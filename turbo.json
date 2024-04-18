@@ -1,0 +1,29 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "pipeline": {
+        "build": {
+            "dependsOn": ["^build"]
+        },
+        "test": {
+            "dependsOn": ["build"]
+        },
+        "test:browser": {
+            "dependsOn": ["^build"]
+        },
+        "test:node": {
+            "dependsOn": ["^build"]
+        },
+        "test:react-native": {
+            "dependsOn": ["^build"]
+        },
+        "test:treeshakability": {
+            "dependsOn": ["build"]
+        },
+        "test:types": {},
+        "lint": {},
+        "lint:fix": {}
+    },
+    "remoteCache": {
+        "signature": true
+    }
+}

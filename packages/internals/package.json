@@ -1,0 +1,14 @@
+{
+    "name": "@kinobi-so/internals",
+    "version": "0.0.0",
+    "private": true,
+    "files": [
+        "ave.config.*",
+        "env-shim.ts",
+        "tsconfig.base.json",
+        "tsup.config.*"
+    ],
+    "devDependencies": {
+        "browserslist-to-esbuild": "^2.1.1"
+    }
+}
