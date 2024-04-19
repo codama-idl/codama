@@ -90,7 +90,13 @@ importers:
         specifier: workspace:*
         version: link:../nodes
 
-  packages/nodes: {}
+  packages/node-types: {}
+
+  packages/nodes:
+    dependencies:
+      '@kinobi-so/node-types':
+        specifier: workspace:*
+        version: link:../node-types
 
 packages:
 

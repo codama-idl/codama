@@ -1,7 +1,7 @@
 {
     "name": "@kinobi-so/nodes",
     "version": "0.20.0",
-    "description": "Node specifications for the Kinobi standard",
+    "description": "Node specifications and helpers for the Kinobi standard",
     "exports": {
         "react-native": "./dist/index.react-native.js",
         "browser": {
@@ -48,6 +48,9 @@
         "test:react-native": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs react-native",
         "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
+    },
+    "dependencies": {
+        "@kinobi-so/node-types": "workspace:*"
     },
     "license": "MIT",
     "repository": {

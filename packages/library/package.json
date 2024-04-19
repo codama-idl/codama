@@ -53,6 +53,9 @@
         "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
     },
+    "dependencies": {
+        "@kinobi-so/nodes": "workspace:*"
+    },
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -64,8 +67,5 @@
     "browserslist": [
         "supports bigint and not dead",
         "maintained node versions"
-    ],
-    "dependencies": {
-        "@kinobi-so/nodes": "workspace:*"
-    }
+    ]
 }
