@@ -1,0 +1,40 @@
+{
+    "name": "@kinobi-so/node-types",
+    "version": "0.20.0",
+    "description": "Node specifications for the Kinobi standard",
+    "exports": {
+        "types": "./dist/types/index.d.ts"
+    },
+    "types": "./dist/types/index.d.ts",
+    "files": [
+        "./dist/types"
+    ],
+    "sideEffects": false,
+    "keywords": [
+        "solana",
+        "framework",
+        "standard",
+        "specifications"
+    ],
+    "scripts": {
+        "build": "rimraf dist && pnpm build:types",
+        "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
+        "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
+        "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
+        "prepublishOnly": "pnpm build",
+        "test": "pnpm test:types",
+        "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kinobi-so/kinobi"
+    },
+    "bugs": {
+        "url": "http://github.com/kinobi-so/kinobi/issues"
+    },
+    "browserslist": [
+        "supports bigint and not dead",
+        "maintained node versions"
+    ]
+}
