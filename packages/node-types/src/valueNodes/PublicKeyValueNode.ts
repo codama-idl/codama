@@ -1,9 +1,9 @@
-import type { MainCaseString } from '../shared';
+import type { CamelCaseString } from '../shared';
 
 export interface PublicKeyValueNode {
     readonly kind: 'publicKeyValueNode';
 
     // Data.
     readonly publicKey: string;
-    readonly identifier?: MainCaseString;
+    readonly identifier?: CamelCaseString;
 }

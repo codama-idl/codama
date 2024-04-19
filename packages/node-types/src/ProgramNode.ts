@@ -3,7 +3,7 @@ import type { DefinedTypeNode } from './DefinedTypeNode';
 import type { ErrorNode } from './ErrorNode';
 import type { InstructionNode } from './InstructionNode';
 import type { PdaNode } from './PdaNode';
-import type { MainCaseString, ProgramVersion } from './shared';
+import type { CamelCaseString, Docs, ProgramVersion } from './shared';
 
 export interface ProgramNode<
     TPdas extends PdaNode[] = PdaNode[],
@@ -15,11 +15,11 @@ export interface ProgramNode<
     readonly kind: 'programNode';
 
     // Data.
-    readonly name: MainCaseString;
-    readonly prefix: MainCaseString;
+    readonly name: CamelCaseString;
     readonly publicKey: string;
     readonly version: ProgramVersion;
     readonly origin?: 'anchor' | 'shank';
+    readonly docs: Docs;
 
     // Children.
     readonly accounts: TAccounts;

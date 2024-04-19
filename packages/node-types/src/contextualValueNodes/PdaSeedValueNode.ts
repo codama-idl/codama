@@ -1,4 +1,4 @@
-import type { MainCaseString } from '../shared';
+import type { CamelCaseString } from '../shared';
 import type { ValueNode } from '../valueNodes';
 import type { AccountValueNode } from './AccountValueNode';
 import type { ArgumentValueNode } from './ArgumentValueNode';
@@ -9,7 +9,7 @@ export interface PdaSeedValueNode<
     readonly kind: 'pdaSeedValueNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
 
     // Children.
     readonly value: TValue;

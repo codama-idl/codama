@@ -1,5 +1,5 @@
 export default {
-    files: ['test/**/*.ts'],
+    files: ['test/**/*.test.ts'],
     nodeArguments: ['--conditions', 'browser'],
     typescript: {
         compile: false,

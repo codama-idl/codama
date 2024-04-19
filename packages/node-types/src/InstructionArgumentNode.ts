@@ -1,5 +1,5 @@
 import type { InstructionInputValueNode } from './contextualValueNodes';
-import type { MainCaseString } from './shared';
+import type { CamelCaseString, Docs } from './shared';
 import type { TypeNode } from './typeNodes';
 
 export interface InstructionArgumentNode<
@@ -8,9 +8,9 @@ export interface InstructionArgumentNode<
     readonly kind: 'instructionArgumentNode';
 
     // Data.
-    readonly name: MainCaseString;
-    readonly docs: string[];
+    readonly name: CamelCaseString;
     readonly defaultValueStrategy?: 'omitted' | 'optional';
+    readonly docs: Docs;
 
     // Children.
     readonly type: TypeNode;

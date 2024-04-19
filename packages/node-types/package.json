@@ -3,11 +3,29 @@
     "version": "0.20.0",
     "description": "Node specifications for the Kinobi standard",
     "exports": {
+        "react-native": "./dist/index.react-native.js",
+        "browser": {
+            "import": "./dist/index.browser.js",
+            "require": "./dist/index.browser.cjs"
+        },
+        "node": {
+            "import": "./dist/index.node.js",
+            "require": "./dist/index.node.cjs"
+        },
         "types": "./dist/types/index.d.ts"
     },
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.js": "./dist/index.browser.js"
+    },
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.js",
+    "react-native": "./dist/index.react-native.js",
     "types": "./dist/types/index.d.ts",
+    "type": "module",
     "files": [
-        "./dist/types"
+        "./dist/types",
+        "./dist/index.*"
     ],
     "sideEffects": false,
     "keywords": [
@@ -17,12 +35,14 @@
         "specifications"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:types",
+        "build": "rimraf dist && pnpm build:src && pnpm build:types",
+        "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs package",
         "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
         "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
         "prepublishOnly": "pnpm build",
-        "test": "pnpm test:types",
+        "test": "pnpm test:types && pnpm test:treeshakability",
+        "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
     },
     "license": "MIT",

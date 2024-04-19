@@ -1,9 +1,9 @@
-import type { ImportFrom, MainCaseString } from '../shared';
+import type { ImportFrom, CamelCaseString } from '../shared';
 
 export interface DefinedTypeLinkNode {
     readonly kind: 'definedTypeLinkNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly importFrom?: ImportFrom;
 }

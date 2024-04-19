@@ -1,8 +1,8 @@
-import type { MainCaseString } from '../shared';
+import type { CamelCaseString } from '../shared';
 
 export interface ArgumentValueNode {
     readonly kind: 'argumentValueNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
 }

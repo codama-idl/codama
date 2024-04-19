@@ -1,5 +1,5 @@
 import type { InstructionInputValueNode } from './contextualValueNodes';
-import type { MainCaseString } from './shared';
+import type { CamelCaseString, Docs } from './shared';
 
 export interface InstructionAccountNode<
     TDefaultValue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
@@ -7,11 +7,11 @@ export interface InstructionAccountNode<
     readonly kind: 'instructionAccountNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly isWritable: boolean;
     readonly isSigner: boolean | 'either';
     readonly isOptional: boolean;
-    readonly docs: string[];
+    readonly docs: Docs;
 
     // Children.
     readonly defaultValue?: TDefaultValue;
