@@ -1,4 +1,4 @@
-import type { ImportFrom, MainCaseString } from '../shared';
+import type { CamelCaseString, Docs, ImportFrom } from '../shared';
 import type { AccountValueNode } from './AccountValueNode';
 import type { ArgumentValueNode } from './ArgumentValueNode';
 
@@ -8,9 +8,9 @@ export interface ResolverValueNode<
     readonly kind: 'resolverValueNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly importFrom?: ImportFrom;
-    readonly docs: string[];
+    readonly docs: Docs;
 
     // Children.
     readonly dependsOn?: TDependsOn;

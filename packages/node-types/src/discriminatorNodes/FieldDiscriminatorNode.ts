@@ -1,9 +1,9 @@
-import type { MainCaseString } from '../shared';
+import type { CamelCaseString } from '../shared';
 
 export interface FieldDiscriminatorNode {
     readonly kind: 'fieldDiscriminatorNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly offset: number;
 }

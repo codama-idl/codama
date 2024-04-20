@@ -1,6 +1,6 @@
 import type { DiscriminatorNode } from './discriminatorNodes';
 import type { PdaLinkNode } from './linkNodes';
-import type { MainCaseString } from './shared';
+import type { CamelCaseString, Docs } from './shared';
 import type { NestedTypeNode, StructTypeNode } from './typeNodes';
 
 export interface AccountNode<
@@ -11,9 +11,9 @@ export interface AccountNode<
     readonly kind: 'accountNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly size?: number | null;
-    readonly docs: string[];
+    readonly docs: Docs;
 
     // Children.
     readonly data: TData;

@@ -1,11 +1,11 @@
-import type { MainCaseString } from './shared';
+import type { CamelCaseString, Docs } from './shared';
 
 export interface ErrorNode {
     readonly kind: 'errorNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly code: number;
     readonly message: string;
-    readonly docs: string[];
+    readonly docs: Docs;
 }

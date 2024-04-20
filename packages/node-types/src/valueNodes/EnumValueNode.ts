@@ -1,5 +1,5 @@
 import type { DefinedTypeLinkNode } from '../linkNodes';
-import type { MainCaseString } from '../shared';
+import type { CamelCaseString } from '../shared';
 import type { StructValueNode } from './StructValueNode';
 import type { TupleValueNode } from './TupleValueNode';
 
@@ -10,7 +10,7 @@ export interface EnumValueNode<
     readonly kind: 'enumValueNode';
 
     // Data.
-    readonly variant: MainCaseString;
+    readonly variant: CamelCaseString;
 
     // Children.
     readonly enum: TEnum;

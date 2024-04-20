@@ -1,4 +1,5 @@
 import type { ArgumentValueNode, ResolverValueNode } from './contextualValueNodes';
+import type { Docs } from './shared';
 
 export interface InstructionRemainingAccountsNode<
     TValue extends ArgumentValueNode | ResolverValueNode = ArgumentValueNode | ResolverValueNode,
@@ -6,10 +7,10 @@ export interface InstructionRemainingAccountsNode<
     readonly kind: 'instructionRemainingAccountsNode';
 
     // Data.
-    readonly docs: string[];
     readonly isOptional?: boolean;
     readonly isSigner?: boolean | 'either';
     readonly isWritable?: boolean;
+    readonly docs: Docs;
 
     // Children.
     readonly value: TValue;

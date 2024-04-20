@@ -1,4 +1,4 @@
-import type { MainCaseString } from '../shared';
+import type { CamelCaseString, Docs } from '../shared';
 import type { ValueNode } from '../valueNodes';
 import type { TypeNode } from './TypeNode';
 
@@ -9,9 +9,9 @@ export interface StructFieldTypeNode<
     readonly kind: 'structFieldTypeNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly defaultValueStrategy?: 'omitted' | 'optional';
-    readonly docs: string[];
+    readonly docs: Docs;
 
     // Children.
     readonly type: TType;

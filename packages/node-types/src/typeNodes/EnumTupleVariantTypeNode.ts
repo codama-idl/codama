@@ -1,4 +1,4 @@
-import type { MainCaseString } from '../shared';
+import type { CamelCaseString } from '../shared';
 import type { NestedTypeNode } from './NestedTypeNode';
 import type { TupleTypeNode } from './TupleTypeNode';
 
@@ -8,7 +8,7 @@ export interface EnumTupleVariantTypeNode<
     readonly kind: 'enumTupleVariantTypeNode';
 
     // Data.
-    readonly name: MainCaseString;
+    readonly name: CamelCaseString;
     readonly discriminator?: number;
 
     // Children.

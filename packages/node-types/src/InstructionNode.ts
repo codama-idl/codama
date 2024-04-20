@@ -3,7 +3,7 @@ import type { InstructionAccountNode } from './InstructionAccountNode';
 import type { InstructionArgumentNode } from './InstructionArgumentNode';
 import type { InstructionByteDeltaNode } from './InstructionByteDeltaNode';
 import type { InstructionRemainingAccountsNode } from './InstructionRemainingAccountsNode';
-import type { MainCaseString } from './shared';
+import type { CamelCaseString, Docs } from './shared';
 
 type SubInstructionNode = InstructionNode;
 
@@ -21,8 +21,8 @@ export interface InstructionNode<
     readonly kind: 'instructionNode';
 
     // Data.
-    readonly name: MainCaseString;
-    readonly docs: string[];
+    readonly name: CamelCaseString;
+    readonly docs: Docs;
     readonly optionalAccountStrategy: 'omitted' | 'programId';
 
     // Children.

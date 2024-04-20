@@ -5,13 +5,12 @@ import type { InstructionInputValueNode } from './ContextualValueNode';
 import type { ResolverValueNode } from './ResolverValueNode';
 
 type ConditionNode = AccountValueNode | ArgumentValueNode | ResolverValueNode;
-type ConditionStatementNode = InstructionInputValueNode;
 
 export interface ConditionalValueNode<
     TCondition extends ConditionNode = ConditionNode,
     TValue extends ValueNode | undefined = ValueNode | undefined,
-    TIfTrue extends ConditionStatementNode | undefined = ConditionStatementNode | undefined,
-    TIfFalse extends ConditionStatementNode | undefined = ConditionStatementNode | undefined,
+    TIfTrue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
+    TIfFalse extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
 > {
     readonly kind: 'conditionalValueNode';
 
