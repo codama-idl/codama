@@ -21,4 +21,4 @@ export const REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS = [
 
 // Contextual Value Node Helpers.
 export const CONTEXTUAL_VALUE_NODES = STANDALONE_CONTEXTUAL_VALUE_NODE_KINDS;
-export const INSTRUCTION_INPUT_VALUE_NODE = [...VALUE_NODES, ...CONTEXTUAL_VALUE_NODES, 'programLinkNode' as const];
+export const INSTRUCTION_INPUT_VALUE_NODES = [...VALUE_NODES, ...CONTEXTUAL_VALUE_NODES, 'programLinkNode' as const];
