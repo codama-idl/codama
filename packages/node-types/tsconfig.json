@@ -3,5 +3,5 @@
     "compilerOptions": { "lib": [] },
     "display": "@kinobi-so/node-types",
     "extends": "../internals/tsconfig.base.json",
-    "include": ["src"]
+    "include": ["src", "test"]
 }

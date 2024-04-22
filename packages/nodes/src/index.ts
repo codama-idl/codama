@@ -8,6 +8,8 @@ export * from './pdaSeedNodes';
 export * from './typeNodes';
 export * from './valueNodes';
 
+export * from './shared';
+
 export * from './AccountNode';
 export * from './DefinedTypeNode';
 export * from './ErrorNode';

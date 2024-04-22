@@ -6,7 +6,7 @@
     "scripts": {
         "build": "turbo run build --log-order grouped",
         "lint": "turbo run test:lint --log-order grouped",
-        "style:fix": "turbo style:fix --log-order grouped && pnpm prettier --log-level warn --ignore-unknown --write '{.,!packages}/*'",
+        "lint:fix": "turbo style:fix --log-order grouped && pnpm prettier --log-level warn --ignore-unknown --write '{.,!packages}/*'",
         "test": "turbo run test --log-order grouped"
     },
     "devDependencies": {
