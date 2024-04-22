@@ -98,6 +98,15 @@ importers:
         specifier: workspace:*
         version: link:../node-types
 
+  packages/visitors:
+    dependencies:
+      '@kinobi-so/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@kinobi-so/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+
   packages/visitors-core:
     dependencies:
       '@kinobi-so/nodes':

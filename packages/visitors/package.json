@@ -1,7 +1,7 @@
 {
-    "name": "@kinobi-so/visitors-core",
+    "name": "@kinobi-so/visitors",
     "version": "0.20.0",
-    "description": "Core visitors for the Kinobi framework",
+    "description": "All visitors for the Kinobi framework",
     "exports": {
         "react-native": "./dist/index.react-native.js",
         "browser": {
@@ -51,10 +51,7 @@
     },
     "dependencies": {
         "@kinobi-so/nodes": "workspace:*",
-        "json-stable-stringify": "^1.1.1"
-    },
-    "devDependencies": {
-        "@types/json-stable-stringify": "^1.0.36"
+        "@kinobi-so/visitors-core": "workspace:*"
     },
     "license": "MIT",
     "repository": {
