@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
 import { type GetNodeFromKind, type Node, type NodeKind, pascalCase, REGISTERED_NODE_KINDS } from '@kinobi-so/nodes';
 
 export type Visitor<TReturn, TNodeKind extends NodeKind = NodeKind> = {
@@ -24,8 +25,7 @@ export function visitOrElse<TReturn, TNode extends Node, TNodeKind extends NodeK
 
 export function getVisitFunctionName<TNodeKind extends NodeKind>(nodeKind: TNodeKind) {
     if (!REGISTERED_NODE_KINDS.includes(nodeKind)) {
-        // TODO: Coded error.
-        throw new Error(`Unrecognized node [${nodeKind}]`);
+        throw new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: nodeKind });
     }
 
     return `visit${pascalCase(nodeKind.slice(0, -4))}` as GetVisitorFunctionName<TNodeKind>;

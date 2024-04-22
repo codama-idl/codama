@@ -11,11 +11,6 @@ export type PdaNodeInput<TSeeds extends PdaSeedNode[] = PdaSeedNode[]> = Omit<
 };
 
 export function pdaNode<const TSeeds extends PdaSeedNode[]>(input: PdaNodeInput<TSeeds>): PdaNode<TSeeds> {
-    if (!input.name) {
-        // TODO: Coded error.
-        throw new Error('PdaNode must have a name.');
-    }
-
     return Object.freeze({
         kind: 'pdaNode',
 

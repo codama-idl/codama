@@ -23,16 +23,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     if (!shouldInline(linkType.name) || linkType.importFrom) {
                         return linkType;
                     }
-
-                    const definedType = linkables.get(linkType);
-                    if (definedType === undefined) {
-                        throw new Error(
-                            `Trying to inline missing defined type [${linkType.name}]. ` +
-                                `Ensure this visitor starts from the root node to access all defined types.`,
-                        );
-                    }
-
-                    return visit(definedType.type, self);
+                    return visit(linkables.getOrThrow(linkType).type, self);
                 },
 
                 visitProgram(program, { self }) {

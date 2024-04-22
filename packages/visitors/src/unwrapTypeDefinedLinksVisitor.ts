@@ -15,14 +15,7 @@ export function unwrapTypeDefinedLinksVisitor(definedLinksType: string[]) {
         transform: node => {
             assertIsNode(node, 'definedTypeLinkNode');
             if (node.importFrom) return node;
-            const definedType = linkables.get(node);
-            if (definedType === undefined) {
-                throw new Error(
-                    `Trying to inline missing defined type [${node.name}]. ` +
-                        `Ensure this visitor starts from the root node to access all defined types.`,
-                );
-            }
-            return definedType.type;
+            return linkables.getOrThrow(node).type;
         },
     }));
 

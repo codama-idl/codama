@@ -78,6 +78,18 @@ importers:
         specifier: ^8.0.2
         version: 8.0.2
 
+  packages/errors:
+    dependencies:
+      '@kinobi-so/node-types':
+        specifier: workspace:*
+        version: link:../node-types
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
+      commander:
+        specifier: ^12.0.0
+        version: 12.0.0
+
   packages/internals:
     devDependencies:
       browserslist-to-esbuild:
@@ -94,12 +106,18 @@ importers:
 
   packages/nodes:
     dependencies:
+      '@kinobi-so/errors':
+        specifier: workspace:*
+        version: link:../errors
       '@kinobi-so/node-types':
         specifier: workspace:*
         version: link:../node-types
 
   packages/visitors:
     dependencies:
+      '@kinobi-so/errors':
+        specifier: workspace:*
+        version: link:../errors
       '@kinobi-so/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -109,6 +127,9 @@ importers:
 
   packages/visitors-core:
     dependencies:
+      '@kinobi-so/errors':
+        specifier: workspace:*
+        version: link:../errors
       '@kinobi-so/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -1634,7 +1655,6 @@ packages:
   /chalk@5.3.0:
     resolution: {integrity: sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
-    dev: true
 
   /chardet@0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
@@ -1740,6 +1760,11 @@ packages:
     resolution: {integrity: sha512-qiBjkpbMLO/HL68y+lh4q0/O1MZFj2RX6X/KmMa3+gJD3z+WwI1ZzDHysvqHGS3mP6mznPckpXmw1nI9cJjyRg==}
     hasBin: true
     dev: true
+
+  /commander@12.0.0:
+    resolution: {integrity: sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==}
+    engines: {node: '>=18'}
+    dev: false
 
   /commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}

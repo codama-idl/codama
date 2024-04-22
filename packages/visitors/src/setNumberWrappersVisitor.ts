@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, KinobiError } from '@kinobi-so/errors';
 import { amountTypeNode, assertIsNestedTypeNode, dateTimeTypeNode, solAmountTypeNode } from '@kinobi-so/nodes';
 import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
 
@@ -23,7 +24,7 @@ export function setNumberWrappersVisitor(map: NumberWrapperMap) {
                         case 'Amount':
                             return amountTypeNode(node, wrapper.decimals, wrapper.unit);
                         default:
-                            throw new Error(`Invalid number wrapper kind: ${wrapper}`);
+                            throw new KinobiError(KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, { wrapper });
                     }
                 },
             }),

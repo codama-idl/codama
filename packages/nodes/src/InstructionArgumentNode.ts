@@ -16,11 +16,6 @@ export type InstructionArgumentNodeInput<
 export function instructionArgumentNode<TDefaultValue extends InstructionInputValueNode | undefined = undefined>(
     input: InstructionArgumentNodeInput<TDefaultValue>,
 ): InstructionArgumentNode<TDefaultValue> {
-    if (!input.name) {
-        // TODO: Coded error.
-        throw new Error('InstructionArgumentNode must have a name.');
-    }
-
     return Object.freeze({
         kind: 'instructionArgumentNode',
 

@@ -1,4 +1,8 @@
 import {
+    KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
+    KinobiError,
+} from '@kinobi-so/errors';
+import {
     assertIsNode,
     camelCase,
     isNode,
@@ -40,13 +44,9 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
     const hasConflictingNames = uniqueDuplicates.length > 0;
 
     if (hasConflictingNames) {
-        // TODO: logWarn
-        // logWarn(
-        //     `Cound not flatten the attributes of a struct ` +
-        //         `since this would cause the following attributes ` +
-        //         `to conflict [${uniqueDuplicates.join(', ')}].` +
-        //         'You may want to rename the conflicting attributes.',
-        // );
+        throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
+            conflictingAttributes: uniqueDuplicates,
+        });
     }
 
     return hasConflictingNames ? node : structTypeNode(inlinedFields);

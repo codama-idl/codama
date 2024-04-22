@@ -7,11 +7,6 @@ export function enumTupleVariantTypeNode<TTuple extends NestedTypeNode<TupleType
     tuple: TTuple,
     discriminator?: number,
 ): EnumTupleVariantTypeNode<TTuple> {
-    if (!name) {
-        // TODO: Coded error.
-        throw new Error('EnumTupleVariantTypeNode must have a name.');
-    }
-
     return Object.freeze({
         kind: 'enumTupleVariantTypeNode',
 

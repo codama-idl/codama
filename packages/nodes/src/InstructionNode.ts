@@ -70,11 +70,6 @@ export function instructionNode<
     TDiscriminators,
     TSubInstructions
 > {
-    if (!input.name) {
-        // TODO: Coded error.
-        throw new Error('InstructionNode must have a name.');
-    }
-
     return Object.freeze({
         kind: 'instructionNode',
 

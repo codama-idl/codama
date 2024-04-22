@@ -7,11 +7,6 @@ export function enumStructVariantTypeNode<TStruct extends NestedTypeNode<StructT
     struct: TStruct,
     discriminator?: number,
 ): EnumStructVariantTypeNode<TStruct> {
-    if (!name) {
-        // TODO: Coded error.
-        throw new Error('EnumStructVariantTypeNode must have a name.');
-    }
-
     return Object.freeze({
         kind: 'enumStructVariantTypeNode',
 
