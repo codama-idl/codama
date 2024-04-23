@@ -46,7 +46,7 @@ export const KinobiErrorMessages: Readonly<{
         'Cannot use optional account [$seedValueName] as the [$seedName] PDA seed for the [$instructionAccountName] account of the [$instruction] instruction.',
     [KINOBI_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES]:
         "Circular dependency detected when resolving the accounts and arguments' default values of the [$instructionName] instruction. Got the following dependency cycle [$formattedCycle].",
-    [KINOBI_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate the given node.',
+    [KINOBI_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate the given node [$formattedHistogram].',
     [KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND]:
         'Could not find an enum argument named [$argumentName] for instruction [$instructionName].',
     [KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]:

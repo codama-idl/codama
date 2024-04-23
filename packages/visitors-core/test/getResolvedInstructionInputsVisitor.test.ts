@@ -6,10 +6,9 @@ import {
     numberTypeNode,
     publicKeyTypeNode,
 } from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
 import test from 'ava';
 
-import { getResolvedInstructionInputsVisitor } from '../src/index.js';
+import { getResolvedInstructionInputsVisitor, visit } from '../src/index.js';
 
 test('it returns all instruction accounts in order of resolution', t => {
     // Given the following instruction node with an account that defaults to another account.

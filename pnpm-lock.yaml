@@ -113,6 +113,18 @@ importers:
         specifier: workspace:*
         version: link:../node-types
 
+  packages/validators:
+    dependencies:
+      '@kinobi-so/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@kinobi-so/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@kinobi-so/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+
   packages/visitors:
     dependencies:
       '@kinobi-so/errors':

@@ -18,7 +18,9 @@ import {
     isNode,
     VALUE_NODES,
 } from '@kinobi-so/nodes';
-import { singleNodeVisitor, Visitor } from '@kinobi-so/visitors-core';
+
+import { singleNodeVisitor } from './singleNodeVisitor';
+import { Visitor } from './visitor';
 
 export type ResolvedInstructionInput = ResolvedInstructionAccount | ResolvedInstructionArgument;
 export type ResolvedInstructionAccount = InstructionAccountNode & {
