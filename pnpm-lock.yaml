@@ -113,6 +113,18 @@ importers:
         specifier: workspace:*
         version: link:../node-types
 
+  packages/nodes-from-anchor:
+    dependencies:
+      '@kinobi-so/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@kinobi-so/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@noble/hashes':
+        specifier: ^1.4.0
+        version: 1.4.0
+
   packages/validators:
     dependencies:
       '@kinobi-so/errors':
@@ -743,6 +755,11 @@ packages:
       - encoding
       - supports-color
     dev: true
+
+  /@noble/hashes@1.4.0:
+    resolution: {integrity: sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==}
+    engines: {node: '>= 16'}
+    dev: false
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}

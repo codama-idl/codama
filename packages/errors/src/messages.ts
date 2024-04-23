@@ -7,6 +7,7 @@ import {
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
+    KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
     KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
@@ -34,6 +35,7 @@ export const KinobiErrorMessages: Readonly<{
     [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not found linked node [$name] from [$kind].',
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: 'Expected nested node of kind [$expectedKinds], got [$kind]',
     [KINOBI_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got [$kind].',
+    [KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
     [KINOBI_ERROR__UNRECOGNIZED_NODE_KIND]: 'Unrecognized node kind [$kind].',
     [KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: 'Account [$name] does not have a field named [$missingField].',
     [KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:
