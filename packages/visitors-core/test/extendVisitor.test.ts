@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, KinobiError } from '@kinobi-so/errors';
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
 import test from 'ava';
 
@@ -52,14 +53,16 @@ test('it cannot extends nodes that are not supported by the base visitor', t => 
     const baseVisitor = voidVisitor(['tupleTypeNode']);
 
     // Then we expect an error when we try to extend other nodes for that visitor.
-    t.throws(
-        () =>
-            extendVisitor(baseVisitor, {
-                // @ts-expect-error NumberTypeNode is not part of the base visitor.
-                visitNumberType: () => undefined,
-            }),
-        {
-            message: 'Cannot extend visitor with function "visitNumberType" as the base visitor does not support it.',
-        },
+    const error = t.throws(() =>
+        extendVisitor(baseVisitor, {
+            // @ts-expect-error NumberTypeNode is not part of the base visitor.
+            visitNumberType: () => undefined,
+        }),
+    );
+    t.deepEqual(
+        error,
+        new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
+            visitFunction: 'visitNumberType',
+        }),
     );
 });

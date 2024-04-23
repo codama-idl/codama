@@ -6,6 +6,7 @@ export * from './consoleLogVisitor';
 export * from './deleteNodesVisitor';
 export * from './extendVisitor';
 export * from './getDebugStringVisitor';
+export * from './getResolvedInstructionInputsVisitor';
 export * from './getUniqueHashStringVisitor';
 export * from './identityVisitor';
 export * from './interceptVisitor';

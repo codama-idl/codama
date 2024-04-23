@@ -9,7 +9,6 @@ export * from './flattenInstructionDataArgumentsVisitor';
 export * from './flattenStructVisitor';
 export * from './getByteSizeVisitor';
 export * from './getDefinedTypeHistogramVisitor';
-export * from './getResolvedInstructionInputsVisitor';
 export * from './setAccountDiscriminatorFromFieldVisitor';
 export * from './setFixedAccountSizesVisitor';
 export * from './setInstructionAccountDefaultValuesVisitor';

@@ -1,4 +1,4 @@
-import { camelCase, isNodeFilter, Node, ProgramNode } from '@kinobi-so/nodes';
+import { isNodeFilter, Node, ProgramNode } from '@kinobi-so/nodes';
 
 export class NodeStack {
     private readonly stack: Node[];
@@ -23,7 +23,7 @@ export class NodeStack {
         return this.stack.find(isNodeFilter('programNode'));
     }
 
-    public all(): Node[] {
+    public all(): readonly Node[] {
         return [...this.stack];
     }
 
@@ -43,17 +43,5 @@ export class NodeStack {
         return this.stack.map((node): string => {
             return 'name' in node ? `[${node.kind}]${node.name}` : `[${node.kind}]`;
         });
-    }
-
-    public matchesWithNames(names: string[]): boolean {
-        const remainingNames = [...names].map(camelCase);
-        this.stack.forEach(node => {
-            const nodeName = (node as { name?: string }).name;
-            if (nodeName && remainingNames.length > 0 && remainingNames[0] === camelCase(nodeName)) {
-                remainingNames.shift();
-            }
-        });
-
-        return remainingNames.length === 0;
     }
 }

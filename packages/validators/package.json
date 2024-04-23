@@ -1,0 +1,69 @@
+{
+    "name": "@kinobi-so/validators",
+    "version": "0.20.0",
+    "description": "Validator visitors for the Kinobi framework",
+    "exports": {
+        "react-native": "./dist/index.react-native.js",
+        "browser": {
+            "import": "./dist/index.browser.js",
+            "require": "./dist/index.browser.cjs"
+        },
+        "node": {
+            "import": "./dist/index.node.js",
+            "require": "./dist/index.node.cjs"
+        },
+        "types": "./dist/types/index.d.ts"
+    },
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.js": "./dist/index.browser.js"
+    },
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.js",
+    "react-native": "./dist/index.react-native.js",
+    "types": "./dist/types/index.d.ts",
+    "type": "module",
+    "files": [
+        "./dist/types",
+        "./dist/index.*"
+    ],
+    "sideEffects": false,
+    "keywords": [
+        "solana",
+        "framework",
+        "standard",
+        "visitors"
+    ],
+    "scripts": {
+        "build": "rimraf dist && pnpm build:src && pnpm build:types",
+        "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs package",
+        "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
+        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs browser --watch",
+        "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
+        "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
+        "prepublishOnly": "pnpm build",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:browser && pnpm test:node && pnpm test:react-native",
+        "test:browser": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs browser",
+        "test:node": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node",
+        "test:react-native": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs react-native",
+        "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
+        "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
+    },
+    "dependencies": {
+        "@kinobi-so/errors": "workspace:*",
+        "@kinobi-so/nodes": "workspace:*",
+        "@kinobi-so/visitors-core": "workspace:*"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kinobi-so/kinobi"
+    },
+    "bugs": {
+        "url": "http://github.com/kinobi-so/kinobi/issues"
+    },
+    "browserslist": [
+        "supports bigint and not dead",
+        "maintained node versions"
+    ]
+}

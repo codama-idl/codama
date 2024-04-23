@@ -96,6 +96,7 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         instructionName: CamelCaseString;
     };
     [KINOBI_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: {
+        formattedHistogram: string;
         validationItems: ValidationItem[];
     };
     [KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND]: {
