@@ -13,11 +13,6 @@ export type StructFieldTypeNodeInput<
 export function structFieldTypeNode<TType extends TypeNode, TDefaultValue extends ValueNode | undefined = undefined>(
     input: StructFieldTypeNodeInput<TType, TDefaultValue>,
 ): StructFieldTypeNode<TType, TDefaultValue> {
-    if (!input.name) {
-        // TODO: Coded error.
-        throw new Error('StructFieldTypeNode must have a name.');
-    }
-
     return Object.freeze({
         kind: 'structFieldTypeNode',
 

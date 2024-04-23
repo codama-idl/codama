@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
 import {
     accountNode,
     assertIsNode,
@@ -23,7 +24,11 @@ export function setAccountDiscriminatorFromFieldVisitor(
                     const accountData = resolveNestedTypeNode(node.data);
                     const fieldIndex = accountData.fields.findIndex(f => f.name === field);
                     if (fieldIndex < 0) {
-                        throw new Error(`Account [${node.name}] does not have a field named [${field}].`);
+                        throw new KinobiError(KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
+                            account: node,
+                            missingField: field,
+                            name: node.name,
+                        });
                     }
 
                     const fieldNode = accountData.fields[fieldIndex];

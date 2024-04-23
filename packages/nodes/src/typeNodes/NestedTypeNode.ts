@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
 import type { NestedTypeNode, Node, TypeNode } from '@kinobi-so/node-types';
 
 import { isNode } from '../Node';
@@ -55,6 +56,10 @@ export function assertIsNestedTypeNode<TKind extends TypeNode['kind']>(
 ): asserts node is NestedTypeNode<Extract<TypeNode, { kind: TKind }>> {
     const kinds = Array.isArray(kind) ? kind : [kind];
     if (!isNestedTypeNode(node, kinds)) {
-        throw new Error(`Expected nested type of ${kinds.join(' | ')}, got ${node?.kind ?? 'null'}.`);
+        throw new KinobiError(KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND, {
+            expectedKinds: kinds,
+            kind: node?.kind ?? null,
+            node,
+        });
     }
 }

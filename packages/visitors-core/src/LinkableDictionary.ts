@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
 import {
     AccountLinkNode,
     AccountNode,
@@ -41,6 +42,18 @@ export class LinkableDictionary {
     recordAll(nodes: LinkableNode[]): this {
         nodes.forEach(node => this.record(node));
         return this;
+    }
+
+    getOrThrow(linkNode: ProgramLinkNode): ProgramNode;
+    getOrThrow(linkNode: PdaLinkNode): PdaNode;
+    getOrThrow(linkNode: AccountLinkNode): AccountNode;
+    getOrThrow(linkNode: DefinedTypeLinkNode): DefinedTypeNode;
+    getOrThrow(linkNode: LinkNode): LinkableNode {
+        throw new KinobiError(KINOBI_ERROR__LINKED_NODE_NOT_FOUND, {
+            kind: linkNode.kind,
+            linkNode,
+            name: linkNode.name,
+        });
     }
 
     get(linkNode: ProgramLinkNode): ProgramNode | undefined;

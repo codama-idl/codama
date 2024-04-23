@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, KinobiError } from '@kinobi-so/errors';
 import {
     accountValueNode,
     argumentValueNode,
@@ -41,8 +42,12 @@ export function fillDefaultPdaSeedValuesVisitor(
                 if (!foundPda) return visitedNode;
                 const seeds = addDefaultSeedValuesFromPdaWhenMissing(instruction, foundPda, visitedNode.seeds);
                 if (strictMode && !allSeedsAreValid(instruction, foundPda, seeds)) {
-                    // TODO: Coded error.
-                    throw new Error(`Invalid seed values for PDA ${foundPda.name} in instruction ${instruction.name}`);
+                    throw new KinobiError(KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, {
+                        instruction,
+                        instructionName: instruction.name,
+                        pda: foundPda,
+                        pdaName: foundPda.name,
+                    });
                 }
                 return pdaValueNode(visitedNode.pda, seeds);
             },

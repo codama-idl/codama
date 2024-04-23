@@ -1,5 +1,11 @@
 /* eslint-disable no-case-declarations */
 import {
+    KINOBI_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
+    KINOBI_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+    KinobiError,
+} from '@kinobi-so/errors';
+import {
     AccountValueNode,
     accountValueNode,
     ArgumentValueNode,
@@ -48,12 +54,16 @@ export function getResolvedInstructionInputsVisitor(
         // Ensure we don't have a circular dependency.
         const isCircular = stack.some(({ kind, name }) => kind === input.kind && name === input.name);
         if (isCircular) {
-            const cycle = [...stack.map(({ name }) => name), input.name].join(' -> ');
-            const error =
-                `Circular dependency detected in the accounts and args of ` +
-                `the "${instruction.name}" instruction. ` +
-                `Got the following dependency cycle: ${cycle}.`;
-            throw new Error(error);
+            const cycle = [...stack, input];
+            throw new KinobiError(
+                KINOBI_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+                {
+                    cycle,
+                    formattedCycle: cycle.map(({ name }) => name).join(' -> '),
+                    instruction,
+                    instructionName: instruction.name,
+                },
+            );
         }
 
         // Resolve whilst keeping track of the stack.
@@ -116,10 +126,15 @@ export function getResolvedInstructionInputsVisitor(
                     if (!isNode(seed.value, 'accountValueNode')) return;
                     const dependency = visitedAccounts.get(seed.value.name)!;
                     if (dependency.resolvedIsOptional) {
-                        const error =
-                            `Cannot use optional account "${seed.value.name}" as the "${seed.name}" PDA seed ` +
-                            `for the "${account.name}" account of the "${instruction.name}" instruction.`;
-                        throw new Error(error);
+                        throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
+                            instruction: instruction,
+                            instructionAccount: account,
+                            instructionAccountName: account.name,
+                            instructionName: instruction.name,
+                            seed,
+                            seedName: seed.name,
+                            seedValueName: seed.value.name,
+                        });
                     }
                 });
                 break;
@@ -156,10 +171,16 @@ export function getResolvedInstructionInputsVisitor(
             if (isNode(dependency, 'accountValueNode')) {
                 const dependencyAccount = instruction.accounts.find(a => a.name === dependency.name);
                 if (!dependencyAccount) {
-                    const error =
-                        `Account "${dependency.name}" is not a valid dependency of ${parent.kind} ` +
-                        `"${parent.name}" in the "${instruction.name}" instruction.`;
-                    throw new Error(error);
+                    throw new KinobiError(KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
+                        dependency,
+                        dependencyKind: dependency.kind,
+                        dependencyName: dependency.name,
+                        instruction,
+                        instructionName: instruction.name,
+                        parent,
+                        parentKind: parent.kind,
+                        parentName: parent.name,
+                    });
                 }
                 input = { ...dependencyAccount };
             } else if (isNode(dependency, 'argumentValueNode')) {
@@ -167,10 +188,16 @@ export function getResolvedInstructionInputsVisitor(
                     a => a.name === dependency.name,
                 );
                 if (!dependencyArgument) {
-                    const error =
-                        `Argument "${dependency.name}" is not a valid dependency of ${parent.kind} ` +
-                        `"${parent.name}" in the "${instruction.name}" instruction.`;
-                    throw new Error(error);
+                    throw new KinobiError(KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
+                        dependency,
+                        dependencyKind: dependency.kind,
+                        dependencyName: dependency.name,
+                        instruction,
+                        instructionName: instruction.name,
+                        parent,
+                        parentKind: parent.kind,
+                        parentName: parent.name,
+                    });
                 }
                 input = { ...dependencyArgument };
             }

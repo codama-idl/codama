@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
 import {
     assertIsNode,
     camelCase,
@@ -33,9 +34,11 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                     const argFieldIndex = argFields.findIndex(field => field.name === argName);
                     const argField = argFieldIndex >= 0 ? argFields[argFieldIndex] : null;
                     if (!argField) {
-                        // TODO: logWarn
-                        // logWarn(`Could not find instruction argument [${argName}].`);
-                        return node;
+                        throw new KinobiError(KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
+                            argumentName: argName,
+                            instruction: node,
+                            instructionName: node.name,
+                        });
                     }
 
                     let argType: EnumTypeNode;
@@ -46,9 +49,11 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                         assertIsNode(linkedType, 'enumTypeNode');
                         argType = linkedType;
                     } else {
-                        // TODO: logWarn
-                        // logWarn(`Could not find an enum type for ` + `instruction argument [${argName}].`);
-                        return node;
+                        throw new KinobiError(KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
+                            argumentName: argName,
+                            instruction: node,
+                            instructionName: node.name,
+                        });
                     }
 
                     const subInstructions = argType.variants.map((variant, index): InstructionNode => {

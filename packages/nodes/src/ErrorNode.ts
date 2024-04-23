@@ -8,16 +8,6 @@ export type ErrorNodeInput = Omit<ErrorNode, 'docs' | 'kind' | 'name'> & {
 };
 
 export function errorNode(input: ErrorNodeInput): ErrorNode {
-    if (!input.name) {
-        // TODO: Coded error.
-        throw new Error('ErrorNode must have a name.');
-    }
-
-    if (input.code < 0) {
-        // TODO: Coded error.
-        throw new Error('ErrorNode must have a code number.');
-    }
-
     return Object.freeze({
         kind: 'errorNode',
 

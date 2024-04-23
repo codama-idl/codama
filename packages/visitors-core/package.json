@@ -50,6 +50,7 @@
         "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
     },
     "dependencies": {
+        "@kinobi-so/errors": "workspace:*",
         "@kinobi-so/nodes": "workspace:*",
         "json-stable-stringify": "^1.1.1"
     },

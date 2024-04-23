@@ -24,11 +24,6 @@ export function accountNode<
     TPda extends PdaLinkNode | undefined = undefined,
     const TDiscriminators extends DiscriminatorNode[] | undefined = undefined,
 >(input: AccountNodeInput<TData, TPda, TDiscriminators>): AccountNode<TData, TPda, TDiscriminators> {
-    if (!input.name) {
-        // TODO: Coded error.
-        throw new Error('AccountNode must have a name.');
-    }
-
     return Object.freeze({
         kind: 'accountNode',
 

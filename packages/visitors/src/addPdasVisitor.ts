@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, KinobiError } from '@kinobi-so/errors';
 import { assertIsNode, camelCase, pdaNode, PdaSeedNode, programNode } from '@kinobi-so/nodes';
 import { bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
 
@@ -13,11 +14,11 @@ export function addPdasVisitor(pdas: Record<string, { name: string; seeds: PdaSe
                     const newPdaNames = new Set(newPdas.map(pda => pda.name));
                     const overlappingPdaNames = new Set([...existingPdaNames].filter(name => newPdaNames.has(name)));
                     if (overlappingPdaNames.size > 0) {
-                        // TODO: Coded error.
-                        throw new Error(
-                            `Cannot add PDAs to program "${programName}" because the following PDA names ` +
-                                `already exist: ${[...overlappingPdaNames].join(', ')}.`,
-                        );
+                        throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
+                            duplicatedPdaNames: [...overlappingPdaNames],
+                            program: node,
+                            programName: node.name,
+                        });
                     }
                     return programNode({
                         ...node,
