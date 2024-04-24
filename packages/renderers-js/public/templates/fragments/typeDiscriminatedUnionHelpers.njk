@@ -1,0 +1,23 @@
+// Data Enum Helpers.
+{% for variant in typeNode.variants %}
+  {% if variant.kind === 'enumStructVariantTypeNode' %}
+    export function {{ discriminatedUnionFunction }}(kind: '{{ getVariant(variant.name) }}', data: GetDiscriminatedUnionVariantContent<{{ looseName }}, '{{ discriminatedUnionDiscriminator }}', '{{ getVariant(variant.name) }}'>): GetDiscriminatedUnionVariant<{{ looseName }}, '{{ discriminatedUnionDiscriminator }}', '{{ getVariant(variant.name) }}'>;
+  {% elif variant.kind === 'enumTupleVariantTypeNode' %}
+    export function {{ discriminatedUnionFunction }}(kind: '{{ getVariant(variant.name) }}', data: GetDiscriminatedUnionVariantContent<{{ looseName }}, '{{ discriminatedUnionDiscriminator }}', '{{ getVariant(variant.name) }}'>['fields']): GetDiscriminatedUnionVariant<{{ looseName }}, '{{ discriminatedUnionDiscriminator }}', '{{ getVariant(variant.name) }}'>;
+  {% else %}
+    export function {{ discriminatedUnionFunction }}(kind: '{{ getVariant(variant.name) }}'): GetDiscriminatedUnionVariant<{{ looseName }}, '{{ discriminatedUnionDiscriminator }}', '{{ getVariant(variant.name) }}'>;
+  {% endif %}
+{% endfor %}
+export function {{ discriminatedUnionFunction }}<K extends {{ looseName }}['{{ discriminatedUnionDiscriminator }}'], Data>(
+  kind: K,
+  data?: Data,
+) {
+  return Array.isArray(data) ? { {{ discriminatedUnionDiscriminator }}: kind, fields: data } : { {{ discriminatedUnionDiscriminator }}: kind, ...(data ?? {}) };
+}
+
+export function {{ isDiscriminatedUnionFunction }}<K extends {{ strictName }}['{{ discriminatedUnionDiscriminator }}']>(
+  kind: K,
+  value: {{ strictName }},
+): value is {{ strictName }} & { {{ discriminatedUnionDiscriminator }}: K } {
+  return value.{{ discriminatedUnionDiscriminator }} === kind;
+};

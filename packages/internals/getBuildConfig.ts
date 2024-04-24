@@ -1,7 +1,8 @@
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { env } from 'node:process';
 
 import browsersListToEsBuild from 'browserslist-to-esbuild';
-import path from 'path';
 import { Format, Options as TsupConfig } from 'tsup';
 
 type Platform = 'browser' | 'node' | 'react-native';
@@ -12,16 +13,6 @@ type BuildOptions = {
 };
 
 const BROWSERSLIST_TARGETS = browsersListToEsBuild();
-
-export function getPackageBuildConfig(): TsupConfig[] {
-    return [
-        getBuildConfig({ format: 'cjs', platform: 'node' }),
-        getBuildConfig({ format: 'esm', platform: 'node' }),
-        getBuildConfig({ format: 'cjs', platform: 'browser' }),
-        getBuildConfig({ format: 'esm', platform: 'browser' }),
-        getBuildConfig({ format: 'esm', platform: 'react-native' }),
-    ];
-}
 
 export function getBuildConfig(options: BuildOptions): TsupConfig {
     const { format, platform } = options;
@@ -41,7 +32,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
                 options.minify = true;
             }
         },
-        external: ['node:fs'],
+        external: ['node:fs', 'node:path', 'node:url'],
         format,
         globalName: 'globalThis.kinobi',
         name: platform,
@@ -57,6 +48,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
             return { js: extension };
         },
         platform: platform === 'node' ? 'node' : 'browser',
+        publicDir: true,
         pure: ['process'],
         sourcemap: format !== 'iife',
         treeshake: true,
@@ -66,7 +58,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
 export function getTestsBuildConfig(options: BuildOptions): TsupConfig[] {
     const { format, platform } = options;
     function outExtension() {
-        return { js: `.${format === 'cjs' ? 'cjs' : 'js'}` };
+        return { js: '.js' };
     }
     return [
         {
@@ -78,6 +70,11 @@ export function getTestsBuildConfig(options: BuildOptions): TsupConfig[] {
             ...getBuildConfig(options),
             bundle: false,
             entry: ['./test/**/*.ts'],
+            async onSuccess() {
+                if (format === 'cjs') {
+                    await writeFile(`./dist/tests-${platform}-${format}/package.json`, '{ "type": "commonjs" }');
+                }
+            },
             outDir: `./dist/tests-${platform}-${format}/test`,
             outExtension,
         },

@@ -1,0 +1,13 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+{{ instructionTypeFragment }}
+{{ instructionDataFragment }}
+{{ instructionExtraArgsFragment }}
+{{ instructionFunctionAsyncFragment }}
+{{ instructionFunctionSyncFragment }}
+{{ instructionParseFunctionFragment }}
+{% endblock %}

@@ -1,5 +1,5 @@
 module.exports = {
     extends: ['turbo', '@solana/eslint-config-solana'],
     root: true,
-    ignorePatterns: ['.eslintrc.js', '.eslintrc.cjs', 'dist/'],
+    ignorePatterns: ['.eslintrc.js', '.eslintrc.cjs', 'dist/', '*.json', '*.njk', '*.cjs'],
 };
