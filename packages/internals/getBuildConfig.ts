@@ -41,6 +41,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
                 options.minify = true;
             }
         },
+        external: ['node:fs'],
         format,
         globalName: 'globalThis.kinobi',
         name: platform,

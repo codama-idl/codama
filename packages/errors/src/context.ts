@@ -20,6 +20,7 @@ import {
 
 import {
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
+    KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE,
@@ -35,6 +36,7 @@ import {
     KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
+    KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
     KinobiErrorCode,
 } from './codes';
 
@@ -51,6 +53,9 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         kind: LinkNode['kind'];
         linkNode: LinkNode;
         name: CamelCaseString;
+    };
+    [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
+        fsFunction: string;
     };
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: {
         expectedKinds: NodeKind[];
@@ -126,6 +131,9 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         instructionName: CamelCaseString;
         pda: PdaNode;
         pdaName: CamelCaseString;
+    };
+    [KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: {
+        key: string;
     };
 }>;
 

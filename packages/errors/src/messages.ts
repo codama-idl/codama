@@ -5,6 +5,7 @@
 
 import {
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
+    KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE,
@@ -20,6 +21,7 @@ import {
     KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
+    KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
     KinobiErrorCode,
 } from './codes';
 
@@ -33,6 +35,8 @@ export const KinobiErrorMessages: Readonly<{
     [P in KinobiErrorCode]: string;
 }> = {
     [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not found linked node [$name] from [$kind].',
+    [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
+        'Node.js filesystem function [$fsFunction] is not available in your environment.',
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: 'Expected nested node of kind [$expectedKinds], got [$kind]',
     [KINOBI_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got [$kind].',
     [KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
@@ -56,4 +60,5 @@ export const KinobiErrorMessages: Readonly<{
     [KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: 'Invalid number wrapper kind [$wrapper].',
     [KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]:
         'Invalid seed values for PDA [$pdaName] in instruction [$instructionName].',
+    [KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: 'Cannot find key [$key] in RenderMap.',
 };

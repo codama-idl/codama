@@ -125,6 +125,18 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
 
+  packages/renderers-core:
+    dependencies:
+      '@kinobi-so/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@kinobi-so/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@kinobi-so/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+
   packages/validators:
     dependencies:
       '@kinobi-so/errors':
