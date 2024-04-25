@@ -1,11 +1,9 @@
 export default {
     files: ['test/**/*.test.ts'],
-    nodeArguments: ['--conditions', 'node'],
+    nodeArguments: ['--conditions', 'browser'],
     typescript: {
         compile: false,
-        rewritePaths: {
-            'test/': 'dist/tests-node-esm/test/',
-        },
+        rewritePaths: { 'test/': 'dist/tests-browser-esm/test/' },
     },
     watchMode: {
         ignoreChanges: ['src/**', 'test/**'],

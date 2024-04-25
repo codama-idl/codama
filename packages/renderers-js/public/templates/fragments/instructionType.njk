@@ -1,0 +1,18 @@
+{% import "macros.njk" as macros %}
+
+export type {{ instructionType }}<
+  TProgram extends string = typeof {{ programAddressConstant }},
+  {% if hasAccounts %}
+    {{ accountTypeParams }},
+  {% endif %}
+  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
+> = IInstruction<TProgram>
+  {% if hasData %}
+    & IInstructionWithData<Uint8Array>
+  {% endif %}
+  {% if hasAccounts %}
+    & IInstructionWithAccounts<[{{ accountMetas }}, ...TRemainingAccounts]>
+  {% else %}
+    & IInstructionWithAccounts<TRemainingAccounts>
+  {% endif %}
+;

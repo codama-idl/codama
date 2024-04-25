@@ -49,6 +49,22 @@ export class RenderMap {
         return typeof value === 'string' ? content.includes(value) : value.test(content);
     }
 
+    async mapContentAsync(fn: (content: string) => Promise<string>): Promise<RenderMap> {
+        await Promise.all(
+            [...this._map.entries()].map(async ([relativePath, code]) => {
+                this._map.set(relativePath, await fn(code));
+            }),
+        );
+        return this;
+    }
+
+    mapContent(fn: (content: string) => string): RenderMap {
+        this._map.forEach((code, relativePath) => {
+            this._map.set(relativePath, fn(code));
+        });
+        return this;
+    }
+
     write(path: string): void {
         this._map.forEach((code, relativePath) => {
             createFile(`${path}/${relativePath}`, code);

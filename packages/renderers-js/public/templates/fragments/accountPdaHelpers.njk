@@ -1,0 +1,25 @@
+{% import "macros.njk" as macros %}
+
+export async function {{ fetchFromSeedsFunction }}(
+  rpc: Parameters<typeof fetchEncodedAccount>[0],
+  {% if hasVariableSeeds %}
+    seeds: {{ pdaSeedsType }},
+  {% endif %}
+  config: FetchAccountConfig & { programAddress?: Address } = {},
+): Promise<Account<{{ accountType }}>> {
+  const maybeAccount = await {{ fetchMaybeFromSeedsFunction }}(rpc, {% if hasVariableSeeds %}seeds, {% endif %}config);
+  assertAccountExists(maybeAccount);
+  return maybeAccount;
+}
+
+export async function {{ fetchMaybeFromSeedsFunction }}(
+  rpc: Parameters<typeof fetchEncodedAccount>[0],
+  {% if hasVariableSeeds %}
+    seeds: {{ pdaSeedsType }},
+  {% endif %}
+  config: FetchAccountConfig & { programAddress?: Address } = {},
+): Promise<MaybeAccount<{{ accountType }}>> {
+  const { programAddress, ...fetchConfig } = config;
+  const [address] = await {{ findPdaFunction }}({% if hasVariableSeeds %}seeds, {% endif %}{ programAddress });
+  return await {{ fetchMaybeFunction }}(rpc, address, fetchConfig);
+}
