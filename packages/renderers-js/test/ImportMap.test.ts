@@ -47,6 +47,28 @@ test('it offers some default dependency mappings', t => {
     // Then we expect the following import statements.
     t.is(
         importStatements,
+        "import { Address, Codec } from '@solana/web3.js';\n" +
+            "import { MyCustomType } from '../../hooked';\n" +
+            "import { myHelper } from '../shared';\n" +
+            "import { MyType } from '../types';",
+    );
+});
+
+test('it offers some more granular default dependency mappings', t => {
+    // Given an import map with some recognized dependency keys.
+    const importMap = new ImportMap()
+        .add('solanaAddresses', 'Address')
+        .add('solanaCodecsCore', 'Codec')
+        .add('generatedTypes', 'MyType')
+        .add('shared', 'myHelper')
+        .add('hooked', 'MyCustomType');
+
+    // When we render it.
+    const importStatements = importMap.toString({}, true);
+
+    // Then we expect the following import statements.
+    t.is(
+        importStatements,
         "import { Address } from '@solana/addresses';\n" +
             "import { Codec } from '@solana/codecs';\n" +
             "import { MyCustomType } from '../../hooked';\n" +

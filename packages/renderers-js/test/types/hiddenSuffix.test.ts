@@ -33,7 +33,7 @@ test('it renders hidden suffix codecs', async t => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(t, renderMap, 'types/myType.ts', {
-        '@solana/codecs': [
+        '@solana/web3.js': [
             'getHiddenSuffixEncoder',
             'getHiddenSuffixDecoder',
             'getConstantEncoder',

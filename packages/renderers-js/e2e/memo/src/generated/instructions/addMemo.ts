@@ -6,25 +6,23 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Address } from '@solana/addresses';
 import {
+  AccountRole,
+  Address,
   Codec,
   Decoder,
   Encoder,
+  IAccountMeta,
+  IInstruction,
+  IInstructionWithAccounts,
+  IInstructionWithData,
+  TransactionSigner,
   combineCodec,
   getStructDecoder,
   getStructEncoder,
   getUtf8Decoder,
   getUtf8Encoder,
-} from '@solana/codecs';
-import {
-  AccountRole,
-  IAccountMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-} from '@solana/instructions';
-import { TransactionSigner } from '@solana/signers';
+} from '@solana/web3.js';
 import { MEMO_PROGRAM_ADDRESS } from '../programs';
 
 export type AddMemoInstruction<

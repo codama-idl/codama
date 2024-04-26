@@ -8,4 +8,3 @@
 
 export * from './instructions';
 export * from './programs';
-export * from './shared';

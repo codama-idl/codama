@@ -7,20 +7,16 @@
  */
 
 import {
-  Address,
-  isProgramDerivedAddress,
-  ProgramDerivedAddress,
-} from '@solana/addresses';
-import {
   AccountRole,
+  Address,
   IAccountMeta,
-  upgradeRoleToSigner,
-} from '@solana/instructions';
-import {
   IAccountSignerMeta,
-  isTransactionSigner as web3JsIsTransactionSigner,
+  ProgramDerivedAddress,
   TransactionSigner,
-} from '@solana/signers';
+  isProgramDerivedAddress,
+  isTransactionSigner as web3JsIsTransactionSigner,
+  upgradeRoleToSigner,
+} from '@solana/web3.js';
 
 /**
  * Asserts that the given value is not null or undefined.

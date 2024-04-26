@@ -64,6 +64,7 @@ export type GetRenderMapOptions = {
     nameTransformers?: Partial<NameTransformers>;
     nonScalarEnums?: string[];
     renderParentInstructions?: boolean;
+    useGranularImports?: boolean;
 };
 
 export type GlobalFragmentScope = {
@@ -88,6 +89,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const nameApi = getNameApi(nameTransformers);
     const renderParentInstructions = options.renderParentInstructions ?? false;
     const dependencyMap = options.dependencyMap ?? {};
+    const useGranularImports = options.useGranularImports ?? false;
     const asyncResolvers = (options.asyncResolvers ?? []).map(camelCase);
     const nonScalarEnums = (options.nonScalarEnums ?? []).map(camelCase);
     const internalNodes = (options.internalNodes ?? []).map(camelCase);
@@ -160,7 +162,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             accountPdaHelpersFragment,
                             accountSizeHelpersFragment,
                             accountTypeFragment,
-                            imports: imports.toString(dependencyMap),
+                            imports: imports.toString(dependencyMap, useGranularImports),
                         }),
                     );
                 },
@@ -251,7 +253,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     return new RenderMap().add(
                         `instructions/${camelCase(node.name)}.ts`,
                         render('instructionsPage.njk', {
-                            imports: imports.toString(dependencyMap),
+                            imports: imports.toString(dependencyMap, useGranularImports),
                             instruction: node,
                             instructionDataFragment,
                             instructionExtraArgsFragment,
@@ -275,7 +277,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     return new RenderMap().add(
                         `pdas/${camelCase(node.name)}.ts`,
                         render('pdasPage.njk', {
-                            imports: imports.toString(dependencyMap),
+                            imports: imports.toString(dependencyMap, useGranularImports),
                             pdaFunctionFragment,
                         }),
                     );
@@ -299,7 +301,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         renderMap.add(
                             `errors/${camelCase(node.name)}.ts`,
                             render('errorsPage.njk', {
-                                imports: new ImportMap().mergeWith(programErrorsFragment).toString(dependencyMap),
+                                imports: new ImportMap()
+                                    .mergeWith(programErrorsFragment)
+                                    .toString(dependencyMap, useGranularImports),
                                 programErrorsFragment,
                             }),
                         );
@@ -313,7 +317,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         render('programsPage.njk', {
                             imports: new ImportMap()
                                 .mergeWith(programFragment, programAccountsFragment, programInstructionsFragment)
-                                .toString(dependencyMap),
+                                .toString(dependencyMap, useGranularImports),
                             programAccountsFragment,
                             programFragment,
                             programInstructionsFragment,
@@ -358,7 +362,26 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const map = new RenderMap();
                     if (hasAnythingToExport) {
-                        map.add('shared/index.ts', render('sharedPage.njk', ctx));
+                        map.add(
+                            'shared/index.ts',
+                            render('sharedPage.njk', {
+                                ...ctx,
+                                imports: new ImportMap()
+                                    .add('solanaAddresses', [
+                                        'Address',
+                                        'isProgramDerivedAddress',
+                                        'ProgramDerivedAddress',
+                                    ])
+                                    .add('solanaInstructions', ['AccountRole', 'IAccountMeta', 'upgradeRoleToSigner'])
+                                    .add('solanaSigners', [
+                                        'IAccountSignerMeta',
+                                        'isTransactionSigner',
+                                        'TransactionSigner',
+                                    ])
+                                    .addAlias('solanaSigners', 'isTransactionSigner', 'web3JsIsTransactionSigner')
+                                    .toString(dependencyMap, useGranularImports),
+                            }),
+                        );
                     }
                     if (programsToExport.length > 0) {
                         map.add('programs/index.ts', render('programsIndex.njk', ctx));
