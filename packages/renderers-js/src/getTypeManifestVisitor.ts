@@ -815,6 +815,37 @@ export function getTypeManifestVisitor(input: {
                         { mergeValues: renders => `[${renders.join(', ')}]` },
                     );
                 },
+
+                visitZeroableOptionType(node, { self }) {
+                    const childManifest = visit(node.item, self);
+                    childManifest.strictType.mapRender(r => `Option<${r}>`).addImports('solanaOptions', 'Option');
+                    childManifest.looseType
+                        .mapRender(r => `OptionOrNullable<${r}>`)
+                        .addImports('solanaOptions', 'OptionOrNullable');
+                    const encoderOptions: string[] = [];
+                    const decoderOptions: string[] = [];
+
+                    // Zero-value option.
+                    if (node.zeroValue) {
+                        const zeroValueManifest = visit(node.zeroValue, self);
+                        childManifest.encoder.mergeImportsWith(zeroValueManifest.value);
+                        childManifest.decoder.mergeImportsWith(zeroValueManifest.value);
+                        encoderOptions.push(`zeroValue: ${zeroValueManifest.value.render}`);
+                        decoderOptions.push(`zeroValue: ${zeroValueManifest.value.render}`);
+                    }
+
+                    const encoderOptionsAsString =
+                        encoderOptions.length > 0 ? `, { ${encoderOptions.join(', ')} }` : '';
+                    const decoderOptionsAsString =
+                        decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
+                    childManifest.encoder
+                        .mapRender(r => `getZeroableOptionEncoder(${r + encoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getZeroableOptionEncoder');
+                    childManifest.decoder
+                        .mapRender(r => `getZeroableOptionDecoder(${r + decoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getZeroableOptionDecoder');
+                    return childManifest;
+                },
             }),
     );
 }
