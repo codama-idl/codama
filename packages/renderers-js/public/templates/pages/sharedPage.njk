@@ -2,9 +2,7 @@
 {% import "macros.njk" as macros %}
 
 {% block main %}
-import { Address, isProgramDerivedAddress, ProgramDerivedAddress } from '@solana/addresses';
-import { AccountRole, IAccountMeta, upgradeRoleToSigner } from '@solana/instructions';
-import { IAccountSignerMeta, isTransactionSigner as web3JsIsTransactionSigner, TransactionSigner } from '@solana/signers';
+{{ imports }}
 
 /**
  * Asserts that the given value is not null or undefined.

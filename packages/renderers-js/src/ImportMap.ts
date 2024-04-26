@@ -3,34 +3,42 @@ import { ImportFrom } from '@kinobi-so/nodes';
 import { Fragment } from './fragments';
 import { TypeManifest } from './TypeManifest';
 
-const DEFAULT_MODULE_MAP: Record<string, string> = {
-    // External.
-    ...{
-        solanaAccounts: '@solana/accounts',
-        solanaAddresses: '@solana/addresses',
-        solanaCodecsCore: '@solana/codecs',
-        solanaCodecsDataStructures: '@solana/codecs',
-        solanaCodecsNumbers: '@solana/codecs',
-        solanaCodecsStrings: '@solana/codecs',
-        solanaInstructions: '@solana/instructions',
-        solanaOptions: '@solana/codecs',
-        solanaSigners: '@solana/signers',
-    },
+const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
+    solanaAccounts: '@solana/web3.js',
+    solanaAddresses: '@solana/web3.js',
+    solanaCodecsCore: '@solana/web3.js',
+    solanaCodecsDataStructures: '@solana/web3.js',
+    solanaCodecsNumbers: '@solana/web3.js',
+    solanaCodecsStrings: '@solana/web3.js',
+    solanaInstructions: '@solana/web3.js',
+    solanaOptions: '@solana/web3.js',
+    solanaSigners: '@solana/web3.js',
+};
 
-    // Internal.
-    ...{
-        errors: '../errors',
-        generated: '..',
-        generatedAccounts: '../accounts',
-        generatedErrors: '../errors',
-        generatedInstructions: '../instructions',
-        generatedPdas: '../pdas',
-        generatedPrograms: '../programs',
-        generatedTypes: '../types',
-        hooked: '../../hooked',
-        shared: '../shared',
-        types: '../types',
-    },
+const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {
+    solanaAccounts: '@solana/accounts',
+    solanaAddresses: '@solana/addresses',
+    solanaCodecsCore: '@solana/codecs',
+    solanaCodecsDataStructures: '@solana/codecs',
+    solanaCodecsNumbers: '@solana/codecs',
+    solanaCodecsStrings: '@solana/codecs',
+    solanaInstructions: '@solana/instructions',
+    solanaOptions: '@solana/codecs',
+    solanaSigners: '@solana/signers',
+};
+
+const DEFAULT_INTERNAL_MODULE_MAP: Record<string, string> = {
+    errors: '../errors',
+    generated: '..',
+    generatedAccounts: '../accounts',
+    generatedErrors: '../errors',
+    generatedInstructions: '../instructions',
+    generatedPdas: '../pdas',
+    generatedPrograms: '../programs',
+    generatedTypes: '../types',
+    hooked: '../../hooked',
+    shared: '../shared',
+    types: '../types',
 };
 
 export class ImportMap {
@@ -90,7 +98,7 @@ export class ImportMap {
         return this._imports.size === 0;
     }
 
-    resolve(dependencies: Record<ImportFrom, string> = {}): Map<ImportFrom, Set<string>> {
+    resolve(dependencies: Record<ImportFrom, string> = {}, useGranularImports = false): Map<ImportFrom, Set<string>> {
         // Resolve aliases.
         const aliasedMap = new Map<ImportFrom, Set<string>>(
             [...this._imports.entries()].map(([module, imports]) => {
@@ -101,7 +109,11 @@ export class ImportMap {
         );
 
         // Resolve dependency mappings.
-        const dependencyMap = { ...DEFAULT_MODULE_MAP, ...dependencies };
+        const dependencyMap = {
+            ...(useGranularImports ? DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP : DEFAULT_EXTERNAL_MODULE_MAP),
+            ...DEFAULT_INTERNAL_MODULE_MAP,
+            ...dependencies,
+        };
         const resolvedMap = new Map<ImportFrom, Set<string>>();
         aliasedMap.forEach((imports, module) => {
             const resolvedModule: string = dependencyMap[module] ?? module;
@@ -113,8 +125,8 @@ export class ImportMap {
         return resolvedMap;
     }
 
-    toString(dependencies: Record<ImportFrom, string> = {}): string {
-        return [...this.resolve(dependencies).entries()]
+    toString(dependencies: Record<ImportFrom, string> = {}, useGranularImports = false): string {
+        return [...this.resolve(dependencies, useGranularImports).entries()]
             .sort(([a], [b]) => {
                 const aIsRelative = a.startsWith('.');
                 const bIsRelative = b.startsWith('.');

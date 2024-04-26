@@ -24,6 +24,6 @@ test('it renders size prefix codecs', async t => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(t, renderMap, 'types/myType.ts', {
-        '@solana/codecs': ['addEncoderSizePrefix', 'addDecoderSizePrefix'],
+        '@solana/web3.js': ['addEncoderSizePrefix', 'addDecoderSizePrefix'],
     });
 });

@@ -6,8 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Address } from '@solana/addresses';
-import { containsBytes, getU32Encoder } from '@solana/codecs';
+import { Address, containsBytes, getU32Encoder } from '@solana/web3.js';
 import {
   ParsedAdvanceNonceAccountInstruction,
   ParsedAllocateInstruction,

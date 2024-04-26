@@ -15,7 +15,7 @@ import {
   getEnumEncoder,
   getU32Decoder,
   getU32Encoder,
-} from '@solana/codecs';
+} from '@solana/web3.js';
 
 export enum NonceState {
   Uninitialized,

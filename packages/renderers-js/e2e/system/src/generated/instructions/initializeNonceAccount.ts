@@ -8,28 +8,24 @@
 
 import {
   Address,
-  getAddressDecoder,
-  getAddressEncoder,
-} from '@solana/addresses';
-import {
   Codec,
   Decoder,
   Encoder,
-  combineCodec,
-  getStructDecoder,
-  getStructEncoder,
-  getU32Decoder,
-  getU32Encoder,
-  transformEncoder,
-} from '@solana/codecs';
-import {
   IAccountMeta,
   IInstruction,
   IInstructionWithAccounts,
   IInstructionWithData,
   ReadonlyAccount,
   WritableAccount,
-} from '@solana/instructions';
+  combineCodec,
+  getAddressDecoder,
+  getAddressEncoder,
+  getStructDecoder,
+  getStructEncoder,
+  getU32Decoder,
+  getU32Encoder,
+  transformEncoder,
+} from '@solana/web3.js';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { ResolvedAccount, getAccountMetaFactory } from '../shared';
 

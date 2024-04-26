@@ -18,7 +18,7 @@ import {
   lamports,
   pipe,
   sendAndConfirmTransactionFactory,
-  setTransactionFeePayerSigner,
+  setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
 } from '@solana/web3.js';
@@ -62,7 +62,7 @@ export const createDefaultTransaction = async (
     .send();
   return pipe(
     createTransactionMessage({ version: 0 }),
-    (tx) => setTransactionFeePayerSigner(feePayer, tx),
+    (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
     (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx)
   );
 };

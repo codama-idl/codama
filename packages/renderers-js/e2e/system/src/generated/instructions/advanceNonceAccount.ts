@@ -6,28 +6,27 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { Address } from '@solana/addresses';
 import {
+  Address,
   Codec,
   Decoder,
   Encoder,
+  IAccountMeta,
+  IAccountSignerMeta,
+  IInstruction,
+  IInstructionWithAccounts,
+  IInstructionWithData,
+  ReadonlyAccount,
+  ReadonlySignerAccount,
+  TransactionSigner,
+  WritableAccount,
   combineCodec,
   getStructDecoder,
   getStructEncoder,
   getU32Decoder,
   getU32Encoder,
   transformEncoder,
-} from '@solana/codecs';
-import {
-  IAccountMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-  ReadonlyAccount,
-  ReadonlySignerAccount,
-  WritableAccount,
-} from '@solana/instructions';
-import { IAccountSignerMeta, TransactionSigner } from '@solana/signers';
+} from '@solana/web3.js';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { ResolvedAccount, getAccountMetaFactory } from '../shared';
 

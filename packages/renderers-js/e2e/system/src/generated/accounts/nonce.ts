@@ -8,32 +8,28 @@
 
 import {
   Account,
+  Address,
+  Codec,
+  Decoder,
   EncodedAccount,
+  Encoder,
   FetchAccountConfig,
   FetchAccountsConfig,
   MaybeAccount,
   MaybeEncodedAccount,
   assertAccountExists,
   assertAccountsExist,
+  combineCodec,
   decodeAccount,
   fetchEncodedAccount,
   fetchEncodedAccounts,
-} from '@solana/accounts';
-import {
-  Address,
   getAddressDecoder,
   getAddressEncoder,
-} from '@solana/addresses';
-import {
-  Codec,
-  Decoder,
-  Encoder,
-  combineCodec,
   getStructDecoder,
   getStructEncoder,
   getU64Decoder,
   getU64Encoder,
-} from '@solana/codecs';
+} from '@solana/web3.js';
 import {
   NonceState,
   NonceStateArgs,
