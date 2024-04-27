@@ -1,0 +1,33 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+export const {{ program.name | snakeCase | upper }}_PROGRAM_ID = '{{ program.publicKey }}' as PublicKey<'{{ program.publicKey }}'>;
+
+{{ macros.docblock(program.docs) }}
+export function create{{ program.name | pascalCase }}Program(): Program {
+  return {
+    name: '{{ program.name | camelCase }}',
+    publicKey: {{ program.name | snakeCase | upper }}_PROGRAM_ID,
+    getErrorFromCode(code: number, cause?: Error) {
+      return get{{ program.name | pascalCase }}ErrorFromCode(code, this, cause);
+    },
+    getErrorFromName(name: string, cause?: Error) {
+      return get{{ program.name | pascalCase }}ErrorFromName(name, this, cause);
+    },
+    isOnCluster() {
+      return true;
+    },
+  };
+}
+
+export function get{{ program.name | pascalCase }}Program<T extends Program = Program>(context: Pick<Context, 'programs'>, clusterFilter?: ClusterFilter): T {
+  return context.programs.get<T>("{{ program.name | camelCase }}", clusterFilter);
+}
+
+export function get{{ program.name | pascalCase }}ProgramId(context: Pick<Context, 'programs'>, clusterFilter?: ClusterFilter): PublicKey {
+  return context.programs.getPublicKey("{{ program.name | camelCase }}", {{ program.name | snakeCase | upper }}_PROGRAM_ID, clusterFilter);
+}
+{% endblock %}

@@ -7,7 +7,6 @@ export * from './defaultVisitor';
 export * from './fillDefaultPdaSeedValuesVisitor';
 export * from './flattenInstructionDataArgumentsVisitor';
 export * from './flattenStructVisitor';
-export * from './getByteSizeVisitor';
 export * from './getDefinedTypeHistogramVisitor';
 export * from './setAccountDiscriminatorFromFieldVisitor';
 export * from './setFixedAccountSizesVisitor';

@@ -1,0 +1,89 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+{% include "instructionsPageAccounts.njk" %}
+{% include "instructionsPageArgs.njk" %}
+
+// Instruction.
+export function {{ instruction.name | camelCase }}(
+  context: {{ interfaces }},
+  {% set accountsType = instruction.name | pascalCase + 'InstructionAccounts' %}
+  {% set argsType = instruction.name | pascalCase + 'InstructionArgs' %}
+  {% if canMergeAccountsAndArgs %}
+    {% set accountsObj = 'input' %}
+    {% set argsObj = 'input' %}
+    {% if hasAccounts and hasAnyArgs %}
+      input: {{ accountsType }} & {{ argsType }},
+    {% elif hasAccounts %}
+      input: {{ accountsType }},
+    {% elif hasAnyArgs %}
+      input: {{ argsType }},
+    {% endif %}
+  {% else %}
+    {% set accountsObj = 'accounts' %}
+    {% set argsObj = 'args' %}
+    {% if hasAccounts %}
+      accounts: {{ accountsType }},
+    {% endif %}
+    {% if hasAnyArgs %}
+      args: {{ argsType }},
+    {% endif %}
+  {% endif %}
+): TransactionBuilder {
+  // Program ID.
+  const programId = context.programs.getPublicKey('{{ program.name | camelCase }}', '{{ program.publicKey }}');
+
+  // Accounts.
+  const resolvedAccounts = {
+    {% for account in accounts %}
+      {{ account.name | camelCase }}: { index: {{ loop.index0 }}, isWritable: {{ 'true' if account.isWritable else 'false' }} as boolean, value: {{ accountsObj }}.{{ account.name | camelCase }} ?? null },
+    {% endfor %}
+  } satisfies ResolvedAccountsWithIndices;
+
+  {% if hasResolvedArgs %}
+    // Arguments.
+    const resolvedArgs: {{ instruction.name | pascalCase + 'InstructionArgs' }} = { ...{{ argsObj }} };
+  {% endif %}
+
+  {% include "instructionsPageResolvedInputs.njk" %}
+
+  // Accounts in order.
+  {% if hasAccounts %}
+    const orderedAccounts: ResolvedAccount[] = Object.values(resolvedAccounts).sort((a,b) => a.index - b.index);
+  {% else %}
+    const orderedAccounts: ResolvedAccount[] = Object.values(resolvedAccounts as ResolvedAccountsWithIndices);
+  {% endif %}
+
+  {% include "instructionsPageRemainingAccounts.njk" %}
+
+  // Keys and Signers.
+  const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "{{ instruction.optionalAccountStrategy }}", programId);
+
+  // Data.
+  {% if hasDataArgs %}
+    const data = get{{ instruction.name | pascalCase + 'InstructionData' }}Serializer().serialize(resolvedArgs as {{ instruction.name | pascalCase + 'InstructionDataArgs' }});
+  {% elif hasData %}
+    const data = get{{ instruction.name | pascalCase + 'InstructionData' }}Serializer().serialize({});
+  {% else %}
+    const data = new Uint8Array();
+  {% endif %}
+
+  // Bytes Created On Chain.
+  {% if byteDelta.value.kind === 'numberValueNode' %}
+    const bytesCreatedOnChain = {{ byteDelta.value.number }}{% if byteDelta.withHeader %} + ACCOUNT_HEADER_SIZE{% endif %};
+  {% elif byteDelta.value.kind === 'argumentValueNode' %}
+    const bytesCreatedOnChain = Number({{ argsObj }}.{{ byteDelta.value.name }}){% if byteDelta.withHeader %} + ACCOUNT_HEADER_SIZE{% endif %};
+  {% elif byteDelta.value.kind === 'accountLinkNode' %}
+    const bytesCreatedOnChain = get{{ byteDelta.value.name | pascalCase }}Size(){% if byteDelta.withHeader %} + ACCOUNT_HEADER_SIZE{% endif %};
+  {% elif byteDelta.value.kind === 'resolverValueNode' %}
+    const bytesCreatedOnChain = {{ byteDelta.value.name | camelCase }}(context, resolvedAccounts, resolvedArgs, programId){% if byteDelta.withHeader %} + ACCOUNT_HEADER_SIZE{% endif %};
+  {% else %}
+    const bytesCreatedOnChain = 0;
+  {% endif %}
+
+  return transactionBuilder([{ instruction: { keys, programId, data }, signers, bytesCreatedOnChain }]);
+}
+{% endblock %}

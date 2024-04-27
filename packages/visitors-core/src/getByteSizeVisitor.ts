@@ -1,5 +1,8 @@
 import { isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@kinobi-so/nodes';
-import { LinkableDictionary, mergeVisitor, visit, Visitor } from '@kinobi-so/visitors-core';
+
+import { LinkableDictionary } from './LinkableDictionary';
+import { mergeVisitor } from './mergeVisitor';
+import { visit, Visitor } from './visitor';
 
 export type ByteSizeVisitorKeys =
     | RegisteredTypeNode['kind']

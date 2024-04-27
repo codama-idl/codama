@@ -1,7 +1,7 @@
 {
-    "name": "@kinobi-so/renderers-js",
+    "name": "@kinobi-so/renderers-js-umi",
     "version": "0.20.0",
-    "description": "JavaScript renderer compatible with the Solana web3.js library",
+    "description": "JavaScript renderer compatible with the Umi framework",
     "exports": {
         "node": {
             "import": "./dist/index.node.js",
@@ -43,6 +43,7 @@
         "@kinobi-so/errors": "workspace:*",
         "@kinobi-so/nodes": "workspace:*",
         "@kinobi-so/renderers-core": "workspace:*",
+        "@kinobi-so/validators": "workspace:*",
         "@kinobi-so/visitors-core": "workspace:*",
         "@solana/codecs-strings": "tp2",
         "nunjucks": "^3.2.4",

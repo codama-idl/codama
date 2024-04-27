@@ -1,0 +1,14 @@
+{% if resolvedInputsWithDefaults.length > 0 %}
+  // Default values.
+  {% for input in resolvedInputsWithDefaults %}
+    {%- if input.kind === 'instructionAccountNode' -%}
+      if (!resolvedAccounts.{{ input.name | camelCase }}.value) {
+        {{ input.render }}
+      }
+    {% else %}
+      if (!resolvedArgs.{{ input.name | camelCase }}) {
+        {{ input.render }}
+      }
+    {% endif %}
+  {% endfor %}
+{% endif %}

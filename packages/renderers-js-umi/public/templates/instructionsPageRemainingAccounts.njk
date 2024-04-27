@@ -1,0 +1,9 @@
+{% if remainingAccounts.value.kind === 'argumentValueNode' %}
+  // Remaining Accounts.
+  const remainingAccounts = resolvedArgs.{{ remainingAccounts.value.name | camelCase }}.map((value, index) => ({ index, value, isWritable: {{ "true" if remainingAccounts.isWritable else "false" }} }));
+  orderedAccounts.push(...remainingAccounts);
+{% elif remainingAccounts.value.kind === 'resolverValueNode' %}
+  // Remaining Accounts.
+  const remainingAccounts = {{ remainingAccounts.value.name | camelCase }}(context, resolvedAccounts, resolvedArgs, programId);
+  orderedAccounts.push(...remainingAccounts);
+{% endif %}

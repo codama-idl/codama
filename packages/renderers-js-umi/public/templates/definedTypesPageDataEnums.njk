@@ -1,0 +1,26 @@
+{% if isDataEnum %}
+  {% set strictName = definedType.name | pascalCase %}
+  {% set looseName = definedType.name | pascalCase + 'Args' %}
+  // Data Enum Helpers.
+  {% for variant in definedType.type.variants %}
+    {% if variant.kind === 'enumStructVariantTypeNode' %}
+      export function {{ definedType.name | camelCase }}(kind: '{{ variant.name | pascalCase }}', data: GetDataEnumKindContent<{{ looseName }}, '{{ variant.name | pascalCase }}'>): GetDataEnumKind<{{ looseName }}, '{{ variant.name | pascalCase }}'>;
+    {% elif variant.kind === 'enumTupleVariantTypeNode' %}
+      export function {{ definedType.name | camelCase }}(kind: '{{ variant.name | pascalCase }}', data: GetDataEnumKindContent<{{ looseName }}, '{{ variant.name | pascalCase }}'>['fields']): GetDataEnumKind<{{ looseName }}, '{{ variant.name | pascalCase }}'>;
+    {% else %}
+      export function {{ definedType.name | camelCase }}(kind: '{{ variant.name | pascalCase }}'): GetDataEnumKind<{{ looseName }}, '{{ variant.name | pascalCase }}'>;
+    {% endif %}
+  {% endfor %}
+  export function {{ definedType.name | camelCase }}<K extends {{ looseName }}['__kind']>(
+    kind: K,
+    data?: any,
+  ): Extract<{{ looseName }}, { __kind: K }> {
+    return Array.isArray(data) ? { __kind: kind, fields: data } : { __kind: kind, ...(data ?? {}) };
+  }
+  export function is{{ strictName }}<K extends {{ strictName }}['__kind']>(
+    kind: K,
+    value: {{ strictName }},
+  ): value is {{ strictName }} & { __kind: K } {
+    return value.__kind === kind;
+  };
+{% endif %}

@@ -12,10 +12,9 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@kinobi-so/nodes';
-import { LinkableDictionary, visit, Visitor } from '@kinobi-so/visitors-core';
 import test from 'ava';
 
-import { getByteSizeVisitor } from '../src/index.js';
+import { getByteSizeVisitor, LinkableDictionary, visit, Visitor } from '../src/index.js';
 
 const macro = test.macro((t, node: Node, expectedSize: number | null) => {
     t.is(visit(node, getByteSizeVisitor(new LinkableDictionary()) as Visitor<number | null>), expectedSize);
