@@ -1,7 +1,11 @@
 import { accountNode, assertIsNode, isNode } from '@kinobi-so/nodes';
-import { LinkableDictionary, recordLinkablesVisitor, topDownTransformerVisitor, visit } from '@kinobi-so/visitors-core';
-
-import { getByteSizeVisitor } from './getByteSizeVisitor';
+import {
+    getByteSizeVisitor,
+    LinkableDictionary,
+    recordLinkablesVisitor,
+    topDownTransformerVisitor,
+    visit,
+} from '@kinobi-so/visitors-core';
 
 export function setFixedAccountSizesVisitor() {
     const linkables = new LinkableDictionary();

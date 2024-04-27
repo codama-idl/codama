@@ -1,0 +1,34 @@
+{# Write a docblock from an array of strings. #}
+{% macro docblock(docs) %}
+{%- if docs.length === 1 -%}
+/** {{ docs[0] }} */
+{%- elif docs.length > 1 -%}
+/**
+{% for doc in docs %}
+ * {{ doc }}
+{% endfor %}
+ */
+{% endif %}
+{% endmacro %}
+
+{# Export a type or an enum. #}
+{% macro exportType(name, typeManifest) %}
+{% set looseName = name + 'Args' %}
+{%- if typeManifest.isEnum -%}
+export enum {{ name }} {{ typeManifest.strictType }};
+
+export type {{ looseName }} = {{ name }};
+{%- else -%}
+export type {{ name }} = {{ typeManifest.strictType }};
+
+export type {{ looseName }} = {{ typeManifest.looseType if typeManifest.strictType != typeManifest.looseType else name }};
+{% endif %}
+{% endmacro %}
+
+{# Export a serializer. #}
+{% macro exportSerializer(name, typeManifest) %}
+{% set looseName = name + 'Args' %}
+export function get{{ name }}Serializer(): Serializer<{{ looseName }}, {{ name }}> {
+  return {{ typeManifest.serializer }} as Serializer<{{ looseName }}, {{ name }}>;
+}
+{% endmacro %}

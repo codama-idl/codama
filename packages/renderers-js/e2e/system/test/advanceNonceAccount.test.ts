@@ -25,13 +25,13 @@ test('it advances the nonce account', async (t) => {
   const originalNonceAccount = await fetchNonce(client.rpc, nonce.address);
 
   // When the authority advances the nonce account.
-  const createAccount = getAdvanceNonceAccountInstruction({
+  const advanceNonce = getAdvanceNonceAccountInstruction({
     nonceAccount: nonce.address,
     nonceAuthority: authority,
   });
   await pipe(
     await createDefaultTransaction(client, payer),
-    (tx) => appendTransactionMessageInstruction(createAccount, tx),
+    (tx) => appendTransactionMessageInstruction(advanceNonce, tx),
     (tx) => signAndSendTransaction(client, tx)
   );
 

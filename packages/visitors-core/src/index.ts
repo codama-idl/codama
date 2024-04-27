@@ -5,6 +5,7 @@ export * from './bottomUpTransformerVisitor';
 export * from './consoleLogVisitor';
 export * from './deleteNodesVisitor';
 export * from './extendVisitor';
+export * from './getByteSizeVisitor';
 export * from './getDebugStringVisitor';
 export * from './getResolvedInstructionInputsVisitor';
 export * from './getUniqueHashStringVisitor';

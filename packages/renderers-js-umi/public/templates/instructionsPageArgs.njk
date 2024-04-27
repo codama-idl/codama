@@ -1,0 +1,35 @@
+{% if not customData and hasData %}
+  // Data.
+  {{ macros.exportType(instruction.name | pascalCase + 'InstructionData', dataArgManifest) }}
+
+  {{ macros.exportSerializer(instruction.name | pascalCase + 'InstructionData', dataArgManifest) }}
+{% endif %}
+
+{% if hasExtraArgs %}
+  // Extra Args.
+  export type {{ instruction.name | pascalCase + 'InstructionExtraArgs' }} = {{ extraArgManifest.looseType }};
+{% endif %}
+
+{% if hasAnyArgs %}
+  {% set argType %}
+    {% if hasDataArgs and hasExtraArgs %}
+      {{ instruction.name | pascalCase + 'InstructionDataArgs' }} & {{ instruction.name | pascalCase + 'InstructionExtraArgs' }}
+    {% elif hasDataArgs %}
+      {{ instruction.name | pascalCase + 'InstructionDataArgs' }}
+    {% elif hasExtraArgs %}
+      {{ instruction.name | pascalCase + 'InstructionExtraArgs' }}
+    {% endif %}
+  {% endset %}
+
+  // Args.
+  {% if argsWithDefaults.length > 0 %}
+    export type {{ instruction.name | pascalCase + 'InstructionArgs' }} = PickPartial<
+      {{ argType }}, 
+      {% for key in argsWithDefaults %}
+        "{{ key }}"{% if not loop.last %} | {% endif %}
+      {% endfor %}
+    >;
+  {% else %}
+    export type {{ instruction.name | pascalCase + 'InstructionArgs' }} = {{ argType }};
+  {% endif %}
+{% endif %}

@@ -1,0 +1,43 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+type ProgramErrorConstructor = new (program: Program, cause?: Error) => ProgramError;
+const codeToErrorMap: Map<number, ProgramErrorConstructor> = new Map();
+const nameToErrorMap: Map<string, ProgramErrorConstructor> = new Map();
+
+{% for error in errors | sort(false, false, 'code') %}
+{{ macros.docblock(error.docs) }}
+export class {{ error.name | pascalCase }}Error extends ProgramError {
+  override readonly name: string = '{{ error.name | pascalCase }}';
+
+  readonly code: number = 0x{{ error.code.toString(16) }}; // {{ error.code }}
+  
+  constructor(program: Program, cause?: Error) {
+    super('{{ error.message.replaceAll("'", "\\'") }}', program, cause);
+  }
+}
+codeToErrorMap.set(0x{{ error.code.toString(16) }}, {{ error.name | pascalCase }}Error);
+nameToErrorMap.set('{{ error.name | pascalCase }}', {{ error.name | pascalCase }}Error);
+
+{% endfor %}
+/**
+ * Attempts to resolve a custom program error from the provided error code.
+ * @category Errors
+ */
+export function get{{ program.name | pascalCase }}ErrorFromCode(code: number, program: Program, cause?: Error): ProgramError | null {
+  const constructor = codeToErrorMap.get(code);
+  return constructor ? new constructor(program, cause) : null;
+}
+
+/**
+ * Attempts to resolve a custom program error from the provided error name, i.e. 'Unauthorized'.
+ * @category Errors
+ */
+export function get{{ program.name | pascalCase }}ErrorFromName(name: string, program: Program, cause?: Error): ProgramError | null {
+  const constructor = nameToErrorMap.get(name);
+  return constructor ? new constructor(program, cause) : null;
+}
+{% endblock %}
