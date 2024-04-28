@@ -1,0 +1,58 @@
+{
+    "name": "@kinobi-so/renderers",
+    "version": "0.20.0",
+    "description": "Exports all Kinobi renderers",
+    "exports": {
+        "node": {
+            "import": "./dist/index.node.js",
+            "require": "./dist/index.node.cjs"
+        },
+        "types": "./dist/types/index.d.ts"
+    },
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.js",
+    "types": "./dist/types/index.d.ts",
+    "type": "module",
+    "files": [
+        "./dist/templates",
+        "./dist/types",
+        "./dist/index.*"
+    ],
+    "sideEffects": false,
+    "keywords": [
+        "solana",
+        "framework",
+        "standard",
+        "renderers"
+    ],
+    "scripts": {
+        "build": "rimraf dist && pnpm build:src && pnpm build:types",
+        "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs node",
+        "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
+        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs browser --watch",
+        "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
+        "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
+        "prepublishOnly": "pnpm build",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node",
+        "test:node": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node",
+        "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
+        "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
+    },
+    "dependencies": {
+        "@kinobi-so/renderers-js": "workspace:*",
+        "@kinobi-so/renderers-js-umi": "workspace:*",
+        "@kinobi-so/renderers-rust": "workspace:*"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kinobi-so/kinobi"
+    },
+    "bugs": {
+        "url": "http://github.com/kinobi-so/kinobi/issues"
+    },
+    "browserslist": [
+        "supports bigint and not dead",
+        "maintained node versions"
+    ]
+}
