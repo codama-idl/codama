@@ -1,3 +1,4 @@
+import { logWarn } from '@kinobi-so/errors';
 import {
     camelCase,
     CamelCaseString,
@@ -318,13 +319,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     if (!linkedDataArgs) {
                         const accountsAndArgsConflicts = getMergeConflictsForInstructionAccountsAndArgs(node);
                         if (accountsAndArgsConflicts.length > 0) {
-                            // TODO: logs?
-                            // logWarn(
-                            //     `[JavaScript] Accounts and args of instruction [${node.name}] have the following ` +
-                            //         `conflicting attributes [${accountsAndArgsConflicts.join(', ')}]. ` +
-                            //         `Thus, they could not be merged into a single input object. ` +
-                            //         'You may want to rename the conflicting attributes.',
-                            // );
+                            logWarn(
+                                `[JavaScript Umi] Accounts and args of instruction [${node.name}] have the following ` +
+                                    `conflicting attributes [${accountsAndArgsConflicts.join(', ')}]. ` +
+                                    `Thus, they could not be merged into a single input object. ` +
+                                    'You may want to rename the conflicting attributes.',
+                            );
                         }
                         canMergeAccountsAndArgs = accountsAndArgsConflicts.length === 0;
                     }

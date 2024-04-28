@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 
+import { logWarn } from '@kinobi-so/errors';
 import {
     camelCase,
     CamelCaseString,
@@ -423,12 +424,11 @@ function getRenamedArgsMap(instruction: InstructionNode): Map<string, string> {
     const duplicates = allNames.filter((e, i, a) => a.indexOf(e) !== i);
     if (duplicates.length === 0) return new Map();
 
-    // TODO: logs?
-    // logWarn(
-    //     `[JavaScript] Accounts and args of instruction [${instruction.name}] have the following ` +
-    //         `conflicting attributes [${duplicates.join(', ')}]. ` +
-    //         `Thus, the arguments have been renamed to avoid conflicts in the input type.`,
-    // );
+    logWarn(
+        `[JavaScript] Accounts and args of instruction [${instruction.name}] have the following ` +
+            `conflicting attributes [${duplicates.join(', ')}]. ` +
+            `Thus, the arguments have been renamed to avoid conflicts in the input type.`,
+    );
 
     return new Map(duplicates.map(name => [camelCase(name), camelCase(`${name}Arg`)]));
 }

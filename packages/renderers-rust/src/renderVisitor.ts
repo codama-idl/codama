@@ -1,3 +1,4 @@
+import { logError, logWarn } from '@kinobi-so/errors';
 import { deleteDirectory, writeRenderMapVisitor } from '@kinobi-so/renderers-core';
 import { rootNodeVisitor, visit } from '@kinobi-so/visitors-core';
 import { spawnSync } from 'child_process';
@@ -25,8 +26,7 @@ export function renderVisitor(path: string, options: RenderOptions = {}) {
             if (options.crateFolder) {
                 runFormatter('cargo-fmt', ['--manifest-path', `${options.crateFolder}/Cargo.toml`]);
             } else {
-                // TODO: logs?
-                // logWarn('No crate folder specified, skipping formatting.');
+                logWarn('No crate folder specified, skipping formatting.');
             }
         }
     });
@@ -35,16 +35,13 @@ export function renderVisitor(path: string, options: RenderOptions = {}) {
 function runFormatter(cmd: string, args: string[]) {
     const { stdout, stderr, error } = spawnSync(cmd, args);
     if (error?.message?.includes('ENOENT')) {
-        // TODO: logs?
-        // logWarn(`Could not find ${cmd}, skipping formatting.`);
+        logWarn(`Could not find ${cmd}, skipping formatting.`);
         return;
     }
     if (stdout.length > 0) {
-        // TODO: logs?
-        // logWarn(`(cargo-fmt) ${stdout || error}`);
+        logWarn(`(cargo-fmt) ${stdout || error}`);
     }
     if (stderr.length > 0) {
-        // TODO: logs?
-        // logError(`(cargo-fmt) ${stderr || error}`);
+        logError(`(cargo-fmt) ${stderr || error}`);
     }
 }

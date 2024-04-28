@@ -1,3 +1,4 @@
+import { logWarn } from '@kinobi-so/errors';
 import {
     getAllAccounts,
     getAllDefinedTypes,
@@ -125,13 +126,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     // canMergeAccountsAndArgs
                     const accountsAndArgsConflicts = getConflictsForInstructionAccountsAndArgs(node);
                     if (accountsAndArgsConflicts.length > 0) {
-                        // TODO: logs?
-                        // logWarn(
-                        //     `[Rust] Accounts and args of instruction [${node.name}] have the following ` +
-                        //         `conflicting attributes [${accountsAndArgsConflicts.join(', ')}]. ` +
-                        //         `Thus, the conflicting arguments will be suffixed with "_arg". ` +
-                        //         'You may want to rename the conflicting attributes.',
-                        // );
+                        logWarn(
+                            `[Rust] Accounts and args of instruction [${node.name}] have the following ` +
+                                `conflicting attributes [${accountsAndArgsConflicts.join(', ')}]. ` +
+                                `Thus, the conflicting arguments will be suffixed with "_arg". ` +
+                                'You may want to rename the conflicting attributes.',
+                        );
                     }
 
                     // Instruction args.
