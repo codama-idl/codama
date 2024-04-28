@@ -1,0 +1,15 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+
+{{ imports }}
+
+{{ macros.docblock(definedType.docs) }}
+{{- typeManifest.type }}
+
+{% for nestedStruct in typeManifest.nestedStructs %}
+{{ nestedStruct }}
+{% endfor %}
+
+{% endblock %}

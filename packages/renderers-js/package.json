@@ -23,7 +23,10 @@
         "solana",
         "framework",
         "standard",
-        "visitors"
+        "renderers",
+        "js",
+        "web3.js",
+        "client"
     ],
     "scripts": {
         "build": "rimraf dist && pnpm build:src && pnpm build:types",

@@ -1,0 +1,17 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+
+{% for program in programsToExport | sort(false, false, 'name') %}
+  {% if program.errors.length > 0 %}
+    pub(crate) mod {{ program.name | snakeCase }};
+  {% endif %}
+{% endfor %}
+
+{% for program in programsToExport | sort(false, false, 'name') %}
+  {% if program.errors.length > 0 %}
+    pub use self::{{ program.name | snakeCase }}::{{ program.name | pascalCase }}Error;
+  {% endif %}
+{% endfor %}
+
+{% endblock %}

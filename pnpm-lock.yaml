@@ -196,6 +196,34 @@ importers:
         specifier: ^3.2.6
         version: 3.2.6
 
+  packages/renderers-rust:
+    dependencies:
+      '@kinobi-so/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@kinobi-so/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@kinobi-so/renderers-core':
+        specifier: workspace:*
+        version: link:../renderers-core
+      '@kinobi-so/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+      '@solana/codecs-strings':
+        specifier: tp2
+        version: 2.0.0-preview.2(fastestsmallesttextencoderdecoder@1.0.22)
+      nunjucks:
+        specifier: ^3.2.4
+        version: 3.2.4
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+    devDependencies:
+      '@types/nunjucks':
+        specifier: ^3.2.6
+        version: 3.2.6
+
   packages/validators:
     dependencies:
       '@kinobi-so/errors':

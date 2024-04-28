@@ -1,6 +1,3 @@
-import { dirname as pathDirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import {
     camelCase,
     CamelCaseString,
@@ -36,7 +33,6 @@ import {
     visit,
     Visitor,
 } from '@kinobi-so/visitors-core';
-import { ConfigureOptions } from 'nunjucks';
 
 import { ContextMap } from './ContextMap';
 import { getTypeManifestVisitor as baseGetTypeManifestVisitor } from './getTypeManifestVisitor';
@@ -47,7 +43,7 @@ import {
     getDefinedTypeNodesToExtract,
     getGpaFieldsFromAccount,
     parseCustomDataOptions,
-    render as baseRender,
+    render,
 } from './utils';
 
 export type GetRenderMapOptions = {
@@ -121,12 +117,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
         ];
         const duplicates = allNames.filter((e, i, a) => a.indexOf(e) !== i);
         return [...new Set(duplicates)];
-    }
-
-    function render(template: string, context?: object, renderOptions?: ConfigureOptions): string {
-        // @ts-expect-error import.meta will be used in the right environment.
-        const dirname = typeof __dirname !== 'undefined' ? __dirname : pathDirname(fileURLToPath(import.meta.url));
-        return baseRender(join(dirname, 'templates'), template, context, renderOptions);
     }
 
     return pipe(

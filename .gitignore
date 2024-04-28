@@ -21,3 +21,4 @@ yarn-error.log*
 # `solana-test-validator`
 .solana/
 test-ledger/
+target/
