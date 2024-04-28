@@ -125,6 +125,18 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
 
+  packages/renderers:
+    dependencies:
+      '@kinobi-so/renderers-js':
+        specifier: workspace:*
+        version: link:../renderers-js
+      '@kinobi-so/renderers-js-umi':
+        specifier: workspace:*
+        version: link:../renderers-js-umi
+      '@kinobi-so/renderers-rust':
+        specifier: workspace:*
+        version: link:../renderers-rust
+
   packages/renderers-core:
     dependencies:
       '@kinobi-so/errors':
