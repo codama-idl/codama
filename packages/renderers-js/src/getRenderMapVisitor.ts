@@ -1,5 +1,4 @@
-import { dirname as pathDirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 import {
     camelCase,
@@ -120,9 +119,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     };
 
     const render = (template: string, context?: object, renderOptions?: ConfigureOptions): string => {
-        // @ts-expect-error import.meta will be used in the right environment.
-        const dirname = typeof __dirname !== 'undefined' ? __dirname : pathDirname(fileURLToPath(import.meta.url));
-        return baseRender(join(dirname, 'templates'), join('pages', template), context, renderOptions);
+        return baseRender(join('pages', template), context, renderOptions);
     };
 
     return pipe(

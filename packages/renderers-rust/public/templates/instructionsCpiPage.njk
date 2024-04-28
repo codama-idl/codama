@@ -1,0 +1,185 @@
+{% if instruction.accounts.length > 0 %}
+  /// `{{ instruction.name | snakeCase }}` CPI accounts.
+  pub struct {{ instruction.name | pascalCase }}CpiAccounts<'a, 'b> {
+    {% for account in instruction.accounts %}
+      {% if account.docs.length > 0 %}
+        {{ macros.docblock(account.docs) }}
+      {% endif %}
+
+      {% if account.isSigner === 'either' %}
+        {% set type = '(&\'b solana_program::account_info::AccountInfo<\'a>, bool)' %}
+      {% else %}
+        {% set type = '&\'b solana_program::account_info::AccountInfo<\'a>' %}
+      {% endif %}
+
+      {% if account.isOptional %}
+        pub {{ account.name | snakeCase }}: Option<{{ type }}>,
+      {% else %}
+        pub {{ account.name | snakeCase }}: {{ type }},
+      {% endif %}
+    {% endfor %}
+  }
+{% endif %}
+
+/// `{{ instruction.name | snakeCase }}` CPI instruction.
+pub struct {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
+  /// The program to invoke.
+  pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+  {% for account in instruction.accounts %}
+    {% if account.docs.length > 0 %}
+      {{ macros.docblock(account.docs) }}
+    {% endif %}
+
+    {% if account.isSigner === 'either' %}
+      {% set type = '(&\'b solana_program::account_info::AccountInfo<\'a>, bool)' %}
+    {% else %}
+      {% set type = '&\'b solana_program::account_info::AccountInfo<\'a>' %}
+    {% endif %}
+
+    {% if account.isOptional %}
+      pub {{ account.name | snakeCase }}: Option<{{ type }}>,
+    {% else %}
+      pub {{ account.name | snakeCase }}: {{ type }},
+    {% endif %}
+  {% endfor %}
+  {% if hasArgs %}
+    /// The arguments for the instruction.
+    pub __args: {{ instruction.name | pascalCase }}InstructionArgs,
+  {% endif %}
+}
+
+impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
+  pub fn new(
+    program: &'b solana_program::account_info::AccountInfo<'a>,
+    {% if instruction.accounts.length > 0 %}
+      accounts: {{ instruction.name | pascalCase }}CpiAccounts<'a, 'b>,
+    {% endif %}
+    {% if hasArgs %}
+      args: {{ instruction.name | pascalCase }}InstructionArgs,
+    {% endif %}
+  ) -> Self {
+    Self {
+      __program: program,
+      {% for account in instruction.accounts %}
+        {{ account.name | snakeCase }}: accounts.{{ account.name | snakeCase }},
+      {% endfor %}
+      {% if hasArgs %}
+        __args: args,
+      {% endif %}
+    }
+  }
+  #[inline(always)]
+  pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    self.invoke_signed_with_remaining_accounts(&[], &[])
+  }
+  #[inline(always)]
+  pub fn invoke_with_remaining_accounts(&self, remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]) -> solana_program::entrypoint::ProgramResult {
+    self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
+  }
+  #[inline(always)]
+  pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
+    self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
+  }
+  #[allow(clippy::clone_on_copy)]
+  #[allow(clippy::vec_init_then_push)]
+  pub fn invoke_signed_with_remaining_accounts(
+    &self,
+    signers_seeds: &[&[&[u8]]],
+    remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
+  ) -> solana_program::entrypoint::ProgramResult {
+    let mut accounts = Vec::with_capacity({{ instruction.accounts.length }} + remaining_accounts.len());
+    {% for account in instruction.accounts %}
+      {% if account.isSigner === 'either' %}
+        {% if account.isOptional and instruction.optionalAccountStrategy === 'programId' %}
+          if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
+            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              *{{ account.name | snakeCase }}.key,
+              signer,
+            ));
+          } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+              crate::{{ program.name | snakeCase | upper }}_ID,
+              false,
+            ));
+          }
+        {% elif account.isOptional %}
+          if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
+            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              *{{ account.name | snakeCase }}.key,
+              signer,
+            ));
+          }
+        {% else %}
+          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            *self.{{ account.name | snakeCase }}.0.key,
+            self.{{ account.name | snakeCase }}.1,
+          ));
+        {% endif %}
+      {% else %}
+        {% if account.isOptional and instruction.optionalAccountStrategy === 'programId' %}
+          if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
+            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              *{{ account.name | snakeCase }}.key,
+              {{ 'true' if account.isSigner else 'false' }},
+            ));
+          } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+              crate::{{ program.name | snakeCase | upper }}_ID,
+              false,
+            ));
+          }
+        {% elif account.isOptional %}
+          if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
+            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              *{{ account.name | snakeCase }}.key,
+              {{ 'true' if account.isSigner else 'false' }},
+            ));
+          }
+        {% else %}
+          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            *self.{{ account.name | snakeCase }}.key,
+            {{ 'true' if account.isSigner else 'false' }}
+          ));
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    remaining_accounts.iter().for_each(|remaining_account| {
+      accounts.push(solana_program::instruction::AccountMeta {
+          pubkey: *remaining_account.0.key,
+          is_signer: remaining_account.1,
+          is_writable: remaining_account.2,
+      })
+    });
+    let {{ 'mut ' if hasArgs }}data = {{ instruction.name | pascalCase }}InstructionData::new().try_to_vec().unwrap();
+    {% if hasArgs %}
+      let mut args = self.__args.try_to_vec().unwrap();
+      data.append(&mut args);
+    {% endif %}
+
+    let instruction = solana_program::instruction::Instruction {
+      program_id: crate::{{ program.name | snakeCase | upper }}_ID,
+      accounts,
+      data,
+    };
+    let mut account_infos = Vec::with_capacity({{ instruction.accounts.length }} + 1 + remaining_accounts.len());
+    account_infos.push(self.__program.clone());
+    {% for account in instruction.accounts %}
+      {% if account.isOptional %}
+        if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
+          account_infos.push({{ account.name | snakeCase }}{{ '.0' if account.isSigner === 'either' }}.clone());
+        }
+      {% else %}
+        account_infos.push(self.{{ account.name | snakeCase }}{{ '.0' if account.isSigner === 'either' }}.clone());
+      {% endif %}
+    {% endfor %}
+    remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
+
+    if signers_seeds.is_empty() {
+      solana_program::program::invoke(&instruction, &account_infos)
+    } else {
+      solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+    }
+  }
+}
+
+{% include "instructionsCpiPageBuilder.njk" %}

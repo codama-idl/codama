@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import { ImportFrom } from '@kinobi-so/nodes';
 import { ConfigureOptions } from 'nunjucks';
 
@@ -9,7 +11,7 @@ export function fragment(render: string, imports?: ImportMap): Fragment {
 }
 
 export function fragmentFromTemplate(fragmentFile: string, context?: object, options?: ConfigureOptions): Fragment {
-    return fragment(render(`./dist/templates`, `fragments/${fragmentFile}`, context, options));
+    return fragment(render(join('fragments', fragmentFile), context, options));
 }
 
 export function mergeFragments(fragments: Fragment[], mergeRenders: (renders: string[]) => string): Fragment {

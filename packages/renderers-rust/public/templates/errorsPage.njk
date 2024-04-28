@@ -1,0 +1,23 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+
+use num_derive::FromPrimitive;
+use thiserror::Error;
+
+#[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
+pub enum {{ program.name | pascalCase }}Error {
+{% for error in errors | sort(false, false, 'code') %}
+    /// {{ error.code }} (0x{{ error.code.toString(16) | upper }}) - {{ error.message }}
+    #[error("{{ error.message }}")]
+    {{ error.name | pascalCase }},
+{% endfor %}
+}
+
+impl solana_program::program_error::PrintProgramError for {{ program.name | pascalCase }}Error {
+    fn print<E>(&self) {
+        solana_program::msg!(&self.to_string());
+    }
+}
+
+{% endblock %}
