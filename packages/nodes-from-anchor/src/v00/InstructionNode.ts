@@ -9,7 +9,7 @@ import {
     numberValueNode,
 } from '@kinobi-so/nodes';
 
-import { getAnchorInstructionDiscriminator } from '../discriminators';
+import { getAnchorInstructionDiscriminatorV00 } from '../discriminators';
 import { IdlV00Instruction } from './idl';
 import { instructionAccountNodesFromAnchorV00 } from './InstructionAccountNode';
 import { instructionArgumentNodeFromAnchorV00 } from './InstructionArgumentNode';
@@ -33,7 +33,7 @@ export function instructionNodeFromAnchorV00(idl: IdlV00Instruction, origin?: 'a
         discriminators = [fieldDiscriminatorNode('discriminator')];
     } else if (origin === 'anchor') {
         const discriminatorField = instructionArgumentNode({
-            defaultValue: getAnchorInstructionDiscriminator(idlName),
+            defaultValue: getAnchorInstructionDiscriminatorV00(idlName),
             defaultValueStrategy: 'omitted',
             name: 'discriminator',
             type: bytesTypeNode(),
