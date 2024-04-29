@@ -1,4 +1,4 @@
-import { camelCase, InstructionNode, pascalCase, ProgramNode } from '@kinobi-so/nodes';
+import { camelCase, InstructionNode, isNode, pascalCase, ProgramNode } from '@kinobi-so/nodes';
 
 import { ResolvedInstructionInput } from '../../../visitors';
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
@@ -51,7 +51,9 @@ export function getInstructionFunctionFragment(
         (instructionNode.extraArguments ?? []).filter(
             field => !field.defaultValue || field.defaultValueStrategy !== 'omitted',
         ).length > 0;
-    const hasAnyArgs = hasDataArgs || hasExtraArgs;
+    const hasRemainingAccountArgs =
+        (instructionNode.remainingAccounts ?? []).filter(({ value }) => isNode(value, 'argumentValueNode')).length > 0;
+    const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     const encoderFunction = customData
