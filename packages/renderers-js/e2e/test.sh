@@ -17,3 +17,4 @@ function test_project() {
 start_validator
 test_project system
 test_project memo
+test_project token

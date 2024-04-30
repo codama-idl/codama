@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@solana/web3.js": "tp3"
+    "@solana/web3.js": "2.0.0-preview.3"
   },
   "devDependencies": {
     "@ava/typescript": "^4.1.0",
