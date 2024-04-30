@@ -1,4 +1,4 @@
-import { instructionAccountNode } from '@kinobi-so/nodes';
+import { instructionAccountNode, publicKeyValueNode } from '@kinobi-so/nodes';
 import test from 'ava';
 
 import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV01 } from '../../src/index.js';
@@ -30,25 +30,35 @@ test('it flattens nested instruction accounts', t => {
         {
             accounts: [
                 {
-                    name: 'AccountB',
+                    name: 'account_b',
                     signer: false,
                     writable: true,
                 },
                 {
-                    name: 'AccountC',
+                    name: 'account_c',
                     signer: true,
                     writable: false,
+                },
+                {
+                    address: '11111111111111111111111111111111',
+                    name: 'system_program',
                 },
             ],
             name: 'nested',
         },
-        { name: 'AccountD', signer: true, writable: true },
+        { name: 'account_d', signer: true, writable: true },
     ]);
 
     t.deepEqual(nodes, [
         instructionAccountNode({ isSigner: false, isWritable: false, name: 'accountA' }),
         instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
         instructionAccountNode({ isSigner: true, isWritable: false, name: 'accountC' }),
+        instructionAccountNode({
+            defaultValue: publicKeyValueNode('11111111111111111111111111111111', 'systemProgram'),
+            isSigner: false,
+            isWritable: false,
+            name: 'systemProgram',
+        }),
         instructionAccountNode({ isSigner: true, isWritable: true, name: 'accountD' }),
     ]);
 });

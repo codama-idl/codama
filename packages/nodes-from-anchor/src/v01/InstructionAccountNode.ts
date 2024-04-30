@@ -1,4 +1,4 @@
-import { InstructionAccountNode, instructionAccountNode } from '@kinobi-so/nodes';
+import { InstructionAccountNode, instructionAccountNode, publicKeyValueNode } from '@kinobi-so/nodes';
 
 import { IdlV01InstructionAccount, IdlV01InstructionAccountItem } from './idl';
 
@@ -16,8 +16,14 @@ export function instructionAccountNodeFromAnchorV01(idl: IdlV01InstructionAccoun
     const isSigner = idl.signer ?? false;
     const isWritable = idl.writable ?? false;
     const name = idl.name ?? '';
+    let defaultValue = undefined;
+
+    if (idl.address) {
+        defaultValue = publicKeyValueNode(idl.address, name);
+    }
 
     return instructionAccountNode({
+        defaultValue,
         docs,
         isOptional,
         isSigner,
