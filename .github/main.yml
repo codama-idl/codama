@@ -1,0 +1,109 @@
+name: Main
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: 18
+  SOLANA_VERSION: 1.18.12
+
+jobs:
+  lint:
+    name: Check styling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check linting
+        run: pnpm run lint
+
+  tests:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Install Solana
+        uses: metaplex-foundation/actions/install-solana@v1
+        with:
+          version: ${{ env.SOLANA_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and run tests
+        run: pnpm run test
+
+      - name: Ensure working directory is clean
+        run: test -z "$(git status --porcelain)"
+
+  # release:
+  #   name: Release
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push'
+  #   needs: [lint, tests]
+  #   outputs:
+  #     published: ${{ steps.changesets.outputs.published }}
+  #   steps:
+  #     - name: Checkout Repo
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v3
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: 'pnpm'
+
+  #     - name: Install Dependencies
+  #       run: pnpm install --frozen-lockfile
+
+  #     - name: Get Build Version
+  #       run: |
+  #         pnpm packages:version
+  #         echo "BUILD_VERSION=$(./configs/get-latest-version.sh)" | tee $GITHUB_ENV
+  #         git reset --hard && git clean -df
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  #     - name: Create Release Pull Request or Publish
+  #       id: changesets
+  #       uses: lorisleiva/changesets-action@main
+  #       with:
+  #         commit: 'Release packages'
+  #         title: 'Release packages'
+  #         publish: pnpm packages:publish
+  #         createGithubReleases: 'aggregate'
+  #         githubReleaseName: v${{ env.BUILD_VERSION }}
+  #         githubTagName: v${{ env.BUILD_VERSION }}
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
