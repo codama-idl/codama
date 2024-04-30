@@ -5,6 +5,8 @@ declarations/
 dist/
 doc/
 lib/
+test-ledger/
+target/
 
 pnpm-lock.yaml
 pnpm-workspace.yaml
