@@ -1,12 +1,12 @@
 import { mapEntryValueNode, mapValueNode, numberValueNode, stringValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = mapValueNode([
     mapEntryValueNode(stringValueNode('Alice'), numberValueNode(42)),
@@ -14,17 +14,23 @@ const node = mapValueNode([
     mapEntryValueNode(stringValueNode('Carla'), numberValueNode(29)),
 ]);
 
-test(mergeVisitorMacro, node, 10);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[mapValueNode]', null);
-test(deleteNodesVisitorMacro, node, '[mapEntryValueNode]', {
-    ...node,
-    entries: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 10);
 });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[mapValueNode]', null);
+    expectDeleteNodesVisitor(node, '[mapEntryValueNode]', { ...node, entries: [] });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 mapValueNode
 |   mapEntryValueNode
 |   |   stringValueNode [Alice]
@@ -35,4 +41,5 @@ mapValueNode
 |   mapEntryValueNode
 |   |   stringValueNode [Carla]
 |   |   numberValueNode [29]`,
-);
+    );
+});

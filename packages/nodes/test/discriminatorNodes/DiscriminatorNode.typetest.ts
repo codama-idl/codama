@@ -1,6 +1,6 @@
 import type { RegisteredDiscriminatorNode } from '@kinobi-so/node-types';
 
-import { REGISTERED_DISCRIMINATOR_NODE_KINDS } from '../../src/index.js';
+import { REGISTERED_DISCRIMINATOR_NODE_KINDS } from '../../src';
 
 // [DESCRIBE] Registered discriminator node kinds.
 {

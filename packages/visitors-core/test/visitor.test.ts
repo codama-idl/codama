@@ -6,11 +6,11 @@ import {
     TupleTypeNode,
     tupleTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { visit, Visitor, visitOrElse } from '../src/index.js';
+import { visit, Visitor, visitOrElse } from '../src';
 
-test('it can create visitors as plain objects', t => {
+test('it can create visitors as plain objects', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -32,10 +32,10 @@ test('it can create visitors as plain objects', t => {
     const result = visit(node, visitor);
 
     // Then we expect the following count.
-    t.is(result, 24);
+    expect(result).toBe(24);
 });
 
-test('it can use visitOrElse to fallback if a nested node is not supported by the visitor', t => {
+test('it can use visitOrElse to fallback if a nested node is not supported by the visitor', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -54,5 +54,5 @@ test('it can use visitOrElse to fallback if a nested node is not supported by th
     const result = visit(node, visitor);
 
     // Then we expect the following count.
-    t.is(result, 44);
+    expect(result).toBe(44);
 });

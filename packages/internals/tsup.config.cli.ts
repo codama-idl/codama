@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsup';
 
-import { getBuildConfig } from './getBuildConfig';
+import { getBuildConfig } from './tsup.config.base';
 
 export default defineConfig([
     {

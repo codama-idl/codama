@@ -20,7 +20,7 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import {
     getNodeSelectorFunction,
@@ -31,7 +31,7 @@ import {
     pipe,
     recordNodeStackVisitor,
     visit,
-} from '../src/index.js';
+} from '../src';
 
 // Given the following tree.
 const tree = rootNode(
@@ -181,8 +181,13 @@ const tree = rootNode(
     ],
 );
 
-const macro = test.macro({
-    exec(t, selector: NodeSelector, expectedSelected: Node[]) {
+const macro = (selector: NodeSelector, expectedSelected: Node[]) => {
+    const title =
+        typeof selector === 'string'
+            ? `it can select nodes using paths: "${selector}"`
+            : 'it can select nodes using functions';
+
+    test(title, () => {
         // Given a selector function created from the selector.
         const selectorFunction = getNodeSelectorFunction(selector);
 
@@ -203,15 +208,10 @@ const macro = test.macro({
         visit(tree, visitor);
 
         // Then the selected nodes are as expected.
-        t.deepEqual(expectedSelected, selected);
-        selected.forEach((node, index) => t.is(node, expectedSelected[index]));
-    },
-    title(_, selector: NodeSelector) {
-        return typeof selector === 'string'
-            ? `it can select nodes using paths: "${selector}"`
-            : 'it can select nodes using functions';
-    },
-});
+        expect(expectedSelected).toEqual(selected);
+        selected.forEach((node, index) => expect(node).toBe(expectedSelected[index]));
+    });
+};
 
 /**
  * [programNode] splToken
@@ -257,34 +257,34 @@ const wrappingPaperEnum = wrappingPaper.type;
 const wrappingPaperEnumGold = wrappingPaperEnum.variants[2];
 
 // Select programs.
-test(macro, '[programNode]', [splTokenProgram, christmasProgram]);
-test(macro, '[programNode]splToken', [splTokenProgram]);
-test(macro, 'christmasProgram', [christmasProgram]);
+macro('[programNode]', [splTokenProgram, christmasProgram]);
+macro('[programNode]splToken', [splTokenProgram]);
+macro('christmasProgram', [christmasProgram]);
 
 // Select and filter owner nodes.
-test(macro, 'owner', [
+macro('owner', [
     tokenAccount.data.fields[0],
     giftAccount.data.fields[0],
     wrappingPaperEnumGold.struct.fields[0],
     openGiftInstruction.accounts[1],
 ]);
-test(macro, '[structFieldTypeNode]owner', [
+macro('[structFieldTypeNode]owner', [
     tokenAccount.data.fields[0],
     giftAccount.data.fields[0],
     wrappingPaperEnumGold.struct.fields[0],
 ]);
-test(macro, 'splToken.owner', [tokenAccount.data.fields[0]]);
-test(macro, '[instructionNode].owner', [openGiftInstruction.accounts[1]]);
-test(macro, '[accountNode].owner', [tokenAccount.data.fields[0], giftAccount.data.fields[0]]);
-test(macro, '[accountNode]token.owner', [tokenAccount.data.fields[0]]);
-test(macro, 'christmasProgram.[accountNode].owner', [giftAccount.data.fields[0]]);
-test(macro, '[programNode]christmasProgram.[definedTypeNode]wrappingPaper.[enumStructVariantTypeNode]gold.owner', [
+macro('splToken.owner', [tokenAccount.data.fields[0]]);
+macro('[instructionNode].owner', [openGiftInstruction.accounts[1]]);
+macro('[accountNode].owner', [tokenAccount.data.fields[0], giftAccount.data.fields[0]]);
+macro('[accountNode]token.owner', [tokenAccount.data.fields[0]]);
+macro('christmasProgram.[accountNode].owner', [giftAccount.data.fields[0]]);
+macro('[programNode]christmasProgram.[definedTypeNode]wrappingPaper.[enumStructVariantTypeNode]gold.owner', [
     wrappingPaperEnumGold.struct.fields[0],
 ]);
-test(macro, 'christmasProgram.wrappingPaper.gold.owner', [wrappingPaperEnumGold.struct.fields[0]]);
+macro('christmasProgram.wrappingPaper.gold.owner', [wrappingPaperEnumGold.struct.fields[0]]);
 
 // Select all descendants of a node.
-test(macro, 'wrappingPaper.*', [
+macro('wrappingPaper.*', [
     giftAccount.data.fields[3].type,
     wrappingPaperEnum,
     wrappingPaperEnum.variants[0],
@@ -294,15 +294,15 @@ test(macro, 'wrappingPaper.*', [
     wrappingPaperEnumGold.struct.fields[0],
     wrappingPaperEnumGold.struct.fields[0].type,
 ]);
-test(macro, 'wrappingPaper.[structFieldTypeNode]', [wrappingPaperEnumGold.struct.fields[0]]);
-test(macro, 'wrappingPaper.blue', [wrappingPaperEnum.variants[0]]);
-test(macro, 'amount.*', [
+macro('wrappingPaper.[structFieldTypeNode]', [wrappingPaperEnumGold.struct.fields[0]]);
+macro('wrappingPaper.blue', [wrappingPaperEnum.variants[0]]);
+macro('amount.*', [
     tokenAccount.data.fields[2].type,
     mintTokenInstruction.arguments[0].type,
     giftAccount.data.fields[2].type,
 ]);
-test(macro, '[instructionNode].amount.*', [mintTokenInstruction.arguments[0].type]);
-test(macro, '[structFieldTypeNode].*', [
+macro('[instructionNode].amount.*', [mintTokenInstruction.arguments[0].type]);
+macro('[structFieldTypeNode].*', [
     tokenAccount.data.fields[0].type,
     tokenAccount.data.fields[1].type,
     tokenAccount.data.fields[2].type,
@@ -316,17 +316,17 @@ test(macro, '[structFieldTypeNode].*', [
     giftAccount.data.fields[3].type,
     wrappingPaperEnumGold.struct.fields[0].type,
 ]);
-test(macro, '[structFieldTypeNode].*.*', [
+macro('[structFieldTypeNode].*.*', [
     tokenDelegatedAmountOption.prefix,
     tokenDelegatedAmountOption.item,
     giftAccount.data.fields[1].type.size,
 ]);
 
 // Select multiple node kinds.
-test(macro, '[accountNode]gift.[publicKeyTypeNode|booleanTypeNode]', [
+macro('[accountNode]gift.[publicKeyTypeNode|booleanTypeNode]', [
     giftAccount.data.fields[0].type,
     giftAccount.data.fields[1].type,
 ]);
 
 // Select using functions.
-test(macro, node => isNode(node, 'numberTypeNode') && node.format === 'u32', [tokenDelegatedAmountOption.prefix]);
+macro(node => isNode(node, 'numberTypeNode') && node.format === 'u32', [tokenDelegatedAmountOption.prefix]);

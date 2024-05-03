@@ -1,25 +1,35 @@
 import { constantDiscriminatorNode, constantValueNodeFromBytes } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = constantDiscriminatorNode(constantValueNodeFromBytes('base16', '01020304'), 42);
 
-test(mergeVisitorMacro, node, 4);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[constantDiscriminatorNode]', null);
-test(deleteNodesVisitorMacro, node, '[constantValueNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 4);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[constantDiscriminatorNode]', null);
+    expectDeleteNodesVisitor(node, '[constantValueNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 constantDiscriminatorNode [offset:42]
 |   constantValueNode
 |   |   bytesTypeNode
 |   |   bytesValueNode [base16.01020304]`,
-);
+    );
+});

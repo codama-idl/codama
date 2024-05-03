@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { numberTypeNode } from '../../src/index.js';
+import { numberTypeNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = numberTypeNode('u8');
-    t.is(node.kind, 'numberTypeNode');
+    expect(node.kind).toBe('numberTypeNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = numberTypeNode('u8');
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

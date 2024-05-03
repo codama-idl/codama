@@ -1,26 +1,35 @@
 import { numberTypeNode, sizePrefixTypeNode, stringTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u32'));
 
-test(mergeVisitorMacro, node, 3);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[sizePrefixTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[stringTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[numberTypeNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 3);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[sizePrefixTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[stringTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 sizePrefixTypeNode
 |   numberTypeNode [u32]
-|   stringTypeNode [utf8]
-`,
-);
+|   stringTypeNode [utf8]`,
+    );
+});

@@ -8,14 +8,14 @@ import {
     programNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from './_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from './_setup';
 
 const node = programNode({
     accounts: [
@@ -34,24 +34,27 @@ const node = programNode({
     version: '1.2.3',
 });
 
-test(mergeVisitorMacro, node, 13);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[programNode]', null);
-test(deleteNodesVisitorMacro, node, '[pdaNode]', { ...node, pdas: [] });
-test(deleteNodesVisitorMacro, node, '[accountNode]', { ...node, accounts: [] });
-test(deleteNodesVisitorMacro, node, '[instructionNode]', {
-    ...node,
-    instructions: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 13);
 });
-test(deleteNodesVisitorMacro, node, '[definedTypeNode]', {
-    ...node,
-    definedTypes: [],
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
 });
-test(deleteNodesVisitorMacro, node, '[errorNode]', { ...node, errors: [] });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[programNode]', null);
+    expectDeleteNodesVisitor(node, '[pdaNode]', { ...node, pdas: [] });
+    expectDeleteNodesVisitor(node, '[accountNode]', { ...node, accounts: [] });
+    expectDeleteNodesVisitor(node, '[instructionNode]', { ...node, instructions: [] });
+    expectDeleteNodesVisitor(node, '[definedTypeNode]', { ...node, definedTypes: [] });
+    expectDeleteNodesVisitor(node, '[errorNode]', { ...node, errors: [] });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 programNode [splToken.TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA]
 |   pdaNode [associatedToken]
 |   accountNode [mint]
@@ -65,4 +68,5 @@ programNode [splToken.TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA]
 |   |   |   numberTypeNode [u8]
 |   errorNode [1.invalidMint]
 |   errorNode [2.invalidToken]`,
-);
+    );
+});

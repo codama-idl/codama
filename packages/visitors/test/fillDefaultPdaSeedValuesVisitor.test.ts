@@ -14,11 +14,11 @@ import {
     variablePdaSeedNode,
 } from '@kinobi-so/nodes';
 import { LinkableDictionary, visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { fillDefaultPdaSeedValuesVisitor } from '../src/index.js';
+import { fillDefaultPdaSeedValuesVisitor } from '../src';
 
-test('it fills missing pda seed values with default values', t => {
+test('it fills missing pda seed values with default values', () => {
     // Given a pdaNode with three variable seeds.
     const pda = pdaNode({
         name: 'myPda',
@@ -53,8 +53,7 @@ test('it fills missing pda seed values with default values', t => {
     const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, linkables));
 
     // Then we expect the following pdaValueNode to be returned.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         pdaValueNode('myPda', [
             pdaSeedValueNode('seed1', numberValueNode(42)),
             pdaSeedValueNode('seed2', argumentValueNode('seed2')),
@@ -63,7 +62,7 @@ test('it fills missing pda seed values with default values', t => {
     );
 });
 
-test('it fills nested pda value nodes', t => {
+test('it fills nested pda value nodes', () => {
     // Given a pdaNode with three variable seeds.
     const pda = pdaNode({
         name: 'myPda',
@@ -101,8 +100,7 @@ test('it fills nested pda value nodes', t => {
     const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, linkables));
 
     // Then we expect the following conditionalValueNode to be returned.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         conditionalValueNode({
             condition: accountValueNode('myAccount'),
             ifTrue: pdaValueNode('myPda', [
@@ -114,7 +112,7 @@ test('it fills nested pda value nodes', t => {
     );
 });
 
-test('it ignores default seeds missing from the instruction', t => {
+test('it ignores default seeds missing from the instruction', () => {
     // Given a pdaNode with three variable seeds.
     const pda = pdaNode({
         name: 'myPda',
@@ -142,8 +140,7 @@ test('it ignores default seeds missing from the instruction', t => {
     const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, linkables));
 
     // Then we expect the following pdaValueNode to be returned.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         pdaValueNode('myPda', [
             pdaSeedValueNode('seed1', numberValueNode(42)),
             pdaSeedValueNode('seed2', argumentValueNode('seed2')),

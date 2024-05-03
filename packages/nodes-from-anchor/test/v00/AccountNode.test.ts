@@ -7,11 +7,11 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { accountNodeFromAnchorV00 } from '../../src/index.js';
+import { accountNodeFromAnchorV00 } from '../../src';
 
-test('it creates account nodes', t => {
+test('it creates account nodes', () => {
     const node = accountNodeFromAnchorV00({
         name: 'myAccount',
         type: {
@@ -20,8 +20,7 @@ test('it creates account nodes', t => {
         },
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         accountNode({
             data: structTypeNode([
                 structFieldTypeNode({
@@ -34,7 +33,7 @@ test('it creates account nodes', t => {
     );
 });
 
-test('it creates account nodes with anchor discriminators', t => {
+test('it creates account nodes with anchor discriminators', () => {
     const node = accountNodeFromAnchorV00(
         {
             name: 'myAccount',
@@ -43,8 +42,7 @@ test('it creates account nodes with anchor discriminators', t => {
         'anchor',
     );
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         accountNode({
             data: structTypeNode([
                 structFieldTypeNode({

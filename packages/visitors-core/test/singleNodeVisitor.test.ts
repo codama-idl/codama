@@ -1,9 +1,9 @@
 import { numberTypeNode, ProgramNode, publicKeyTypeNode, rootNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { rootNodeVisitor, singleNodeVisitor, visit } from '../src/index.js';
+import { rootNodeVisitor, singleNodeVisitor, visit } from '../src';
 
-test('it visits a single node and return a custom value', t => {
+test('it visits a single node and return a custom value', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -14,16 +14,16 @@ test('it visits a single node and return a custom value', t => {
     const result = visit(node, visitor);
 
     // Then we expect 2 direct items in the tuple node.
-    t.deepEqual(result, 2);
+    expect(result).toEqual(2);
 
     // And no other nodes can be visited.
     // @ts-expect-error NumberTypeNode is not supported.
-    t.throws(() => visit(numberTypeNode(), visitor));
+    expect(() => visit(numberTypeNode('u64'), visitor)).toThrow();
     // @ts-expect-error PublicKeyTypeNode is not supported.
-    t.throws(() => visit(publicKeyTypeNode(), visitor));
+    expect(() => visit(publicKeyTypeNode(), visitor)).toThrow();
 });
 
-test('it can create rootNode only visitors that return new rootNode instances', t => {
+test('it can create rootNode only visitors that return new rootNode instances', () => {
     // Given a root node.
     const node = rootNode({} as ProgramNode);
 
@@ -34,5 +34,5 @@ test('it can create rootNode only visitors that return new rootNode instances', 
     const result = visit(node, visitor);
 
     // Then we expect the returned root node to have one additional program node.
-    t.deepEqual(result.additionalPrograms.length, 1);
+    expect(result.additionalPrograms.length).toBe(1);
 });

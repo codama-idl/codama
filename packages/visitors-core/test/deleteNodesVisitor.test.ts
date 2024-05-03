@@ -1,9 +1,9 @@
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { deleteNodesVisitor, visit } from '../src/index.js';
+import { deleteNodesVisitor, visit } from '../src';
 
-test('it can delete nodes using selectors', t => {
+test('it can delete nodes using selectors', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -14,10 +14,10 @@ test('it can delete nodes using selectors', t => {
     const result = visit(node, visitor);
 
     // Then we expect the number nodes to have been deleted.
-    t.deepEqual(result, tupleTypeNode([tupleTypeNode([publicKeyTypeNode()])]));
+    expect(result).toEqual(tupleTypeNode([tupleTypeNode([publicKeyTypeNode()])]));
 });
 
-test('it can create partial visitors', t => {
+test('it can create partial visitors', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -32,9 +32,9 @@ test('it can create partial visitors', t => {
     const result = visit(node, visitor);
 
     // Then only the number nodes have been deleted.
-    t.deepEqual(result, tupleTypeNode([tupleTypeNode([publicKeyTypeNode()])]));
+    expect(result).toEqual(tupleTypeNode([tupleTypeNode([publicKeyTypeNode()])]));
 
     // And the public key node cannot be visited.
     // @ts-expect-error PublicKeyTypeNode is not supported.
-    t.throws(() => visit(publicKeyTypeNode(), visitor));
+    expect(() => visit(publicKeyTypeNode(), visitor)).toThrow();
 });

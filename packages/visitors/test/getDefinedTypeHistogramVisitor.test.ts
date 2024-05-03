@@ -10,11 +10,11 @@ import {
     structTypeNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { getDefinedTypeHistogramVisitor } from '../src/index.js';
+import { getDefinedTypeHistogramVisitor } from '../src';
 
-test('it counts the amount of times defined types are used within the tree', t => {
+test('it counts the amount of times defined types are used within the tree', () => {
     // Given the following tree.
     const node = programNode({
         accounts: [
@@ -64,7 +64,7 @@ test('it counts the amount of times defined types are used within the tree', t =
     const histogram = visit(node, getDefinedTypeHistogramVisitor());
 
     // Then we expect the following histogram.
-    t.deepEqual(histogram, {
+    expect(histogram).toEqual({
         myEnum: {
             directlyAsInstructionArgs: 0,
             inAccounts: 1,

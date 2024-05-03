@@ -1,9 +1,9 @@
 import { instructionAccountNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { instructionAccountNodeFromAnchorV00, instructionAccountNodesFromAnchorV00 } from '../../src/index.js';
+import { instructionAccountNodeFromAnchorV00, instructionAccountNodesFromAnchorV00 } from '../../src';
 
-test('it creates instruction account nodes', t => {
+test('it creates instruction account nodes', () => {
     const node = instructionAccountNodeFromAnchorV00({
         docs: ['my docs'],
         isMut: true,
@@ -12,8 +12,7 @@ test('it creates instruction account nodes', t => {
         name: 'myInstructionAccount',
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         instructionAccountNode({
             docs: ['my docs'],
             isOptional: true,
@@ -24,7 +23,7 @@ test('it creates instruction account nodes', t => {
     );
 });
 
-test('it flattens nested instruction accounts', t => {
+test('it flattens nested instruction accounts', () => {
     const nodes = instructionAccountNodesFromAnchorV00([
         { isMut: false, isSigner: false, name: 'accountA' },
         {
@@ -37,7 +36,7 @@ test('it flattens nested instruction accounts', t => {
         { isMut: true, isSigner: true, name: 'accountD' },
     ]);
 
-    t.deepEqual(nodes, [
+    expect(nodes).toEqual([
         instructionAccountNode({ isSigner: false, isWritable: false, name: 'accountA' }),
         instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
         instructionAccountNode({ isSigner: true, isWritable: false, name: 'accountC' }),

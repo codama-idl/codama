@@ -1,23 +1,33 @@
 import { amountTypeNode, numberTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = amountTypeNode(numberTypeNode('u64'), 9, 'SOL');
 
-test(mergeVisitorMacro, node, 2);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[amountTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[numberTypeNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 2);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[amountTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 amountTypeNode [9.SOL]
 |   numberTypeNode [u64]`,
-);
+    );
+});

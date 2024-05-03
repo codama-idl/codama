@@ -1,9 +1,9 @@
 import { assertIsNode, isNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { topDownTransformerVisitor, visit } from '../src/index.js';
+import { topDownTransformerVisitor, visit } from '../src';
 
-test('it can transform nodes to the same kind of node', t => {
+test('it can transform nodes to the same kind of node', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -16,13 +16,12 @@ test('it can transform nodes to the same kind of node', t => {
     const result = visit(node, visitor);
 
     // Then we expect the number nodes to have been transformed into u64 number nodes.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         tupleTypeNode([numberTypeNode('u64'), tupleTypeNode([numberTypeNode('u64'), publicKeyTypeNode()])]),
     );
 });
 
-test('it can transform nodes using node selectors', t => {
+test('it can transform nodes using node selectors', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -38,13 +37,12 @@ test('it can transform nodes using node selectors', t => {
     const result = visit(node, visitor);
 
     // Then we expect the number nodes to have been transformed into u64 number nodes.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         tupleTypeNode([numberTypeNode('u64'), tupleTypeNode([numberTypeNode('u64'), publicKeyTypeNode()])]),
     );
 });
 
-test('it can create partial transformer visitors', t => {
+test('it can create partial transformer visitors', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -66,8 +64,7 @@ test('it can create partial transformer visitors', t => {
     const result = visit(node, visitor);
 
     // Then we expect the following tree.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         tupleTypeNode([
             numberTypeNode('u64'),
             numberTypeNode('u32'),
@@ -77,12 +74,12 @@ test('it can create partial transformer visitors', t => {
 
     // And the other nodes cannot be visited.
     // @ts-expect-error NumberTypeNode is not a tuple node.
-    t.throws(() => visit(numberTypeNode(), visitor));
+    expect(() => visit(numberTypeNode('u64'), visitor)).toThrow();
     // @ts-expect-error PublicKeyTypeNode is not a tuple node.
-    t.throws(() => visit(publicKeyTypeNode(), visitor));
+    expect(() => visit(publicKeyTypeNode(), visitor)).toThrow();
 });
 
-test('it can be used to delete nodes', t => {
+test('it can be used to delete nodes', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -93,10 +90,10 @@ test('it can be used to delete nodes', t => {
     const result = visit(node, visitor);
 
     // Then we expect the number nodes to have been deleted.
-    t.deepEqual(result, tupleTypeNode([tupleTypeNode([publicKeyTypeNode()])]));
+    expect(result).toEqual(tupleTypeNode([tupleTypeNode([publicKeyTypeNode()])]));
 });
 
-test('it can transform nodes using multiple node selectors', t => {
+test('it can transform nodes using multiple node selectors', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -114,8 +111,7 @@ test('it can transform nodes using multiple node selectors', t => {
     const result = visit(node, visitor);
 
     // Then we expect both node selectors to have been applied.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u64'), publicKeyTypeNode()])]),
     );
 });

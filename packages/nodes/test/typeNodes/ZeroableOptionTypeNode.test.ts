@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { publicKeyTypeNode, zeroableOptionTypeNode } from '../../src/index.js';
+import { publicKeyTypeNode, zeroableOptionTypeNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = zeroableOptionTypeNode(publicKeyTypeNode());
-    t.is(node.kind, 'zeroableOptionTypeNode');
+    expect(node.kind).toBe('zeroableOptionTypeNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = zeroableOptionTypeNode(publicKeyTypeNode());
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

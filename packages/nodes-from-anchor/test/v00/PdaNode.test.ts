@@ -6,11 +6,11 @@ import {
     pdaNode,
     variablePdaSeedNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { pdaNodeFromAnchorV00 } from '../../src/index.js';
+import { pdaNodeFromAnchorV00 } from '../../src';
 
-test('it creates PDA nodes', t => {
+test('it creates PDA nodes', () => {
     const node = pdaNodeFromAnchorV00({
         name: 'myPda',
         seeds: [
@@ -20,8 +20,7 @@ test('it creates PDA nodes', t => {
         ],
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         pdaNode({
             name: 'myPda',
             seeds: [

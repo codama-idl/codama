@@ -1,28 +1,37 @@
 import { constantValueNodeFromBytes, sentinelTypeNode, stringTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = sentinelTypeNode(stringTypeNode('utf8'), constantValueNodeFromBytes('base16', 'ffff'));
 
-test(mergeVisitorMacro, node, 5);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[sentinelTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[stringTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[constantValueNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 5);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[sentinelTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[stringTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[constantValueNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 sentinelTypeNode
 |   constantValueNode
 |   |   bytesTypeNode
 |   |   bytesValueNode [base16.ffff]
-|   stringTypeNode [utf8]
-`,
-);
+|   stringTypeNode [utf8]`,
+    );
+});

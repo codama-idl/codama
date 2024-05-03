@@ -1,8 +1,8 @@
 import { RenderMap } from '@kinobi-so/renderers-core';
-import type { ExecutionContext } from 'ava';
 import * as estreePlugin from 'prettier/plugins/estree';
 import * as typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';
+import { expect } from 'vitest';
 
 const PRETTIER_OPTIONS: Parameters<typeof format>[1] = {
     arrowParens: 'always',
@@ -16,21 +16,12 @@ const PRETTIER_OPTIONS: Parameters<typeof format>[1] = {
     useTabs: false,
 };
 
-export function renderMapContains(
-    t: ExecutionContext,
-    renderMap: RenderMap,
-    key: string,
-    expected: (RegExp | string)[] | RegExp | string,
-) {
-    t.true(renderMap.has(key), `RenderMap is missing key "${key}".`);
-    return codeContains(t, renderMap.get(key), expected);
+export function renderMapContains(renderMap: RenderMap, key: string, expected: (RegExp | string)[] | RegExp | string) {
+    expect(renderMap.has(key), `RenderMap is missing key "${key}".`).toBe(true);
+    return codeContains(renderMap.get(key), expected);
 }
 
-export async function codeContains(
-    t: ExecutionContext,
-    actual: string,
-    expected: (RegExp | string)[] | RegExp | string,
-) {
+export async function codeContains(actual: string, expected: (RegExp | string)[] | RegExp | string) {
     const expectedArray = Array.isArray(expected) ? expected : [expected];
     const normalizedActual = await normalizeCode(actual);
     expectedArray.forEach(expectedResult => {
@@ -42,42 +33,32 @@ export async function codeContains(
                 .replace(/(\w)\s+(\w)/g, '$1\\s+$2')
                 // Transform other spaces into optional whitespace.
                 .replace(/\s+/g, '\\s*');
-            t.regex(normalizedActual, new RegExp(stringAsRegex));
+            expect(normalizedActual).toMatch(new RegExp(stringAsRegex));
         } else {
-            t.regex(normalizedActual, expectedResult);
+            expect(normalizedActual).toMatch(expectedResult);
         }
     });
 }
 
-export function renderMapContainsImports(
-    t: ExecutionContext,
-    renderMap: RenderMap,
-    key: string,
-    expectedImports: Record<string, string[]>,
-) {
-    t.true(renderMap.has(key), `RenderMap is missing key "${key}".`);
-    return codeContainsImports(t, renderMap.get(key), expectedImports);
+export function renderMapContainsImports(renderMap: RenderMap, key: string, expectedImports: Record<string, string[]>) {
+    expect(renderMap.has(key), `RenderMap is missing key "${key}".`).toBe(true);
+    return codeContainsImports(renderMap.get(key), expectedImports);
 }
 
-export async function codeContainsImports(
-    t: ExecutionContext,
-    actual: string,
-    expectedImports: Record<string, string[]>,
-) {
+export async function codeContainsImports(actual: string, expectedImports: Record<string, string[]>) {
     const normalizedActual = await inlineCode(actual);
     const importPairs = Object.entries(expectedImports).flatMap(([key, value]) => {
         return value.map(v => [key, v] as const);
     });
 
     importPairs.forEach(([importFrom, importValue]) => {
-        t.regex(normalizedActual, new RegExp(`import{[^}]*\\b${importValue}\\b[^}]*}from'${importFrom}'`));
+        expect(normalizedActual).toMatch(new RegExp(`import{[^}]*\\b${importValue}\\b[^}]*}from'${importFrom}'`));
     });
 }
 
 async function normalizeCode(code: string) {
-    code = await format(code, PRETTIER_OPTIONS);
     try {
-        // code = await format(code, PRETTIER_OPTIONS);
+        code = await format(code, PRETTIER_OPTIONS);
     } catch (e) {
         // Ignore errors.
     }

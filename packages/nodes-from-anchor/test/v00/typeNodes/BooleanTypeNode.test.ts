@@ -1,8 +1,8 @@
 import { booleanTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src/index.js';
+import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates boolean type nodes', t => {
-    t.deepEqual(typeNodeFromAnchorV00('bool'), booleanTypeNode());
+test('it creates boolean type nodes', () => {
+    expect(typeNodeFromAnchorV00('bool')).toEqual(booleanTypeNode());
 });

@@ -1,4 +1,4 @@
-import test from 'ava';
+import { describe, expect, test } from 'vitest';
 
 import {
     assertIsNode,
@@ -9,95 +9,101 @@ import {
     publicKeyTypeNode,
     removeNullAndAssertIsNodeFilter,
     tupleTypeNode,
-} from '../src/index.js';
+} from '../src';
 
-test('it checks if a given node is of the given kind', t => {
-    t.true(isNode(tupleTypeNode([]), 'tupleTypeNode'));
-    t.false(isNode(publicKeyTypeNode(), 'tupleTypeNode'));
-    t.false(isNode(null, 'tupleTypeNode'));
-});
-
-test('it checks if a given node is part of the given kinds', t => {
-    t.true(isNode(tupleTypeNode([]), ['tupleTypeNode', 'publicKeyTypeNode']));
-    t.true(isNode(publicKeyTypeNode(), ['tupleTypeNode', 'publicKeyTypeNode']));
-    t.false(isNode(numberTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode']));
-    t.false(isNode(null, ['tupleTypeNode', 'publicKeyTypeNode']));
-});
-
-test('it asserts that a given node is of the given kind', t => {
-    t.notThrows(() => assertIsNode(tupleTypeNode([]), 'tupleTypeNode'));
-    t.throws(() => assertIsNode(publicKeyTypeNode(), 'tupleTypeNode'), {
-        message: 'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
+describe('isNode', () => {
+    test('it checks if a given node is of the given kind', () => {
+        expect(isNode(tupleTypeNode([]), 'tupleTypeNode')).toBe(true);
+        expect(isNode(publicKeyTypeNode(), 'tupleTypeNode')).toBe(false);
+        expect(isNode(null, 'tupleTypeNode')).toBe(false);
     });
-    t.throws(() => assertIsNode(null, 'tupleTypeNode'), {
-        message: 'Expected node of kind [tupleTypeNode], got [null].',
+
+    test('it checks if a given node is part of the given kinds', () => {
+        expect(isNode(tupleTypeNode([]), ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(true);
+        expect(isNode(publicKeyTypeNode(), ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(true);
+        expect(isNode(numberTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(false);
+        expect(isNode(null, ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(false);
     });
 });
 
-test('it asserts that a given node is part of the given kinds', t => {
-    t.notThrows(() => assertIsNode(tupleTypeNode([]), ['tupleTypeNode', 'publicKeyTypeNode']));
-    t.notThrows(() => assertIsNode(publicKeyTypeNode(), ['tupleTypeNode', 'publicKeyTypeNode']));
-    t.throws(() => assertIsNode(numberTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode']), {
-        message: 'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+describe('assertIsNode', () => {
+    test('it asserts that a given node is of the given kind', () => {
+        expect(() => assertIsNode(tupleTypeNode([]), 'tupleTypeNode')).not.toThrow();
+        expect(() => assertIsNode(publicKeyTypeNode(), 'tupleTypeNode')).toThrowError(
+            'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
+        );
+        expect(() => assertIsNode(null, 'tupleTypeNode')).toThrowError(
+            'Expected node of kind [tupleTypeNode], got [null].',
+        );
     });
-    t.throws(() => assertIsNode(null, ['tupleTypeNode', 'publicKeyTypeNode']), {
-        message: 'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].',
+
+    test('it asserts that a given node is part of the given kinds', () => {
+        expect(() => assertIsNode(tupleTypeNode([]), ['tupleTypeNode', 'publicKeyTypeNode'])).not.toThrow();
+        expect(() => assertIsNode(publicKeyTypeNode(), ['tupleTypeNode', 'publicKeyTypeNode'])).not.toThrow();
+        expect(() => assertIsNode(numberTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode'])).toThrowError(
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+        );
+        expect(() => assertIsNode(null, ['tupleTypeNode', 'publicKeyTypeNode'])).toThrowError(
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].',
+        );
     });
 });
 
-test('it returns a callback that checks the node is of the given kind', t => {
-    const filter = isNodeFilter('tupleTypeNode');
-    t.true(filter(tupleTypeNode([])));
-    t.false(filter(publicKeyTypeNode()));
-    t.false(filter(null));
-});
-
-test('it returns a callback that checks the node is part of the given kinds', t => {
-    const filter = isNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
-    t.true(filter(tupleTypeNode([])));
-    t.true(filter(publicKeyTypeNode()));
-    t.false(filter(numberTypeNode('u8')));
-    t.false(filter(null));
-});
-
-test('it returns a callback that asserts the node is of the given kind', t => {
-    const filter = assertIsNodeFilter('tupleTypeNode');
-    t.notThrows(() => filter(tupleTypeNode([])));
-    t.throws(() => filter(publicKeyTypeNode()), {
-        message: 'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
+describe('isNodeFilter', () => {
+    test('it returns a callback that checks the node is of the given kind', () => {
+        const filter = isNodeFilter('tupleTypeNode');
+        expect(filter(tupleTypeNode([]))).toBe(true);
+        expect(filter(publicKeyTypeNode())).toBe(false);
+        expect(filter(null)).toBe(false);
     });
-    t.throws(() => filter(null), {
-        message: 'Expected node of kind [tupleTypeNode], got [null].',
+
+    test('it returns a callback that checks the node is part of the given kinds', () => {
+        const filter = isNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
+        expect(filter(tupleTypeNode([]))).toBe(true);
+        expect(filter(publicKeyTypeNode())).toBe(true);
+        expect(filter(numberTypeNode('u8'))).toBe(false);
+        expect(filter(null)).toBe(false);
     });
 });
 
-test('it returns a callback that asserts the node is part of the given kinds', t => {
-    const filter = assertIsNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
-    t.notThrows(() => filter(tupleTypeNode([])));
-    t.notThrows(() => filter(publicKeyTypeNode()));
-    t.throws(() => filter(numberTypeNode('u8')), {
-        message: 'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+describe('assertIsNodeFilter', () => {
+    test('it returns a callback that asserts the node is of the given kind', () => {
+        const filter = assertIsNodeFilter('tupleTypeNode');
+        expect(() => filter(tupleTypeNode([]))).not.toThrow();
+        expect(() => filter(publicKeyTypeNode())).toThrowError(
+            'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
+        );
+        expect(() => filter(null)).toThrowError('Expected node of kind [tupleTypeNode], got [null].');
     });
-    t.throws(() => filter(null), {
-        message: 'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].',
+
+    test('it returns a callback that asserts the node is part of the given kinds', () => {
+        const filter = assertIsNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
+        expect(() => filter(tupleTypeNode([]))).not.toThrow();
+        expect(() => filter(publicKeyTypeNode())).not.toThrow();
+        expect(() => filter(numberTypeNode('u8'))).toThrowError(
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+        );
+        expect(() => filter(null)).toThrowError('Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].');
     });
 });
 
-test('it returns a callback that filters out null values and asserts the node is of the given kind', t => {
-    const filter = removeNullAndAssertIsNodeFilter('tupleTypeNode');
-    t.deepEqual([tupleTypeNode([]), null].filter(filter), [tupleTypeNode([])]);
-    t.throws(() => [tupleTypeNode([]), publicKeyTypeNode(), null].filter(filter), {
-        message: 'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
+describe('removeNullAndAssertIsNodeFilter', () => {
+    test('it returns a callback that filters out null values and asserts the node is of the given kind', () => {
+        const filter = removeNullAndAssertIsNodeFilter('tupleTypeNode');
+        expect([tupleTypeNode([]), null].filter(filter)).toEqual([tupleTypeNode([])]);
+        expect(() => [tupleTypeNode([]), publicKeyTypeNode(), null].filter(filter)).toThrowError(
+            'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
+        );
     });
-});
 
-test('it returns a callback that filters out null values and asserts the node is part of the given kinds', t => {
-    const filter = removeNullAndAssertIsNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
-    t.deepEqual([tupleTypeNode([]), publicKeyTypeNode(), null].filter(filter), [
-        tupleTypeNode([]),
-        publicKeyTypeNode(),
-    ]);
-    t.throws(() => [tupleTypeNode([]), numberTypeNode('u8'), null].filter(filter), {
-        message: 'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+    test('it returns a callback that filters out null values and asserts the node is part of the given kinds', () => {
+        const filter = removeNullAndAssertIsNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
+        expect([tupleTypeNode([]), publicKeyTypeNode(), null].filter(filter)).toEqual([
+            tupleTypeNode([]),
+            publicKeyTypeNode(),
+        ]);
+        expect(() => [tupleTypeNode([]), numberTypeNode('u8'), null].filter(filter)).toThrowError(
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+        );
     });
 });

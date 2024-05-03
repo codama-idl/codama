@@ -1,23 +1,19 @@
 import { fixedCountNode, numberTypeNode, prefixedCountNode, remainderCountNode, setTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src/index.js';
+import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates set type nodes', t => {
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashSet: 'u8' }),
+test('it creates set type nodes', () => {
+    expect(typeNodeFromAnchorV00({ hashSet: 'u8' })).toEqual(
         setTypeNode(numberTypeNode('u8'), prefixedCountNode(numberTypeNode('u32'))),
     );
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashSet: 'u8', size: 2 }),
+    expect(typeNodeFromAnchorV00({ hashSet: 'u8', size: 2 })).toEqual(
         setTypeNode(numberTypeNode('u8'), fixedCountNode(2)),
     );
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashSet: 'u8', size: 'u16' }),
+    expect(typeNodeFromAnchorV00({ hashSet: 'u8', size: 'u16' })).toEqual(
         setTypeNode(numberTypeNode('u8'), prefixedCountNode(numberTypeNode('u16'))),
     );
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashSet: 'u8', size: 'remainder' }),
+    expect(typeNodeFromAnchorV00({ hashSet: 'u8', size: 'remainder' })).toEqual(
         setTypeNode(numberTypeNode('u8'), remainderCountNode()),
     );
 });

@@ -1,8 +1,8 @@
 import { PublicKeyTypeNode } from '@kinobi-so/node-types';
 
-import * as KinobiErrorCodeModule from '../src/codes.js';
-import { KinobiErrorContext } from '../src/context.js';
-import { isKinobiError, KinobiError, KinobiErrorCode } from '../src/index.js';
+import { isKinobiError, KinobiError, KinobiErrorCode } from '../src';
+import * as KinobiErrorCodeModule from '../src/codes';
+import { KinobiErrorContext } from '../src/context';
 
 const { KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, KINOBI_ERROR__UNEXPECTED_NODE_KIND } = KinobiErrorCodeModule;
 

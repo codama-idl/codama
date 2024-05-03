@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { accountBumpValueNode } from '../../src/index.js';
+import { accountBumpValueNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = accountBumpValueNode('associatedToken');
-    t.is(node.kind, 'accountBumpValueNode');
+    expect(node.kind).toBe('accountBumpValueNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = accountBumpValueNode('associatedToken');
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

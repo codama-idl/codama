@@ -1,53 +1,53 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import {
     isKinobiError,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
     KinobiError,
-} from '../src/index.js';
+} from '../src';
 
-test('it exposes the Kinobi error context', t => {
+test('it exposes the Kinobi error context', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
-    t.is(error.context.kind, 'missingNode');
+    expect(error.context.kind).toBe('missingNode');
 });
 
-test('it exposes the Kinobi error code', t => {
+test('it exposes the Kinobi error code', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
-    t.is(error.context.__code, KINOBI_ERROR__UNRECOGNIZED_NODE_KIND);
+    expect(error.context.__code).toBe(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND);
 });
 
-test('it calls the message formatter with the code and context', t => {
+test('it calls the message formatter with the code and context', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
-    t.is(error.message, 'Unrecognized node kind [missingNode].');
+    expect(error.message).toBe('Unrecognized node kind [missingNode].');
 });
 
-test('it exposes no cause when none is provided', t => {
+test('it exposes no cause when none is provided', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
-    t.is(error.cause, undefined);
+    expect(error.cause).toBeUndefined();
 });
 
-test('it exposes the cause when provided', t => {
+test('it exposes the cause when provided', () => {
     const cause = {} as unknown;
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { cause, kind: 'missingNode' });
-    t.is(error.cause, cause);
+    expect(error.cause).toBe(cause);
 });
 
-test('it returns `true` for an instance of `KinobiError`', t => {
+test('it returns `true` for an instance of `KinobiError`', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
-    t.true(isKinobiError(error));
+    expect(isKinobiError(error)).toBe(true);
 });
 
-test('it returns `false` for an instance of `Error`', t => {
-    t.false(isKinobiError(new Error('bad thing')));
+test('it returns `false` for an instance of `Error`', () => {
+    expect(isKinobiError(new Error('bad thing'))).toBe(false);
 });
 
-test('it returns `true` when the error code matches', t => {
+test('it returns `true` when the error code matches', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
-    t.true(isKinobiError(error, KINOBI_ERROR__UNRECOGNIZED_NODE_KIND));
+    expect(isKinobiError(error, KINOBI_ERROR__UNRECOGNIZED_NODE_KIND)).toBe(true);
 });
 
-test('it returns `false` when the error code does not match', t => {
+test('it returns `false` when the error code does not match', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
-    t.false(isKinobiError(error, KINOBI_ERROR__UNEXPECTED_NODE_KIND));
+    expect(isKinobiError(error, KINOBI_ERROR__UNEXPECTED_NODE_KIND)).toBe(false);
 });

@@ -1,4 +1,3 @@
-import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { env } from 'node:process';
 
@@ -21,6 +20,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
             __BROWSER__: `${platform === 'browser'}`,
             __NODEJS__: `${platform === 'node'}`,
             __REACTNATIVE__: `${platform === 'react-native'}`,
+            __TEST__: 'false',
             __VERSION__: `"${env.npm_package_version}"`,
         },
         entry: [`./src/index.ts`],
@@ -53,30 +53,4 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         sourcemap: format !== 'iife',
         treeshake: true,
     };
-}
-
-export function getTestsBuildConfig(options: BuildOptions): TsupConfig[] {
-    const { format, platform } = options;
-    function outExtension() {
-        return { js: '.js' };
-    }
-    return [
-        {
-            ...getBuildConfig(options),
-            outDir: `./dist/tests-${platform}-${format}/src`,
-            outExtension,
-        },
-        {
-            ...getBuildConfig(options),
-            bundle: false,
-            entry: ['./test/**/*.ts'],
-            async onSuccess() {
-                if (format === 'esm') {
-                    await writeFile(`./dist/tests-${platform}-${format}/package.json`, '{ "type": "module" }');
-                }
-            },
-            outDir: `./dist/tests-${platform}-${format}/test`,
-            outExtension,
-        },
-    ];
 }

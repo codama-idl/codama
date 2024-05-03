@@ -1,6 +1,6 @@
 import type { RegisteredPdaSeedNode } from '@kinobi-so/node-types';
 
-import { REGISTERED_PDA_SEED_NODE_KINDS } from '../../src/index.js';
+import { REGISTERED_PDA_SEED_NODE_KINDS } from '../../src';
 
 // [DESCRIBE] Registered pda seed node kinds.
 {

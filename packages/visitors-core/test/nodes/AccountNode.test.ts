@@ -7,14 +7,14 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from './_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from './_setup';
 
 const node = accountNode({
     data: structTypeNode([
@@ -28,14 +28,23 @@ const node = accountNode({
     size: 72,
 });
 
-test(mergeVisitorMacro, node, 10);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[accountNode]', null);
-test(deleteNodesVisitorMacro, node, '[pdaLinkNode]', accountNode({ ...node, pda: undefined }));
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 10);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[accountNode]', null);
+    expectDeleteNodesVisitor(node, '[pdaLinkNode]', accountNode({ ...node, pda: undefined }));
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 accountNode [token]
 |   structTypeNode
 |   |   structFieldTypeNode [mint]
@@ -46,4 +55,5 @@ accountNode [token]
 |   |   |   numberTypeNode [u64]
 |   pdaLinkNode [associatedToken]
 |   sizeDiscriminatorNode [72]`,
-);
+    );
+});

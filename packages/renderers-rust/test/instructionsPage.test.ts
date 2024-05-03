@@ -1,11 +1,11 @@
 import { instructionArgumentNode, instructionNode, programNode, stringTypeNode } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { test } from 'vitest';
 
-import { getRenderMapVisitor } from '../src/index.js';
-import { codeContains } from './_setup.js';
+import { getRenderMapVisitor } from '../src';
+import { codeContains } from './_setup';
 
-test('it renders a public instruction data struct', t => {
+test('it renders a public instruction data struct', () => {
     // Given the following program with 1 instruction.
     const node = programNode({
         instructions: [instructionNode({ name: 'mintTokens' })],
@@ -17,13 +17,10 @@ test('it renders a public instruction data struct', t => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following pub struct.
-    codeContains(t, renderMap.get('instructions/mint_tokens.rs'), [
-        `pub struct MintTokensInstructionData`,
-        `pub fn new(`,
-    ]);
+    codeContains(renderMap.get('instructions/mint_tokens.rs'), [`pub struct MintTokensInstructionData`, `pub fn new(`]);
 });
 
-test('it renders an instruction with a remainder str', t => {
+test('it renders an instruction with a remainder str', () => {
     // Given the following program with 1 instruction.
     const node = programNode({
         instructions: [
@@ -45,7 +42,7 @@ test('it renders an instruction with a remainder str', t => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following pub struct.
-    codeContains(t, renderMap.get('instructions/add_memo.rs'), [
+    codeContains(renderMap.get('instructions/add_memo.rs'), [
         `use kaigan::types::RemainderStr`,
         `pub memo: RemainderStr`,
     ]);

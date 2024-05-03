@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { tupleValueNode } from '../../src/index.js';
+import { tupleValueNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = tupleValueNode([]);
-    t.is(node.kind, 'tupleValueNode');
+    expect(node.kind).toBe('tupleValueNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = tupleValueNode([]);
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

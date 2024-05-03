@@ -1,9 +1,9 @@
 import { bytesValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { getAnchorAccountDiscriminator, getAnchorInstructionDiscriminator } from '../src/index.js';
+import { getAnchorAccountDiscriminator, getAnchorInstructionDiscriminator } from '../src';
 
-test('it can compute the discriminator of an Anchor account', t => {
+test('it can compute the discriminator of an Anchor account', () => {
     // Given an account named "StakeEntry" on the IDL.
     const idlName = 'StakeEntry';
 
@@ -11,10 +11,10 @@ test('it can compute the discriminator of an Anchor account', t => {
     const discriminator = getAnchorAccountDiscriminator(idlName);
 
     // Then we get the expected value.
-    t.deepEqual(discriminator, bytesValueNode('base16', 'bb7f09239b445628'));
+    expect(discriminator).toEqual(bytesValueNode('base16', 'bb7f09239b445628'));
 });
 
-test('it can compute the discriminator of an Anchor instruction', t => {
+test('it can compute the discriminator of an Anchor instruction', () => {
     // Given an instruction named "addConfigLines" on the IDL.
     const idlName = 'addConfigLines';
 
@@ -22,5 +22,5 @@ test('it can compute the discriminator of an Anchor instruction', t => {
     const discriminator = getAnchorInstructionDiscriminator(idlName);
 
     // Then we get the expected value.
-    t.deepEqual(discriminator, bytesValueNode('base16', 'df32e0e39708736a'));
+    expect(discriminator).toEqual(bytesValueNode('base16', 'df32e0e39708736a'));
 });

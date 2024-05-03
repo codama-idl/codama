@@ -1,12 +1,12 @@
 import { programNode, rootNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from './_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from './_setup';
 
 const node = rootNode(
     programNode({
@@ -21,19 +21,26 @@ const node = rootNode(
     ],
 );
 
-test(mergeVisitorMacro, node, 3);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[rootNode]', null);
-test(deleteNodesVisitorMacro, node, '[programNode]', null);
-test(deleteNodesVisitorMacro, node, '[programNode]splAddressLookupTable', {
-    ...node,
-    additionalPrograms: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 3);
 });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[rootNode]', null);
+    expectDeleteNodesVisitor(node, '[programNode]', null);
+    expectDeleteNodesVisitor(node, '[programNode]splAddressLookupTable', { ...node, additionalPrograms: [] });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 rootNode
 |   programNode [splToken.TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA]
 |   programNode [splAddressLookupTable.AddressLookupTab1e1111111111111111111111111]`,
-);
+    );
+});

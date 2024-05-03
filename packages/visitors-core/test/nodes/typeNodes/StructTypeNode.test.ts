@@ -1,33 +1,40 @@
 import { numberTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = structTypeNode([
     structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() }),
     structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') }),
 ]);
 
-test(mergeVisitorMacro, node, 5);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[structTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[structFieldTypeNode]', {
-    ...node,
-    fields: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 5);
 });
-test(deleteNodesVisitorMacro, node, ['[publicKeyTypeNode]', '[numberTypeNode]'], { ...node, fields: [] });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[structTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[structFieldTypeNode]', { ...node, fields: [] });
+    expectDeleteNodesVisitor(node, ['[publicKeyTypeNode]', '[numberTypeNode]'], { ...node, fields: [] });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 structTypeNode
 |   structFieldTypeNode [owner]
 |   |   publicKeyTypeNode
 |   structFieldTypeNode [amount]
 |   |   numberTypeNode [u64]`,
-);
+    );
+});

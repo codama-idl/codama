@@ -1,12 +1,12 @@
 import { accountValueNode, instructionAccountNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from './_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from './_setup';
 
 const node = instructionAccountNode({
     defaultValue: accountValueNode('authority'),
@@ -16,14 +16,24 @@ const node = instructionAccountNode({
     name: 'owner',
 });
 
-test(mergeVisitorMacro, node, 2);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[instructionAccountNode]', null);
-test(deleteNodesVisitorMacro, node, '[accountValueNode]', instructionAccountNode({ ...node, defaultValue: undefined }));
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 2);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[instructionAccountNode]', null);
+    expectDeleteNodesVisitor(node, '[accountValueNode]', instructionAccountNode({ ...node, defaultValue: undefined }));
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 instructionAccountNode [owner.writable.optionalSigner]
 |   accountValueNode [authority]`,
-);
+    );
+});

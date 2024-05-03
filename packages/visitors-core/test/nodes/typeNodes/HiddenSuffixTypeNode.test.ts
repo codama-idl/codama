@@ -4,35 +4,43 @@ import {
     hiddenSuffixTypeNode,
     numberTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = hiddenSuffixTypeNode(numberTypeNode('u32'), [
     constantValueNodeFromString('utf8', 'hello world'),
     constantValueNodeFromBytes('base16', 'ffff'),
 ]);
 
-test(mergeVisitorMacro, node, 8);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[hiddenSuffixTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[numberTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[constantValueNode]', numberTypeNode('u32'));
-test(
-    deleteNodesVisitorMacro,
-    node,
-    '[stringTypeNode]',
-    hiddenSuffixTypeNode(numberTypeNode('u32'), [constantValueNodeFromBytes('base16', 'ffff')]),
-);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 8);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[hiddenSuffixTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[constantValueNode]', numberTypeNode('u32'));
+    expectDeleteNodesVisitor(
+        node,
+        '[stringTypeNode]',
+        hiddenSuffixTypeNode(numberTypeNode('u32'), [constantValueNodeFromBytes('base16', 'ffff')]),
+    );
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 hiddenSuffixTypeNode
 |   numberTypeNode [u32]
 |   constantValueNode
@@ -40,6 +48,6 @@ hiddenSuffixTypeNode
 |   |   stringValueNode [hello world]
 |   constantValueNode
 |   |   bytesTypeNode
-|   |   bytesValueNode [base16.ffff]
-`,
-);
+|   |   bytesValueNode [base16.ffff]`,
+    );
+});

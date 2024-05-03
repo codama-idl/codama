@@ -10,11 +10,11 @@ import {
     rootNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { updateInstructionsVisitor } from '../src/index.js';
+import { updateInstructionsVisitor } from '../src';
 
-test('it updates the name of an instruction', t => {
+test('it updates the name of an instruction', () => {
     // Given the following program node with one instruction.
     const node = programNode({
         instructions: [instructionNode({ name: 'myInstruction' })],
@@ -32,10 +32,10 @@ test('it updates the name of an instruction', t => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'programNode');
-    t.is(result.instructions[0].name, 'myNewInstruction' as CamelCaseString);
+    expect(result.instructions[0].name).toBe('myNewInstruction' as CamelCaseString);
 });
 
-test('it updates the name of an instruction within a specific program', t => {
+test('it updates the name of an instruction within a specific program', () => {
     // Given two programs each with an instruction of the same name.
     const node = rootNode(
         programNode({
@@ -62,13 +62,13 @@ test('it updates the name of an instruction within a specific program', t => {
 
     // Then we expect the first instruction to have been renamed.
     assertIsNode(result, 'rootNode');
-    t.is(result.program.instructions[0].name, 'newTransfer' as CamelCaseString);
+    expect(result.program.instructions[0].name).toBe('newTransfer' as CamelCaseString);
 
     // But not the second instruction.
-    t.is(result.additionalPrograms[0].instructions[0].name, 'transfer' as CamelCaseString);
+    expect(result.additionalPrograms[0].instructions[0].name).toBe('transfer' as CamelCaseString);
 });
 
-test('it updates the name of an instruction account', t => {
+test('it updates the name of an instruction account', () => {
     // Given the following instruction node with one account.
     const node = instructionNode({
         accounts: [
@@ -95,10 +95,10 @@ test('it updates the name of an instruction account', t => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    t.is(result.accounts[0].name, 'myNewAccount' as CamelCaseString);
+    expect(result.accounts[0].name).toBe('myNewAccount' as CamelCaseString);
 });
 
-test('it updates the name of an instruction argument', t => {
+test('it updates the name of an instruction argument', () => {
     // Given the following instruction node with one argument.
     const node = instructionNode({
         arguments: [
@@ -124,10 +124,10 @@ test('it updates the name of an instruction argument', t => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    t.is(result.arguments[0].name, 'myNewArgument' as CamelCaseString);
+    expect(result.arguments[0].name).toBe('myNewArgument' as CamelCaseString);
 });
 
-test('it updates the default value of an instruction argument', t => {
+test('it updates the default value of an instruction argument', () => {
     // Given the following instruction node with a argument that has no default value.
     const node = instructionNode({
         arguments: [
@@ -153,11 +153,11 @@ test('it updates the default value of an instruction argument', t => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    t.deepEqual(result.arguments[0].defaultValue, numberValueNode(1));
-    t.is(result.arguments[0].defaultValueStrategy, undefined);
+    expect(result.arguments[0].defaultValue).toEqual(numberValueNode(1));
+    expect(result.arguments[0].defaultValueStrategy).toBeUndefined();
 });
 
-test('it updates the default value strategy of an instruction argument', t => {
+test('it updates the default value strategy of an instruction argument', () => {
     // Given the following instruction node with two arguments that have no default values.
     const node = instructionNode({
         arguments: [
@@ -194,8 +194,8 @@ test('it updates the default value strategy of an instruction argument', t => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    t.deepEqual(result.arguments[0].defaultValue, numberValueNode(42));
-    t.is(result.arguments[0].defaultValueStrategy, 'omitted');
-    t.deepEqual(result.arguments[1].defaultValue, numberValueNode(1));
-    t.is(result.arguments[1].defaultValueStrategy, 'optional');
+    expect(result.arguments[0].defaultValue).toEqual(numberValueNode(42));
+    expect(result.arguments[0].defaultValueStrategy).toBe('omitted');
+    expect(result.arguments[1].defaultValue).toEqual(numberValueNode(1));
+    expect(result.arguments[1].defaultValueStrategy).toBe('optional');
 });

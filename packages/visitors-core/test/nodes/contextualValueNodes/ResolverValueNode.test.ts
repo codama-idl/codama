@@ -1,27 +1,37 @@
 import { accountValueNode, argumentValueNode, resolverValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = resolverValueNode('myCustomResolver', {
     dependsOn: [accountValueNode('mint'), argumentValueNode('tokenStandard')],
     importFrom: 'hooked',
 });
 
-test(mergeVisitorMacro, node, 3);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[resolverValueNode]', null);
-test(deleteNodesVisitorMacro, node, ['[accountValueNode]', '[argumentValueNode]'], { ...node, dependsOn: undefined });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 3);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[resolverValueNode]', null);
+    expectDeleteNodesVisitor(node, ['[accountValueNode]', '[argumentValueNode]'], { ...node, dependsOn: undefined });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 resolverValueNode [myCustomResolver.from:hooked]
 |   accountValueNode [mint]
 |   argumentValueNode [tokenStandard]`,
-);
+    );
+});

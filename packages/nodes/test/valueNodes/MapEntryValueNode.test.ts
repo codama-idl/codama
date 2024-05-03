@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { mapEntryValueNode, numberValueNode, stringValueNode } from '../../src/index.js';
+import { mapEntryValueNode, numberValueNode, stringValueNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = mapEntryValueNode(stringValueNode('age'), numberValueNode(42));
-    t.is(node.kind, 'mapEntryValueNode');
+    expect(node.kind).toBe('mapEntryValueNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = mapEntryValueNode(stringValueNode('age'), numberValueNode(42));
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

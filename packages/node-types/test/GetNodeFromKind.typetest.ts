@@ -1,4 +1,4 @@
-import type { GetNodeFromKind, PublicKeyTypeNode, StringTypeNode } from '../src/index.js';
+import type { GetNodeFromKind, PublicKeyTypeNode, StringTypeNode } from '../src';
 
 // [DESCRIBE] GetNodeFromKind.
 {

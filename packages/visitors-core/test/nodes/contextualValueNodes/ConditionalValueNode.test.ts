@@ -5,14 +5,14 @@ import {
     enumValueNode,
     programIdValueNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = conditionalValueNode({
     condition: argumentValueNode('tokenStandard'),
@@ -21,21 +21,31 @@ const node = conditionalValueNode({
     value: enumValueNode('tokenStandard', 'ProgrammableNonFungible'),
 });
 
-test(mergeVisitorMacro, node, 6);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[conditionalValueNode]', null);
-test(deleteNodesVisitorMacro, node, '[enumValueNode]', conditionalValueNode({ ...node, value: undefined }));
-test(deleteNodesVisitorMacro, node, '[accountValueNode]', conditionalValueNode({ ...node, ifTrue: undefined }));
-test(deleteNodesVisitorMacro, node, '[programIdValueNode]', conditionalValueNode({ ...node, ifFalse: undefined }));
-test(deleteNodesVisitorMacro, node, ['[accountValueNode]', '[programIdValueNode]'], null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 6);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[conditionalValueNode]', null);
+    expectDeleteNodesVisitor(node, '[enumValueNode]', conditionalValueNode({ ...node, value: undefined }));
+    expectDeleteNodesVisitor(node, '[accountValueNode]', conditionalValueNode({ ...node, ifTrue: undefined }));
+    expectDeleteNodesVisitor(node, '[programIdValueNode]', conditionalValueNode({ ...node, ifFalse: undefined }));
+    expectDeleteNodesVisitor(node, ['[accountValueNode]', '[programIdValueNode]'], null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 conditionalValueNode
 |   argumentValueNode [tokenStandard]
 |   enumValueNode [programmableNonFungible]
 |   |   definedTypeLinkNode [tokenStandard]
 |   accountValueNode [mint]
 |   programIdValueNode`,
-);
+    );
+});

@@ -6,25 +6,21 @@ import {
     prefixedCountNode,
     remainderCountNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src/index.js';
+import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates map type nodes', t => {
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'] }),
+test('it creates map type nodes', () => {
+    expect(typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'] })).toEqual(
         mapTypeNode(numberTypeNode('u8'), booleanTypeNode(), prefixedCountNode(numberTypeNode('u32'))),
     );
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'], size: 2 }),
+    expect(typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'], size: 2 })).toEqual(
         mapTypeNode(numberTypeNode('u8'), booleanTypeNode(), fixedCountNode(2)),
     );
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'], size: 'u16' }),
+    expect(typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'], size: 'u16' })).toEqual(
         mapTypeNode(numberTypeNode('u8'), booleanTypeNode(), prefixedCountNode(numberTypeNode('u16'))),
     );
-    t.deepEqual(
-        typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'], size: 'remainder' }),
+    expect(typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'], size: 'remainder' })).toEqual(
         mapTypeNode(numberTypeNode('u8'), booleanTypeNode(), remainderCountNode()),
     );
 });

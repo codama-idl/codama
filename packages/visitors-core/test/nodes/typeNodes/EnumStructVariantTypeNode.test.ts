@@ -5,14 +5,14 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = enumStructVariantTypeNode(
     'mouseClick',
@@ -22,19 +22,29 @@ const node = enumStructVariantTypeNode(
     ]),
 );
 
-test(mergeVisitorMacro, node, 6);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[enumStructVariantTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[structTypeNode]', enumEmptyVariantTypeNode('mouseClick'));
-test(deleteNodesVisitorMacro, node, '[structFieldTypeNode]', enumEmptyVariantTypeNode('mouseClick'));
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 6);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[enumStructVariantTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[structTypeNode]', enumEmptyVariantTypeNode('mouseClick'));
+    expectDeleteNodesVisitor(node, '[structFieldTypeNode]', enumEmptyVariantTypeNode('mouseClick'));
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 enumStructVariantTypeNode [mouseClick]
 |   structTypeNode
 |   |   structFieldTypeNode [x]
 |   |   |   numberTypeNode [u32]
 |   |   structFieldTypeNode [y]
 |   |   |   numberTypeNode [u32]`,
-);
+    );
+});

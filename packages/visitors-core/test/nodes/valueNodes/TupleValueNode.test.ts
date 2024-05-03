@@ -1,12 +1,12 @@
 import { numberValueNode, publicKeyValueNode, stringValueNode, tupleValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = tupleValueNode([
     stringValueNode('Hello'),
@@ -14,19 +14,29 @@ const node = tupleValueNode([
     publicKeyValueNode('9sL9D2kshFgZSHz98pUQxGphwVUbCNBGqhYGaWWNJags'),
 ]);
 
-test(mergeVisitorMacro, node, 4);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[tupleValueNode]', null);
-test(deleteNodesVisitorMacro, node, ['[stringValueNode]', '[numberValueNode]', '[publicKeyValueNode]'], {
-    ...node,
-    items: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 4);
 });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[tupleValueNode]', null);
+    expectDeleteNodesVisitor(node, ['[stringValueNode]', '[numberValueNode]', '[publicKeyValueNode]'], {
+        ...node,
+        items: [],
+    });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 tupleValueNode
 |   stringValueNode [Hello]
 |   numberValueNode [42]
 |   publicKeyValueNode [9sL9D2kshFgZSHz98pUQxGphwVUbCNBGqhYGaWWNJags]`,
-);
+    );
+});

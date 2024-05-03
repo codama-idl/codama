@@ -7,19 +7,18 @@ import {
     instructionNode,
     numberTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { instructionNodeFromAnchorV00 } from '../../src/index.js';
+import { instructionNodeFromAnchorV00 } from '../../src';
 
-test('it creates instruction nodes', t => {
+test('it creates instruction nodes', () => {
     const node = instructionNodeFromAnchorV00({
         accounts: [{ isMut: true, isSigner: false, name: 'mint' }],
         args: [{ name: 'amount', type: 'u8' }],
         name: 'mintTokens',
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         instructionNode({
             accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'mint' })],
             arguments: [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
@@ -28,7 +27,7 @@ test('it creates instruction nodes', t => {
     );
 });
 
-test('it creates instruction nodes with anchor discriminators', t => {
+test('it creates instruction nodes with anchor discriminators', () => {
     const node = instructionNodeFromAnchorV00(
         {
             accounts: [],
@@ -38,8 +37,7 @@ test('it creates instruction nodes with anchor discriminators', t => {
         'anchor',
     );
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         instructionNode({
             arguments: [
                 instructionArgumentNode({

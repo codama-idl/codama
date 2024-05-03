@@ -14,11 +14,11 @@ import {
     structTypeNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { setStructDefaultValuesVisitor } from '../src/index.js';
+import { setStructDefaultValuesVisitor } from '../src';
 
-test('it adds new default values to struct fields', t => {
+test('it adds new default values to struct fields', () => {
     // Given the following person type with no default values.
     const node = definedTypeNode({
         name: 'person',
@@ -48,13 +48,13 @@ test('it adds new default values to struct fields', t => {
     // Then we expect the following tree changes.
     assertIsNode(result, 'definedTypeNode');
     assertIsNode(result.type, 'structTypeNode');
-    t.deepEqual(result.type.fields[0].defaultValue, numberValueNode(42));
-    t.is(result.type.fields[0].defaultValueStrategy, undefined);
-    t.deepEqual(result.type.fields[1].defaultValue, noneValueNode());
-    t.is(result.type.fields[1].defaultValueStrategy, undefined);
+    expect(result.type.fields[0].defaultValue).toEqual(numberValueNode(42));
+    expect(result.type.fields[0].defaultValueStrategy).toBeUndefined();
+    expect(result.type.fields[1].defaultValue).toEqual(noneValueNode());
+    expect(result.type.fields[1].defaultValueStrategy).toBeUndefined();
 });
 
-test('it adds new default values with custom strategies to struct fields', t => {
+test('it adds new default values with custom strategies to struct fields', () => {
     // Given the following token account with no default values.
     const node = accountNode({
         data: structTypeNode([
@@ -84,13 +84,13 @@ test('it adds new default values with custom strategies to struct fields', t => 
     // Then we expect the following tree changes.
     assertIsNode(result, 'accountNode');
     const data = resolveNestedTypeNode(result.data);
-    t.deepEqual(data.fields[0].defaultValue, numberValueNode(42));
-    t.is(data.fields[0].defaultValueStrategy, 'omitted');
-    t.deepEqual(data.fields[1].defaultValue, noneValueNode());
-    t.is(data.fields[1].defaultValueStrategy, 'optional');
+    expect(data.fields[0].defaultValue).toEqual(numberValueNode(42));
+    expect(data.fields[0].defaultValueStrategy).toBe('omitted');
+    expect(data.fields[1].defaultValue).toEqual(noneValueNode());
+    expect(data.fields[1].defaultValueStrategy).toBe('optional');
 });
 
-test('it adds new default values to instruction arguments', t => {
+test('it adds new default values to instruction arguments', () => {
     // Given the following instruction node with no default values for its arguments
     const node = instructionNode({
         arguments: [
@@ -119,8 +119,8 @@ test('it adds new default values to instruction arguments', t => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    t.deepEqual(result.arguments[0].defaultValue, numberValueNode(42));
-    t.is(result.arguments[0].defaultValueStrategy, 'omitted');
-    t.deepEqual(result.arguments[1].defaultValue, numberValueNode(1));
-    t.is(result.arguments[1].defaultValueStrategy, undefined);
+    expect(result.arguments[0].defaultValue).toEqual(numberValueNode(42));
+    expect(result.arguments[0].defaultValueStrategy).toBe('omitted');
+    expect(result.arguments[1].defaultValue).toEqual(numberValueNode(1));
+    expect(result.arguments[1].defaultValueStrategy).toBeUndefined();
 });

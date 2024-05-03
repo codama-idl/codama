@@ -1,10 +1,10 @@
 import { KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, KinobiError } from '@kinobi-so/errors';
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { extendVisitor, mergeVisitor, visit, voidVisitor } from '../src/index.js';
+import { extendVisitor, mergeVisitor, visit, voidVisitor } from '../src';
 
-test('it returns a new visitor that extends a subset of visits with a next function', t => {
+test('it returns a new visitor that extends a subset of visits with a next function', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u64'), publicKeyTypeNode()])]);
 
@@ -22,13 +22,13 @@ test('it returns a new visitor that extends a subset of visits with a next funct
     const result = visit(node, visitor);
 
     // Then we expect the following count.
-    t.is(result, 35);
+    expect(result).toBe(35);
 
     // And the extended visitor is a new instance.
-    t.not(baseVisitor, visitor);
+    expect(baseVisitor).not.toBe(visitor);
 });
 
-test('it can visit itself using the exposed self argument', t => {
+test('it can visit itself using the exposed self argument', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u64'), publicKeyTypeNode()])]);
 
@@ -45,22 +45,20 @@ test('it can visit itself using the exposed self argument', t => {
     const result = visit(node, visitor);
 
     // Then we expect the following count.
-    t.is(result, 2);
+    expect(result).toBe(2);
 });
 
-test('it cannot extends nodes that are not supported by the base visitor', t => {
+test('it cannot extends nodes that are not supported by the base visitor', () => {
     // Given a base visitor that only supports tuple nodes.
     const baseVisitor = voidVisitor(['tupleTypeNode']);
 
     // Then we expect an error when we try to extend other nodes for that visitor.
-    const error = t.throws(() =>
+    expect(() =>
         extendVisitor(baseVisitor, {
             // @ts-expect-error NumberTypeNode is not part of the base visitor.
             visitNumberType: () => undefined,
         }),
-    );
-    t.deepEqual(
-        error,
+    ).toThrow(
         new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
             visitFunction: 'visitNumberType',
         }),

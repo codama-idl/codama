@@ -6,11 +6,11 @@ import {
     numberTypeNode,
     publicKeyTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { getResolvedInstructionInputsVisitor, visit } from '../src/index.js';
+import { getResolvedInstructionInputsVisitor, visit } from '../src';
 
-test('it returns all instruction accounts in order of resolution', t => {
+test('it returns all instruction accounts in order of resolution', () => {
     // Given the following instruction node with an account that defaults to another account.
     const node = instructionNode({
         accounts: [
@@ -33,7 +33,7 @@ test('it returns all instruction accounts in order of resolution', t => {
     const result = visit(node, getResolvedInstructionInputsVisitor());
 
     // Then we expect the accounts to be in order of resolution.
-    t.deepEqual(result, [
+    expect(result).toEqual([
         {
             ...node.accounts[1],
             dependsOn: [],
@@ -51,7 +51,7 @@ test('it returns all instruction accounts in order of resolution', t => {
     ]);
 });
 
-test('it sets the resolved signer to either when a non signer defaults to a signer account', t => {
+test('it sets the resolved signer to either when a non signer defaults to a signer account', () => {
     // Given the following instruction node such that a non signer account defaults to a signer account.
     const node = instructionNode({
         accounts: [
@@ -74,7 +74,7 @@ test('it sets the resolved signer to either when a non signer defaults to a sign
     const result = visit(node, getResolvedInstructionInputsVisitor());
 
     // Then we expect the resolved signer to be either for the non signer account.
-    t.deepEqual(result[1], {
+    expect(result[1]).toEqual({
         ...node.accounts[0],
         dependsOn: [accountValueNode('authority')],
         isPda: false,
@@ -83,7 +83,7 @@ test('it sets the resolved signer to either when a non signer defaults to a sign
     });
 });
 
-test('it sets the resolved signer to either when a signer defaults to a non signer account', t => {
+test('it sets the resolved signer to either when a signer defaults to a non signer account', () => {
     // Given the following instruction node such that a signer account defaults to a non signer account.
     const node = instructionNode({
         accounts: [
@@ -106,7 +106,7 @@ test('it sets the resolved signer to either when a signer defaults to a non sign
     const result = visit(node, getResolvedInstructionInputsVisitor());
 
     // Then we expect the resolved signer to be either for the signer account.
-    t.deepEqual(result[1], {
+    expect(result[1]).toEqual({
         ...node.accounts[0],
         dependsOn: [accountValueNode('authority')],
         isPda: false,
@@ -115,7 +115,7 @@ test('it sets the resolved signer to either when a signer defaults to a non sign
     });
 });
 
-test('it includes instruction data arguments with default values', t => {
+test('it includes instruction data arguments with default values', () => {
     // Given the following instruction node with two arguments such that:
     // - The first argument defaults to an account.
     // - The second argument has no default value.
@@ -145,7 +145,7 @@ test('it includes instruction data arguments with default values', t => {
     const result = visit(node, getResolvedInstructionInputsVisitor());
 
     // Then we expect the following inputs.
-    t.deepEqual(result, [
+    expect(result).toEqual([
         {
             ...node.accounts[0],
             dependsOn: [],
@@ -160,10 +160,10 @@ test('it includes instruction data arguments with default values', t => {
     ]);
 
     // And the argument without default value is not included.
-    t.false(result.some(input => input.name === 'argWithoutDefaults'));
+    expect(result.some(input => input.name === 'argWithoutDefaults')).toBe(false);
 });
 
-test('it includes instruction extra arguments with default values', t => {
+test('it includes instruction extra arguments with default values', () => {
     // Given the following instruction node with two extra arguments such that:
     // - The first argument defaults to an account.
     // - The second argument has no default value.
@@ -193,7 +193,7 @@ test('it includes instruction extra arguments with default values', t => {
     const result = visit(node, getResolvedInstructionInputsVisitor());
 
     // Then we expect the following inputs.
-    t.deepEqual(result, [
+    expect(result).toEqual([
         {
             ...node.accounts[0],
             dependsOn: [],
@@ -208,10 +208,10 @@ test('it includes instruction extra arguments with default values', t => {
     ]);
 
     // And the argument without default value is not included.
-    t.false(result.some(input => input.name === 'argWithoutDefaults'));
+    expect(result.some(input => input.name === 'argWithoutDefaults')).toBe(false);
 });
 
-test('it returns an empty array for empty instructions', t => {
+test('it returns an empty array for empty instructions', () => {
     // Given the following empty instruction node.
     const node = instructionNode({ name: 'myInstruction' });
 
@@ -219,5 +219,5 @@ test('it returns an empty array for empty instructions', t => {
     const result = visit(node, getResolvedInstructionInputsVisitor());
 
     // Then we expect an empty array.
-    t.deepEqual(result, []);
+    expect(result).toEqual([]);
 });

@@ -1,8 +1,8 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { ImportMap } from '../src/index.js';
+import { ImportMap } from '../src';
 
-test('it renders JavaScript import statements', t => {
+test('it renders JavaScript import statements', () => {
     // Given an import map with 3 imports from 2 sources.
     const importMap = new ImportMap()
         .add('@metaplex-foundation/umi', ['PublicKey', 'publicKey'])
@@ -12,14 +12,13 @@ test('it renders JavaScript import statements', t => {
     const importStatements = importMap.toString({});
 
     // Then we expect the following import statements.
-    t.is(
-        importStatements,
+    expect(importStatements).toBe(
         "import { Metadata } from '@metaplex-foundation/mpl-token-metadata';\n" +
             "import { PublicKey, publicKey } from '@metaplex-foundation/umi';",
     );
 });
 
-test('it renders JavaScript import aliases', t => {
+test('it renders JavaScript import aliases', () => {
     // Given an import map with an import alias.
     const importMap = new ImportMap()
         .add('@metaplex-foundation/umi', 'publicKey')
@@ -29,10 +28,10 @@ test('it renders JavaScript import aliases', t => {
     const importStatements = importMap.toString({});
 
     // Then we expect the following import statement.
-    t.is(importStatements, "import { publicKey as toPublicKey } from '@metaplex-foundation/umi';");
+    expect(importStatements).toBe("import { publicKey as toPublicKey } from '@metaplex-foundation/umi';");
 });
 
-test('it offers some default dependency mappings', t => {
+test('it offers some default dependency mappings', () => {
     // Given an import map with some recognized dependency keys.
     const importMap = new ImportMap()
         .add('umi', ['PublicKey', 'publicKey'])
@@ -43,15 +42,14 @@ test('it offers some default dependency mappings', t => {
     const importStatements = importMap.toString({});
 
     // Then we expect the following import statements.
-    t.is(
-        importStatements,
+    expect(importStatements).toBe(
         "import { PublicKey, publicKey } from '@metaplex-foundation/umi';\n" +
             "import { u16 } from '@metaplex-foundation/umi/serializers';\n" +
             "import { myHelper } from '../shared';",
     );
 });
 
-test('it supports custom dependency mappings', t => {
+test('it supports custom dependency mappings', () => {
     // Given an import map with some custom dependency keys.
     const importMap = new ImportMap().add('myDependency', 'MyType');
 
@@ -61,5 +59,5 @@ test('it supports custom dependency mappings', t => {
     });
 
     // Then we expect the following import statement.
-    t.is(importStatements, "import { MyType } from 'my/custom/path';");
+    expect(importStatements).toBe("import { MyType } from 'my/custom/path';");
 });

@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { enumStructVariantTypeNode, structTypeNode } from '../../src/index.js';
+import { enumStructVariantTypeNode, structTypeNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = enumStructVariantTypeNode('apple', structTypeNode([]));
-    t.is(node.kind, 'enumStructVariantTypeNode');
+    expect(node.kind).toBe('enumStructVariantTypeNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = enumStructVariantTypeNode('apple', structTypeNode([]));
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

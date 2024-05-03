@@ -1,12 +1,12 @@
 import { publicKeyTypeNode, publicKeyValueNode, structFieldTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = structFieldTypeNode({
     defaultValue: publicKeyValueNode('CzC5HidG6kR5J4haV7pKZmenYYVS7rw3SoBkqeStxZ9U'),
@@ -14,16 +14,26 @@ const node = structFieldTypeNode({
     type: publicKeyTypeNode(),
 });
 
-test(mergeVisitorMacro, node, 3);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[structFieldTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[publicKeyTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[publicKeyValueNode]', structFieldTypeNode({ ...node, defaultValue: undefined }));
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 3);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[structFieldTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[publicKeyValueNode]', structFieldTypeNode({ ...node, defaultValue: undefined }));
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 structFieldTypeNode [owner]
 |   publicKeyTypeNode
 |   publicKeyValueNode [CzC5HidG6kR5J4haV7pKZmenYYVS7rw3SoBkqeStxZ9U]`,
-);
+    );
+});

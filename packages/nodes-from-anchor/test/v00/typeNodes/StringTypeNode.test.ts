@@ -1,8 +1,8 @@
 import { numberTypeNode, sizePrefixTypeNode, stringTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src/index.js';
+import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates string type nodes', t => {
-    t.deepEqual(typeNodeFromAnchorV00('string'), sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u32')));
+test('it creates string type nodes', () => {
+    expect(typeNodeFromAnchorV00('string')).toEqual(sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u32')));
 });

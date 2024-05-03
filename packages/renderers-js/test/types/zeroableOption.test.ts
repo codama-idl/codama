@@ -6,12 +6,12 @@ import {
     zeroableOptionTypeNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { test } from 'vitest';
 
-import { getRenderMapVisitor } from '../../src/index.js';
-import { renderMapContains, renderMapContainsImports } from '../_setup.js';
+import { getRenderMapVisitor } from '../../src';
+import { renderMapContains, renderMapContainsImports } from '../_setup';
 
-test('it renders zeroable option codecs', t => {
+test('it renders zeroable option codecs', () => {
     // Given the following node.
     const node = definedTypeNode({
         name: 'myType',
@@ -22,7 +22,7 @@ test('it renders zeroable option codecs', t => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following types and codecs to be exported.
-    renderMapContains(t, renderMap, 'types/myType.ts', [
+    renderMapContains(renderMap, 'types/myType.ts', [
         'export type MyType = Option<Address>',
         'export type MyTypeArgs = OptionOrNullable<Address>',
         'getZeroableOptionEncoder( getAddressEncoder() )',
@@ -30,7 +30,7 @@ test('it renders zeroable option codecs', t => {
     ]);
 
     // And we expect the following codec imports.
-    renderMapContainsImports(t, renderMap, 'types/myType.ts', {
+    renderMapContainsImports(renderMap, 'types/myType.ts', {
         '@solana/web3.js': [
             'getZeroableOptionEncoder',
             'getZeroableOptionDecoder',
@@ -42,7 +42,7 @@ test('it renders zeroable option codecs', t => {
     });
 });
 
-test('it renders zeroable option codecs with custom zero values', t => {
+test('it renders zeroable option codecs with custom zero values', () => {
     // Given the following node.
     const node = definedTypeNode({
         name: 'myType',
@@ -53,7 +53,7 @@ test('it renders zeroable option codecs with custom zero values', t => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following types and codecs to be exported.
-    renderMapContains(t, renderMap, 'types/myType.ts', [
+    renderMapContains(renderMap, 'types/myType.ts', [
         'export type MyType = Option<number>',
         'export type MyTypeArgs = OptionOrNullable<number>',
         'getZeroableOptionEncoder( getU16Encoder(), { zeroValue: new Uint8Array([255, 255]) } )',
@@ -61,7 +61,7 @@ test('it renders zeroable option codecs with custom zero values', t => {
     ]);
 
     // And we expect the following codec imports.
-    renderMapContainsImports(t, renderMap, 'types/myType.ts', {
+    renderMapContainsImports(renderMap, 'types/myType.ts', {
         '@solana/web3.js': [
             'getZeroableOptionEncoder',
             'getZeroableOptionDecoder',
