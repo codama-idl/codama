@@ -44,7 +44,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         ],
         outExtension({ format }) {
             const extension =
-                format === 'iife' ? `.production.min.js` : `.${platform}.${format === 'cjs' ? 'cjs' : 'js'}`;
+                format === 'iife' ? `.production.min.js` : `.${platform}.${format === 'cjs' ? 'cjs' : 'mjs'}`;
             return { js: extension };
         },
         platform: platform === 'node' ? 'node' : 'browser',
@@ -71,8 +71,8 @@ export function getTestsBuildConfig(options: BuildOptions): TsupConfig[] {
             bundle: false,
             entry: ['./test/**/*.ts'],
             async onSuccess() {
-                if (format === 'cjs') {
-                    await writeFile(`./dist/tests-${platform}-${format}/package.json`, '{ "type": "commonjs" }');
+                if (format === 'esm') {
+                    await writeFile(`./dist/tests-${platform}-${format}/package.json`, '{ "type": "module" }');
                 }
             },
             outDir: `./dist/tests-${platform}-${format}/test`,

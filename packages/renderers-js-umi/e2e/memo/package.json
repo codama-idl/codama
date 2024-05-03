@@ -2,7 +2,7 @@
   "name": "@kinobi-so/renderers-js-umi-e2e-memo",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "type": "commonjs",
   "sideEffects": false,
   "scripts": {
     "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
