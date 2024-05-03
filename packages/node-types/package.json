@@ -3,26 +3,26 @@
     "version": "0.20.0",
     "description": "Node specifications for the Kinobi standard",
     "exports": {
-        "react-native": "./dist/index.react-native.js",
+        "types": "./dist/types/index.d.ts",
+        "react-native": "./dist/index.react-native.mjs",
         "browser": {
-            "import": "./dist/index.browser.js",
+            "import": "./dist/index.browser.mjs",
             "require": "./dist/index.browser.cjs"
         },
         "node": {
-            "import": "./dist/index.node.js",
+            "import": "./dist/index.node.mjs",
             "require": "./dist/index.node.cjs"
-        },
-        "types": "./dist/types/index.d.ts"
+        }
     },
     "browser": {
         "./dist/index.node.cjs": "./dist/index.browser.cjs",
-        "./dist/index.node.js": "./dist/index.browser.js"
+        "./dist/index.node.mjs": "./dist/index.browser.mjs"
     },
     "main": "./dist/index.node.cjs",
-    "module": "./dist/index.node.js",
-    "react-native": "./dist/index.react-native.js",
+    "module": "./dist/index.node.mjs",
+    "react-native": "./dist/index.react-native.mjs",
     "types": "./dist/types/index.d.ts",
-    "type": "module",
+    "type": "commonjs",
     "files": [
         "./dist/types",
         "./dist/index.*"

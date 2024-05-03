@@ -7,7 +7,7 @@ export default defineConfig([
         ...getBuildConfig({ format: 'esm', platform: 'node' }),
         entry: ['./src/cli.ts'],
         outExtension() {
-            return { js: `.js` };
+            return { js: `.mjs` };
         },
     },
 ]);
