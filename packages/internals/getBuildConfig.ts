@@ -72,7 +72,7 @@ export function getTestsBuildConfig(options: BuildOptions): TsupConfig[] {
             entry: ['./test/**/*.ts'],
             async onSuccess() {
                 if (format === 'esm') {
-                    await writeFile(`./dist/tests-${platform}-${format}/package.json`, '{ "type": "commonjs" }');
+                    await writeFile(`./dist/tests-${platform}-${format}/package.json`, '{ "type": "module" }');
                 }
             },
             outDir: `./dist/tests-${platform}-${format}/test`,
