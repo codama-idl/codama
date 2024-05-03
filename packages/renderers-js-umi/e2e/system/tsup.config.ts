@@ -7,7 +7,7 @@ const SHARED_OPTIONS: Options = {
   entry: ['./src/index.ts'],
   inject: [path.resolve(__dirname, 'env-shim.ts')],
   outDir: './dist/src',
-  outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
+  outExtension: ({ format }) => ({ js: format === 'cjs' ? '.js' : '.mjs' }),
   sourcemap: true,
   treeshake: true,
 };
@@ -22,7 +22,7 @@ export default defineConfig(() => [
     ...SHARED_OPTIONS,
     bundle: false,
     entry: ['./test/*.ts'],
-    format: 'esm',
+    format: 'cjs',
     outDir: './dist/test',
   },
 ]);
