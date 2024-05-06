@@ -5,10 +5,19 @@
     { "repo": "kinobi-so/kinobi" }
   ],
   "commit": false,
-  "fixed": [],
+  "fixed": [
+        [
+            "kinobi",
+            "@kinobi-so/errors",
+            "@kinobi-so/node-types",
+            "@kinobi-so/nodes",
+            "@kinobi-so/validators",
+            "@kinobi-so/visitors*"
+        ]
+    ],
   "linked": [],
+  "ignore": ["@kinobi-so/internals"],
   "access": "public",
   "baseBranch": "main",
-  "updateInternalDependencies": "patch",
-  "ignore": []
+  "updateInternalDependencies": "patch"
 }
