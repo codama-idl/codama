@@ -29,7 +29,7 @@ export const KINOBI_ERROR__UNRECOGNIZED_NODE_KIND = 1 as const;
 export const KINOBI_ERROR__UNEXPECTED_NODE_KIND = 2 as const;
 export const KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND = 3 as const;
 export const KINOBI_ERROR__LINKED_NODE_NOT_FOUND = 4 as const;
-export const KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE = 5 as const;
+export const KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE = 5 as const;
 export const KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE = 6 as const;
 
 // Visitors-related errors.
@@ -48,6 +48,10 @@ export const KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND = 12000
 export const KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES = 1200010 as const;
 export const KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND = 1200011 as const;
 
+// Anchor-related errors.
+// Reserve error codes in the range [1300000-1300999].
+export const KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING = 1300000 as const;
+
 /**
  * A union of every Kinobi error code
  *
@@ -64,11 +68,12 @@ export const KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND = 1200011 as const
  * is not safe, for a variety of reasons covered here: https://stackoverflow.com/a/28818850
  */
 export type KinobiErrorCode =
+    | typeof KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING
+    | typeof KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE
     | typeof KINOBI_ERROR__LINKED_NODE_NOT_FOUND
     | typeof KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE
     | typeof KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND
     | typeof KINOBI_ERROR__UNEXPECTED_NODE_KIND
-    | typeof KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE
     | typeof KINOBI_ERROR__UNRECOGNIZED_NODE_KIND
     | typeof KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND
     | typeof KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES

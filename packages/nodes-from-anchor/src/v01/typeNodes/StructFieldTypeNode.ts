@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@kinobi-so/errors';
 import { StructFieldTypeNode, structFieldTypeNode } from '@kinobi-so/nodes';
 
 import { IdlV01Field, IdlV01Type } from '../idl';
@@ -17,7 +17,7 @@ export function structFieldTypeNodeFromAnchorV01(idl: IdlV01Field | IdlV01Type):
         });
     }
 
-    throw new KinobiError(KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE, {
+    throw new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
         idlType: JSON.stringify(idl),
     });
 }

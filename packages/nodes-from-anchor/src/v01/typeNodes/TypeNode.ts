@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@kinobi-so/errors';
 import {
     booleanTypeNode,
     bytesTypeNode,
@@ -57,7 +57,7 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
 
     // Ensure eveything else is an object.
     if (typeof idlType !== 'object') {
-        throw new KinobiError(KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE, {
+        throw new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
             idlType: JSON.stringify(idlType),
         });
     }
@@ -101,7 +101,7 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
         return structTypeNodeFromAnchorV01(idlType as IdlV01TypeDefTyStruct);
     }
 
-    throw new KinobiError(KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE, {
+    throw new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
         idlType: JSON.stringify(idlType),
     });
 };

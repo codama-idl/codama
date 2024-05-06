@@ -1,7 +1,8 @@
-import { KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, KinobiError } from '@kinobi-so/errors';
 import {
     AccountNode,
     accountNode,
+    assertIsNode,
     bytesTypeNode,
     camelCase,
     fieldDiscriminatorNode,
@@ -10,8 +11,8 @@ import {
 } from '@kinobi-so/nodes';
 
 import { getAnchorDiscriminatorV01 } from './../discriminators';
-import { IdlV01Account, IdlV01TypeDef, IdlV01TypeDefTyStruct } from './idl';
-import { structTypeNodeFromAnchorV01 } from './typeNodes';
+import { IdlV01Account, IdlV01TypeDef } from './idl';
+import { typeNodeFromAnchorV01 } from './typeNodes';
 
 export function accountNodeFromAnchorV01(idl: IdlV01Account, types: IdlV01TypeDef[]): AccountNode {
     const idlName = idl.name;
@@ -20,16 +21,13 @@ export function accountNodeFromAnchorV01(idl: IdlV01Account, types: IdlV01TypeDe
     const type = types.find(t => t.name === idl.name);
 
     if (!type) {
-        throw new KinobiError(KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {});
+        throw new KinobiError(KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, {
+            name,
+        });
     }
 
-    if (type.type.kind !== 'struct') {
-        throw new KinobiError(KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {});
-    }
-
-    const idlTypeStruct = type.type as IdlV01TypeDefTyStruct;
-
-    const data = structTypeNodeFromAnchorV01(idlTypeStruct);
+    const data = typeNodeFromAnchorV01(type.type);
+    assertIsNode(data, 'structTypeNode');
 
     const discriminator = structFieldTypeNode({
         defaultValue: getAnchorDiscriminatorV01(idl.discriminator),

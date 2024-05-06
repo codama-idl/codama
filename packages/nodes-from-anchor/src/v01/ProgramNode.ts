@@ -17,7 +17,7 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
     const accountNodeFromAnchorV01 = accountNodeFromAnchorV01WithTypeDefinition(types);
     const pdas = instructions
         .flatMap<IdlV01InstructionAccount>(instruction => instruction.accounts)
-        .filter(account => !account.pda?.program)
+        .filter(account => !!account.pda && !account.pda?.program)
         .map(pdaNodeFromAnchorV01);
 
     return programNode({

@@ -4,11 +4,12 @@
  */
 
 import {
+    KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
+    KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
     KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
-    KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
     KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
@@ -34,12 +35,13 @@ export const KinobiErrorMessages: Readonly<{
     // TypeScript will fail to build this project if add an error code without a message.
     [P in KinobiErrorCode]: string;
 }> = {
+    [KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: 'Account type [$name] is missing from the IDL types.',
+    [KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
     [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not found linked node [$name] from [$kind].',
     [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
         'Node.js filesystem function [$fsFunction] is not available in your environment.',
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: 'Expected nested node of kind [$expectedKinds], got [$kind]',
     [KINOBI_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got [$kind].',
-    [KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
     [KINOBI_ERROR__UNRECOGNIZED_NODE_KIND]: 'Unrecognized node kind [$kind].',
     [KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: 'Account [$name] does not have a field named [$missingField].',
     [KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:

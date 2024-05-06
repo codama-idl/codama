@@ -36,6 +36,9 @@ test('it creates program nodes', () => {
                             ],
                         },
                     },
+                    {
+                        name: 'some_account',
+                    },
                 ],
                 args: [],
                 discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
@@ -78,6 +81,11 @@ test('it creates program nodes', () => {
                             isSigner: false,
                             isWritable: false,
                             name: 'authority',
+                        }),
+                        instructionAccountNode({
+                            isSigner: false,
+                            isWritable: false,
+                            name: 'someAccount',
                         }),
                     ],
                     arguments: [
