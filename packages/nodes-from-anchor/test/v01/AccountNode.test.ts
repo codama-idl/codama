@@ -6,11 +6,11 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { accountNodeFromAnchorV01, getAnchorDiscriminatorV01 } from '../../src/index.js';
 
-test('it creates account nodes with anchor discriminators', t => {
+test('it creates account nodes with anchor discriminators', () => {
     const node = accountNodeFromAnchorV01(
         {
             discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
@@ -33,8 +33,7 @@ test('it creates account nodes with anchor discriminators', t => {
         ],
     );
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         accountNode({
             data: structTypeNode([
                 structFieldTypeNode({

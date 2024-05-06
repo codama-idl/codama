@@ -15,11 +15,11 @@ import {
     structTypeNode,
     variablePdaSeedNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { getAnchorDiscriminatorV01, programNodeFromAnchorV01 } from '../../src/index.js';
 
-test('it creates program nodes', t => {
+test('it creates program nodes', () => {
     const node = programNodeFromAnchorV01({
         accounts: [{ discriminator: [246, 28, 6, 87, 251, 45, 50, 42], name: 'MyAccount' }],
         address: '1111',
@@ -46,8 +46,7 @@ test('it creates program nodes', t => {
         types: [{ name: 'MyAccount', type: { fields: [], kind: 'struct' } }],
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         programNode({
             accounts: [
                 accountNode({

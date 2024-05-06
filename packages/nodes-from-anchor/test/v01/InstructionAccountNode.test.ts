@@ -1,9 +1,9 @@
 import { instructionAccountNode, publicKeyValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV01 } from '../../src/index.js';
 
-test('it creates instruction account nodes', t => {
+test('it creates instruction account nodes', () => {
     const node = instructionAccountNodeFromAnchorV01({
         docs: ['my docs'],
         name: 'MyInstructionAccount',
@@ -12,8 +12,7 @@ test('it creates instruction account nodes', t => {
         writable: true,
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         instructionAccountNode({
             docs: ['my docs'],
             isOptional: true,
@@ -24,7 +23,7 @@ test('it creates instruction account nodes', t => {
     );
 });
 
-test('it flattens nested instruction accounts', t => {
+test('it flattens nested instruction accounts', () => {
     const nodes = instructionAccountNodesFromAnchorV01([
         { name: 'accountA', signer: false, writable: false },
         {
@@ -49,7 +48,7 @@ test('it flattens nested instruction accounts', t => {
         { name: 'account_d', signer: true, writable: true },
     ]);
 
-    t.deepEqual(nodes, [
+    expect(nodes).toEqual([
         instructionAccountNode({ isSigner: false, isWritable: false, name: 'accountA' }),
         instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
         instructionAccountNode({ isSigner: true, isWritable: false, name: 'accountC' }),

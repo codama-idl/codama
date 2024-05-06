@@ -5,11 +5,11 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV01 } from '../../../src/index.js';
 
-test('it creates struct type nodes', t => {
+test('it creates struct type nodes', () => {
     // TODO: Fix 2 fields always registering as a tuple when this should be a struct
     const node = typeNodeFromAnchorV01({
         fields: [
@@ -20,8 +20,7 @@ test('it creates struct type nodes', t => {
         kind: 'struct',
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         structTypeNode([
             structFieldTypeNode({
                 name: 'name',

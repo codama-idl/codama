@@ -1,9 +1,9 @@
 import { definedTypeNode, numberTypeNode, structFieldTypeNode, structTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { definedTypeNodeFromAnchorV01 } from '../../src/index.js';
 
-test('it creates defined type nodes', t => {
+test('it creates defined type nodes', () => {
     const node = definedTypeNodeFromAnchorV01({
         name: 'MyType',
         type: {
@@ -12,8 +12,7 @@ test('it creates defined type nodes', t => {
         },
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         definedTypeNode({
             name: 'myType',
             type: structTypeNode([

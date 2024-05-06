@@ -1,9 +1,9 @@
 import { programNode, rootNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { rootNodeFromAnchorV01 } from '../../src/index.js';
 
-test('it creates root nodes', t => {
+test('it creates root nodes', () => {
     const node = rootNodeFromAnchorV01({
         address: '1111',
         instructions: [],
@@ -14,8 +14,7 @@ test('it creates root nodes', t => {
         },
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         rootNode(
             programNode({
                 name: 'myProgram',

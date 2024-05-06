@@ -1,16 +1,15 @@
 import { instructionArgumentNode, numberTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { instructionArgumentNodeFromAnchorV01 } from '../../src/index.js';
 
-test('it creates instruction argument nodes', t => {
+test('it creates instruction argument nodes', () => {
     const node = instructionArgumentNodeFromAnchorV01({
         name: 'my_instruction_argument',
         type: 'u8',
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         instructionArgumentNode({
             name: 'myInstructionArgument',
             type: numberTypeNode('u8'),

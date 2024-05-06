@@ -1,9 +1,9 @@
 import { bytesTypeNode, constantPdaSeedNode, pdaNode, publicKeyTypeNode, variablePdaSeedNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { getAnchorDiscriminatorV01, pdaNodeFromAnchorV01 } from '../../src/index.js';
 
-test('it creates PDA nodes', t => {
+test('it creates PDA nodes', () => {
     const node = pdaNodeFromAnchorV01({
         name: 'myPda',
         pda: {
@@ -14,8 +14,7 @@ test('it creates PDA nodes', t => {
         },
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         pdaNode({
             name: 'myPda',
             seeds: [

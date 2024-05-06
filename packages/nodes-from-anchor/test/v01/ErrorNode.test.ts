@@ -1,17 +1,16 @@
 import { errorNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
 import { errorNodeFromAnchorV01 } from '../../src/index.js';
 
-test('it creates error nodes', t => {
+test('it creates error nodes', () => {
     const node = errorNodeFromAnchorV01({
         code: 42,
         msg: 'my error message',
         name: 'myError',
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         errorNode({
             code: 42,
             docs: ['myError: my error message'],
