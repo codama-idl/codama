@@ -1,33 +1,40 @@
 import { preOffsetTypeNode, stringTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = preOffsetTypeNode(stringTypeNode('utf8'), 42);
 
-test(mergeVisitorMacro, node, 2);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[stringTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[preOffsetTypeNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 2);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[stringTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[preOffsetTypeNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 preOffsetTypeNode [42.relative]
 |   stringTypeNode [utf8]`,
-);
+    );
 
-// Different strategy.
-test(
-    'getDebugStringVisitor: different strategy',
-    getDebugStringVisitorMacro,
-    preOffsetTypeNode(stringTypeNode('utf8'), 42, 'absolute'),
-    `
+    expectDebugStringVisitor(
+        preOffsetTypeNode(stringTypeNode('utf8'), 42, 'absolute'),
+        `
 preOffsetTypeNode [42.absolute]
 |   stringTypeNode [utf8]`,
-);
+    );
+});

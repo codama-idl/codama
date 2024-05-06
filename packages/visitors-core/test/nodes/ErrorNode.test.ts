@@ -1,12 +1,12 @@
 import { errorNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from './_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from './_setup';
 
 const node = errorNode({
     code: 42,
@@ -14,7 +14,18 @@ const node = errorNode({
     name: 'InvalidTokenOwner',
 });
 
-test(mergeVisitorMacro, node, 1);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[errorNode]', null);
-test(getDebugStringVisitorMacro, node, `errorNode [42.invalidTokenOwner]`);
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 1);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[errorNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(node, `errorNode [42.invalidTokenOwner]`);
+});

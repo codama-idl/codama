@@ -13,7 +13,7 @@ export function rustDocblock(docs: string[]): string {
 export const render = (template: string, context?: object, options?: NunJucksOptions): string => {
     // @ts-expect-error import.meta will be used in the right environment.
     const dirname = typeof __dirname !== 'undefined' ? __dirname : pathDirname(fileURLToPath(import.meta.url));
-    const templates = join(dirname, 'templates'); // Path to templates from bundled output file.
+    const templates = __TEST__ ? join(dirname, '..', '..', 'public', 'templates') : join(dirname, 'templates'); // Path to templates from bundled output file.
     const env = nunjucks.configure(templates, { autoescape: false, trimBlocks: true, ...options });
     env.addFilter('pascalCase', pascalCase);
     env.addFilter('camelCase', camelCase);

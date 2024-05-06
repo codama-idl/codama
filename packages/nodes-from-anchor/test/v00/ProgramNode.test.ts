@@ -9,11 +9,11 @@ import {
     programNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { programNodeFromAnchorV00 } from '../../src/index.js';
+import { programNodeFromAnchorV00 } from '../../src';
 
-test('it creates program nodes', t => {
+test('it creates program nodes', () => {
     const node = programNodeFromAnchorV00({
         accounts: [{ name: 'myAccount', seeds: [{ kind: 'programId' }], type: { fields: [], kind: 'struct' } }],
         errors: [{ code: 42, msg: 'my error message', name: 'myError' }],
@@ -24,8 +24,7 @@ test('it creates program nodes', t => {
         version: '1.2.3',
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         programNode({
             accounts: [accountNode({ name: 'myAccount', pda: pdaLinkNode('myAccount') })],
             definedTypes: [definedTypeNode({ name: 'myType', type: structTypeNode([]) })],

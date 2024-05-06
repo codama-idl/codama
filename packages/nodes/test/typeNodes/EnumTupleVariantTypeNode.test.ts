@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { enumTupleVariantTypeNode, tupleTypeNode } from '../../src/index.js';
+import { enumTupleVariantTypeNode, tupleTypeNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = enumTupleVariantTypeNode('apple', tupleTypeNode([]));
-    t.is(node.kind, 'enumTupleVariantTypeNode');
+    expect(node.kind).toBe('enumTupleVariantTypeNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = enumTupleVariantTypeNode('apple', tupleTypeNode([]));
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

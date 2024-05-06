@@ -5,11 +5,11 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src/index.js';
+import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates struct type nodes', t => {
+test('it creates struct type nodes', () => {
     const node = typeNodeFromAnchorV00({
         fields: [
             { name: 'name', type: 'string' },
@@ -18,8 +18,7 @@ test('it creates struct type nodes', t => {
         kind: 'struct',
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         structTypeNode([
             structFieldTypeNode({
                 name: 'name',

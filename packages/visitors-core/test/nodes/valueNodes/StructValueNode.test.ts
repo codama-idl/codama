@@ -1,32 +1,39 @@
 import { numberValueNode, stringValueNode, structFieldValueNode, structValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = structValueNode([
     structFieldValueNode('name', stringValueNode('Alice')),
     structFieldValueNode('age', numberValueNode(42)),
 ]);
 
-test(mergeVisitorMacro, node, 5);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[structValueNode]', null);
-test(deleteNodesVisitorMacro, node, '[structFieldValueNode]', {
-    ...node,
-    fields: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 5);
 });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[structValueNode]', null);
+    expectDeleteNodesVisitor(node, '[structFieldValueNode]', { ...node, fields: [] });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 structValueNode
 |   structFieldValueNode [name]
 |   |   stringValueNode [Alice]
 |   structFieldValueNode [age]
 |   |   numberValueNode [42]`,
-);
+    );
+});

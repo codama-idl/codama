@@ -1,16 +1,27 @@
 import { definedTypeLinkNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = definedTypeLinkNode('tokenState', 'splToken');
 
-test(mergeVisitorMacro, node, 1);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[definedTypeLinkNode]', null);
-test(getDebugStringVisitorMacro, node, `definedTypeLinkNode [tokenState.from:splToken]`);
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 1);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[definedTypeLinkNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(node, `definedTypeLinkNode [tokenState.from:splToken]`);
+});

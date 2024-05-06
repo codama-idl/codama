@@ -6,14 +6,14 @@ import {
     publicKeyTypeNode,
     stringTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = mapTypeNode(
     fixedSizeTypeNode(stringTypeNode('utf8'), 32),
@@ -21,20 +21,30 @@ const node = mapTypeNode(
     prefixedCountNode(numberTypeNode('u8')),
 );
 
-test(mergeVisitorMacro, node, 6);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[mapTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[stringTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[publicKeyTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[prefixedCountNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
- mapTypeNode
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 6);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[mapTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[stringTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[prefixedCountNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
+mapTypeNode
 |   prefixedCountNode
 |   |   numberTypeNode [u8]
 |   fixedSizeTypeNode [32]
 |   |   stringTypeNode [utf8]
 |   publicKeyTypeNode`,
-);
+    );
+});

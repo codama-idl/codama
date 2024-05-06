@@ -3,10 +3,11 @@
     "version": "0.0.0",
     "private": true,
     "files": [
-        "ave.config.*",
+        "scripts",
         "env-shim.ts",
-        "tsconfig.base.json",
-        "tsup.config.*"
+        "tsconfig.*",
+        "tsup.config.*",
+        "vitest.config.*"
     ],
     "devDependencies": {
         "browserslist-to-esbuild": "^2.1.1"

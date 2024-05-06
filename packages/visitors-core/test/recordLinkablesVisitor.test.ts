@@ -10,11 +10,11 @@ import {
     rootNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { LinkableDictionary, recordLinkablesVisitor, visit, voidVisitor } from '../src/index.js';
+import { LinkableDictionary, recordLinkablesVisitor, visit, voidVisitor } from '../src';
 
-test('it record all linkable nodes it finds when traversing the tree', t => {
+test('it record all linkable nodes it finds when traversing the tree', () => {
     // Given the following root node containing multiple linkable nodes.
     const node = rootNode(
         programNode({
@@ -43,12 +43,12 @@ test('it record all linkable nodes it finds when traversing the tree', t => {
     visit(node, visitor);
 
     // Then we expect all linkable nodes to be recorded.
-    t.deepEqual(linkables.get(programLinkNode('programA')), node.program);
-    t.deepEqual(linkables.get(programLinkNode('programB')), node.additionalPrograms[0]);
-    t.deepEqual(linkables.get(pdaLinkNode('pdaA')), node.program.pdas[0]);
-    t.deepEqual(linkables.get(pdaLinkNode('pdaB')), node.additionalPrograms[0].pdas[0]);
-    t.deepEqual(linkables.get(accountLinkNode('accountA')), node.program.accounts[0]);
-    t.deepEqual(linkables.get(accountLinkNode('accountB')), node.additionalPrograms[0].accounts[0]);
-    t.deepEqual(linkables.get(definedTypeLinkNode('typeA')), node.program.definedTypes[0]);
-    t.deepEqual(linkables.get(definedTypeLinkNode('typeB')), node.additionalPrograms[0].definedTypes[0]);
+    expect(linkables.get(programLinkNode('programA'))).toEqual(node.program);
+    expect(linkables.get(programLinkNode('programB'))).toEqual(node.additionalPrograms[0]);
+    expect(linkables.get(pdaLinkNode('pdaA'))).toEqual(node.program.pdas[0]);
+    expect(linkables.get(pdaLinkNode('pdaB'))).toEqual(node.additionalPrograms[0].pdas[0]);
+    expect(linkables.get(accountLinkNode('accountA'))).toEqual(node.program.accounts[0]);
+    expect(linkables.get(accountLinkNode('accountB'))).toEqual(node.additionalPrograms[0].accounts[0]);
+    expect(linkables.get(definedTypeLinkNode('typeA'))).toEqual(node.program.definedTypes[0]);
+    expect(linkables.get(definedTypeLinkNode('typeB'))).toEqual(node.additionalPrograms[0].definedTypes[0]);
 });

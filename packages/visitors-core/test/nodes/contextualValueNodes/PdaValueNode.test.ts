@@ -1,34 +1,41 @@
 import { accountValueNode, pdaLinkNode, pdaSeedValueNode, pdaValueNode, publicKeyValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = pdaValueNode(pdaLinkNode('associatedToken'), [
     pdaSeedValueNode('mint', accountValueNode('mint')),
     pdaSeedValueNode('owner', publicKeyValueNode('8sphVBHQxufE4Jc1HMuWwWdKgoDjncQyPHwxYhfATRtF')),
 ]);
 
-test(mergeVisitorMacro, node, 6);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[pdaValueNode]', null);
-test(deleteNodesVisitorMacro, node, '[pdaLinkNode]', null);
-test(deleteNodesVisitorMacro, node, '[pdaSeedValueNode]', {
-    ...node,
-    seeds: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 6);
 });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[pdaValueNode]', null);
+    expectDeleteNodesVisitor(node, '[pdaLinkNode]', null);
+    expectDeleteNodesVisitor(node, '[pdaSeedValueNode]', { ...node, seeds: [] });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 pdaValueNode
 |   pdaLinkNode [associatedToken]
 |   pdaSeedValueNode [mint]
 |   |   accountValueNode [mint]
 |   pdaSeedValueNode [owner]
 |   |   publicKeyValueNode [8sphVBHQxufE4Jc1HMuWwWdKgoDjncQyPHwxYhfATRtF]`,
-);
+    );
+});

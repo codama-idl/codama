@@ -1,24 +1,28 @@
 import { stringTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = stringTypeNode('utf8');
 
-test(mergeVisitorMacro, node, 1);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[stringTypeNode]', null);
-test(getDebugStringVisitorMacro, node, `stringTypeNode [utf8]`);
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 1);
+});
 
-// Different encoding.
-test(
-    'getDebugStringVisitor: different encoding',
-    getDebugStringVisitorMacro,
-    stringTypeNode('base58'),
-    `stringTypeNode [base58]`,
-);
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[stringTypeNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(node, `stringTypeNode [utf8]`);
+    expectDebugStringVisitor(stringTypeNode('base58'), `stringTypeNode [base58]`);
+});

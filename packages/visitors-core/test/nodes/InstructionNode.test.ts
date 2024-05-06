@@ -10,14 +10,14 @@ import {
     publicKeyTypeNode,
     resolverValueNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from './_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from './_setup';
 
 const node = instructionNode({
     accounts: [
@@ -46,25 +46,25 @@ const node = instructionNode({
     name: 'transferSol',
 });
 
-test(mergeVisitorMacro, node, 8);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[instructionNode]', null);
-test(deleteNodesVisitorMacro, node, '[instructionAccountNode]', {
-    ...node,
-    accounts: [],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 8);
 });
-test(deleteNodesVisitorMacro, node, '[instructionArgumentNode]', {
-    ...node,
-    arguments: [],
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
 });
-test(deleteNodesVisitorMacro, node, '[fieldDiscriminatorNode]', {
-    ...node,
-    discriminators: [],
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[instructionNode]', null);
+    expectDeleteNodesVisitor(node, '[instructionAccountNode]', { ...node, accounts: [] });
+    expectDeleteNodesVisitor(node, '[instructionArgumentNode]', { ...node, arguments: [] });
+    expectDeleteNodesVisitor(node, '[fieldDiscriminatorNode]', { ...node, discriminators: [] });
 });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 instructionNode [transferSol]
 |   instructionAccountNode [source.writable.signer]
 |   instructionAccountNode [destination.writable]
@@ -73,41 +73,53 @@ instructionNode [transferSol]
 |   instructionArgumentNode [amount]
 |   |   numberTypeNode [u64]
 |   fieldDiscriminatorNode [discriminator]`,
-);
-
-// Extra arguments.
-const nodeWithExtraArguments = instructionNode({
-    extraArguments: [
-        instructionArgumentNode({
-            name: 'myExtraArgument',
-            type: publicKeyTypeNode(),
-        }),
-    ],
-    name: 'myInstruction',
+    );
 });
-test('mergeVisitor: extraArguments', mergeVisitorMacro, nodeWithExtraArguments, 3);
-test('identityVisitor: extraArguments', identityVisitorMacro, nodeWithExtraArguments);
 
-// Remaining accounts.
-const nodeWithRemainingAccounts = instructionNode({
-    name: 'myInstruction',
-    remainingAccounts: [instructionRemainingAccountsNode(resolverValueNode('myResolver'))],
-});
-test('mergeVisitor: remainingAccounts', mergeVisitorMacro, nodeWithRemainingAccounts, 3);
-test('identityVisitor: remainingAccounts', identityVisitorMacro, nodeWithRemainingAccounts);
+test('extra arguments', () => {
+    const nodeWithExtraArguments = instructionNode({
+        extraArguments: [
+            instructionArgumentNode({
+                name: 'myExtraArgument',
+                type: publicKeyTypeNode(),
+            }),
+        ],
+        name: 'myInstruction',
+    });
 
-// Byte deltas.
-const nodeWithByteDeltas = instructionNode({
-    byteDeltas: [instructionByteDeltaNode(numberValueNode(42))],
-    name: 'myInstruction',
+    expectMergeVisitorCount(nodeWithExtraArguments, 3);
+    expectIdentityVisitor(nodeWithExtraArguments);
 });
-test('mergeVisitor: byteDeltas', mergeVisitorMacro, nodeWithByteDeltas, 3);
-test('identityVisitor: byteDeltas', identityVisitorMacro, nodeWithByteDeltas);
 
-// Sub-instructions.
-const nodeWithSubInstructions = instructionNode({
-    name: 'myInstruction',
-    subInstructions: [instructionNode({ name: 'mySubInstruction1' }), instructionNode({ name: 'mySubInstruction2' })],
+test('remaining accounts', () => {
+    const nodeWithRemainingAccounts = instructionNode({
+        name: 'myInstruction',
+        remainingAccounts: [instructionRemainingAccountsNode(resolverValueNode('myResolver'))],
+    });
+
+    expectMergeVisitorCount(nodeWithRemainingAccounts, 3);
+    expectIdentityVisitor(nodeWithRemainingAccounts);
 });
-test('mergeVisitor: subInstructions', mergeVisitorMacro, nodeWithSubInstructions, 3);
-test('identityVisitor: subInstructions', identityVisitorMacro, nodeWithSubInstructions);
+
+test('byte deltas', () => {
+    const nodeWithByteDeltas = instructionNode({
+        byteDeltas: [instructionByteDeltaNode(numberValueNode(42))],
+        name: 'myInstruction',
+    });
+
+    expectMergeVisitorCount(nodeWithByteDeltas, 3);
+    expectIdentityVisitor(nodeWithByteDeltas);
+});
+
+test('sub instructions', () => {
+    const nodeWithSubInstructions = instructionNode({
+        name: 'myInstruction',
+        subInstructions: [
+            instructionNode({ name: 'mySubInstruction1' }),
+            instructionNode({ name: 'mySubInstruction2' }),
+        ],
+    });
+
+    expectMergeVisitorCount(nodeWithSubInstructions, 3);
+    expectIdentityVisitor(nodeWithSubInstructions);
+});

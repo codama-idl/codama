@@ -13,11 +13,11 @@ import {
     structTypeNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { updateAccountsVisitor } from '../src/index.js';
+import { updateAccountsVisitor } from '../src';
 
-test('it updates the name of an account', t => {
+test('it updates the name of an account', () => {
     // Given the following program node with one account.
     const node = programNode({
         accounts: [accountNode({ name: 'myAccount' })],
@@ -35,10 +35,10 @@ test('it updates the name of an account', t => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'programNode');
-    t.is(result.accounts[0].name, 'myNewAccount' as CamelCaseString);
+    expect(result.accounts[0].name).toBe('myNewAccount' as CamelCaseString);
 });
 
-test('it updates the name of an account within a specific program', t => {
+test('it updates the name of an account within a specific program', () => {
     // Given two programs each with an account of the same name.
     const node = rootNode(
         programNode({
@@ -65,13 +65,13 @@ test('it updates the name of an account within a specific program', t => {
 
     // Then we expect the first account to have been renamed.
     assertIsNode(result, 'rootNode');
-    t.is(result.program.accounts[0].name, 'newCandyMachine' as CamelCaseString);
+    expect(result.program.accounts[0].name).toBe('newCandyMachine' as CamelCaseString);
 
     // But not the second account.
-    t.is(result.additionalPrograms[0].accounts[0].name, 'candyMachine' as CamelCaseString);
+    expect(result.additionalPrograms[0].accounts[0].name).toBe('candyMachine' as CamelCaseString);
 });
 
-test("it renames the fields of an account's data", t => {
+test("it renames the fields of an account's data", () => {
     // Given the following account.
     const node = accountNode({
         data: structTypeNode([structFieldTypeNode({ name: 'myData', type: numberTypeNode('u32') })]),
@@ -91,10 +91,10 @@ test("it renames the fields of an account's data", t => {
     // Then we expect the following tree changes.
     assertIsNode(result, 'accountNode');
     const data = resolveNestedTypeNode(result.data);
-    t.is(data.fields[0].name, 'myNewData' as CamelCaseString);
+    expect(data.fields[0].name).toBe('myNewData' as CamelCaseString);
 });
 
-test('it updates the name of associated PDA nodes', t => {
+test('it updates the name of associated PDA nodes', () => {
     // Given the following program node with one account
     // and PDA accounts such that one of them is named the same.
     const node = programNode({
@@ -114,13 +114,13 @@ test('it updates the name of associated PDA nodes', t => {
 
     // Then we expect the associated PDA node to have been renamed.
     assertIsNode(result, 'programNode');
-    t.is(result.pdas[0].name, 'myNewAccount' as CamelCaseString);
+    expect(result.pdas[0].name).toBe('myNewAccount' as CamelCaseString);
 
     // But not the other PDA node.
-    t.is(result.pdas[1].name, 'myOtherAccount' as CamelCaseString);
+    expect(result.pdas[1].name).toBe('myOtherAccount' as CamelCaseString);
 });
 
-test('it creates a new PDA node when providing seeds to an account with no linked PDA', t => {
+test('it creates a new PDA node when providing seeds to an account with no linked PDA', () => {
     // Given the following program node with one account.
     const node = rootNode(
         programNode({
@@ -143,15 +143,15 @@ test('it creates a new PDA node when providing seeds to an account with no linke
     assertIsNode(result, 'rootNode');
 
     // Then we expect a new PDA node to have been created on the program.
-    t.is(result.program.pdas.length, 1);
-    t.is(result.additionalPrograms[0].pdas.length, 0);
-    t.deepEqual(result.program.pdas[0], pdaNode({ name: 'myAccount', seeds }));
+    expect(result.program.pdas.length).toBe(1);
+    expect(result.additionalPrograms[0].pdas.length).toBe(0);
+    expect(result.program.pdas[0]).toEqual(pdaNode({ name: 'myAccount', seeds }));
 
     // And the account now links to the new PDA node.
-    t.deepEqual(result.program.accounts[0].pda, pdaLinkNode('myAccount'));
+    expect(result.program.accounts[0].pda).toEqual(pdaLinkNode('myAccount'));
 });
 
-test('it updates the PDA node when the updated account name matches an existing PDA node', t => {
+test('it updates the PDA node when the updated account name matches an existing PDA node', () => {
     // Given an account node and a PDA node with the same name
     // such that the account is not linked to the PDA.
     const node = programNode({
@@ -172,14 +172,14 @@ test('it updates the PDA node when the updated account name matches an existing 
     assertIsNode(result, 'programNode');
 
     // Then we expect the PDA node with the same name to have been updated.
-    t.is(result.pdas.length, 1);
-    t.deepEqual(result.pdas[0], pdaNode({ name: 'myAccount', seeds }));
+    expect(result.pdas.length).toBe(1);
+    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myAccount', seeds }));
 
     // And the account now links to this PDA node.
-    t.deepEqual(result.accounts[0].pda, pdaLinkNode('myAccount'));
+    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myAccount'));
 });
 
-test('it updates the PDA node with the provided seeds when an account is linked to a PDA', t => {
+test('it updates the PDA node with the provided seeds when an account is linked to a PDA', () => {
     // Given an account node and a PDA node with a different name
     // such that the account is linked to the PDA.
     const node = programNode({
@@ -200,14 +200,14 @@ test('it updates the PDA node with the provided seeds when an account is linked 
     assertIsNode(result, 'programNode');
 
     // Then we expect the linked PDA node to have been updated.
-    t.is(result.pdas.length, 1);
-    t.deepEqual(result.pdas[0], pdaNode({ name: 'myPda', seeds }));
+    expect(result.pdas.length).toBe(1);
+    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
 
     // And the account still links to the PDA node.
-    t.deepEqual(result.accounts[0].pda, pdaLinkNode('myPda'));
+    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myPda'));
 });
 
-test('it creates a new PDA node when updating an account with seeds and a new linked PDA that does not exist', t => {
+test('it creates a new PDA node when updating an account with seeds and a new linked PDA that does not exist', () => {
     // Given an account node with no linked PDA.
     const node = programNode({
         accounts: [accountNode({ name: 'myAccount' })],
@@ -229,14 +229,14 @@ test('it creates a new PDA node when updating an account with seeds and a new li
     assertIsNode(result, 'programNode');
 
     // Then we expect the linked PDA node to have been created.
-    t.is(result.pdas.length, 1);
-    t.deepEqual(result.pdas[0], pdaNode({ name: 'myPda', seeds }));
+    expect(result.pdas.length).toBe(1);
+    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
 
     // And the account now links to the PDA node.
-    t.deepEqual(result.accounts[0].pda, pdaLinkNode('myPda'));
+    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myPda'));
 });
 
-test('it updates a PDA node when updating an account with seeds and a new linked PDA that exists', t => {
+test('it updates a PDA node when updating an account with seeds and a new linked PDA that exists', () => {
     // Given an account node with no linked PDA and an existing PDA node.
     const node = programNode({
         accounts: [accountNode({ name: 'myAccount' })],
@@ -259,14 +259,14 @@ test('it updates a PDA node when updating an account with seeds and a new linked
     assertIsNode(result, 'programNode');
 
     // Then we expect the existing PDA node to have been updated.
-    t.is(result.pdas.length, 1);
-    t.deepEqual(result.pdas[0], pdaNode({ name: 'myPda', seeds }));
+    expect(result.pdas.length).toBe(1);
+    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
 
     // And the account now links to this PDA node.
-    t.deepEqual(result.accounts[0].pda, pdaLinkNode('myPda'));
+    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myPda'));
 });
 
-test('it can update the seeds and name of an account at the same time', t => {
+test('it can update the seeds and name of an account at the same time', () => {
     // Given an account node with no linked PDA.
     const node = programNode({
         accounts: [accountNode({ name: 'myAccount' })],
@@ -288,12 +288,12 @@ test('it can update the seeds and name of an account at the same time', t => {
     assertIsNode(result, 'programNode');
 
     // Then we expect the account name to have been updated.
-    t.is(result.accounts[0].name, 'myNewAccount' as CamelCaseString);
+    expect(result.accounts[0].name).toBe('myNewAccount' as CamelCaseString);
 
     // And a new PDA node to have been created with that new name and the provided seeds.
-    t.is(result.pdas.length, 1);
-    t.deepEqual(result.pdas[0], pdaNode({ name: 'myNewAccount', seeds }));
+    expect(result.pdas.length).toBe(1);
+    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myNewAccount', seeds }));
 
     // And the account to now link to the PDA node.
-    t.deepEqual(result.accounts[0].pda, pdaLinkNode('myNewAccount'));
+    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myNewAccount'));
 });

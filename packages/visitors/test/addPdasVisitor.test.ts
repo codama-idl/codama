@@ -8,11 +8,11 @@ import {
     variablePdaSeedNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { addPdasVisitor } from '../src/index.js';
+import { addPdasVisitor } from '../src';
 
-test('it adds PDA nodes to a program', t => {
+test('it adds PDA nodes to a program', () => {
     // Given a program with a single PDA.
     const node = programNode({
         name: 'myProgram',
@@ -52,10 +52,10 @@ test('it adds PDA nodes to a program', t => {
     const result = visit(node, addPdasVisitor({ myProgram: newPdas }));
 
     // Then we expect the following program to be returned.
-    t.deepEqual(result, { ...node, pdas: [...node.pdas, ...newPdas] });
+    expect(result).toEqual({ ...node, pdas: [...node.pdas, ...newPdas] });
 });
 
-test('it fails to add a PDA if its name conflicts with an existing PDA on the program', t => {
+test('it fails to add a PDA if its name conflicts with an existing PDA on the program', () => {
     // Given a program with a PDA named "myPda".
     const node = programNode({
         name: 'myProgram',
@@ -91,9 +91,7 @@ test('it fails to add a PDA if its name conflicts with an existing PDA on the pr
         );
 
     // Then we expect the following error to be thrown.
-    const error = t.throws(fn);
-    t.deepEqual(
-        error,
+    expect(fn).toThrow(
         new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
             duplicatedPdaNames: ['myPda'],
             program: node,

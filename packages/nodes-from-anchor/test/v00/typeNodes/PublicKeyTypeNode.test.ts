@@ -1,8 +1,8 @@
 import { publicKeyTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src/index.js';
+import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates public key type nodes', t => {
-    t.deepEqual(typeNodeFromAnchorV00('publicKey'), publicKeyTypeNode());
+test('it creates public key type nodes', () => {
+    expect(typeNodeFromAnchorV00('publicKey')).toEqual(publicKeyTypeNode());
 });

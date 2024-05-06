@@ -42,7 +42,7 @@
         "build": "rimraf dist && pnpm build:src && pnpm build:types",
         "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs library",
         "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs browser --watch",
+        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
         "prepublishOnly": "pnpm build",
@@ -54,7 +54,8 @@
         "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
     },
     "dependencies": {
-        "@kinobi-so/nodes": "workspace:*"
+        "@kinobi-so/nodes": "workspace:*",
+        "@kinobi-so/visitors": "workspace:*"
     },
     "license": "MIT",
     "repository": {

@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { instructionAccountNode } from '../src/index.js';
+import { instructionAccountNode } from '../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = instructionAccountNode({ name: 'foo', isSigner: false, isWritable: false });
-    t.is(node.kind, 'instructionAccountNode');
+    expect(node.kind).toBe('instructionAccountNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = instructionAccountNode({ name: 'foo', isSigner: false, isWritable: false });
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

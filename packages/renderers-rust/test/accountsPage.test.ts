@@ -8,12 +8,12 @@ import {
     variablePdaSeedNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { test } from 'vitest';
 
-import { getRenderMapVisitor } from '../src/index.js';
-import { codeContains } from './_setup.js';
+import { getRenderMapVisitor } from '../src';
+import { codeContains } from './_setup';
 
-test('it renders a byte array seed used on an account', t => {
+test('it renders a byte array seed used on an account', () => {
     // Given the following program with 1 account and 1 pda with a byte array as seeds.
     const node = programNode({
         accounts: [
@@ -38,10 +38,10 @@ test('it renders a byte array seed used on an account', t => {
 
     // Then we expect the following identifier and reference to the byte array
     // as a parameters to be rendered.
-    codeContains(t, renderMap.get('accounts/test_account.rs'), [`byte_array_seed: [u8; 32],`, `&byte_array_seed,`]);
+    codeContains(renderMap.get('accounts/test_account.rs'), [`byte_array_seed: [u8; 32],`, `&byte_array_seed,`]);
 });
 
-test('it renders an empty array seed used on an account', t => {
+test('it renders an empty array seed used on an account', () => {
     // Given the following program with 1 account and 1 pda with empty seeds.
     const node = programNode({
         accounts: [
@@ -64,5 +64,5 @@ test('it renders an empty array seed used on an account', t => {
 
     // Then we expect the following identifier and reference to the byte array
     // as a parameters to be rendered.
-    codeContains(t, renderMap.get('accounts/test_account.rs'), [/pub fn find_pda\(/, /&\[\s*\]/]);
+    codeContains(renderMap.get('accounts/test_account.rs'), [/pub fn find_pda\(/, /&\[\s*\]/]);
 });

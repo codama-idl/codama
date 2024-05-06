@@ -1,9 +1,9 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { renderJavaScriptUmiVisitor, renderJavaScriptVisitor, renderRustVisitor } from '../src/index.js';
+import { renderJavaScriptUmiVisitor, renderJavaScriptVisitor, renderRustVisitor } from '../src';
 
-test('it exports the visitor of all renderers', t => {
-    t.is(typeof renderJavaScriptVisitor, 'function');
-    t.is(typeof renderJavaScriptUmiVisitor, 'function');
-    t.is(typeof renderRustVisitor, 'function');
+test('it exports the visitor of all renderers', () => {
+    expect(renderJavaScriptVisitor).toBeTypeOf('function');
+    expect(renderJavaScriptUmiVisitor).toBeTypeOf('function');
+    expect(renderRustVisitor).toBeTypeOf('function');
 });

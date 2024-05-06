@@ -9,11 +9,11 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src/index.js';
+import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates enum type nodes', t => {
+test('it creates enum type nodes', () => {
     const node = typeNodeFromAnchorV00({
         kind: 'enum',
         variants: [
@@ -23,8 +23,7 @@ test('it creates enum type nodes', t => {
         ],
     });
 
-    t.deepEqual(
-        node,
+    expect(node).toEqual(
         enumTypeNode([
             enumEmptyVariantTypeNode('variantA'),
             enumTupleVariantTypeNode('variantB', tupleTypeNode([numberTypeNode('u16'), booleanTypeNode()])),
@@ -36,7 +35,7 @@ test('it creates enum type nodes', t => {
     );
 });
 
-test('it creates enum type nodes with custom sizes', t => {
+test('it creates enum type nodes with custom sizes', () => {
     const node = typeNodeFromAnchorV00({ kind: 'enum', size: 'u16', variants: [] });
-    t.deepEqual(node, enumTypeNode([], { size: numberTypeNode('u16') }));
+    expect(node).toEqual(enumTypeNode([], { size: numberTypeNode('u16') }));
 });

@@ -1,23 +1,33 @@
 import { publicKeyTypeNode, variablePdaSeedNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = variablePdaSeedNode('mint', publicKeyTypeNode());
 
-test(mergeVisitorMacro, node, 2);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[variablePdaSeedNode]', null);
-test(deleteNodesVisitorMacro, node, '[publicKeyTypeNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 2);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[variablePdaSeedNode]', null);
+    expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 variablePdaSeedNode [mint]
 |   publicKeyTypeNode`,
-);
+    );
+});

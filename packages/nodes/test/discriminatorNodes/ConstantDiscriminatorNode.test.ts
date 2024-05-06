@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { constantDiscriminatorNode, constantValueNodeFromBytes } from '../../src/index.js';
+import { constantDiscriminatorNode, constantValueNodeFromBytes } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = constantDiscriminatorNode(constantValueNodeFromBytes('base16', 'aabbccdd'));
-    t.is(node.kind, 'constantDiscriminatorNode');
+    expect(node.kind).toBe('constantDiscriminatorNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = constantDiscriminatorNode(constantValueNodeFromBytes('base16', 'aabbccdd'));
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

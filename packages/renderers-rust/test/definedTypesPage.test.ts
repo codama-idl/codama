@@ -8,12 +8,12 @@ import {
     structTypeNode,
 } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { test } from 'vitest';
 
-import { getRenderMapVisitor } from '../src/index.js';
-import { codeContains } from './_setup.js';
+import { getRenderMapVisitor } from '../src';
+import { codeContains } from './_setup';
 
-test('it renders a prefix string on a defined type', t => {
+test('it renders a prefix string on a defined type', () => {
     // Given the following program with 1 defined type using a prefixed size string.
     const node = programNode({
         definedTypes: [
@@ -35,7 +35,7 @@ test('it renders a prefix string on a defined type', t => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following use and identifier to be rendered.
-    codeContains(t, renderMap.get('types/blob.rs'), [
+    codeContains(renderMap.get('types/blob.rs'), [
         `use kaigan::types::U8PrefixString;`,
         `content_type: U8PrefixString,`,
     ]);

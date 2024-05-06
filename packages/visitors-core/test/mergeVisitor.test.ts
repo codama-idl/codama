@@ -1,9 +1,9 @@
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { mergeVisitor, visit } from '../src/index.js';
+import { mergeVisitor, visit } from '../src';
 
-test('it sets a value for all leaves and merges node values together', t => {
+test('it sets a value for all leaves and merges node values together', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -18,10 +18,10 @@ test('it sets a value for all leaves and merges node values together', t => {
     const result = visit(node, visitor);
 
     // Then we get the following result.
-    t.is(result, 'tupleTypeNode(numberTypeNode,publicKeyTypeNode)');
+    expect(result).toBe('tupleTypeNode(numberTypeNode,publicKeyTypeNode)');
 });
 
-test('it can be used to count nodes', t => {
+test('it can be used to count nodes', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -33,10 +33,10 @@ test('it can be used to count nodes', t => {
     const result = visit(node, visitor);
 
     // Then we expect to have 3 nodes.
-    t.is(result, 3);
+    expect(result).toBe(3);
 });
 
-test('it can create partial visitors', t => {
+test('it can create partial visitors', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -51,9 +51,9 @@ test('it can create partial visitors', t => {
     const result = visit(node, visitor);
 
     // Then the unsupported node is not included in the result.
-    t.is(result, 'tupleTypeNode(numberTypeNode)');
+    expect(result).toBe('tupleTypeNode(numberTypeNode)');
 
     // And the unsupported node cannot be visited.
     // @ts-expect-error PublicKeyTypeNode is not supported.
-    t.throws(() => visit(publicKeyTypeNode(), visitor));
+    expect(() => visit(publicKeyTypeNode(), visitor)).toThrow();
 });

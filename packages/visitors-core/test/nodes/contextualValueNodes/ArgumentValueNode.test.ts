@@ -1,16 +1,27 @@
 import { argumentValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = argumentValueNode('space');
 
-test(mergeVisitorMacro, node, 1);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[argumentValueNode]', null);
-test(getDebugStringVisitorMacro, node, `argumentValueNode [space]`);
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 1);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[argumentValueNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(node, `argumentValueNode [space]`);
+});

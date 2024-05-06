@@ -1,9 +1,9 @@
 import { numberTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { removeDocsVisitor, visit } from '../src/index.js';
+import { removeDocsVisitor, visit } from '../src';
 
-test('it empties the docs array of any node that contains docs', t => {
+test('it empties the docs array of any node that contains docs', () => {
     // Given the following struct node with docs.
     const node = structTypeNode([
         structFieldTypeNode({
@@ -27,8 +27,7 @@ test('it empties the docs array of any node that contains docs', t => {
     const result = visit(node, removeDocsVisitor());
 
     // Then we expect the following node.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         structTypeNode([
             structFieldTypeNode({
                 docs: [],
@@ -49,7 +48,7 @@ test('it empties the docs array of any node that contains docs', t => {
     );
 });
 
-test('it freezes the returned node', t => {
+test('it freezes the returned node', () => {
     // Given the following struct node with docs.
     const node = structTypeNode([
         structFieldTypeNode({
@@ -63,10 +62,10 @@ test('it freezes the returned node', t => {
     const result = visit(node, removeDocsVisitor());
 
     // Then we expect the returned node to be frozen.
-    t.true(Object.isFrozen(result));
+    expect(Object.isFrozen(result)).toBe(true);
 });
 
-test('it can create partial visitors', t => {
+test('it can create partial visitors', () => {
     // Given the following struct node with docs.
     const node = structTypeNode([
         structFieldTypeNode({
@@ -83,9 +82,9 @@ test('it can create partial visitors', t => {
     const result = visit(node, visitor);
 
     // Then we expect the same node back.
-    t.deepEqual(result, node);
+    expect(result).toEqual(node);
 
     // And we expect an error when visiting an unsupported node.
     // @ts-expect-error StructFieldTypeNode is not supported.
-    t.throws(() => visit(node.fields[0], visitor));
+    expect(() => visit(node.fields[0], visitor)).toThrow();
 });

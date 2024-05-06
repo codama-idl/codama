@@ -1,9 +1,9 @@
 import { assertIsNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { identityVisitor, interceptVisitor, visit } from '../src/index.js';
+import { identityVisitor, interceptVisitor, visit } from '../src';
 
-test('it visits all nodes and returns different instances of the same nodes', t => {
+test('it visits all nodes and returns different instances of the same nodes', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -11,16 +11,16 @@ test('it visits all nodes and returns different instances of the same nodes', t 
     const result = visit(node, identityVisitor());
 
     // Then we get the same tree back.
-    t.deepEqual(result, node);
+    expect(result).toEqual(node);
 
     // But the nodes are different instances.
-    t.not(result, node);
+    expect(result).not.toBe(node);
     assertIsNode(result, 'tupleTypeNode');
-    t.not(result.items[0], node.items[0]);
-    t.not(result.items[1], node.items[1]);
+    expect(result.items[0]).not.toBe(node.items[0]);
+    expect(result.items[1]).not.toBe(node.items[1]);
 });
 
-test('it can remove nodes by returning null', t => {
+test('it can remove nodes by returning null', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -32,10 +32,10 @@ test('it can remove nodes by returning null', t => {
     const result = visit(node, visitor);
 
     // Then we expect the following tree back.
-    t.deepEqual(result, tupleTypeNode([numberTypeNode('u32')]));
+    expect(result).toEqual(tupleTypeNode([numberTypeNode('u32')]));
 });
 
-test('it can create partial visitors', t => {
+test('it can create partial visitors', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -51,16 +51,16 @@ test('it can create partial visitors', t => {
     const result = visit(node, visitor);
 
     // Then we still get the full tree back as different instances.
-    t.deepEqual(result, node);
-    t.not(result, node);
+    expect(result).toEqual(node);
+    expect(result).not.toBe(node);
     assertIsNode(result, 'tupleTypeNode');
-    t.not(result.items[0], node.items[0]);
-    t.not(result.items[1], node.items[1]);
+    expect(result.items[0]).not.toBe(node.items[0]);
+    expect(result.items[1]).not.toBe(node.items[1]);
 
     // But the unsupported node was not visited.
-    t.deepEqual(events, ['visiting:tupleTypeNode', 'visiting:numberTypeNode']);
+    expect(events).toEqual(['visiting:tupleTypeNode', 'visiting:numberTypeNode']);
 
     // And the unsupported node cannot be visited.
     // @ts-expect-error PublicKeyTypeNode is not supported.
-    t.throws(() => visit(publicKeyTypeNode(), visitor));
+    expect(() => visit(publicKeyTypeNode(), visitor)).toThrow();
 });

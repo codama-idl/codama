@@ -1,6 +1,6 @@
 import type { RegisteredTypeNode } from '@kinobi-so/node-types';
 
-import { REGISTERED_TYPE_NODE_KINDS } from '../../src/index.js';
+import { REGISTERED_TYPE_NODE_KINDS } from '../../src';
 
 // [DESCRIBE] Registered value node kinds.
 {

@@ -1,23 +1,33 @@
 import { accountValueNode, pdaSeedValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = pdaSeedValueNode('mint', accountValueNode('mint'));
 
-test(mergeVisitorMacro, node, 2);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[pdaSeedValueNode]', null);
-test(deleteNodesVisitorMacro, node, '[accountValueNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 2);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[pdaSeedValueNode]', null);
+    expectDeleteNodesVisitor(node, '[accountValueNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 pdaSeedValueNode [mint]
 |   accountValueNode [mint]`,
-);
+    );
+});

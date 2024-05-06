@@ -1,16 +1,27 @@
 import { programLinkNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = programLinkNode('mplCandyGuard', 'mplCandyMachine');
 
-test(mergeVisitorMacro, node, 1);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[programLinkNode]', null);
-test(getDebugStringVisitorMacro, node, `programLinkNode [mplCandyGuard.from:mplCandyMachine]`);
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 1);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[programLinkNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(node, `programLinkNode [mplCandyGuard.from:mplCandyMachine]`);
+});

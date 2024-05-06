@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { pdaLinkNode } from '../../src/index.js';
+import { pdaLinkNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = pdaLinkNode('associatedToken');
-    t.is(node.kind, 'pdaLinkNode');
+    expect(node.kind).toBe('pdaLinkNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = pdaLinkNode('associatedToken');
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

@@ -1,6 +1,6 @@
 import type { RegisteredContextualValueNode } from '@kinobi-so/node-types';
 
-import { REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS } from '../../src/index.js';
+import { REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS } from '../../src';
 
 // [DESCRIBE] Registered contextual value node kinds.
 {

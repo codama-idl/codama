@@ -1,9 +1,9 @@
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { extendVisitor, visit, voidVisitor } from '../src/index.js';
+import { extendVisitor, visit, voidVisitor } from '../src';
 
-test('it visits all nodes and returns void', t => {
+test('it visits all nodes and returns void', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -20,8 +20,8 @@ test('it visits all nodes and returns void', t => {
     const result = visit(node, visitor);
 
     // Then we expect the counter to match the amount of tuple nodes.
-    t.is(counter, 2);
+    expect(counter).toBe(2);
 
     // And a void result.
-    t.is(result, undefined);
+    expect(result).toBeUndefined();
 });

@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { stringValueNode, structFieldValueNode } from '../../src/index.js';
+import { stringValueNode, structFieldValueNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = structFieldValueNode('name', stringValueNode('Alice'));
-    t.is(node.kind, 'structFieldValueNode');
+    expect(node.kind).toBe('structFieldValueNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = structFieldValueNode('name', stringValueNode('Alice'));
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

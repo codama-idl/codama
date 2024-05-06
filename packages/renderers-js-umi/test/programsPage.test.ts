@@ -1,11 +1,11 @@
 import { programNode } from '@kinobi-so/nodes';
 import { visit } from '@kinobi-so/visitors-core';
-import test from 'ava';
+import { test } from 'vitest';
 
-import { getRenderMapVisitor } from '../src/index.js';
-import { renderMapContains, renderMapContainsImports } from './_setup.js';
+import { getRenderMapVisitor } from '../src';
+import { renderMapContains, renderMapContainsImports } from './_setup';
 
-test('it renders the program address constant', async t => {
+test('it renders the program address constant', async () => {
     // Given the following program.
     const node = programNode({
         name: 'splToken',
@@ -16,12 +16,12 @@ test('it renders the program address constant', async t => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following program address constant.
-    await renderMapContains(t, renderMap, 'programs/splToken.ts', [
+    await renderMapContains(renderMap, 'programs/splToken.ts', [
         "export const SPL_TOKEN_PROGRAM_ID = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as PublicKey<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;",
     ]);
 
     // And we expect the following imports.
-    await renderMapContainsImports(t, renderMap, 'programs/splToken.ts', {
+    await renderMapContainsImports(renderMap, 'programs/splToken.ts', {
         '@metaplex-foundation/umi': ['PublicKey'],
     });
 });

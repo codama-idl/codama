@@ -1,9 +1,9 @@
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { interceptVisitor, visit, voidVisitor } from '../src/index.js';
+import { interceptVisitor, visit, voidVisitor } from '../src';
 
-test('it returns a new visitor that intercepts all visits of a visitor', t => {
+test('it returns a new visitor that intercepts all visits of a visitor', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -20,7 +20,7 @@ test('it returns a new visitor that intercepts all visits of a visitor', t => {
     visit(node, visitor);
 
     // Then we expect the following events to have happened.
-    t.deepEqual(events, [
+    expect(events).toEqual([
         'down:tupleTypeNode',
         'down:numberTypeNode',
         'up:numberTypeNode',
@@ -30,5 +30,5 @@ test('it returns a new visitor that intercepts all visits of a visitor', t => {
     ]);
 
     // And the intercepted visitor is a new instance.
-    t.not(baseVisitor, visitor);
+    expect(baseVisitor).not.toBe(visitor);
 });

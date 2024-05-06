@@ -10,11 +10,11 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { getDebugStringVisitor, visit } from '../src/index.js';
+import { getDebugStringVisitor, visit } from '../src';
 
-test('it returns a string representing the main information of a node for debugging purposes', t => {
+test('it returns a string representing the main information of a node for debugging purposes', () => {
     // Given the following tree.
     const node = tupleTypeNode([
         numberTypeNode('u32'),
@@ -45,13 +45,12 @@ test('it returns a string representing the main information of a node for debugg
     const result = visit(node, getDebugStringVisitor());
 
     // Then we expect the following string.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         'tupleTypeNode(numberTypeNode[u32], structTypeNode(structFieldTypeNode[firstname](sizePrefixTypeNode(numberTypeNode[u64], stringTypeNode[utf8])), structFieldTypeNode[age](numberTypeNode[u32]), structFieldTypeNode[wallet](optionTypeNode(numberTypeNode[u16], publicKeyTypeNode)), structFieldTypeNode[industry](enumTypeNode(numberTypeNode[u8], enumEmptyVariantTypeNode[programming], enumEmptyVariantTypeNode[crypto], enumEmptyVariantTypeNode[music]))))',
     );
 });
 
-test('it can create indented strings', t => {
+test('it can create indented strings', () => {
     // Given the following tree.
     const node = tupleTypeNode([
         numberTypeNode('u32'),
@@ -82,9 +81,7 @@ test('it can create indented strings', t => {
     const result = visit(node, getDebugStringVisitor({ indent: true }));
 
     // Then we expect the following string.
-    t.deepEqual(
-        result,
-        `tupleTypeNode
+    expect(result).toEqual(`tupleTypeNode
 |   numberTypeNode [u32]
 |   structTypeNode
 |   |   structFieldTypeNode [firstname]
@@ -102,6 +99,5 @@ test('it can create indented strings', t => {
 |   |   |   |   numberTypeNode [u8]
 |   |   |   |   enumEmptyVariantTypeNode [programming]
 |   |   |   |   enumEmptyVariantTypeNode [crypto]
-|   |   |   |   enumEmptyVariantTypeNode [music]`,
-    );
+|   |   |   |   enumEmptyVariantTypeNode [music]`);
 });

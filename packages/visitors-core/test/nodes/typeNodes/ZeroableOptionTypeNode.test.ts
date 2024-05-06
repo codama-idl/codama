@@ -1,37 +1,44 @@
 import { constantValueNodeFromBytes, publicKeyTypeNode, zeroableOptionTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = zeroableOptionTypeNode(publicKeyTypeNode(), constantValueNodeFromBytes('base16', 'ff'.repeat(32)));
 
-test(mergeVisitorMacro, node, 5);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[zeroableOptionTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[publicKeyTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[constantValueNode]', zeroableOptionTypeNode(publicKeyTypeNode()));
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 5);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[zeroableOptionTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[constantValueNode]', zeroableOptionTypeNode(publicKeyTypeNode()));
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 zeroableOptionTypeNode
 |   publicKeyTypeNode
 |   constantValueNode
 |   |   bytesTypeNode
 |   |   bytesValueNode [base16.ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff]`,
-);
+    );
 
-// No zero value.
-test(
-    'getDebugStringVisitor: different strategy',
-    getDebugStringVisitorMacro,
-    zeroableOptionTypeNode(publicKeyTypeNode()),
-    `
+    expectDebugStringVisitor(
+        zeroableOptionTypeNode(publicKeyTypeNode()),
+        `
 zeroableOptionTypeNode
 |   publicKeyTypeNode`,
-);
+    );
+});

@@ -1,9 +1,9 @@
 import { definedTypeNode, numberTypeNode, publicKeyTypeNode, TupleTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { NodeStack, pipe, recordNodeStackVisitor, tapVisitor, visit, voidVisitor } from '../src/index.js';
+import { NodeStack, pipe, recordNodeStackVisitor, tapVisitor, visit, voidVisitor } from '../src';
 
-test('it records the current node stack of a visit', t => {
+test('it records the current node stack of a visit', () => {
     // Given the following tree.
     const node = definedTypeNode({
         name: 'myType',
@@ -23,14 +23,14 @@ test('it records the current node stack of a visit', t => {
     visit(node, visitor);
 
     // Then we expect the number stacks to have been recorded.
-    t.is(numberStacks.length, 1);
-    t.deepEqual(numberStacks[0].all(), [node, node.type]);
+    expect(numberStacks.length).toBe(1);
+    expect(numberStacks[0].all()).toEqual([node, node.type]);
 
     // And the current node stack to be empty.
-    t.true(stack.isEmpty());
+    expect(stack.isEmpty()).toBe(true);
 });
 
-test('it includes the current node when applied last', t => {
+test('it includes the current node when applied last', () => {
     // Given the following tree.
     const node = definedTypeNode({
         name: 'myType',
@@ -51,6 +51,6 @@ test('it includes the current node when applied last', t => {
 
     // Then we expect the number stacks to have been recorded
     // such that the number node themselves are included in the stack.
-    t.is(numberStacks.length, 1);
-    t.deepEqual(numberStacks[0].all(), [node, node.type, (node.type as TupleTypeNode).items[0]]);
+    expect(numberStacks.length).toBe(1);
+    expect(numberStacks[0].all()).toEqual([node, node.type, (node.type as TupleTypeNode).items[0]]);
 });

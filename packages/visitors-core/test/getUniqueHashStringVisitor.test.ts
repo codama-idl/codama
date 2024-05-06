@@ -5,11 +5,11 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { getUniqueHashStringVisitor, visit } from '../src/index.js';
+import { getUniqueHashStringVisitor, visit } from '../src';
 
-test('it returns a unique string representing the whole node', t => {
+test('it returns a unique string representing the whole node', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -17,8 +17,7 @@ test('it returns a unique string representing the whole node', t => {
     const result = visit(node, getUniqueHashStringVisitor());
 
     // Then we expect the following string.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         '{"items":[' +
             '{"endian":"le","format":"u32","kind":"numberTypeNode"},' +
             '{"items":[{"endian":"le","format":"u32","kind":"numberTypeNode"},{"kind":"publicKeyTypeNode"}],"kind":"tupleTypeNode"}' +
@@ -26,7 +25,7 @@ test('it returns a unique string representing the whole node', t => {
     );
 });
 
-test('it returns a unique string whilst discard docs', t => {
+test('it returns a unique string whilst discard docs', () => {
     // Given the following tree with docs.
     const node = structTypeNode([
         structFieldTypeNode({
@@ -40,8 +39,7 @@ test('it returns a unique string whilst discard docs', t => {
     const result = visit(node, getUniqueHashStringVisitor({ removeDocs: true }));
 
     // Then we expect the following string.
-    t.deepEqual(
-        result,
+    expect(result).toEqual(
         '{"fields":[' +
             '{"docs":[],"kind":"structFieldTypeNode","name":"owner","type":{"kind":"publicKeyTypeNode"}}' +
             '],"kind":"structTypeNode"}',

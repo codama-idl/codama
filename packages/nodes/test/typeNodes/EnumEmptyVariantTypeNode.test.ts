@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { enumEmptyVariantTypeNode } from '../../src/index.js';
+import { enumEmptyVariantTypeNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = enumEmptyVariantTypeNode('apple');
-    t.is(node.kind, 'enumEmptyVariantTypeNode');
+    expect(node.kind).toBe('enumEmptyVariantTypeNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = enumEmptyVariantTypeNode('apple');
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

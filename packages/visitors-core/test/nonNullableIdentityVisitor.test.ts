@@ -1,9 +1,9 @@
 import { assertIsNode, Node, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { nonNullableIdentityVisitor, visit } from '../src/index.js';
+import { nonNullableIdentityVisitor, visit } from '../src';
 
-test('it visits all nodes and returns different instances of the same nodes without returning null', t => {
+test('it visits all nodes and returns different instances of the same nodes without returning null', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -14,11 +14,11 @@ test('it visits all nodes and returns different instances of the same nodes with
     result satisfies Node;
 
     // And we get the same tree back.
-    t.deepEqual(result, node);
+    expect(result).toEqual(node);
 
     // But the nodes are different instances.
-    t.not(result, node);
+    expect(result).not.toBe(node);
     assertIsNode(result, 'tupleTypeNode');
-    t.not(result.items[0], node.items[0]);
-    t.not(result.items[1], node.items[1]);
+    expect(result.items[0]).not.toBe(node.items[0]);
+    expect(result.items[1]).not.toBe(node.items[1]);
 });

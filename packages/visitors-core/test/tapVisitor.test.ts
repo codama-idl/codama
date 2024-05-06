@@ -1,9 +1,9 @@
 import { NumberTypeNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { mergeVisitor, tapVisitor, visit } from '../src/index.js';
+import { mergeVisitor, tapVisitor, visit } from '../src';
 
-test('it returns a new instance of the same visitor whilst tapping into one of its visits', t => {
+test('it returns a new instance of the same visitor whilst tapping into one of its visits', () => {
     // Given the following tree.
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
@@ -24,11 +24,11 @@ test('it returns a new instance of the same visitor whilst tapping into one of i
     const result = visit(node, tappedVisitor);
 
     // Then we get the expected result.
-    t.is(result, 5);
+    expect(result).toBe(5);
 
     // And the tapped counter is also correct.
-    t.is(numberOfNumberNodes, 2);
+    expect(numberOfNumberNodes).toBe(2);
 
     // And the tapped visitor is a new instance.
-    t.not(visitor, tappedVisitor);
+    expect(visitor).not.toBe(tappedVisitor);
 });

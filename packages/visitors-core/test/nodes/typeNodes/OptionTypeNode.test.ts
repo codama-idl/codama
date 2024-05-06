@@ -1,28 +1,38 @@
 import { numberTypeNode, optionTypeNode, publicKeyTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = optionTypeNode(publicKeyTypeNode(), {
     fixed: true,
     prefix: numberTypeNode('u64'),
 });
 
-test(mergeVisitorMacro, node, 3);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[optionTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[publicKeyTypeNode]', null);
-test(deleteNodesVisitorMacro, node, '[numberTypeNode]', null);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 3);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[optionTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 optionTypeNode [fixed]
 |   numberTypeNode [u64]
 |   publicKeyTypeNode`,
-);
+    );
+});

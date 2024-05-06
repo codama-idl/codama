@@ -42,7 +42,7 @@
         "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs package",
         "build:cli": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs cli",
         "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs browser --watch",
+        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
         "prepublishOnly": "pnpm build",

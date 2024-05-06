@@ -7,7 +7,7 @@ import {
     isNodeFilter,
     REGISTERED_NODE_KINDS,
     removeNullAndAssertIsNodeFilter,
-} from '../src/index.js';
+} from '../src';
 
 // [DESCRIBE] Registered node kinds.
 {

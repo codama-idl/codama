@@ -1,24 +1,25 @@
 import type { KinobiVersion } from '@kinobi-so/node-types';
-import test from 'ava';
+import { expect, expectTypeOf, test } from 'vitest';
 
-import { programNode, rootNode } from '../src/index.js';
+import { programNode, rootNode } from '../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
-    t.is(root.kind, 'rootNode');
+    expect(root.kind).toBe('rootNode');
 });
 
-test('it returns the right Kinobi standard', t => {
+test('it returns the right Kinobi standard', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
-    t.is(root.standard, 'kinobi');
+    expect(root.standard).toBe('kinobi');
 });
 
-test('it returns the right Kinobi version', t => {
+test('it returns the right Kinobi version', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
-    t.is(root.version, __VERSION__ as KinobiVersion);
+    expect(root.version).toBe(__VERSION__);
+    expectTypeOf(root.version).toMatchTypeOf<KinobiVersion>();
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
-    t.true(Object.isFrozen(root));
+    expect(Object.isFrozen(root)).toBe(true);
 });

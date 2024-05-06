@@ -1,9 +1,9 @@
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { mapVisitor, mergeVisitor, staticVisitor, visit, Visitor } from '../src/index.js';
+import { mapVisitor, mergeVisitor, staticVisitor, visit, Visitor } from '../src';
 
-test('it maps the return value of a visitor to another', t => {
+test('it maps the return value of a visitor to another', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -17,12 +17,12 @@ test('it maps the return value of a visitor to another', t => {
     const visitorB = mapVisitor(visitorA, value => value.length);
 
     // Then we expect the following results when visiting different nodes.
-    t.is(visit(node, visitorB), 47);
-    t.is(visit(node.items[0], visitorB), 14);
-    t.is(visit(node.items[1], visitorB), 17);
+    expect(visit(node, visitorB)).toBe(47);
+    expect(visit(node.items[0], visitorB)).toBe(14);
+    expect(visit(node.items[1], visitorB)).toBe(17);
 });
 
-test('it creates partial visitors from partial visitors', t => {
+test('it creates partial visitors from partial visitors', () => {
     // Given the following 3-nodes tree.
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
@@ -38,5 +38,5 @@ test('it creates partial visitors from partial visitors', t => {
 
     // Then we expect an error when visiting an unsupported node.
     // @ts-expect-error PublicKeyTypeNode is not supported.
-    t.throws(() => visit(node.items[1], visitorB));
+    expect(() => visit(node.items[1], visitorB)).toThrow();
 });

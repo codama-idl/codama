@@ -10,7 +10,7 @@ import {
     StringTypeNode,
     stringTypeNode,
     transformNestedTypeNode,
-} from '../../src/index.js';
+} from '../../src';
 
 // [DESCRIBE] NestedTypeNode.
 {

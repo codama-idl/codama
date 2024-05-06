@@ -1,12 +1,12 @@
 import { instructionArgumentNode, numberTypeNode, numberValueNode } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from './_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from './_setup';
 
 const node = instructionArgumentNode({
     defaultValue: numberValueNode(1),
@@ -14,21 +14,30 @@ const node = instructionArgumentNode({
     type: numberTypeNode('u64'),
 });
 
-test(mergeVisitorMacro, node, 3);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[instructionArgumentNode]', null);
-test(deleteNodesVisitorMacro, node, '[numberTypeNode]', null);
-test(
-    deleteNodesVisitorMacro,
-    node,
-    '[numberValueNode]',
-    instructionArgumentNode({ name: 'amount', type: numberTypeNode('u64') }),
-);
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 3);
+});
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[instructionArgumentNode]', null);
+    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(
+        node,
+        '[numberValueNode]',
+        instructionArgumentNode({ name: 'amount', type: numberTypeNode('u64') }),
+    );
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 instructionArgumentNode [amount]
 |   numberTypeNode [u64]
 |   numberValueNode [1]`,
-);
+    );
+});

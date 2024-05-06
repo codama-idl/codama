@@ -10,14 +10,14 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@kinobi-so/nodes';
-import test from 'ava';
+import { test } from 'vitest';
 
 import {
-    deleteNodesVisitorMacro,
-    getDebugStringVisitorMacro,
-    identityVisitorMacro,
-    mergeVisitorMacro,
-} from '../_setup.js';
+    expectDebugStringVisitor,
+    expectDeleteNodesVisitor,
+    expectIdentityVisitor,
+    expectMergeVisitorCount,
+} from '../_setup';
 
 const node = enumTypeNode(
     [
@@ -34,23 +34,35 @@ const node = enumTypeNode(
     { size: numberTypeNode('u64') },
 );
 
-test(mergeVisitorMacro, node, 13);
-test(identityVisitorMacro, node);
-test(deleteNodesVisitorMacro, node, '[enumTypeNode]', null);
-test(
-    deleteNodesVisitorMacro,
-    node,
-    ['[enumEmptyVariantTypeNode]', '[enumTupleVariantTypeNode]', '[enumStructVariantTypeNode]'],
-    { ...node, variants: [] },
-);
-test(deleteNodesVisitorMacro, node, ['[tupleTypeNode]', '[structFieldTypeNode]'], {
-    ...node,
-    variants: [enumEmptyVariantTypeNode('quit'), enumEmptyVariantTypeNode('write'), enumEmptyVariantTypeNode('move')],
+test('mergeVisitor', () => {
+    expectMergeVisitorCount(node, 13);
 });
-test(
-    getDebugStringVisitorMacro,
-    node,
-    `
+
+test('identityVisitor', () => {
+    expectIdentityVisitor(node);
+});
+
+test('deleteNodesVisitor', () => {
+    expectDeleteNodesVisitor(node, '[enumTypeNode]', null);
+    expectDeleteNodesVisitor(
+        node,
+        ['[enumEmptyVariantTypeNode]', '[enumTupleVariantTypeNode]', '[enumStructVariantTypeNode]'],
+        { ...node, variants: [] },
+    );
+    expectDeleteNodesVisitor(node, ['[tupleTypeNode]', '[structFieldTypeNode]'], {
+        ...node,
+        variants: [
+            enumEmptyVariantTypeNode('quit'),
+            enumEmptyVariantTypeNode('write'),
+            enumEmptyVariantTypeNode('move'),
+        ],
+    });
+});
+
+test('debugStringVisitor', () => {
+    expectDebugStringVisitor(
+        node,
+        `
 enumTypeNode
 |   numberTypeNode [u64]
 |   enumEmptyVariantTypeNode [quit]
@@ -64,4 +76,5 @@ enumTypeNode
 |   |   |   |   numberTypeNode [u32]
 |   |   |   structFieldTypeNode [y]
 |   |   |   |   numberTypeNode [u32]`,
-);
+    );
+});

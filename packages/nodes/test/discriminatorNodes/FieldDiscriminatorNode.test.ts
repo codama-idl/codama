@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { fieldDiscriminatorNode } from '../../src/index.js';
+import { fieldDiscriminatorNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = fieldDiscriminatorNode('discriminator');
-    t.is(node.kind, 'fieldDiscriminatorNode');
+    expect(node.kind).toBe('fieldDiscriminatorNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = fieldDiscriminatorNode('discriminator');
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });

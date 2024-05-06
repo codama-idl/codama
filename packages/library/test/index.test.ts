@@ -1,7 +1,11 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { rootNode } from '../src/index.js';
+import { identityVisitor, rootNode } from '../src';
 
-test('it exports node helpers', t => {
-    t.is(typeof rootNode, 'function');
+test('it exports node helpers', () => {
+    expect(typeof rootNode).toBe('function');
+});
+
+test('it exports visitors', () => {
+    expect(typeof identityVisitor).toBe('function');
 });

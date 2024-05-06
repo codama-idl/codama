@@ -1,13 +1,13 @@
-import test from 'ava';
+import { expect, test } from 'vitest';
 
-import { programLinkNode } from '../../src/index.js';
+import { programLinkNode } from '../../src';
 
-test('it returns the right node kind', t => {
+test('it returns the right node kind', () => {
     const node = programLinkNode('system');
-    t.is(node.kind, 'programLinkNode');
+    expect(node.kind).toBe('programLinkNode');
 });
 
-test('it returns a frozen object', t => {
+test('it returns a frozen object', () => {
     const node = programLinkNode('system');
-    t.true(Object.isFrozen(node));
+    expect(Object.isFrozen(node)).toBe(true);
 });
