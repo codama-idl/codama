@@ -94,8 +94,7 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
 
     // Struct.
     if ('kind' in idlType && 'fields' in idlType && idlType.kind === 'struct') {
-        // TODO: bug here where struct type field is getting handled as a tuple if it has 2 fields
-        if (isArrayOfSize(idlType.fields, 2)) {
+        if (isArrayOfSize(idlType.fields, 2) && idlType.fields?.every(field => typeof field === 'string')) {
             return tupleTypeNodeFromAnchorV01(idlType.fields as IdlV01DefinedFieldsTuple);
         }
 

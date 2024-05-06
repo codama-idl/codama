@@ -1,14 +1,19 @@
 import {
     accountNode,
     bytesTypeNode,
+    constantPdaSeedNode,
     definedTypeNode,
     errorNode,
     fieldDiscriminatorNode,
+    instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
+    pdaNode,
     programNode,
+    publicKeyTypeNode,
     structFieldTypeNode,
     structTypeNode,
+    variablePdaSeedNode,
 } from '@kinobi-so/nodes';
 import test from 'ava';
 
@@ -20,10 +25,25 @@ test('it creates program nodes', t => {
         address: '1111',
         errors: [{ code: 42, msg: 'my error message', name: 'myError' }],
         instructions: [
-            { accounts: [], args: [], discriminator: [246, 28, 6, 87, 251, 45, 50, 42], name: 'myInstruction' },
+            {
+                accounts: [
+                    {
+                        name: 'authority',
+                        pda: {
+                            seeds: [
+                                { kind: 'const', value: [42, 31, 29] },
+                                { kind: 'account', path: 'owner' },
+                            ],
+                        },
+                    },
+                ],
+                args: [],
+                discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+                name: 'myInstruction',
+            },
         ],
         metadata: { name: 'myProgram', spec: '0.1.0', version: '1.2.3' },
-        types: [{ name: 'myType', type: { fields: [], kind: 'struct' } }],
+        types: [{ name: 'MyAccount', type: { fields: [], kind: 'struct' } }],
     });
 
     t.deepEqual(
@@ -43,7 +63,7 @@ test('it creates program nodes', t => {
                     name: 'myAccount',
                 }),
             ],
-            definedTypes: [definedTypeNode({ name: 'myType', type: structTypeNode([]) })],
+            definedTypes: [definedTypeNode({ name: 'myAccount', type: structTypeNode([]) })],
             errors: [
                 errorNode({
                     code: 42,
@@ -54,6 +74,13 @@ test('it creates program nodes', t => {
             ],
             instructions: [
                 instructionNode({
+                    accounts: [
+                        instructionAccountNode({
+                            isSigner: false,
+                            isWritable: false,
+                            name: 'authority',
+                        }),
+                    ],
                     arguments: [
                         instructionArgumentNode({
                             defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
@@ -68,7 +95,15 @@ test('it creates program nodes', t => {
             ],
             name: 'myProgram',
             origin: 'anchor',
-            pdas: [],
+            pdas: [
+                pdaNode({
+                    name: 'authority',
+                    seeds: [
+                        constantPdaSeedNode(bytesTypeNode(), getAnchorDiscriminatorV01([42, 31, 29])),
+                        variablePdaSeedNode('owner', publicKeyTypeNode()),
+                    ],
+                }),
+            ],
             publicKey: '1111',
             version: '1.2.3',
         }),
