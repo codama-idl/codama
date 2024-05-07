@@ -3,7 +3,6 @@ export * from '@kinobi-so/visitors-core';
 export * from './addPdasVisitor';
 export * from './createSubInstructionsFromEnumArgsVisitor';
 export * from './deduplicateIdenticalDefinedTypesVisitor';
-export * from './defaultVisitor';
 export * from './fillDefaultPdaSeedValuesVisitor';
 export * from './flattenInstructionDataArgumentsVisitor';
 export * from './flattenStructVisitor';

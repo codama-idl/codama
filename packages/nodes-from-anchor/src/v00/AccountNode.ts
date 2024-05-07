@@ -12,7 +12,7 @@ import {
     structTypeNode,
 } from '@kinobi-so/nodes';
 
-import { getAnchorAccountDiscriminator } from '../discriminators';
+import { getAnchorAccountDiscriminatorV00 } from '../discriminators';
 import { IdlV00AccountDef } from './idl';
 import { structTypeNodeFromAnchorV00 } from './typeNodes';
 
@@ -31,7 +31,7 @@ export function accountNodeFromAnchorV00(
     let discriminators: DiscriminatorNode[] | undefined;
     if (origin === 'anchor') {
         const discriminator = structFieldTypeNode({
-            defaultValue: getAnchorAccountDiscriminator(idlName),
+            defaultValue: getAnchorAccountDiscriminatorV00(idlName),
             defaultValueStrategy: 'omitted',
             name: 'discriminator',
             type: bytesTypeNode(),

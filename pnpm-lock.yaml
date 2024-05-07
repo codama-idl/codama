@@ -127,6 +127,9 @@ importers:
       '@kinobi-so/nodes':
         specifier: workspace:*
         version: link:../nodes
+      '@kinobi-so/visitors':
+        specifier: workspace:*
+        version: link:../visitors
       '@noble/hashes':
         specifier: ^1.4.0
         version: 1.4.0

@@ -19,12 +19,13 @@ import {
 } from '@kinobi-so/node-types';
 
 import {
+    KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
     KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
-    KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
+    KINOBI_ERROR__VERSION_MISMATCH,
     KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
     KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
@@ -49,6 +50,9 @@ type DefaultUnspecifiedErrorContextToUndefined<T> = {
  *   - Don't change or remove members of an error's context.
  */
 export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
+    [KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: {
+        idlType: string;
+    };
     [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: {
         kind: LinkNode['kind'];
         linkNode: LinkNode;
@@ -67,11 +71,12 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         kind: NodeKind | null;
         node: Node | null | undefined;
     };
-    [KINOBI_ERROR__UNRECOGNIZED_ANCHOR_IDL_TYPE]: {
-        idlType: string;
-    };
     [KINOBI_ERROR__UNRECOGNIZED_NODE_KIND]: {
         kind: string;
+    };
+    [KINOBI_ERROR__VERSION_MISMATCH]: {
+        kinobiVersion: string;
+        rootVersion: string;
     };
     [KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: {
         account: AccountNode;
