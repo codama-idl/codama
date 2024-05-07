@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/errors",
-    "version": "0.20.0",
+    "version": "0.20.1",
     "description": "Error management for Kinobi",
     "exports": {
         "types": "./dist/types/index.d.ts",

@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/renderers-rust",
-    "version": "0.20.0",
+    "version": "0.20.1",
     "description": "Renders Rust clients for your programs",
     "exports": {
         "types": "./dist/types/index.d.ts",
