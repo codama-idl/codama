@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "kinobi-so/kinobi" }
+  ],
+  "commit": false,
+  "fixed": [
+        [
+            "kinobi",
+            "@kinobi-so/errors",
+            "@kinobi-so/node-types",
+            "@kinobi-so/nodes",
+            "@kinobi-so/validators",
+            "@kinobi-so/visitors*"
+        ]
+    ],
+  "linked": [],
+  "ignore": ["@kinobi-so/internals"],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch"
+}
