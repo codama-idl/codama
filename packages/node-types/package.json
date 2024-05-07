@@ -40,7 +40,6 @@
         "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
         "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
-        "prepublishOnly": "pnpm build",
         "test": "pnpm test:types && pnpm test:treeshakability",
         "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"

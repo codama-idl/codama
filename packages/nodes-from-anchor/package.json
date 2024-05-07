@@ -41,7 +41,6 @@
         "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
-        "prepublishOnly": "pnpm build",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:browser && pnpm test:node && pnpm test:react-native",
         "test:browser": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs browser",
         "test:node": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node",
