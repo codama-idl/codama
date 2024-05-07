@@ -1,15 +1,16 @@
 import { assertIsNode, Node, RootNode } from '@kinobi-so/nodes';
-import { rootNodeVisitor, visit, Visitor } from '@kinobi-so/visitors-core';
-
-import { deduplicateIdenticalDefinedTypesVisitor } from './deduplicateIdenticalDefinedTypesVisitor';
-import { flattenInstructionDataArgumentsVisitor } from './flattenInstructionDataArgumentsVisitor';
-import { setFixedAccountSizesVisitor } from './setFixedAccountSizesVisitor';
 import {
+    deduplicateIdenticalDefinedTypesVisitor,
+    flattenInstructionDataArgumentsVisitor,
     getCommonInstructionAccountDefaultRules,
+    rootNodeVisitor,
+    setFixedAccountSizesVisitor,
     setInstructionAccountDefaultValuesVisitor,
-} from './setInstructionAccountDefaultValuesVisitor';
-import { transformU8ArraysToBytesVisitor } from './transformU8ArraysToBytesVisitor';
-import { unwrapInstructionArgsDefinedTypesVisitor } from './unwrapInstructionArgsDefinedTypesVisitor';
+    transformU8ArraysToBytesVisitor,
+    unwrapInstructionArgsDefinedTypesVisitor,
+    visit,
+    Visitor,
+} from '@kinobi-so/visitors';
 
 export function defaultVisitor() {
     return rootNodeVisitor(currentRoot => {
