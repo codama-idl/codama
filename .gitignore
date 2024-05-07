@@ -22,3 +22,4 @@ yarn-error.log*
 .solana/
 test-ledger/
 target/
+CHANGELOG.md
