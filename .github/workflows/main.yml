@@ -72,6 +72,7 @@ jobs:
     needs: [lint, tests]
     permissions:
       contents: write
+      pull-requests: write
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
