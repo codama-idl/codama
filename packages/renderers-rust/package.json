@@ -34,8 +34,9 @@
         "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e && pnpm test:exports",
         "test:e2e": "./e2e/test.sh",
+        "test:exports": "node ./test/exports/module.mjs && node ./test/exports/commonjs.cjs",
         "test:node": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node",
         "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
