@@ -92,7 +92,7 @@ jobs:
         with:
           commit: 'Publish packages'
           title: 'Publish packages'
-          publish: ./node_modules/.bin/changeset publish
+          publish: pnpm publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
