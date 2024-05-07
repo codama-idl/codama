@@ -52,6 +52,7 @@
     "dependencies": {
         "@kinobi-so/errors": "workspace:*",
         "@kinobi-so/nodes": "workspace:*",
+        "@kinobi-so/visitors": "workspace:*",
         "@noble/hashes": "^1.4.0"
     },
     "license": "MIT",

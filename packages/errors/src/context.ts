@@ -25,6 +25,7 @@ import {
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
+    KINOBI_ERROR__VERSION_MISMATCH,
     KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
     KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
@@ -72,6 +73,10 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [KINOBI_ERROR__UNRECOGNIZED_NODE_KIND]: {
         kind: string;
+    };
+    [KINOBI_ERROR__VERSION_MISMATCH]: {
+        kinobiVersion: string;
+        rootVersion: string;
     };
     [KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: {
         account: AccountNode;
