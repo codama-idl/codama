@@ -70,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: [lint, tests]
+    permissions:
+      contents: write
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
