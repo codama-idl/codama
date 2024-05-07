@@ -92,7 +92,7 @@ jobs:
         with:
           commit: 'Publish packages'
           title: 'Publish packages'
-          publish: pnpm publish
+          publish: pnpm publish-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

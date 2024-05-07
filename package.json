@@ -1,6 +1,4 @@
 {
-    "name": "@kinobi-so/monorepo",
-    "version": "0.0.0",
     "private": true,
     "workspaces": [
         "packages/*"
@@ -10,7 +8,7 @@
         "lint": "turbo run lint --log-order grouped",
         "lint:fix": "turbo lint:fix --log-order grouped && pnpm prettier --log-level warn --ignore-unknown --write '{.,!packages}/*'",
         "test": "turbo run test --log-order grouped",
-        "publish": "pnpm build && changesets publish"
+        "publish-packages": "pnpm build && changesets publish"
     },
     "devDependencies": {
         "@changesets/changelog-github": "^0.5.0",
