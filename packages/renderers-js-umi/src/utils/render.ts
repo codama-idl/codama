@@ -13,7 +13,7 @@ export function jsDocblock(docs: string[]): string {
 
 export const render = (template: string, context?: object, options?: NunJucksOptions): string => {
     // @ts-expect-error import.meta will be used in the right environment.
-    const dirname = typeof __dirname !== 'undefined' ? __dirname : pathDirname(fileURLToPath(import.meta.url));
+    const dirname = __ESM__ ? pathDirname(fileURLToPath(import.meta.url)) : __dirname;
     const templates = __TEST__ ? join(dirname, '..', '..', 'public', 'templates') : join(dirname, 'templates'); // Path to templates from bundled output file.
     const env = nunjucks.configure(templates, { autoescape: false, trimBlocks: true, ...options });
     env.addFilter('pascalCase', pascalCase);

@@ -9,6 +9,7 @@ export function getVitestConfig(platform: Platform) {
         define: {
             __BROWSER__: `${platform === 'browser'}`,
             __DEV__: 'true',
+            __ESM__: 'true',
             __NODEJS__: `${platform === 'node'}`,
             __REACTNATIVE__: `${platform === 'react-native'}`,
             __TEST__: 'true',

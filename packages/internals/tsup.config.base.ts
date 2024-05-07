@@ -18,6 +18,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
     return {
         define: {
             __BROWSER__: `${platform === 'browser'}`,
+            __ESM__: `${format === 'esm'}`,
             __NODEJS__: `${platform === 'node'}`,
             __REACTNATIVE__: `${platform === 'react-native'}`,
             __TEST__: 'false',
