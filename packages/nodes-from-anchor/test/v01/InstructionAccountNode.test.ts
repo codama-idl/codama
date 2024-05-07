@@ -1,7 +1,7 @@
 import { instructionAccountNode, publicKeyValueNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV01 } from '../../src/index.js';
+import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV01 } from '../../src';
 
 test('it creates instruction account nodes', () => {
     const node = instructionAccountNodeFromAnchorV01({

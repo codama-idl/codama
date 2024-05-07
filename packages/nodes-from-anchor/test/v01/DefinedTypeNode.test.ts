@@ -1,7 +1,7 @@
 import { definedTypeNode, numberTypeNode, structFieldTypeNode, structTypeNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { definedTypeNodeFromAnchorV01 } from '../../src/index.js';
+import { definedTypeNodeFromAnchorV01 } from '../../src';
 
 test('it creates defined type nodes', () => {
     const node = definedTypeNodeFromAnchorV01({

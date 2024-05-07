@@ -11,12 +11,14 @@ import {
 } from '@kinobi-so/nodes';
 
 import {
+    IdlV01DefinedFields,
+    IdlV01DefinedFieldsNamed,
     IdlV01DefinedFieldsTuple,
+    IdlV01Field,
     IdlV01Type,
     IdlV01TypeCOption,
     IdlV01TypeDefTy,
     IdlV01TypeDefTyEnum,
-    IdlV01TypeDefTyStruct,
     IdlV01TypeOption,
 } from '../idl';
 import { arrayTypeNodeFromAnchorV01 } from './ArrayTypeNode';
@@ -92,13 +94,15 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
         return optionTypeNodeFromAnchorV01(idlType as IdlV01TypeCOption);
     }
 
-    // Struct.
-    if ('kind' in idlType && 'fields' in idlType && idlType.kind === 'struct') {
-        if (isArrayOfSize(idlType.fields, 2) && idlType.fields?.every(field => typeof field === 'string')) {
-            return tupleTypeNodeFromAnchorV01(idlType.fields as IdlV01DefinedFieldsTuple);
+    // Struct and Tuple.
+    if ('kind' in idlType && idlType.kind === 'struct' && 'fields' in idlType) {
+        const fields = idlType.fields ?? [];
+        if (isStructFieldArray(fields)) {
+            return structTypeNodeFromAnchorV01(idlType);
         }
-
-        return structTypeNodeFromAnchorV01(idlType as IdlV01TypeDefTyStruct);
+        if (isTupleFieldArray(fields)) {
+            return tupleTypeNodeFromAnchorV01(fields);
+        }
     }
 
     throw new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
@@ -109,4 +113,16 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isArrayOfSize(array: any, size: number): boolean {
     return Array.isArray(array) && array.length === size;
+}
+
+function isStructFieldArray(field: IdlV01DefinedFields): field is IdlV01DefinedFieldsNamed {
+    return field.every(isStructField);
+}
+
+function isTupleFieldArray(field: IdlV01DefinedFields): field is IdlV01DefinedFieldsTuple {
+    return field.every(f => !isStructField(f));
+}
+
+function isStructField(field: IdlV01Field | IdlV01Type): field is IdlV01Field {
+    return typeof field === 'object' && 'name' in field && 'type' in field;
 }

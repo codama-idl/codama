@@ -17,7 +17,7 @@ import {
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { getAnchorDiscriminatorV01, programNodeFromAnchorV01 } from '../../src/index.js';
+import { getAnchorDiscriminatorV01, programNodeFromAnchorV01 } from '../../src';
 
 test('it creates program nodes', () => {
     const node = programNodeFromAnchorV01({

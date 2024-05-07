@@ -8,7 +8,7 @@ import {
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { accountNodeFromAnchorV01, getAnchorDiscriminatorV01 } from '../../src/index.js';
+import { accountNodeFromAnchorV01, getAnchorDiscriminatorV01 } from '../../src';
 
 test('it creates account nodes with anchor discriminators', () => {
     const node = accountNodeFromAnchorV01(

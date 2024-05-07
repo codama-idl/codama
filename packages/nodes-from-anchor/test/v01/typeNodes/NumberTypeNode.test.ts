@@ -1,7 +1,7 @@
 import { numberTypeNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV01 } from '../../../src/index.js';
+import { typeNodeFromAnchorV01 } from '../../../src';
 
 test('it creates number type nodes', () => {
     expect(typeNodeFromAnchorV01('f32')).toEqual(numberTypeNode('f32'));

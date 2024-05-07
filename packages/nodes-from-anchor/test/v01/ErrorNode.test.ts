@@ -1,7 +1,7 @@
 import { errorNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { errorNodeFromAnchorV01 } from '../../src/index.js';
+import { errorNodeFromAnchorV01 } from '../../src';
 
 test('it creates error nodes', () => {
     const node = errorNodeFromAnchorV01({

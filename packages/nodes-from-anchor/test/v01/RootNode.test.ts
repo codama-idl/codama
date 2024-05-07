@@ -1,7 +1,7 @@
 import { programNode, rootNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { rootNodeFromAnchorV01 } from '../../src/index.js';
+import { rootNodeFromAnchorV01 } from '../../src';
 
 test('it creates root nodes', () => {
     const node = rootNodeFromAnchorV01({

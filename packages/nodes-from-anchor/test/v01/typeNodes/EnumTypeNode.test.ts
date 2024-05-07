@@ -11,7 +11,7 @@ import {
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV01 } from '../../../src/index.js';
+import { typeNodeFromAnchorV01 } from '../../../src';
 
 test('it creates enum type nodes', () => {
     const node = typeNodeFromAnchorV01({

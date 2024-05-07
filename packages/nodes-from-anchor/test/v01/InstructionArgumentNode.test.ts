@@ -1,7 +1,7 @@
 import { instructionArgumentNode, numberTypeNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { instructionArgumentNodeFromAnchorV01 } from '../../src/index.js';
+import { instructionArgumentNodeFromAnchorV01 } from '../../src';
 
 test('it creates instruction argument nodes', () => {
     const node = instructionArgumentNodeFromAnchorV01({

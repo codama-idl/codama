@@ -8,8 +8,7 @@ import {
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { instructionNodeFromAnchorV01 } from '../../src/index.js';
-import { getAnchorDiscriminatorV01 } from '../../src/index.js';
+import { getAnchorDiscriminatorV01, instructionNodeFromAnchorV01 } from '../../src';
 
 test('it creates instruction nodes', () => {
     const node = instructionNodeFromAnchorV01({

@@ -1,7 +1,7 @@
 import { bytesTypeNode, constantPdaSeedNode, pdaNode, publicKeyTypeNode, variablePdaSeedNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { getAnchorDiscriminatorV01, pdaNodeFromAnchorV01 } from '../../src/index.js';
+import { getAnchorDiscriminatorV01, pdaNodeFromAnchorV01 } from '../../src';
 
 test('it creates PDA nodes', () => {
     const node = pdaNodeFromAnchorV01({

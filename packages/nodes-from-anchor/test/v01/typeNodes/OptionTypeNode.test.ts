@@ -1,7 +1,7 @@
 import { numberTypeNode, optionTypeNode } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV01 } from '../../../src/index.js';
+import { typeNodeFromAnchorV01 } from '../../../src';
 
 test('it creates option type nodes', () => {
     expect(typeNodeFromAnchorV01({ option: 'u8' })).toEqual(optionTypeNode(numberTypeNode('u8')));
