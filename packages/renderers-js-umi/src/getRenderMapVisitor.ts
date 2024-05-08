@@ -213,12 +213,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                         }
                         const seedManifest = visit(seed.type, typeManifestVisitor);
                         imports.mergeWith(seedManifest.serializerImports);
-                        const seedValue = seed.value;
-                        const valueManifest = visit(seedValue, typeManifestVisitor);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (seedValue as any).render = valueManifest.value;
+                        const valueManifest = visit(seed.value, typeManifestVisitor);
                         imports.mergeWith(valueManifest.valueImports);
-                        return { ...seed, typeManifest: seedManifest };
+                        return { ...seed, typeManifest: seedManifest, valueManifest };
                     });
                     if (seeds.length > 0) {
                         imports.add('umi', ['Pda']);

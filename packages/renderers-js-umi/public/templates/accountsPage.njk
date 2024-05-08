@@ -103,7 +103,7 @@ export function find{{ account.name | pascalCase }}Pda(
       {% if seed.kind === 'constantPdaSeedNode' and seed.value.kind === 'programIdValueNode' %}
         publicKeySerializer().serialize(programId),
       {% elif seed.kind === 'constantPdaSeedNode' %}
-        {{ seed.typeManifest.serializer }}.serialize({{ seed.value.render }}),
+        {{ seed.typeManifest.serializer }}.serialize({{ seed.valueManifest.render }}),
       {% else %}
         {{ seed.typeManifest.serializer }}.serialize(seeds.{{ seed.name | camelCase }}),
       {% endif %}

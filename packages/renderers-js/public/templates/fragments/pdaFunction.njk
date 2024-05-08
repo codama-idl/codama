@@ -23,7 +23,7 @@ export async function {{ findPdaFunction }}(
       {% if seed.kind === 'constantPdaSeedNode' and seed.value.kind === 'programIdValueNode' %}
         getAddressEncoder().encode(programAddress),
       {% elif seed.kind === 'constantPdaSeedNode' %}
-        {{ seed.typeManifest.encoder.render }}.encode({{ seed.value.render }}),
+        {{ seed.typeManifest.encoder.render }}.encode({{ seed.valueManifest.render }}),
       {% else %}
         {{ seed.typeManifest.encoder.render }}.encode(seeds.{{ seed.name | camelCase }}),
       {% endif %}
