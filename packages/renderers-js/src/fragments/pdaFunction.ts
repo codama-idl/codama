@@ -27,12 +27,9 @@ export function getPdaFunctionFragment(
         }
         const seedManifest = visit(seed.type, typeManifestVisitor);
         imports.mergeWith(seedManifest.encoder);
-        const seedValue = seed.value;
-        const valueManifest = visit(seedValue, typeManifestVisitor).value;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (seedValue as any).render = valueManifest.render;
+        const valueManifest = visit(seed.value, typeManifestVisitor).value;
         imports.mergeWith(valueManifest.imports);
-        return { ...seed, typeManifest: seedManifest };
+        return { ...seed, typeManifest: seedManifest, valueManifest };
     });
     const hasVariableSeeds = pdaNode.seeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
 

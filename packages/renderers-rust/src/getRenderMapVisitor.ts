@@ -68,13 +68,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             return seed;
                         }
                         const seedManifest = visit(seed.type, typeManifestVisitor);
-                        const seedValue = seed.value;
-                        const valueManifest = renderValueNode(seedValue, true);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (seedValue as any).render = valueManifest.render;
+                        const valueManifest = renderValueNode(seed.value, true);
                         seedsImports.mergeWith(valueManifest.imports);
                         const resolvedType = resolveNestedTypeNode(seed.type);
-                        return { ...seed, resolvedType, typeManifest: seedManifest };
+                        return { ...seed, resolvedType, typeManifest: seedManifest, valueManifest };
                     });
                     const hasVariableSeeds = pdaSeeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
                     const constantSeeds = pdaSeeds
