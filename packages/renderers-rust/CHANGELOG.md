@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-rust
 
+## 0.20.3
+
+### Patch Changes
+
+- [#25](https://github.com/kinobi-so/kinobi/pull/25) [`2382631`](https://github.com/kinobi-so/kinobi/commit/238263129b61df67f010b47cd9229b2662eaccb2) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix generated PDA prefix
+
 ## 0.20.2
 
 ### Patch Changes
