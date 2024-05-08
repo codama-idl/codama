@@ -74,7 +74,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         return { ...seed, resolvedType, typeManifest: seedManifest, valueManifest };
                     });
                     const hasVariableSeeds = pdaSeeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
-                    const constantSeeds = pdaSeeds
+                    const constantSeeds = seeds
                         .filter(isNodeFilter('constantPdaSeedNode'))
                         .filter(seed => !isNode(seed.value, 'programIdValueNode'));
 
