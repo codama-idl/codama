@@ -42,6 +42,23 @@ export function getInstructionFunctionFragment(
     const hasLegacyOptionalAccounts =
         instructionNode.optionalAccountStrategy === 'omitted' &&
         instructionNode.accounts.some(account => account.isOptional);
+    const instructionDependencies = getInstructionDependencies(instructionNode, asyncResolvers, useAsync);
+    const argDependencies = instructionDependencies.filter(isNodeFilter('argumentValueNode')).map(node => node.name);
+    console.log({ argDependencies });
+    const hasData = !!customData || instructionNode.arguments.length > 0;
+    const hasDataArgs =
+        !!customData ||
+        instructionNode.arguments.filter(field => !field.defaultValue || field.defaultValueStrategy !== 'omitted')
+            .length > 0;
+    const hasExtraArgs =
+        (instructionNode.extraArguments ?? []).filter(
+            field =>
+                (!field.defaultValue || field.defaultValueStrategy !== 'omitted') &&
+                argDependencies.includes(field.name),
+        ).length > 0;
+    const hasRemainingAccountArgs =
+        (instructionNode.remainingAccounts ?? []).filter(({ value }) => isNode(value, 'argumentValueNode')).length > 0;
+    const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     const encoderFunction = customData
@@ -83,24 +100,6 @@ export function getInstructionFunctionFragment(
         }
         return useAsync ? `Promise<${returnType}>` : returnType;
     };
-
-    const instructionDependencies = getInstructionDependencies(instructionNode, asyncResolvers, useAsync);
-    const argDependencies = instructionDependencies.filter(isNodeFilter('argumentValueNode')).map(node => node.name);
-    console.log(argDependencies);
-    const hasData = !!customData || instructionNode.arguments.length > 0;
-    const hasDataArgs =
-        !!customData ||
-        instructionNode.arguments.filter(field => !field.defaultValue || field.defaultValueStrategy !== 'omitted')
-            .length > 0;
-    const hasExtraArgs =
-        (instructionNode.extraArguments ?? []).filter(
-            field =>
-                (!field.defaultValue || field.defaultValueStrategy !== 'omitted') &&
-                argDependencies.includes(field.name),
-        ).length > 0;
-    const hasRemainingAccountArgs =
-        (instructionNode.remainingAccounts ?? []).filter(({ value }) => isNode(value, 'argumentValueNode')).length > 0;
-    const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
 
     const functionFragment = fragmentFromTemplate('instructionFunction.njk', {
         argsTypeFragment,
