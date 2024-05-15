@@ -1,4 +1,5 @@
 import {
+    argumentValueNode,
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
@@ -9,7 +10,41 @@ import { visit } from '@kinobi-so/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
-import { codeContains, codeDoesNotContain } from './_setup';
+import { codeContains, codeDoesNotContain, renderMapContains } from './_setup';
+
+test('it renders extra arguments that default on each other', async () => {
+    // Given the following instruction with two extra arguments
+    // such that one defaults to the other.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                extraArguments: [
+                    instructionArgumentNode({
+                        defaultValue: argumentValueNode('bar'),
+                        name: 'foo',
+                        type: numberTypeNode('u64'),
+                    }),
+                    instructionArgumentNode({
+                        name: 'bar',
+                        type: numberTypeNode('u64'),
+                    }),
+                ],
+                name: 'create',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following code to be rendered.
+    await renderMapContains(renderMap, 'instructions/create.ts', [
+        'const args = { ...input }',
+        'if (!args.foo) { args.foo = expectSome(args.bar); }',
+    ]);
+});
 
 test('it only renders the args variable on the async function if the sync function does not need it', async () => {
     // Given the following instruction with an async resolver and an extra argument.

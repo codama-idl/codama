@@ -1,5 +1,15 @@
-import { InstructionInputValueNode, InstructionNode, isNode } from '@kinobi-so/nodes';
-import { ResolvedInstructionInput } from '@kinobi-so/visitors-core';
+import {
+    AccountValueNode,
+    accountValueNode,
+    ArgumentValueNode,
+    CamelCaseString,
+    InstructionAccountNode,
+    InstructionArgumentNode,
+    InstructionInputValueNode,
+    InstructionNode,
+    isNode,
+} from '@kinobi-so/nodes';
+import { deduplicateInstructionDependencies, ResolvedInstructionInput } from '@kinobi-so/visitors-core';
 
 export function hasAsyncFunction(
     instructionNode: InstructionNode,
@@ -37,4 +47,57 @@ export function isAsyncDefaultValue(defaultValue: InstructionInputValueNode, asy
         default:
             return false;
     }
+}
+
+export function getInstructionDependencies(
+    input: InstructionAccountNode | InstructionArgumentNode | InstructionNode,
+    asyncResolvers: string[],
+    useAsync: boolean,
+): (AccountValueNode | ArgumentValueNode)[] {
+    if (isNode(input, 'instructionNode')) {
+        return deduplicateInstructionDependencies([
+            ...input.accounts.flatMap(x => getInstructionDependencies(x, asyncResolvers, useAsync)),
+            ...input.arguments.flatMap(x => getInstructionDependencies(x, asyncResolvers, useAsync)),
+            ...(input.extraArguments ?? []).flatMap(x => getInstructionDependencies(x, asyncResolvers, useAsync)),
+        ]);
+    }
+
+    if (!input.defaultValue) return [];
+
+    const getNestedDependencies = (
+        defaultValue: InstructionInputValueNode | undefined,
+    ): (AccountValueNode | ArgumentValueNode)[] => {
+        if (!defaultValue) return [];
+        return getInstructionDependencies({ ...input, defaultValue }, asyncResolvers, useAsync);
+    };
+
+    if (isNode(input.defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {
+        return [accountValueNode(input.defaultValue.name)];
+    }
+
+    if (isNode(input.defaultValue, 'pdaValueNode')) {
+        const dependencies = new Map<CamelCaseString, AccountValueNode | ArgumentValueNode>();
+        input.defaultValue.seeds.forEach(seed => {
+            if (isNode(seed.value, ['accountValueNode', 'argumentValueNode'])) {
+                dependencies.set(seed.value.name, { ...seed.value });
+            }
+        });
+        return [...dependencies.values()];
+    }
+
+    if (isNode(input.defaultValue, 'resolverValueNode')) {
+        if (!useAsync || asyncResolvers.includes(input.defaultValue.name)) {
+            return input.defaultValue.dependsOn ?? [];
+        }
+    }
+
+    if (isNode(input.defaultValue, 'conditionalValueNode')) {
+        return deduplicateInstructionDependencies([
+            ...getNestedDependencies(input.defaultValue.condition),
+            ...getNestedDependencies(input.defaultValue.ifTrue),
+            ...getNestedDependencies(input.defaultValue.ifFalse),
+        ]);
+    }
+
+    return [];
 }

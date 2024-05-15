@@ -209,45 +209,6 @@ export function getResolvedInstructionInputsVisitor(
         });
     }
 
-    function getInstructionDependencies(input: InstructionInput): InstructionDependency[] {
-        if (!input.defaultValue) return [];
-
-        const getNestedDependencies = (
-            defaultValue: InstructionInputValueNode | undefined,
-        ): InstructionDependency[] => {
-            if (!defaultValue) return [];
-            return getInstructionDependencies({ ...input, defaultValue });
-        };
-
-        if (isNode(input.defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {
-            return [accountValueNode(input.defaultValue.name)];
-        }
-
-        if (isNode(input.defaultValue, 'pdaValueNode')) {
-            const dependencies = new Map<CamelCaseString, InstructionDependency>();
-            input.defaultValue.seeds.forEach(seed => {
-                if (isNode(seed.value, ['accountValueNode', 'argumentValueNode'])) {
-                    dependencies.set(seed.value.name, { ...seed.value });
-                }
-            });
-            return [...dependencies.values()];
-        }
-
-        if (isNode(input.defaultValue, 'resolverValueNode')) {
-            return input.defaultValue.dependsOn ?? [];
-        }
-
-        if (isNode(input.defaultValue, 'conditionalValueNode')) {
-            return [
-                ...getNestedDependencies(input.defaultValue.condition),
-                ...getNestedDependencies(input.defaultValue.ifTrue),
-                ...getNestedDependencies(input.defaultValue.ifFalse),
-            ];
-        }
-
-        return [];
-    }
-
     return singleNodeVisitor('instructionNode', (node): ResolvedInstructionInput[] => {
         // Ensure we always start with a clean slate.
         stack = [];
@@ -271,4 +232,62 @@ export function getResolvedInstructionInputsVisitor(
 
         return resolved;
     });
+}
+
+export function deduplicateInstructionDependencies(dependencies: InstructionDependency[]): InstructionDependency[] {
+    const accounts = new Map<CamelCaseString, InstructionDependency>();
+    const args = new Map<CamelCaseString, InstructionDependency>();
+    dependencies.forEach(dependency => {
+        if (isNode(dependency, 'accountValueNode')) {
+            accounts.set(dependency.name, dependency);
+        } else if (isNode(dependency, 'argumentValueNode')) {
+            args.set(dependency.name, dependency);
+        }
+    });
+    return [...accounts.values(), ...args.values()];
+}
+
+export function getInstructionDependencies(input: InstructionInput | InstructionNode): InstructionDependency[] {
+    if (isNode(input, 'instructionNode')) {
+        return deduplicateInstructionDependencies([
+            ...input.accounts.flatMap(getInstructionDependencies),
+            ...input.arguments.flatMap(getInstructionDependencies),
+            ...(input.extraArguments ?? []).flatMap(getInstructionDependencies),
+        ]);
+    }
+
+    if (!input.defaultValue) return [];
+
+    const getNestedDependencies = (defaultValue: InstructionInputValueNode | undefined): InstructionDependency[] => {
+        if (!defaultValue) return [];
+        return getInstructionDependencies({ ...input, defaultValue });
+    };
+
+    if (isNode(input.defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {
+        return [accountValueNode(input.defaultValue.name)];
+    }
+
+    if (isNode(input.defaultValue, 'pdaValueNode')) {
+        const dependencies = new Map<CamelCaseString, InstructionDependency>();
+        input.defaultValue.seeds.forEach(seed => {
+            if (isNode(seed.value, ['accountValueNode', 'argumentValueNode'])) {
+                dependencies.set(seed.value.name, { ...seed.value });
+            }
+        });
+        return [...dependencies.values()];
+    }
+
+    if (isNode(input.defaultValue, 'resolverValueNode')) {
+        return input.defaultValue.dependsOn ?? [];
+    }
+
+    if (isNode(input.defaultValue, 'conditionalValueNode')) {
+        return deduplicateInstructionDependencies([
+            ...getNestedDependencies(input.defaultValue.condition),
+            ...getNestedDependencies(input.defaultValue.ifTrue),
+            ...getNestedDependencies(input.defaultValue.ifFalse),
+        ]);
+    }
+
+    return [];
 }

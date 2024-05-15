@@ -1,10 +1,10 @@
-import { camelCase, InstructionNode, isNode, pascalCase, ProgramNode } from '@kinobi-so/nodes';
+import { camelCase, InstructionNode, isNode, isNodeFilter, pascalCase, ProgramNode } from '@kinobi-so/nodes';
+import { ResolvedInstructionInput } from '@kinobi-so/visitors-core';
 
-import { ResolvedInstructionInput } from '../../../visitors';
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { NameApi } from '../nameTransformers';
 import { TypeManifest } from '../TypeManifest';
-import { hasAsyncFunction } from '../utils';
+import { getInstructionDependencies, hasAsyncFunction } from '../utils';
 import { Fragment, fragment, fragmentFromTemplate, mergeFragments } from './common';
 import { getInstructionByteDeltaFragment } from './instructionByteDelta';
 import { getInstructionInputResolvedFragment } from './instructionInputResolved';
@@ -84,6 +84,9 @@ export function getInstructionFunctionFragment(
         return useAsync ? `Promise<${returnType}>` : returnType;
     };
 
+    const instructionDependencies = getInstructionDependencies(instructionNode, asyncResolvers, useAsync);
+    const argDependencies = instructionDependencies.filter(isNodeFilter('argumentValueNode')).map(node => node.name);
+    console.log(argDependencies);
     const hasData = !!customData || instructionNode.arguments.length > 0;
     const hasDataArgs =
         !!customData ||
@@ -91,8 +94,10 @@ export function getInstructionFunctionFragment(
             .length > 0;
     const hasExtraArgs =
         (instructionNode.extraArguments ?? []).filter(
-            field => !field.defaultValue || field.defaultValueStrategy !== 'omitted',
-        ).length > 0 && hasResolver;
+            field =>
+                (!field.defaultValue || field.defaultValueStrategy !== 'omitted') &&
+                argDependencies.includes(field.name),
+        ).length > 0;
     const hasRemainingAccountArgs =
         (instructionNode.remainingAccounts ?? []).filter(({ value }) => isNode(value, 'argumentValueNode')).length > 0;
     const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
