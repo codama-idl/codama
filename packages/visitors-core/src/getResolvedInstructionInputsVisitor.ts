@@ -9,6 +9,7 @@ import {
     AccountValueNode,
     accountValueNode,
     ArgumentValueNode,
+    argumentValueNode,
     CamelCaseString,
     getAllInstructionArguments,
     InstructionAccountNode,
@@ -265,6 +266,10 @@ export function getInstructionDependencies(input: InstructionInput | Instruction
 
     if (isNode(input.defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {
         return [accountValueNode(input.defaultValue.name)];
+    }
+
+    if (isNode(input.defaultValue, ['argumentValueNode'])) {
+        return [argumentValueNode(input.defaultValue.name)];
     }
 
     if (isNode(input.defaultValue, 'pdaValueNode')) {

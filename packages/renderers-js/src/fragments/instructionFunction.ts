@@ -1,10 +1,18 @@
-import { camelCase, InstructionNode, isNode, isNodeFilter, pascalCase, ProgramNode } from '@kinobi-so/nodes';
+import {
+    camelCase,
+    InstructionArgumentNode,
+    InstructionNode,
+    isNode,
+    isNodeFilter,
+    pascalCase,
+    ProgramNode,
+} from '@kinobi-so/nodes';
 import { ResolvedInstructionInput } from '@kinobi-so/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { NameApi } from '../nameTransformers';
 import { TypeManifest } from '../TypeManifest';
-import { getInstructionDependencies, hasAsyncFunction } from '../utils';
+import { getInstructionDependencies, hasAsyncFunction, isAsyncDefaultValue } from '../utils';
 import { Fragment, fragment, fragmentFromTemplate, mergeFragments } from './common';
 import { getInstructionByteDeltaFragment } from './instructionByteDelta';
 import { getInstructionInputResolvedFragment } from './instructionInputResolved';
@@ -44,17 +52,19 @@ export function getInstructionFunctionFragment(
         instructionNode.accounts.some(account => account.isOptional);
     const instructionDependencies = getInstructionDependencies(instructionNode, asyncResolvers, useAsync);
     const argDependencies = instructionDependencies.filter(isNodeFilter('argumentValueNode')).map(node => node.name);
-    console.log({ argDependencies });
     const hasData = !!customData || instructionNode.arguments.length > 0;
-    const hasDataArgs =
-        !!customData ||
-        instructionNode.arguments.filter(field => !field.defaultValue || field.defaultValueStrategy !== 'omitted')
-            .length > 0;
+    const argIsNotOmitted = (arg: InstructionArgumentNode) =>
+        !(arg.defaultValue && arg.defaultValueStrategy === 'omitted');
+    const argIsDependent = (arg: InstructionArgumentNode) => argDependencies.includes(arg.name);
+    const argHasDefaultValue = (arg: InstructionArgumentNode) => {
+        if (!arg.defaultValue) return false;
+        if (useAsync) return true;
+        return !isAsyncDefaultValue(arg.defaultValue, asyncResolvers);
+    };
+    const hasDataArgs = !!customData || instructionNode.arguments.filter(argIsNotOmitted).length > 0;
     const hasExtraArgs =
         (instructionNode.extraArguments ?? []).filter(
-            field =>
-                (!field.defaultValue || field.defaultValueStrategy !== 'omitted') &&
-                argDependencies.includes(field.name),
+            field => argIsNotOmitted(field) && (argIsDependent(field) || argHasDefaultValue(field)),
         ).length > 0;
     const hasRemainingAccountArgs =
         (instructionNode.remainingAccounts ?? []).filter(({ value }) => isNode(value, 'argumentValueNode')).length > 0;
