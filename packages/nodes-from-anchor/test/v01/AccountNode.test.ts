@@ -2,6 +2,7 @@ import {
     accountNode,
     bytesTypeNode,
     fieldDiscriminatorNode,
+    fixedSizeTypeNode,
     numberTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -40,7 +41,7 @@ test('it creates account nodes with anchor discriminators', () => {
                     defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
                     defaultValueStrategy: 'omitted',
                     name: 'discriminator',
-                    type: bytesTypeNode(),
+                    type: fixedSizeTypeNode(bytesTypeNode(), 8),
                 }),
                 structFieldTypeNode({
                     name: 'name',

@@ -5,6 +5,7 @@ import {
     definedTypeNode,
     errorNode,
     fieldDiscriminatorNode,
+    fixedSizeTypeNode,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
@@ -58,7 +59,7 @@ test('it creates program nodes', () => {
                             defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
                             defaultValueStrategy: 'omitted',
                             name: 'discriminator',
-                            type: bytesTypeNode(),
+                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
                         }),
                     ]),
                     discriminators: [fieldDiscriminatorNode('discriminator')],
@@ -93,7 +94,7 @@ test('it creates program nodes', () => {
                             defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
                             defaultValueStrategy: 'omitted',
                             name: 'discriminator',
-                            type: bytesTypeNode(),
+                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
                         }),
                     ],
                     discriminators: [fieldDiscriminatorNode('discriminator')],
@@ -106,7 +107,10 @@ test('it creates program nodes', () => {
                 pdaNode({
                     name: 'authority',
                     seeds: [
-                        constantPdaSeedNode(bytesTypeNode(), getAnchorDiscriminatorV01([42, 31, 29])),
+                        constantPdaSeedNode(
+                            fixedSizeTypeNode(bytesTypeNode(), 3),
+                            getAnchorDiscriminatorV01([42, 31, 29]),
+                        ),
                         variablePdaSeedNode('owner', publicKeyTypeNode()),
                     ],
                 }),

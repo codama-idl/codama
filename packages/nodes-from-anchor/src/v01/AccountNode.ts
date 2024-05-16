@@ -6,6 +6,7 @@ import {
     bytesTypeNode,
     camelCase,
     fieldDiscriminatorNode,
+    fixedSizeTypeNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@kinobi-so/nodes';
@@ -33,7 +34,7 @@ export function accountNodeFromAnchorV01(idl: IdlV01Account, types: IdlV01TypeDe
         defaultValue: getAnchorDiscriminatorV01(idl.discriminator),
         defaultValueStrategy: 'omitted',
         name: 'discriminator',
-        type: bytesTypeNode(),
+        type: fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
     });
 
     return accountNode({

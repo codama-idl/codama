@@ -2,6 +2,7 @@ import {
     bytesTypeNode,
     camelCase,
     fieldDiscriminatorNode,
+    fixedSizeTypeNode,
     instructionArgumentNode,
     InstructionNode,
     instructionNode,
@@ -20,7 +21,7 @@ export function instructionNodeFromAnchorV01(idl: IdlV01Instruction): Instructio
         defaultValue: getAnchorDiscriminatorV01(idl.discriminator),
         defaultValueStrategy: 'omitted',
         name: 'discriminator',
-        type: bytesTypeNode(),
+        type: fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
     });
     dataArguments = [discriminatorField, ...dataArguments];
     const discriminators = [fieldDiscriminatorNode('discriminator')];

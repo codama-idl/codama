@@ -3,6 +3,7 @@ import {
     bytesTypeNode,
     camelCase,
     constantPdaSeedNode,
+    fixedSizeTypeNode,
     PdaNode,
     pdaNode,
     PdaSeedNode,
@@ -17,7 +18,10 @@ export function pdaNodeFromAnchorV01(idl: IdlV01InstructionAccount): PdaNode {
     const seeds = idl.pda?.seeds.map((seed): PdaSeedNode => {
         switch (seed.kind) {
             case 'const':
-                return constantPdaSeedNode(bytesTypeNode(), getAnchorDiscriminatorV01(seed.value));
+                return constantPdaSeedNode(
+                    fixedSizeTypeNode(bytesTypeNode(), seed.value.length),
+                    getAnchorDiscriminatorV01(seed.value),
+                );
             case 'account':
                 return variablePdaSeedNode(seed.path, publicKeyTypeNode());
             case 'arg':
