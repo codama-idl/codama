@@ -8,19 +8,19 @@ import { codeContains } from './_setup';
 test('it renders codes for errors', () => {
     // Given the following program with 2 errors.
     const node = programNode({
-        name: 'splToken',
         errors: [
             errorNode({
                 code: 6000,
-                name: 'InvalidInstruction',
                 message: 'Invalid instruction',
+                name: 'InvalidInstruction',
             }),
             errorNode({
                 code: 7000,
-                name: 'InvalidProgram',
                 message: 'Invalid program',
+                name: 'InvalidProgram',
             }),
         ],
+        name: 'splToken',
         publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
     });
 
