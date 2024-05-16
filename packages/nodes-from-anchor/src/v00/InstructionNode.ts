@@ -3,6 +3,7 @@ import {
     camelCase,
     DiscriminatorNode,
     fieldDiscriminatorNode,
+    fixedSizeTypeNode,
     instructionArgumentNode,
     InstructionNode,
     instructionNode,
@@ -36,7 +37,7 @@ export function instructionNodeFromAnchorV00(idl: IdlV00Instruction, origin?: 'a
             defaultValue: getAnchorInstructionDiscriminatorV00(idlName),
             defaultValueStrategy: 'omitted',
             name: 'discriminator',
-            type: bytesTypeNode(),
+            type: fixedSizeTypeNode(bytesTypeNode(), 8),
         });
         dataArguments = [discriminatorField, ...dataArguments];
         discriminators = [fieldDiscriminatorNode('discriminator')];

@@ -6,6 +6,7 @@ import {
     camelCase,
     DiscriminatorNode,
     fieldDiscriminatorNode,
+    fixedSizeTypeNode,
     pdaLinkNode,
     structFieldTypeNode,
     StructTypeNode,
@@ -34,7 +35,7 @@ export function accountNodeFromAnchorV00(
             defaultValue: getAnchorAccountDiscriminatorV00(idlName),
             defaultValueStrategy: 'omitted',
             name: 'discriminator',
-            type: bytesTypeNode(),
+            type: fixedSizeTypeNode(bytesTypeNode(), 8),
         });
         data = structTypeNode([discriminator, ...data.fields]);
         discriminators = [fieldDiscriminatorNode('discriminator')];

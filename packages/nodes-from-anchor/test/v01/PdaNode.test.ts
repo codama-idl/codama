@@ -1,4 +1,11 @@
-import { bytesTypeNode, constantPdaSeedNode, pdaNode, publicKeyTypeNode, variablePdaSeedNode } from '@kinobi-so/nodes';
+import {
+    bytesTypeNode,
+    constantPdaSeedNode,
+    fixedSizeTypeNode,
+    pdaNode,
+    publicKeyTypeNode,
+    variablePdaSeedNode,
+} from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
 import { getAnchorDiscriminatorV01, pdaNodeFromAnchorV01 } from '../../src';
@@ -18,7 +25,7 @@ test('it creates PDA nodes', () => {
         pdaNode({
             name: 'myPda',
             seeds: [
-                constantPdaSeedNode(bytesTypeNode(), getAnchorDiscriminatorV01([42, 31, 29])),
+                constantPdaSeedNode(fixedSizeTypeNode(bytesTypeNode(), 3), getAnchorDiscriminatorV01([42, 31, 29])),
                 variablePdaSeedNode('authority', publicKeyTypeNode()),
             ],
         }),
