@@ -63,6 +63,12 @@ impl AdvanceNonceAccountInstructionData {
     }
 }
 
+impl Default for AdvanceNonceAccountInstructionData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Instruction builder for `AdvanceNonceAccount`.
 ///
 /// ### Accounts:
