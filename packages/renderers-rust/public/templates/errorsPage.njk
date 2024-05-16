@@ -8,9 +8,9 @@ use thiserror::Error;
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum {{ program.name | pascalCase }}Error {
 {% for error in errors | sort(false, false, 'code') %}
-    /// {{ error.code }} (0x{{ error.code.toString(16) | upper }}) - {{ error.message }}
+    /// {{ error.code }} - {{ error.message }}
     #[error("{{ error.message }}")]
-    {{ error.name | pascalCase }},
+    {{ error.name | pascalCase }} = 0x{{ error.code.toString(16) | upper }},
 {% endfor %}
 }
 

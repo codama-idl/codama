@@ -10,33 +10,33 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum SystemError {
-    /// 0 (0x0) - an account with the same address already exists
+    /// 0 - an account with the same address already exists
     #[error("an account with the same address already exists")]
-    AccountAlreadyInUse,
-    /// 1 (0x1) - account does not have enough SOL to perform the operation
+    AccountAlreadyInUse = 0x0,
+    /// 1 - account does not have enough SOL to perform the operation
     #[error("account does not have enough SOL to perform the operation")]
-    ResultWithNegativeLamports,
-    /// 2 (0x2) - cannot assign account to this program id
+    ResultWithNegativeLamports = 0x1,
+    /// 2 - cannot assign account to this program id
     #[error("cannot assign account to this program id")]
-    InvalidProgramId,
-    /// 3 (0x3) - cannot allocate account data of this length
+    InvalidProgramId = 0x2,
+    /// 3 - cannot allocate account data of this length
     #[error("cannot allocate account data of this length")]
-    InvalidAccountDataLength,
-    /// 4 (0x4) - length of requested seed is too long
+    InvalidAccountDataLength = 0x3,
+    /// 4 - length of requested seed is too long
     #[error("length of requested seed is too long")]
-    MaxSeedLengthExceeded,
-    /// 5 (0x5) - provided address does not match addressed derived from seed
+    MaxSeedLengthExceeded = 0x4,
+    /// 5 - provided address does not match addressed derived from seed
     #[error("provided address does not match addressed derived from seed")]
-    AddressWithSeedMismatch,
-    /// 6 (0x6) - advancing stored nonce requires a populated RecentBlockhashes sysvar
+    AddressWithSeedMismatch = 0x5,
+    /// 6 - advancing stored nonce requires a populated RecentBlockhashes sysvar
     #[error("advancing stored nonce requires a populated RecentBlockhashes sysvar")]
-    NonceNoRecentBlockhashes,
-    /// 7 (0x7) - stored nonce is still in recent_blockhashes
+    NonceNoRecentBlockhashes = 0x6,
+    /// 7 - stored nonce is still in recent_blockhashes
     #[error("stored nonce is still in recent_blockhashes")]
-    NonceBlockhashNotExpired,
-    /// 8 (0x8) - specified nonce does not match stored nonce
+    NonceBlockhashNotExpired = 0x7,
+    /// 8 - specified nonce does not match stored nonce
     #[error("specified nonce does not match stored nonce")]
-    NonceUnexpectedBlockhashValue,
+    NonceUnexpectedBlockhashValue = 0x8,
 }
 
 impl solana_program::program_error::PrintProgramError for SystemError {
