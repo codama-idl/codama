@@ -1,5 +1,11 @@
 # @kinobi-so/nodes-from-anchor
 
+## 0.20.4
+
+### Patch Changes
+
+- [#37](https://github.com/kinobi-so/kinobi/pull/37) [`c5bc916`](https://github.com/kinobi-so/kinobi/commit/c5bc91609b5cb16caec13214bbe7a39e74e8d52c) Thanks [@kespinola](https://github.com/kespinola)! - Remove Anchor V01 accounts from defined types to resolve duplicate exports in generated clients
+
 ## 0.20.3
 
 ### Patch Changes
