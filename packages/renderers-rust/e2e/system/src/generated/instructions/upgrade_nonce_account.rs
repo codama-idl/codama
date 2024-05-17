@@ -51,6 +51,12 @@ impl UpgradeNonceAccountInstructionData {
     }
 }
 
+impl Default for UpgradeNonceAccountInstructionData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Instruction builder for `UpgradeNonceAccount`.
 ///
 /// ### Accounts:

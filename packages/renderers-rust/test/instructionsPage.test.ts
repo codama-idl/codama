@@ -47,3 +47,21 @@ test('it renders an instruction with a remainder str', () => {
         `pub memo: RemainderStr`,
     ]);
 });
+
+test('it renders a default impl for instruction data struct', () => {
+    // Given the following program with 1 instruction.
+    const node = programNode({
+        instructions: [instructionNode({ name: 'mintTokens' })],
+        name: 'splToken',
+        publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following Default trait to be implemented.
+    codeContains(renderMap.get('instructions/mint_tokens.rs'), [
+        `impl Default for MintTokensInstructionData`,
+        `fn default(`,
+    ]);
+});
