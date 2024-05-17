@@ -1,5 +1,15 @@
 # @kinobi-so/renderers-rust
 
+## 0.20.4
+
+### Patch Changes
+
+- [#27](https://github.com/kinobi-so/kinobi/pull/27) [`46bfc2d`](https://github.com/kinobi-so/kinobi/commit/46bfc2dd3609dc63e7d05e30dd1d196c9e8903cf) Thanks [@samuelvanderwaal](https://github.com/samuelvanderwaal)! - Make rust docs kinobi link clickable
+
+- [#32](https://github.com/kinobi-so/kinobi/pull/32) [`3645d92`](https://github.com/kinobi-so/kinobi/commit/3645d92845db3582b801f2a32f1c36e6b478b754) Thanks [@febo](https://github.com/febo)! - Add default impl for instruction data struct in Rust renderer
+
+- [#31](https://github.com/kinobi-so/kinobi/pull/31) [`e0ea30c`](https://github.com/kinobi-so/kinobi/commit/e0ea30c168bcdc1cb376cf8ca6bd4bb76778acf2) Thanks [@febo](https://github.com/febo)! - Render error codes on Rust renderer
+
 ## 0.20.3
 
 ### Patch Changes
