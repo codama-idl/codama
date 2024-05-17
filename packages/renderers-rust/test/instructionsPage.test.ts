@@ -59,7 +59,7 @@ test('it renders a default impl for instruction data struct', () => {
     // When we render it.
     const renderMap = visit(node, getRenderMapVisitor());
 
-    // Then we expect the following pub struct.
+    // Then we expect the following Default trait to be implemented.
     codeContains(renderMap.get('instructions/mint_tokens.rs'), [
         `impl Default for MintTokensInstructionData`,
         `fn default(`,
