@@ -2,7 +2,6 @@ import {
     accountNode,
     bytesTypeNode,
     constantPdaSeedNode,
-    definedTypeNode,
     errorNode,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
@@ -66,7 +65,7 @@ test('it creates program nodes', () => {
                     name: 'myAccount',
                 }),
             ],
-            definedTypes: [definedTypeNode({ name: 'myAccount', type: structTypeNode([]) })],
+            definedTypes: [],
             errors: [
                 errorNode({
                     code: 42,

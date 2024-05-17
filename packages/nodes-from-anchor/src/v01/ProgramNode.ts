@@ -13,13 +13,13 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
     const instructions = idl.instructions ?? [];
     const errors = idl.errors ?? [];
 
-    const definedTypes = types.map(definedTypeNodeFromAnchorV01);
+    const filteredTypes = types.filter(type => !accounts.some(account => account.name === type.name));
+    const definedTypes = filteredTypes.map(definedTypeNodeFromAnchorV01);
     const accountNodeFromAnchorV01 = accountNodeFromAnchorV01WithTypeDefinition(types);
     const pdas = instructions
         .flatMap<IdlV01InstructionAccount>(instruction => instruction.accounts)
         .filter(account => !!account.pda && !account.pda?.program)
         .map(pdaNodeFromAnchorV01);
-
     return programNode({
         accounts: accounts.map(accountNodeFromAnchorV01),
         definedTypes,
