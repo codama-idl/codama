@@ -8,14 +8,24 @@
 
 import {
   Address,
+  Codec,
+  Decoder,
+  Encoder,
   IAccountMeta,
   IAccountSignerMeta,
   IInstruction,
   IInstructionWithAccounts,
+  IInstructionWithData,
   ReadonlyAccount,
   TransactionSigner,
   WritableAccount,
   WritableSignerAccount,
+  combineCodec,
+  getStructDecoder,
+  getStructEncoder,
+  getU8Decoder,
+  getU8Encoder,
+  transformEncoder,
 } from '@solana/web3.js';
 import { findAssociatedTokenPda } from '../pdas';
 import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs';
@@ -39,6 +49,7 @@ export type CreateAssociatedTokenInstruction<
     | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
+  IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
     [
       TAccountPayer extends string
@@ -61,6 +72,31 @@ export type CreateAssociatedTokenInstruction<
       ...TRemainingAccounts,
     ]
   >;
+
+export type CreateAssociatedTokenInstructionData = { discriminator: number };
+
+export type CreateAssociatedTokenInstructionDataArgs = {};
+
+export function getCreateAssociatedTokenInstructionDataEncoder(): Encoder<CreateAssociatedTokenInstructionDataArgs> {
+  return transformEncoder(
+    getStructEncoder([['discriminator', getU8Encoder()]]),
+    (value) => ({ ...value, discriminator: 0 })
+  );
+}
+
+export function getCreateAssociatedTokenInstructionDataDecoder(): Decoder<CreateAssociatedTokenInstructionData> {
+  return getStructDecoder([['discriminator', getU8Decoder()]]);
+}
+
+export function getCreateAssociatedTokenInstructionDataCodec(): Codec<
+  CreateAssociatedTokenInstructionDataArgs,
+  CreateAssociatedTokenInstructionData
+> {
+  return combineCodec(
+    getCreateAssociatedTokenInstructionDataEncoder(),
+    getCreateAssociatedTokenInstructionDataDecoder()
+  );
+}
 
 export type CreateAssociatedTokenAsyncInput<
   TAccountPayer extends string = string,
@@ -156,6 +192,7 @@ export async function getCreateAssociatedTokenInstructionAsync<
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
+    data: getCreateAssociatedTokenInstructionDataEncoder().encode({}),
   } as CreateAssociatedTokenInstruction<
     typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
     TAccountPayer,
@@ -254,6 +291,7 @@ export function getCreateAssociatedTokenInstruction<
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
+    data: getCreateAssociatedTokenInstructionDataEncoder().encode({}),
   } as CreateAssociatedTokenInstruction<
     typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
     TAccountPayer,
@@ -286,13 +324,16 @@ export type ParsedCreateAssociatedTokenInstruction<
     /** SPL Token program. */
     tokenProgram: TAccountMetas[5];
   };
+  data: CreateAssociatedTokenInstructionData;
 };
 
 export function parseCreateAssociatedTokenInstruction<
   TProgram extends string,
   TAccountMetas extends readonly IAccountMeta[],
 >(
-  instruction: IInstruction<TProgram> & IInstructionWithAccounts<TAccountMetas>
+  instruction: IInstruction<TProgram> &
+    IInstructionWithAccounts<TAccountMetas> &
+    IInstructionWithData<Uint8Array>
 ): ParsedCreateAssociatedTokenInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 6) {
     // TODO: Coded error.
@@ -314,5 +355,8 @@ export function parseCreateAssociatedTokenInstruction<
       systemProgram: getNextAccount(),
       tokenProgram: getNextAccount(),
     },
+    data: getCreateAssociatedTokenInstructionDataDecoder().decode(
+      instruction.data
+    ),
   };
 }
