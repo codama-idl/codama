@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/renderers-js-umi",
-    "version": "0.20.2",
+    "version": "0.20.3",
     "description": "JavaScript renderer compatible with the Umi framework",
     "exports": {
         "types": "./dist/types/index.d.ts",

@@ -1,5 +1,18 @@
 # @kinobi-so/renderers-js-umi
 
+## 0.20.3
+
+### Patch Changes
+
+- [`964776f`](https://github.com/kinobi-so/kinobi/commit/964776fe73402c236d334032821013674c3b1a5e) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix invalid package dependencies
+
+- Updated dependencies [[`964776f`](https://github.com/kinobi-so/kinobi/commit/964776fe73402c236d334032821013674c3b1a5e)]:
+  - @kinobi-so/errors@0.20.2
+  - @kinobi-so/nodes@0.20.2
+  - @kinobi-so/renderers-core@0.20.2
+  - @kinobi-so/validators@0.20.2
+  - @kinobi-so/visitors-core@0.20.2
+
 ## 0.20.2
 
 ### Patch Changes
