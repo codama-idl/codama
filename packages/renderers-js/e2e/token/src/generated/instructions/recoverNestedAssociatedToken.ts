@@ -8,14 +8,24 @@
 
 import {
   Address,
+  Codec,
+  Decoder,
+  Encoder,
   IAccountMeta,
   IAccountSignerMeta,
   IInstruction,
   IInstructionWithAccounts,
+  IInstructionWithData,
   ReadonlyAccount,
   TransactionSigner,
   WritableAccount,
   WritableSignerAccount,
+  combineCodec,
+  getStructDecoder,
+  getStructEncoder,
+  getU8Decoder,
+  getU8Encoder,
+  transformEncoder,
 } from '@solana/web3.js';
 import { findAssociatedTokenPda } from '../pdas';
 import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs';
@@ -44,6 +54,7 @@ export type RecoverNestedAssociatedTokenInstruction<
     | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
+  IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
     [
       TAccountNestedAssociatedAccountAddress extends string
@@ -71,6 +82,33 @@ export type RecoverNestedAssociatedTokenInstruction<
       ...TRemainingAccounts,
     ]
   >;
+
+export type RecoverNestedAssociatedTokenInstructionData = {
+  discriminator: number;
+};
+
+export type RecoverNestedAssociatedTokenInstructionDataArgs = {};
+
+export function getRecoverNestedAssociatedTokenInstructionDataEncoder(): Encoder<RecoverNestedAssociatedTokenInstructionDataArgs> {
+  return transformEncoder(
+    getStructEncoder([['discriminator', getU8Encoder()]]),
+    (value) => ({ ...value, discriminator: 2 })
+  );
+}
+
+export function getRecoverNestedAssociatedTokenInstructionDataDecoder(): Decoder<RecoverNestedAssociatedTokenInstructionData> {
+  return getStructDecoder([['discriminator', getU8Decoder()]]);
+}
+
+export function getRecoverNestedAssociatedTokenInstructionDataCodec(): Codec<
+  RecoverNestedAssociatedTokenInstructionDataArgs,
+  RecoverNestedAssociatedTokenInstructionData
+> {
+  return combineCodec(
+    getRecoverNestedAssociatedTokenInstructionDataEncoder(),
+    getRecoverNestedAssociatedTokenInstructionDataDecoder()
+  );
+}
 
 export type RecoverNestedAssociatedTokenAsyncInput<
   TAccountNestedAssociatedAccountAddress extends string = string,
@@ -203,6 +241,7 @@ export async function getRecoverNestedAssociatedTokenInstructionAsync<
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
+    data: getRecoverNestedAssociatedTokenInstructionDataEncoder().encode({}),
   } as RecoverNestedAssociatedTokenInstruction<
     typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
     TAccountNestedAssociatedAccountAddress,
@@ -321,6 +360,7 @@ export function getRecoverNestedAssociatedTokenInstruction<
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
+    data: getRecoverNestedAssociatedTokenInstructionDataEncoder().encode({}),
   } as RecoverNestedAssociatedTokenInstruction<
     typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
     TAccountNestedAssociatedAccountAddress,
@@ -356,13 +396,16 @@ export type ParsedRecoverNestedAssociatedTokenInstruction<
     /** SPL Token program. */
     tokenProgram: TAccountMetas[6];
   };
+  data: RecoverNestedAssociatedTokenInstructionData;
 };
 
 export function parseRecoverNestedAssociatedTokenInstruction<
   TProgram extends string,
   TAccountMetas extends readonly IAccountMeta[],
 >(
-  instruction: IInstruction<TProgram> & IInstructionWithAccounts<TAccountMetas>
+  instruction: IInstruction<TProgram> &
+    IInstructionWithAccounts<TAccountMetas> &
+    IInstructionWithData<Uint8Array>
 ): ParsedRecoverNestedAssociatedTokenInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 7) {
     // TODO: Coded error.
@@ -385,5 +428,8 @@ export function parseRecoverNestedAssociatedTokenInstruction<
       walletAddress: getNextAccount(),
       tokenProgram: getNextAccount(),
     },
+    data: getRecoverNestedAssociatedTokenInstructionDataDecoder().decode(
+      instruction.data
+    ),
   };
 }

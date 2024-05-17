@@ -2384,7 +2384,27 @@
               }
             }
           ],
-          "arguments": [],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [],
+              "defaultValue": { "kind": "numberValueNode", "number": 0 },
+              "defaultValueStrategy": "omitted"
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ],
           "name": "createAssociatedToken",
           "docs": [
             "Creates an associated token account for the given wallet address and",
@@ -2486,7 +2506,27 @@
               }
             }
           ],
-          "arguments": [],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [],
+              "defaultValue": { "kind": "numberValueNode", "number": 1 },
+              "defaultValueStrategy": "omitted"
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ],
           "name": "createAssociatedTokenIdempotent",
           "docs": [
             "Creates an associated token account for the given wallet address and",
@@ -2662,7 +2702,27 @@
               }
             }
           ],
-          "arguments": [],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [],
+              "defaultValue": { "kind": "numberValueNode", "number": 2 },
+              "defaultValueStrategy": "omitted"
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ],
           "name": "recoverNestedAssociatedToken",
           "docs": [
             "Transfers from and closes a nested associated token account: an",
