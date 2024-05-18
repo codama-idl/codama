@@ -49,7 +49,7 @@ export class LinkableDictionary {
     getOrThrow(linkNode: AccountLinkNode): AccountNode;
     getOrThrow(linkNode: DefinedTypeLinkNode): DefinedTypeNode;
     getOrThrow(linkNode: LinkNode): LinkableNode {
-        let node = this.get(linkNode);
+        const node = this.get(linkNode);
 
         if (node) {
             return node;
