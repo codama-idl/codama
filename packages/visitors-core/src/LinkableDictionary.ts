@@ -49,6 +49,12 @@ export class LinkableDictionary {
     getOrThrow(linkNode: AccountLinkNode): AccountNode;
     getOrThrow(linkNode: DefinedTypeLinkNode): DefinedTypeNode;
     getOrThrow(linkNode: LinkNode): LinkableNode {
+        let node = this.get(linkNode);
+
+        if (node) {
+            return node;
+        }
+
         throw new KinobiError(KINOBI_ERROR__LINKED_NODE_NOT_FOUND, {
             kind: linkNode.kind,
             linkNode,
@@ -60,6 +66,7 @@ export class LinkableDictionary {
     get(linkNode: PdaLinkNode): PdaNode | undefined;
     get(linkNode: AccountLinkNode): AccountNode | undefined;
     get(linkNode: DefinedTypeLinkNode): DefinedTypeNode | undefined;
+    get(linkNode: LinkNode): LinkableNode | undefined;
     get(linkNode: LinkNode): LinkableNode | undefined {
         if (linkNode.importFrom) {
             return undefined;
