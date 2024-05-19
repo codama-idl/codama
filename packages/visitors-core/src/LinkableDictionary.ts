@@ -49,11 +49,17 @@ export class LinkableDictionary {
     getOrThrow(linkNode: AccountLinkNode): AccountNode;
     getOrThrow(linkNode: DefinedTypeLinkNode): DefinedTypeNode;
     getOrThrow(linkNode: LinkNode): LinkableNode {
-        throw new KinobiError(KINOBI_ERROR__LINKED_NODE_NOT_FOUND, {
-            kind: linkNode.kind,
-            linkNode,
-            name: linkNode.name,
-        });
+        const node = this.get(linkNode as ProgramLinkNode) as LinkableNode;
+
+        if (!node) {
+            throw new KinobiError(KINOBI_ERROR__LINKED_NODE_NOT_FOUND, {
+                kind: linkNode.kind,
+                linkNode,
+                name: linkNode.name,
+            });
+        }
+
+        return node;
     }
 
     get(linkNode: ProgramLinkNode): ProgramNode | undefined;
