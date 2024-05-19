@@ -1,5 +1,6 @@
 import {
     argumentValueNode,
+    instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
@@ -11,6 +12,28 @@ import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
 import { codeContains, codeDoesNotContain, renderMapContains } from './_setup';
+
+test('it renders instruction accounts that can either be signer or non-signer', async () => {
+    // Given the following instruction with a signer or non-signer account.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                accounts: [instructionAccountNode({ isSigner: 'either', isWritable: false, name: 'myAccount' })],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the input to be rendered as either a signer or non-signer.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', [
+        'myAccount: Address<TAccountMyAccount> | TransactionSigner<TAccountMyAccount>;',
+    ]);
+});
 
 test('it renders extra arguments that default on each other', async () => {
     // Given the following instruction with two extra arguments
