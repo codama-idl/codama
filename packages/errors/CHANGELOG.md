@@ -1,5 +1,14 @@
 # @kinobi-so/errors
 
+## 0.20.3
+
+### Patch Changes
+
+- [#40](https://github.com/kinobi-so/kinobi/pull/40) [`4bc5823`](https://github.com/kinobi-so/kinobi/commit/4bc5823377824198bd5a6432d16333b2cb1d8b8c) Thanks [@febo](https://github.com/febo)! - Fix typo in error message
+
+- Updated dependencies []:
+  - @kinobi-so/node-types@0.20.3
+
 ## 0.20.2
 
 ### Patch Changes
