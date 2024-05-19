@@ -38,7 +38,7 @@ export const KinobiErrorMessages: Readonly<{
 }> = {
     [KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: 'Account type [$name] is missing from the IDL types.',
     [KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
-    [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not found linked node [$name] from [$kind].',
+    [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not find linked node [$name] from [$kind].',
     [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
         'Node.js filesystem function [$fsFunction] is not available in your environment.',
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: 'Expected nested node of kind [$expectedKinds], got [$kind]',
