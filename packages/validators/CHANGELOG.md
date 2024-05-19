@@ -1,5 +1,14 @@
 # @kinobi-so/validators
 
+## 0.20.3
+
+### Patch Changes
+
+- Updated dependencies [[`d938e04`](https://github.com/kinobi-so/kinobi/commit/d938e04b8cf5765c5bb2b68916b29e892fd5ad70), [`4bc5823`](https://github.com/kinobi-so/kinobi/commit/4bc5823377824198bd5a6432d16333b2cb1d8b8c)]:
+  - @kinobi-so/visitors-core@0.20.3
+  - @kinobi-so/errors@0.20.3
+  - @kinobi-so/nodes@0.20.3
+
 ## 0.20.2
 
 ### Patch Changes
