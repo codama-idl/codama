@@ -1,14 +1,18 @@
 import {
     accountNode,
+    accountValueNode,
     bytesTypeNode,
-    constantPdaSeedNode,
+    constantPdaSeedNodeFromBytes,
     errorNode,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
+    hex,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
     pdaNode,
+    pdaSeedValueNode,
+    pdaValueNode,
     programNode,
     publicKeyTypeNode,
     structFieldTypeNode,
@@ -37,6 +41,9 @@ test('it creates program nodes', () => {
                         },
                     },
                     {
+                        name: 'owner',
+                    },
+                    {
                         name: 'some_account',
                     },
                 ],
@@ -46,7 +53,7 @@ test('it creates program nodes', () => {
             },
         ],
         metadata: { name: 'myProgram', spec: '0.1.0', version: '1.2.3' },
-        types: [{ name: 'MyAccount', type: { fields: [], kind: 'struct' } }],
+        types: [{ name: 'MyAccount', type: { fields: [{ name: 'delegate', type: 'pubkey' }], kind: 'struct' } }],
     });
 
     expect(node).toEqual(
@@ -59,6 +66,10 @@ test('it creates program nodes', () => {
                             defaultValueStrategy: 'omitted',
                             name: 'discriminator',
                             type: fixedSizeTypeNode(bytesTypeNode(), 8),
+                        }),
+                        structFieldTypeNode({
+                            name: 'delegate',
+                            type: publicKeyTypeNode(),
                         }),
                     ]),
                     discriminators: [fieldDiscriminatorNode('discriminator')],
@@ -78,9 +89,24 @@ test('it creates program nodes', () => {
                 instructionNode({
                     accounts: [
                         instructionAccountNode({
+                            defaultValue: pdaValueNode(
+                                pdaNode({
+                                    name: 'authority',
+                                    seeds: [
+                                        constantPdaSeedNodeFromBytes('base16', hex(new Uint8Array([42, 31, 29]))),
+                                        variablePdaSeedNode('owner', publicKeyTypeNode()),
+                                    ],
+                                }),
+                                [pdaSeedValueNode('owner', accountValueNode('owner'))],
+                            ),
                             isSigner: false,
                             isWritable: false,
                             name: 'authority',
+                        }),
+                        instructionAccountNode({
+                            isSigner: false,
+                            isWritable: false,
+                            name: 'owner',
                         }),
                         instructionAccountNode({
                             isSigner: false,
@@ -102,18 +128,7 @@ test('it creates program nodes', () => {
             ],
             name: 'myProgram',
             origin: 'anchor',
-            pdas: [
-                pdaNode({
-                    name: 'authority',
-                    seeds: [
-                        constantPdaSeedNode(
-                            fixedSizeTypeNode(bytesTypeNode(), 3),
-                            getAnchorDiscriminatorV01([42, 31, 29]),
-                        ),
-                        variablePdaSeedNode('owner', publicKeyTypeNode()),
-                    ],
-                }),
-            ],
+            pdas: [],
             publicKey: '1111',
             version: '1.2.3',
         }),

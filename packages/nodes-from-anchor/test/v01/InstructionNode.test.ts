@@ -1,27 +1,81 @@
 import {
+    accountNode,
     bytesTypeNode,
+    constantPdaSeedNodeFromBytes,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
+    hex,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
+    pdaNode,
+    pdaValueNode,
+    publicKeyTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
+    variablePdaSeedNode,
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
 import { getAnchorDiscriminatorV01, instructionNodeFromAnchorV01 } from '../../src';
 
 test('it creates instruction nodes', () => {
-    const node = instructionNodeFromAnchorV01({
-        accounts: [{ name: 'Mint', signer: false, writable: true }],
-        args: [{ name: 'amount', type: 'u8' }],
-        discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
-        name: 'mintTokens',
-    });
+    const node = instructionNodeFromAnchorV01(
+        [
+            accountNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        name: 'groupMint',
+                        type: publicKeyTypeNode(),
+                    }),
+                    structFieldTypeNode({
+                        name: 'paymentMint',
+                        type: publicKeyTypeNode(),
+                    }),
+                ]),
+                name: 'distribution',
+            }),
+        ],
+        {
+            accounts: [
+                {
+                    name: 'distribution',
+                    pda: {
+                        seeds: [
+                            { kind: 'const', value: [42, 31, 29] },
+                            { account: 'Distribution', kind: 'account', path: 'distribution.group_mint' },
+                        ],
+                    },
+                    signer: false,
+                    writable: true,
+                },
+            ],
+            args: [{ name: 'amount', type: 'u8' }],
+            discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+            name: 'mintTokens',
+        },
+    );
 
     expect(node).toEqual(
         instructionNode({
-            accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'mint' })],
+            accounts: [
+                instructionAccountNode({
+                    defaultValue: pdaValueNode(
+                        pdaNode({
+                            name: 'distribution',
+                            seeds: [
+                                constantPdaSeedNodeFromBytes('base16', hex(new Uint8Array([42, 31, 29]))),
+                                variablePdaSeedNode('distributionGroupMint', publicKeyTypeNode()),
+                            ],
+                        }),
+                        [],
+                    ),
+                    isSigner: false,
+                    isWritable: true,
+                    name: 'distribution',
+                }),
+            ],
             arguments: [
                 instructionArgumentNode({
                     defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
@@ -38,7 +92,7 @@ test('it creates instruction nodes', () => {
 });
 
 test('it creates instruction nodes with anchor discriminators', () => {
-    const node = instructionNodeFromAnchorV01({
+    const node = instructionNodeFromAnchorV01([], {
         accounts: [],
         args: [],
         discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
