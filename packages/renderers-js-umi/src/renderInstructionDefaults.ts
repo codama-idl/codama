@@ -76,6 +76,55 @@ export function renderInstructionDefaults(
             imports.add('shared', 'expectPublicKey');
             return render(`expectPublicKey(resolvedAccounts.${name}.value)`);
         case 'pdaValueNode':
+            // Inlined PDA value.
+            if (isNode(defaultValue.pda, 'pdaNode')) {
+                const pdaProgram = defaultValue.pda.programId
+                    ? `context.programs.getPublicKey('${defaultValue.pda.programId}', '${defaultValue.pda.programId}')`
+                    : 'programId';
+                const pdaSeeds = defaultValue.pda.seeds.flatMap((seed): string[] => {
+                    if (isNode(seed, 'constantPdaSeedNode') && isNode(seed.value, 'programIdValueNode')) {
+                        imports
+                            .add('umiSerializers', 'publicKey')
+                            .addAlias('umiSerializers', 'publicKey', 'publicKeySerializer');
+                        return [`publicKeySerializer().serialize(${pdaProgram})`];
+                    }
+                    if (isNode(seed, 'constantPdaSeedNode') && !isNode(seed.value, 'programIdValueNode')) {
+                        const typeManifest = visit(seed.type, typeManifestVisitor);
+                        const valueManifest = visit(seed.value, typeManifestVisitor);
+                        imports.mergeWith(typeManifest.serializerImports);
+                        imports.mergeWith(valueManifest.valueImports);
+                        return [`${typeManifest.serializer}.serialize(${valueManifest.value})`];
+                    }
+                    if (isNode(seed, 'variablePdaSeedNode')) {
+                        const typeManifest = visit(seed.type, typeManifestVisitor);
+                        const valueSeed = defaultValue.seeds.find(s => s.name === seed.name)?.value;
+                        if (!valueSeed) return [];
+                        if (isNode(valueSeed, 'accountValueNode')) {
+                            imports.mergeWith(typeManifest.serializerImports);
+                            imports.add('shared', 'expectPublicKey');
+                            return [
+                                `${typeManifest.serializer}.serialize(expectPublicKey(resolvedAccounts.${camelCase(valueSeed.name)}.value))`,
+                            ];
+                        }
+                        if (isNode(valueSeed, 'argumentValueNode')) {
+                            imports.mergeWith(typeManifest.serializerImports);
+                            imports.add('shared', 'expectSome');
+                            return [
+                                `${typeManifest.serializer}.serialize(expectSome(${argObject}.${camelCase(valueSeed.name)}))`,
+                            ];
+                        }
+                        const valueManifest = visit(valueSeed, typeManifestVisitor);
+                        imports.mergeWith(typeManifest.serializerImports);
+                        imports.mergeWith(valueManifest.valueImports);
+                        return [`${typeManifest.serializer}.serialize(${valueManifest.value})`];
+                    }
+                    return [];
+                });
+
+                return render(`context.eddsa.findPda(${pdaProgram}, [${pdaSeeds.join(', ')}])`);
+            }
+
+            // Linked PDA value.
             const pdaFunction = `find${pascalCase(defaultValue.pda.name)}Pda`;
             const pdaImportFrom = defaultValue.pda.importFrom ?? 'generatedAccounts';
             imports.add(pdaImportFrom, pdaFunction);

@@ -7,6 +7,7 @@ export interface PdaNode<TSeeds extends PdaSeedNode[] = PdaSeedNode[]> {
     // Data.
     readonly name: CamelCaseString;
     readonly docs: Docs;
+    readonly programId?: string;
 
     // Children.
     readonly seeds: TSeeds;

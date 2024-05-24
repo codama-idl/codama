@@ -55,6 +55,71 @@ export function getInstructionInputDefaultFragment(
             return defaultFragment(`expectAddress(accounts.${name}.value)`).addImports('shared', 'expectAddress');
 
         case 'pdaValueNode':
+            // Inlined PDA value.
+            if (isNode(defaultValue.pda, 'pdaNode')) {
+                const pdaProgram = defaultValue.pda.programId
+                    ? fragment(
+                          `'${defaultValue.pda.programId}' as Address<'${defaultValue.pda.programId}'>`,
+                      ).addImports('solanaAddresses', 'Address')
+                    : fragment('programAddress');
+                const pdaSeeds = defaultValue.pda.seeds.flatMap((seed): Fragment[] => {
+                    if (isNode(seed, 'constantPdaSeedNode') && isNode(seed.value, 'programIdValueNode')) {
+                        return [
+                            fragment(`getAddressEncoder().encode(${pdaProgram})`)
+                                .mergeImportsWith(pdaProgram)
+                                .addImports('solanaAddresses', 'getAddressEncoder'),
+                        ];
+                    }
+                    if (isNode(seed, 'constantPdaSeedNode') && !isNode(seed.value, 'programIdValueNode')) {
+                        const typeManifest = visit(seed.type, typeManifestVisitor);
+                        const valueManifest = visit(seed.value, typeManifestVisitor);
+                        return [
+                            fragment(`${typeManifest.encoder}.encode(${valueManifest.value})`).mergeImportsWith(
+                                typeManifest.encoder,
+                                valueManifest.value,
+                            ),
+                        ];
+                    }
+                    if (isNode(seed, 'variablePdaSeedNode')) {
+                        const typeManifest = visit(seed.type, typeManifestVisitor);
+                        const valueSeed = defaultValue.seeds.find(s => s.name === seed.name)?.value;
+                        if (!valueSeed) return [];
+                        if (isNode(valueSeed, 'accountValueNode')) {
+                            return [
+                                fragment(
+                                    `${typeManifest.encoder}.encode(expectAddress(accounts.${camelCase(valueSeed.name)}.value))`,
+                                )
+                                    .mergeImportsWith(typeManifest.encoder)
+                                    .addImports('shared', 'expectAddress'),
+                            ];
+                        }
+                        if (isNode(valueSeed, 'argumentValueNode')) {
+                            return [
+                                fragment(
+                                    `${typeManifest.encoder}.encode(expectSome(args.${camelCase(valueSeed.name)}))`,
+                                )
+                                    .mergeImportsWith(typeManifest.encoder)
+                                    .addImports('shared', 'expectSome'),
+                            ];
+                        }
+                        const valueManifest = visit(valueSeed, typeManifestVisitor);
+                        return [
+                            fragment(`${typeManifest.encoder}.encode(${valueManifest.value})`).mergeImportsWith(
+                                typeManifest.encoder,
+                                valueManifest.value,
+                            ),
+                        ];
+                    }
+                    return [];
+                });
+                const pdaStatement = mergeFragments([pdaProgram, ...pdaSeeds], ([p, ...s]) => {
+                    const programAddress = p === 'programAddress' ? p : `programAddress: ${p}`;
+                    return `await getProgramDerivedAddress({ ${programAddress}, seeds: [${s.join(', ')}] })`;
+                }).addImports('solanaAddresses', 'getProgramDerivedAddress');
+                return defaultFragment(pdaStatement.render).mergeImportsWith(pdaStatement);
+            }
+
+            // Linked PDA value.
             const pdaFunction = nameApi.pdaFindFunction(defaultValue.pda.name);
             const pdaImportFrom = defaultValue.pda.importFrom ?? 'generatedPdas';
             const pdaArgs = [];
