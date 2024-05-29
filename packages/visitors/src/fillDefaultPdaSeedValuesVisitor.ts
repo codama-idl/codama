@@ -38,7 +38,7 @@ export function fillDefaultPdaSeedValuesVisitor(
             visitPdaValue(node, { next }) {
                 const visitedNode = next(node);
                 assertIsNode(visitedNode, 'pdaValueNode');
-                const foundPda = linkables.get(visitedNode.pda);
+                const foundPda = isNode(visitedNode.pda, 'pdaNode') ? visitedNode.pda : linkables.get(visitedNode.pda);
                 if (!foundPda) return visitedNode;
                 const seeds = addDefaultSeedValuesFromPdaWhenMissing(instruction, foundPda, visitedNode.seeds);
                 if (strictMode && !allSeedsAreValid(instruction, foundPda, seeds)) {

@@ -17,6 +17,7 @@ export function pdaNode<const TSeeds extends PdaSeedNode[]>(input: PdaNodeInput<
         // Data.
         name: camelCase(input.name),
         docs: parseDocs(input.docs),
+        ...(input.programId && { programId: input.programId }),
 
         // Children.
         seeds: input.seeds,
