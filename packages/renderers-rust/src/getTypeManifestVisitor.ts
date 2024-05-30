@@ -132,7 +132,7 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                     manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
                     const traits = ['BorshSerialize', 'BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'];
                     if (isNode(definedType.type, 'enumTypeNode') && isScalarEnum(definedType.type)) {
-                        traits.push('PartialOrd', 'Hash', 'FromPrimitive');
+                        traits.push('Copy', 'PartialOrd', 'Hash', 'FromPrimitive');
                         manifest.imports.add(['num_derive::FromPrimitive']);
                     }
                     return {
