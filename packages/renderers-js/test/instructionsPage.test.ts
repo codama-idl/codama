@@ -76,7 +76,7 @@ test('it renders extra arguments that default on each other', async () => {
     ]);
 });
 
-test('it only renders the args variable on the async function if the sync function does not need it', async () => {
+test('it renders the args variable on the async function only if the extra argument has an async default value', async () => {
     // Given the following instruction with an async resolver and an extra argument.
     const node = programNode({
         instructions: [
@@ -85,6 +85,46 @@ test('it only renders the args variable on the async function if the sync functi
                     instructionArgumentNode({
                         defaultValue: resolverValueNode('myAsyncResolver'),
                         name: 'foo',
+                        type: numberTypeNode('u64'),
+                    }),
+                ],
+                name: 'create',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor({ asyncResolvers: ['myAsyncResolver'] }));
+
+    // And split the async and sync functions.
+    const [asyncFunction, syncFunction] = renderMap
+        .get('instructions/create.ts')
+        .split(/export\s+function\s+getCreateInstruction/);
+
+    // Then we expect only the async function to contain the args variable.
+    await codeContains(asyncFunction, ['// Original args.', 'const args = { ...input }']);
+    await codeDoesNotContain(syncFunction, ['// Original args.', 'const args = { ...input }']);
+});
+
+test('it only renders the args variable on the async function if the extra argument is used in an async default value', async () => {
+    // Given the following instruction with an async resolver depending on
+    // an extra argument such that the instruction has no data arguments.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({
+                        defaultValue: resolverValueNode('myAsyncResolver', { dependsOn: [argumentValueNode('bar')] }),
+                        isSigner: false,
+                        isWritable: false,
+                        name: 'foo',
+                    }),
+                ],
+                extraArguments: [
+                    instructionArgumentNode({
+                        name: 'bar',
                         type: numberTypeNode('u64'),
                     }),
                 ],

@@ -91,7 +91,8 @@ export function getInstructionDependencies(
     }
 
     if (isNode(input.defaultValue, 'resolverValueNode')) {
-        if (!useAsync || asyncResolvers.includes(input.defaultValue.name)) {
+        const isSynchronousResolver = !asyncResolvers.includes(input.defaultValue.name);
+        if (useAsync || isSynchronousResolver) {
             return input.defaultValue.dependsOn ?? [];
         }
     }
