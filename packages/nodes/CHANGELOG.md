@@ -1,5 +1,15 @@
 # @kinobi-so/nodes
 
+## 0.20.4
+
+### Patch Changes
+
+- [#43](https://github.com/kinobi-so/kinobi/pull/43) [`668b550`](https://github.com/kinobi-so/kinobi/commit/668b550aa2172c24ddb3b8751d91e67e94a93fa4) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Allow PdaValueNode to inline their own PdaNode definition
+
+- Updated dependencies [[`668b550`](https://github.com/kinobi-so/kinobi/commit/668b550aa2172c24ddb3b8751d91e67e94a93fa4)]:
+  - @kinobi-so/node-types@0.20.4
+  - @kinobi-so/errors@0.20.4
+
 ## 0.20.3
 
 ### Patch Changes

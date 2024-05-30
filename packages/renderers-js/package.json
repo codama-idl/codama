@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/renderers-js",
-    "version": "0.20.5",
+    "version": "0.20.6",
     "description": "JavaScript renderer compatible with the Solana web3.js library",
     "exports": {
         "types": "./dist/types/index.d.ts",
