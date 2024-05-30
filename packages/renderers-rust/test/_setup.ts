@@ -11,7 +11,7 @@ export function codeContains(actual: string, expected: (RegExp | string)[] | Reg
     });
 }
 
-export function codeNotContains(actual: string, expected: (RegExp | string)[] | RegExp | string) {
+export function codeDoesNotContains(actual: string, expected: (RegExp | string)[] | RegExp | string) {
     const expectedArray = Array.isArray(expected) ? expected : [expected];
     expectedArray.forEach(e => {
         if (typeof e === 'string') {

@@ -14,7 +14,7 @@ import { visit } from '@kinobi-so/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
-import { codeContains, codeNotContains } from './_setup';
+import { codeContains, codeDoesNotContains } from './_setup';
 
 test('it renders a prefix string on a defined type', () => {
     // Given the following program with 1 defined type using a prefixed size string.
@@ -94,5 +94,5 @@ test('it renders a non-scalar enum without Copy derive', () => {
     // Then we expect the following use and identifier to be rendered.
     codeContains(renderMap.get('types/tag_with_struct.rs'), [`#[derive(`, `pub enum TagWithStruct`]);
     // And we expect the Copy derive to be missing.
-    codeNotContains(renderMap.get('types/tag_with_struct.rs'), `Copy`);
+    codeDoesNotContains(renderMap.get('types/tag_with_struct.rs'), `Copy`);
 });
