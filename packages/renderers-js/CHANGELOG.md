@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-js
 
+## 0.20.7
+
+### Patch Changes
+
+- [#46](https://github.com/kinobi-so/kinobi/pull/46) [`bcd5eae`](https://github.com/kinobi-so/kinobi/commit/bcd5eaedf673432106e7cc72273e36f729cc8275) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix unused args variable on sync instruction functions on JS renderer again
+
 ## 0.20.6
 
 ### Patch Changes
