@@ -6,11 +6,11 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { Address, containsBytes, getU8Encoder } from '@solana/web3.js';
+import { containsBytes, getU8Encoder, type Address } from '@solana/web3.js';
 import {
-  ParsedCreateAssociatedTokenIdempotentInstruction,
-  ParsedCreateAssociatedTokenInstruction,
-  ParsedRecoverNestedAssociatedTokenInstruction,
+  type ParsedCreateAssociatedTokenIdempotentInstruction,
+  type ParsedCreateAssociatedTokenInstruction,
+  type ParsedRecoverNestedAssociatedTokenInstruction,
 } from '../instructions';
 
 export const ASSOCIATED_TOKEN_PROGRAM_ADDRESS =

@@ -7,18 +7,6 @@
  */
 
 import {
-  Account,
-  Address,
-  Codec,
-  Decoder,
-  EncodedAccount,
-  Encoder,
-  FetchAccountConfig,
-  FetchAccountsConfig,
-  MaybeAccount,
-  MaybeEncodedAccount,
-  Option,
-  OptionOrNullable,
   assertAccountExists,
   assertAccountsExist,
   combineCodec,
@@ -39,6 +27,18 @@ import {
   getU64Encoder,
   getU8Decoder,
   getU8Encoder,
+  type Account,
+  type Address,
+  type Codec,
+  type Decoder,
+  type EncodedAccount,
+  type Encoder,
+  type FetchAccountConfig,
+  type FetchAccountsConfig,
+  type MaybeAccount,
+  type MaybeEncodedAccount,
+  type Option,
+  type OptionOrNullable,
 } from '@solana/web3.js';
 
 export type Mint = {

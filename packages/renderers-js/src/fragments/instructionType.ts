@@ -55,10 +55,10 @@ export function getInstructionTypeFragment(
         .mergeImportsWith(accountTypeParamsFragment, accountMetasFragment)
         .addImports('generatedPrograms', [programAddressConstant])
         .addImports('solanaInstructions', [
-            'IAccountMeta',
-            'IInstruction',
-            'IInstructionWithAccounts',
-            ...(hasData ? ['IInstructionWithData'] : []),
+            'type IAccountMeta',
+            'type IInstruction',
+            'type IInstructionWithAccounts',
+            ...(hasData ? ['type IInstructionWithData'] : []),
         ]);
 
     // TODO: if link, add import for data type. Unless we don't need to inject the data type in IInstructionWithData.

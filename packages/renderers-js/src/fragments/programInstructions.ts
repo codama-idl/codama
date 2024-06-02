@@ -108,7 +108,7 @@ function getProgramInstructionsParsedUnionTypeFragment(
 
         return fragment(
             `| { instructionType: ${programInstructionsEnum}.${instructionEnumVariant} } & ${parsedInstructionType}<TProgram>`,
-        ).addImports('generatedInstructions', parsedInstructionType);
+        ).addImports('generatedInstructions', `type ${parsedInstructionType}`);
     });
 
     return mergeFragments(

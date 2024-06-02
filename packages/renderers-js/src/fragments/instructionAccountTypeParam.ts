@@ -24,7 +24,7 @@ export function getInstructionAccountTypeParamFragment(
     const accountMeta = allowAccountMeta ? ' | IAccountMeta<string>' : '';
     const imports = new ImportMap();
     if (allowAccountMeta) {
-        imports.add('solanaInstructions', 'IAccountMeta');
+        imports.add('solanaInstructions', 'type IAccountMeta');
     }
 
     if (instructionNode.optionalAccountStrategy === 'omitted' && instructionAccountNode.isOptional) {

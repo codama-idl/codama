@@ -18,5 +18,5 @@ export function getTypeDecoderFragment(
         strictName: nameApi.dataType(name),
     })
         .mergeImportsWith(manifest.decoder)
-        .addImports('solanaCodecsCore', 'Decoder');
+        .addImports('solanaCodecsCore', 'type Decoder');
 }

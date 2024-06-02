@@ -17,7 +17,8 @@
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "verbatimModuleSyntax": true
   },
   "exclude": ["node_modules"],
   "include": ["src", "test"]

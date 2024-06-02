@@ -6,8 +6,8 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { Address, containsBytes, getU32Encoder } from '@solana/web3.js';
-import { ParsedCreateAccountInstruction } from '../instructions';
+import { containsBytes, getU32Encoder, type Address } from '@solana/web3.js';
+import { type ParsedCreateAccountInstruction } from '../instructions';
 
 export const SYSTEM_PROGRAM_ADDRESS =
   '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;

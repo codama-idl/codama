@@ -7,10 +7,10 @@
  */
 
 import {
-  Address,
-  ProgramDerivedAddress,
   getAddressEncoder,
   getProgramDerivedAddress,
+  type Address,
+  type ProgramDerivedAddress,
 } from '@solana/web3.js';
 
 export type AssociatedTokenSeeds = {
