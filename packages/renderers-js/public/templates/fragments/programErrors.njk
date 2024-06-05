@@ -11,7 +11,7 @@ export type {{ programErrorUnion }} =
   {% endfor %};
 
 let {{ programErrorMessagesMap }}: Record<{{ programErrorUnion }}, string> | undefined;
-if (__DEV__) {
+if ("__DEV__" in global && __DEV__) {
   {{ programErrorMessagesMap }} = {
     {% for error in errors | sort(false, false, 'name') %}
       [{{ getProgramErrorConstant(error.name) }}]: `{{ error.message }}`,
@@ -20,7 +20,7 @@ if (__DEV__) {
 }
 
 export function {{ programGetErrorMessageFunction }}(code: {{ programErrorUnion }}): string {
-  if (__DEV__) {
+  if ("__DEV__" in global && __DEV__) {
     return ({{ programErrorMessagesMap }} as Record<{{ programErrorUnion }}, string>)[code];
   }
 
