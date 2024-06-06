@@ -1,6 +1,7 @@
 import {
     accountNode,
     bytesTypeNode,
+    camelCase,
     constantPdaSeedNode,
     constantPdaSeedNodeFromString,
     fixedSizeTypeNode,
@@ -99,5 +100,37 @@ test('it renders constant PDA seeds as prefix consts', () => {
         '///   1. my_account (`Pubkey`)',
         '///   2. `TestAccount::PREFIX.1`',
         /pub const PREFIX: \(\s*&'static \[u8\],\s*&'static \[u8\],\s*\) = \(\s*"myPrefix"\.as_bytes\(\),\s*42\.as_bytes\(\),\s*\)/,
+    ]);
+});
+
+test('it renders anchor traits impl', () => {
+    // Given the following account.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                discriminators: [
+                    {
+                        kind: 'fieldDiscriminatorNode',
+                        name: camelCase('discriminator'),
+                        offset: 0,
+                    },
+                ],
+                name: 'testAccount',
+                pda: pdaLinkNode('testPda'),
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following Anchor traits impl.
+    codeContains(renderMap.get('accounts/test_account.rs'), [
+        '#[cfg(feature = "anchor")]',
+        'impl anchor_lang::AccountDeserialize for TestAccount',
+        'impl anchor_lang::AccountSerialize for TestAccount {}',
+        'impl anchor_lang::Owner for TestAccount',
     ]);
 });
