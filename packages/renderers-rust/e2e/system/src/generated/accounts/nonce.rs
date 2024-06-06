@@ -63,6 +63,6 @@ impl anchor_lang::AccountSerialize for Nonce {}
 #[cfg(feature = "anchor")]
 impl anchor_lang::Owner for Nonce {
     fn owner() -> Pubkey {
-        crate::ID
+        crate::SYSTEM_ID
     }
 }
