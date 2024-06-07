@@ -128,4 +128,21 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for {{ account.
   }
 }
 
+#[cfg(feature = "anchor")]
+impl anchor_lang::AccountDeserialize for {{ account.name | pascalCase }} {
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
+      Ok(Self::deserialize(buf)?)
+    }
+}
+
+#[cfg(feature = "anchor")]
+impl anchor_lang::AccountSerialize for {{ account.name | pascalCase }} {}
+
+#[cfg(feature = "anchor")]
+impl anchor_lang::Owner for {{ account.name | pascalCase }} {
+    fn owner() -> Pubkey {
+      crate::{{ program.name | snakeCase | upper }}_ID
+    }
+}
+
 {% endblock %}
