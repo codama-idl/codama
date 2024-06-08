@@ -52,7 +52,7 @@ export function getInstructionInputTypeFragment(
             extraArgumentsFragment,
             remainingAccountsFragment,
         )
-        .addImports('solanaAddresses', ['Address']);
+        .addImports('solanaAddresses', ['type Address']);
 }
 
 function getAccountsFragment(
@@ -86,26 +86,28 @@ function getAccountTypeFragment(account: Pick<ResolvedInstructionAccount, 'isPda
     const typeParam = `TAccount${pascalCase(account.name)}`;
 
     if (account.isPda && account.isSigner === false) {
-        return fragment(`ProgramDerivedAddress<${typeParam}>`).addImports('solanaAddresses', ['ProgramDerivedAddress']);
+        return fragment(`ProgramDerivedAddress<${typeParam}>`).addImports('solanaAddresses', [
+            'type ProgramDerivedAddress',
+        ]);
     }
 
     if (account.isPda && account.isSigner === 'either') {
         return fragment(`ProgramDerivedAddress<${typeParam}> | TransactionSigner<${typeParam}>`)
-            .addImports('solanaAddresses', ['ProgramDerivedAddress'])
-            .addImports('solanaSigners', ['TransactionSigner']);
+            .addImports('solanaAddresses', ['type ProgramDerivedAddress'])
+            .addImports('solanaSigners', ['type TransactionSigner']);
     }
 
     if (account.isSigner === 'either') {
         return fragment(`Address<${typeParam}> | TransactionSigner<${typeParam}>`)
-            .addImports('solanaAddresses', ['Address'])
-            .addImports('solanaSigners', ['TransactionSigner']);
+            .addImports('solanaAddresses', ['type Address'])
+            .addImports('solanaSigners', ['type TransactionSigner']);
     }
 
     if (account.isSigner) {
-        return fragment(`TransactionSigner<${typeParam}>`).addImports('solanaSigners', ['TransactionSigner']);
+        return fragment(`TransactionSigner<${typeParam}>`).addImports('solanaSigners', ['type TransactionSigner']);
     }
 
-    return fragment(`Address<${typeParam}>`).addImports('solanaAddresses', ['Address']);
+    return fragment(`Address<${typeParam}>`).addImports('solanaAddresses', ['type Address']);
 }
 
 function getDataArgumentsFragments(
@@ -184,8 +186,8 @@ function getRemainingAccountsFragment(instructionNode: InstructionNode): Fragmen
 
         const isSigner = remainingAccountsNode.isSigner ?? false;
         const optionalSign = remainingAccountsNode.isOptional ?? false ? '?' : '';
-        const signerFragment = fragment(`TransactionSigner`).addImports('solanaSigners', ['TransactionSigner']);
-        const addressFragment = fragment(`Address`).addImports('solanaAddresses', ['Address']);
+        const signerFragment = fragment(`TransactionSigner`).addImports('solanaSigners', ['type TransactionSigner']);
+        const addressFragment = fragment(`Address`).addImports('solanaAddresses', ['type Address']);
         return (() => {
             if (isSigner === 'either') {
                 return mergeFragments([signerFragment, addressFragment], r => r.join(' | '));

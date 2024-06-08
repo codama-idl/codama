@@ -7,18 +7,7 @@
  */
 
 import {
-  Address,
   BASE_ACCOUNT_SIZE,
-  Codec,
-  Decoder,
-  Encoder,
-  IAccountMeta,
-  IAccountSignerMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-  TransactionSigner,
-  WritableSignerAccount,
   combineCodec,
   getAddressDecoder,
   getAddressEncoder,
@@ -29,12 +18,23 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type Address,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
+  type TransactionSigner,
+  type WritableSignerAccount,
 } from '@solana/web3.js';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import {
-  IInstructionWithByteDelta,
-  ResolvedAccount,
   getAccountMetaFactory,
+  type IInstructionWithByteDelta,
+  type ResolvedAccount,
 } from '../shared';
 
 export type CreateAccountInstruction<

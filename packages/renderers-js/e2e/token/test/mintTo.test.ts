@@ -5,8 +5,8 @@ import {
 } from '@solana/web3.js';
 import test from 'ava';
 import {
-  Mint,
-  Token,
+  type Mint,
+  type Token,
   fetchMint,
   fetchToken,
   getMintToInstruction,

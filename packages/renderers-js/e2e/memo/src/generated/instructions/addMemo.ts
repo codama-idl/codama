@@ -8,20 +8,20 @@
 
 import {
   AccountRole,
-  Address,
-  Codec,
-  Decoder,
-  Encoder,
-  IAccountMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-  TransactionSigner,
   combineCodec,
   getStructDecoder,
   getStructEncoder,
   getUtf8Decoder,
   getUtf8Encoder,
+  type Address,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
+  type TransactionSigner,
 } from '@solana/web3.js';
 import { MEMO_PROGRAM_ADDRESS } from '../programs';
 

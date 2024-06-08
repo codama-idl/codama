@@ -144,16 +144,16 @@ export function getInstructionFunctionFragment(
             argsTypeFragment,
         )
         .addImports('generatedPrograms', [programAddressConstant])
-        .addImports('solanaAddresses', ['Address']);
+        .addImports('solanaAddresses', ['type Address']);
 
     if (hasAccounts) {
         functionFragment
-            .addImports('solanaInstructions', ['IAccountMeta'])
-            .addImports('shared', ['getAccountMetaFactory', 'ResolvedAccount']);
+            .addImports('solanaInstructions', ['type IAccountMeta'])
+            .addImports('shared', ['getAccountMetaFactory', 'type ResolvedAccount']);
     }
 
     if (hasByteDeltas) {
-        functionFragment.addImports('shared', ['IInstructionWithByteDelta']);
+        functionFragment.addImports('shared', ['type IInstructionWithByteDelta']);
     }
 
     return functionFragment;
@@ -187,8 +187,8 @@ function getInstructionType(scope: {
                     `? ${signerRole}<${typeParam}> & IAccountSignerMeta<${typeParam}> ` +
                     `: ${typeParam}`,
             )
-                .addImports('solanaInstructions', [signerRole])
-                .addImports('solanaSigners', ['IAccountSignerMeta']);
+                .addImports('solanaInstructions', [`type ${signerRole}`])
+                .addImports('solanaSigners', ['type IAccountSignerMeta']);
         }
 
         return fragment(typeParam);

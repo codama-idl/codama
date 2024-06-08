@@ -7,14 +7,14 @@
  */
 
 import {
-  Codec,
-  Decoder,
-  Encoder,
   combineCodec,
   getEnumDecoder,
   getEnumEncoder,
   getU32Decoder,
   getU32Encoder,
+  type Codec,
+  type Decoder,
+  type Encoder,
 } from '@solana/web3.js';
 
 export enum NonceVersion {

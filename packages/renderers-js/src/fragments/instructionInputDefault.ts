@@ -60,7 +60,7 @@ export function getInstructionInputDefaultFragment(
                 const pdaProgram = defaultValue.pda.programId
                     ? fragment(
                           `'${defaultValue.pda.programId}' as Address<'${defaultValue.pda.programId}'>`,
-                      ).addImports('solanaAddresses', 'Address')
+                      ).addImports('solanaAddresses', 'type Address')
                     : fragment('programAddress');
                 const pdaSeeds = defaultValue.pda.seeds.flatMap((seed): Fragment[] => {
                     if (isNode(seed, 'constantPdaSeedNode') && isNode(seed.value, 'programIdValueNode')) {
@@ -148,7 +148,7 @@ export function getInstructionInputDefaultFragment(
         case 'publicKeyValueNode':
             return defaultFragment(`'${defaultValue.publicKey}' as Address<'${defaultValue.publicKey}'>`).addImports(
                 'solanaAddresses',
-                'Address',
+                'type Address',
             );
 
         case 'programLinkNode':

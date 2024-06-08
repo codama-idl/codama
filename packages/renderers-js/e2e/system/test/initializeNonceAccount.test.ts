@@ -1,12 +1,12 @@
 import {
-  Account,
+  type Account,
   appendTransactionMessageInstruction,
   generateKeyPairSigner,
   pipe,
 } from '@solana/web3.js';
 import test from 'ava';
 import {
-  Nonce,
+  type Nonce,
   NonceState,
   NonceVersion,
   SYSTEM_PROGRAM_ADDRESS,

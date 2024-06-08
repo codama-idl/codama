@@ -6,21 +6,21 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { Address, containsBytes, getU32Encoder } from '@solana/web3.js';
+import { containsBytes, getU32Encoder, type Address } from '@solana/web3.js';
 import {
-  ParsedAdvanceNonceAccountInstruction,
-  ParsedAllocateInstruction,
-  ParsedAllocateWithSeedInstruction,
-  ParsedAssignInstruction,
-  ParsedAssignWithSeedInstruction,
-  ParsedAuthorizeNonceAccountInstruction,
-  ParsedCreateAccountInstruction,
-  ParsedCreateAccountWithSeedInstruction,
-  ParsedInitializeNonceAccountInstruction,
-  ParsedTransferSolInstruction,
-  ParsedTransferSolWithSeedInstruction,
-  ParsedUpgradeNonceAccountInstruction,
-  ParsedWithdrawNonceAccountInstruction,
+  type ParsedAdvanceNonceAccountInstruction,
+  type ParsedAllocateInstruction,
+  type ParsedAllocateWithSeedInstruction,
+  type ParsedAssignInstruction,
+  type ParsedAssignWithSeedInstruction,
+  type ParsedAuthorizeNonceAccountInstruction,
+  type ParsedCreateAccountInstruction,
+  type ParsedCreateAccountWithSeedInstruction,
+  type ParsedInitializeNonceAccountInstruction,
+  type ParsedTransferSolInstruction,
+  type ParsedTransferSolWithSeedInstruction,
+  type ParsedUpgradeNonceAccountInstruction,
+  type ParsedWithdrawNonceAccountInstruction,
 } from '../instructions';
 
 export const SYSTEM_PROGRAM_ADDRESS =

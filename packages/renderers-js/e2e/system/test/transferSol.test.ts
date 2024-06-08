@@ -1,6 +1,6 @@
 import {
   AccountRole,
-  Address,
+  type Address,
   appendTransactionMessageInstruction,
   generateKeyPairSigner,
   lamports,

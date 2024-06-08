@@ -49,7 +49,7 @@
         "@kinobi-so/visitors-core": "workspace:*",
         "@solana/codecs-strings": "tp2",
         "nunjucks": "^3.2.4",
-        "prettier": "^3.2.5"
+        "prettier": "^3.3.0"
     },
     "devDependencies": {
         "@types/nunjucks": "^3.2.6"

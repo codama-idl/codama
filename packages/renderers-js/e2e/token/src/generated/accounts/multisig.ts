@@ -7,16 +7,6 @@
  */
 
 import {
-  Account,
-  Address,
-  Codec,
-  Decoder,
-  EncodedAccount,
-  Encoder,
-  FetchAccountConfig,
-  FetchAccountsConfig,
-  MaybeAccount,
-  MaybeEncodedAccount,
   assertAccountExists,
   assertAccountsExist,
   combineCodec,
@@ -33,6 +23,16 @@ import {
   getStructEncoder,
   getU8Decoder,
   getU8Encoder,
+  type Account,
+  type Address,
+  type Codec,
+  type Decoder,
+  type EncodedAccount,
+  type Encoder,
+  type FetchAccountConfig,
+  type FetchAccountsConfig,
+  type MaybeAccount,
+  type MaybeEncodedAccount,
 } from '@solana/web3.js';
 
 export type Multisig = {
