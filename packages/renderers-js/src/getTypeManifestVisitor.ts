@@ -137,8 +137,14 @@ export function getTypeManifestVisitor(input: {
                             'getBytesEncoder',
                         ),
                         isEnum: false,
-                        looseType: fragment('ReadonlyUint8Array').addImports('solanaCodecsCore', 'type ReadonlyUint8Array'),
-                        strictType: fragment('ReadonlyUint8Array').addImports('solanaCodecsCore', 'type ReadonlyUint8Array'),
+                        looseType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
                         value: fragment(''),
                     };
                 },

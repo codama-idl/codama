@@ -86,7 +86,9 @@ function getAccountTypeFragment(account: Pick<ResolvedInstructionAccount, 'isPda
     const typeParam = `TAccount${pascalCase(account.name)}`;
 
     if (account.isPda && account.isSigner === false) {
-        return fragment(`ProgramDerivedAddress<${typeParam}>`).addImports('solanaAddresses', ['type ProgramDerivedAddress']);
+        return fragment(`ProgramDerivedAddress<${typeParam}>`).addImports('solanaAddresses', [
+            'type ProgramDerivedAddress',
+        ]);
     }
 
     if (account.isPda && account.isSigner === 'either') {

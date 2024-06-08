@@ -370,7 +370,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                         'isProgramDerivedAddress',
                                         'type ProgramDerivedAddress',
                                     ])
-                                    .add('solanaInstructions', ['AccountRole', 'type IAccountMeta', 'upgradeRoleToSigner'])
+                                    .add('solanaInstructions', [
+                                        'AccountRole',
+                                        'type IAccountMeta',
+                                        'upgradeRoleToSigner',
+                                    ])
                                     .add('solanaSigners', [
                                         'type IAccountSignerMeta',
                                         'isTransactionSigner',
