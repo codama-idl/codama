@@ -17,7 +17,7 @@ export async function {{ findPdaFunction }}(
   {% endif %}
   config: { programAddress?: Address | undefined } = {},
 ): Promise<ProgramDerivedAddress> {
-  const { programAddress = '{{ program.publicKey }}' as Address<'{{ program.publicKey }}'> } = config;
+  const { programAddress = '{{ programAddress }}' as Address<'{{ programAddress }}'> } = config;
   return await getProgramDerivedAddress({ programAddress, seeds: [
     {% for seed in seeds %}
       {% if seed.kind === 'constantPdaSeedNode' and seed.value.kind === 'programIdValueNode' %}
