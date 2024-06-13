@@ -37,7 +37,7 @@ export function getPdaFunctionFragment(
         findPdaFunction: nameApi.pdaFindFunction(pdaNode.name),
         hasVariableSeeds,
         pdaSeedsType: nameApi.pdaSeedsType(pdaNode.name),
-        program: programNode,
+        programAddress: pdaNode.programId ?? programNode.publicKey,
         seeds,
     })
         .mergeImportsWith(imports)
