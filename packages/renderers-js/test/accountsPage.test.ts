@@ -45,13 +45,12 @@ test('it renders an account with a defined type link as discriminator', async ()
     const node = programNode({
         accounts: [
             accountNode({
-                name: 'asset',
                 data: structTypeNode([
                     structFieldTypeNode({
-                        name: 'key',
-                        type: definedTypeLinkNode('Key'),
                         defaultValue: enumValueNode('key', 'Asset'),
                         defaultValueStrategy: 'omitted',
+                        name: 'key',
+                        type: definedTypeLinkNode('Key'),
                     }),
                     structFieldTypeNode({
                         name: 'mutable',
@@ -63,6 +62,7 @@ test('it renders an account with a defined type link as discriminator', async ()
                     }),
                 ]),
                 discriminators: [fieldDiscriminatorNode('key', 0)],
+                name: 'asset',
             }),
         ],
         definedTypes: [
