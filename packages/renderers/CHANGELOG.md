@@ -1,5 +1,12 @@
 # @kinobi-so/renderers
 
+## 0.20.11
+
+### Patch Changes
+
+-   Updated dependencies [[`cde409c`](https://github.com/kinobi-so/kinobi/commit/cde409c6132a66a27091bfb7025904e70b7689a4)]:
+    -   @kinobi-so/renderers-rust@0.20.10
+
 ## 0.20.10
 
 ### Patch Changes
