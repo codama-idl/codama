@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-js
 
+## 0.20.9
+
+### Patch Changes
+
+-   [#53](https://github.com/kinobi-so/kinobi/pull/53) [`e3e4099`](https://github.com/kinobi-so/kinobi/commit/e3e4099e33b4d1dd9bc63e9c4997dc00426c8010) Thanks [@febo](https://github.com/febo)! - Filter out type variant on imports
+
 ## 0.20.8
 
 ### Patch Changes

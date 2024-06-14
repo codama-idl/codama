@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-rust
 
+## 0.20.9
+
+### Patch Changes
+
+-   [#54](https://github.com/kinobi-so/kinobi/pull/54) [`5b8186f`](https://github.com/kinobi-so/kinobi/commit/5b8186f0231e767bba7fa02a201eb7dcb87591a3) Thanks [@febo](https://github.com/febo)! - Add support to Anchor idl build for account types
+
 ## 0.20.8
 
 ### Patch Changes
