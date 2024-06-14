@@ -5,6 +5,7 @@ edition = "2021"
 
 [features]
 anchor = ["dep:anchor-lang"]
+anchor-idl-build = ["anchor", "anchor-lang?/idl-build"]
 serde = ["dep:serde", "dep:serde_with"]
 test-sbf = []
 
