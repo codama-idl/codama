@@ -135,7 +135,18 @@ export class ImportMap {
                 return a.localeCompare(b);
             })
             .map(([module, imports]) => {
-                const joinedImports = [...imports].sort().join(', ');
+                const joinedImports = [...imports]
+                    .sort()
+                    .filter(i => {
+                        // import of a type can either be '<Type>' or 'type <Type>', so
+                        // we filter out 'type <Type>' variation if there is a '<Type>'
+                        const name = i.split(' ');
+                        if (name.length > 1) {
+                            return !imports.has(name[1]);
+                        }
+                        return true;
+                    })
+                    .join(', ');
                 return `import { ${joinedImports} } from '${module}';`;
             })
             .join('\n');
