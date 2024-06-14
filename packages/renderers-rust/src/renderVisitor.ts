@@ -9,7 +9,7 @@ export type RenderOptions = GetRenderMapOptions & {
     crateFolder?: string;
     deleteFolderBeforeRendering?: boolean;
     formatCode?: boolean;
-    toolchain?: 'nightly' | 'stable';
+    toolchain?: string;
 };
 
 export function renderVisitor(path: string, options: RenderOptions = {}) {
@@ -25,7 +25,7 @@ export function renderVisitor(path: string, options: RenderOptions = {}) {
         // format the code
         if (options.formatCode) {
             if (options.crateFolder) {
-                const toolchain = options.toolchain ? `+${options.toolchain}` : '+stable';
+                const toolchain = options.toolchain ?? '+stable';
                 runFormatter('cargo', [toolchain, 'fmt', '--manifest-path', `${options.crateFolder}/Cargo.toml`]);
             } else {
                 logWarn('No crate folder specified, skipping formatting.');
