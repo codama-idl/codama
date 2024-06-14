@@ -2,4 +2,4 @@
 '@kinobi-so/renderers-js': patch
 ---
 
-Add missing type prefix for enums
+Filter out type variant on imports
