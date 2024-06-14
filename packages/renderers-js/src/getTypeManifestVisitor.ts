@@ -350,7 +350,9 @@ export function getTypeManifestVisitor(input: {
 
                     if (!node.value && isScalar) {
                         const variantName = nameApi.enumVariant(node.variant);
-                        manifest.value.setRender(`${enumName}.${variantName}`).addImports(importFrom, enumName);
+                        manifest.value
+                            .setRender(`${enumName}.${variantName}`)
+                            .addImports(importFrom, `type ${enumName}`);
                         return manifest;
                     }
 
