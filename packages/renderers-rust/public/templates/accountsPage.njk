@@ -145,4 +145,16 @@ impl anchor_lang::Owner for {{ account.name | pascalCase }} {
     }
 }
 
+#[cfg(feature = "anchor-idl-build")]
+impl anchor_lang::IdlBuild for {{ account.name | pascalCase }} {}
+
+{#
+  This is not used for the IDL generation since default `IdlBuild` impl doesn't include
+  the type in the IDL but it stil needs to be added in order to make compilation work.
+#}
+#[cfg(feature = "anchor-idl-build")]
+impl anchor_lang::Discriminator for {{ account.name | pascalCase }} {
+  const DISCRIMINATOR: [u8; 8] = [0; 8];
+}
+
 {% endblock %}

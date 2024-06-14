@@ -66,3 +66,11 @@ impl anchor_lang::Owner for Nonce {
         crate::SYSTEM_ID
     }
 }
+
+#[cfg(feature = "anchor-idl-build")]
+impl anchor_lang::IdlBuild for Nonce {}
+
+#[cfg(feature = "anchor-idl-build")]
+impl anchor_lang::Discriminator for Nonce {
+    const DISCRIMINATOR: [u8; 8] = [0; 8];
+}
