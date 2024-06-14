@@ -78,5 +78,5 @@ test('it renders an account with a defined type link as discriminator', async ()
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following import list with a reference to the disciminator type.
-    await renderMapContains(renderMap, 'accounts/asset.ts', ['import { getKeyDecoder, getKeyEncoder, type Key }']);
+    await renderMapContains(renderMap, 'accounts/asset.ts', ['import { Key, getKeyDecoder, getKeyEncoder }']);
 });
