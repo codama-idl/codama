@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-rust
 
+## 0.20.10
+
+### Patch Changes
+
+-   [#56](https://github.com/kinobi-so/kinobi/pull/56) [`cde409c`](https://github.com/kinobi-so/kinobi/commit/cde409c6132a66a27091bfb7025904e70b7689a4) Thanks [@buffalojoec](https://github.com/buffalojoec)! - Rust Renderer: Add toolchain arg to formatter
+
 ## 0.20.9
 
 ### Patch Changes
