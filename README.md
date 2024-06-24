@@ -64,7 +64,8 @@ _Note that some features such as rendering CLIs are not yet available. However, 
     -   `@kinobi-so/renderers-js-umi`: Renders a JavaScript client compatible with Metaplex’s [Umi](https://github.com/metaplex-foundation/umi) framework.
     -   `@kinobi-so/renderers-rust`: Renders a Rust client that removes the need for publishing the program crate and offers a better developer experience.
     -   _And more to come._
-        Here’s an example of how to generate JavaScript and Rust client code for your program.
+
+    Here’s an example of how to generate JavaScript and Rust client code for your program.
 
     ```ts
     import { renderJavaScriptVisitor, renderRustVisitor } from '@kinobi-so/renderers';
