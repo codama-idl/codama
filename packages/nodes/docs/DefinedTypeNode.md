@@ -4,7 +4,9 @@ This node defines a named type that can be reused in other types using a [`Defin
 
 ![Diagram](https://github.com/kinobi-so/kinobi/assets/3642397/6049cf77-9a70-4915-8276-dd571d2f8828)
 
-## Data
+## Attributes
+
+### Data
 
 | Attribute | Type                | Description                          |
 | --------- | ------------------- | ------------------------------------ |
@@ -12,7 +14,7 @@ This node defines a named type that can be reused in other types using a [`Defin
 | `name`    | `CamelCaseString`   | The name of the reusable type.       |
 | `docs`    | `string[]`          | Markdown documentation for the type. |
 
-## Children
+### Children
 
 | Attribute | Type                      | Description                   |
 | --------- | ------------------------- | ----------------------------- |
@@ -20,10 +22,17 @@ This node defines a named type that can be reused in other types using a [`Defin
 
 ## Functions
 
-TODO
+### `definedTypeNode(input)`
 
-## Examples
+Helper function that creates a `DefinedTypeNode` object from an input object.
 
 ```ts
-const todo = 4;
+const node = definedTypeNode({
+    name: 'person',
+    docs: ['This type describes a Person.'],
+    type: structTypeNode([
+        structFieldTypeNode({ name: 'name', type: stringTypeNode('utf8') }),
+        structFieldTypeNode({ name: 'age', type: numberTypeNode('u8') }),
+    ]),
+});
 ```
