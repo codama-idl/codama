@@ -33,7 +33,7 @@ There are various ways to extract information from your Solana programs in order
 
     ```ts
     import { createFromRootNode } from 'kinobi';
-    import { rootNodeFromAnchor } from '@kinobi-so/nodes-from-anchor';
+    import { rootNodeFromAnchor } from '@kinobi-so/nodes-from-anchor';
     import anchorIdl from 'anchor-idl.json';
 
     const kinobi = createFromRootNode(rootNodeFromAnchor(anchorIdl));
