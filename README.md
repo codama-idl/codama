@@ -43,12 +43,12 @@ There are various ways to extract information from your Solana programs in order
 
 ## Transforming Kinobi
 
-Once you have your Kinobi IDL, you may use visitors to transform it further. This can be useful when the Kinobi IDL was obtained from another source that may not contain as much information. Here is an example using two provided visitors that adjust the accounts and instructions on the program.
+Once you have your Kinobi IDL, you may use visitors to transform it. This can be useful when the Kinobi IDL was obtained from another source that may not contain some necessary information. Here is an example using two provided visitors that adjust the accounts and instructions on the program.
 
 ```ts
-import { updateAccoutsVisitor, updateInstructionsVisitor } from 'kinobi';
+import { updateAccountsVisitor, updateInstructionsVisitor } from 'kinobi';
 
-kinobi.update(updateAccoutsVisitor({ ... }));
+kinobi.update(updateAccountsVisitor({ ... }));
 kinobi.update(updateInstructionsVisitor({ ... }));
 ```
 
@@ -60,7 +60,7 @@ _Note that some features such as rendering CLIs are not yet available. However, 
 
 -   **Rendering client code**. Want people to start interacting with your Solana program? You can use special visitors that go through your Kinobi IDL and generate client code that you can then publish for your end-users. Currently, we have the following renderers available:
 
-    -   `@kinobi-so/renderers-js`: Renders a JavaScript client compatible with the new [web3.js](https://github.com/solana-labs/solana-web3.js) (in technological preview).
+    -   `@kinobi-so/renderers-js`: Renders a JavaScript client compatible with the soon-to-be-released 2.0 line of [`@solana/web3.js`](https://github.com/solana-labs/solana-web3.js).
     -   `@kinobi-so/renderers-js-umi`: Renders a JavaScript client compatible with Metaplex’s [Umi](https://github.com/metaplex-foundation/umi) framework.
     -   `@kinobi-so/renderers-rust`: Renders a Rust client that removes the need for publishing the program crate and offers a better developer experience.
     -   _And more to come._
