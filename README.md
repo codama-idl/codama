@@ -10,7 +10,7 @@
 [ci-image]: https://img.shields.io/github/actions/workflow/status/kinobi-so/kinobi/main.yml?logo=GitHub
 [ci-url]: https://github.com/kinobi-so/kinobi/actions/workflows/main.yml
 
-Kinobi is a tool that describes any Solana program in a powerful standardised format known as the Kinobi IDL. This IDL can then be used to create a variety of utility such as rendering client code for your programs in various languages/frameworks, generating CLI tools, providing more information to explorers, etc.
+Kinobi is a tool that describes any Solana program in a powerful standardised format known as the Kinobi IDL. This IDL can then be used to create a variety of utility such as rendering client code for your programs in various languages/frameworks, generating CLIs, providing more information to explorers, etc.
 
 ![Kinobi header: A small double-sided mind-map with the Kinobi logo in the middle. On the left, we see the various ways to get a Kinobi IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/kinobi-so/kinobi/assets/3642397/1c3682f3-1cec-4ad4-a7b9-9f917a7a52f6)
 
@@ -43,7 +43,7 @@ There are various ways to extract information from your Solana programs in order
 
 ## Transforming Kinobi
 
-Once you have your Kinobi IDL, you may use visitors to transform it. This can be useful when the Kinobi IDL was obtained from another source that may not contain some necessary information. Here is an example using two provided visitors that adjust the accounts and instructions on the program.
+Once you have your Kinobi IDL, you may use visitors to transform it. This can be useful when the Kinobi IDL was obtained from another source that may not contain some necessary information. Here is an example using two provided visitors that adjusts the accounts and instructions on the program.
 
 ```ts
 import { updateAccountsVisitor, updateInstructionsVisitor } from 'kinobi';
@@ -75,5 +75,5 @@ _Note that some features such as rendering CLIs are not yet available. However, 
     ```
 
 -   **Registering your Kinobi IDL on-chain** (_Coming soon_). Perhaps the biggest benefit of having a Kinobi IDL from your program is that you can share it on-chain with the rest of the ecosystem. This means explorers may now use this information to provide a better experience for users of your programs. Additionally, anyone can now grab your Kinobi IDL, select the portion they are interested in and benefit from the same ecosystem of Kinobi visitors to iterate over it. For instance, an app could decide to grab the IDLs of all programs they depend on, filter out the accounts and instructions they don’t need and generate a bespoke client for their app that only contains the functions the app needs.
--   **Rendering CLIs** (_Not yet available_). Whilst not available yet, we can imagine a set of CLI tools that can be generated from our Kinobi IDL (much like our clients) so that end-users can fetch decoded accounts and send instructions directly from their Terminal.
--   **Rendering documentation** (_Not yet available_). Similarly to CLI tools, we may easily generate documentation in various formats from the information held by our Kinobi IDL.
+-   **Rendering CLIs** (_Not yet available_). Whilst not available yet, we can imagine a set of CLI commands that can be generated from our Kinobi IDL (much like our clients) so that end-users can fetch decoded accounts and send instructions directly from their terminal.
+-   **Rendering documentation** (_Not yet available_). Similarly to CLIs, we may easily generate documentation in various formats from the information held by our Kinobi IDL.
