@@ -10,19 +10,19 @@
 [ci-image]: https://img.shields.io/github/actions/workflow/status/kinobi-so/kinobi/main.yml?logo=GitHub
 [ci-url]: https://github.com/kinobi-so/kinobi/actions/workflows/main.yml
 
-Kinobi is a tool that describes any Solana program in a powerful standardised format known as the Kinobi IDL. This IDL can then be used to create a variety of utility such as rendering client code for your programs in various languages/frameworks, generating CLIs, providing more information to explorers, etc.
+Kinobi is a tool that describes any Solana program in a powerful standardised format known as the Kinobi IDL. This IDL can then be used to create a variety of utility such as rendering client code for your programs in various languages/frameworks, generating CLIs and providing more information to explorers.
 
-![Kinobi header: A small double-sided mind-map with the Kinobi logo in the middle. On the left, we see the various ways to get a Kinobi IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/kinobi-so/kinobi/assets/3642397/1c3682f3-1cec-4ad4-a7b9-9f917a7a52f6)
+![Kinobi header: A small double-sided mind-map with the Kinobi logo in the middle. On the left, we see the various ways to get a Kinobi IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/kinobi-so/kinobi/assets/3642397/1e25dfba-9213-4c5b-9f4a-32be8feb4a7f)
 
 ## Nodes and visitors
 
 The Kinobi IDL is designed as a tree of nodes starting with the `RootNode` which contains a `ProgramNode` and additional data such as the Kinobi version used when the IDL was created. Kinobi provides over 60 different types of nodes that help describe just about any aspect of your Solana programs. [You can read more about the Kinobi nodes here](./packages/nodes).
 
-![A small example of a Kinobi IDL as a tree of nodes. It starts with a RootNode and goes down to ProgramNode, AccountNode, InstructionNode, etc.](https://github.com/kinobi-so/kinobi/assets/3642397/fc89615f-f881-4160-a0a1-31b6d3da26da)
+![A small example of a Kinobi IDL as a tree of nodes. It starts with a RootNode and goes down to ProgramNode, AccountNode, InstructionNode, etc.](https://github.com/kinobi-so/kinobi/assets/3642397/9d53485d-a4f6-459a-b7eb-58faab716bc1)
 
 Because everything is designed as a `Node`, we can transform the IDL, aggregate information and output various utility tools using special objects that can traverse node trees known as visitors. [See this documentation to learn more about Kinobi visitors](./packages/visitors).
 
-![A small example of how a visitor can transform a Kinobi IDL into another Kinobi IDL. This example illustrates the "deleteNodesVisitor" which recursively removes NumberTypeNodes from a tree of nested TypleTypeNodes.](https://github.com/kinobi-so/kinobi/assets/3642397/958efd93-e866-4e6d-a99f-fb18606b58c1)
+![A small example of how a visitor can transform a Kinobi IDL into another Kinobi IDL. This example illustrates the "deleteNodesVisitor" which recursively removes NumberTypeNodes from a tree of nested TypleTypeNodes.](https://github.com/kinobi-so/kinobi/assets/3642397/f54e83d1-eade-4674-80dc-7ddc360f5f66)
 
 ## From program to Kinobi
 
