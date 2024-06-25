@@ -12,7 +12,7 @@
 
 Kinobi is a tool that describes any Solana program in a powerful standardised format known as the Kinobi IDL. This IDL can then be used to create a variety of utility such as rendering client code for your programs in various languages/frameworks, generating CLIs and providing more information to explorers.
 
-![Kinobi header: A small double-sided mind-map with the Kinobi logo in the middle. On the left, we see the various ways to get a Kinobi IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/kinobi-so/kinobi/assets/3642397/1e25dfba-9213-4c5b-9f4a-32be8feb4a7f)
+![Kinobi header: A small double-sided mind-map with the Kinobi logo in the middle. On the left, we see the various ways to get a Kinobi IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/kinobi-so/kinobi/assets/3642397/11161fb6-1ef4-446d-bf73-ce04484519a0)
 
 ## Nodes and visitors
 
