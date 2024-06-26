@@ -1,20 +1,25 @@
 # `PublicKeyTypeNode`
 
-TODO: Small description.
+A node that represents a 32-byte public key.
 
-TODO: Diagram.
+## Attributes
 
-## Data
+### Data
 
--   `foo`: Description.
--   `bar`: Description.
+| Attribute | Type                  | Description             |
+| --------- | --------------------- | ----------------------- |
+| `kind`    | `"publicKeyTypeNode"` | The node discriminator. |
 
-## Children
+### Children
 
-This node has no children.
+_This node has no children._
 
-## Example
+## Functions
+
+### `publicKeyTypeNode()`
+
+Helper function that creates a `PublicKeyTypeNode` object.
 
 ```ts
-const todo = 4;
+const node = publicKeyTypeNode();
 ```
