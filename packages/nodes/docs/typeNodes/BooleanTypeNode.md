@@ -18,9 +18,9 @@ A node that represents a boolean value using a `NumberTypeNode`. If the number i
 
 ## Functions
 
-### `booleanTypeNode(size)`
+### `booleanTypeNode(size?)`
 
-Helper function that creates a `BooleanTypeNode` object from a `NumberTypeNode`.
+Helper function that creates a `BooleanTypeNode` object from a `NumberTypeNode` (defaulting to `u8` if not provided).
 
 ```ts
 const node = booleanTypeNode(numberTypeNode('u32'));

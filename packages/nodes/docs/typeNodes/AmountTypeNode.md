@@ -14,15 +14,15 @@ A node that wraps a [`NumberTypeNode`](./NumberTypeNode.md) to provide additiona
 
 ### Children
 
-| Attribute | Type                                                                             | Description             |
-| --------- | -------------------------------------------------------------------------------- | ----------------------- |
-| `number`  | [`NestedTypeNode`](./NestedTypeNode.md)<[`NumberTypeNode`](./NumberTypeNode.md)> | The number node to wrap |
+| Attribute | Type                                                                             | Description              |
+| --------- | -------------------------------------------------------------------------------- | ------------------------ |
+| `number`  | [`NestedTypeNode`](./NestedTypeNode.md)<[`NumberTypeNode`](./NumberTypeNode.md)> | The number node to wrap. |
 
 ## Functions
 
-### `amountTypeNode(input)`
+### `amountTypeNode(number, decimals, unit?)`
 
-Helper function that creates a `AmountTypeNode` object from an input object.
+Helper function that creates a `AmountTypeNode` object from a `NumberTypeNode`, a number of decimals and an optional unit.
 
 ```ts
 const node = amountTypeNode(numberTypeNode('u64'), 2, 'USD');
