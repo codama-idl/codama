@@ -1,4 +1,14 @@
-import { accountValueNode, pdaLinkNode, pdaSeedValueNode, pdaValueNode, publicKeyValueNode } from '@kinobi-so/nodes';
+import {
+    accountValueNode,
+    constantPdaSeedNode,
+    pdaLinkNode,
+    pdaNode,
+    pdaSeedValueNode,
+    pdaValueNode,
+    publicKeyTypeNode,
+    publicKeyValueNode,
+    variablePdaSeedNode,
+} from '@kinobi-so/nodes';
 import { test } from 'vitest';
 
 import {
@@ -19,6 +29,25 @@ test('mergeVisitor', () => {
 
 test('identityVisitor', () => {
     expectIdentityVisitor(node);
+});
+
+test('identityVisitor with inlined PdaNode', () => {
+    const inlinedPdaNode = pdaNode({
+        name: 'associatedToken',
+        seeds: [
+            variablePdaSeedNode('mint', publicKeyTypeNode()),
+            constantPdaSeedNode(
+                publicKeyTypeNode(),
+                publicKeyValueNode('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'),
+            ),
+            variablePdaSeedNode('owner', publicKeyTypeNode()),
+        ],
+    });
+    const inlinedPdaValueNode = pdaValueNode(inlinedPdaNode, [
+        pdaSeedValueNode('mint', accountValueNode('mint')),
+        pdaSeedValueNode('owner', publicKeyValueNode('8sphVBHQxufE4Jc1HMuWwWdKgoDjncQyPHwxYhfATRtF')),
+    ]);
+    expectIdentityVisitor(inlinedPdaValueNode);
 });
 
 test('deleteNodesVisitor', () => {
