@@ -517,7 +517,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitPdaValue = function visitPdaValue(node) {
             const pda = visit(this)(node.pda);
             if (pda === null) return null;
-            assertIsNode(pda, 'pdaLinkNode');
+            assertIsNode(pda, ['pdaLinkNode', 'pdaNode']);
             const seeds = node.seeds.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pdaSeedValueNode'));
             return pdaValueNode(pda, seeds);
         };
