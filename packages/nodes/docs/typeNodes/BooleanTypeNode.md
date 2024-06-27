@@ -12,9 +12,9 @@ A node that represents a boolean value using a `NumberTypeNode`. If the number i
 
 ### Children
 
-| Attribute | Type                                                                       | Description                                    |
-| --------- | -------------------------------------------------------------------------- | ---------------------------------------------- |
-| `size`    | [`NestedTypeNode`](./NestedTypeNode)<[`NumberTypeNode`](./NumberTypeNode)> | The number node used to represent the boolean. |
+| Attribute | Type                                                                             | Description                                    |
+| --------- | -------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `size`    | [`NestedTypeNode`](./NestedTypeNode.md)<[`NumberTypeNode`](./NumberTypeNode.md)> | The number node used to represent the boolean. |
 
 ## Functions
 

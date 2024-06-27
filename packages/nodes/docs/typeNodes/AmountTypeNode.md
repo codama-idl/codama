@@ -1,6 +1,6 @@
 # `AmountTypeNode`
 
-A node that wraps a [`NumberTypeNode`](./NumberTypeNode) to provide additional context such as its unit and decimal places.
+A node that wraps a [`NumberTypeNode`](./NumberTypeNode.md) to provide additional context such as its unit and decimal places.
 
 ## Attributes
 
@@ -14,9 +14,9 @@ A node that wraps a [`NumberTypeNode`](./NumberTypeNode) to provide additional c
 
 ### Children
 
-| Attribute | Type                                                                       | Description             |
-| --------- | -------------------------------------------------------------------------- | ----------------------- |
-| `number`  | [`NestedTypeNode`](./NestedTypeNode)<[`NumberTypeNode`](./NumberTypeNode)> | The number node to wrap |
+| Attribute | Type                                                                             | Description             |
+| --------- | -------------------------------------------------------------------------------- | ----------------------- |
+| `number`  | [`NestedTypeNode`](./NestedTypeNode.md)<[`NumberTypeNode`](./NumberTypeNode.md)> | The number node to wrap |
 
 ## Functions
 
