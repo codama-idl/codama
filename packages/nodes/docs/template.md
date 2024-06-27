@@ -2,9 +2,6 @@
 
 Some node description.
 
-<!-- Some node diagram (optional). -->
-<!-- ![Diagram](https://github.com/kinobi-so/kinobi/assets/3642397/6049cf77-9a70-4915-8276-dd571d2f8828) -->
-
 ## Attributes
 
 ### Data
@@ -29,15 +26,20 @@ _This node has no children._
 
 ### `someNode(input)`
 
-Helper function that creates a `SomeNode` object from an input object.
+Helper function that creates a `SomeNode` object from TODO.
 
 ```ts
-const node = someNode({
-    name: 'person',
-    docs: ['This type describes a Person.'],
-    child: structTypeNode([
-        structFieldTypeNode({ name: 'name', type: stringTypeNode('utf8') }),
-        structFieldTypeNode({ name: 'age', type: numberTypeNode('u8') }),
-    ]),
-});
+const node = someNode(TODO);
+```
+
+## Examples
+
+### Some example title
+
+```ts
+someNode(TODO);
+
+// 0.01 USD   => 0x01000000
+// 10 USD     => 0x03E80000
+// 400.60 USD => 0x9C7C0000
 ```
