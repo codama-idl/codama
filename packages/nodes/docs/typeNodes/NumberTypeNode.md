@@ -107,13 +107,11 @@ isDecimal(numberTypeNode('f32')); // true
 
 ```ts
 numberTypeNode('u32');
-```
 
-| Value  | Bytes      |
-| ------ | ---------- |
-| 0      | `00000000` |
-| 42     | `2A000000` |
-| 65 535 | `FFFF0000` |
+// 5     => 0x00000000
+// 42    => 0x2A000000
+// 65535 => 0xFFFF0000
+```
 
 ### Encoding `f32` big-endian decimal numbers
 
@@ -121,13 +119,11 @@ numberTypeNode('u32');
 
 ```ts
 numberTypeNode('f32', 'be');
-```
 
-| Value  | Bytes      |
-| ------ | ---------- |
-| 1      | `3F800000` |
-| -42    | `C2280000` |
-| 3.1415 | `40490E56` |
+// 1      => 0x3F800000
+// -42    => 0xC2280000
+// 3.1415 => 0x40490E56
+```
 
 ### Encoding `shortU16` integers
 
@@ -135,10 +131,8 @@ numberTypeNode('f32', 'be');
 
 ```ts
 numberTypeNode('shortU16');
-```
 
-| Value  | Bytes    |
-| ------ | -------- |
-| 42     | `2A`     |
-| 128    | `8001`   |
-| 16 384 | `808001` |
+// 42    => 0x2A
+// 128   => 0x8001
+// 16384 => 0x808001
+```
