@@ -4,6 +4,8 @@ A node that wraps a type node and whilst silently consuming a suffix of constant
 
 When encoding, the constant values are written after the child node. When decoding, the suffixed constant values are consumed and checked against the expected values before being discarded.
 
+This node can be used to create [`NestedTypeNode`](./NestedTypeNode.md).
+
 ## Attributes
 
 ### Data
