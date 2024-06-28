@@ -1,6 +1,6 @@
 # `ArrayTypeNode`
 
-A node that represents an array of items. The type of the items is defined by the `item` child node and the length of the array is determined by the `count` child node.
+A node that represents an array of items. The type of each item is defined by the `item` child node and the length of the array is determined by the `count` child node.
 
 ## Attributes
 
@@ -12,10 +12,10 @@ A node that represents an array of items. The type of the items is defined by th
 
 ### Children
 
-| Attribute | Type                                   | Description                                 |
-| --------- | -------------------------------------- | ------------------------------------------- |
-| `item`    | [`TypeNode`](./README.md)              | The item type of the array.                 |
-| `count`   | [`CountNode`](../countNodes/README.md) | The strategy to determine the array length. |
+| Attribute | Type                                   | Description                                      |
+| --------- | -------------------------------------- | ------------------------------------------------ |
+| `item`    | [`TypeNode`](./README.md)              | The type of each item in the array.              |
+| `count`   | [`CountNode`](../countNodes/README.md) | The strategy to determine the size of the array. |
 
 ## Functions
 
