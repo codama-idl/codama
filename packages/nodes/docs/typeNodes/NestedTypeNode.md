@@ -6,7 +6,7 @@ For instance, say we have the following requirement: `NestedTypeNode<StringTypeN
 
 ## Available wrappers
 
-Therefore, when encountering a `NestedTypeNode<T>` requirement, we can either provide the type `T` itself or any nested combination of nodes that includes `T` as the final node and the following wrappers:
+Therefore, when encountering a `NestedTypeNode<T>` requirement, we can either provide the type `T` itself or any nested combination of nodes that includes the following wrappers:
 
 -   [`FixedSizeTypeNode`](./FixedSizeTypeNode.md)
 -   [`HiddenPrefixTypeNode`](./HiddenPrefixTypeNode.md)
