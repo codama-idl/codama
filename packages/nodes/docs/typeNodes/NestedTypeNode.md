@@ -1,4 +1,4 @@
-# `NestedTypeNode<T>` (generic)
+# `NestedTypeNode<T>` (helper)
 
 The `NestedTypeNode` type is a generic helper type that allows us to define nested requirements for a child node. The requirement `NestedTypeNode<T>` – where `T` is any `TypeNode` — tells us that the child node may be wrapped however they want but, eventually, we should end up with a `T` type node.
 
