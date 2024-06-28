@@ -6,6 +6,8 @@ When encoding, the sentinel value is written after the child node. When decoding
 
 Note that, for the `SentinelTypeNode` to work, the sentinel value must not be included in the child node's encoding.
 
+This node can be used to create [`NestedTypeNodes`](./NestedTypeNode.md).
+
 ## Attributes
 
 ### Data

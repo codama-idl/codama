@@ -2,7 +2,7 @@
 
 A node that takes another type node as a child and fixes its byte length to the provided size. It will pad or truncate the data to match the fixed size.
 
-This node can be used to create [`NestedTypeNode`](./NestedTypeNode.md).
+This node can be used to create [`NestedTypeNodes`](./NestedTypeNode.md).
 
 ## Attributes
 

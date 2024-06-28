@@ -4,7 +4,7 @@ A node that wraps another type node and offsets the encoding/decoding cursor by 
 
 Since this is the `PreOffsetTypeNode`, the offset is applied _before_ the child node has been encoded/decoded. Therefore, this node is useful to move encoded value of the child node itself. See the [`PostOffsetTypeNode`](./PostOffsetTypeNode.md) for the opposite behavior.
 
-This node can be used to create [`NestedTypeNode`](./NestedTypeNode.md).
+This node can be used to create [`NestedTypeNodes`](./NestedTypeNode.md).
 
 ## Attributes
 

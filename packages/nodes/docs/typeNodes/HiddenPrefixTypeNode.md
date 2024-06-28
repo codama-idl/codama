@@ -4,7 +4,7 @@ A node that wraps a type node and whilst silently consuming a prefix of constant
 
 When encoding, the constant values are written before the child node. When decoding, the prefixed constant values are consumed and checked against the expected values before being discarded.
 
-This node can be used to create [`NestedTypeNode`](./NestedTypeNode.md).
+This node can be used to create [`NestedTypeNodes`](./NestedTypeNode.md).
 
 ## Attributes
 
