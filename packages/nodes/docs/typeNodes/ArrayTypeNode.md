@@ -14,7 +14,7 @@ A node that represents an array of items. The type of the items is defined by th
 
 | Attribute | Type                                   | Description                                 |
 | --------- | -------------------------------------- | ------------------------------------------- |
-| `item`    | [`TypeNode`](../typeNodes/README.md)   | The item type of the array.                 |
+| `item`    | [`TypeNode`](./README.md)              | The item type of the array.                 |
 | `count`   | [`CountNode`](../countNodes/README.md) | The strategy to determine the array length. |
 
 ## Functions

@@ -15,9 +15,9 @@ This node can be used to create [`NestedTypeNode`](./NestedTypeNode.md).
 
 ### Children
 
-| Attribute | Type                                | Description                                               |
-| --------- | ----------------------------------- | --------------------------------------------------------- |
-| `type`    | [`TypeNode`](./typeNodes/README.md) | The node type from which the byte length should be fixed. |
+| Attribute | Type                      | Description                                               |
+| --------- | ------------------------- | --------------------------------------------------------- |
+| `type`    | [`TypeNode`](./README.md) | The node type from which the byte length should be fixed. |
 
 ## Functions
 
