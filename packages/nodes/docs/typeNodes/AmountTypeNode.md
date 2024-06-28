@@ -37,6 +37,6 @@ const nodeWithoutUnits = amountTypeNode(numberTypeNode('u16'), 2);
 amountTypeNode(numberTypeNode('u32'), 2, 'USD');
 
 // 0.01 USD   => 0x01000000
-// 10 USD     => 0x03E80000
-// 400.60 USD => 0x9C7C0000
+// 10 USD     => 0xE8030000
+// 400.60 USD => 0x7C9C0000
 ```
