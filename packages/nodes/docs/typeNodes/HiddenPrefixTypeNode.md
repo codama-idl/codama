@@ -50,5 +50,5 @@ hiddenPrefixTypeNode(fixedSizeTypeNode(stringTypeNode('utf8'), 10), [
     constantValueNode(stringTypeNode('utf8'), stringValueNode('Hello')),
 ]);
 
-// World => 0x48656c6c6f576f726c640000000000
+// World => 0x48656C6C6F576F726C640000000000
 ```

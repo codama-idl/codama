@@ -40,7 +40,7 @@ const fixedNode = optionTypeNode(publicKeyTypeNode(), { fixed: true });
 optionTypeNode(stringTypeNode('UTF-8'), { prefix: numberTypeNode('u16') });
 
 // None          => 0x0000
-// Some("Hello") => 0x010048656c6c6f
+// Some("Hello") => 0x010048656C6C6F
 ```
 
 ### A fixed optional u32 number

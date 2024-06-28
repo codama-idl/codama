@@ -50,5 +50,5 @@ hiddenSuffixTypeNode(fixedSizeTypeNode(stringTypeNode('utf8'), 10), [
     constantValueNode(stringTypeNode('utf8'), stringValueNode('Hello')),
 ]);
 
-// World => 0x576f726c64000000000048656c6c6f
+// World => 0x576F726C64000000000048656c6c6F
 ```

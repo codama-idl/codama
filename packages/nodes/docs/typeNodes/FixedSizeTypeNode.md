@@ -36,7 +36,7 @@ const node = fixedSizeTypeNode(stringTypeNode('utf8'), 32);
 ```ts
 fixedSizeTypeNode(stringTypeNode('utf8'), 10);
 
-// Hello => 0x48656c6c6f0000000000
+// Hello => 0x48656C6C6F0000000000
 ```
 
 ### Fixed byte arrays
