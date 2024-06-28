@@ -4,8 +4,10 @@ export function fixedSizeTypeNode<TType extends TypeNode>(type: TType, size: num
     return Object.freeze({
         kind: 'fixedSizeTypeNode',
 
+        // Data.
+        size,
+
         // Children.
         type,
-        size,
     });
 }
