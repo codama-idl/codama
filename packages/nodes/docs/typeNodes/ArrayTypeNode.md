@@ -12,10 +12,10 @@ A node that represents an array of items. The type of the items is defined by th
 
 ### Children
 
-| Attribute | Type                         | Description                                 |
-| --------- | ---------------------------- | ------------------------------------------- |
-| `item`    | [`TypeNode`](../typeNodes)   | The item type of the array.                 |
-| `count`   | [`CountNode`](../countNodes) | The strategy to determine the array length. |
+| Attribute | Type                                   | Description                                 |
+| --------- | -------------------------------------- | ------------------------------------------- |
+| `item`    | [`TypeNode`](../typeNodes/README.md)   | The item type of the array.                 |
+| `count`   | [`CountNode`](../countNodes/README.md) | The strategy to determine the array length. |
 
 ## Functions
 

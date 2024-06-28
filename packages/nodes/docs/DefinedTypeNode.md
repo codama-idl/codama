@@ -16,9 +16,9 @@ This node defines a named type that can be reused in other types using a [`Defin
 
 ### Children
 
-| Attribute | Type                      | Description                   |
-| --------- | ------------------------- | ----------------------------- |
-| `type`    | [`TypeNode`](./typeNodes) | The concrete type definition. |
+| Attribute | Type                                | Description                   |
+| --------- | ----------------------------------- | ----------------------------- |
+| `type`    | [`TypeNode`](./typeNodes/README.md) | The concrete type definition. |
 
 ## Functions
 

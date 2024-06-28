@@ -14,9 +14,9 @@ Some node description.
 
 ### Children
 
-| Attribute | Type                      | Description             |
-| --------- | ------------------------- | ----------------------- |
-| `child`   | [`TypeNode`](./typeNodes) | The child of some node. |
+| Attribute | Type                                | Description             |
+| --------- | ----------------------------------- | ----------------------- |
+| `child`   | [`TypeNode`](./typeNodes/README.md) | The child of some node. |
 
 OR
 
