@@ -1,4 +1,4 @@
-# `payerValueNode`
+# `PayerValueNode`
 
 A node that represents the main wallet that should **pay for things**.
 
