@@ -17,11 +17,11 @@ This node defines an on-chain account. It is characterized by its name, data str
 
 ### Children
 
-| Attribute        | Type                                                                                                 | Description                                                                                                                                              |
-| ---------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data`           | [`NestedTypeNode`](./typeNodes/NestedTypeNode.md)<[`StructTypeNode`](./typeNodes/StructTypeNode.md)> | The type node that describes the account's data. Note that it must be a struct so we can access its fields via other nodes.                              |
-| `pda`            | [`PdaLinkNode`](./linkNodes/PdaLinkNode.md)                                                          | (Optional) The link node that describes the account's PDA, if its address is derived from one.                                                           |
-| `discriminators` | [`DiscriminatorNode`](./discriminatorNodes/README.md)[]                                              | (Optional) The nodes that distinguish the account from others. If multiple discriminators are provided, they are combined using a logical AND operation. |
+| Attribute        | Type                                                                                                 | Description                                                                                                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `data`           | [`NestedTypeNode`](./typeNodes/NestedTypeNode.md)<[`StructTypeNode`](./typeNodes/StructTypeNode.md)> | The type node that describes the account's data. Note that it must be a struct so we can access its fields via other nodes.                                              |
+| `pda`            | [`PdaLinkNode`](./linkNodes/PdaLinkNode.md)                                                          | (Optional) The link node that describes the account's PDA, if its address is derived from one.                                                                           |
+| `discriminators` | [`DiscriminatorNode`](./discriminatorNodes/README.md)[]                                              | (Optional) The nodes that distinguish this account from others in the program. If multiple discriminators are provided, they are combined using a logical AND operation. |
 
 ## Functions
 
