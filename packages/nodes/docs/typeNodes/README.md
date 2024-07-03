@@ -1,6 +1,6 @@
 # `TypeNode` (abstract)
 
-The `TypeNode` type helper represents all the available type node as well as the `DefinedTypeLinkNode` which can be used to reuse a pre-defined type node. Note that `TypeNode` is a type alias and cannot be used directly as a node. Instead you may use one of the following nodes:
+The `TypeNode` type helper represents all the available type nodes as well as the `DefinedTypeLinkNode` which allows us to reuse a pre-defined type node. Note that `TypeNode` is a type alias and cannot be used directly as a node. Instead you may use one of the following nodes:
 
 -   [`AmountTypeNode`](./AmountTypeNode.md)
 -   [`ArrayTypeNode`](./ArrayTypeNode.md)
