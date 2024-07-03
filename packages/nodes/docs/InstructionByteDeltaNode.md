@@ -20,7 +20,7 @@ This node represents a difference in bytes stored on-chain from executing an ins
 
 ## Functions
 
-### `instructionByteDeltaNode(input)`
+### `instructionByteDeltaNode(value, options?)`
 
 Helper function that creates a `InstructionByteDeltaNode` object from a value node and some options.
 
