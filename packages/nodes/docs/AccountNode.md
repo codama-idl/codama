@@ -12,7 +12,7 @@ This node defines an on-chain account. It is characterized by its name, data str
 | --------- | ----------------- | ----------------------------------------------------------------------------------- |
 | `kind`    | `"accountNode"`   | The node discriminator.                                                             |
 | `name`    | `CamelCaseString` | The name of the account.                                                            |
-| `docs`    | `string[]`        | Markdown documentation for the type.                                                |
+| `docs`    | `string[]`        | Markdown documentation for the account.                                             |
 | `size`    | `number`          | (Optional) The size of the account in bytes, if the account's data length is fixed. |
 
 ### Children
