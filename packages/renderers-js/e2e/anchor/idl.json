@@ -1,0 +1,645 @@
+{
+  "address": "LockdqYQ9X2kwtWB99ioSbxubAmEi8o9jqYwbXgrrRw",
+  "metadata": {
+    "name": "wen_transfer_guard",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "A generic transfer hook implementation for Token Extensions"
+  },
+  "instructions": [
+    {
+      "name": "create_guard",
+      "discriminator": [251, 254, 17, 198, 219, 218, 154, 99],
+      "accounts": [
+        {
+          "name": "guard",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119, 101, 110, 95, 116, 111, 107, 101, 110, 95, 116, 114, 97,
+                  110, 115, 102, 101, 114, 95, 103, 117, 97, 114, 100
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [103, 117, 97, 114, 100, 95, 118, 49]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "guard_authority"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            }
+          }
+        },
+        {
+          "name": "guard_authority",
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CreateGuardArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "execute",
+      "discriminator": [105, 37, 101, 197, 75, 251, 102, 26],
+      "accounts": [
+        {
+          "name": "source_account"
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "destination_account"
+        },
+        {
+          "name": "owner_delegate"
+        },
+        {
+          "name": "extra_metas_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101, 120, 116, 114, 97, 45, 97, 99, 99, 111, 117, 110, 116,
+                  45, 109, 101, 116, 97, 115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "guard",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119, 101, 110, 95, 116, 111, 107, 101, 110, 95, 116, 114, 97,
+                  110, 115, 102, 101, 114, 95, 103, 117, 97, 114, 100
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [103, 117, 97, 114, 100, 95, 118, 49]
+              },
+              {
+                "kind": "account",
+                "path": "guard.mint",
+                "account": "GuardV1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "instruction_sysvar_account",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [43, 34, 13, 49, 167, 88, 235, 235],
+      "accounts": [
+        {
+          "name": "extra_metas_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101, 120, 116, 114, 97, 45, 97, 99, 99, 111, 117, 110, 116,
+                  45, 109, 101, 116, 97, 115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "guard",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119, 101, 110, 95, 116, 111, 107, 101, 110, 95, 116, 114, 97,
+                  110, 115, 102, 101, 114, 95, 103, 117, 97, 114, 100
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [103, 117, 97, 114, 100, 95, 118, 49]
+              },
+              {
+                "kind": "account",
+                "path": "guard.mint",
+                "account": "GuardV1"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "transfer_hook_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_guard",
+      "discriminator": [51, 38, 175, 180, 25, 249, 39, 24],
+      "accounts": [
+        {
+          "name": "guard",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119, 101, 110, 95, 116, 111, 107, 101, 110, 95, 116, 114, 97,
+                  110, 115, 102, 101, 114, 95, 103, 117, 97, 114, 100
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [103, 117, 97, 114, 100, 95, 118, 49]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "token_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "guard_authority"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            }
+          }
+        },
+        {
+          "name": "guard_authority",
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "UpdateGuardArgs"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GuardV1",
+      "discriminator": [185, 149, 156, 78, 245, 108, 172, 68]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CpiRuleEnforcementFailed",
+      "msg": "Cpi Rule Enforcement Failed"
+    },
+    {
+      "code": 6001,
+      "name": "TransferAmountRuleEnforceFailed",
+      "msg": "Transfer Amount Rule Enforce Failed"
+    },
+    {
+      "code": 6002,
+      "name": "MetadataFieldDoesNotExist",
+      "msg": "Metadata Field Does Not Exist"
+    },
+    {
+      "code": 6003,
+      "name": "MetadataFieldDoesNotPass",
+      "msg": "Metadata Field Does Not Pass"
+    },
+    {
+      "code": 6004,
+      "name": "GuardTokenAmountShouldBeAtLeastOne",
+      "msg": "Guard token amount should be at least 1"
+    },
+    {
+      "code": 6005,
+      "name": "NotOwnedByToken2022Program",
+      "msg": "Not owned by token 2022 program"
+    },
+    {
+      "code": 6006,
+      "name": "MustBeInitializedByTransferHookAuthority",
+      "msg": "Must be initialized by Transfer Hook Authority"
+    },
+    {
+      "code": 6007,
+      "name": "MintAssignedTransferHookProgramIsNotThisOne",
+      "msg": "Mint's assigned Transfer Hook Program is not this one"
+    }
+  ],
+  "types": [
+    {
+      "name": "CpiRule",
+      "docs": [
+        "Controls which protocols can interact with the token by",
+        "enforcing Allow and Deny lists."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Allow",
+            "fields": [
+              {
+                "vec": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "Deny",
+            "fields": [
+              {
+                "vec": "pubkey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateGuardArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "cpi_rule",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "CpiRule"
+                }
+              }
+            }
+          },
+          {
+            "name": "transfer_amount_rule",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "TransferAmountRule"
+                }
+              }
+            }
+          },
+          {
+            "name": "additional_fields_rule",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "MetadataAdditionalFieldRule"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GuardV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "docs": [
+              "Mint token representing the guard, do not confuse with the mint of the token being transferred."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "docs": ["Bump seed for the guard account."],
+            "type": "u8"
+          },
+          {
+            "name": "cpi_rule",
+            "docs": ["CPI ruleset for the guard."],
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "CpiRule"
+                }
+              }
+            }
+          },
+          {
+            "name": "transfer_amount_rule",
+            "docs": ["Transfer amount ruleset for the guard."],
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "TransferAmountRule"
+                }
+              }
+            }
+          },
+          {
+            "name": "additional_fields_rule",
+            "docs": ["Additional fields ruleset for the guard."],
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "MetadataAdditionalFieldRule"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MetadataAdditionalFieldRestriction",
+      "docs": [
+        "Inner enum for the MetadataAdditionalFieldRestriction enum.",
+        "* Includes - The field must include one of the values in the vector.",
+        "* Excludes - The field must not include any of the values in the vector."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Includes",
+            "fields": [
+              {
+                "vec": "string"
+              }
+            ]
+          },
+          {
+            "name": "Excludes",
+            "fields": [
+              {
+                "vec": "string"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "MetadataAdditionalFieldRule",
+      "docs": [
+        "Enforces rules on a single additional field in the mint metadata.",
+        "The field must exist and the value must pass the restriction."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "field",
+            "type": "string"
+          },
+          {
+            "name": "value_restrictions",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "MetadataAdditionalFieldRestriction"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TransferAmountRule",
+      "docs": [
+        "Enforces rules on the amount of tokens being transferred.",
+        "The rules can be above, below, equal to, or within a range."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Above",
+            "fields": ["u64"]
+          },
+          {
+            "name": "Below",
+            "fields": ["u64"]
+          },
+          {
+            "name": "Equal",
+            "fields": ["u64"]
+          },
+          {
+            "name": "Rang",
+            "fields": ["u64", "u64"]
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateGuardArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cpi_rule",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "CpiRule"
+                }
+              }
+            }
+          },
+          {
+            "name": "transfer_amount_rule",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "TransferAmountRule"
+                }
+              }
+            }
+          },
+          {
+            "name": "additional_fields_rule",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "MetadataAdditionalFieldRule"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "constants": [
+    {
+      "name": "EXTRA_ACCOUNT_METAS",
+      "type": {
+        "array": ["u8", 19]
+      },
+      "value": "[101, 120, 116, 114, 97, 45, 97, 99, 99, 111, 117, 110, 116, 45, 109, 101, 116, 97, 115]"
+    },
+    {
+      "name": "GUARD_V1",
+      "type": {
+        "array": ["u8", 8]
+      },
+      "value": "[103, 117, 97, 114, 100, 95, 118, 49]"
+    },
+    {
+      "name": "WEN_TOKEN_GUARD",
+      "type": {
+        "array": ["u8", 24]
+      },
+      "value": "[119, 101, 110, 95, 116, 111, 107, 101, 110, 95, 116, 114, 97, 110, 115, 102, 101, 114, 95, 103, 117, 97, 114, 100]"
+    }
+  ]
+}
