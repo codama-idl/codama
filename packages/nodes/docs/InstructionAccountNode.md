@@ -15,7 +15,7 @@ This node defines an account used by an instruction. It is characterized by its 
 | `isWritable` | `boolean`                  | Whether of not the account needs to be writable.                                                                                                                                                                                                       |
 | `isSigner`   | `boolean` \| `"either"`    | Whether or not the account needs to be a signer. If the value `"either"` is provided, the account can be either a signer or not depending on the context.                                                                                              |
 | `isOptional` | `boolean`                  | (Optional) Whether or not the account is optional. If this is `true`, the account should be handled as an optional account according to the `optionalAccountStrategy` attribute of the [`InstructionNode`.](./InstructionNode.md) Defaults to `false`. |
-| `docs`       | `string[]`                 | Markdown documentation for the type.                                                                                                                                                                                                                   |
+| `docs`       | `string[]`                 | Markdown documentation for the instruction account.                                                                                                                                                                                                    |
 
 ### Children
 
