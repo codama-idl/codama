@@ -55,10 +55,10 @@ type DefaultUnspecifiedErrorContextToUndefined<T> = {
  */
 export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: {
-        name: CamelCaseString;
+        name: string;
     };
     [KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING]: {
-        name: CamelCaseString;
+        name: string;
     };
     [KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]: {
         kind: string;
