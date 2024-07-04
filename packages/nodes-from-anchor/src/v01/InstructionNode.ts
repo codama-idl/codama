@@ -7,13 +7,6 @@ import {
     instructionArgumentNode,
     InstructionNode,
     instructionNode,
-    NestedTypeNode,
-    PdaLinkNode,
-    RegisteredDiscriminatorNode,
-    StandaloneValueNode,
-    StructFieldTypeNode,
-    StructTypeNode,
-    TypeNode,
 } from '@kinobi-so/nodes';
 
 import { getAnchorDiscriminatorV01 } from '../discriminators';
@@ -21,14 +14,7 @@ import { IdlV01Instruction } from './idl';
 import { instructionAccountNodesFromAnchorV01 } from './InstructionAccountNode';
 import { instructionArgumentNodeFromAnchorV01 } from './InstructionArgumentNode';
 
-export function instructionNodeFromAnchorV01(
-    accountTypes: AccountNode<
-        NestedTypeNode<StructTypeNode<StructFieldTypeNode<TypeNode, StandaloneValueNode | undefined>[]>>,
-        PdaLinkNode | undefined,
-        RegisteredDiscriminatorNode[] | undefined
-    >[],
-    idl: IdlV01Instruction,
-): InstructionNode {
+export function instructionNodeFromAnchorV01(allAccounts: AccountNode[], idl: IdlV01Instruction): InstructionNode {
     const name = idl.name;
     let dataArguments = idl.args.map(instructionArgumentNodeFromAnchorV01);
 
@@ -42,7 +28,7 @@ export function instructionNodeFromAnchorV01(
     const discriminators = [fieldDiscriminatorNode('discriminator')];
 
     return instructionNode({
-        accounts: instructionAccountNodesFromAnchorV01(accountTypes, dataArguments, idl.accounts ?? []),
+        accounts: instructionAccountNodesFromAnchorV01(allAccounts, dataArguments, idl.accounts ?? []),
         arguments: dataArguments,
         discriminators,
         docs: idl.docs ?? [],
