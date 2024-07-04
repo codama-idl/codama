@@ -129,7 +129,7 @@ export type ExecuteAsyncInput<
   destinationAccount: Address<TAccountDestinationAccount>;
   ownerDelegate: Address<TAccountOwnerDelegate>;
   extraMetasAccount?: Address<TAccountExtraMetasAccount>;
-  guard?: Address<TAccountGuard>;
+  guard: Address<TAccountGuard>;
   instructionSysvarAccount?: Address<TAccountInstructionSysvarAccount>;
   amount: ExecuteInstructionDataArgs['amount'];
 };
@@ -206,22 +206,6 @@ export async function getExecuteInstructionAsync<
           ])
         ),
         getAddressEncoder().encode(expectAddress(accounts.mint.value)),
-      ],
-    });
-  }
-  if (!accounts.guard.value) {
-    accounts.guard.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([
-            119, 101, 110, 95, 116, 111, 107, 101, 110, 95, 116, 114, 97, 110,
-            115, 102, 101, 114, 95, 103, 117, 97, 114, 100,
-          ])
-        ),
-        getBytesEncoder().encode(
-          new Uint8Array([103, 117, 97, 114, 100, 95, 118, 49])
-        ),
       ],
     });
   }

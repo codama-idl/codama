@@ -1,19 +1,15 @@
 import {
     accountNode,
     bytesTypeNode,
-    constantPdaSeedNodeFromBytes,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
-    pdaNode,
-    pdaValueNode,
     publicKeyTypeNode,
     structFieldTypeNode,
     structTypeNode,
-    variablePdaSeedNode,
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
@@ -60,16 +56,17 @@ test('it creates instruction nodes', () => {
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    defaultValue: pdaValueNode(
-                        pdaNode({
-                            name: 'distribution',
-                            seeds: [
-                                constantPdaSeedNodeFromBytes('base16', '2a1f1d'),
-                                variablePdaSeedNode('distributionGroupMint', publicKeyTypeNode()),
-                            ],
-                        }),
-                        [],
-                    ),
+                    // TODO: Handle seeds with nested paths.
+                    // defaultValue: pdaValueNode(
+                    //     pdaNode({
+                    //         name: 'distribution',
+                    //         seeds: [
+                    //             constantPdaSeedNodeFromBytes('base16', '2a1f1d'),
+                    //             variablePdaSeedNode('distributionGroupMint', publicKeyTypeNode()),
+                    //         ],
+                    //     }),
+                    //     [],
+                    // ),
                     isSigner: false,
                     isWritable: true,
                     name: 'distribution',

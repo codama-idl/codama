@@ -122,7 +122,46 @@ test('it flattens nested instruction accounts', () => {
     ]);
 });
 
-test('it handles account data paths of length 2', () => {
+test('it ignores PDA default values if at least one seed as a path of length greater than 1', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            accountNode({
+                data: sizePrefixTypeNode(
+                    structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
+                    numberTypeNode('u32'),
+                ),
+                name: 'mint',
+            }),
+        ],
+        [],
+        [
+            {
+                name: 'somePdaAccount',
+                pda: {
+                    seeds: [
+                        {
+                            account: 'mint',
+                            kind: 'account',
+                            path: 'mint.authority',
+                        },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+        ],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            isSigner: false,
+            isWritable: false,
+            name: 'somePdaAccount',
+        }),
+    ]);
+});
+
+test.skip('it handles account data paths of length 2', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
         [
             accountNode({
