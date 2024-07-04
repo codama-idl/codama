@@ -1,6 +1,8 @@
 import {
+    KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
     KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
     KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
+    KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING,
     KinobiError,
 } from '@kinobi-so/errors';
 import {
@@ -29,14 +31,14 @@ import { hex } from '../utils';
 import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
 
 export function instructionAccountNodesFromAnchorV01(
-    types: AccountNode[],
-    args: InstructionArgumentNode[],
+    allAccounts: AccountNode[],
+    instructionArguments: InstructionArgumentNode[],
     idl: IdlV01InstructionAccountItem[],
 ): InstructionAccountNode[] {
     return idl.flatMap(account =>
         'accounts' in account
-            ? instructionAccountNodesFromAnchorV01(types, args, account.accounts)
-            : [instructionAccountNodeFromAnchorV01(types, args, account)],
+            ? instructionAccountNodesFromAnchorV01(allAccounts, instructionArguments, account.accounts)
+            : [instructionAccountNodeFromAnchorV01(allAccounts, instructionArguments, account)],
     );
 }
 
@@ -70,23 +72,29 @@ export function instructionAccountNodeFromAnchorV01(
                                 [...lookups, pdaSeedValueNode(seed.path, accountValueNode(seed.path))],
                             ];
                         } else if (path.length === 2) {
-                            const [_, field] = path;
-                            const name = camelCase(seed.account ?? '');
-                            const accountNode = allAccounts.find(type => type.name === name);
+                            const accountName = camelCase(seed.account ?? '');
+                            const accountNode = allAccounts.find(({ name }) => name === accountName);
                             if (!accountNode) {
-                                throw new KinobiError(KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED, { kind });
+                                throw new KinobiError(KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, { kind });
                             }
 
+                            const fieldName = camelCase(path[1]);
                             const accountFields = resolveNestedTypeNode(accountNode.data).fields;
-                            const camelCaseField = camelCase(field);
-                            const fieldNode = accountFields.find(({ name }) => name === camelCaseField);
+                            const fieldNode = accountFields.find(({ name }) => name === fieldName);
                             if (!fieldNode) {
-                                throw new KinobiError(KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED, { kind });
+                                throw new KinobiError(KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING, {
+                                    idlType: seed.account,
+                                    path: seed.path,
+                                });
                             }
 
-                            return [[...seeds, variablePdaSeedNode(seed.path, fieldNode.type)], lookups];
+                            const seedName = camelCase(seed.path);
+                            return [[...seeds, variablePdaSeedNode(seedName, fieldNode.type)], []];
                         } else {
-                            throw new KinobiError(KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED, { kind });
+                            throw new KinobiError(KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING, {
+                                idlType: seed,
+                                path: seed.path,
+                            });
                         }
                     }
                     case 'arg': {

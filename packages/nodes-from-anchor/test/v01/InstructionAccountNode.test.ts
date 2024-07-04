@@ -1,4 +1,5 @@
 import {
+    accountNode,
     accountValueNode,
     argumentValueNode,
     constantPdaSeedNodeFromBytes,
@@ -10,6 +11,9 @@ import {
     pdaValueNode,
     publicKeyTypeNode,
     publicKeyValueNode,
+    sizePrefixTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
     variablePdaSeedNode,
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
@@ -115,5 +119,51 @@ test('it flattens nested instruction accounts', () => {
             name: 'systemProgram',
         }),
         instructionAccountNode({ isSigner: true, isWritable: true, name: 'accountD' }),
+    ]);
+});
+
+test('it handles account data paths of length 2', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            accountNode({
+                data: sizePrefixTypeNode(
+                    structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
+                    numberTypeNode('u32'),
+                ),
+                name: 'mint',
+            }),
+        ],
+        [],
+        [
+            {
+                name: 'somePdaAccount',
+                pda: {
+                    seeds: [
+                        {
+                            account: 'mint',
+                            kind: 'account',
+                            path: 'mint.authority',
+                        },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+        ],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'somePdaAccount',
+                    seeds: [variablePdaSeedNode('mintAuthority', publicKeyTypeNode())],
+                }),
+                [],
+            ),
+            isSigner: false,
+            isWritable: false,
+            name: 'somePdaAccount',
+        }),
     ]);
 });
