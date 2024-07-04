@@ -4,6 +4,7 @@ const path = require('node:path');
 const process = require('node:process');
 
 const { rootNode } = require('@kinobi-so/nodes');
+const { rootNodeFromAnchor } = require('@kinobi-so/nodes-from-anchor');
 const { readJson } = require('@kinobi-so/renderers-core');
 const { visit } = require('@kinobi-so/visitors-core');
 
@@ -19,7 +20,15 @@ async function main() {
 
 async function generateProject(project) {
     const idl = readJson(path.join(__dirname, project, 'idl.json'));
-    const node = rootNode(idl.program, idl.additionalPrograms);
+
+    let node;
+
+    if (idl?.metadata?.spec) {
+        node = rootNodeFromAnchor(idl);
+    } else {
+        node = rootNode(idl.program, idl.additionalPrograms);
+    }
+
     await visit(node, renderVisitor(path.join(__dirname, project, 'src', 'generated')));
 }
 

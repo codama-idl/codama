@@ -16,15 +16,11 @@ import { IdlV01Account, IdlV01TypeDef } from './idl';
 import { typeNodeFromAnchorV01 } from './typeNodes';
 
 export function accountNodeFromAnchorV01(idl: IdlV01Account, types: IdlV01TypeDef[]): AccountNode {
-    const idlName = idl.name;
-    const name = camelCase(idlName);
-
-    const type = types.find(t => t.name === idl.name);
+    const name = camelCase(idl.name);
+    const type = types.find(({ name }) => name === idl.name);
 
     if (!type) {
-        throw new KinobiError(KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, {
-            name,
-        });
+        throw new KinobiError(KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, { name: idl.name });
     }
 
     const data = typeNodeFromAnchorV01(type.type);

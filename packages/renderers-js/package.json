@@ -45,6 +45,7 @@
     "dependencies": {
         "@kinobi-so/errors": "workspace:*",
         "@kinobi-so/nodes": "workspace:*",
+        "@kinobi-so/nodes-from-anchor": "workspace:*",
         "@kinobi-so/renderers-core": "workspace:*",
         "@kinobi-so/visitors-core": "workspace:*",
         "@solana/codecs-strings": "tp2",
