@@ -1,10 +1,10 @@
+import { KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED, KinobiError } from '@kinobi-so/errors';
 import {
     AccountNode,
     accountValueNode,
     argumentValueNode,
     camelCase,
     constantPdaSeedNodeFromBytes,
-    hex,
     InstructionAccountNode,
     instructionAccountNode,
     InstructionArgumentNode,
@@ -25,8 +25,9 @@ import {
     TypeNode,
     variablePdaSeedNode,
 } from '@kinobi-so/nodes';
-import { KinobiError, KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED } from '@kinobi-so/errors';
-import { IdlV01InstructionAccount, IdlV01Seed, IdlV01InstructionAccountItem } from './idl';
+
+import { hex } from '../utils';
+import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
 
 type AccountNodeList = AccountNode<
     NestedTypeNode<StructTypeNode<StructFieldTypeNode<TypeNode, StandaloneValueNode | undefined>[]>>,
@@ -69,10 +70,7 @@ export function instructionAccountNodeFromAnchorV01(
 
                 switch (kind) {
                     case 'const':
-                        return [
-                            [...seeds, constantPdaSeedNodeFromBytes('base16', hex(new Uint8Array(seed.value)))],
-                            lookups,
-                        ];
+                        return [[...seeds, constantPdaSeedNodeFromBytes('base16', hex(seed.value))], lookups];
                     case 'account': {
                         const path = seed.path.split('.');
                         const length = path.length;

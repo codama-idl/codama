@@ -37,7 +37,3 @@ export function constantPdaSeedNodeFromString<TEncoding extends BytesEncoding>(e
 export function constantPdaSeedNodeFromBytes<TEncoding extends BytesEncoding>(encoding: TEncoding, data: string) {
     return constantPdaSeedNode(bytesTypeNode(), bytesValueNode(encoding, data));
 }
-
-export function hex(bytes: Uint8Array): string {
-    return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-}

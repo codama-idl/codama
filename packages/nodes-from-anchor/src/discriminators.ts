@@ -1,6 +1,8 @@
 import { BytesValueNode, bytesValueNode, pascalCase, snakeCase } from '@kinobi-so/nodes';
 import { sha256 } from '@noble/hashes/sha256';
 
+import { hex } from './utils';
+
 export const getAnchorDiscriminatorV01 = (discriminator: number[]): BytesValueNode => {
     return bytesValueNode('base16', hex(new Uint8Array(discriminator)));
 };
@@ -14,7 +16,3 @@ export const getAnchorAccountDiscriminatorV00 = (idlName: string): BytesValueNod
     const hash = sha256(`account:${pascalCase(idlName)}`).slice(0, 8);
     return bytesValueNode('base16', hex(hash));
 };
-
-function hex(bytes: Uint8Array): string {
-    return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-}

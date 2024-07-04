@@ -6,7 +6,6 @@ import {
     errorNode,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
-    hex,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
@@ -93,7 +92,7 @@ test('it creates program nodes', () => {
                                 pdaNode({
                                     name: 'authority',
                                     seeds: [
-                                        constantPdaSeedNodeFromBytes('base16', hex(new Uint8Array([42, 31, 29]))),
+                                        constantPdaSeedNodeFromBytes('base16', '2a1f1d'),
                                         variablePdaSeedNode('owner', publicKeyTypeNode()),
                                     ],
                                 }),

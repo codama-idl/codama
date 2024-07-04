@@ -1,17 +1,16 @@
 import {
     accountValueNode,
+    argumentValueNode,
     constantPdaSeedNodeFromBytes,
-    hex,
     instructionAccountNode,
     instructionArgumentNode,
+    numberTypeNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
     publicKeyTypeNode,
-    numberTypeNode,
     publicKeyValueNode,
     variablePdaSeedNode,
-    argumentValueNode,
 } from '@kinobi-so/nodes';
 import { expect, test } from 'vitest';
 
@@ -95,7 +94,7 @@ test('it flattens nested instruction accounts', () => {
                 pdaNode({
                     name: 'accountC',
                     seeds: [
-                        constantPdaSeedNodeFromBytes('base16', hex(new Uint8Array([0, 1, 2, 3]))),
+                        constantPdaSeedNodeFromBytes('base16', '00010203'),
                         variablePdaSeedNode('accountB', publicKeyTypeNode()),
                         variablePdaSeedNode('amount', numberTypeNode('u8')),
                     ],
