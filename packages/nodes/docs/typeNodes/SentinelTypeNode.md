@@ -27,7 +27,7 @@ This node can be used to create [`NestedTypeNodes`](./NestedTypeNode.md).
 
 ### `sentinelTypeNode(type, sentinel)`
 
-Helper function that creates a `SentinelTypeNode` object from TODO.
+Helper function that creates a `SentinelTypeNode` object from a type node and a constant value node.
 
 ```ts
 const sentinel = constantValueNode(bytesTypeNode(), bytesValueNode('base16', 'ff'));
