@@ -1,5 +1,15 @@
 # kinobi
 
+## 0.20.5
+
+### Patch Changes
+
+- Updated dependencies [[`908acba`](https://github.com/kinobi-so/kinobi/commit/908acba99cdb0b761ed79aebf6828e23fde97ef8)]:
+  - @kinobi-so/errors@0.20.5
+  - @kinobi-so/nodes@0.20.5
+  - @kinobi-so/validators@0.20.5
+  - @kinobi-so/visitors@0.20.5
+
 ## 0.20.4
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @kinobi-so/node-types
 
+## 0.20.5
+
 ## 0.20.4
 
 ### Patch Changes

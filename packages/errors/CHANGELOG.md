@@ -1,5 +1,14 @@
 # @kinobi-so/errors
 
+## 0.20.5
+
+### Patch Changes
+
+- [#42](https://github.com/kinobi-so/kinobi/pull/42) [`908acba`](https://github.com/kinobi-so/kinobi/commit/908acba99cdb0b761ed79aebf6828e23fde97ef8) Thanks [@kespinola](https://github.com/kespinola)! - set anchor account seed definitions on instructions as defaultValue for the associated instruction account. Removes hoisting PDAs to the program node for the time being.
+
+- Updated dependencies []:
+  - @kinobi-so/node-types@0.20.5
+
 ## 0.20.4
 
 ### Patch Changes
