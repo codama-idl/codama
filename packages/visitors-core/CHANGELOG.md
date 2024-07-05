@@ -1,5 +1,15 @@
 # @kinobi-so/visitors-core
 
+## 0.20.5
+
+### Patch Changes
+
+- [#94](https://github.com/kinobi-so/kinobi/pull/94) [`88572e8`](https://github.com/kinobi-so/kinobi/commit/88572e8eaffe09b5b8c48c4e9aebfdeb8bc149e6) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix identityVisitor for inlined PdaValueNode
+
+- Updated dependencies [[`908acba`](https://github.com/kinobi-so/kinobi/commit/908acba99cdb0b761ed79aebf6828e23fde97ef8)]:
+  - @kinobi-so/errors@0.20.5
+  - @kinobi-so/nodes@0.20.5
+
 ## 0.20.4
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @kinobi-so/visitors
 
+## 0.20.5
+
+### Patch Changes
+
+- Updated dependencies [[`908acba`](https://github.com/kinobi-so/kinobi/commit/908acba99cdb0b761ed79aebf6828e23fde97ef8), [`88572e8`](https://github.com/kinobi-so/kinobi/commit/88572e8eaffe09b5b8c48c4e9aebfdeb8bc149e6)]:
+  - @kinobi-so/errors@0.20.5
+  - @kinobi-so/nodes@0.20.5
+  - @kinobi-so/visitors-core@0.20.5
+
 ## 0.20.4
 
 ### Patch Changes
