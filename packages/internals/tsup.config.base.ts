@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { env } from 'node:process';
 
 import browsersListToEsBuild from 'browserslist-to-esbuild';
@@ -26,11 +25,14 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         },
         entry: [`./src/index.ts`],
         esbuildOptions(options, context) {
-            options.inject = [path.resolve(__dirname, 'env-shim.ts')];
             if (context.format === 'iife') {
-                options.define = { ...options.define, __DEV__: `false` };
                 options.target = BROWSERSLIST_TARGETS;
                 options.minify = true;
+            } else {
+                options.define = {
+                    ...options.define,
+                    'process.env.NODE_ENV': 'process.env.NODE_ENV',
+                };
             }
         },
         external: ['node:fs', 'node:path', 'node:url'],
