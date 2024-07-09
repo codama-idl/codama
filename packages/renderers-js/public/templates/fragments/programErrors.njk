@@ -11,7 +11,7 @@ export type {{ programErrorUnion }} =
   {% endfor %};
 
 let {{ programErrorMessagesMap }}: Record<{{ programErrorUnion }}, string> | undefined;
-if (__DEV__) {
+if (process.env.NODE_ENV !== 'production') {
   {{ programErrorMessagesMap }} = {
     {% for error in errors | sort(false, false, 'name') %}
       [{{ getProgramErrorConstant(error.name) }}]: `{{ error.message }}`,
@@ -20,9 +20,9 @@ if (__DEV__) {
 }
 
 export function {{ programGetErrorMessageFunction }}(code: {{ programErrorUnion }}): string {
-  if (__DEV__) {
+  if (process.env.NODE_ENV !== 'production') {
     return ({{ programErrorMessagesMap }} as Record<{{ programErrorUnion }}, string>)[code];
   }
 
-  return 'Error message not available in production bundles. Compile with `__DEV__` set to true to see more information.';
+  return 'Error message not available in production bundles.';
 }

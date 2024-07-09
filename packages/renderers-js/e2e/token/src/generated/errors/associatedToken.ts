@@ -14,7 +14,7 @@ export type AssociatedTokenError = typeof ASSOCIATED_TOKEN_ERROR__INVALID_OWNER;
 let associatedTokenErrorMessages:
   | Record<AssociatedTokenError, string>
   | undefined;
-if (__DEV__) {
+if (process.env.NODE_ENV !== 'production') {
   associatedTokenErrorMessages = {
     [ASSOCIATED_TOKEN_ERROR__INVALID_OWNER]: `Associated token account owner does not match address derivation`,
   };
@@ -23,11 +23,11 @@ if (__DEV__) {
 export function getAssociatedTokenErrorMessage(
   code: AssociatedTokenError
 ): string {
-  if (__DEV__) {
+  if (process.env.NODE_ENV !== 'production') {
     return (
       associatedTokenErrorMessages as Record<AssociatedTokenError, string>
     )[code];
   }
 
-  return 'Error message not available in production bundles. Compile with `__DEV__` set to true to see more information.';
+  return 'Error message not available in production bundles.';
 }
