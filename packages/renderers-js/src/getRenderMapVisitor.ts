@@ -406,7 +406,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     return map
                         .add('index.ts', render('rootIndex.njk', ctx))
-                        .add('global.d.ts', render('globalTypesPage.njk', ctx))
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),
