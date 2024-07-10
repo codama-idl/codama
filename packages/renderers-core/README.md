@@ -3,22 +3,20 @@
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/nodes.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/nodes.svg?style=flat&label=%40kinobi-so%2Fnodes
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/nodes
+[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/renderers-core.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@kinobi-so/renderers-core.svg?style=flat&label=%40kinobi-so%2Frenderers-core
+[npm-url]: https://www.npmjs.com/package/@kinobi-so/renderers-core
+
+This package provides the core utility for generating clients from Kinobi IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@kinobi-so/renderers-js`](../renderers-js) and [`@kinobi-so/renderers-rust`](../renderers-rust).
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/nodes
+pnpm install @kinobi-so/renderers-core
 ```
 
 > [!NOTE]
-> This package is included in the main [`kinobi`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
->
-> ```sh
-> pnpm install kinobi
-> ```
+> This package is **not** included in the main [`kinobi`](../library) package.
 
 ## Documentation
 
