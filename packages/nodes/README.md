@@ -7,6 +7,8 @@
 [npm-image]: https://img.shields.io/npm/v/@kinobi-so/nodes.svg?style=flat&label=%40kinobi-so%2Fnodes
 [npm-url]: https://www.npmjs.com/package/@kinobi-so/nodes
 
+This package defines the various nodes that make up the Kinobi IDL. It provides types and helper functions to work with these nodes. If you are looking for a type-only version of these nodes, you can find them in the [`@kinobi-so/node-types`](../node-types) package.
+
 ## Installation
 
 ```sh
@@ -20,9 +22,7 @@ pnpm install @kinobi-so/nodes
 > pnpm install kinobi
 > ```
 
-## Documentation
-
-This package defines the various nodes that make up the Kinobi IDL. It provides types and helper functions to work with these nodes. If you are looking for a type-only version of these nodes, you can find them in the [`@kinobi-so/node-types`](../node-types) package.
+## All available nodes
 
 The Kinobi IDL is composed of various nodes that describe different aspects of a Solana program. Some nodes are categorised together as they share a similar purpose. For instance, all the nodes that describe a data structure that can be encoded and decoded into buffers are grouped under the `TypeNode` category.
 
