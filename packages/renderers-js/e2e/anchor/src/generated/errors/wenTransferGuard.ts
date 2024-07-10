@@ -36,7 +36,7 @@ export type WenTransferGuardError =
 let wenTransferGuardErrorMessages:
   | Record<WenTransferGuardError, string>
   | undefined;
-if (__DEV__) {
+if (process.env.NODE_ENV !== 'production') {
   wenTransferGuardErrorMessages = {
     [WEN_TRANSFER_GUARD_ERROR__CPI_RULE_ENFORCEMENT_FAILED]: `Cpi Rule Enforcement Failed`,
     [WEN_TRANSFER_GUARD_ERROR__GUARD_TOKEN_AMOUNT_SHOULD_BE_AT_LEAST_ONE]: `Guard token amount should be at least 1`,
@@ -52,11 +52,11 @@ if (__DEV__) {
 export function getWenTransferGuardErrorMessage(
   code: WenTransferGuardError
 ): string {
-  if (__DEV__) {
+  if (process.env.NODE_ENV !== 'production') {
     return (
       wenTransferGuardErrorMessages as Record<WenTransferGuardError, string>
     )[code];
   }
 
-  return 'Error message not available in production bundles. Compile with `__DEV__` set to true to see more information.';
+  return 'Error message not available in production bundles.';
 }
