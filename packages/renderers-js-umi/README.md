@@ -20,14 +20,32 @@ pnpm install @kinobi-so/renderers-js-umi
 >
 > However, note that the [`renderers`](../renderers) package re-exports the `renderVisitor` function of this package as `renderJavaScriptUmiVisitor`.
 
-## Documentation
+## Usage
 
-_Coming soon..._
+Once you have a Kinobi IDL, you can use the `renderVisitor` of this package to generate JavaScript clients compatible with Umi. You will need to provide the base directory where the generated files will be saved and an optional set of options to customize the output.
 
 ```ts
 // node ./kinobi.mjs
 import { renderVisitor } from '@kinobi-so/renderers-js-umi';
 
 const pathToGeneratedFolder = path.join(__dirname, 'clients', 'js', 'src', 'generated');
-kinobi.accept(renderVisitor(pathToGeneratedFolder));
+const options = {}; // See below.
+kinobi.accept(renderVisitor(pathToGeneratedFolder, options));
 ```
+
+## Options
+
+The `renderVisitor` accepts the following options.
+
+| Name                          | Type                                                | Default   | Description                                                                                                                                                                                  |
+| ----------------------------- | --------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deleteFolderBeforeRendering` | `boolean`                                           | `true`    | Whether the base directory should be cleaned before generating new files.                                                                                                                    |
+| `formatCode`                  | `boolean`                                           | `true`    | Whether we should use Prettier to format the generated code.                                                                                                                                 |
+| `prettierOptions`             | `PrettierOptions`                                   | `{}`      | The options to use when formatting the code using Prettier.                                                                                                                                  |
+| `throwLevel`                  | `'debug' \| 'trace' \| 'info' \| 'warn' \| 'error'` | `'error'` | When validating the Kinobi IDL, the level at which the validation should throw an error.                                                                                                     |
+| `customAccountData`           | `string[]`                                          | `[]`      | The names of all `AccountNodes` whose data should be manually written in JavaScript.                                                                                                         |
+| `customInstructionData`       | `string[]`                                          | `[]`      | The names of all `InstructionNodes` whose data should be manually written in JavaScript.                                                                                                     |
+| `dependencyMap`               | `Record<ImportFrom, string>`                        | `{}`      | A mapping between import aliases and their actual package name or path in JavaScript.                                                                                                        |
+| `internalNodes`               | `string[]`                                          | `[]`      | The names of all nodes that should be generated but not exported by the `index.ts` files.                                                                                                    |
+| `nonScalarEnums`              | `string[]`                                          | `[]`      | The names of enum variants with no data that should be treated as a data union instead of a native `enum` type. This is only useful if you are referencing an enum value in your Kinobi IDL. |
+| `renderParentInstructions`    | `boolean`                                           | `false`   | When using nested instructions, whether the parent instructions should also be rendered. When set to `false` (default), only the instruction leaves are being rendered.                      |
