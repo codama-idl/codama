@@ -391,11 +391,63 @@ const visitor = rootNodeVisitor((root: RootNode) => {
 
 ### `NodeStack`
 
-TODO
+The `NodeStack` class is a utility that allows us to record the stack of nodes that led to a specific node.
+
+For instance, consider the following node:
+
+```ts
+const node = definedTypeNode({
+    name: 'myType',
+    type: tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]),
+});
+```
+
+In this example, the `numberTypeNode` can be reached using the following stack:
+
+```ts
+const stack = new NodeStack()
+    .push(node) // -> definedTypeNode.
+    .push(node.type) // -> tupleTypeNode.
+    .push(node.type.items[0]); // -> numberTypeNode.
+```
+
+Once you have access to a `NodeStack` instance — provided by various utility visitors — you may use the following methods:
+
+```ts
+// Push a node to the stack.
+nodeStack.push(node);
+// Pop the last node out of the stack.
+const lastNode = nodeStack.pop();
+// Peek at the last node in the stack.
+const lastNode = nodeStack.peek();
+// Get all the nodes in the stack as an array.
+const nodes = nodeStack.all();
+// Check if the stack is empty.
+const isEmpty = nodeStack.isEmpty();
+// Clone the stack.
+const clonedStack = nodeStack.clone();
+// Get a string representation of the stack.
+const stackString = nodeStack.toString();
+```
 
 ### `recordNodeStackVisitor`
 
-TODO
+The `recordNodeStackVisitor` function gives us a convenient way to record the stack of each node currently being visited. It accepts a base visitor and an empty `NodeStack` instance that will automatically be pushed and popped as the visitor traverses the nodes. This means that we can inject the `NodeStack` instance into another extension of the visitor to access the stack whilst visiting the nodes.
+
+For instance, here's how we can log the `NodeStack` of any base visitor as we visit the nodes.
+
+```ts
+const stack = new NodeStack();
+const visitor = pipe(
+    baseVisitor,
+    v => recordNodeStackVisitor(v, stack),
+    v =>
+        interceptVisitor(v, (node, next) => {
+            console.log(stack.clone().toString());
+            return next(node);
+        }),
+);
+```
 
 ## Selecting nodes
 
