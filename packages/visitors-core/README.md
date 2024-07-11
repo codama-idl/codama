@@ -37,7 +37,7 @@ The `Visitor` type accepts a second type parameter which defines the scope of no
 
 ```ts
 let myVisitorForProgramNodesOnly: Visitor<number, 'programNode'>;
-let myVisitorForTypeNodesOnly: Visitor<number, TypeNode>;
+let myVisitorForTypeNodesOnly: Visitor<number, TypeNode['kind']>;
 ```
 
 The definition of the `Visitor` type is an object such that, for each supported node kind, a function that accepts a node of that kind and returns a value of type `T` is defined. The name of the function must be camel cased, start with `visit` and finish with the name of the node kind without the `Node` suffix. For instance, the function for the `programNode` kind is named `visitProgram`.
@@ -90,27 +90,169 @@ kinobi.update(myTransformerVisitor());
 
 ## Core visitors
 
-As mentionned in the previous section, creating visitors is much easier when we start from a set of core visitors and extend them to suit our needs. This prevents us from having to write a function for each supported node and allows us to focus on the logic we want to implement.
+As mentionned in the previous section, creating visitors is much easier when we start from a set of core visitors and extend them to suit our needs.
 
--   voidVisitor.ts
--   staticVisitor.ts
--   identityVisitor.ts
--   nonNullableIdentityVisitor.ts
--   mergeVisitor.ts
--   singleNodeVisitor.ts
+Therefore, let's start by exploring the core visitors provided by this package.
+
+### Filtering node kinds
+
+Before we list each available core visitor, it is important to know that each of these functions optionally accept a node kind or an array of node kinds **as their last argument**. This allows us to restrict the visitor to a specific set of nodes and will return a `Visitor<T, U>` instance where `U` is the union of the provided node kinds.
+
+Here are some examples:
+
+```ts
+// This visitor only accepts `ProgramNodes`.
+const visitor: Visitor<number, 'programNode'> = myNumberVisitor('programNode');
+
+// This visitor accepts both `NumberTypeNodes` and `StringTypeNodes`.
+const visitor: Visitor<number, 'numberTypeNode' | 'stringTypeNode'> = myNumberVisitor([
+    'numberTypeNode',
+    'stringTypeNode',
+]);
+
+// This visitor accepts all type nodes.
+const visitor: Visitor<number, TypeNode['kind']> = myNumberVisitor(TYPE_NODES);
+
+// This visitor accepts all nodes.
+const visitor: Visitor<number> = myNumberVisitor();
+```
+
+In the following sections describing the core visitors, this exact pattern can be used to restrict the visitors to specific node kinds. We won't cover this for each visitor but know that you can achieve this via the last argument of each function.
+
+### `voidVisitor`
+
+The `voidVisitor` traverses all the nodes and ends up returning `undefined`, regardless of the node kind.
+
+```ts
+visit(node, voidVisitor());
+// ^ undefined
+```
+
+Visiting a node with this visitor does nothing and causes no side effect. However, it can be a great starting point for creating new visitors by extending certain visiting functions of the `voidVisitor`.
+
+### `staticVisitor`
+
+The `staticVisitor` accepts a function that is used for every node. The provided function is called with the node being visited.
+
+```ts
+const visitor: Visitor<string> = staticVisitor(node => `Visiting ${node.kind}`);
+const kind = visit(numberTypeNode('u32'), visitor);
+// ^ "Visiting numberTypeNode"
+```
+
+This visitor can be used to create simple visitors where each node share a similar logic or to provide a starting point for more complex visitors.
+
+### `identityVisitor`
+
+The `identityVisitor` traverses the nodes and returns a deep copy of the visited node.
+
+```ts
+const node = visit(numberTypeNode('u32'), identityVisitor());
+// ^ A different instance of numberTypeNode('u32')
+```
+
+Note that the returned visitor is of type `Visitor<Node | null>` meaning this visitor allows for nodes to be deleted — i.e. marked as `null`. The `identityVisitor` is able to resolved nested `null` references depending on the node kind. For instance, if a `tupleTypeNode` contains two items and the first one is `null` — after having visited its children — then, the `tupleTypeNode` will only contain the second item. It is also possible for a nested `null` reference to bubble all the way up if it cannot be resolved.
+
+Here are some examples if this behavior by overriding the `visitPublicKeyType` function to return `null`.
+
+```ts
+const visitor = identityVisitor();
+visitor.visitPublicKeyType = () => null;
+
+const node = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ tupleTypeNode([numberTypeNode('u32')])
+
+const node = visit(definedTypeNode({ name: 'address', type: publicKeyTypeNode() }), visitor);
+// ^ null
+```
+
+Also note that, because the visitor is of type `Node | null`, it is technically possible to extend it such that a node of a different kind is returned.
+
+```ts
+const visitor = identityVisitor();
+visitor.visitPublicKeyType = () => fixedSizeTypeNode(stringTypeNode('base58'), 32);
+```
+
+### `nonNullableIdentityVisitor`
+
+The `nonNullableIdentityVisitor` works the same way as the `identityVisitor` but it does not allow nodes to be deleted. That is, its return type must be a `Node` and not `Node | null`.
+
+```ts
+const node = visit(numberTypeNode('u32'), nonNullableIdentityVisitor());
+// ^ A different instance of numberTypeNode('u32')
+```
+
+### `mergeVisitor`
+
+The `mergeVisitor` returns a `Visitor<T>` by accepting two functions such that:
+
+-   The first function is used on the leaves of the Kinobi IDL and return a type `T`.
+-   The second function is used to merge the values `T[]` of the children of a node and aggregate them into a type `T`.
+
+For instance, here is how we can use the `mergeVisitor` to create a nested string representation of node kinds.
+
+```ts
+const visitor = mergeVisitor(
+    (node): string => node.kind,
+    (node, values: string[]): string => `${node.kind}(${values.join(',')})`,
+);
+
+const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ "tupleTypeNode(numberTypeNode,publicKeyTypeNode)"
+```
+
+Here's another example counting the number of traversed nodes.
+
+```ts
+const visitor = mergeVisitor(
+    () => 1,
+    (, values) => values.reduce((a, b) => a + b, 1),
+);
+
+const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ 3
+```
+
+The `mergeVisitor` is a powerful starting point to create aggregating visitors.
 
 ## Composing visitors
 
--   mapVisitor.ts
--   extendVisitor.ts
--   interceptVisitor.ts
--   tapVisitor.ts
--   pipe.ts
+### `extendVisitor`
+
+TODO
+
+### `interceptVisitor`
+
+TODO
+
+### `tapVisitor`
+
+TODO
+
+### `mapVisitor`
+
+TODO
+
+### `pipe`
+
+TODO
+
+### `singleNodeVisitor`
+
+TODO
+
+-   singleNodeVisitor
+-   rootNodeVisitor
 
 ## Recording node stacks
 
--   NodeStack.ts
--   recordNodeStackVisitor.ts
+### `NodeStack`
+
+TODO
+
+### `recordNodeStackVisitor`
+
+TODO
 
 ## Selecting nodes
 
@@ -118,23 +260,52 @@ As mentionned in the previous section, creating visitors is much easier when we 
 
 ## Transforming nodes
 
--   bottomUpTransformerVisitor.ts
--   topDownTransformerVisitor.ts
--   deleteNodesVisitor.ts
+### `bottomUpTransformerVisitor`
+
+TODO
+
+### `topDownTransformerVisitor`
+
+TODO
+
+### `deleteNodesVisitor`
+
+TODO
 
 ## String representations
 
--   getDebugStringVisitor.ts
--   getUniqueHashStringVisitor.ts
--   consoleLogVisitor.ts
+### `getDebugStringVisitor`
+
+TODO
+
+### `getUniqueHashStringVisitor`
+
+TODO
+
+### `consoleLogVisitor`
+
+TODO
 
 ## Resolving link nodes
 
--   LinkableDictionary.ts
--   recordLinkablesVisitor.ts
+### `LinkableDictionary`
+
+TODO
+
+### `recordLinkablesVisitor`
+
+TODO
 
 ## Others useful visitors
 
--   getByteSizeVisitor.ts
--   getResolvedInstructionInputsVisitor.ts
--   removeDocsVisitor.ts
+### `getByteSizeVisitor`
+
+TODO
+
+### `getResolvedInstructionInputsVisitor`
+
+TODO
+
+### `removeDocsVisitor`
+
+TODO
