@@ -451,7 +451,46 @@ const visitor = pipe(
 
 ## Selecting nodes
 
--   NodeSelector.ts
+When visiting a tree of nodes, it is often useful to be explicit about the paths we want to select. For instance, I may want to delete all accounts from a program node named "token".
+
+To take end, the `NodeSelector` type represents a node selection that can take two forms:
+
+-   A `NodeSelectorFunction` of type `(node: Node, stack: NodeStack) => boolean`. In this case, the provided function is used to determine if the node should be selected.
+-   A `NodeSelectorPath` of type `string`. In this case, the provided string uses a simple syntax to select nodes.
+
+The `NodeSelectorPath` syntax is as follows:
+
+-   Plain text is used to match the name of a node, if any. For instance, `token` will match any node named "token".
+-   Square brackets `[]` are used to match the kind of a node. For instance, `[programNode]` will match any `ProgramNode`.
+-   Plain text and square brackets can be combined to match both the name and the kind of a node. For instance, `[programNode]token` will match any `ProgramNode` named "token".
+-   Plain texts and/or square brackets can be chained using dots `.` to match several nodes in the current `NodeStack`.
+-   Dot-separated paths must follow the provided order but do not need to be contigious or exhaustive. This means that `a.b.c` will match a `NodeStack` that looks like `x.a.y.b.z.c` but not `b.a.c`.
+-   The last item of a dot-separated path must match the last node of the `NodeStack`. For instance, `a.b` will not match `a.b.x`.
+-   The wildcard `*` can be used at the end of the path to match any node within the matching path. For instance, `a.b.*` will match `a.b.x`.
+
+Here are some examples:
+
+```ts
+'[accountNode]';
+// Matches any `AccountNode`.
+
+'mint';
+// Matches any node named "mint".
+
+'[accountNode]mint';
+// Matches any `AccountNode` named "mint".
+
+'[programNode]token.[accountNode]mint';
+// Matches any `AccountNode` named "mint" within a `ProgramNode` named "token".
+
+'[programNode]token.*';
+// Matches any node within a `ProgramNode` named "token" (excluding the program node itself).
+
+'token.[structTypeNode].amount';
+// Matches any node named "amount" within a `StructTypeNode` within any node named "token".
+```
+
+The `NodeSelector` type is used by various visitors such as the `bottomUpTransformerVisitor` or the `deleteNodesVisitor` to help us select the nodes we want to transform or delete.
 
 ## Transforming nodes
 
