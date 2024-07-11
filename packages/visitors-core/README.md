@@ -263,26 +263,129 @@ const result = visit(tupleTypeNode([tupleTypeNode([publicKeyTypeNode()]), number
 
 ### `interceptVisitor`
 
-TODO
+The `interceptVisitor` allows us to wrap every visiting function of a provided visitor into a given function. This function has access to the node being visited and a `next` function that can be called to delegate to the base visitor.
+
+For instance, the following visitor intercepts a `voidVisitor` and captures events when visiting nodes.
+
+```ts
+const events: string[] = [];
+const visitor = interceptVisitor(voidVisitor(), (node, next) => {
+    events.push(`down:${node.kind}`);
+    next(node);
+    events.push(`up:${node.kind}`);
+});
+
+visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// events === [
+//     'down:tupleTypeNode',
+//     'down:numberTypeNode',
+//     'up:numberTypeNode',
+//     'down:publicKeyTypeNode',
+//     'up:publicKeyTypeNode',
+//     'up:tupleTypeNode',
+// ]
+```
 
 ### `tapVisitor`
 
-TODO
+The `tapVisitor` function allows us to tap into the visiting functions of a provided visitor without modifying its behavior. This means the returned visitor will behave exactly like the base visitor except that the provided function will be called for the specified node kind.
+
+Note that the provided function must not return a value as it is only used for side effects.
+
+```ts
+let numberOfNumberNodes = 0;
+const visitor = tapVisitor(voidVisitor(), 'numberTypeNode', node => {
+    numberOfNumberNodes++;
+});
+
+visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// numberOfNumberNodes === 1
+```
 
 ### `mapVisitor`
 
-TODO
+The `mapVisitor` function accepts a base visitor of type `Visitor<T>` and a function of type `(value: T) => U`; and returns a new visitor of type `Visitor<U>`.
+
+```ts
+// Gets a nested string representation of node kinds.
+const baseVisitor = mergeVisitor(
+    node => node.kind as string,
+    (node, values) => `${node.kind}(${values.join(',')})`,
+);
+
+// Counts the number of characters in the string representation.
+const visitor = mapVisitor(baseVisitor, (value: string): number => value.length);
+
+const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ 47
+```
 
 ### `pipe`
 
-TODO
+The `pipe` helper function allows us to compose visitors in a more readable way. It accepts a base visitor and a set of visitor functions that are used to extend the behavior of the previous visitor at each step.
+
+```ts
+const visitor = pipe(
+    baseVisitor,
+    v => extendVisitor(v /** ... */),
+    v => interceptVisitor(v /** ... */),
+    v => mapVisitor(v /** ... */),
+    v => tapVisitor(v /** ... */),
+);
+```
+
+For instance, here's an example using the `pipe` function to transform an `identityVisitor` into a visitor that:
+
+-   Transforms all number types into `u64` numbers.
+-   Logs the amount of items in tuple types.
+-   Wraps the visited node in a `DefinedTypeNode` labelled "gift".
+
+```ts
+const visitor = pipe(
+    // Starts with the identity visitor.
+    identityVisitor(),
+    v =>
+        // Extends the visitor to make all number types u64.
+        extendVisitor(v, {
+            visitNumberType: node => numberTypeNode('u64'),
+        }),
+    v =>
+        // Log the amount of items in tuple types.
+        tapVisitor(v, 'tupleTypeNode', node => {
+            console.log(node.items.length);
+        }),
+    v =>
+        // Wrap the visited node in a `DefinedTypeNode` labelled "gift".
+        interceptVisitor(v, node => (node, next) => {
+            return definedTypeNode({ name: 'gift', type: next(node) });
+        }),
+);
+```
 
 ### `singleNodeVisitor`
 
-TODO
+The `singleNodeVisitor` function is a simple primitive that creates a `Visitor` that only visits a single node kind. It accepts a node kind and a function that is used to visit that node kind. Any other node kind will not be supported by the visitor.
 
--   singleNodeVisitor
--   rootNodeVisitor
+```ts
+const visitor = singleNodeVisitor('tupleTypeNode', node => node.items.length);
+
+const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ 2
+```
+
+Additionally, a `rootNodeVisitor` shortcut is provided to create a visitor that only visits `RootNodes`. This can be useful to design top-level visitors using custom logic.
+
+For instance, we can create a visitor that takes a `RootNode` and update it through a series of other visitors before returning the updated `RootNode`.
+
+```ts
+const visitor = rootNodeVisitor((root: RootNode) => {
+    let newRoot = root;
+    newRoot = visit(newRoot, visitorA);
+    newRoot = visit(newRoot, visitorB);
+    newRoot = visit(newRoot, visitorC);
+    return newRoot;
+});
+```
 
 ## Recording node stacks
 
