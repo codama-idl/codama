@@ -23,6 +23,59 @@ pnpm install @kinobi-so/visitors-core
 > pnpm install kinobi
 > ```
 
-## Documentation
+## The `Visitor` type
 
-_Coming soon..._
+-   visitor.ts
+
+### Writing your own visitor
+
+TODO
+
+## Core visitors
+
+-   voidVisitor.ts
+-   staticVisitor.ts
+-   identityVisitor.ts
+-   nonNullableIdentityVisitor.ts
+-   mergeVisitor.ts
+-   singleNodeVisitor.ts
+
+## Composing visitors
+
+-   mapVisitor.ts
+-   extendVisitor.ts
+-   interceptVisitor.ts
+-   tapVisitor.ts
+-   pipe.ts
+
+## Recording node stacks
+
+-   NodeStack.ts
+-   recordNodeStackVisitor.ts
+
+## Selecting nodes
+
+-   NodeSelector.ts
+
+## Transforming nodes
+
+-   bottomUpTransformerVisitor.ts
+-   topDownTransformerVisitor.ts
+-   deleteNodesVisitor.ts
+
+## String representations
+
+-   getDebugStringVisitor.ts
+-   getUniqueHashStringVisitor.ts
+-   consoleLogVisitor.ts
+
+## Resolving link nodes
+
+-   LinkableDictionary.ts
+-   recordLinkablesVisitor.ts
+
+## Others useful visitors
+
+-   getByteSizeVisitor.ts
+-   getResolvedInstructionInputsVisitor.ts
+-   removeDocsVisitor.ts
