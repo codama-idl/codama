@@ -217,9 +217,49 @@ The `mergeVisitor` is a powerful starting point to create aggregating visitors.
 
 ## Composing visitors
 
+The following visitor functions accept a existing visitor and return a new visitor that extends or modifies the behavior of the provided visitor. These primitives can be used to create complex visitors by composing simpler ones.
+
 ### `extendVisitor`
 
-TODO
+The `extendVisitor` function accepts a base visitor and a set of function wrappers that are used to extend the behavior of the base visitor.
+
+Each function wrapper is given the `node` being visited and an object composed of two elements:
+
+-   `next`: A function that can be called to delegate to the base visitor — e.g. `next(node)`.
+-   `self`: The visitor itself, allowing for recursive calls.
+
+To illustrate this, consider the following base visitor that counts the number of nodes.
+
+```ts
+const baseVisitor = mergeVisitor(
+    () => 1,
+    (_, values) => values.reduce((a, b) => a + b, 1),
+);
+```
+
+We can extend this visitor to increment the count by 10 when visiting a `PublicKeyTypeNode` like so:
+
+```ts
+const visitor = extendVisitor(baseVisitor, {
+    visitPublicKeyType: (node, { next }) => next(node) + 10,
+});
+
+const result = visit(tupleTypeNode([publicKeyTypeNode(), numberTypeNode('u32')]), visitor);
+// ^ 13
+```
+
+Notice how `next(node)` can be used to access the underlying visitor meaning we can extend both the input and the output of the base visitor.
+
+Another example is to make use of the `self` property to recursively call the extended visitor. For instance, the following code only visits the first item of tuple types.
+
+```ts
+const visitor = extendVisitor(baseVisitor, {
+    visitTupleType: (node, { self }) => visit(node.items[0], self) + 1,
+});
+
+const result = visit(tupleTypeNode([tupleTypeNode([publicKeyTypeNode()]), numberTypeNode('u32')]), visitor);
+// ^ 3
+```
 
 ### `interceptVisitor`
 
