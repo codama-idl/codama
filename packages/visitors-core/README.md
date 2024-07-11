@@ -23,15 +23,74 @@ pnpm install @kinobi-so/visitors-core
 > pnpm install kinobi
 > ```
 
-## The `Visitor` type
+## Getting started with visitors
 
--   visitor.ts
+### The `Visitor` type
+
+The type `Visitor<T>` is the core interface for defining Kinobi visitors. The type parameter `T` is used to define the return type of the visitor. For instance, here's the definition of a visitor that goes through the nodes and returns a number.
+
+```ts
+let myNumberVisitor: Visitor<number>;
+```
+
+The `Visitor` type accepts a second type parameter which defines the scope of nodes accepted by the visitor. By default, the visitor accepts all nodes. However, you can restrict the visitor to a specific set of nodes by providing a union of node kinds.
+
+```ts
+let myVisitorForProgramNodesOnly: Visitor<number, 'programNode'>;
+let myVisitorForTypeNodesOnly: Visitor<number, TypeNode>;
+```
+
+The definition of the `Visitor` type is an object such that, for each supported node kind, a function that accepts a node of that kind and returns a value of type `T` is defined. The name of the function must be camel cased, start with `visit` and finish with the name of the node kind without the `Node` suffix. For instance, the function for the `programNode` kind is named `visitProgram`.
 
 ### Writing your own visitor
 
-TODO
+To write your own custom visitor, you may simply define an object with the appropriate functions. For instance, here's a visitor that only visit `ProgramNodes` and returns the number of accounts in the program.
+
+```ts
+const accountCounterVisitor: Visitor<number, 'programNode'> = {
+    visitProgram: (node: ProgramNode) => node.accounts.length,
+};
+```
+
+Note that it is recommended to return visitors from functions so we can easily reuse them and parameterize them. Additionally, this allows our code to be tree-shaken by the bundler. As we will see in this documentation, all provided visitors are returned from functions even if they don't take any parameter.
+
+Here's our previous example updated to accept a `multiplier` parameter.
+
+```ts
+const accountCounterVisitor = (multiplier = 1): Visitor<number, 'programNode'> => ({
+    visitProgram: (node: ProgramNode) => node.accounts.length * multiplier,
+});
+```
+
+In practice, writing a visitor manually can be cumbersome as a function must be provided for each supported node kind. Therefore, it is recommended to compose visitors from a set of core visitors provided by this package and extend them to suit your needs. We will see how to do this in the next sections.
+
+### Visiting nodes
+
+Once we have a visitor, we can visit any node it supports by calling the `visit` function. This function accepts a node and a visitor of type `Visitor<T>` and returns a type `T`.
+
+```ts
+const counter: number = visit(programNode, accountCounterVisitor());
+```
+
+The `visitOrElse` function can also be used to gracefully handle the case where the node is not supported by the visitor. In this case, a fallback logic — provided as a third argument — is used to compute the result.
+
+```ts
+const counter: number = visit(stringTypeNode, accountCounterVisitor(), () => 0);
+```
+
+Also note that, if you are using [the `Kinobi` interface](../library/README#kinobi) — which is a simple wrapper around a `RootNode` — you may visit that root node using the provided helpers:
+
+```ts
+// Runs the visitor and returns the result.
+const result: number = kinobi.accept(myNumberVisitor());
+
+// Runs the visitor and updates the wrapped `RootNode` with the result.
+kinobi.update(myTransformerVisitor());
+```
 
 ## Core visitors
+
+As mentionned in the previous section, creating visitors is much easier when we start from a set of core visitors and extend them to suit our needs. This prevents us from having to write a function for each supported node and allows us to focus on the logic we want to implement.
 
 -   voidVisitor.ts
 -   staticVisitor.ts
