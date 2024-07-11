@@ -18,9 +18,13 @@ pnpm install @kinobi-so/renderers
 > [!NOTE]
 > This package is **not** included in the main [`kinobi`](../library) package.
 
-## Documentation
+## Available renderers
 
-_Coming soon..._
+The following renderer packages are included in this package:
+
+-   [`@kinobi-so/renderers-js`](../renderers-js) as `renderJavaScriptVisitor`
+-   [`@kinobi-so/renderers-js-umi`](../renderers-js-umi) as `renderJavaScriptUmiVisitor`
+-   [`@kinobi-so/renderers-rust`](../renderers-rust) as `renderRustVisitor`
 
 ```ts
 // node ./kinobi.mjs
