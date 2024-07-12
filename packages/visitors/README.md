@@ -303,40 +303,125 @@ kinobi.update(unwrapTypeDefinedLinksVisitor(['[accountNode]counter.data', '[inst
 
 ### `updateAccountsVisitor`
 
-TODO
+This visitor allows us to update various aspects of `AccountNodes` and/or delete them. It accepts an object where the keys are the account names and the values are the operations to apply to these accounts.
 
 ```ts
-kinobi.update(updateAccountsVisitor());
+kinobi.update(
+    updateAccountsVisitor({
+        vault: {
+            // Rename the 'vault' account to 'safe'.
+            name: 'safe',
+            // Rename the 'owner' field to 'authority'.
+            data: { owner: 'authority' },
+            // Create a new PDA node and link it to this account.
+            seeds: [variablePdaSeedNode('authority', publicKeyTypeNode())],
+        },
+        counter: {
+            // Delete the 'counter' account.
+            delete: true,
+        },
+    }),
+);
 ```
 
 ### `updateDefinedTypesVisitor`
 
-TODO
+This visitor allows us to update various aspects of `DefinedTypeNode` and/or delete them. It accepts an object where the keys are the defined type names and the values are the operations to apply to these types.
 
 ```ts
-kinobi.update(updateDefinedTypesVisitor());
+kinobi.update(
+    updateDefinedTypesVisitor({
+        options: {
+            // Rename the 'options' type to 'configs'.
+            name: 'configs',
+            // Rename the 'sol' field to 'lamports'.
+            data: { sol: 'lamports' },
+        },
+        player: {
+            // Delete the 'player' type.
+            delete: true,
+        },
+    }),
+);
 ```
 
 ### `updateErrorsVisitor`
 
-TODO
+This visitor allows us to update various aspects of `ErrorNodes` and/or delete them. It accepts an object where the keys are the error names and the values are the operations to apply to these errors.
 
 ```ts
-kinobi.update(updateErrorsVisitor());
+kinobi.update(
+    updateErrorsVisitor({
+        invalidPda: {
+            // Rename the 'invalidPda' error to 'invalidProgramDerivedAddress'.
+            name: 'invalidProgramDerivedAddress',
+            // Change the error message.
+            message: 'The program-derived address is invalid.',
+            // Change the error code.
+            code: 123,
+        },
+        accountMismatch: {
+            // Delete the 'accountMismatch' error.
+            delete: true,
+        },
+    }),
+);
 ```
 
 ### `updateInstructionsVisitor`
 
-TODO
+This visitor allows us to update various aspects of `InstructionNodes` and/or delete them. It accepts an object where the keys are the instruction names and the values are the operations to apply to these instructions.
 
 ```ts
-kinobi.update(updateInstructionsVisitor());
+kinobi.update(
+    updateInstructionsVisitor({
+        send: {
+            // Rename the 'send' instruction to 'transfer'.
+            name: 'transfer',
+            accounts: {
+                // Rename the 'owner' instruction account to 'authority'.
+                owner: { name: 'authority' },
+                // Set a default value for the 'associatedToken' instruction account.
+                associatedToken: { defaultValue: pdaValueNode('associatedToken') },
+                // Update the signer status of the 'payer' instruction account to `true`.
+                payer: { isSigner: true },
+                // Mark the 'mint' instruction account as optional.
+                mint: { isOptional: true },
+            },
+            arguments: {
+                // Set a default value for the 'amount' instruction argument to 1.
+                amount: { defaultValue: numberValueNode(1) },
+                // Rename the 'decimals' instruction argument to 'mintDecimals'.
+                decimals: { name: 'mintDecimals' },
+            },
+        },
+        burn: {
+            // Delete the 'burn' instruction.
+            delete: true,
+        },
+    }),
+);
 ```
 
 ### `updateProgramsVisitor`
 
-TODO
+This visitor allows us to update various aspects of `ProgramNodes` and/or delete them. It accepts an object where the keys are the program names and the values are the operations to apply to these programs.
 
 ```ts
-kinobi.update(updateProgramsVisitor());
+kinobi.update(
+    updateProgramsVisitor({
+        splToken: {
+            // Rename the 'splToken' program to 'token'.
+            name: 'token',
+            // Change the program version.
+            version: '3.0.0',
+            // Change the program's public key.
+            publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+        splAssociatedToken: {
+            // Delete the 'splAssociatedToken' program.
+            delete: true,
+        },
+    }),
+);
 ```
