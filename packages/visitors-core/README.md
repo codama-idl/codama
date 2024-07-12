@@ -27,7 +27,7 @@ pnpm install @kinobi-so/visitors-core
 
 ### The `Visitor` type
 
-The type `Visitor<T>` is the core interface for defining Kinobi visitors. The type parameter `T` is used to define the return type of the visitor. For instance, here's the definition of a visitor that goes through the nodes and returns a number.
+The type `Visitor<T>` is the core interface for defining Kinobi visitors. The type parameter `T` is used to determine the return type of the visitor. For instance, here's the definition of a visitor that goes through the nodes and returns a number.
 
 ```ts
 let myNumberVisitor: Visitor<number>;
@@ -40,11 +40,11 @@ let myVisitorForProgramNodesOnly: Visitor<number, 'programNode'>;
 let myVisitorForTypeNodesOnly: Visitor<number, TypeNode['kind']>;
 ```
 
-The definition of the `Visitor` type is an object such that, for each supported node kind, a function that accepts a node of that kind and returns a value of type `T` is defined. The name of the function must be camel cased, start with `visit` and finish with the name of the node kind without the `Node` suffix. For instance, the function for the `programNode` kind is named `visitProgram`.
+The definition of the `Visitor` type is an object such that, for each supported node kind, a function that accepts a node of that kind and returns a value of type `T` is defined. The name of the function must be camel-cased, start with `visit` and finish with the name of the node kind without the `Node` suffix. For instance, the function for the `programNode` kind is named `visitProgram`.
 
 ### Writing your own visitor
 
-To write your own custom visitor, you may simply define an object with the appropriate functions. For instance, here's a visitor that only visit `ProgramNodes` and returns the number of accounts in the program.
+To write a custom visitor, you may simply define an object with the appropriate functions. For instance, here's a visitor that only visits `ProgramNodes` and returns the number of accounts in the program.
 
 ```ts
 const accountCounterVisitor: Visitor<number, 'programNode'> = {
@@ -90,13 +90,13 @@ kinobi.update(myTransformerVisitor());
 
 ## Core visitors
 
-As mentionned in the previous section, creating visitors is much easier when we start from a set of core visitors and extend them to suit our needs.
+As mentioned in the previous section, creating visitors is much easier when we start from a set of core visitors and extend them to suit our needs.
 
 Therefore, let's start by exploring the core visitors provided by this package.
 
 ### Filtering node kinds
 
-Before we list each available core visitor, it is important to know that each of these functions optionally accept a node kind or an array of node kinds **as their last argument**. This allows us to restrict the visitor to a specific set of nodes and will return a `Visitor<T, U>` instance where `U` is the union of the provided node kinds.
+Before we list each available core visitor, it is important to know that each of these functions optionally accepts a node kind or an array of node kinds **as their last argument**. This allows us to restrict the visitor to a specific set of nodes and will return a `Visitor<T, U>` instance where `U` is the union of the provided node kinds.
 
 Here are some examples:
 
@@ -128,7 +128,7 @@ visit(node, voidVisitor());
 // ^ undefined
 ```
 
-Visiting a node with this visitor does nothing and causes no side effect. However, it can be a great starting point for creating new visitors by extending certain visiting functions of the `voidVisitor`.
+Visiting a node with this visitor does nothing and causes no side effects. However, it can be a great starting point for creating new visitors by extending certain visiting functions of the `voidVisitor`.
 
 ### `staticVisitor`
 
@@ -140,7 +140,7 @@ const kind = visit(numberTypeNode('u32'), visitor);
 // ^ "Visiting numberTypeNode"
 ```
 
-This visitor can be used to create simple visitors where each node share a similar logic or to provide a starting point for more complex visitors.
+This visitor can be used to create simple visitors where each node shares a similar logic or to provide a starting point for more complex visitors.
 
 ### `identityVisitor`
 
@@ -151,9 +151,9 @@ const node = visit(numberTypeNode('u32'), identityVisitor());
 // ^ A different instance of numberTypeNode('u32')
 ```
 
-Note that the returned visitor is of type `Visitor<Node | null>` meaning this visitor allows for nodes to be deleted — i.e. marked as `null`. The `identityVisitor` is able to resolved nested `null` references depending on the node kind. For instance, if a `tupleTypeNode` contains two items and the first one is `null` — after having visited its children — then, the `tupleTypeNode` will only contain the second item. It is also possible for a nested `null` reference to bubble all the way up if it cannot be resolved.
+Note that the returned visitor is of type `Visitor<Node | null>` meaning this visitor allows for nodes to be deleted — i.e. marked as `null`. The `identityVisitor` can resolve nested `null` references depending on the node kind. For instance, if a `tupleTypeNode` contains two items and the first one is `null` — after having visited its children — then, the `tupleTypeNode` will only contain the second item. It is also possible for a nested `null` reference to bubble up if it cannot be resolved.
 
-Here are some examples if this behavior by overriding the `visitPublicKeyType` function to return `null`.
+Here are some examples of this behaviour by overriding the `visitPublicKeyType` function to return `null`.
 
 ```ts
 const visitor = identityVisitor();
@@ -186,7 +186,7 @@ const node = visit(numberTypeNode('u32'), nonNullableIdentityVisitor());
 
 The `mergeVisitor` returns a `Visitor<T>` by accepting two functions such that:
 
--   The first function is used on the leaves of the Kinobi IDL and return a type `T`.
+-   The first function is used on the leaves of the Kinobi IDL and returns a type `T`.
 -   The second function is used to merge the values `T[]` of the children of a node and aggregate them into a type `T`.
 
 For instance, here is how we can use the `mergeVisitor` to create a nested string representation of node kinds.
@@ -201,7 +201,7 @@ const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])
 // ^ "tupleTypeNode(numberTypeNode,publicKeyTypeNode)"
 ```
 
-Here's another example counting the number of traversed nodes.
+Here's another example, counting the number of traversed nodes.
 
 ```ts
 const visitor = mergeVisitor(
@@ -217,11 +217,11 @@ The `mergeVisitor` is a powerful starting point to create aggregating visitors.
 
 ## Composing visitors
 
-The following visitor functions accept a existing visitor and return a new visitor that extends or modifies the behavior of the provided visitor. These primitives can be used to create complex visitors by composing simpler ones.
+The following visitor functions accept an existing visitor and return a new visitor that extends or modifies the behaviour of the provided visitor. These primitives can be used to create complex visitors by composing simpler ones.
 
 ### `extendVisitor`
 
-The `extendVisitor` function accepts a base visitor and a set of function wrappers that are used to extend the behavior of the base visitor.
+The `extendVisitor` function accepts a base visitor and a set of function wrappers that are used to extend the behaviour of the base visitor.
 
 Each function wrapper is given the `node` being visited and an object composed of two elements:
 
@@ -288,7 +288,7 @@ visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
 
 ### `tapVisitor`
 
-The `tapVisitor` function allows us to tap into the visiting functions of a provided visitor without modifying its behavior. This means the returned visitor will behave exactly like the base visitor except that the provided function will be called for the specified node kind.
+The `tapVisitor` function allows us to tap into the visiting functions of a provided visitor without modifying its behaviour. This means the returned visitor will behave exactly like the base visitor except that the provided function will be called for the specified node kind.
 
 Note that the provided function must not return a value as it is only used for side effects.
 
@@ -322,7 +322,7 @@ const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])
 
 ### `pipe`
 
-The `pipe` helper function allows us to compose visitors in a more readable way. It accepts a base visitor and a set of visitor functions that are used to extend the behavior of the previous visitor at each step.
+The `pipe` helper function allows us to compose visitors in a more readable way. It accepts a base visitor and a set of visitor functions that are used to extend the behaviour of the previous visitor at each step.
 
 ```ts
 const visitor = pipe(
@@ -375,7 +375,7 @@ const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])
 
 Additionally, a `rootNodeVisitor` shortcut is provided to create a visitor that only visits `RootNodes`. This can be useful to design top-level visitors using custom logic.
 
-For instance, we can create a visitor that takes a `RootNode` and update it through a series of other visitors before returning the updated `RootNode`.
+For instance, we can create a visitor that takes a `RootNode` and updates it through a series of other visitors before returning the updated `RootNode`.
 
 ```ts
 const visitor = rootNodeVisitor((root: RootNode) => {
@@ -464,7 +464,7 @@ The `NodeSelectorPath` syntax is as follows:
 -   Square brackets `[]` are used to match the kind of a node. For instance, `[programNode]` will match any `ProgramNode`.
 -   Plain text and square brackets can be combined to match both the name and the kind of a node. For instance, `[programNode]token` will match any `ProgramNode` named "token".
 -   Plain texts and/or square brackets can be chained using dots `.` to match several nodes in the current `NodeStack`.
--   Dot-separated paths must follow the provided order but do not need to be contigious or exhaustive. This means that `a.b.c` will match a `NodeStack` that looks like `x.a.y.b.z.c` but not `b.a.c`.
+-   Dot-separated paths must follow the provided order but do not need to be contiguous or exhaustive. This means that `a.b.c` will match a `NodeStack` that looks like `x.a.y.b.z.c` but not `b.a.c`.
 -   The last item of a dot-separated path must match the last node of the `NodeStack`. For instance, `a.b` will not match `a.b.x`.
 -   The wildcard `*` can be used at the end of the path to match any node within the matching path. For instance, `a.b.*` will match `a.b.x`.
 
@@ -500,7 +500,7 @@ This package offers several visitors to facilitate the transformation and/or del
 
 The `bottomUpTransformerVisitor` traverses the nodes and intercepts them on the way back up. This means that when we reach a node, we have already visited all its children.
 
-This visitor accepts and array of `transformers` where each transformer is an object with the following properties:
+This visitor accepts an array of `transformers` where each transformer is an object with the following properties:
 
 -   `select`: A `NodeSelector` or an array of `NodeSelectors` used to select the nodes we want to transform. When multiple selectors are provided, they must all match for the node to be selected.
 -   `transform`: A function that accepts the selected node and its `NodeStack`; and returns a new node or `null` to delete the node.
@@ -660,9 +660,9 @@ const visitor = pipe(
 );
 ```
 
-## Others useful visitors
+## Other useful visitors
 
-This package provides a few other visitors that may be help build more complex visitors.
+This package provides a few other visitors that may help build more complex visitors.
 
 ### `getByteSizeVisitor`
 
