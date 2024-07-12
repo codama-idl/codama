@@ -662,14 +662,38 @@ const visitor = pipe(
 
 ## Others useful visitors
 
+This package provides a few other visitors that may be help build more complex visitors.
+
 ### `getByteSizeVisitor`
 
-TODO
+The `getByteSizeVisitor` calculates the byte size of a given `TypeNode`. It returns a `number` if the byte size is fixed or `null` if it is variable. It requires a `LinkableDictionary` instance to resolve any link nodes it encounters.
+
+```ts
+const visitor = getByteSizeVisitor(linkables);
+const size = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ 36 (4 bytes for the u32 number and 32 bytes for the public key)
+```
 
 ### `getResolvedInstructionInputsVisitor`
 
-TODO
+The `getResolvedInstructionInputsVisitor` visits `InstructionNodes` only and returns an array of instruction accounts and arguments in the order they should be rendered for their default values to be resolved.
+
+For instance, say we have an instruction with two accounts and one argument such that `argumentA` defaults to `accountB` and `accountA` is a PDA that uses `argumentA` as a seed. Therefore, the visitor will return an array in the order `[accountB, argumentA, accountA]`.
+
+This is mostly useful when rendering client code for instructions.
 
 ### `removeDocsVisitor`
 
-TODO
+The `removeDocsVisitor` goes through all nodes that have a `docs` property and clears its content.
+
+```ts
+const node = definedTypeNode({
+    name: 'authority',
+    type: publicKeyTypeNode(),
+    docs: ['The authority of the account'],
+});
+const updatedNode = visit(node, removeDocsVisitor());
+// ^ definedTypeNode({ name: 'authority', type: publicKeyTypeNode() })
+```
+
+This is used internally by the `getUniqueHashStringVisitor` to get a unique identifier for a node regardless of its documentation.
