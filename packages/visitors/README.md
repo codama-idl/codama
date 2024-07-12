@@ -162,15 +162,21 @@ This histogram is used internally in other visitors to understand how types are 
 
 ### `setAccountDiscriminatorFromFieldVisitor`
 
-TODO
+This visitor helps to set account discriminator based on a field in the account data and the value it should take. This is typically used on the very first field of the account data which usually refers to a discriminator value that helps distinguish between multiple accounts in a program.
 
 ```ts
-kinobi.update(setAccountDiscriminatorFromFieldVisitor());
+kinobi.update(
+    setAccountDiscriminatorFromFieldVisitor({
+        counter: { field: 'discriminator', value: k.enumValueNode('accountState', 'counter') },
+        escrow: { field: 'discriminator', value: k.enumValueNode('accountState', 'escrow') },
+        vault: { field: 'discriminator', value: k.enumValueNode('accountState', 'vault') },
+    }),
+);
 ```
 
 ### `setFixedAccountSizesVisitor`
 
-TODO
+This visitor uses the [`getByteSizeVisitor`](../visitors-core/README.md#getbytesizevisitor) to check the size of all `AccountNodes` and, if a fixed-size is identified, it sets the `size` property of the account to that value.
 
 ```ts
 kinobi.update(setFixedAccountSizesVisitor());
@@ -178,47 +184,82 @@ kinobi.update(setFixedAccountSizesVisitor());
 
 ### `setInstructionAccountDefaultValuesVisitor`
 
-TODO
+This visitor helps set the default values of instruction accounts in bulk. It accepts an array of "rule" objects that must contain the default value to set and the name of the instruction account to set it on. The account name may also be a regular expression to match more complex patterns.
 
 ```ts
-kinobi.update(setInstructionAccountDefaultValuesVisitor());
+kinobi.update(
+    setInstructionAccountDefaultValuesVisitor([
+        {
+            // Set this public key as default value to any account named 'counterProgram'.
+            account: 'counterProgram',
+            defaultValue: publicKeyValueNode('MyCounterProgram11111111111111111111111111'),
+        },
+        {
+            // Set this PDA as default value to any account named 'associatedToken' or 'ata'.
+            account: /^(associatedToken|ata)$/,
+            defaultValue: pdaValueNode('associatedToken'),
+        },
+    ]),
+);
 ```
 
 ### `setInstructionDiscriminatorsVisitor`
 
-TODO
+This visitor adds a new instruction argument to each of the provided instruction names. The new argument is added before any existing argument and marked as a discriminator of the instruction. This is useful if your Kinobi IDL is missing discriminators in the instruction data.
 
 ```ts
-kinobi.update(setInstructionDiscriminatorsVisitor());
+kinobi.update(
+    setInstructionDiscriminatorsVisitor({
+        mint: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(0) },
+        transfer: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(1) },
+        burn: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(2) },
+    }),
+);
 ```
 
 ### `setNumberWrappersVisitor`
 
-TODO
+This visitor helps wrap `NumberTypeNodes` matching a given name with a specific number wrapper.
 
 ```ts
-kinobi.update(setNumberWrappersVisitor());
+kinobi.update(
+    setNumberWrappersVisitor({
+        lamports: { kind: 'SolAmount' },
+        timestamp: { kind: 'DateTime' },
+        percent: { decimals: 2, kind: 'Amount', unit: '%' },
+    }),
+);
 ```
 
 ### `setStructDefaultValuesVisitor`
 
-TODO
+This visitor sets default values for all provided fields of a struct. It accepts an object where the keys are the struct names and the values are objects that map field names to their new default values.
 
 ```ts
-kinobi.update(setStructDefaultValuesVisitor());
+kinobi.update(
+    setStructDefaultValuesVisitor({
+        person: {
+            age: numberValueNode(42),
+            dateOfBirth: noneValueNode(),
+        },
+        counter: {
+            count: numberValueNode(0),
+        },
+    }),
+);
 ```
 
 ### `transformDefinedTypesIntoAccountsVisitor`
 
-TODO
+This visitor transforms `DefinedTypeNodes` matching the provided names into `AccountNodes` within the same `ProgramNode`.
 
 ```ts
-kinobi.update(transformDefinedTypesIntoAccountsVisitor());
+kinobi.update(transformDefinedTypesIntoAccountsVisitor(['counter', 'escrow']));
 ```
 
 ### `transformU8ArraysToBytesVisitor`
 
-TODO
+This visitor transforms fixed-size array of `u8` numbers into fixed-size `BytesTypeNode`.
 
 ```ts
 kinobi.update(transformU8ArraysToBytesVisitor());
@@ -226,15 +267,17 @@ kinobi.update(transformU8ArraysToBytesVisitor());
 
 ### `unwrapDefinedTypesVisitor`
 
-TODO
+This visitor replaces any `DefinedTypeLinkNode` with the actual `DefinedTypeNode` it points to. By default, it unwraps all defined types, but you can provide an array of names to only unwrap specific types.
+
+Note that if multiple link nodes point to the same defined type, each link node will be replaced by a copy of the defined type.
 
 ```ts
-kinobi.update(unwrapDefinedTypesVisitor());
+kinobi.update(unwrapDefinedTypesVisitor(['counter', 'escrow']));
 ```
 
 ### `unwrapInstructionArgsDefinedTypesVisitor`
 
-TODO
+This visitor replaces `DefinedTypeLinkNodes` used only once inside an instruction argument with the actual `DefinedTypeNodes` they refer to.
 
 ```ts
 kinobi.update(unwrapInstructionArgsDefinedTypesVisitor());
@@ -242,7 +285,7 @@ kinobi.update(unwrapInstructionArgsDefinedTypesVisitor());
 
 ### `unwrapTupleEnumWithSingleStructVisitor`
 
-TODO
+This visitor transform `EnumTupleVariantTypeNodes` with a single `StructTypeNode` item into `EnumStructVariantTypeNodes`. By default, it will unwrap all tuple variant matching that criteria, but you can provide an array of names to only unwrap specific variants.
 
 ```ts
 kinobi.update(unwrapTupleEnumWithSingleStructVisitor());
@@ -250,10 +293,12 @@ kinobi.update(unwrapTupleEnumWithSingleStructVisitor());
 
 ### `unwrapTypeDefinedLinksVisitor`
 
-TODO
+This visitor replaces any `DefinedTypeLinkNode` matching the provided `NodeSelectors` with the actual `DefinedTypeNode` it points to.
+
+Contrary to the `unwrapDefinedTypesVisitor` though, it only replaces the requested `DefinedTypeLinkNodes` and does not remove the associated `DefinedTypeNode` from its `ProgramNode`.
 
 ```ts
-kinobi.update(unwrapTypeDefinedLinksVisitor());
+kinobi.update(unwrapTypeDefinedLinksVisitor(['[accountNode]counter.data', '[instructionNode]transfer.config']));
 ```
 
 ### `updateAccountsVisitor`
