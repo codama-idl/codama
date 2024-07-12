@@ -74,15 +74,21 @@ kinobi.update(
 
 ### `createSubInstructionsFromEnumArgsVisitor`
 
-TODO
+This visitor splits an instruction into multiple sub-instructions by using an enum argument such that each of its variants creates a different sub-instruction. It accepts an object where the keys are the instruction names and the values are the enum argument names that will be used to split the instruction.
 
 ```ts
-kinobi.update(createSubInstructionsFromEnumArgsVisitor());
+kinobi.update(
+    createSubInstructionsFromEnumArgsVisitor({
+        mint: 'mintArgs',
+        transfer: 'transferArgs',
+        burn: 'burnArgs',
+    }),
+);
 ```
 
 ### `deduplicateIdenticalDefinedTypesVisitor`
 
-TODO
+This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Kinobi IDL and remove any duplicates. A `DefinedTypeNode` is considered a duplicate if it has the same name and data structure as another `DefinedTypeNode`. This is useful when you have multiple programs that share the same types.
 
 ```ts
 kinobi.update(deduplicateIdenticalDefinedTypesVisitor());
@@ -90,15 +96,23 @@ kinobi.update(deduplicateIdenticalDefinedTypesVisitor());
 
 ### `fillDefaultPdaSeedValuesVisitor`
 
-TODO
+This visitor fills any missing `PdaSeedValueNodes` from `PdaValueNodes` using the provided `InstructionNode` such that:
+
+-   If a `VariablePdaSeedNode` is of type `PublicKeyTypeNode` and the name of the seed matches the name of an account in the `InstructionNode`, then a new `PdaSeedValueNode` will be added with the matching account.
+-   Otherwise, if a `VariablePdaSeedNode` is of any other type and the name of the seed matches the name of an argument in the `InstructionNode`, then a new `PdaSeedValueNode` will be added with the matching argument.
+-   Otherwise, no `PdaSeedValueNode` will be added.
+
+It also requires a [`LinkableDictionary`](../visitors-core/README.md#linkable-dictionary) to resolve any link nodes and an optional `strictMode` boolean to throw an error if seeds are still missing after the visitor has run.
+
+Note that this visitor is mainly used for internal purposes.
 
 ```ts
-kinobi.update(fillDefaultPdaSeedValuesVisitor());
+kinobi.update(fillDefaultPdaSeedValuesVisitor(instructionNode, linkables, strictMode));
 ```
 
 ### `flattenInstructionDataArgumentsVisitor`
 
-TODO
+This visitor flattens any instruction arguments of type `StructTypeNode` such that their fields are no longer nested. This can be useful to simplify the data structure of an instruction.
 
 ```ts
 kinobi.update(flattenInstructionDataArgumentsVisitor());
@@ -106,19 +120,45 @@ kinobi.update(flattenInstructionDataArgumentsVisitor());
 
 ### `flattenStructVisitor`
 
-TODO
+This visitor flattens any struct fields that are also structs such that their fields are no longer nested. It accepts an object such that the keys are the struct names and the values are the field names to flatten or `"*"` to flatten all struct fields.
 
 ```ts
-kinobi.update(flattenStructVisitor());
+kinobi.update(
+    flattenStructVisitor({
+        counter: ['data', 'config'],
+        escrow: '*',
+    }),
+);
 ```
 
 ### `getDefinedTypeHistogramVisitor`
 
-TODO
+This visitor go through all `DefinedTypeNodes` and outputs a histogram of how many times each type is used in the Kinobi IDL.
 
 ```ts
-kinobi.update(getDefinedTypeHistogramVisitor());
+const histogram = kinobi.accept(getDefinedTypeHistogramVisitor());
 ```
+
+The returned histogram is an object such that the keys are the names of visited `DefinedTypeNodes` and the values are objects with properties described below.
+
+```ts
+export type DefinedTypeHistogram = {
+    [key: CamelCaseString]: {
+        // The number of times the type is used as a direct instruction argument.
+        directlyAsInstructionArgs: number;
+        // The number of times the type is used in account data.
+        inAccounts: number;
+        // The number of times the type is used in other defined types.
+        inDefinedTypes: number;
+        // The number of times the type is used in instruction arguments.
+        inInstructionArgs: number;
+        // The number of times the type is used in total.
+        total: number;
+    };
+};
+```
+
+This histogram is used internally in other visitors to understand how types are used before applying transformations.
 
 ### `setAccountDiscriminatorFromFieldVisitor`
 
