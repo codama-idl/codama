@@ -619,11 +619,46 @@ const visitor = consoleLogVisitor(getDebugStringVisitor({ indent: true }));
 
 ### `LinkableDictionary`
 
-TODO
+The `LinkableDictionary` type is a utility that allows us to store and access linkable nodes — such as `ProgramNodes`, `AccountNodes` or `PdaNodes` — from their respective [link nodes](../nodes/linkNodes/README.md).
+
+It offers the following API:
+
+```ts
+const linkables = new LinkableDictionary();
+
+// Record any linkable node — such as programs, PDAs, accounts and defined types.
+linkables.record(programNode);
+
+// Record multiple linkable nodes at once.
+linkables.recordAll([...accountNodes, ...pdaNodes]);
+
+// Get a linkable node using a link node, or throw an error if it is not found.
+const programNode = linkables.getOrThrow(programLinkNode);
+
+// Get a linkable node using a link node, or return undefined if it is not found.
+const accountNode = linkables.get(accountLinkNode);
+```
 
 ### `recordLinkablesVisitor`
 
-TODO
+Much like the `recordNodeStackVisitor`, the `recordLinkablesVisitor` allows us to record linkable nodes as we traverse the tree of nodes. It accepts a base visitor and `LinkableDictionary` instance; and records any linkable node it encounters.
+
+This means that we can inject the `LinkableDictionary` instance into another extension of the base visitor to resolve any link node we encounter.
+
+Here's an example that records a `LinkableDictionary` and uses it to log the amount of seeds in each linked PDA node.
+
+```ts
+const linkables = new LinkableDictionary();
+const visitor = pipe(
+    baseVisitor,
+    v => recordLinkablesVisitor(v, linkables),
+    v =>
+        tapVisitor(v, 'pdaLinkNode', node => {
+            const pdaNode = linkables.getOrThrow(node);
+            console.log(`${pdaNode.seeds.length} seeds`);
+        }),
+);
+```
 
 ## Others useful visitors
 
