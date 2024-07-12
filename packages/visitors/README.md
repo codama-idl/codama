@@ -22,6 +22,112 @@ pnpm install @kinobi-so/visitors
 > pnpm install kinobi
 > ```
 
-## Documentation
+## Understanding visitors
 
-_Coming soon..._
+This package includes and re-exports the [`@kinobi-so/visitors-core`](../visitors-core/README.md) package which provides the core interfaces and functions to create and compose visitors.
+
+To get a better understanding of visitors and how they work, please refer to the [`@kinobi-so/visitors-core` documentation](../visitors-core/README.md).
+
+In the rest of this documentation, we focus on the high-level visitors that are only available in this package. The main goal of these visitors is to provide a set of specific operations that can be applied to Kinobi IDLs — as opposed to the generic primitives provided by the core package.
+
+For instance, this package provides visitors to unwrap link nodes, update instructions, add PDAs, set default values, and more.
+
+Let's go through all of them alphabetically.
+
+## Available visitors
+
+### `addPdasVisitor`
+
+TODO
+
+### `createSubInstructionsFromEnumArgsVisitor`
+
+TODO
+
+### `deduplicateIdenticalDefinedTypesVisitor`
+
+TODO
+
+### `fillDefaultPdaSeedValuesVisitor`
+
+TODO
+
+### `flattenInstructionDataArgumentsVisitor`
+
+TODO
+
+### `flattenStructVisitor`
+
+TODO
+
+### `getDefinedTypeHistogramVisitor`
+
+TODO
+
+### `setAccountDiscriminatorFromFieldVisitor`
+
+TODO
+
+### `setFixedAccountSizesVisitor`
+
+TODO
+
+### `setInstructionAccountDefaultValuesVisitor`
+
+TODO
+
+### `setInstructionDiscriminatorsVisitor`
+
+TODO
+
+### `setNumberWrappersVisitor`
+
+TODO
+
+### `setStructDefaultValuesVisitor`
+
+TODO
+
+### `transformDefinedTypesIntoAccountsVisitor`
+
+TODO
+
+### `transformU8ArraysToBytesVisitor`
+
+TODO
+
+### `unwrapDefinedTypesVisitor`
+
+TODO
+
+### `unwrapInstructionArgsDefinedTypesVisitor`
+
+TODO
+
+### `unwrapTupleEnumWithSingleStructVisitor`
+
+TODO
+
+### `unwrapTypeDefinedLinksVisitor`
+
+TODO
+
+### `updateAccountsVisitor`
+
+TODO
+
+### `updateDefinedTypesVisitor`
+
+TODO
+
+### `updateErrorsVisitor`
+
+TODO
+
+### `updateInstructionsVisitor`
+
+TODO
+
+### `updateProgramsVisitor`
+
+TODO
