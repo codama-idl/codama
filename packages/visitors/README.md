@@ -38,96 +38,220 @@ Let's go through all of them alphabetically.
 
 ### `addPdasVisitor`
 
-TODO
+This visitor adds `PdaNodes` to the desired `ProgramNodes`. It accepts an object where the keys are the program names and the values are the `PdaNodes` to add within these programs.
+
+```ts
+kinobi.update(
+    addPdasVisitor({
+        // Add a PDA to the 'token' program.
+        token: [
+            {
+                name: 'associatedToken',
+                seeds: [
+                    variablePdaSeedNode('mint', publicKeyTypeNode()),
+                    constantPdaSeedNode(
+                        publicKeyTypeNode(),
+                        publicKeyValueNode('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+                    ),
+                    variablePdaSeedNode('owner', publicKeyTypeNode()),
+                ],
+            },
+        ],
+        // Add two PDAs to the 'counter' program.
+        counter: [
+            {
+                name: 'counter',
+                seeds: [variablePdaSeedNode('authority', publicKeyTypeNode())],
+            },
+            {
+                name: 'counterConfig',
+                seeds: [variablePdaSeedNode('counter', publicKeyTypeNode())],
+            },
+        ],
+    }),
+);
+```
 
 ### `createSubInstructionsFromEnumArgsVisitor`
 
 TODO
 
+```ts
+kinobi.update(createSubInstructionsFromEnumArgsVisitor());
+```
+
 ### `deduplicateIdenticalDefinedTypesVisitor`
 
 TODO
+
+```ts
+kinobi.update(deduplicateIdenticalDefinedTypesVisitor());
+```
 
 ### `fillDefaultPdaSeedValuesVisitor`
 
 TODO
 
+```ts
+kinobi.update(fillDefaultPdaSeedValuesVisitor());
+```
+
 ### `flattenInstructionDataArgumentsVisitor`
 
 TODO
+
+```ts
+kinobi.update(flattenInstructionDataArgumentsVisitor());
+```
 
 ### `flattenStructVisitor`
 
 TODO
 
+```ts
+kinobi.update(flattenStructVisitor());
+```
+
 ### `getDefinedTypeHistogramVisitor`
 
 TODO
+
+```ts
+kinobi.update(getDefinedTypeHistogramVisitor());
+```
 
 ### `setAccountDiscriminatorFromFieldVisitor`
 
 TODO
 
+```ts
+kinobi.update(setAccountDiscriminatorFromFieldVisitor());
+```
+
 ### `setFixedAccountSizesVisitor`
 
 TODO
+
+```ts
+kinobi.update(setFixedAccountSizesVisitor());
+```
 
 ### `setInstructionAccountDefaultValuesVisitor`
 
 TODO
 
+```ts
+kinobi.update(setInstructionAccountDefaultValuesVisitor());
+```
+
 ### `setInstructionDiscriminatorsVisitor`
 
 TODO
+
+```ts
+kinobi.update(setInstructionDiscriminatorsVisitor());
+```
 
 ### `setNumberWrappersVisitor`
 
 TODO
 
+```ts
+kinobi.update(setNumberWrappersVisitor());
+```
+
 ### `setStructDefaultValuesVisitor`
 
 TODO
+
+```ts
+kinobi.update(setStructDefaultValuesVisitor());
+```
 
 ### `transformDefinedTypesIntoAccountsVisitor`
 
 TODO
 
+```ts
+kinobi.update(transformDefinedTypesIntoAccountsVisitor());
+```
+
 ### `transformU8ArraysToBytesVisitor`
 
 TODO
+
+```ts
+kinobi.update(transformU8ArraysToBytesVisitor());
+```
 
 ### `unwrapDefinedTypesVisitor`
 
 TODO
 
+```ts
+kinobi.update(unwrapDefinedTypesVisitor());
+```
+
 ### `unwrapInstructionArgsDefinedTypesVisitor`
 
 TODO
+
+```ts
+kinobi.update(unwrapInstructionArgsDefinedTypesVisitor());
+```
 
 ### `unwrapTupleEnumWithSingleStructVisitor`
 
 TODO
 
+```ts
+kinobi.update(unwrapTupleEnumWithSingleStructVisitor());
+```
+
 ### `unwrapTypeDefinedLinksVisitor`
 
 TODO
+
+```ts
+kinobi.update(unwrapTypeDefinedLinksVisitor());
+```
 
 ### `updateAccountsVisitor`
 
 TODO
 
+```ts
+kinobi.update(updateAccountsVisitor());
+```
+
 ### `updateDefinedTypesVisitor`
 
 TODO
+
+```ts
+kinobi.update(updateDefinedTypesVisitor());
+```
 
 ### `updateErrorsVisitor`
 
 TODO
 
+```ts
+kinobi.update(updateErrorsVisitor());
+```
+
 ### `updateInstructionsVisitor`
 
 TODO
 
+```ts
+kinobi.update(updateInstructionsVisitor());
+```
+
 ### `updateProgramsVisitor`
 
 TODO
+
+```ts
+kinobi.update(updateProgramsVisitor());
+```
