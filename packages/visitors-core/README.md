@@ -494,17 +494,81 @@ The `NodeSelector` type is used by various visitors such as the `bottomUpTransfo
 
 ## Transforming nodes
 
+This package offers several visitors to facilitate the transformation and/or deletion of nodes. These visitors are designed to be used in conjunction with the `NodeSelector` type to select the nodes we want to transform/delete.
+
 ### `bottomUpTransformerVisitor`
 
-TODO
+The `bottomUpTransformerVisitor` traverses the nodes and intercepts them on the way back up. This means that when we reach a node, we have already visited all its children.
+
+This visitor accepts and array of `transformers` where each transformer is an object with the following properties:
+
+-   `select`: A `NodeSelector` or an array of `NodeSelectors` used to select the nodes we want to transform. When multiple selectors are provided, they must all match for the node to be selected.
+-   `transform`: A function that accepts the selected node and its `NodeStack`; and returns a new node or `null` to delete the node.
+
+Here are a few examples:
+
+```ts
+const visitor = bottomUpTransformerVisitor([
+    {
+        // Transform all numbers into u64 numbers.
+        select: '[numberTypeNode]',
+        transform: () => numberTypeNode('u64'),
+    },
+    {
+        // Delete all account nodes that start with "m".
+        select: ['[accountNode]', node => 'name' in node && node.name.startsWith('m')],
+        transform: () => null,
+    },
+    {
+        // Prefix all fields inside a defined type with "super".
+        select: '[definedTypeNode]metadata.[structFieldTypeNode]',
+        transform: node => structFieldTypeNode({ ...node, name: `super${pascalCase(node.name)}` }),
+    },
+]);
+```
+
+Additionally, `transformers` can be provided directly as functions. In this case, the function is used to transform all the nodes and further filtering may be needed inside the function.
+
+```ts
+const visitor = bottomUpTransformerVisitor([
+    (node, stack) => {
+        if (!isNode(node, numberTypeNode)) {
+            return node;
+        }
+        const swappedEndian = node.endian === 'be' ? 'le' : 'be';
+        return numberTypeNode(node.format, swappedEndian);
+    },
+]);
+```
 
 ### `topDownTransformerVisitor`
 
-TODO
+The `topDownTransformerVisitor` works the same way as the `bottomUpTransformerVisitor` but intercepts the nodes on the way down. This means that when we reach a node, we have not yet visited its children.
+
+```ts
+const visitor = topDownTransformerVisitor([
+    {
+        // Half the amount of all accounts and instructions in programs.
+        // The other half won't be visited on the way down.
+        select: '[programNode]',
+        transform: node =>
+            programNode({
+                ...node,
+                accounts: node.accounts.slice(0, Math.floor(node.accounts.length / 2)),
+                instructions: node.instructions.slice(0, Math.floor(node.instructions.length / 2)),
+            }),
+    },
+]);
+```
 
 ### `deleteNodesVisitor`
 
-TODO
+The `deleteNodesVisitor` accepts an array of `NodeSelectors` and deletes all the nodes that match any of the provided selectors. Therefore, it is equivalent to using a transformer visitor such that the `transform` function returns `null` for the selected nodes.
+
+```ts
+// Deletes all account nodes named "mint" and all number type nodes.
+const visitor = deleteNodesVisitor(['[accountNode]mint', '[numberTypeNode]']);
+```
 
 ## String representations
 
