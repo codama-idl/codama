@@ -30,7 +30,7 @@ To get a better understanding of visitors and how they work, please refer to the
 
 In the rest of this documentation, we focus on the high-level visitors that are only available in this package. The main goal of these visitors is to provide a set of specific operations that can be applied to Kinobi IDLs — as opposed to the generic primitives provided by the core package.
 
-For instance, this package provides visitors to unwrap link nodes, update instructions, add PDAs, set default values, and more.
+For instance, this package offers visitors that unwrap link nodes, update instructions, add PDAs, set default values, and more.
 
 Let's go through all of them alphabetically.
 
@@ -88,7 +88,7 @@ kinobi.update(
 
 ### `deduplicateIdenticalDefinedTypesVisitor`
 
-This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Kinobi IDL and remove any duplicates. A `DefinedTypeNode` is considered a duplicate if it has the same name and data structure as another `DefinedTypeNode`. This is useful when you have multiple programs that share the same types.
+This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Kinobi IDL and removes any duplicates. A `DefinedTypeNode` is considered a duplicate if it has the same name and data structure as another `DefinedTypeNode`. This is useful when you have multiple programs that share the same types.
 
 ```ts
 kinobi.update(deduplicateIdenticalDefinedTypesVisitor());
@@ -133,7 +133,7 @@ kinobi.update(
 
 ### `getDefinedTypeHistogramVisitor`
 
-This visitor go through all `DefinedTypeNodes` and outputs a histogram of how many times each type is used in the Kinobi IDL.
+This visitor goes through all `DefinedTypeNodes` and outputs a histogram of how many times each type is used in the Kinobi IDL.
 
 ```ts
 const histogram = kinobi.accept(getDefinedTypeHistogramVisitor());
@@ -162,7 +162,7 @@ This histogram is used internally in other visitors to understand how types are 
 
 ### `setAccountDiscriminatorFromFieldVisitor`
 
-This visitor helps to set account discriminator based on a field in the account data and the value it should take. This is typically used on the very first field of the account data which usually refers to a discriminator value that helps distinguish between multiple accounts in a program.
+This visitor helps set account discriminators based on a field in the account data and the value it should take. This is typically used on the very first field of the account data which usually refers to a discriminator value that helps distinguish between multiple accounts in a program.
 
 ```ts
 kinobi.update(
@@ -259,7 +259,7 @@ kinobi.update(transformDefinedTypesIntoAccountsVisitor(['counter', 'escrow']));
 
 ### `transformU8ArraysToBytesVisitor`
 
-This visitor transforms fixed-size array of `u8` numbers into fixed-size `BytesTypeNode`.
+This visitor transforms any fixed-size array of `u8` numbers into a fixed-size `BytesTypeNode`.
 
 ```ts
 kinobi.update(transformU8ArraysToBytesVisitor());
@@ -285,7 +285,7 @@ kinobi.update(unwrapInstructionArgsDefinedTypesVisitor());
 
 ### `unwrapTupleEnumWithSingleStructVisitor`
 
-This visitor transform `EnumTupleVariantTypeNodes` with a single `StructTypeNode` item into `EnumStructVariantTypeNodes`. By default, it will unwrap all tuple variant matching that criteria, but you can provide an array of names to only unwrap specific variants.
+This visitor transforms `EnumTupleVariantTypeNodes` with a single `StructTypeNode` item into `EnumStructVariantTypeNodes`. By default, it will unwrap all tuple variants matching that criteria, but you can provide an array of names to only unwrap specific variants.
 
 ```ts
 kinobi.update(unwrapTupleEnumWithSingleStructVisitor());
