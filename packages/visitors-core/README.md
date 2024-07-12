@@ -572,17 +572,48 @@ const visitor = deleteNodesVisitor(['[accountNode]mint', '[numberTypeNode]']);
 
 ## String representations
 
+This package also offers visitors that help render nodes as strings. These visitors can be useful for debugging purposes as well as getting a unique hash string representation of a node.
+
 ### `getDebugStringVisitor`
 
-TODO
+The `getDebugStringVisitor` provides a string representation of the nodes that can be used for debugging purposes. By default, it inlines the content of the nodes and does not include any indentation.
+
+```ts
+const visitor = getDebugStringVisitor();
+const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ "tupleTypeNode(numberTypeNode[u32], publicKeyTypeNode)"
+```
+
+However, you can provide the `indent` option to get a more readable string representation.
+
+```ts
+const visitor = getDebugStringVisitor({ indent: true });
+const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// tupleTypeNode
+// |   numberTypeNode [u32]
+// |   publicKeyTypeNode
+```
+
+Note that this string does not always include every piece of information a node has to offer. Therefore, it cannot be used as a unique identifier for the content of a node. For that purpose, see the `getUniqueHashStringVisitor` below.
 
 ### `getUniqueHashStringVisitor`
 
-TODO
+The `getUniqueHashStringVisitor` provides a unique string representation of the node that can be used to get a unique hash for that node. In other words, if two different nodes have the exact same content, they will output the same string.
+
+```ts
+const visitor = getUniqueHashStringVisitor();
+const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ '{"items":[{"endian":"le","format":"u32","kind":"numberTypeNode"},{"kind":"publicKeyTypeNode"}],"kind":"tupleTypeNode"}'
+```
 
 ### `consoleLogVisitor`
 
-TODO
+The `consoleLogVisitor` accepts any `Visitor<string>` and transforms it into a `Visitor<void>` such that the provided `string` is logged to the console.
+
+```ts
+// Outputs the indented debug string to the console.
+const visitor = consoleLogVisitor(getDebugStringVisitor({ indent: true }));
+```
 
 ## Resolving link nodes
 
