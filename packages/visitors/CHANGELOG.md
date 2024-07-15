@@ -1,5 +1,14 @@
 # @kinobi-so/visitors
 
+## 0.20.6
+
+### Patch Changes
+
+- Updated dependencies [[`bcf6a23`](https://github.com/kinobi-so/kinobi/commit/bcf6a23fa0e0d1f1a064ea6ddcfc9c092190a51f)]:
+  - @kinobi-so/errors@0.20.6
+  - @kinobi-so/nodes@0.20.6
+  - @kinobi-so/visitors-core@0.20.6
+
 ## 0.20.5
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/visitors-core",
-    "version": "0.20.5",
+    "version": "0.20.6",
     "description": "Core visitors for the Kinobi framework",
     "exports": {
         "types": "./dist/types/index.d.ts",

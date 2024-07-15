@@ -1,5 +1,14 @@
 # @kinobi-so/errors
 
+## 0.20.6
+
+### Patch Changes
+
+- [#102](https://github.com/kinobi-so/kinobi/pull/102) [`bcf6a23`](https://github.com/kinobi-so/kinobi/commit/bcf6a23fa0e0d1f1a064ea6ddcfc9c092190a51f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Replace \_\_DEV\_\_ with NODE_ENV is not production in Kinobi
+
+- Updated dependencies []:
+  - @kinobi-so/node-types@0.20.6
+
 ## 0.20.5
 
 ### Patch Changes

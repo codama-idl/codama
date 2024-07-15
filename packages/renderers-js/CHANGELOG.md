@@ -1,5 +1,20 @@
 # @kinobi-so/renderers-js
 
+## 0.20.11
+
+### Patch Changes
+
+- [#102](https://github.com/kinobi-so/kinobi/pull/102) [`bcf6a23`](https://github.com/kinobi-so/kinobi/commit/bcf6a23fa0e0d1f1a064ea6ddcfc9c092190a51f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Replace \_\_DEV\_\_ with NODE_ENV is not production in Kinobi
+
+- [#103](https://github.com/kinobi-so/kinobi/pull/103) [`93942cc`](https://github.com/kinobi-so/kinobi/commit/93942ccb8cb87d4f4ede1ef3e2398e10635dbaf2) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Replace \_\_DEV\_\_ with NODE_ENV is not production in generated code
+
+- Updated dependencies [[`bcf6a23`](https://github.com/kinobi-so/kinobi/commit/bcf6a23fa0e0d1f1a064ea6ddcfc9c092190a51f), [`4979b94`](https://github.com/kinobi-so/kinobi/commit/4979b94720465a58538ee61bb1a4a23fd5471511)]:
+  - @kinobi-so/renderers-core@0.20.6
+  - @kinobi-so/errors@0.20.6
+  - @kinobi-so/nodes@0.20.6
+  - @kinobi-so/nodes-from-anchor@0.20.8
+  - @kinobi-so/visitors-core@0.20.6
+
 ## 0.20.10
 
 ### Patch Changes
