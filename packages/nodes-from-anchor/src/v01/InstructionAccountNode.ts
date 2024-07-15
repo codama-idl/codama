@@ -105,7 +105,8 @@ export function instructionAccountNodeFromAnchorV01(
                             }
                         }
                         case 'arg': {
-                            const argumentNode = instructionArguments.find(({ name }) => name === seed.path);
+                            const argumentName = camelCase(seed.path);
+                            const argumentNode = instructionArguments.find(({ name }) => name === argumentName);
                             if (!argumentNode) {
                                 throw new KinobiError(KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: seed.path });
                             }
