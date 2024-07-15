@@ -1,5 +1,16 @@
 # @kinobi-so/nodes-from-anchor
 
+## 0.20.8
+
+### Patch Changes
+
+- [#109](https://github.com/kinobi-so/kinobi/pull/109) [`4979b94`](https://github.com/kinobi-so/kinobi/commit/4979b94720465a58538ee61bb1a4a23fd5471511) Thanks [@kespinola](https://github.com/kespinola)! - Fix argument node lookup for anchor v01 instruction pda seeds.
+
+- Updated dependencies [[`bcf6a23`](https://github.com/kinobi-so/kinobi/commit/bcf6a23fa0e0d1f1a064ea6ddcfc9c092190a51f)]:
+  - @kinobi-so/errors@0.20.6
+  - @kinobi-so/nodes@0.20.6
+  - @kinobi-so/visitors@0.20.6
+
 ## 0.20.7
 
 ### Patch Changes
