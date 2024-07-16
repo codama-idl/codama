@@ -519,8 +519,8 @@ export function getTypeManifestVisitor(input: {
 
                     // Fixed option.
                     if (optionType.fixed) {
-                        encoderOptions.push(`fixed: true`);
-                        decoderOptions.push(`fixed: true`);
+                        encoderOptions.push(`noneValue: "zeroes"`);
+                        decoderOptions.push(`noneValue: "zeroes"`);
                     }
 
                     const encoderOptionsAsString =
@@ -828,16 +828,19 @@ export function getTypeManifestVisitor(input: {
                     childManifest.looseType
                         .mapRender(r => `OptionOrNullable<${r}>`)
                         .addImports('solanaOptions', 'type OptionOrNullable');
-                    const encoderOptions: string[] = [];
-                    const decoderOptions: string[] = [];
+                    const encoderOptions: string[] = ['prefix: null'];
+                    const decoderOptions: string[] = ['prefix: null'];
 
                     // Zero-value option.
                     if (node.zeroValue) {
                         const zeroValueManifest = visit(node.zeroValue, self);
                         childManifest.encoder.mergeImportsWith(zeroValueManifest.value);
                         childManifest.decoder.mergeImportsWith(zeroValueManifest.value);
-                        encoderOptions.push(`zeroValue: ${zeroValueManifest.value.render}`);
-                        decoderOptions.push(`zeroValue: ${zeroValueManifest.value.render}`);
+                        encoderOptions.push(`noneValue: ${zeroValueManifest.value.render}`);
+                        decoderOptions.push(`noneValue: ${zeroValueManifest.value.render}`);
+                    } else {
+                        encoderOptions.push(`noneValue: "zeroes"`);
+                        decoderOptions.push(`noneValue: "zeroes"`);
                     }
 
                     const encoderOptionsAsString =
@@ -845,11 +848,11 @@ export function getTypeManifestVisitor(input: {
                     const decoderOptionsAsString =
                         decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
                     childManifest.encoder
-                        .mapRender(r => `getZeroableOptionEncoder(${r + encoderOptionsAsString})`)
-                        .addImports('solanaOptions', 'getZeroableOptionEncoder');
+                        .mapRender(r => `getOptionEncoder(${r + encoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionEncoder');
                     childManifest.decoder
-                        .mapRender(r => `getZeroableOptionDecoder(${r + decoderOptionsAsString})`)
-                        .addImports('solanaOptions', 'getZeroableOptionDecoder');
+                        .mapRender(r => `getOptionDecoder(${r + decoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionDecoder');
                     return childManifest;
                 },
             }),

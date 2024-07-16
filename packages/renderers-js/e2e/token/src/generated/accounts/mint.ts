@@ -81,7 +81,7 @@ export function getMintEncoder(): Encoder<MintArgs> {
       'mintAuthority',
       getOptionEncoder(getAddressEncoder(), {
         prefix: getU32Encoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
     ['supply', getU64Encoder()],
@@ -91,7 +91,7 @@ export function getMintEncoder(): Encoder<MintArgs> {
       'freezeAuthority',
       getOptionEncoder(getAddressEncoder(), {
         prefix: getU32Encoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
   ]);
@@ -103,7 +103,7 @@ export function getMintDecoder(): Decoder<Mint> {
       'mintAuthority',
       getOptionDecoder(getAddressDecoder(), {
         prefix: getU32Decoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
     ['supply', getU64Decoder()],
@@ -113,7 +113,7 @@ export function getMintDecoder(): Decoder<Mint> {
       'freezeAuthority',
       getOptionDecoder(getAddressDecoder(), {
         prefix: getU32Decoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
   ]);
