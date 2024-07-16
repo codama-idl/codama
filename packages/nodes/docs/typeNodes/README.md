@@ -18,6 +18,7 @@ The `TypeNode` type helper represents all the available type nodes as well as th
 -   [`PostOffsetTypeNode`](./PostOffsetTypeNode.md)
 -   [`PreOffsetTypeNode`](./PreOffsetTypeNode.md)
 -   [`PublicKeyTypeNode`](./PublicKeyTypeNode.md)
+-   [`RemainderOptionTypeNode`](./RemainderOptionTypeNode.md)
 -   [`SentinelTypeNode`](./SentinelTypeNode.md)
 -   [`SetTypeNode`](./SetTypeNode.md)
 -   [`SizePrefixTypeNode`](./SizePrefixTypeNode.md)

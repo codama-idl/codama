@@ -11,6 +11,7 @@ import {
     KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
     KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
+    KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
@@ -47,6 +48,7 @@ export const KinobiErrorMessages: Readonly<{
     [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not find linked node [$name] from [$kind].',
     [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
         'Node.js filesystem function [$fsFunction] is not available in your environment.',
+    [KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE]: 'Cannot render the encountered node of kind [$kind].',
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: 'Expected nested node of kind [$expectedKinds], got [$kind]',
     [KINOBI_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got [$kind].',
     [KINOBI_ERROR__UNRECOGNIZED_NODE_KIND]: 'Unrecognized node kind [$kind].',

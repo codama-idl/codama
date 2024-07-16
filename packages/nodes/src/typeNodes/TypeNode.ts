@@ -15,6 +15,7 @@ export const STANDALONE_TYPE_NODE_KINDS = [
     'postOffsetTypeNode' as const,
     'preOffsetTypeNode' as const,
     'publicKeyTypeNode' as const,
+    'remainderOptionTypeNode' as const,
     'sentinelTypeNode' as const,
     'setTypeNode' as const,
     'sizePrefixTypeNode' as const,

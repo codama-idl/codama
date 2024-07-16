@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@kinobi-so/errors';
 import {
     ArrayTypeNode,
     camelCase,
@@ -600,6 +601,10 @@ export function getTypeManifestVisitor(input: {
                     };
                 },
 
+                visitRemainderOptionType(node) {
+                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                },
+
                 visitSetType(setType, { self }) {
                     const childManifest = visit(setType.item, self);
                     childManifest.serializerImports.add('umiSerializers', 'set');
@@ -824,6 +829,10 @@ export function getTypeManifestVisitor(input: {
                         value: `[${list.map(c => c.value).join(', ')}]`,
                         valueImports: new ImportMap().mergeWith(...list.map(c => c.valueImports)),
                     };
+                },
+
+                visitZeroableOptionType(node) {
+                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
     );
