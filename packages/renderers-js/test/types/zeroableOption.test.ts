@@ -25,15 +25,15 @@ test('it renders zeroable option codecs', () => {
     renderMapContains(renderMap, 'types/myType.ts', [
         'export type MyType = Option<Address>',
         'export type MyTypeArgs = OptionOrNullable<Address>',
-        'getZeroableOptionEncoder( getAddressEncoder() )',
-        'getZeroableOptionDecoder( getAddressDecoder() )',
+        "getOptionEncoder( getAddressEncoder(), { prefix: null, noneValue: 'zeroes' } )",
+        "getOptionDecoder( getAddressDecoder(), { prefix: null, noneValue: 'zeroes' } )",
     ]);
 
     // And we expect the following codec imports.
     renderMapContainsImports(renderMap, 'types/myType.ts', {
         '@solana/web3.js': [
-            'getZeroableOptionEncoder',
-            'getZeroableOptionDecoder',
+            'getOptionEncoder',
+            'getOptionDecoder',
             'getAddressEncoder',
             'getAddressDecoder',
             'Option',
@@ -56,15 +56,15 @@ test('it renders zeroable option codecs with custom zero values', () => {
     renderMapContains(renderMap, 'types/myType.ts', [
         'export type MyType = Option<number>',
         'export type MyTypeArgs = OptionOrNullable<number>',
-        'getZeroableOptionEncoder( getU16Encoder(), { zeroValue: new Uint8Array([255, 255]) } )',
-        'getZeroableOptionDecoder( getU16Decoder(), { zeroValue: new Uint8Array([255, 255]) } )',
+        'getOptionEncoder( getU16Encoder(), { prefix: null, noneValue: new Uint8Array([255, 255]) } )',
+        'getOptionDecoder( getU16Decoder(), { prefix: null, noneValue: new Uint8Array([255, 255]) } )',
     ]);
 
     // And we expect the following codec imports.
     renderMapContainsImports(renderMap, 'types/myType.ts', {
         '@solana/web3.js': [
-            'getZeroableOptionEncoder',
-            'getZeroableOptionDecoder',
+            'getOptionEncoder',
+            'getOptionDecoder',
             'getU16Encoder',
             'getU16Decoder',
             'Option',
