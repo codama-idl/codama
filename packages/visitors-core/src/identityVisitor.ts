@@ -44,6 +44,7 @@ import {
     preOffsetTypeNode,
     programNode,
     REGISTERED_NODE_KINDS,
+    remainderOptionTypeNode,
     removeNullAndAssertIsNodeFilter,
     resolverValueNode,
     rootNode,
@@ -292,6 +293,15 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const zeroValue = node.zeroValue ? visit(this)(node.zeroValue) ?? undefined : undefined;
             if (zeroValue) assertIsNode(zeroValue, 'constantValueNode');
             return zeroableOptionTypeNode(item, zeroValue);
+        };
+    }
+
+    if (castedNodeKeys.includes('remainderOptionTypeNode')) {
+        visitor.visitRemainderOptionType = function visitRemainderOptionType(node) {
+            const item = visit(this)(node.item);
+            if (item === null) return null;
+            assertIsNode(item, TYPE_NODES);
+            return remainderOptionTypeNode(item);
         };
     }
 

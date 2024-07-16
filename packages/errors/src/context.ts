@@ -26,6 +26,7 @@ import {
     KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
     KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
+    KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
@@ -77,6 +78,10 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
         fsFunction: string;
+    };
+    [KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE]: {
+        kind: NodeKind;
+        node: Node | undefined;
     };
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: {
         expectedKinds: NodeKind[];

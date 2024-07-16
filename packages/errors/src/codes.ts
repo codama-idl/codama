@@ -56,6 +56,10 @@ export const KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING = 2100002 as const;
 export const KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING = 2100003 as const;
 export const KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED = 2100004 as const;
 
+// Renderers-related errors.
+// Reserve error codes in the range [2800000-2800999].
+export const KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE = 2800000 as const;
+
 /**
  * A union of every Kinobi error code
  *
@@ -79,6 +83,7 @@ export type KinobiErrorCode =
     | typeof KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE
     | typeof KINOBI_ERROR__LINKED_NODE_NOT_FOUND
     | typeof KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE
+    | typeof KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE
     | typeof KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND
     | typeof KINOBI_ERROR__UNEXPECTED_NODE_KIND
     | typeof KINOBI_ERROR__UNRECOGNIZED_NODE_KIND

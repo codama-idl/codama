@@ -87,6 +87,7 @@ Below are all of the available nodes and their documentation. Also note that you
     -   [`PostOffsetTypeNode`](./docs/typeNodes/PostOffsetTypeNode.md)
     -   [`PreOffsetTypeNode`](./docs/typeNodes/PreOffsetTypeNode.md)
     -   [`PublicKeyTypeNode`](./docs/typeNodes/PublicKeyTypeNode.md)
+    -   [`RemainderOptionTypeNode`](./docs/typeNodes/RemainderOptionTypeNode.md)
     -   [`SentinelTypeNode`](./docs/typeNodes/SentinelTypeNode.md)
     -   [`SetTypeNode`](./docs/typeNodes/SetTypeNode.md)
     -   [`SizePrefixTypeNode`](./docs/typeNodes/SizePrefixTypeNode.md)

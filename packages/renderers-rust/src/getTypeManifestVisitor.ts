@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@kinobi-so/errors';
 import {
     arrayTypeNode,
     CountNode,
@@ -291,6 +292,10 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                     };
                 },
 
+                visitRemainderOptionType(node) {
+                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                },
+
                 visitSetType(setType, { self }) {
                     const childManifest = visit(setType.item, self);
                     childManifest.imports.add('std::collections::HashSet');
@@ -442,6 +447,10 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                         ...mergedManifest,
                         type: `(${items.map(item => item.type).join(', ')})`,
                     };
+                },
+
+                visitZeroableOptionType(node) {
+                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
     );

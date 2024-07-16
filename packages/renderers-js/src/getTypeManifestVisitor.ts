@@ -624,6 +624,28 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
 
+                visitRemainderOptionType(node, { self }) {
+                    const childManifest = visit(node.item, self);
+                    childManifest.strictType.mapRender(r => `Option<${r}>`).addImports('solanaOptions', 'type Option');
+                    childManifest.looseType
+                        .mapRender(r => `OptionOrNullable<${r}>`)
+                        .addImports('solanaOptions', 'type OptionOrNullable');
+                    const encoderOptions: string[] = ['prefix: null'];
+                    const decoderOptions: string[] = ['prefix: null'];
+
+                    const encoderOptionsAsString =
+                        encoderOptions.length > 0 ? `, { ${encoderOptions.join(', ')} }` : '';
+                    const decoderOptionsAsString =
+                        decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
+                    childManifest.encoder
+                        .mapRender(r => `getOptionEncoder(${r + encoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionEncoder');
+                    childManifest.decoder
+                        .mapRender(r => `getOptionDecoder(${r + decoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionDecoder');
+                    return childManifest;
+                },
+
                 visitSentinelType(node, { self }) {
                     const manifest = visit(node.type, self);
                     const sentinel = visit(node.sentinel, self).value;
