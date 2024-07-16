@@ -1,5 +1,23 @@
 # @kinobi-so/renderers-rust
 
+## 0.21.0
+
+### Minor Changes
+
+- [#110](https://github.com/kinobi-so/kinobi/pull/110) [`2d45383`](https://github.com/kinobi-so/kinobi/commit/2d453830621047da2a18001ab427db9b603ad025) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update renderers to tp4 of web3.js
+
+- [#111](https://github.com/kinobi-so/kinobi/pull/111) [`2f26050`](https://github.com/kinobi-so/kinobi/commit/2f26050ddbcbdefcefbd853e1017a30c94442e1f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add `RemainderOptionTypeNode`
+
+  A node that represents an optional item using a child `TypeNode` such that the item can either be present — i.e. `Some<T>` — or absent — i.e. `None` — depending on whether or not there are remaining bytes in the buffer.
+
+### Patch Changes
+
+- Updated dependencies [[`2f26050`](https://github.com/kinobi-so/kinobi/commit/2f26050ddbcbdefcefbd853e1017a30c94442e1f)]:
+  - @kinobi-so/visitors-core@0.21.0
+  - @kinobi-so/errors@0.21.0
+  - @kinobi-so/nodes@0.21.0
+  - @kinobi-so/renderers-core@0.20.7
+
 ## 0.20.12
 
 ### Patch Changes
