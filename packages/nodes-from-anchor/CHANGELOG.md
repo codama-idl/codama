@@ -1,5 +1,14 @@
 # @kinobi-so/nodes-from-anchor
 
+## 0.20.9
+
+### Patch Changes
+
+- Updated dependencies [[`2f26050`](https://github.com/kinobi-so/kinobi/commit/2f26050ddbcbdefcefbd853e1017a30c94442e1f)]:
+  - @kinobi-so/errors@0.21.0
+  - @kinobi-so/nodes@0.21.0
+  - @kinobi-so/visitors@0.21.0
+
 ## 0.20.8
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/renderers-core",
-    "version": "0.20.6",
+    "version": "0.20.7",
     "description": "Core types and helpers for Kinobi renderers to use",
     "exports": {
         "types": "./dist/types/index.d.ts",
