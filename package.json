@@ -15,7 +15,7 @@
         "@changesets/cli": "^2.27.1",
         "@kinobi-so/internals": "workspace:*",
         "@solana/eslint-config-solana": "^3.0.3",
-        "@solana/prettier-config-solana": "0.0.4",
+        "@solana/prettier-config-solana": "0.0.5",
         "@types/node": "^20",
         "@typescript-eslint/eslint-plugin": "^6.21.0",
         "@typescript-eslint/parser": "^6.0.0",
