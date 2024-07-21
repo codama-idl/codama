@@ -27,7 +27,7 @@ This function takes a valid Anchor IDL and returns a `RootNode`.
 ```js
 // node ./kinobi.mjs
 import { rootNodeFromAnchor } from '@kinobi-so/nodes-from-anchor';
-import { createFromRootNode } from 'kinobi';
+import { createFromRoot } from 'kinobi';
 import { readFileSync } from 'node:fs';
 import path from 'path';
 
