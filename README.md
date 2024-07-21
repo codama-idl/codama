@@ -32,11 +32,11 @@ There are various ways to extract information from your Solana programs in order
 -   **From Anchor IDLs**. If you are using [Anchor programs](https://github.com/coral-xyz/anchor) or [Shank macros](https://github.com/metaplex-foundation/shank), then you can get an Anchor IDL from them. You can then use the `@kinobi-so/nodes-from-anchor` package to convert that IDL into a Kinobi IDL as shown in the code snippet below. Note that the Anchor IDL might not offer all the information that Kinobi can hold and therefore, you may want to transform your Kinobi IDL to provide additional information. You can learn more about this in the next section.
 
     ```ts
-    import { createFromRootNode } from 'kinobi';
+    import { createFromRoot } from 'kinobi';
     import { rootNodeFromAnchor } from '@kinobi-so/nodes-from-anchor';
     import anchorIdl from 'anchor-idl.json';
 
-    const kinobi = createFromRootNode(rootNodeFromAnchor(anchorIdl));
+    const kinobi = createFromRoot(rootNodeFromAnchor(anchorIdl));
     ```
 
 -   **By hand**. If your Solana program cannot be updated to use Kinobi macros and you don’t have an Anchor IDL, you may design your Kinobi IDL by hand. We may provide tools such as a Kinobi Playground to help with that in the future.
