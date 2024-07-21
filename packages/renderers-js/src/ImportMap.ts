@@ -10,8 +10,10 @@ const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaCodecsDataStructures: '@solana/web3.js',
     solanaCodecsNumbers: '@solana/web3.js',
     solanaCodecsStrings: '@solana/web3.js',
+    solanaErrors: '@solana/web3.js',
     solanaInstructions: '@solana/web3.js',
     solanaOptions: '@solana/web3.js',
+    solanaPrograms: '@solana/web3.js',
     solanaSigners: '@solana/web3.js',
 };
 
@@ -22,8 +24,10 @@ const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaCodecsDataStructures: '@solana/codecs',
     solanaCodecsNumbers: '@solana/codecs',
     solanaCodecsStrings: '@solana/codecs',
+    solanaErrors: '@solana/errors',
     solanaInstructions: '@solana/instructions',
     solanaOptions: '@solana/codecs',
+    solanaPrograms: '@solana/programs',
     solanaSigners: '@solana/signers',
 };
 

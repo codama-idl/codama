@@ -26,3 +26,11 @@ export function {{ programGetErrorMessageFunction }}(code: {{ programErrorUnion 
 
   return 'Error message not available in production bundles.';
 }
+
+export function {{ programIsErrorFunction }}<TProgramErrorCode extends {{ programErrorUnion }}>(
+    error: unknown,
+    transactionMessage: { instructions: Record<number, { programAddress: Address }> },
+    code?: TProgramErrorCode,
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> & { context: { code: TProgramErrorCode } } {
+  return isProgramError<TProgramErrorCode>(error, transactionMessage, {{ programAddressConstant }}, code);
+}
