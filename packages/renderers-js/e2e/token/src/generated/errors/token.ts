@@ -117,9 +117,8 @@ export function isTokenError<TProgramErrorCode extends TokenError>(
     instructions: Record<number, { programAddress: Address }>;
   },
   code?: TProgramErrorCode
-): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> & {
-  context: { code: TProgramErrorCode };
-} {
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
   return isProgramError<TProgramErrorCode>(
     error,
     transactionMessage,

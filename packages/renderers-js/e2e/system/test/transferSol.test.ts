@@ -6,6 +6,7 @@ import {
   isSolanaError,
   lamports,
   pipe,
+  SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE,
   SolanaError,
 } from '@solana/web3.js';
@@ -15,6 +16,7 @@ import {
   isSystemError,
   parseTransferSolInstruction,
   SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS,
+  type SystemError,
 } from '../src/index.js';
 import {
   createDefaultSolanaClient,
@@ -76,8 +78,13 @@ test('it fails if the source account does not have enough SOLs', async (t) => {
       SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE
     )
   ) {
+    error satisfies SolanaError<
+      typeof SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE
+    >;
     if (isSystemError(error.cause, txMessage)) {
-      error satisfies SolanaError;
+      error.cause satisfies SolanaError<
+        typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM
+      > & { readonly context: { readonly code: SystemError } };
       if (
         isSystemError(
           error.cause,
@@ -87,7 +94,10 @@ test('it fails if the source account does not have enough SOLs', async (t) => {
       ) {
         error.cause.context
           .code satisfies typeof SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS;
-        t.pass();
+        t.is(
+          error.cause.context.code,
+          SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS
+        );
       } else {
         t.fail('Expected a negative lamports system program error');
       }
