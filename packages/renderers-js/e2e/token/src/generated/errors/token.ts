@@ -6,6 +6,14 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
+import {
+  isProgramError,
+  type Address,
+  type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  type SolanaError,
+} from '@solana/web3.js';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs';
+
 /** NotRentExempt: Lamport balance below rent-exempt threshold */
 export const TOKEN_ERROR__NOT_RENT_EXEMPT = 0x0; // 0
 /** InsufficientFunds: Insufficient funds */
@@ -101,4 +109,20 @@ export function getTokenErrorMessage(code: TokenError): string {
   }
 
   return 'Error message not available in production bundles.';
+}
+
+export function isTokenError<TProgramErrorCode extends TokenError>(
+  error: unknown,
+  transactionMessage: {
+    instructions: Record<number, { programAddress: Address }>;
+  },
+  code?: TProgramErrorCode
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(
+    error,
+    transactionMessage,
+    TOKEN_PROGRAM_ADDRESS,
+    code
+  );
 }

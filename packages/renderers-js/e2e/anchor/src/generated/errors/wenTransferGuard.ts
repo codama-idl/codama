@@ -6,6 +6,14 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
+import {
+  isProgramError,
+  type Address,
+  type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  type SolanaError,
+} from '@solana/web3.js';
+import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs';
+
 /** CpiRuleEnforcementFailed: Cpi Rule Enforcement Failed */
 export const WEN_TRANSFER_GUARD_ERROR__CPI_RULE_ENFORCEMENT_FAILED = 0x1770; // 6000
 /** TransferAmountRuleEnforceFailed: Transfer Amount Rule Enforce Failed */
@@ -59,4 +67,22 @@ export function getWenTransferGuardErrorMessage(
   }
 
   return 'Error message not available in production bundles.';
+}
+
+export function isWenTransferGuardError<
+  TProgramErrorCode extends WenTransferGuardError,
+>(
+  error: unknown,
+  transactionMessage: {
+    instructions: Record<number, { programAddress: Address }>;
+  },
+  code?: TProgramErrorCode
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(
+    error,
+    transactionMessage,
+    WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    code
+  );
 }

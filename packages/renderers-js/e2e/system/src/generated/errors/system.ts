@@ -6,6 +6,14 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
+import {
+  isProgramError,
+  type Address,
+  type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  type SolanaError,
+} from '@solana/web3.js';
+import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
+
 /** AccountAlreadyInUse: an account with the same address already exists */
 export const SYSTEM_ERROR__ACCOUNT_ALREADY_IN_USE = 0x0; // 0
 /** ResultWithNegativeLamports: account does not have enough SOL to perform the operation */
@@ -57,4 +65,20 @@ export function getSystemErrorMessage(code: SystemError): string {
   }
 
   return 'Error message not available in production bundles.';
+}
+
+export function isSystemError<TProgramErrorCode extends SystemError>(
+  error: unknown,
+  transactionMessage: {
+    instructions: Record<number, { programAddress: Address }>;
+  },
+  code?: TProgramErrorCode
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(
+    error,
+    transactionMessage,
+    SYSTEM_PROGRAM_ADDRESS,
+    code
+  );
 }

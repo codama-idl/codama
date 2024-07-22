@@ -6,6 +6,14 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
+import {
+  isProgramError,
+  type Address,
+  type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  type SolanaError,
+} from '@solana/web3.js';
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs';
+
 /** InvalidOwner: Associated token account owner does not match address derivation */
 export const ASSOCIATED_TOKEN_ERROR__INVALID_OWNER = 0x0; // 0
 
@@ -30,4 +38,22 @@ export function getAssociatedTokenErrorMessage(
   }
 
   return 'Error message not available in production bundles.';
+}
+
+export function isAssociatedTokenError<
+  TProgramErrorCode extends AssociatedTokenError,
+>(
+  error: unknown,
+  transactionMessage: {
+    instructions: Record<number, { programAddress: Address }>;
+  },
+  code?: TProgramErrorCode
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(
+    error,
+    transactionMessage,
+    ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    code
+  );
 }

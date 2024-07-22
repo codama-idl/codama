@@ -3,13 +3,20 @@ import {
   type Address,
   appendTransactionMessageInstruction,
   generateKeyPairSigner,
+  isSolanaError,
   lamports,
   pipe,
+  SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE,
+  SolanaError,
 } from '@solana/web3.js';
 import test from 'ava';
 import {
   getTransferSolInstruction,
+  isSystemError,
   parseTransferSolInstruction,
+  SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS,
+  type SystemError,
 } from '../src/index.js';
 import {
   createDefaultSolanaClient,
@@ -44,6 +51,62 @@ test('it transfers SOL from one account to another', async (t) => {
 
   // And the destination account has exactly 1 SOL.
   t.is(await getBalance(client, destination), lamports(1_000_000_000n));
+});
+
+test('it fails if the source account does not have enough SOLs', async (t) => {
+  // Given a source account with 1 SOL and a destination account with no SOL.
+  const client = createDefaultSolanaClient();
+  const source = await generateKeyPairSignerWithSol(client, 1_000_000_000n);
+  const destination = (await generateKeyPairSigner()).address;
+
+  // When the source account tries to transfer 2 SOLs to the destination account.
+  const transferSol = getTransferSolInstruction({
+    source,
+    destination,
+    amount: 2_000_000_000,
+  });
+  const txMessage = pipe(await createDefaultTransaction(client, source), (tx) =>
+    appendTransactionMessageInstruction(transferSol, tx)
+  );
+  const promise = signAndSendTransaction(client, txMessage);
+
+  // Then we expect the transaction to fail and to have the correct error code.
+  const error = await t.throwsAsync(promise);
+  if (
+    isSolanaError(
+      error,
+      SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE
+    )
+  ) {
+    error satisfies SolanaError<
+      typeof SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE
+    >;
+    if (isSystemError(error.cause, txMessage)) {
+      error.cause satisfies SolanaError<
+        typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM
+      > & { readonly context: { readonly code: SystemError } };
+      if (
+        isSystemError(
+          error.cause,
+          txMessage,
+          SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS
+        )
+      ) {
+        error.cause.context
+          .code satisfies typeof SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS;
+        t.is(
+          error.cause.context.code,
+          SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS
+        );
+      } else {
+        t.fail('Expected a negative lamports system program error');
+      }
+    } else {
+      t.fail('Expected a system program error');
+    }
+  } else {
+    t.fail('Expected a preflight failure');
+  }
 });
 
 test('it parses the accounts and the data of an existing transfer SOL instruction', async (t) => {

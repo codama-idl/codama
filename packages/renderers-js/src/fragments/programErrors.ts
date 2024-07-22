@@ -9,12 +9,19 @@ export function getProgramErrorsFragment(
     },
 ): Fragment {
     const { programNode, nameApi } = scope;
+    const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     return fragmentFromTemplate('programErrors.njk', {
         errors: programNode.errors,
         getProgramErrorConstant: (name: string) =>
             nameApi.programErrorConstantPrefix(programNode.name) + nameApi.programErrorConstant(name),
+        programAddressConstant,
         programErrorMessagesMap: nameApi.programErrorMessagesMap(programNode.name),
         programErrorUnion: nameApi.programErrorUnion(programNode.name),
         programGetErrorMessageFunction: nameApi.programGetErrorMessageFunction(programNode.name),
-    });
+        programIsErrorFunction: nameApi.programIsErrorFunction(programNode.name),
+    })
+        .addImports('generatedPrograms', [programAddressConstant])
+        .addImports('solanaPrograms', ['isProgramError'])
+        .addImports('solanaErrors', ['type SolanaError', 'type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM'])
+        .addImports('solanaAddresses', ['type Address']);
 }
