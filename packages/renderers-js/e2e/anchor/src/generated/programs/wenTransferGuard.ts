@@ -11,6 +11,7 @@ import {
   fixEncoderSize,
   getBytesEncoder,
   type Address,
+  type ReadonlyUint8Array,
 } from '@solana/web3.js';
 import {
   type ParsedCreateGuardInstruction,
@@ -27,9 +28,9 @@ export enum WenTransferGuardAccount {
 }
 
 export function identifyWenTransferGuardAccount(
-  account: { data: Uint8Array } | Uint8Array
+  account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): WenTransferGuardAccount {
-  const data = account instanceof Uint8Array ? account : account.data;
+  const data = 'data' in account ? account.data : account;
   if (
     containsBytes(
       data,
