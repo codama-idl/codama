@@ -1,5 +1,12 @@
 # @kinobi-so/renderers
 
+## 0.20.17
+
+### Patch Changes
+
+-   Updated dependencies [[`af8ac37`](https://github.com/kinobi-so/kinobi/commit/af8ac374192d1c1b6c834c31fa30bc72d4b7da8e)]:
+    -   @kinobi-so/renderers-js@0.21.2
+
 ## 0.20.16
 
 ### Patch Changes
