@@ -6,7 +6,12 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { containsBytes, getU8Encoder, type Address } from '@solana/web3.js';
+import {
+  containsBytes,
+  getU8Encoder,
+  type Address,
+  type ReadonlyUint8Array,
+} from '@solana/web3.js';
 import {
   type ParsedAmountToUiAmountInstruction,
   type ParsedApproveCheckedInstruction,
@@ -45,9 +50,9 @@ export enum TokenAccount {
 }
 
 export function identifyTokenAccount(
-  account: { data: Uint8Array } | Uint8Array
+  account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): TokenAccount {
-  const data = account instanceof Uint8Array ? account : account.data;
+  const data = 'data' in account ? account.data : account;
   if (data.length === 82) {
     return TokenAccount.Mint;
   }
@@ -91,10 +96,9 @@ export enum TokenInstruction {
 }
 
 export function identifyTokenInstruction(
-  instruction: { data: Uint8Array } | Uint8Array
+  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): TokenInstruction {
-  const data =
-    instruction instanceof Uint8Array ? instruction : instruction.data;
+  const data = 'data' in instruction ? instruction.data : instruction;
   if (containsBytes(data, getU8Encoder().encode(0), 0)) {
     return TokenInstruction.InitializeMint;
   }
