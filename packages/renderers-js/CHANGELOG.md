@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-js
 
+## 0.21.2
+
+### Patch Changes
+
+-   [#138](https://github.com/kinobi-so/kinobi/pull/138) [`af8ac37`](https://github.com/kinobi-so/kinobi/commit/af8ac374192d1c1b6c834c31fa30bc72d4b7da8e) Thanks [@mcintyre94](https://github.com/mcintyre94)! - Use ReadonlyUint8Array for identifying accounts/instructions by data
+
 ## 0.21.1
 
 ### Patch Changes

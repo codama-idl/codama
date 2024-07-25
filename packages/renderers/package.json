@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/renderers",
-    "version": "0.20.16",
+    "version": "0.20.17",
     "description": "Exports all Kinobi renderers",
     "exports": {
         "types": "./dist/types/index.d.ts",
