@@ -4,6 +4,9 @@ export const REGISTERED_LINK_NODE_KINDS = [
     'pdaLinkNode' as const,
     'accountLinkNode' as const,
     'definedTypeLinkNode' as const,
+    'instructionLinkNode' as const,
+    'instructionAccountLinkNode' as const,
+    'instructionArgumentLinkNode' as const,
 ];
 
 // Link Node Helpers.
