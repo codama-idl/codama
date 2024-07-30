@@ -5,6 +5,7 @@ import { REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS } from './contextualValueNodes/C
 import { REGISTERED_COUNT_NODE_KINDS } from './countNodes/CountNode';
 import { REGISTERED_DISCRIMINATOR_NODE_KINDS } from './discriminatorNodes/DiscriminatorNode';
 import { REGISTERED_LINK_NODE_KINDS } from './linkNodes/LinkNode';
+import { REGISTERED_OVERRIDE_NODE_KINDS } from './overrideNodes/OverrideNode';
 import { REGISTERED_PDA_SEED_NODE_KINDS } from './pdaSeedNodes/PdaSeedNode';
 import { REGISTERED_TYPE_NODE_KINDS } from './typeNodes/TypeNode';
 import { REGISTERED_VALUE_NODE_KINDS } from './valueNodes/ValueNode';
@@ -18,12 +19,14 @@ export const REGISTERED_NODE_KINDS = [
     ...REGISTERED_COUNT_NODE_KINDS,
     ...REGISTERED_TYPE_NODE_KINDS,
     ...REGISTERED_VALUE_NODE_KINDS,
+    ...REGISTERED_OVERRIDE_NODE_KINDS,
     'rootNode' as const,
     'programNode' as const,
     'pdaNode' as const,
     'accountNode' as const,
     'instructionAccountNode' as const,
     'instructionArgumentNode' as const,
+    'instructionBundleNode' as const,
     'instructionByteDeltaNode' as const,
     'instructionNode' as const,
     'instructionRemainingAccountsNode' as const,

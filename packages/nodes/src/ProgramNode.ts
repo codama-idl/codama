@@ -2,10 +2,11 @@ import type {
     AccountNode,
     DefinedTypeNode,
     ErrorNode,
+    InstructionBundleNode,
     InstructionNode,
     PdaNode,
     ProgramNode,
-    RootNode,
+    RootNode
 } from '@kinobi-so/node-types';
 
 import { camelCase, DocsInput, parseDocs } from './shared';
@@ -14,10 +15,11 @@ export type ProgramNodeInput<
     TPdas extends PdaNode[] = PdaNode[],
     TAccounts extends AccountNode[] = AccountNode[],
     TInstructions extends InstructionNode[] = InstructionNode[],
+    TInstructionBundles extends InstructionBundleNode[] = InstructionBundleNode[] ,
     TDefinedTypes extends DefinedTypeNode[] = DefinedTypeNode[],
     TErrors extends ErrorNode[] = ErrorNode[],
 > = Omit<
-    Partial<ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors>>,
+    Partial<ProgramNode<TPdas, TAccounts, TInstructions, TInstructionBundles, TDefinedTypes, TErrors>>,
     'docs' | 'kind' | 'name' | 'publicKey'
 > & {
     readonly docs?: DocsInput;
@@ -29,11 +31,12 @@ export function programNode<
     const TPdas extends PdaNode[] = [],
     const TAccounts extends AccountNode[] = [],
     const TInstructions extends InstructionNode[] = [],
+    TInstructionBundles extends InstructionBundleNode[] = InstructionBundleNode[],
     const TDefinedTypes extends DefinedTypeNode[] = [],
     const TErrors extends ErrorNode[] = [],
 >(
-    input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors>,
-): ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors> {
+    input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TInstructionBundles, TDefinedTypes, TErrors>,
+): ProgramNode<TPdas, TAccounts, TInstructions, TInstructionBundles, TDefinedTypes, TErrors> {
     return Object.freeze({
         kind: 'programNode',
 
@@ -47,6 +50,7 @@ export function programNode<
         // Children.
         accounts: (input.accounts ?? []) as TAccounts,
         instructions: (input.instructions ?? []) as TInstructions,
+        ...(input.instructionBundles !== undefined && { instructionBundles: input.instructionBundles }),
         definedTypes: (input.definedTypes ?? []) as TDefinedTypes,
         pdas: (input.pdas ?? []) as TPdas,
         errors: (input.errors ?? []) as TErrors,
@@ -73,6 +77,11 @@ export function getAllDefinedTypes(node: ProgramNode | ProgramNode[] | RootNode)
 
 export function getAllInstructions(node: ProgramNode | ProgramNode[] | RootNode): InstructionNode[] {
     return getAllPrograms(node).flatMap(program => program.instructions);
+}
+
+export function getAllInstructionBundles(node: ProgramNode | ProgramNode[] | RootNode): InstructionBundleNode[] {
+    return getAllPrograms(node).flatMap(program => program.instructionBundles)
+        .filter((instructionBundle): instructionBundle is InstructionBundleNode => instructionBundle !== undefined);
 }
 
 export function getAllErrors(node: ProgramNode | ProgramNode[] | RootNode): ErrorNode[] {

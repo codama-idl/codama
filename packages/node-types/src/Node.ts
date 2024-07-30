@@ -6,10 +6,12 @@ import type { RegisteredDiscriminatorNode } from './discriminatorNodes/Discrimin
 import type { ErrorNode } from './ErrorNode';
 import type { InstructionAccountNode } from './InstructionAccountNode';
 import type { InstructionArgumentNode } from './InstructionArgumentNode';
+import type { InstructionBundleNode } from './InstructionBundleNode';
 import type { InstructionByteDeltaNode } from './InstructionByteDeltaNode';
 import type { InstructionNode } from './InstructionNode';
 import type { InstructionRemainingAccountsNode } from './InstructionRemainingAccountsNode';
 import type { RegisteredLinkNode } from './linkNodes/LinkNode';
+import type { RegisteredOverrideNode } from './overrideNodes/OverrideNode';
 import type { PdaNode } from './PdaNode';
 import type { RegisteredPdaSeedNode } from './pdaSeedNodes/PdaSeedNode';
 import type { ProgramNode } from './ProgramNode';
@@ -25,6 +27,7 @@ export type Node =
     | ErrorNode
     | InstructionAccountNode
     | InstructionArgumentNode
+    | InstructionBundleNode
     | InstructionByteDeltaNode
     | InstructionNode
     | InstructionRemainingAccountsNode
@@ -34,6 +37,7 @@ export type Node =
     | RegisteredCountNode
     | RegisteredDiscriminatorNode
     | RegisteredLinkNode
+    | RegisteredOverrideNode
     | RegisteredPdaSeedNode
     | RegisteredTypeNode
     | RegisteredValueNode

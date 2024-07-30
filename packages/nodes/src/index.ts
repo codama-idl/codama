@@ -7,6 +7,7 @@ export * from './linkNodes';
 export * from './pdaSeedNodes';
 export * from './typeNodes';
 export * from './valueNodes';
+export * from './overrideNodes';
 
 export * from './shared';
 
@@ -17,6 +18,7 @@ export * from './InstructionAccountNode';
 export * from './InstructionArgumentNode';
 export * from './InstructionByteDeltaNode';
 export * from './InstructionNode';
+export * from './InstructionBundleNode';
 export * from './InstructionRemainingAccountsNode';
 export * from './Node';
 export * from './PdaNode';
