@@ -16,7 +16,7 @@ import {
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
     KINOBI_ERROR__VERSION_MISMATCH,
-    KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
+    KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_ADDITIONAL_PROGRAMS,
     KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
     KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
     KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
@@ -28,7 +28,7 @@ import {
     KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
     KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
-    KinobiErrorCode,
+    KinobiErrorCode
 } from './codes';
 
 /**
@@ -55,6 +55,8 @@ export const KinobiErrorMessages: Readonly<{
     [KINOBI_ERROR__VERSION_MISMATCH]:
         'The provided RootNode version [$rootVersion] is not compatible with the installed Kinobi version [$kinobiVersion].',
     [KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: 'Account [$name] does not have a field named [$missingField].',
+    [KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_ADDITIONAL_PROGRAMS]:
+        'Cannot add additional program to program [$programName] because the following programs already exist [$duplicatedProgramPublicKeys].',
     [KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:
         'Cannot add PDAs to program [$programName] because the following PDA names already exist [$duplicatedPdaNames].',
     [KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION]:
