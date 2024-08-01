@@ -92,6 +92,13 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                                     type: `${prefixFormat}PrefixVec<${childManifest.type}>`,
                                 };
                             }
+                            case 'shortU16': {
+                                childManifest.imports.add('solana_program::short_vec::ShortVec');
+                                return {
+                                    ...childManifest,
+                                    type: `ShortVec<${childManifest.type}>`,
+                                };
+                            }
                             default:
                                 throw new Error(`Array prefix not supported: ${prefix.format}`);
                         }
@@ -253,20 +260,24 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                 },
 
                 visitNumberType(numberType) {
-                    if (numberType.format === 'shortU16') {
-                        throw new Error('shortU16 numbers are not supported by the Rust renderer');
+                    if (numberType.endian !== 'le') {
+                        // TODO: Add to the Rust validator.
+                        throw new Error('Number endianness not supported by Borsh');
                     }
 
-                    if (numberType.endian === 'le') {
+                    if (numberType.format === 'shortU16') {
                         return {
-                            imports: new ImportMap(),
+                            imports: new ImportMap().add('solana_program::short_vec::ShortU16'),
                             nestedStructs: [],
-                            type: numberType.format,
+                            type: 'ShortU16',
                         };
                     }
 
-                    // TODO: Add to the Rust validator.
-                    throw new Error('Number endianness not supported by Borsh');
+                    return {
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: numberType.format,
+                    };
                 },
 
                 visitOptionType(optionType, { self }) {
