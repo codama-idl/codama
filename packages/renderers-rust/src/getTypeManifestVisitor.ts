@@ -137,20 +137,35 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                     parentName = pascalCase(definedType.name);
                     const manifest = visit(definedType.type, self);
                     parentName = null;
-                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
                     const traits = ['BorshSerialize', 'BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'];
+
                     if (isNode(definedType.type, 'enumTypeNode') && isScalarEnum(definedType.type)) {
                         traits.push('Copy', 'PartialOrd', 'Hash', 'FromPrimitive');
                         manifest.imports.add(['num_derive::FromPrimitive']);
                     }
+
+                    const nestedStructs = manifest.nestedStructs.map(
+                        struct =>
+                            `#[derive(${traits.join(', ')})]\n` +
+                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
+                            `${struct}`,
+                    );
+
+                    if (!isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])) {
+                        if (nestedStructs.length > 0) {
+                            manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
+                        }
+                        return {
+                            ...manifest,
+                            nestedStructs,
+                            type: `pub type ${pascalCase(definedType.name)} = ${manifest.type}`,
+                        };
+                    }
+
+                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
                     return {
                         ...manifest,
-                        nestedStructs: manifest.nestedStructs.map(
-                            struct =>
-                                `#[derive(${traits.join(', ')})]\n` +
-                                '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                                `${struct}`,
-                        ),
+                        nestedStructs,
                         type:
                             `#[derive(${traits.join(', ')})]\n` +
                             '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
