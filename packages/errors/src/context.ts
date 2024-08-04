@@ -32,6 +32,8 @@ import {
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
     KINOBI_ERROR__VERSION_MISMATCH,
     KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
+    KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_ADDITIONAL_PROGRAMS,
+    KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_INSTRUCTION_BUNDLE_NAMES,
     KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
     KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
     KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
@@ -104,6 +106,16 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         account: AccountNode;
         missingField: CamelCaseString;
         name: CamelCaseString;
+    };
+    [KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_ADDITIONAL_PROGRAMS]: {
+        duplicatedProgramNames: CamelCaseString[];
+        program: ProgramNode;
+        programName: CamelCaseString;
+    };
+    [KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_INSTRUCTION_BUNDLE_NAMES]: {
+        duplicatedInstructionBundleNames: CamelCaseString[];
+        program: ProgramNode;
+        programName: CamelCaseString;
     };
     [KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]: {
         duplicatedPdaNames: CamelCaseString[];

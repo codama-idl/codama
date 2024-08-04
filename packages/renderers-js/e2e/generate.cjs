@@ -8,7 +8,7 @@ const { rootNodeFromAnchor } = require('@kinobi-so/nodes-from-anchor');
 const { readJson } = require('@kinobi-so/renderers-core');
 const { visit } = require('@kinobi-so/visitors-core');
 
-const { renderVisitor } = require('../dist/index.node.cjs');
+const { renderVisitor, addBundlesVisitor } = require('../dist/index.node.cjs');
 
 async function main() {
     const project = process.argv.slice(2)[0] ?? undefined;
@@ -20,6 +20,13 @@ async function main() {
 
 async function generateProject(project) {
     const idl = readJson(path.join(__dirname, project, 'idl.json'));
+    let bundles;
+
+    try {
+        bundles = readJson(path.join(__dirname, project, 'bundles.json'));
+    } catch (e) {
+        console.warn(e);
+    }
 
     let node;
 
@@ -29,6 +36,7 @@ async function generateProject(project) {
         node = rootNode(idl.program, idl.additionalPrograms);
     }
 
+    await visit(node, addBundle)
     await visit(node, renderVisitor(path.join(__dirname, project, 'src', 'generated')));
 }
 

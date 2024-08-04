@@ -3,14 +3,13 @@ import type {
     ImportFrom,
     InstructionAccountLinkNode,
     InstructionAccountOverrideNode,
-    InstructionLinkNode} from '@kinobi-so/node-types';
+} from '@kinobi-so/node-types';
 
 import { camelCase } from '../shared';
 
 export function instructionAccountOverrideNode(
     name: string,
-    instruction: InstructionLinkNode,
-    replace?: InstructionAccountLinkNode[],
+    replace?: InstructionAccountLinkNode | InstructionAccountLinkNode[],
     defaultAccount?: AccountNode,
     importFrom?: ImportFrom
 ): InstructionAccountOverrideNode {
@@ -19,11 +18,10 @@ export function instructionAccountOverrideNode(
 
         // Data.
         name: camelCase(name),
-        instruction,
         ...(defaultAccount !== undefined && { defaultAccount }),
         ...(importFrom !== undefined && { importFrom }),
 
         // Children.
-        ...(replace !== undefined && { replace }),
+        ...(replace !== undefined && { replace: Array.isArray(replace) ? replace : [replace] }),
     });
 }

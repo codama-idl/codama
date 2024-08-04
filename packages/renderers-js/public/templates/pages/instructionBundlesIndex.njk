@@ -1,0 +1,9 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+{% for instructionBundle in instructionBundlesToExport | sort(false, false, 'name') %}
+export * from './{{ instructionBundle.name | camelCase }}';
+{% else %}
+export default {};
+{% endfor %}
+{% endblock %}
