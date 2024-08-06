@@ -95,6 +95,7 @@ test('it renders instruction accounts with inlined PDAs as default value', async
 
     // Then we expect the following default value to be rendered.
     await renderMapContains(renderMap, 'instructions/increment.ts', [
+        "context: Pick<Context, 'eddsa' | 'programs'>",
         'if (!resolvedAccounts.counter.value) { ' +
             'resolvedAccounts.counter.value = context.eddsa.findPda( programId, [ ' +
             "  string({ size: 'variable' }).serialize( 'counter' ), " +
