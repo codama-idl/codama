@@ -46,7 +46,7 @@
         "@kinobi-so/nodes": "workspace:*",
         "@kinobi-so/renderers-core": "workspace:*",
         "@kinobi-so/visitors-core": "workspace:*",
-        "@solana/codecs-strings": "tp4",
+        "@solana/codecs-strings": "rc",
         "nunjucks": "^3.2.4"
     },
     "devDependencies": {

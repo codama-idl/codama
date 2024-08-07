@@ -176,8 +176,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
-        specifier: tp4
-        version: 2.0.0-preview.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
+        specifier: rc
+        version: 2.0.0-rc.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -207,8 +207,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
-        specifier: tp4
-        version: 2.0.0-preview.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
+        specifier: rc
+        version: 2.0.0-rc.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -235,8 +235,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
-        specifier: tp4
-        version: 2.0.0-preview.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
+        specifier: rc
+        version: 2.0.0-rc.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -810,24 +810,24 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@solana/codecs-core@2.0.0-preview.4':
-    resolution: {integrity: sha512-A0VVuDDA5kNKZUinOqHxJQK32aKTucaVbvn31YenGzHX1gPqq+SOnFwgaEY6pq4XEopSmaK16w938ZQS8IvCnw==}
+  '@solana/codecs-core@2.0.0-rc.0':
+    resolution: {integrity: sha512-eIMMZiSfzZNlMK0uJRfpj9URrvuRo8SXncbCva+Wmpaob9dS+Mplo9VrH0T7+aTZJUAb5o9FbZgo4tUAOecVhg==}
     peerDependencies:
       typescript: '>=5'
 
-  '@solana/codecs-numbers@2.0.0-preview.4':
-    resolution: {integrity: sha512-Q061rLtMadsO7uxpguT+Z7G4UHnjQ6moVIxAQxR58nLxDPCC7MB1Pk106/Z7NDhDLHTcd18uO6DZ7ajHZEn2XQ==}
+  '@solana/codecs-numbers@2.0.0-rc.0':
+    resolution: {integrity: sha512-KqIU/xuB+IHNex9uYsB9y2MoH6VX2zRBnDJpdu9L/dE9Uw5xVKJRGdeHB9mBC4PBZ90VPMz3mP+xfFIXMS0j8g==}
     peerDependencies:
       typescript: '>=5'
 
-  '@solana/codecs-strings@2.0.0-preview.4':
-    resolution: {integrity: sha512-YDbsQePRWm+xnrfS64losSGRg8Wb76cjK1K6qfR8LPmdwIC3787x9uW5/E4icl/k+9nwgbIRXZ65lpF+ucZUnw==}
+  '@solana/codecs-strings@2.0.0-rc.0':
+    resolution: {integrity: sha512-9yYBvJpo1WTT8idzomrHF602Snylo1+pmEGNrYlUaxmzVU2Hdb28U0WKv0iz9TdCDvMDlIwjsBznt6DmVf4i6g==}
     peerDependencies:
       fastestsmallesttextencoderdecoder: ^1.0.22
       typescript: '>=5'
 
-  '@solana/errors@2.0.0-preview.4':
-    resolution: {integrity: sha512-kadtlbRv2LCWr8A9V22On15Us7Nn8BvqNaOB4hXsTB3O0fU40D1ru2l+cReqLcRPij4znqlRzW9Xi0m6J5DIhA==}
+  '@solana/errors@2.0.0-rc.0':
+    resolution: {integrity: sha512-4zaFxuYWQJi+CBucncGPc+QsWZktdmC6rDne3JxZGDKqqY5AMwktRC9LyUKaey/dVThmFGo1wv1wNQy1ryvbWw==}
     hasBin: true
     peerDependencies:
       typescript: '>=5'
@@ -2905,26 +2905,26 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.19.0':
     optional: true
 
-  '@solana/codecs-core@2.0.0-preview.4(typescript@5.5.4)':
+  '@solana/codecs-core@2.0.0-rc.0(typescript@5.5.4)':
     dependencies:
-      '@solana/errors': 2.0.0-preview.4(typescript@5.5.4)
+      '@solana/errors': 2.0.0-rc.0(typescript@5.5.4)
       typescript: 5.5.4
 
-  '@solana/codecs-numbers@2.0.0-preview.4(typescript@5.5.4)':
+  '@solana/codecs-numbers@2.0.0-rc.0(typescript@5.5.4)':
     dependencies:
-      '@solana/codecs-core': 2.0.0-preview.4(typescript@5.5.4)
-      '@solana/errors': 2.0.0-preview.4(typescript@5.5.4)
+      '@solana/codecs-core': 2.0.0-rc.0(typescript@5.5.4)
+      '@solana/errors': 2.0.0-rc.0(typescript@5.5.4)
       typescript: 5.5.4
 
-  '@solana/codecs-strings@2.0.0-preview.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)':
+  '@solana/codecs-strings@2.0.0-rc.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)':
     dependencies:
-      '@solana/codecs-core': 2.0.0-preview.4(typescript@5.5.4)
-      '@solana/codecs-numbers': 2.0.0-preview.4(typescript@5.5.4)
-      '@solana/errors': 2.0.0-preview.4(typescript@5.5.4)
+      '@solana/codecs-core': 2.0.0-rc.0(typescript@5.5.4)
+      '@solana/codecs-numbers': 2.0.0-rc.0(typescript@5.5.4)
+      '@solana/errors': 2.0.0-rc.0(typescript@5.5.4)
       fastestsmallesttextencoderdecoder: 1.0.22
       typescript: 5.5.4
 
-  '@solana/errors@2.0.0-preview.4(typescript@5.5.4)':
+  '@solana/errors@2.0.0-rc.0(typescript@5.5.4)':
     dependencies:
       chalk: 5.3.0
       commander: 12.1.0
