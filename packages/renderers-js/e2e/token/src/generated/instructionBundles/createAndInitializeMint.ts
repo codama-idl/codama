@@ -6,10 +6,6 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-export * from './accounts';
-export * from './errors';
-export * from './instructions';
-export * from './instructionBundles';
-export * from './pdas';
-export * from './programs';
-export * from './types';
+export type MyType = boolean;
+
+export default {};

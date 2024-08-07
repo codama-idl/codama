@@ -1,48 +1,50 @@
-[
-  {
-    "kind": "instructionBundleNode",
-    "name": "createAndInitializeMint",
-    "instructions": [
-      {
-        "kind": "instructionLinkNode",
-        "program": {
-          "kind": "programLinkNode",
-          "name": "system"
+{
+  "token": [
+    {
+      "kind": "instructionBundleNode",
+      "name": "createAndInitializeMint",
+      "instructions": [
+        {
+          "kind": "instructionLinkNode",
+          "program": {
+            "kind": "programLinkNode",
+            "name": "system"
+          },
+          "name":"createAccount"
         },
-        "name":"createAccount"
-      },
-      {
-        "kind": "instructionLinkNode",
-        "name":"initializeMint"
-      }
-    ],
-    "override": [
-      {
-        "kind": "instructionAccountOverrideNode",
-        "name": "mint",
-        "replace": [
-          {
-            "kind": "instructionAccountLinkNode",
-            "name": "newAccount",
-            "instruction": {
-              "kind": "instructionLinkNode",
-              "name":"createAccount",
-              "program": {
-                "kind": "programLinkNode",
-                "name": "system"
+        {
+          "kind": "instructionLinkNode",
+          "name":"initializeMint"
+        }
+      ],
+      "override": [
+        {
+          "kind": "instructionAccountOverrideNode",
+          "name": "mint",
+          "replace": [
+            {
+              "kind": "instructionAccountLinkNode",
+              "name": "newAccount",
+              "instruction": {
+                "kind": "instructionLinkNode",
+                "name":"createAccount",
+                "program": {
+                  "kind": "programLinkNode",
+                  "name": "system"
+                }
+              }
+            },
+            {
+              "kind": "instructionAccountLinkNode",
+              "name": "mint",
+              "instruction": {
+                "kind": "instructionLinkNode",
+                "name":"initializeMint2"
               }
             }
-          },
-          {
-            "kind": "instructionAccountLinkNode",
-            "name": "mint",
-            "instruction": {
-              "kind": "instructionLinkNode",
-              "name":"initializeMint2"
-            }
-          }
-        ]
-      }
-    ]
-  }
-]
+          ]
+        }
+      ]
+    }
+  ]
+}

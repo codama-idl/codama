@@ -6,14 +6,14 @@ import {
     CamelCaseString,
     getAllAccounts,
     getAllDefinedTypes,
+    getAllInstructionBundles,
     getAllInstructionsWithSubs,
     getAllPdas,
     getAllPrograms,
     ImportFrom,
     InstructionNode,
     ProgramNode,
-    structTypeNodeFromInstructionArgumentNodes,
-} from '@kinobi-so/nodes';
+    structTypeNodeFromInstructionArgumentNodes} from '@kinobi-so/nodes';
 import { RenderMap } from '@kinobi-so/renderers-core';
 import {
     extendVisitor,
@@ -31,6 +31,7 @@ import {
     getAccountPdaHelpersFragment,
     getAccountSizeHelpersFragment,
     getAccountTypeFragment,
+    getInstructionBundleInputTypeFragment,
     getInstructionDataFragment,
     getInstructionExtraArgsFragment,
     getInstructionFunctionFragment,
@@ -42,7 +43,7 @@ import {
     getProgramFragment,
     getProgramInstructionsFragment,
     getTypeDiscriminatedUnionHelpersFragment,
-    getTypeWithCodecFragment,
+    getTypeWithCodecFragment
 } from './fragments';
 import { getTypeManifestVisitor as baseGetTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
@@ -126,7 +127,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     return pipe(
         staticVisitor(
             () => new RenderMap(),
-            ['rootNode', 'programNode', 'pdaNode', 'accountNode', 'definedTypeNode', 'instructionNode'],
+            ['rootNode', 'programNode', 'pdaNode', 'accountNode', 'definedTypeNode', 'instructionNode', 'instructionBundleNode'],
         ),
         v =>
             extendVisitor(v, {
@@ -263,6 +264,24 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     );
                 },
 
+                visitInstructionBundle(node) {
+                    const scope = {
+                        instructionBundleNode: node,
+                        programNode: program,
+                    };
+                    const instructionBundleInputTypeFragment = getInstructionBundleInputTypeFragment(scope);
+                    const imports = new ImportMap().mergeWith(instructionBundleInputTypeFragment);
+
+                    return new RenderMap().add(
+                        `instructionBundles/${camelCase(node.name)}.ts`,
+                        render('instructionBundlesPage.njk', {
+                            imports: imports.toString(dependencyMap, useGranularImports),
+                            instructionBundleInputTypeFragment,
+                            instructionBundleNode: node,
+                        }),
+                    );
+                },
+
                 visitPda(node) {
                     if (!program) {
                         throw new Error('Account must be visited inside a program.');
@@ -292,6 +311,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...node.pdas.map(p => visit(p, self)))
                         .mergeWith(...node.accounts.map(a => visit(a, self)))
                         .mergeWith(...node.definedTypes.map(t => visit(t, self)))
+                        .mergeWith(...(node.instructionBundles ?? []).map(b => visit(b, self)))
                         .mergeWith(...customDataDefinedType.map(t => visit(t, self)));
 
                     if (node.errors.length > 0) {
@@ -340,6 +360,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const instructionsToExport = getAllInstructionsWithSubs(node, {
                         leavesOnly: !renderParentInstructions,
                     }).filter(isNotInternal);
+                    const instructionBundlesToExport = getAllInstructionBundles(node);
                     const definedTypesToExport = getAllDefinedTypes(node).filter(isNotInternal);
                     const hasAnythingToExport =
                         programsToExport.length > 0 ||
@@ -351,6 +372,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         accountsToExport,
                         definedTypesToExport,
                         hasAnythingToExport,
+                        instructionBundlesToExport,
                         instructionsToExport,
                         pdasToExport,
                         programsToExport,
@@ -399,6 +421,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
                     if (instructionsToExport.length > 0) {
                         map.add('instructions/index.ts', render('instructionsIndex.njk', ctx));
+                    }
+                    if (instructionBundlesToExport.length > 0) {
+                        map.add('instructionBundles/index.ts', render('instructionBundlesIndex.njk', ctx));
                     }
                     if (definedTypesToExport.length > 0) {
                         map.add('types/index.ts', render('definedTypesIndex.njk', ctx));

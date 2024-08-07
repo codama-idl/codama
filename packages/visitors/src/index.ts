@@ -25,3 +25,4 @@ export * from './updateErrorsVisitor';
 export * from './updateInstructionsVisitor';
 export * from './updateProgramsVisitor';
 export * from './addProgramsVisitor';
+export * from './addInstructionBundlesVisitor';

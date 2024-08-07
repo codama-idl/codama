@@ -172,6 +172,9 @@ importers:
       '@kinobi-so/renderers-core':
         specifier: workspace:*
         version: link:../renderers-core
+      '@kinobi-so/visitors':
+        specifier: workspace:*
+        version: link:../visitors
       '@kinobi-so/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core

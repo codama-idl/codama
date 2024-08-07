@@ -16,6 +16,7 @@ export * from './instructionInputType';
 export * from './instructionParseFunction';
 export * from './instructionRemainingAccounts';
 export * from './instructionType';
+export * from './instructionBundleInputType';
 export * from './pdaFunction';
 export * from './program';
 export * from './programAccounts';
