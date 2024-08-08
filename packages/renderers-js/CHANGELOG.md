@@ -1,5 +1,13 @@
 # @kinobi-so/renderers-js
 
+## 0.21.3
+
+### Patch Changes
+
+-   [#161](https://github.com/kinobi-so/kinobi/pull/161) [`524687c`](https://github.com/kinobi-so/kinobi/commit/524687cfe4b1a5e7a64cd133191bc1548f580d5b) Thanks [@mcintyre94](https://github.com/mcintyre94)! - Use lamports type/encoder/decoder for SolAmountTypeNode
+
+-   [#160](https://github.com/kinobi-so/kinobi/pull/160) [`87bab8a`](https://github.com/kinobi-so/kinobi/commit/87bab8ad6f2e40903064be9258a741e176eeef77) Thanks [@mcintyre94](https://github.com/mcintyre94)! - Bump to web3js rc
+
 ## 0.21.2
 
 ### Patch Changes

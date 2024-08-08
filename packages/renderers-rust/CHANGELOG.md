@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-rust
 
+## 0.21.2
+
+### Patch Changes
+
+-   [#160](https://github.com/kinobi-so/kinobi/pull/160) [`87bab8a`](https://github.com/kinobi-so/kinobi/commit/87bab8ad6f2e40903064be9258a741e176eeef77) Thanks [@mcintyre94](https://github.com/mcintyre94)! - Bump to web3js rc
+
 ## 0.21.1
 
 ### Patch Changes

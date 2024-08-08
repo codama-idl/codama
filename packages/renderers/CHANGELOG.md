@@ -1,5 +1,14 @@
 # @kinobi-so/renderers
 
+## 0.20.20
+
+### Patch Changes
+
+-   Updated dependencies [[`524687c`](https://github.com/kinobi-so/kinobi/commit/524687cfe4b1a5e7a64cd133191bc1548f580d5b), [`87bab8a`](https://github.com/kinobi-so/kinobi/commit/87bab8ad6f2e40903064be9258a741e176eeef77)]:
+    -   @kinobi-so/renderers-js@0.21.3
+    -   @kinobi-so/renderers-js-umi@0.21.2
+    -   @kinobi-so/renderers-rust@0.21.2
+
 ## 0.20.19
 
 ### Patch Changes
