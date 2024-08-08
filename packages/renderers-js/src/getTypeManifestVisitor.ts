@@ -701,8 +701,26 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
 
-                visitSolAmountType(solAmountType, { self }) {
-                    return visit(solAmountType.number, self);
+                visitSolAmountType({ number }, { self }) {
+                    const numberManifest = visit(number, self);
+
+                    const lamportsType = 'LamportsUnsafeBeyond2Pow53Minus1';
+                    const lamportsImport = new ImportMap().add(
+                        'solanaRpcTypes',
+                        'type LamportsUnsafeBeyond2Pow53Minus1',
+                    );
+
+                    return {
+                        ...numberManifest,
+                        decoder: numberManifest.decoder
+                            .mapRender(r => `getLamportsDecoder(${r})`)
+                            .addImports('solanaRpcTypes', 'getLamportsDecoder'),
+                        encoder: numberManifest.encoder
+                            .mapRender(r => `getLamportsEncoder(${r})`)
+                            .addImports('solanaRpcTypes', 'getLamportsEncoder'),
+                        looseType: fragment(lamportsType, lamportsImport),
+                        strictType: fragment(lamportsType, lamportsImport),
+                    };
                 },
 
                 visitSomeValue(node, { self }) {

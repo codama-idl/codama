@@ -2800,9 +2800,12 @@
               "kind": "instructionArgumentNode",
               "name": "lamports",
               "type": {
-                "kind": "numberTypeNode",
-                "format": "u64",
-                "endian": "le"
+                "kind": "solAmountTypeNode",
+                "number": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
               },
               "docs": []
             },

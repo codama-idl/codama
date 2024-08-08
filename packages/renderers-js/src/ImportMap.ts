@@ -14,6 +14,7 @@ const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaInstructions: '@solana/web3.js',
     solanaOptions: '@solana/web3.js',
     solanaPrograms: '@solana/web3.js',
+    solanaRpcTypes: '@solana/web3.js',
     solanaSigners: '@solana/web3.js',
 };
 
@@ -28,6 +29,7 @@ const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaInstructions: '@solana/instructions',
     solanaOptions: '@solana/codecs',
     solanaPrograms: '@solana/programs',
+    solanaRpcTypes: '@solana/rpc-types',
     solanaSigners: '@solana/signers',
 };
 
