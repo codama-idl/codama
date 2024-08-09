@@ -6,11 +6,11 @@
 import chalk from 'chalk';
 import { Command, InvalidArgumentError } from 'commander';
 
-import { version } from '../package.json';
-import { KinobiErrorCode } from './codes';
-import { decodeEncodedContext } from './context';
-import { getHumanReadableErrorMessage } from './message-formatter';
-import { KinobiErrorMessages } from './messages';
+import { version } from '../../package.json';
+import { KinobiErrorCode } from '../codes';
+import { decodeEncodedContext } from '../context';
+import { getHumanReadableErrorMessage } from '../message-formatter';
+import { KinobiErrorMessages } from '../messages';
 
 const program = new Command();
 
