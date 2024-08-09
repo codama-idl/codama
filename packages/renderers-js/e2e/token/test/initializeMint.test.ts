@@ -1,5 +1,5 @@
 import {
-  Account,
+  type Account,
   appendTransactionMessageInstructions,
   generateKeyPairSigner,
   none,
@@ -8,7 +8,7 @@ import {
 } from '@solana/web3.js';
 import test from 'ava';
 import {
-  Mint,
+  type Mint,
   TOKEN_PROGRAM_ADDRESS,
   fetchMint,
   getCreateAccountInstruction,

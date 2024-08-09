@@ -41,6 +41,30 @@ test('it renders a PDA helper function and its input type', async () => {
     ]);
 });
 
+test('it renders a PDA helper function with a default program address', async () => {
+    // Given the following PDA node with a default program address.
+    const node = programNode({
+        name: 'myProgram',
+        pdas: [
+            pdaNode({
+                name: 'foo',
+                programId: 'myProgramId',
+                seeds: [constantPdaSeedNodeFromString('utf8', 'myPrefix')],
+            }),
+        ],
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following PDA function using the programId as the default program address.
+    await renderMapContains(renderMap, 'pdas/foo.ts', [
+        'export async function findFooPda',
+        "const { programAddress = 'myProgramId' as Address<'myProgramId'> } = config;",
+    ]);
+});
+
 test('it renders an empty array of seeds for seedless PDAs', async () => {
     // Given the following program with 1 account and 1 pda with empty seeds.
     const node = programNode({

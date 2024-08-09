@@ -6,21 +6,26 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { Address, containsBytes, getU32Encoder } from '@solana/web3.js';
 import {
-  ParsedAdvanceNonceAccountInstruction,
-  ParsedAllocateInstruction,
-  ParsedAllocateWithSeedInstruction,
-  ParsedAssignInstruction,
-  ParsedAssignWithSeedInstruction,
-  ParsedAuthorizeNonceAccountInstruction,
-  ParsedCreateAccountInstruction,
-  ParsedCreateAccountWithSeedInstruction,
-  ParsedInitializeNonceAccountInstruction,
-  ParsedTransferSolInstruction,
-  ParsedTransferSolWithSeedInstruction,
-  ParsedUpgradeNonceAccountInstruction,
-  ParsedWithdrawNonceAccountInstruction,
+  containsBytes,
+  getU32Encoder,
+  type Address,
+  type ReadonlyUint8Array,
+} from '@solana/web3.js';
+import {
+  type ParsedAdvanceNonceAccountInstruction,
+  type ParsedAllocateInstruction,
+  type ParsedAllocateWithSeedInstruction,
+  type ParsedAssignInstruction,
+  type ParsedAssignWithSeedInstruction,
+  type ParsedAuthorizeNonceAccountInstruction,
+  type ParsedCreateAccountInstruction,
+  type ParsedCreateAccountWithSeedInstruction,
+  type ParsedInitializeNonceAccountInstruction,
+  type ParsedTransferSolInstruction,
+  type ParsedTransferSolWithSeedInstruction,
+  type ParsedUpgradeNonceAccountInstruction,
+  type ParsedWithdrawNonceAccountInstruction,
 } from '../instructions';
 
 export const SYSTEM_PROGRAM_ADDRESS =
@@ -47,10 +52,9 @@ export enum SystemInstruction {
 }
 
 export function identifySystemInstruction(
-  instruction: { data: Uint8Array } | Uint8Array
+  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): SystemInstruction {
-  const data =
-    instruction instanceof Uint8Array ? instruction : instruction.data;
+  const data = 'data' in instruction ? instruction.data : instruction;
   if (containsBytes(data, getU32Encoder().encode(0), 0)) {
     return SystemInstruction.CreateAccount;
   }

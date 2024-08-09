@@ -7,12 +7,12 @@
  */
 
 import {
-  Codec,
-  Decoder,
-  Encoder,
   combineCodec,
   getEnumDecoder,
   getEnumEncoder,
+  type Codec,
+  type Decoder,
+  type Encoder,
 } from '@solana/web3.js';
 
 export enum AccountState {

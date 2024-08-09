@@ -1,5 +1,5 @@
 import {
-  Account,
+  type Account,
   appendTransactionMessageInstructions,
   generateKeyPairSigner,
   none,
@@ -9,7 +9,7 @@ import test from 'ava';
 import {
   AccountState,
   TOKEN_PROGRAM_ADDRESS,
-  Token,
+  type Token,
   fetchToken,
   getCreateAccountInstruction,
   getInitializeAccountInstruction,

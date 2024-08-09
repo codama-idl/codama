@@ -1,5 +1,37 @@
 # kinobi
 
+## 0.21.0
+
+### Patch Changes
+
+- Updated dependencies [[`2f26050`](https://github.com/kinobi-so/kinobi/commit/2f26050ddbcbdefcefbd853e1017a30c94442e1f)]:
+  - @kinobi-so/errors@0.21.0
+  - @kinobi-so/nodes@0.21.0
+  - @kinobi-so/validators@0.21.0
+  - @kinobi-so/visitors@0.21.0
+
+## 0.20.6
+
+### Patch Changes
+
+- [#102](https://github.com/kinobi-so/kinobi/pull/102) [`bcf6a23`](https://github.com/kinobi-so/kinobi/commit/bcf6a23fa0e0d1f1a064ea6ddcfc9c092190a51f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Replace \_\_DEV\_\_ with NODE_ENV is not production in Kinobi
+
+- Updated dependencies [[`bcf6a23`](https://github.com/kinobi-so/kinobi/commit/bcf6a23fa0e0d1f1a064ea6ddcfc9c092190a51f)]:
+  - @kinobi-so/errors@0.20.6
+  - @kinobi-so/nodes@0.20.6
+  - @kinobi-so/validators@0.20.6
+  - @kinobi-so/visitors@0.20.6
+
+## 0.20.5
+
+### Patch Changes
+
+- Updated dependencies [[`908acba`](https://github.com/kinobi-so/kinobi/commit/908acba99cdb0b761ed79aebf6828e23fde97ef8)]:
+  - @kinobi-so/errors@0.20.5
+  - @kinobi-so/nodes@0.20.5
+  - @kinobi-so/validators@0.20.5
+  - @kinobi-so/visitors@0.20.5
+
 ## 0.20.4
 
 ### Patch Changes

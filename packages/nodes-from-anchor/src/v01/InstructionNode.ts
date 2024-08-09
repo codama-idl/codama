@@ -1,4 +1,5 @@
 import {
+    AccountNode,
     bytesTypeNode,
     camelCase,
     fieldDiscriminatorNode,
@@ -13,7 +14,7 @@ import { IdlV01Instruction } from './idl';
 import { instructionAccountNodesFromAnchorV01 } from './InstructionAccountNode';
 import { instructionArgumentNodeFromAnchorV01 } from './InstructionArgumentNode';
 
-export function instructionNodeFromAnchorV01(idl: IdlV01Instruction): InstructionNode {
+export function instructionNodeFromAnchorV01(allAccounts: AccountNode[], idl: IdlV01Instruction): InstructionNode {
     const name = idl.name;
     let dataArguments = idl.args.map(instructionArgumentNodeFromAnchorV01);
 
@@ -27,7 +28,7 @@ export function instructionNodeFromAnchorV01(idl: IdlV01Instruction): Instructio
     const discriminators = [fieldDiscriminatorNode('discriminator')];
 
     return instructionNode({
-        accounts: instructionAccountNodesFromAnchorV01(idl.accounts ?? []),
+        accounts: instructionAccountNodesFromAnchorV01(allAccounts, dataArguments, idl.accounts ?? []),
         arguments: dataArguments,
         discriminators,
         docs: idl.docs ?? [],

@@ -7,16 +7,6 @@
  */
 
 import {
-  Account,
-  Address,
-  Codec,
-  Decoder,
-  EncodedAccount,
-  Encoder,
-  FetchAccountConfig,
-  FetchAccountsConfig,
-  MaybeAccount,
-  MaybeEncodedAccount,
   assertAccountExists,
   assertAccountsExist,
   combineCodec,
@@ -25,20 +15,33 @@ import {
   fetchEncodedAccounts,
   getAddressDecoder,
   getAddressEncoder,
+  getLamportsDecoder,
+  getLamportsEncoder,
   getStructDecoder,
   getStructEncoder,
   getU64Decoder,
   getU64Encoder,
+  type Account,
+  type Address,
+  type Codec,
+  type Decoder,
+  type EncodedAccount,
+  type Encoder,
+  type FetchAccountConfig,
+  type FetchAccountsConfig,
+  type LamportsUnsafeBeyond2Pow53Minus1,
+  type MaybeAccount,
+  type MaybeEncodedAccount,
 } from '@solana/web3.js';
 import {
-  NonceState,
-  NonceStateArgs,
-  NonceVersion,
-  NonceVersionArgs,
   getNonceStateDecoder,
   getNonceStateEncoder,
   getNonceVersionDecoder,
   getNonceVersionEncoder,
+  type NonceState,
+  type NonceStateArgs,
+  type NonceVersion,
+  type NonceVersionArgs,
 } from '../types';
 
 export type Nonce = {
@@ -46,7 +49,7 @@ export type Nonce = {
   state: NonceState;
   authority: Address;
   blockhash: Address;
-  lamportsPerSignature: bigint;
+  lamportsPerSignature: LamportsUnsafeBeyond2Pow53Minus1;
 };
 
 export type NonceArgs = {
@@ -54,7 +57,7 @@ export type NonceArgs = {
   state: NonceStateArgs;
   authority: Address;
   blockhash: Address;
-  lamportsPerSignature: number | bigint;
+  lamportsPerSignature: LamportsUnsafeBeyond2Pow53Minus1;
 };
 
 export function getNonceEncoder(): Encoder<NonceArgs> {
@@ -63,7 +66,7 @@ export function getNonceEncoder(): Encoder<NonceArgs> {
     ['state', getNonceStateEncoder()],
     ['authority', getAddressEncoder()],
     ['blockhash', getAddressEncoder()],
-    ['lamportsPerSignature', getU64Encoder()],
+    ['lamportsPerSignature', getLamportsEncoder(getU64Encoder())],
   ]);
 }
 
@@ -73,7 +76,7 @@ export function getNonceDecoder(): Decoder<Nonce> {
     ['state', getNonceStateDecoder()],
     ['authority', getAddressDecoder()],
     ['blockhash', getAddressDecoder()],
-    ['lamportsPerSignature', getU64Decoder()],
+    ['lamportsPerSignature', getLamportsDecoder(getU64Decoder())],
   ]);
 }
 

@@ -6,6 +6,14 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
+import {
+  isProgramError,
+  type Address,
+  type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  type SolanaError,
+} from '@solana/web3.js';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs';
+
 /** NotRentExempt: Lamport balance below rent-exempt threshold */
 export const TOKEN_ERROR__NOT_RENT_EXEMPT = 0x0; // 0
 /** InsufficientFunds: Insufficient funds */
@@ -70,7 +78,7 @@ export type TokenError =
   | typeof TOKEN_ERROR__UNINITIALIZED_STATE;
 
 let tokenErrorMessages: Record<TokenError, string> | undefined;
-if (__DEV__) {
+if (process.env.NODE_ENV !== 'production') {
   tokenErrorMessages = {
     [TOKEN_ERROR__ACCOUNT_FROZEN]: `Account is frozen`,
     [TOKEN_ERROR__ALREADY_IN_USE]: `Already in use`,
@@ -96,9 +104,25 @@ if (__DEV__) {
 }
 
 export function getTokenErrorMessage(code: TokenError): string {
-  if (__DEV__) {
+  if (process.env.NODE_ENV !== 'production') {
     return (tokenErrorMessages as Record<TokenError, string>)[code];
   }
 
-  return 'Error message not available in production bundles. Compile with `__DEV__` set to true to see more information.';
+  return 'Error message not available in production bundles.';
+}
+
+export function isTokenError<TProgramErrorCode extends TokenError>(
+  error: unknown,
+  transactionMessage: {
+    instructions: Record<number, { programAddress: Address }>;
+  },
+  code?: TProgramErrorCode
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(
+    error,
+    transactionMessage,
+    TOKEN_PROGRAM_ADDRESS,
+    code
+  );
 }

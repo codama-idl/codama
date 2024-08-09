@@ -91,8 +91,8 @@ test('it renders an function that identifies accounts in a program', async () =>
     // Then we expect the following identifier function to be rendered.
     // Notice it does not include the `mint` account because it has no discriminators.
     await renderMapContains(renderMap, 'programs/splToken.ts', [
-        `export function identifySplTokenAccount( account: { data: Uint8Array } | Uint8Array ): SplTokenAccount { ` +
-            `const data = account instanceof Uint8Array ? account : account.data; ` +
+        `export function identifySplTokenAccount( account: { data: ReadonlyUint8Array } | ReadonlyUint8Array ): SplTokenAccount { ` +
+            `const data = 'data' in account ? account.data : account; ` +
             `if ( containsBytes(data, getU8Encoder().encode(5), 0) ) { return SplTokenAccount.Metadata; } ` +
             `if ( data.length === 72 && containsBytes(data, new Uint8Array([1, 2, 3]), 4) ) { return SplTokenAccount.Token; } ` +
             `throw new Error ( 'The provided account could not be identified as a splToken account.' ); ` +
@@ -101,7 +101,7 @@ test('it renders an function that identifies accounts in a program', async () =>
 
     // And we expect the following imports.
     await renderMapContainsImports(renderMap, 'programs/splToken.ts', {
-        '@solana/web3.js': ['containsBytes'],
+        '@solana/web3.js': ['containsBytes', 'ReadonlyUint8Array'],
     });
 });
 
@@ -163,8 +163,8 @@ test('it renders an function that identifies instructions in a program', async (
     // Then we expect the following identifier function to be rendered.
     // Notice it does not include the `updateAuthority` instruction because it has no discriminators.
     await renderMapContains(renderMap, 'programs/splToken.ts', [
-        `export function identifySplTokenInstruction ( instruction: { data: Uint8Array } | Uint8Array ): SplTokenInstruction { ` +
-            `const data = instruction instanceof Uint8Array ? instruction : instruction.data; ` +
+        `export function identifySplTokenInstruction ( instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array ): SplTokenInstruction { ` +
+            `const data = 'data' in instruction ? instruction.data : instruction; ` +
             `if ( containsBytes(data, getU8Encoder().encode(1), 0) ) { return SplTokenInstruction.MintTokens; } ` +
             `if ( data.length === 72 && containsBytes(data, new Uint8Array([1, 2, 3]), 4) ) { return SplTokenInstruction.TransferTokens; } ` +
             `throw new Error( 'The provided instruction could not be identified as a splToken instruction.' ); ` +
@@ -173,7 +173,7 @@ test('it renders an function that identifies instructions in a program', async (
 
     // And we expect the following imports.
     await renderMapContainsImports(renderMap, 'programs/splToken.ts', {
-        '@solana/web3.js': ['containsBytes'],
+        '@solana/web3.js': ['containsBytes', 'ReadonlyUint8Array'],
     });
 });
 

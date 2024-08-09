@@ -5,9 +5,13 @@
 
 import {
     KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
+    KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
+    KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
+    KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING,
     KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
     KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
+    KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
@@ -37,10 +41,14 @@ export const KinobiErrorMessages: Readonly<{
     [P in KinobiErrorCode]: string;
 }> = {
     [KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: 'Account type [$name] is missing from the IDL types.',
+    [KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING]: 'Argument name [$name] is missing from the instruction definition.',
+    [KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]: 'Seed kind [$kind] is not implemented.',
+    [KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING]: 'Field type is missing for path [$path] in [$idlType].',
     [KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
     [KINOBI_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not find linked node [$name] from [$kind].',
     [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
         'Node.js filesystem function [$fsFunction] is not available in your environment.',
+    [KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE]: 'Cannot render the encountered node of kind [$kind].',
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: 'Expected nested node of kind [$expectedKinds], got [$kind]',
     [KINOBI_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got [$kind].',
     [KINOBI_ERROR__UNRECOGNIZED_NODE_KIND]: 'Unrecognized node kind [$kind].',

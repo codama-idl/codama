@@ -19,7 +19,7 @@ export function getHumanReadableErrorMessage<TErrorCode extends KinobiErrorCode>
 }
 
 export function getErrorMessage<TErrorCode extends KinobiErrorCode>(code: TErrorCode, context: object = {}): string {
-    if (__DEV__) {
+    if (process.env.NODE_ENV !== 'production') {
         return getHumanReadableErrorMessage(code, context);
     } else {
         let decodingAdviceMessage = `Kinobi error #${code}; Decode this error by running \`npx @kinobi-so/errors decode -- ${code}`;

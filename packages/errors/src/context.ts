@@ -19,9 +19,14 @@ import {
 } from '@kinobi-so/node-types';
 
 import {
+    KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
+    KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
+    KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
+    KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING,
     KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     KINOBI_ERROR__LINKED_NODE_NOT_FOUND,
     KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
+    KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE,
     KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     KINOBI_ERROR__UNEXPECTED_NODE_KIND,
     KINOBI_ERROR__UNRECOGNIZED_NODE_KIND,
@@ -50,6 +55,19 @@ type DefaultUnspecifiedErrorContextToUndefined<T> = {
  *   - Don't change or remove members of an error's context.
  */
 export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
+    [KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: {
+        name: string;
+    };
+    [KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING]: {
+        name: string;
+    };
+    [KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]: {
+        kind: string;
+    };
+    [KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING]: {
+        idlType: string;
+        path: string;
+    };
     [KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: {
         idlType: string;
     };
@@ -60,6 +78,10 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
         fsFunction: string;
+    };
+    [KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE]: {
+        kind: NodeKind;
+        node: Node | undefined;
     };
     [KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND]: {
         expectedKinds: NodeKind[];

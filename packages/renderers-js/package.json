@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/renderers-js",
-    "version": "0.20.7",
+    "version": "0.21.3",
     "description": "JavaScript renderer compatible with the Solana web3.js library",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -45,11 +45,12 @@
     "dependencies": {
         "@kinobi-so/errors": "workspace:*",
         "@kinobi-so/nodes": "workspace:*",
+        "@kinobi-so/nodes-from-anchor": "workspace:*",
         "@kinobi-so/renderers-core": "workspace:*",
         "@kinobi-so/visitors-core": "workspace:*",
-        "@solana/codecs-strings": "tp2",
+        "@solana/codecs-strings": "rc",
         "nunjucks": "^3.2.4",
-        "prettier": "^3.2.5"
+        "prettier": "^3.3.0"
     },
     "devDependencies": {
         "@types/nunjucks": "^3.2.6"

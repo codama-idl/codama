@@ -57,14 +57,16 @@ function getProgramAccountsIdentifierFunctionFragment(
         r => r.join('\n'),
     );
 
-    return discriminatorsFragment.mapRender(
-        discriminators =>
-            `export function ${programAccountsIdentifierFunction}(` +
-            `account: { data: Uint8Array } | Uint8Array` +
-            `): ${programAccountsEnum} {\n` +
-            `const data = account instanceof Uint8Array ? account : account.data;\n` +
-            `${discriminators}\n` +
-            `throw new Error("The provided account could not be identified as a ${programNode.name} account.")\n` +
-            `}`,
-    );
+    return discriminatorsFragment
+        .mapRender(
+            discriminators =>
+                `export function ${programAccountsIdentifierFunction}(` +
+                `account: { data: ReadonlyUint8Array } | ReadonlyUint8Array` +
+                `): ${programAccountsEnum} {\n` +
+                `const data = 'data' in account ? account.data : account;\n` +
+                `${discriminators}\n` +
+                `throw new Error("The provided account could not be identified as a ${programNode.name} account.")\n` +
+                `}`,
+        )
+        .addImports('solanaCodecsCore', 'type ReadonlyUint8Array');
 }

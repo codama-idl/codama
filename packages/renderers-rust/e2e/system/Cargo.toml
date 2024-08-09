@@ -4,10 +4,13 @@ version = "0.0.0"
 edition = "2021"
 
 [features]
-test-sbf = []
+anchor = ["dep:anchor-lang"]
+anchor-idl-build = ["anchor", "anchor-lang?/idl-build"]
 serde = ["dep:serde", "dep:serde_with"]
+test-sbf = []
 
 [dependencies]
+anchor-lang = { version = "0.30.0", optional = true }
 borsh = "^0.10"
 num-derive = "^0.3"
 num-traits = "^0.2"

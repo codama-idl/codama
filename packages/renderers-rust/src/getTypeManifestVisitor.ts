@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@kinobi-so/errors';
 import {
     arrayTypeNode,
     CountNode,
@@ -91,6 +92,13 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                                     type: `${prefixFormat}PrefixVec<${childManifest.type}>`,
                                 };
                             }
+                            case 'shortU16': {
+                                childManifest.imports.add('solana_program::short_vec::ShortVec');
+                                return {
+                                    ...childManifest,
+                                    type: `ShortVec<${childManifest.type}>`,
+                                };
+                            }
                             default:
                                 throw new Error(`Array prefix not supported: ${prefix.format}`);
                         }
@@ -129,20 +137,35 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                     parentName = pascalCase(definedType.name);
                     const manifest = visit(definedType.type, self);
                     parentName = null;
-                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
                     const traits = ['BorshSerialize', 'BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'];
+
                     if (isNode(definedType.type, 'enumTypeNode') && isScalarEnum(definedType.type)) {
                         traits.push('Copy', 'PartialOrd', 'Hash', 'FromPrimitive');
                         manifest.imports.add(['num_derive::FromPrimitive']);
                     }
+
+                    const nestedStructs = manifest.nestedStructs.map(
+                        struct =>
+                            `#[derive(${traits.join(', ')})]\n` +
+                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
+                            `${struct}`,
+                    );
+
+                    if (!isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])) {
+                        if (nestedStructs.length > 0) {
+                            manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
+                        }
+                        return {
+                            ...manifest,
+                            nestedStructs,
+                            type: `pub type ${pascalCase(definedType.name)} = ${manifest.type}`,
+                        };
+                    }
+
+                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
                     return {
                         ...manifest,
-                        nestedStructs: manifest.nestedStructs.map(
-                            struct =>
-                                `#[derive(${traits.join(', ')})]\n` +
-                                '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                                `${struct}`,
-                        ),
+                        nestedStructs,
                         type:
                             `#[derive(${traits.join(', ')})]\n` +
                             '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
@@ -252,20 +275,24 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                 },
 
                 visitNumberType(numberType) {
-                    if (numberType.format === 'shortU16') {
-                        throw new Error('shortU16 numbers are not supported by the Rust renderer');
+                    if (numberType.endian !== 'le') {
+                        // TODO: Add to the Rust validator.
+                        throw new Error('Number endianness not supported by Borsh');
                     }
 
-                    if (numberType.endian === 'le') {
+                    if (numberType.format === 'shortU16') {
                         return {
-                            imports: new ImportMap(),
+                            imports: new ImportMap().add('solana_program::short_vec::ShortU16'),
                             nestedStructs: [],
-                            type: numberType.format,
+                            type: 'ShortU16',
                         };
                     }
 
-                    // TODO: Add to the Rust validator.
-                    throw new Error('Number endianness not supported by Borsh');
+                    return {
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: numberType.format,
+                    };
                 },
 
                 visitOptionType(optionType, { self }) {
@@ -289,6 +316,10 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                         nestedStructs: [],
                         type: 'Pubkey',
                     };
+                },
+
+                visitRemainderOptionType(node) {
+                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
 
                 visitSetType(setType, { self }) {
@@ -442,6 +473,10 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
                         ...mergedManifest,
                         type: `(${items.map(item => item.type).join(', ')})`,
                     };
+                },
+
+                visitZeroableOptionType(node) {
+                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
     );

@@ -17,6 +17,7 @@ import type { OptionTypeNode } from './OptionTypeNode';
 import type { PostOffsetTypeNode } from './PostOffsetTypeNode';
 import type { PreOffsetTypeNode } from './PreOffsetTypeNode';
 import type { PublicKeyTypeNode } from './PublicKeyTypeNode';
+import type { RemainderOptionTypeNode } from './RemainderOptionTypeNode';
 import type { SentinelTypeNode } from './SentinelTypeNode';
 import type { SetTypeNode } from './SetTypeNode';
 import type { SizePrefixTypeNode } from './SizePrefixTypeNode';
@@ -44,6 +45,7 @@ export type StandaloneTypeNode =
     | PostOffsetTypeNode
     | PreOffsetTypeNode
     | PublicKeyTypeNode
+    | RemainderOptionTypeNode
     | SentinelTypeNode
     | SetTypeNode
     | SizePrefixTypeNode

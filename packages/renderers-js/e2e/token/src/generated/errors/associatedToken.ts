@@ -6,6 +6,14 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
+import {
+  isProgramError,
+  type Address,
+  type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  type SolanaError,
+} from '@solana/web3.js';
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs';
+
 /** InvalidOwner: Associated token account owner does not match address derivation */
 export const ASSOCIATED_TOKEN_ERROR__INVALID_OWNER = 0x0; // 0
 
@@ -14,7 +22,7 @@ export type AssociatedTokenError = typeof ASSOCIATED_TOKEN_ERROR__INVALID_OWNER;
 let associatedTokenErrorMessages:
   | Record<AssociatedTokenError, string>
   | undefined;
-if (__DEV__) {
+if (process.env.NODE_ENV !== 'production') {
   associatedTokenErrorMessages = {
     [ASSOCIATED_TOKEN_ERROR__INVALID_OWNER]: `Associated token account owner does not match address derivation`,
   };
@@ -23,11 +31,29 @@ if (__DEV__) {
 export function getAssociatedTokenErrorMessage(
   code: AssociatedTokenError
 ): string {
-  if (__DEV__) {
+  if (process.env.NODE_ENV !== 'production') {
     return (
       associatedTokenErrorMessages as Record<AssociatedTokenError, string>
     )[code];
   }
 
-  return 'Error message not available in production bundles. Compile with `__DEV__` set to true to see more information.';
+  return 'Error message not available in production bundles.';
+}
+
+export function isAssociatedTokenError<
+  TProgramErrorCode extends AssociatedTokenError,
+>(
+  error: unknown,
+  transactionMessage: {
+    instructions: Record<number, { programAddress: Address }>;
+  },
+  code?: TProgramErrorCode
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(
+    error,
+    transactionMessage,
+    ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    code
+  );
 }

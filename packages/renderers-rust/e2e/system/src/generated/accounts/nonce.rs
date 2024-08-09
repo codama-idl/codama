@@ -49,3 +49,28 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Nonce {
         Self::deserialize(&mut data)
     }
 }
+
+#[cfg(feature = "anchor")]
+impl anchor_lang::AccountDeserialize for Nonce {
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
+        Ok(Self::deserialize(buf)?)
+    }
+}
+
+#[cfg(feature = "anchor")]
+impl anchor_lang::AccountSerialize for Nonce {}
+
+#[cfg(feature = "anchor")]
+impl anchor_lang::Owner for Nonce {
+    fn owner() -> Pubkey {
+        crate::SYSTEM_ID
+    }
+}
+
+#[cfg(feature = "anchor-idl-build")]
+impl anchor_lang::IdlBuild for Nonce {}
+
+#[cfg(feature = "anchor-idl-build")]
+impl anchor_lang::Discriminator for Nonce {
+    const DISCRIMINATOR: [u8; 8] = [0; 8];
+}

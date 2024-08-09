@@ -1,14 +1,19 @@
 import {
     accountNode,
+    accountValueNode,
+    argumentValueNode,
     bytesTypeNode,
-    constantPdaSeedNode,
+    constantPdaSeedNodeFromBytes,
     errorNode,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
+    numberTypeNode,
     pdaNode,
+    pdaSeedValueNode,
+    pdaValueNode,
     programNode,
     publicKeyTypeNode,
     structFieldTypeNode,
@@ -33,20 +38,29 @@ test('it creates program nodes', () => {
                             seeds: [
                                 { kind: 'const', value: [42, 31, 29] },
                                 { kind: 'account', path: 'owner' },
+                                { kind: 'arg', path: 'amount' },
                             ],
                         },
+                    },
+                    {
+                        name: 'owner',
                     },
                     {
                         name: 'some_account',
                     },
                 ],
-                args: [],
+                args: [
+                    {
+                        name: 'amount',
+                        type: 'u8',
+                    },
+                ],
                 discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
-                name: 'myInstruction',
+                name: 'my_instruction',
             },
         ],
-        metadata: { name: 'myProgram', spec: '0.1.0', version: '1.2.3' },
-        types: [{ name: 'MyAccount', type: { fields: [], kind: 'struct' } }],
+        metadata: { name: 'my_program', spec: '0.1.0', version: '1.2.3' },
+        types: [{ name: 'MyAccount', type: { fields: [{ name: 'delegate', type: 'pubkey' }], kind: 'struct' } }],
     });
 
     expect(node).toEqual(
@@ -59,6 +73,10 @@ test('it creates program nodes', () => {
                             defaultValueStrategy: 'omitted',
                             name: 'discriminator',
                             type: fixedSizeTypeNode(bytesTypeNode(), 8),
+                        }),
+                        structFieldTypeNode({
+                            name: 'delegate',
+                            type: publicKeyTypeNode(),
                         }),
                     ]),
                     discriminators: [fieldDiscriminatorNode('discriminator')],
@@ -78,9 +96,28 @@ test('it creates program nodes', () => {
                 instructionNode({
                     accounts: [
                         instructionAccountNode({
+                            defaultValue: pdaValueNode(
+                                pdaNode({
+                                    name: 'authority',
+                                    seeds: [
+                                        constantPdaSeedNodeFromBytes('base16', '2a1f1d'),
+                                        variablePdaSeedNode('owner', publicKeyTypeNode()),
+                                        variablePdaSeedNode('amount', numberTypeNode('u8')),
+                                    ],
+                                }),
+                                [
+                                    pdaSeedValueNode('owner', accountValueNode('owner')),
+                                    pdaSeedValueNode('amount', argumentValueNode('amount')),
+                                ],
+                            ),
                             isSigner: false,
                             isWritable: false,
                             name: 'authority',
+                        }),
+                        instructionAccountNode({
+                            isSigner: false,
+                            isWritable: false,
+                            name: 'owner',
                         }),
                         instructionAccountNode({
                             isSigner: false,
@@ -95,6 +132,7 @@ test('it creates program nodes', () => {
                             name: 'discriminator',
                             type: fixedSizeTypeNode(bytesTypeNode(), 8),
                         }),
+                        instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') }),
                     ],
                     discriminators: [fieldDiscriminatorNode('discriminator')],
                     name: 'myInstruction',
@@ -102,18 +140,7 @@ test('it creates program nodes', () => {
             ],
             name: 'myProgram',
             origin: 'anchor',
-            pdas: [
-                pdaNode({
-                    name: 'authority',
-                    seeds: [
-                        constantPdaSeedNode(
-                            fixedSizeTypeNode(bytesTypeNode(), 3),
-                            getAnchorDiscriminatorV01([42, 31, 29]),
-                        ),
-                        variablePdaSeedNode('owner', publicKeyTypeNode()),
-                    ],
-                }),
-            ],
+            pdas: [],
             publicKey: '1111',
             version: '1.2.3',
         }),

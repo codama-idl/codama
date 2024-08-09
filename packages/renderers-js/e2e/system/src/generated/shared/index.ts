@@ -8,13 +8,13 @@
 
 import {
   AccountRole,
-  Address,
-  IAccountMeta,
-  IAccountSignerMeta,
-  ProgramDerivedAddress,
-  TransactionSigner,
   isProgramDerivedAddress,
   isTransactionSigner as web3JsIsTransactionSigner,
+  type Address,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type ProgramDerivedAddress,
+  type TransactionSigner,
   upgradeRoleToSigner,
 } from '@solana/web3.js';
 

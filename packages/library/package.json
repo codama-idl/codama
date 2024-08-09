@@ -1,6 +1,6 @@
 {
     "name": "kinobi",
-    "version": "0.20.4",
+    "version": "0.21.0",
     "description": "A Solana framework for building standardised programs",
     "exports": {
         "types": "./dist/types/index.d.ts",

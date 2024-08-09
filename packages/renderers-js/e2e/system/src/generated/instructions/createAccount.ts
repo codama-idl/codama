@@ -7,21 +7,12 @@
  */
 
 import {
-  Address,
   BASE_ACCOUNT_SIZE,
-  Codec,
-  Decoder,
-  Encoder,
-  IAccountMeta,
-  IAccountSignerMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-  TransactionSigner,
-  WritableSignerAccount,
   combineCodec,
   getAddressDecoder,
   getAddressEncoder,
+  getLamportsDecoder,
+  getLamportsEncoder,
   getStructDecoder,
   getStructEncoder,
   getU32Decoder,
@@ -29,12 +20,24 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type Address,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
+  type LamportsUnsafeBeyond2Pow53Minus1,
+  type TransactionSigner,
+  type WritableSignerAccount,
 } from '@solana/web3.js';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import {
-  IInstructionWithByteDelta,
-  ResolvedAccount,
   getAccountMetaFactory,
+  type IInstructionWithByteDelta,
+  type ResolvedAccount,
 } from '../shared';
 
 export type CreateAccountInstruction<
@@ -60,13 +63,13 @@ export type CreateAccountInstruction<
 
 export type CreateAccountInstructionData = {
   discriminator: number;
-  lamports: bigint;
+  lamports: LamportsUnsafeBeyond2Pow53Minus1;
   space: bigint;
   programAddress: Address;
 };
 
 export type CreateAccountInstructionDataArgs = {
-  lamports: number | bigint;
+  lamports: LamportsUnsafeBeyond2Pow53Minus1;
   space: number | bigint;
   programAddress: Address;
 };
@@ -75,7 +78,7 @@ export function getCreateAccountInstructionDataEncoder(): Encoder<CreateAccountI
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
-      ['lamports', getU64Encoder()],
+      ['lamports', getLamportsEncoder(getU64Encoder())],
       ['space', getU64Encoder()],
       ['programAddress', getAddressEncoder()],
     ]),
@@ -86,7 +89,7 @@ export function getCreateAccountInstructionDataEncoder(): Encoder<CreateAccountI
 export function getCreateAccountInstructionDataDecoder(): Decoder<CreateAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
-    ['lamports', getU64Decoder()],
+    ['lamports', getLamportsDecoder(getU64Decoder())],
     ['space', getU64Decoder()],
     ['programAddress', getAddressDecoder()],
   ]);

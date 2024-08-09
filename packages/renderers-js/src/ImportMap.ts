@@ -10,8 +10,11 @@ const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaCodecsDataStructures: '@solana/web3.js',
     solanaCodecsNumbers: '@solana/web3.js',
     solanaCodecsStrings: '@solana/web3.js',
+    solanaErrors: '@solana/web3.js',
     solanaInstructions: '@solana/web3.js',
     solanaOptions: '@solana/web3.js',
+    solanaPrograms: '@solana/web3.js',
+    solanaRpcTypes: '@solana/web3.js',
     solanaSigners: '@solana/web3.js',
 };
 
@@ -22,8 +25,11 @@ const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaCodecsDataStructures: '@solana/codecs',
     solanaCodecsNumbers: '@solana/codecs',
     solanaCodecsStrings: '@solana/codecs',
+    solanaErrors: '@solana/errors',
     solanaInstructions: '@solana/instructions',
     solanaOptions: '@solana/codecs',
+    solanaPrograms: '@solana/programs',
+    solanaRpcTypes: '@solana/rpc-types',
     solanaSigners: '@solana/signers',
 };
 
@@ -135,7 +141,18 @@ export class ImportMap {
                 return a.localeCompare(b);
             })
             .map(([module, imports]) => {
-                const joinedImports = [...imports].sort().join(', ');
+                const joinedImports = [...imports]
+                    .sort()
+                    .filter(i => {
+                        // import of a type can either be '<Type>' or 'type <Type>', so
+                        // we filter out 'type <Type>' variation if there is a '<Type>'
+                        const name = i.split(' ');
+                        if (name.length > 1) {
+                            return !imports.has(name[1]);
+                        }
+                        return true;
+                    })
+                    .join(', ');
                 return `import { ${joinedImports} } from '${module}';`;
             })
             .join('\n');

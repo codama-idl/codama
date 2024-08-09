@@ -366,15 +366,19 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 ...ctx,
                                 imports: new ImportMap()
                                     .add('solanaAddresses', [
-                                        'Address',
+                                        'type Address',
                                         'isProgramDerivedAddress',
-                                        'ProgramDerivedAddress',
+                                        'type ProgramDerivedAddress',
                                     ])
-                                    .add('solanaInstructions', ['AccountRole', 'IAccountMeta', 'upgradeRoleToSigner'])
+                                    .add('solanaInstructions', [
+                                        'AccountRole',
+                                        'type IAccountMeta',
+                                        'upgradeRoleToSigner',
+                                    ])
                                     .add('solanaSigners', [
-                                        'IAccountSignerMeta',
+                                        'type IAccountSignerMeta',
                                         'isTransactionSigner',
-                                        'TransactionSigner',
+                                        'type TransactionSigner',
                                     ])
                                     .addAlias('solanaSigners', 'isTransactionSigner', 'web3JsIsTransactionSigner')
                                     .toString(dependencyMap, useGranularImports),
@@ -402,7 +406,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     return map
                         .add('index.ts', render('rootIndex.njk', ctx))
-                        .add('global.d.ts', render('globalTypesPage.njk', ctx))
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),

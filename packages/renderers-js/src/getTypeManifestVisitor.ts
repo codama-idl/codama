@@ -140,8 +140,14 @@ export function getTypeManifestVisitor(input: {
                             'getBytesEncoder',
                         ),
                         isEnum: false,
-                        looseType: fragment('ReadonlyUint8Array').addImports('solanaCodecsCore', 'ReadonlyUint8Array'),
-                        strictType: fragment('ReadonlyUint8Array').addImports('solanaCodecsCore', 'ReadonlyUint8Array'),
+                        looseType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
                         value: fragment(''),
                     };
                 },
@@ -192,8 +198,8 @@ export function getTypeManifestVisitor(input: {
                         decoder: fragment(`${decoderFunction}()`).addImports(importFrom, decoderFunction),
                         encoder: fragment(`${encoderFunction}()`).addImports(importFrom, encoderFunction),
                         isEnum: false,
-                        looseType: fragment(looseName).addImports(importFrom, looseName),
-                        strictType: fragment(strictName).addImports(importFrom, strictName),
+                        looseType: fragment(looseName).addImports(importFrom, `type ${looseName}`),
+                        strictType: fragment(strictName).addImports(importFrom, `type ${strictName}`),
                         value: fragment(''),
                     };
                 },
@@ -501,10 +507,10 @@ export function getTypeManifestVisitor(input: {
 
                 visitOptionType(optionType, { self }) {
                     const childManifest = visit(optionType.item, self);
-                    childManifest.strictType.mapRender(r => `Option<${r}>`).addImports('solanaOptions', 'Option');
+                    childManifest.strictType.mapRender(r => `Option<${r}>`).addImports('solanaOptions', 'type Option');
                     childManifest.looseType
                         .mapRender(r => `OptionOrNullable<${r}>`)
-                        .addImports('solanaOptions', 'OptionOrNullable');
+                        .addImports('solanaOptions', 'type OptionOrNullable');
                     const encoderOptions: string[] = [];
                     const decoderOptions: string[] = [];
 
@@ -520,8 +526,8 @@ export function getTypeManifestVisitor(input: {
 
                     // Fixed option.
                     if (optionType.fixed) {
-                        encoderOptions.push(`fixed: true`);
-                        decoderOptions.push(`fixed: true`);
+                        encoderOptions.push(`noneValue: "zeroes"`);
+                        decoderOptions.push(`noneValue: "zeroes"`);
                     }
 
                     const encoderOptionsAsString =
@@ -608,7 +614,7 @@ export function getTypeManifestVisitor(input: {
                 },
 
                 visitPublicKeyType() {
-                    const imports = new ImportMap().add('solanaAddresses', 'Address');
+                    const imports = new ImportMap().add('solanaAddresses', 'type Address');
                     return {
                         defaultValues: fragment(''),
                         decoder: fragment('getAddressDecoder()').addImports('solanaAddresses', 'getAddressDecoder'),
@@ -624,6 +630,28 @@ export function getTypeManifestVisitor(input: {
                     const manifest = typeManifest();
                     manifest.value.setRender(`address("${node.publicKey}")`).addImports('solanaAddresses', 'address');
                     return manifest;
+                },
+
+                visitRemainderOptionType(node, { self }) {
+                    const childManifest = visit(node.item, self);
+                    childManifest.strictType.mapRender(r => `Option<${r}>`).addImports('solanaOptions', 'type Option');
+                    childManifest.looseType
+                        .mapRender(r => `OptionOrNullable<${r}>`)
+                        .addImports('solanaOptions', 'type OptionOrNullable');
+                    const encoderOptions: string[] = ['prefix: null'];
+                    const decoderOptions: string[] = ['prefix: null'];
+
+                    const encoderOptionsAsString =
+                        encoderOptions.length > 0 ? `, { ${encoderOptions.join(', ')} }` : '';
+                    const decoderOptionsAsString =
+                        decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
+                    childManifest.encoder
+                        .mapRender(r => `getOptionEncoder(${r + encoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionEncoder');
+                    childManifest.decoder
+                        .mapRender(r => `getOptionDecoder(${r + decoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionDecoder');
+                    return childManifest;
                 },
 
                 visitSentinelType(node, { self }) {
@@ -681,8 +709,26 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
 
-                visitSolAmountType(solAmountType, { self }) {
-                    return visit(solAmountType.number, self);
+                visitSolAmountType({ number }, { self }) {
+                    const numberManifest = visit(number, self);
+
+                    const lamportsType = 'LamportsUnsafeBeyond2Pow53Minus1';
+                    const lamportsImport = new ImportMap().add(
+                        'solanaRpcTypes',
+                        'type LamportsUnsafeBeyond2Pow53Minus1',
+                    );
+
+                    return {
+                        ...numberManifest,
+                        decoder: numberManifest.decoder
+                            .mapRender(r => `getLamportsDecoder(${r})`)
+                            .addImports('solanaRpcTypes', 'getLamportsDecoder'),
+                        encoder: numberManifest.encoder
+                            .mapRender(r => `getLamportsEncoder(${r})`)
+                            .addImports('solanaRpcTypes', 'getLamportsEncoder'),
+                        looseType: fragment(lamportsType, lamportsImport),
+                        strictType: fragment(lamportsType, lamportsImport),
+                    };
                 },
 
                 visitSomeValue(node, { self }) {
@@ -839,20 +885,23 @@ export function getTypeManifestVisitor(input: {
 
                 visitZeroableOptionType(node, { self }) {
                     const childManifest = visit(node.item, self);
-                    childManifest.strictType.mapRender(r => `Option<${r}>`).addImports('solanaOptions', 'Option');
+                    childManifest.strictType.mapRender(r => `Option<${r}>`).addImports('solanaOptions', 'type Option');
                     childManifest.looseType
                         .mapRender(r => `OptionOrNullable<${r}>`)
-                        .addImports('solanaOptions', 'OptionOrNullable');
-                    const encoderOptions: string[] = [];
-                    const decoderOptions: string[] = [];
+                        .addImports('solanaOptions', 'type OptionOrNullable');
+                    const encoderOptions: string[] = ['prefix: null'];
+                    const decoderOptions: string[] = ['prefix: null'];
 
                     // Zero-value option.
                     if (node.zeroValue) {
                         const zeroValueManifest = visit(node.zeroValue, self);
                         childManifest.encoder.mergeImportsWith(zeroValueManifest.value);
                         childManifest.decoder.mergeImportsWith(zeroValueManifest.value);
-                        encoderOptions.push(`zeroValue: ${zeroValueManifest.value.render}`);
-                        decoderOptions.push(`zeroValue: ${zeroValueManifest.value.render}`);
+                        encoderOptions.push(`noneValue: ${zeroValueManifest.value.render}`);
+                        decoderOptions.push(`noneValue: ${zeroValueManifest.value.render}`);
+                    } else {
+                        encoderOptions.push(`noneValue: "zeroes"`);
+                        decoderOptions.push(`noneValue: "zeroes"`);
                     }
 
                     const encoderOptionsAsString =
@@ -860,11 +909,11 @@ export function getTypeManifestVisitor(input: {
                     const decoderOptionsAsString =
                         decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
                     childManifest.encoder
-                        .mapRender(r => `getZeroableOptionEncoder(${r + encoderOptionsAsString})`)
-                        .addImports('solanaOptions', 'getZeroableOptionEncoder');
+                        .mapRender(r => `getOptionEncoder(${r + encoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionEncoder');
                     childManifest.decoder
-                        .mapRender(r => `getZeroableOptionDecoder(${r + decoderOptionsAsString})`)
-                        .addImports('solanaOptions', 'getZeroableOptionDecoder');
+                        .mapRender(r => `getOptionDecoder(${r + decoderOptionsAsString})`)
+                        .addImports('solanaOptions', 'getOptionDecoder');
                     return childManifest;
                 },
             }),

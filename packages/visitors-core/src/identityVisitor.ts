@@ -44,6 +44,7 @@ import {
     preOffsetTypeNode,
     programNode,
     REGISTERED_NODE_KINDS,
+    remainderOptionTypeNode,
     removeNullAndAssertIsNodeFilter,
     resolverValueNode,
     rootNode,
@@ -295,6 +296,15 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
+    if (castedNodeKeys.includes('remainderOptionTypeNode')) {
+        visitor.visitRemainderOptionType = function visitRemainderOptionType(node) {
+            const item = visit(this)(node.item);
+            if (item === null) return null;
+            assertIsNode(item, TYPE_NODES);
+            return remainderOptionTypeNode(item);
+        };
+    }
+
     if (castedNodeKeys.includes('booleanTypeNode')) {
         visitor.visitBooleanType = function visitBooleanType(node) {
             const size = visit(this)(node.size);
@@ -517,7 +527,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitPdaValue = function visitPdaValue(node) {
             const pda = visit(this)(node.pda);
             if (pda === null) return null;
-            assertIsNode(pda, 'pdaLinkNode');
+            assertIsNode(pda, ['pdaLinkNode', 'pdaNode']);
             const seeds = node.seeds.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pdaSeedValueNode'));
             return pdaValueNode(pda, seeds);
         };

@@ -7,18 +7,6 @@
  */
 
 import {
-  Address,
-  Codec,
-  Decoder,
-  Encoder,
-  IAccountMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-  Option,
-  OptionOrNullable,
-  ReadonlyAccount,
-  WritableAccount,
   combineCodec,
   getAddressDecoder,
   getAddressEncoder,
@@ -30,9 +18,21 @@ import {
   getU8Encoder,
   none,
   transformEncoder,
+  type Address,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
+  type Option,
+  type OptionOrNullable,
+  type ReadonlyAccount,
+  type WritableAccount,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
-import { ResolvedAccount, getAccountMetaFactory } from '../shared';
+import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export type InitializeMintInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,

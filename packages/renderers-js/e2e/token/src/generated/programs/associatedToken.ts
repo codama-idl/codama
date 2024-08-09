@@ -6,11 +6,16 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { Address, containsBytes, getU8Encoder } from '@solana/web3.js';
 import {
-  ParsedCreateAssociatedTokenIdempotentInstruction,
-  ParsedCreateAssociatedTokenInstruction,
-  ParsedRecoverNestedAssociatedTokenInstruction,
+  containsBytes,
+  getU8Encoder,
+  type Address,
+  type ReadonlyUint8Array,
+} from '@solana/web3.js';
+import {
+  type ParsedCreateAssociatedTokenIdempotentInstruction,
+  type ParsedCreateAssociatedTokenInstruction,
+  type ParsedRecoverNestedAssociatedTokenInstruction,
 } from '../instructions';
 
 export const ASSOCIATED_TOKEN_PROGRAM_ADDRESS =
@@ -23,10 +28,9 @@ export enum AssociatedTokenInstruction {
 }
 
 export function identifyAssociatedTokenInstruction(
-  instruction: { data: Uint8Array } | Uint8Array
+  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): AssociatedTokenInstruction {
-  const data =
-    instruction instanceof Uint8Array ? instruction : instruction.data;
+  const data = 'data' in instruction ? instruction.data : instruction;
   if (containsBytes(data, getU8Encoder().encode(0), 0)) {
     return AssociatedTokenInstruction.CreateAssociatedToken;
   }

@@ -7,18 +7,6 @@
  */
 
 import {
-  Account,
-  Address,
-  Codec,
-  Decoder,
-  EncodedAccount,
-  Encoder,
-  FetchAccountConfig,
-  FetchAccountsConfig,
-  MaybeAccount,
-  MaybeEncodedAccount,
-  Option,
-  OptionOrNullable,
   assertAccountExists,
   assertAccountsExist,
   combineCodec,
@@ -35,12 +23,24 @@ import {
   getU32Encoder,
   getU64Decoder,
   getU64Encoder,
+  type Account,
+  type Address,
+  type Codec,
+  type Decoder,
+  type EncodedAccount,
+  type Encoder,
+  type FetchAccountConfig,
+  type FetchAccountsConfig,
+  type MaybeAccount,
+  type MaybeEncodedAccount,
+  type Option,
+  type OptionOrNullable,
 } from '@solana/web3.js';
 import {
-  AccountState,
-  AccountStateArgs,
   getAccountStateDecoder,
   getAccountStateEncoder,
+  type AccountState,
+  type AccountStateArgs,
 } from '../types';
 
 export type Token = {
@@ -106,7 +106,7 @@ export function getTokenEncoder(): Encoder<TokenArgs> {
       'delegate',
       getOptionEncoder(getAddressEncoder(), {
         prefix: getU32Encoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
     ['state', getAccountStateEncoder()],
@@ -114,7 +114,7 @@ export function getTokenEncoder(): Encoder<TokenArgs> {
       'isNative',
       getOptionEncoder(getU64Encoder(), {
         prefix: getU32Encoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
     ['delegatedAmount', getU64Encoder()],
@@ -122,7 +122,7 @@ export function getTokenEncoder(): Encoder<TokenArgs> {
       'closeAuthority',
       getOptionEncoder(getAddressEncoder(), {
         prefix: getU32Encoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
   ]);
@@ -137,7 +137,7 @@ export function getTokenDecoder(): Decoder<Token> {
       'delegate',
       getOptionDecoder(getAddressDecoder(), {
         prefix: getU32Decoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
     ['state', getAccountStateDecoder()],
@@ -145,7 +145,7 @@ export function getTokenDecoder(): Decoder<Token> {
       'isNative',
       getOptionDecoder(getU64Decoder(), {
         prefix: getU32Decoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
     ['delegatedAmount', getU64Decoder()],
@@ -153,7 +153,7 @@ export function getTokenDecoder(): Decoder<Token> {
       'closeAuthority',
       getOptionDecoder(getAddressDecoder(), {
         prefix: getU32Decoder(),
-        fixed: true,
+        noneValue: 'zeroes',
       }),
     ],
   ]);

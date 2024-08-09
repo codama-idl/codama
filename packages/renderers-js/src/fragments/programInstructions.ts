@@ -75,16 +75,18 @@ function getProgramInstructionsIdentifierFunctionFragment(
         r => r.join('\n'),
     );
 
-    return discriminatorsFragment.mapRender(
-        discriminators =>
-            `export function ${programInstructionsIdentifierFunction}(` +
-            `instruction: { data: Uint8Array } | Uint8Array` +
-            `): ${programInstructionsEnum} {\n` +
-            `const data = instruction instanceof Uint8Array ? instruction : instruction.data;\n` +
-            `${discriminators}\n` +
-            `throw new Error("The provided instruction could not be identified as a ${programNode.name} instruction.")\n` +
-            `}`,
-    );
+    return discriminatorsFragment
+        .mapRender(
+            discriminators =>
+                `export function ${programInstructionsIdentifierFunction}(` +
+                `instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array` +
+                `): ${programInstructionsEnum} {\n` +
+                `const data = 'data' in instruction ? instruction.data : instruction;\n` +
+                `${discriminators}\n` +
+                `throw new Error("The provided instruction could not be identified as a ${programNode.name} instruction.")\n` +
+                `}`,
+        )
+        .addImports('solanaCodecsCore', 'type ReadonlyUint8Array');
 }
 
 function getProgramInstructionsParsedUnionTypeFragment(
@@ -108,7 +110,7 @@ function getProgramInstructionsParsedUnionTypeFragment(
 
         return fragment(
             `| { instructionType: ${programInstructionsEnum}.${instructionEnumVariant} } & ${parsedInstructionType}<TProgram>`,
-        ).addImports('generatedInstructions', parsedInstructionType);
+        ).addImports('generatedInstructions', `type ${parsedInstructionType}`);
     });
 
     return mergeFragments(

@@ -6,33 +6,38 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { Address, containsBytes, getU8Encoder } from '@solana/web3.js';
 import {
-  ParsedAmountToUiAmountInstruction,
-  ParsedApproveCheckedInstruction,
-  ParsedApproveInstruction,
-  ParsedBurnCheckedInstruction,
-  ParsedBurnInstruction,
-  ParsedCloseAccountInstruction,
-  ParsedFreezeAccountInstruction,
-  ParsedGetAccountDataSizeInstruction,
-  ParsedInitializeAccount2Instruction,
-  ParsedInitializeAccount3Instruction,
-  ParsedInitializeAccountInstruction,
-  ParsedInitializeImmutableOwnerInstruction,
-  ParsedInitializeMint2Instruction,
-  ParsedInitializeMintInstruction,
-  ParsedInitializeMultisig2Instruction,
-  ParsedInitializeMultisigInstruction,
-  ParsedMintToCheckedInstruction,
-  ParsedMintToInstruction,
-  ParsedRevokeInstruction,
-  ParsedSetAuthorityInstruction,
-  ParsedSyncNativeInstruction,
-  ParsedThawAccountInstruction,
-  ParsedTransferCheckedInstruction,
-  ParsedTransferInstruction,
-  ParsedUiAmountToAmountInstruction,
+  containsBytes,
+  getU8Encoder,
+  type Address,
+  type ReadonlyUint8Array,
+} from '@solana/web3.js';
+import {
+  type ParsedAmountToUiAmountInstruction,
+  type ParsedApproveCheckedInstruction,
+  type ParsedApproveInstruction,
+  type ParsedBurnCheckedInstruction,
+  type ParsedBurnInstruction,
+  type ParsedCloseAccountInstruction,
+  type ParsedFreezeAccountInstruction,
+  type ParsedGetAccountDataSizeInstruction,
+  type ParsedInitializeAccount2Instruction,
+  type ParsedInitializeAccount3Instruction,
+  type ParsedInitializeAccountInstruction,
+  type ParsedInitializeImmutableOwnerInstruction,
+  type ParsedInitializeMint2Instruction,
+  type ParsedInitializeMintInstruction,
+  type ParsedInitializeMultisig2Instruction,
+  type ParsedInitializeMultisigInstruction,
+  type ParsedMintToCheckedInstruction,
+  type ParsedMintToInstruction,
+  type ParsedRevokeInstruction,
+  type ParsedSetAuthorityInstruction,
+  type ParsedSyncNativeInstruction,
+  type ParsedThawAccountInstruction,
+  type ParsedTransferCheckedInstruction,
+  type ParsedTransferInstruction,
+  type ParsedUiAmountToAmountInstruction,
 } from '../instructions';
 
 export const TOKEN_PROGRAM_ADDRESS =
@@ -45,9 +50,9 @@ export enum TokenAccount {
 }
 
 export function identifyTokenAccount(
-  account: { data: Uint8Array } | Uint8Array
+  account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): TokenAccount {
-  const data = account instanceof Uint8Array ? account : account.data;
+  const data = 'data' in account ? account.data : account;
   if (data.length === 82) {
     return TokenAccount.Mint;
   }
@@ -91,10 +96,9 @@ export enum TokenInstruction {
 }
 
 export function identifyTokenInstruction(
-  instruction: { data: Uint8Array } | Uint8Array
+  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): TokenInstruction {
-  const data =
-    instruction instanceof Uint8Array ? instruction : instruction.data;
+  const data = 'data' in instruction ? instruction.data : instruction;
   if (containsBytes(data, getU8Encoder().encode(0), 0)) {
     return TokenInstruction.InitializeMint;
   }

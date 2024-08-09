@@ -6,8 +6,13 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
-import { Address, containsBytes, getU32Encoder } from '@solana/web3.js';
-import { ParsedCreateAccountInstruction } from '../instructions';
+import {
+  containsBytes,
+  getU32Encoder,
+  type Address,
+  type ReadonlyUint8Array,
+} from '@solana/web3.js';
+import { type ParsedCreateAccountInstruction } from '../instructions';
 
 export const SYSTEM_PROGRAM_ADDRESS =
   '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
@@ -17,10 +22,9 @@ export enum SystemInstruction {
 }
 
 export function identifySystemInstruction(
-  instruction: { data: Uint8Array } | Uint8Array
+  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): SystemInstruction {
-  const data =
-    instruction instanceof Uint8Array ? instruction : instruction.data;
+  const data = 'data' in instruction ? instruction.data : instruction;
   if (containsBytes(data, getU32Encoder().encode(0), 0)) {
     return SystemInstruction.CreateAccount;
   }

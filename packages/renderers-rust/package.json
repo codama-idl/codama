@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/renderers-rust",
-    "version": "0.20.7",
+    "version": "0.21.2",
     "description": "Renders Rust clients for your programs",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -46,7 +46,7 @@
         "@kinobi-so/nodes": "workspace:*",
         "@kinobi-so/renderers-core": "workspace:*",
         "@kinobi-so/visitors-core": "workspace:*",
-        "@solana/codecs-strings": "tp2",
+        "@solana/codecs-strings": "rc",
         "nunjucks": "^3.2.4"
     },
     "devDependencies": {

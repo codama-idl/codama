@@ -8,19 +8,6 @@
 
 import {
   AccountRole,
-  Address,
-  Codec,
-  Decoder,
-  Encoder,
-  IAccountMeta,
-  IAccountSignerMeta,
-  IInstruction,
-  IInstructionWithAccounts,
-  IInstructionWithData,
-  ReadonlyAccount,
-  ReadonlySignerAccount,
-  TransactionSigner,
-  WritableAccount,
   combineCodec,
   getStructDecoder,
   getStructEncoder,
@@ -29,9 +16,22 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
+  type Address,
+  type Codec,
+  type Decoder,
+  type Encoder,
+  type IAccountMeta,
+  type IAccountSignerMeta,
+  type IInstruction,
+  type IInstructionWithAccounts,
+  type IInstructionWithData,
+  type ReadonlyAccount,
+  type ReadonlySignerAccount,
+  type TransactionSigner,
+  type WritableAccount,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
-import { ResolvedAccount, getAccountMetaFactory } from '../shared';
+import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export type MintToInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,

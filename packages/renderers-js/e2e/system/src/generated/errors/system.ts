@@ -6,6 +6,14 @@
  * @see https://github.com/kinobi-so/kinobi
  */
 
+import {
+  isProgramError,
+  type Address,
+  type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
+  type SolanaError,
+} from '@solana/web3.js';
+import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
+
 /** AccountAlreadyInUse: an account with the same address already exists */
 export const SYSTEM_ERROR__ACCOUNT_ALREADY_IN_USE = 0x0; // 0
 /** ResultWithNegativeLamports: account does not have enough SOL to perform the operation */
@@ -37,7 +45,7 @@ export type SystemError =
   | typeof SYSTEM_ERROR__RESULT_WITH_NEGATIVE_LAMPORTS;
 
 let systemErrorMessages: Record<SystemError, string> | undefined;
-if (__DEV__) {
+if (process.env.NODE_ENV !== 'production') {
   systemErrorMessages = {
     [SYSTEM_ERROR__ACCOUNT_ALREADY_IN_USE]: `an account with the same address already exists`,
     [SYSTEM_ERROR__ADDRESS_WITH_SEED_MISMATCH]: `provided address does not match addressed derived from seed`,
@@ -52,9 +60,25 @@ if (__DEV__) {
 }
 
 export function getSystemErrorMessage(code: SystemError): string {
-  if (__DEV__) {
+  if (process.env.NODE_ENV !== 'production') {
     return (systemErrorMessages as Record<SystemError, string>)[code];
   }
 
-  return 'Error message not available in production bundles. Compile with `__DEV__` set to true to see more information.';
+  return 'Error message not available in production bundles.';
+}
+
+export function isSystemError<TProgramErrorCode extends SystemError>(
+  error: unknown,
+  transactionMessage: {
+    instructions: Record<number, { programAddress: Address }>;
+  },
+  code?: TProgramErrorCode
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
+  Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(
+    error,
+    transactionMessage,
+    SYSTEM_PROGRAM_ADDRESS,
+    code
+  );
 }
