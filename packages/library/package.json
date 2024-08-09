@@ -26,6 +26,7 @@
     "react-native": "./dist/index.react-native.mjs",
     "types": "./dist/types/index.d.ts",
     "type": "commonjs",
+    "bin": "./bin/cli.mjs",
     "files": [
         "./dist/types",
         "./dist/index.*"
@@ -39,8 +40,9 @@
         "code generation"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs library",
+        "build": "rimraf dist && pnpm build:src && pnpm build:cli && pnpm build:types",
+        "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs package",
+        "build:cli": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs cli",
         "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
         "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
@@ -56,7 +58,8 @@
         "@kinobi-so/errors": "workspace:*",
         "@kinobi-so/nodes": "workspace:*",
         "@kinobi-so/validators": "workspace:*",
-        "@kinobi-so/visitors": "workspace:*"
+        "@kinobi-so/visitors": "workspace:*",
+        "commander": "^12.1.0"
     },
     "license": "MIT",
     "repository": {
