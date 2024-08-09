@@ -825,9 +825,14 @@ export function getTypeManifestVisitor(input: {
                         return mergedManifest;
                     }
 
+                    const getConstantKey = (name: string) => {
+                        const structName = parentName?.strict ?? '';
+                        return nameApi.typeConstant(`${structName}_${name}`);
+                    }
+
                     const defaultValues = optionalFields
                         .map(f => {
-                            const constantKey = nameApi.typeConstant(f.name);
+                            const constantKey = getConstantKey(f.name);
                             const defaultValue = f.defaultValue as NonNullable<typeof f.defaultValue>;
                             const { render: renderedValue, imports } = visit(defaultValue, self).value;
                             mergedManifest.defaultValues.mergeImportsWith(imports);
@@ -841,7 +846,7 @@ export function getTypeManifestVisitor(input: {
                     const presetValues = optionalFields
                         .map(f => {
                             const key = camelCase(f.name);
-                            const constantKey = nameApi.typeConstant(f.name);
+                            const constantKey = getConstantKey(f.name);
                             return f.defaultValueStrategy === 'omitted'
                                 ? `${key}: ${constantKey}`
                                 : `${key}: value.${key} ?? ${constantKey}`;
