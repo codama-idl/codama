@@ -54,7 +54,8 @@ export type NameTransformerKey =
     | 'programInstructionsEnumVariant'
     | 'programInstructionsIdentifierFunction'
     | 'programInstructionsParsedUnionType'
-    | 'resolverFunction';
+    | 'resolverFunction'
+    | 'typeConstant';
 
 export type NameTransformers = Record<NameTransformerKey, NameTransformer>;
 
@@ -118,4 +119,5 @@ export const DEFAULT_NAME_TRANSFORMERS: NameTransformers = {
     programInstructionsIdentifierFunction: name => `identify${pascalCase(name)}Instruction`,
     programInstructionsParsedUnionType: name => `Parsed${pascalCase(name)}Instruction`,
     resolverFunction: name => `${camelCase(name)}`,
+    typeConstant: name => `${snakeCase(name).toUpperCase()}`,
 };

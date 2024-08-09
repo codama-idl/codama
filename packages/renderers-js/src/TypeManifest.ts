@@ -1,6 +1,7 @@
 import { Fragment, fragment, mergeFragments } from './fragments';
 
 export type TypeManifest = {
+    defaultValues: Fragment;
     decoder: Fragment;
     encoder: Fragment;
     isEnum: boolean;
@@ -11,6 +12,7 @@ export type TypeManifest = {
 
 export function typeManifest(): TypeManifest {
     return {
+        defaultValues: fragment(''),
         decoder: fragment(''),
         encoder: fragment(''),
         isEnum: false,
@@ -32,6 +34,7 @@ export function mergeManifests(
     const merge = (fragmentFn: (m: TypeManifest) => Fragment, mergeFn?: (r: string[]) => string) =>
         mergeFn ? mergeFragments(manifests.map(fragmentFn), mergeFn) : fragment('');
     return {
+        defaultValues: merge(m => m.defaultValues),
         decoder: merge(m => m.decoder, mergeCodecs),
         encoder: merge(m => m.encoder, mergeCodecs),
         isEnum: false,
