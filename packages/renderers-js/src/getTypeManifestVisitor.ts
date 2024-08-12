@@ -831,6 +831,7 @@ export function getTypeManifestVisitor(input: {
                     }
 
                     const defaultValues = optionalFields
+                        .filter(f => f.defaultValueStrategy === 'omitted')
                         .map(f => {
                             const constantKey = getConstantKey(f.name);
                             const defaultValue = f.defaultValue as NonNullable<typeof f.defaultValue>;
@@ -846,10 +847,18 @@ export function getTypeManifestVisitor(input: {
                     const presetValues = optionalFields
                         .map(f => {
                             const key = camelCase(f.name);
-                            const constantKey = getConstantKey(f.name);
+                            let value = "";
+                            if (f.defaultValueStrategy === 'omitted') {
+                                value = getConstantKey(f.name);
+                            } else {
+                                const defaultValue = f.defaultValue as NonNullable<typeof f.defaultValue>;
+                                const { render: renderedValue, imports } = visit(defaultValue, self).value;
+                                mergedManifest.defaultValues.mergeImportsWith(imports);
+                                value = renderedValue;
+                            }
                             return f.defaultValueStrategy === 'omitted'
-                                ? `${key}: ${constantKey}`
-                                : `${key}: value.${key} ?? ${constantKey}`;
+                                ? `${key}: ${value}`
+                                : `${key}: value.${key} ?? ${value}`;
                         })
                         .join(', ');
 
