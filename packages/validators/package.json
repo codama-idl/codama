@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/validators",
-    "version": "0.21.0",
+    "version": "0.21.1",
     "description": "Validator visitors for the Kinobi framework",
     "exports": {
         "types": "./dist/types/index.d.ts",
