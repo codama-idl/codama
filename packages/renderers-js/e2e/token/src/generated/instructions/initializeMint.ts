@@ -34,6 +34,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const INITIALIZE_MINT_DISCRIMINATOR = 0;
+
+export function getInitializeMintDiscriminatorBytes() {
+  return getU8Encoder().encode(INITIALIZE_MINT_DISCRIMINATOR);
+}
+
 export type InitializeMintInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountMint extends string | IAccountMeta<string> = string,
@@ -84,7 +90,7 @@ export function getInitializeMintInstructionDataEncoder(): Encoder<InitializeMin
     ]),
     (value) => ({
       ...value,
-      discriminator: 0,
+      discriminator: INITIALIZE_MINT_DISCRIMINATOR,
       freezeAuthority: value.freezeAuthority ?? none(),
     })
   );

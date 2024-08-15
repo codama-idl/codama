@@ -26,6 +26,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const UPGRADE_NONCE_ACCOUNT_DISCRIMINATOR = 12;
+
+export function getUpgradeNonceAccountDiscriminatorBytes() {
+  return getU32Encoder().encode(UPGRADE_NONCE_ACCOUNT_DISCRIMINATOR);
+}
+
 export type UpgradeNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountNonceAccount extends string | IAccountMeta<string> = string,
@@ -48,7 +54,10 @@ export type UpgradeNonceAccountInstructionDataArgs = {};
 export function getUpgradeNonceAccountInstructionDataEncoder(): Encoder<UpgradeNonceAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
-    (value) => ({ ...value, discriminator: 12 })
+    (value) => ({
+      ...value,
+      discriminator: UPGRADE_NONCE_ACCOUNT_DISCRIMINATOR,
+    })
   );
 }
 

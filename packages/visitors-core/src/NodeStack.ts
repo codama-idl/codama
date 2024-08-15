@@ -1,4 +1,4 @@
-import { isNodeFilter, Node, ProgramNode } from '@kinobi-so/nodes';
+import { GetNodeFromKind, isNodeFilter, Node, NodeKind, ProgramNode } from '@kinobi-so/nodes';
 
 export class NodeStack {
     private readonly stack: Node[];
@@ -19,8 +19,12 @@ export class NodeStack {
         return this.isEmpty() ? undefined : this.stack[this.stack.length - 1];
     }
 
+    public find<TKind extends NodeKind>(kind: TKind | TKind[]): GetNodeFromKind<TKind> | undefined {
+        return this.stack.find(isNodeFilter(kind));
+    }
+
     public getProgram(): ProgramNode | undefined {
-        return this.stack.find(isNodeFilter('programNode'));
+        return this.find('programNode');
     }
 
     public all(): readonly Node[] {

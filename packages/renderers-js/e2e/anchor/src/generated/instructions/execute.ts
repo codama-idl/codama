@@ -37,6 +37,14 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
+export const EXECUTE_DISCRIMINATOR = new Uint8Array([
+  105, 37, 101, 197, 75, 251, 102, 26,
+]);
+
+export function getExecuteDiscriminatorBytes() {
+  return fixEncoderSize(getBytesEncoder(), 8).encode(EXECUTE_DISCRIMINATOR);
+}
+
 export type ExecuteInstruction<
   TProgram extends string = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
   TAccountSourceAccount extends string | IAccountMeta<string> = string,
@@ -91,10 +99,7 @@ export function getExecuteInstructionDataEncoder(): Encoder<ExecuteInstructionDa
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['amount', getU64Encoder()],
     ]),
-    (value) => ({
-      ...value,
-      discriminator: new Uint8Array([105, 37, 101, 197, 75, 251, 102, 26]),
-    })
+    (value) => ({ ...value, discriminator: EXECUTE_DISCRIMINATOR })
   );
 }
 

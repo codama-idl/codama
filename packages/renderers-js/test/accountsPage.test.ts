@@ -1,12 +1,16 @@
 import {
     accountNode,
     booleanTypeNode,
+    constantDiscriminatorNode,
+    constantValueNodeFromBytes,
     definedTypeLinkNode,
     definedTypeNode,
     enumEmptyVariantTypeNode,
     enumTypeNode,
     enumValueNode,
     fieldDiscriminatorNode,
+    numberTypeNode,
+    numberValueNode,
     pdaLinkNode,
     pdaNode,
     programNode,
@@ -79,4 +83,65 @@ test('it renders an account with a defined type link as discriminator', async ()
 
     // Then we expect the following import list with a reference to the disciminator type.
     await renderMapContains(renderMap, 'accounts/asset.ts', ['import { Key, getKeyDecoder, getKeyEncoder }']);
+});
+
+test('it renders constants for account field discriminators', async () => {
+    // Given the following account with a field discriminator.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        defaultValue: numberValueNode(42),
+                        defaultValueStrategy: 'omitted',
+                        name: 'myDiscriminator',
+                        type: numberTypeNode('u64'),
+                    }),
+                ]),
+                discriminators: [fieldDiscriminatorNode('myDiscriminator')],
+                name: 'myAccount',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following constant and function to be rendered
+    // And we expect the field default value to use that constant.
+    await renderMapContains(renderMap, 'accounts/myAccount.ts', [
+        'export const MY_ACCOUNT_MY_DISCRIMINATOR = 42;',
+        'export function getMyAccountMyDiscriminatorBytes() { return getU64Encoder().encode(MY_ACCOUNT_MY_DISCRIMINATOR); }',
+        '(value) => ({ ...value, myDiscriminator: MY_ACCOUNT_MY_DISCRIMINATOR })',
+    ]);
+});
+
+test('it renders constants for account constant discriminators', async () => {
+    // Given the following account with two constant discriminators.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                discriminators: [
+                    constantDiscriminatorNode(constantValueNodeFromBytes('base16', '1111')),
+                    constantDiscriminatorNode(constantValueNodeFromBytes('base16', '2222'), 2),
+                ],
+                name: 'myAccount',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following constants and functions to be rendered.
+    await renderMapContains(renderMap, 'accounts/myAccount.ts', [
+        'export const MY_ACCOUNT_DISCRIMINATOR = new Uint8Array([ 17, 17 ]);',
+        'export function getMyAccountDiscriminatorBytes() { return getBytesEncoder().encode(MY_ACCOUNT_DISCRIMINATOR); }',
+        'export const MY_ACCOUNT_DISCRIMINATOR2 = new Uint8Array([ 34, 34 ]);',
+        'export function getMyAccountDiscriminator2Bytes() { return getBytesEncoder().encode(MY_ACCOUNT_DISCRIMINATOR2); }',
+    ]);
 });

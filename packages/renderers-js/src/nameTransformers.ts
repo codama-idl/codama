@@ -21,6 +21,8 @@ export type NameTransformerKey =
     | 'accountFetchMaybeFunction'
     | 'accountGetSizeFunction'
     | 'codecFunction'
+    | 'constant'
+    | 'constantFunction'
     | 'dataArgsType'
     | 'dataType'
     | 'decoderFunction'
@@ -85,6 +87,8 @@ export const DEFAULT_NAME_TRANSFORMERS: NameTransformers = {
     accountFetchMaybeFunction: name => `fetchMaybe${pascalCase(name)}`,
     accountGetSizeFunction: name => `get${pascalCase(name)}Size`,
     codecFunction: name => `get${pascalCase(name)}Codec`,
+    constant: name => snakeCase(name).toUpperCase(),
+    constantFunction: name => `get${pascalCase(name)}Bytes`,
     dataArgsType: name => `${pascalCase(name)}Args`,
     dataType: name => `${pascalCase(name)}`,
     decoderFunction: name => `get${pascalCase(name)}Decoder`,
@@ -110,7 +114,7 @@ export const DEFAULT_NAME_TRANSFORMERS: NameTransformers = {
     programAccountsIdentifierFunction: name => `identify${pascalCase(name)}Account`,
     programAddressConstant: name => `${snakeCase(name).toUpperCase()}_PROGRAM_ADDRESS`,
     programErrorConstant: name => snakeCase(name).toUpperCase(),
-    programErrorConstantPrefix: name => `${snakeCase(name)}_ERROR__`.toUpperCase(),
+    programErrorConstantPrefix: name => `${snakeCase(name).toUpperCase()}_ERROR__`,
     programErrorMessagesMap: name => `${camelCase(name)}ErrorMessages`,
     programErrorUnion: name => `${pascalCase(name)}Error`,
     programGetErrorMessageFunction: name => `get${pascalCase(name)}ErrorMessage`,

@@ -29,6 +29,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const INITIALIZE_ACCOUNT2_DISCRIMINATOR = 16;
+
+export function getInitializeAccount2DiscriminatorBytes() {
+  return getU8Encoder().encode(INITIALIZE_ACCOUNT2_DISCRIMINATOR);
+}
+
 export type InitializeAccount2Instruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountAccount extends string | IAccountMeta<string> = string,
@@ -71,7 +77,7 @@ export function getInitializeAccount2InstructionDataEncoder(): Encoder<Initializ
       ['discriminator', getU8Encoder()],
       ['owner', getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: 16 })
+    (value) => ({ ...value, discriminator: INITIALIZE_ACCOUNT2_DISCRIMINATOR })
   );
 }
 

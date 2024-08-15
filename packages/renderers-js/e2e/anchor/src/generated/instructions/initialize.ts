@@ -39,6 +39,14 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
+export const INITIALIZE_DISCRIMINATOR = new Uint8Array([
+  43, 34, 13, 49, 167, 88, 235, 235,
+]);
+
+export function getInitializeDiscriminatorBytes() {
+  return fixEncoderSize(getBytesEncoder(), 8).encode(INITIALIZE_DISCRIMINATOR);
+}
+
 export type InitializeInstruction<
   TProgram extends string = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
   TAccountExtraMetasAccount extends string | IAccountMeta<string> = string,
@@ -85,10 +93,7 @@ export type InitializeInstructionDataArgs = {};
 export function getInitializeInstructionDataEncoder(): Encoder<InitializeInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
-    (value) => ({
-      ...value,
-      discriminator: new Uint8Array([43, 34, 13, 49, 167, 88, 235, 235]),
-    })
+    (value) => ({ ...value, discriminator: INITIALIZE_DISCRIMINATOR })
   );
 }
 

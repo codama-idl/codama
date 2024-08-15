@@ -26,6 +26,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const INITIALIZE_IMMUTABLE_OWNER_DISCRIMINATOR = 22;
+
+export function getInitializeImmutableOwnerDiscriminatorBytes() {
+  return getU8Encoder().encode(INITIALIZE_IMMUTABLE_OWNER_DISCRIMINATOR);
+}
+
 export type InitializeImmutableOwnerInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountAccount extends string | IAccountMeta<string> = string,
@@ -48,7 +54,10 @@ export type InitializeImmutableOwnerInstructionDataArgs = {};
 export function getInitializeImmutableOwnerInstructionDataEncoder(): Encoder<InitializeImmutableOwnerInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: 22 })
+    (value) => ({
+      ...value,
+      discriminator: INITIALIZE_IMMUTABLE_OWNER_DISCRIMINATOR,
+    })
   );
 }
 

@@ -35,6 +35,12 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
+export const CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR = 0;
+
+export function getCreateAssociatedTokenDiscriminatorBytes() {
+  return getU8Encoder().encode(CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR);
+}
+
 export type CreateAssociatedTokenInstruction<
   TProgram extends string = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   TAccountPayer extends string | IAccountMeta<string> = string,
@@ -80,7 +86,10 @@ export type CreateAssociatedTokenInstructionDataArgs = {};
 export function getCreateAssociatedTokenInstructionDataEncoder(): Encoder<CreateAssociatedTokenInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: 0 })
+    (value) => ({
+      ...value,
+      discriminator: CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR,
+    })
   );
 }
 

@@ -35,6 +35,12 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
+export const RECOVER_NESTED_ASSOCIATED_TOKEN_DISCRIMINATOR = 2;
+
+export function getRecoverNestedAssociatedTokenDiscriminatorBytes() {
+  return getU8Encoder().encode(RECOVER_NESTED_ASSOCIATED_TOKEN_DISCRIMINATOR);
+}
+
 export type RecoverNestedAssociatedTokenInstruction<
   TProgram extends string = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   TAccountNestedAssociatedAccountAddress extends
@@ -92,7 +98,10 @@ export type RecoverNestedAssociatedTokenInstructionDataArgs = {};
 export function getRecoverNestedAssociatedTokenInstructionDataEncoder(): Encoder<RecoverNestedAssociatedTokenInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: 2 })
+    (value) => ({
+      ...value,
+      discriminator: RECOVER_NESTED_ASSOCIATED_TOKEN_DISCRIMINATOR,
+    })
   );
 }
 

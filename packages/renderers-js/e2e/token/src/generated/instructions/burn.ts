@@ -33,6 +33,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const BURN_DISCRIMINATOR = 8;
+
+export function getBurnDiscriminatorBytes() {
+  return getU8Encoder().encode(BURN_DISCRIMINATOR);
+}
+
 export type BurnInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountAccount extends string | IAccountMeta<string> = string,
@@ -70,7 +76,7 @@ export function getBurnInstructionDataEncoder(): Encoder<BurnInstructionDataArgs
       ['discriminator', getU8Encoder()],
       ['amount', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 8 })
+    (value) => ({ ...value, discriminator: BURN_DISCRIMINATOR })
   );
 }
 

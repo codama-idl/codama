@@ -33,6 +33,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const BURN_CHECKED_DISCRIMINATOR = 15;
+
+export function getBurnCheckedDiscriminatorBytes() {
+  return getU8Encoder().encode(BURN_CHECKED_DISCRIMINATOR);
+}
+
 export type BurnCheckedInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountAccount extends string | IAccountMeta<string> = string,
@@ -78,7 +84,7 @@ export function getBurnCheckedInstructionDataEncoder(): Encoder<BurnCheckedInstr
       ['amount', getU64Encoder()],
       ['decimals', getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 15 })
+    (value) => ({ ...value, discriminator: BURN_CHECKED_DISCRIMINATOR })
   );
 }
 

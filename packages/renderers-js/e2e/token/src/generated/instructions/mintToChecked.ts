@@ -33,6 +33,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const MINT_TO_CHECKED_DISCRIMINATOR = 14;
+
+export function getMintToCheckedDiscriminatorBytes() {
+  return getU8Encoder().encode(MINT_TO_CHECKED_DISCRIMINATOR);
+}
+
 export type MintToCheckedInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountMint extends string | IAccountMeta<string> = string,
@@ -78,7 +84,7 @@ export function getMintToCheckedInstructionDataEncoder(): Encoder<MintToCheckedI
       ['amount', getU64Encoder()],
       ['decimals', getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 14 })
+    (value) => ({ ...value, discriminator: MINT_TO_CHECKED_DISCRIMINATOR })
   );
 }
 

@@ -31,6 +31,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const CLOSE_ACCOUNT_DISCRIMINATOR = 9;
+
+export function getCloseAccountDiscriminatorBytes() {
+  return getU8Encoder().encode(CLOSE_ACCOUNT_DISCRIMINATOR);
+}
+
 export type CloseAccountInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountAccount extends string | IAccountMeta<string> = string,
@@ -61,7 +67,7 @@ export type CloseAccountInstructionDataArgs = {};
 export function getCloseAccountInstructionDataEncoder(): Encoder<CloseAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: 9 })
+    (value) => ({ ...value, discriminator: CLOSE_ACCOUNT_DISCRIMINATOR })
   );
 }
 

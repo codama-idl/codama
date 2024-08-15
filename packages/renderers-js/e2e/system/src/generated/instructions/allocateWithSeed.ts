@@ -37,6 +37,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const ALLOCATE_WITH_SEED_DISCRIMINATOR = 9;
+
+export function getAllocateWithSeedDiscriminatorBytes() {
+  return getU32Encoder().encode(ALLOCATE_WITH_SEED_DISCRIMINATOR);
+}
+
 export type AllocateWithSeedInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountNewAccount extends string | IAccountMeta<string> = string,
@@ -81,7 +87,7 @@ export function getAllocateWithSeedInstructionDataEncoder(): Encoder<AllocateWit
       ['space', getU64Encoder()],
       ['programAddress', getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: 9 })
+    (value) => ({ ...value, discriminator: ALLOCATE_WITH_SEED_DISCRIMINATOR })
   );
 }
 

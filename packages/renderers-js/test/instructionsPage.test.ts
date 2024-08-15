@@ -1,11 +1,15 @@
 import {
     accountValueNode,
     argumentValueNode,
+    constantDiscriminatorNode,
     constantPdaSeedNodeFromString,
+    constantValueNodeFromBytes,
+    fieldDiscriminatorNode,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
+    numberValueNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
@@ -291,4 +295,65 @@ test('it renders instruction accounts with inlined PDAs from another program as 
     renderMapContainsImports(renderMap, 'instructions/increment.ts', {
         '@solana/web3.js': ['Address', 'getProgramDerivedAddress'],
     });
+});
+
+test('it renders constants for instruction field discriminators', async () => {
+    // Given the following instruction with a field discriminator.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                arguments: [
+                    instructionArgumentNode({
+                        defaultValue: numberValueNode(42),
+                        defaultValueStrategy: 'omitted',
+                        name: 'myDiscriminator',
+                        type: numberTypeNode('u64'),
+                    }),
+                ],
+                discriminators: [fieldDiscriminatorNode('myDiscriminator')],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following constant and function to be rendered
+    // And we expect the field default value to use that constant.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', [
+        'export const MY_INSTRUCTION_MY_DISCRIMINATOR = 42;',
+        'export function getMyInstructionMyDiscriminatorBytes() { return getU64Encoder().encode(MY_INSTRUCTION_MY_DISCRIMINATOR); }',
+        '(value) => ({ ...value, myDiscriminator: MY_INSTRUCTION_MY_DISCRIMINATOR })',
+    ]);
+});
+
+test('it renders constants for instruction constant discriminators', async () => {
+    // Given the following instruction with two constant discriminators.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                discriminators: [
+                    constantDiscriminatorNode(constantValueNodeFromBytes('base16', '1111')),
+                    constantDiscriminatorNode(constantValueNodeFromBytes('base16', '2222'), 2),
+                ],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following constants and functions to be rendered.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', [
+        'export const MY_INSTRUCTION_DISCRIMINATOR = new Uint8Array([ 17, 17 ]);',
+        'export function getMyInstructionDiscriminatorBytes() { return getBytesEncoder().encode(MY_INSTRUCTION_DISCRIMINATOR); }',
+        'export const MY_INSTRUCTION_DISCRIMINATOR2 = new Uint8Array([ 34, 34 ]);',
+        'export function getMyInstructionDiscriminator2Bytes() { return getBytesEncoder().encode(MY_INSTRUCTION_DISCRIMINATOR2); }',
+    ]);
 });

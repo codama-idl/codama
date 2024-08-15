@@ -3,6 +3,7 @@ import {
     CamelCaseString,
     CountNode,
     isNode,
+    isNodeFilter,
     isScalarEnum,
     REGISTERED_TYPE_NODE_KINDS,
     REGISTERED_VALUE_NODE_KINDS,
@@ -12,7 +13,16 @@ import {
     structTypeNodeFromInstructionArgumentNodes,
     TypeNode,
 } from '@kinobi-so/nodes';
-import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@kinobi-so/visitors-core';
+import {
+    extendVisitor,
+    LinkableDictionary,
+    NodeStack,
+    pipe,
+    recordNodeStackVisitor,
+    staticVisitor,
+    visit,
+    Visitor,
+} from '@kinobi-so/visitors-core';
 
 import { Fragment, fragment, mergeFragments } from './fragments';
 import { ImportMap } from './ImportMap';
@@ -31,6 +41,7 @@ export function getTypeManifestVisitor(input: {
     parentName?: { loose: string; strict: string };
 }) {
     const { nameApi, linkables, nonScalarEnums, customAccountData, customInstructionData } = input;
+    const stack = new NodeStack();
     let parentName = input.parentName ?? null;
 
     return pipe(
@@ -816,9 +827,26 @@ export function getTypeManifestVisitor(input: {
                         return mergedManifest;
                     }
 
+                    // Check if we are inside an instruction or account to use discriminator constants when available.
+                    const instructionNode = stack.find('instructionNode');
+                    const accountNode = stack.find('accountNode');
+                    const discriminatorPrefix = instructionNode ? instructionNode.name : accountNode?.name;
+                    const discriminators =
+                        (instructionNode ? instructionNode.discriminators : accountNode?.discriminators) ?? [];
+                    const fieldDiscriminators = discriminators.filter(isNodeFilter('fieldDiscriminatorNode'));
+
                     const defaultValues = optionalFields
                         .map(f => {
                             const key = camelCase(f.name);
+
+                            // If the field has an associated discriminator node, use the constant value instead.
+                            if (fieldDiscriminators.some(d => d.name === f.name)) {
+                                const constantName = nameApi.constant(camelCase(`${discriminatorPrefix}_${f.name}`));
+                                return f.defaultValueStrategy === 'omitted'
+                                    ? `${key}: ${constantName}`
+                                    : `${key}: value.${key} ?? ${constantName}`;
+                            }
+
                             const defaultValue = f.defaultValue as NonNullable<typeof f.defaultValue>;
                             const { render: renderedValue, imports } = visit(defaultValue, self).value;
                             mergedManifest.encoder.mergeImportsWith(imports);
@@ -896,6 +924,7 @@ export function getTypeManifestVisitor(input: {
                     return childManifest;
                 },
             }),
+        visitor => recordNodeStackVisitor(visitor, stack),
     );
 }
 

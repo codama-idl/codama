@@ -33,6 +33,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const TRANSFER_DISCRIMINATOR = 3;
+
+export function getTransferDiscriminatorBytes() {
+  return getU8Encoder().encode(TRANSFER_DISCRIMINATOR);
+}
+
 export type TransferInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountSource extends string | IAccountMeta<string> = string,
@@ -73,7 +79,7 @@ export function getTransferInstructionDataEncoder(): Encoder<TransferInstruction
       ['discriminator', getU8Encoder()],
       ['amount', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 3 })
+    (value) => ({ ...value, discriminator: TRANSFER_DISCRIMINATOR })
   );
 }
 

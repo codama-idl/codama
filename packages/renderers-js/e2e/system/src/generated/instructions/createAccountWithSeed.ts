@@ -38,6 +38,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const CREATE_ACCOUNT_WITH_SEED_DISCRIMINATOR = 3;
+
+export function getCreateAccountWithSeedDiscriminatorBytes() {
+  return getU32Encoder().encode(CREATE_ACCOUNT_WITH_SEED_DISCRIMINATOR);
+}
+
 export type CreateAccountWithSeedInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountPayer extends string | IAccountMeta<string> = string,
@@ -90,7 +96,10 @@ export function getCreateAccountWithSeedInstructionDataEncoder(): Encoder<Create
       ['space', getU64Encoder()],
       ['programAddress', getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: 3 })
+    (value) => ({
+      ...value,
+      discriminator: CREATE_ACCOUNT_WITH_SEED_DISCRIMINATOR,
+    })
   );
 }
 

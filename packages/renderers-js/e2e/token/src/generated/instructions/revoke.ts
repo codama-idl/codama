@@ -31,6 +31,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const REVOKE_DISCRIMINATOR = 5;
+
+export function getRevokeDiscriminatorBytes() {
+  return getU8Encoder().encode(REVOKE_DISCRIMINATOR);
+}
+
 export type RevokeInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountSource extends string | IAccountMeta<string> = string,
@@ -57,7 +63,7 @@ export type RevokeInstructionDataArgs = {};
 export function getRevokeInstructionDataEncoder(): Encoder<RevokeInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: 5 })
+    (value) => ({ ...value, discriminator: REVOKE_DISCRIMINATOR })
   );
 }
 
