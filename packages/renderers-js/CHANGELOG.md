@@ -1,5 +1,18 @@
 # @kinobi-so/renderers-js
 
+## 0.21.4
+
+### Patch Changes
+
+-   [#168](https://github.com/kinobi-so/kinobi/pull/168) [`2e8ce36`](https://github.com/kinobi-so/kinobi/commit/2e8ce36af43a853673b0805c86a62672869de487) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Export discriminator constants for instructions and accounts
+
+-   Updated dependencies [[`2e8ce36`](https://github.com/kinobi-so/kinobi/commit/2e8ce36af43a853673b0805c86a62672869de487)]:
+    -   @kinobi-so/visitors-core@0.21.1
+    -   @kinobi-so/renderers-core@0.20.8
+    -   @kinobi-so/nodes-from-anchor@0.20.10
+    -   @kinobi-so/errors@0.21.1
+    -   @kinobi-so/nodes@0.21.1
+
 ## 0.21.3
 
 ### Patch Changes
