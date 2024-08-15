@@ -40,6 +40,12 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
+export const CREATE_ACCOUNT_DISCRIMINATOR = 0;
+
+export function getCreateAccountDiscriminatorBytes() {
+  return getU32Encoder().encode(CREATE_ACCOUNT_DISCRIMINATOR);
+}
+
 export type CreateAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountPayer extends string | IAccountMeta<string> = string,
@@ -82,7 +88,7 @@ export function getCreateAccountInstructionDataEncoder(): Encoder<CreateAccountI
       ['space', getU64Encoder()],
       ['programAddress', getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: 0 })
+    (value) => ({ ...value, discriminator: CREATE_ACCOUNT_DISCRIMINATOR })
   );
 }
 

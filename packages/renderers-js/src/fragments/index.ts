@@ -8,6 +8,7 @@ export * from './instructionAccountMeta';
 export * from './instructionAccountTypeParam';
 export * from './instructionByteDelta';
 export * from './instructionData';
+export * from './discriminatorConstants';
 export * from './instructionExtraArgs';
 export * from './instructionFunction';
 export * from './instructionInputDefault';

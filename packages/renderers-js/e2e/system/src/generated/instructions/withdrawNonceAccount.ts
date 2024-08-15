@@ -32,6 +32,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR = 5;
+
+export function getWithdrawNonceAccountDiscriminatorBytes() {
+  return getU32Encoder().encode(WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR);
+}
+
 export type WithdrawNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountNonceAccount extends string | IAccountMeta<string> = string,
@@ -83,7 +89,10 @@ export function getWithdrawNonceAccountInstructionDataEncoder(): Encoder<Withdra
       ['discriminator', getU32Encoder()],
       ['withdrawAmount', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 5 })
+    (value) => ({
+      ...value,
+      discriminator: WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR,
+    })
   );
 }
 

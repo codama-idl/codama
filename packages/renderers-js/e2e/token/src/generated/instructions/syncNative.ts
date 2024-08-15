@@ -26,6 +26,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const SYNC_NATIVE_DISCRIMINATOR = 17;
+
+export function getSyncNativeDiscriminatorBytes() {
+  return getU8Encoder().encode(SYNC_NATIVE_DISCRIMINATOR);
+}
+
 export type SyncNativeInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountAccount extends string | IAccountMeta<string> = string,
@@ -48,7 +54,7 @@ export type SyncNativeInstructionDataArgs = {};
 export function getSyncNativeInstructionDataEncoder(): Encoder<SyncNativeInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: 17 })
+    (value) => ({ ...value, discriminator: SYNC_NATIVE_DISCRIMINATOR })
   );
 }
 

@@ -31,6 +31,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const TRANSFER_SOL_DISCRIMINATOR = 2;
+
+export function getTransferSolDiscriminatorBytes() {
+  return getU32Encoder().encode(TRANSFER_SOL_DISCRIMINATOR);
+}
+
 export type TransferSolInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountSource extends string | IAccountMeta<string> = string,
@@ -64,7 +70,7 @@ export function getTransferSolInstructionDataEncoder(): Encoder<TransferSolInstr
       ['discriminator', getU32Encoder()],
       ['amount', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 2 })
+    (value) => ({ ...value, discriminator: TRANSFER_SOL_DISCRIMINATOR })
   );
 }
 

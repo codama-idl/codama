@@ -28,6 +28,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const UI_AMOUNT_TO_AMOUNT_DISCRIMINATOR = 24;
+
+export function getUiAmountToAmountDiscriminatorBytes() {
+  return getU8Encoder().encode(UI_AMOUNT_TO_AMOUNT_DISCRIMINATOR);
+}
+
 export type UiAmountToAmountInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountMint extends string | IAccountMeta<string> = string,
@@ -60,7 +66,7 @@ export function getUiAmountToAmountInstructionDataEncoder(): Encoder<UiAmountToA
       ['discriminator', getU8Encoder()],
       ['uiAmount', getUtf8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 24 })
+    (value) => ({ ...value, discriminator: UI_AMOUNT_TO_AMOUNT_DISCRIMINATOR })
   );
 }
 

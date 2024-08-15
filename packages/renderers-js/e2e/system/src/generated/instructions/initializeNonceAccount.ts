@@ -29,6 +29,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const INITIALIZE_NONCE_ACCOUNT_DISCRIMINATOR = 6;
+
+export function getInitializeNonceAccountDiscriminatorBytes() {
+  return getU32Encoder().encode(INITIALIZE_NONCE_ACCOUNT_DISCRIMINATOR);
+}
+
 export type InitializeNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountNonceAccount extends string | IAccountMeta<string> = string,
@@ -71,7 +77,10 @@ export function getInitializeNonceAccountInstructionDataEncoder(): Encoder<Initi
       ['discriminator', getU32Encoder()],
       ['nonceAuthority', getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: 6 })
+    (value) => ({
+      ...value,
+      discriminator: INITIALIZE_NONCE_ACCOUNT_DISCRIMINATOR,
+    })
   );
 }
 

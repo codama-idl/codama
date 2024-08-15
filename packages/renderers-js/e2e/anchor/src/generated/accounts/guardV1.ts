@@ -57,6 +57,14 @@ import {
   type TransferAmountRuleArgs,
 } from '../types';
 
+export const GUARD_V1_DISCRIMINATOR = new Uint8Array([
+  185, 149, 156, 78, 245, 108, 172, 68,
+]);
+
+export function getGuardV1DiscriminatorBytes() {
+  return fixEncoderSize(getBytesEncoder(), 8).encode(GUARD_V1_DISCRIMINATOR);
+}
+
 export type GuardV1 = {
   discriminator: ReadonlyUint8Array;
   /** Mint token representing the guard, do not confuse with the mint of the token being transferred. */
@@ -97,10 +105,7 @@ export function getGuardV1Encoder(): Encoder<GuardV1Args> {
         getArrayEncoder(getMetadataAdditionalFieldRuleEncoder()),
       ],
     ]),
-    (value) => ({
-      ...value,
-      discriminator: new Uint8Array([185, 149, 156, 78, 245, 108, 172, 68]),
-    })
+    (value) => ({ ...value, discriminator: GUARD_V1_DISCRIMINATOR })
   );
 }
 

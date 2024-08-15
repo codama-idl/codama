@@ -59,6 +59,16 @@ import {
   type TransferAmountRuleArgs,
 } from '../types';
 
+export const UPDATE_GUARD_DISCRIMINATOR = new Uint8Array([
+  51, 38, 175, 180, 25, 249, 39, 24,
+]);
+
+export function getUpdateGuardDiscriminatorBytes() {
+  return fixEncoderSize(getBytesEncoder(), 8).encode(
+    UPDATE_GUARD_DISCRIMINATOR
+  );
+}
+
 export type UpdateGuardInstruction<
   TProgram extends string = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
   TAccountGuard extends string | IAccountMeta<string> = string,
@@ -123,10 +133,7 @@ export function getUpdateGuardInstructionDataEncoder(): Encoder<UpdateGuardInstr
         getArrayEncoder(getMetadataAdditionalFieldRuleEncoder()),
       ],
     ]),
-    (value) => ({
-      ...value,
-      discriminator: new Uint8Array([51, 38, 175, 180, 25, 249, 39, 24]),
-    })
+    (value) => ({ ...value, discriminator: UPDATE_GUARD_DISCRIMINATOR })
   );
 }
 

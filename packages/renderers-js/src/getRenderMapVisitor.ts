@@ -12,6 +12,7 @@ import {
     ImportFrom,
     InstructionNode,
     ProgramNode,
+    resolveNestedTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
 } from '@kinobi-so/nodes';
 import { RenderMap } from '@kinobi-so/renderers-core';
@@ -31,6 +32,7 @@ import {
     getAccountPdaHelpersFragment,
     getAccountSizeHelpersFragment,
     getAccountTypeFragment,
+    getDiscriminatorConstantsFragment,
     getInstructionDataFragment,
     getInstructionExtraArgsFragment,
     getInstructionFunctionFragment,
@@ -142,11 +144,19 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         typeManifest: visit(node, typeManifestVisitor),
                     };
 
+                    const fields = resolveNestedTypeNode(node.data).fields;
+                    const accountDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
+                        ...scope,
+                        discriminatorNodes: node.discriminators ?? [],
+                        fields,
+                        prefix: node.name,
+                    });
                     const accountTypeFragment = getAccountTypeFragment(scope);
                     const accountFetchHelpersFragment = getAccountFetchHelpersFragment(scope);
                     const accountSizeHelpersFragment = getAccountSizeHelpersFragment(scope);
                     const accountPdaHelpersFragment = getAccountPdaHelpersFragment(scope);
                     const imports = new ImportMap().mergeWith(
+                        accountDiscriminatorConstantsFragment,
                         accountTypeFragment,
                         accountFetchHelpersFragment,
                         accountSizeHelpersFragment,
@@ -156,6 +166,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     return new RenderMap().add(
                         `accounts/${camelCase(node.name)}.ts`,
                         render('accountsPage.njk', {
+                            accountDiscriminatorConstantsFragment,
                             accountFetchHelpersFragment,
                             accountPdaHelpersFragment,
                             accountSizeHelpersFragment,
@@ -225,6 +236,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
 
                     // Fragments.
+                    const instructionDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
+                        ...scope,
+                        discriminatorNodes: node.discriminators ?? [],
+                        fields: node.arguments,
+                        prefix: node.name,
+                    });
                     const instructionTypeFragment = getInstructionTypeFragment(scope);
                     const instructionDataFragment = getInstructionDataFragment(scope);
                     const instructionExtraArgsFragment = getInstructionExtraArgsFragment(scope);
@@ -240,6 +257,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     // Imports and interfaces.
                     const imports = new ImportMap().mergeWith(
+                        instructionDiscriminatorConstantsFragment,
                         instructionTypeFragment,
                         instructionDataFragment,
                         instructionExtraArgsFragment,
@@ -254,6 +272,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             imports: imports.toString(dependencyMap, useGranularImports),
                             instruction: node,
                             instructionDataFragment,
+                            instructionDiscriminatorConstantsFragment,
                             instructionExtraArgsFragment,
                             instructionFunctionAsyncFragment,
                             instructionFunctionSyncFragment,

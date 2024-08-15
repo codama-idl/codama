@@ -30,6 +30,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const ADVANCE_NONCE_ACCOUNT_DISCRIMINATOR = 4;
+
+export function getAdvanceNonceAccountDiscriminatorBytes() {
+  return getU32Encoder().encode(ADVANCE_NONCE_ACCOUNT_DISCRIMINATOR);
+}
+
 export type AdvanceNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountNonceAccount extends string | IAccountMeta<string> = string,
@@ -63,7 +69,10 @@ export type AdvanceNonceAccountInstructionDataArgs = {};
 export function getAdvanceNonceAccountInstructionDataEncoder(): Encoder<AdvanceNonceAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
-    (value) => ({ ...value, discriminator: 4 })
+    (value) => ({
+      ...value,
+      discriminator: ADVANCE_NONCE_ACCOUNT_DISCRIMINATOR,
+    })
   );
 }
 

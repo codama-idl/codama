@@ -30,6 +30,12 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const ALLOCATE_DISCRIMINATOR = 8;
+
+export function getAllocateDiscriminatorBytes() {
+  return getU32Encoder().encode(ALLOCATE_DISCRIMINATOR);
+}
+
 export type AllocateInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
   TAccountNewAccount extends string | IAccountMeta<string> = string,
@@ -56,7 +62,7 @@ export function getAllocateInstructionDataEncoder(): Encoder<AllocateInstruction
       ['discriminator', getU32Encoder()],
       ['space', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 8 })
+    (value) => ({ ...value, discriminator: ALLOCATE_DISCRIMINATOR })
   );
 }
 

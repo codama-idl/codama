@@ -27,6 +27,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const INITIALIZE_MULTISIG2_DISCRIMINATOR = 19;
+
+export function getInitializeMultisig2DiscriminatorBytes() {
+  return getU8Encoder().encode(INITIALIZE_MULTISIG2_DISCRIMINATOR);
+}
+
 export type InitializeMultisig2Instruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountMultisig extends string | IAccountMeta<string> = string,
@@ -59,7 +65,7 @@ export function getInitializeMultisig2InstructionDataEncoder(): Encoder<Initiali
       ['discriminator', getU8Encoder()],
       ['m', getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 19 })
+    (value) => ({ ...value, discriminator: INITIALIZE_MULTISIG2_DISCRIMINATOR })
   );
 }
 

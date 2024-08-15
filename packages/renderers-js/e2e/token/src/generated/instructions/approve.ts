@@ -33,6 +33,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const APPROVE_DISCRIMINATOR = 4;
+
+export function getApproveDiscriminatorBytes() {
+  return getU8Encoder().encode(APPROVE_DISCRIMINATOR);
+}
+
 export type ApproveInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountSource extends string | IAccountMeta<string> = string,
@@ -73,7 +79,7 @@ export function getApproveInstructionDataEncoder(): Encoder<ApproveInstructionDa
       ['discriminator', getU8Encoder()],
       ['amount', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 4 })
+    (value) => ({ ...value, discriminator: APPROVE_DISCRIMINATOR })
   );
 }
 

@@ -33,6 +33,12 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
+export const MINT_TO_DISCRIMINATOR = 7;
+
+export function getMintToDiscriminatorBytes() {
+  return getU8Encoder().encode(MINT_TO_DISCRIMINATOR);
+}
+
 export type MintToInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
   TAccountMint extends string | IAccountMeta<string> = string,
@@ -73,7 +79,7 @@ export function getMintToInstructionDataEncoder(): Encoder<MintToInstructionData
       ['discriminator', getU8Encoder()],
       ['amount', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: 7 })
+    (value) => ({ ...value, discriminator: MINT_TO_DISCRIMINATOR })
   );
 }
 
