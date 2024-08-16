@@ -286,6 +286,27 @@ visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
 // ]
 ```
 
+### `interceptFirstVisitVisitor`
+
+The `interceptFirstVisitVisitor` works the same way as the `interceptVisitor` but only intercepts the first visit of a node. This means that the provided function is called when visiting the specific node provided but not when visiting its children. The parameters are the same as for the `interceptVisitor`.
+
+For instance, the following visitor intercepts a `voidVisitor` and captures events only during the first visit.
+
+```ts
+const events: string[] = [];
+const visitor = interceptFirstVisitVisitor(voidVisitor(), (node, next) => {
+    events.push(`down:${node.kind}`);
+    next(node);
+    events.push(`up:${node.kind}`);
+});
+
+visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// events === [
+//     'down:tupleTypeNode',
+//     'up:tupleTypeNode',
+// ]
+```
+
 ### `tapVisitor`
 
 The `tapVisitor` function allows us to tap into the visiting functions of a provided visitor without modifying its behaviour. This means the returned visitor will behave exactly like the base visitor except that the provided function will be called for the specified node kind.
