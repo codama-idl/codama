@@ -11,6 +11,7 @@ export * from './getResolvedInstructionInputsVisitor';
 export * from './getUniqueHashStringVisitor';
 export * from './identityVisitor';
 export * from './interceptVisitor';
+export * from './interceptFirstVisitVisitor';
 export * from './mapVisitor';
 export * from './mergeVisitor';
 export * from './nonNullableIdentityVisitor';
