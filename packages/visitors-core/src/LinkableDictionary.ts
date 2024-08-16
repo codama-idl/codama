@@ -14,6 +14,8 @@ import {
 
 export type LinkableNode = AccountNode | DefinedTypeNode | PdaNode | ProgramNode;
 
+export const LINKABLE_NODES: LinkableNode['kind'][] = ['accountNode', 'definedTypeNode', 'pdaNode', 'programNode'];
+
 export class LinkableDictionary {
     private readonly programs: Map<string, ProgramNode> = new Map();
 
