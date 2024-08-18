@@ -20,7 +20,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
         v =>
             extendVisitor(v, {
                 visitDefinedTypeLink(linkType, { self }) {
-                    if (!shouldInline(linkType.name) || linkType.importFrom) {
+                    if (!shouldInline(linkType.name)) {
                         return linkType;
                     }
                     return visit(linkables.getOrThrow(linkType).type, self);

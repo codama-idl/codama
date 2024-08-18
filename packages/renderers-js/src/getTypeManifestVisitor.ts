@@ -28,19 +28,20 @@ import { Fragment, fragment, mergeFragments } from './fragments';
 import { ImportMap } from './ImportMap';
 import { NameApi } from './nameTransformers';
 import { mergeManifests, TypeManifest, typeManifest } from './TypeManifest';
-import { getBytesFromBytesValueNode, jsDocblock, ParsedCustomDataOptions } from './utils';
+import { getBytesFromBytesValueNode, GetImportFromFunction, jsDocblock, ParsedCustomDataOptions } from './utils';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 
 export function getTypeManifestVisitor(input: {
     customAccountData: ParsedCustomDataOptions;
     customInstructionData: ParsedCustomDataOptions;
+    getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
     nameApi: NameApi;
     nonScalarEnums: CamelCaseString[];
     parentName?: { loose: string; strict: string };
 }) {
-    const { nameApi, linkables, nonScalarEnums, customAccountData, customInstructionData } = input;
+    const { nameApi, linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
     const stack = new NodeStack();
     let parentName = input.parentName ?? null;
 
@@ -199,7 +200,7 @@ export function getTypeManifestVisitor(input: {
                     const looseName = nameApi.dataArgsType(node.name);
                     const encoderFunction = nameApi.encoderFunction(node.name);
                     const decoderFunction = nameApi.decoderFunction(node.name);
-                    const importFrom = node.importFrom ?? 'generatedTypes';
+                    const importFrom = getImportFrom(node);
 
                     return {
                         decoder: fragment(`${decoderFunction}()`).addImports(importFrom, decoderFunction),
@@ -351,7 +352,7 @@ export function getTypeManifestVisitor(input: {
                     const manifest = typeManifest();
                     const enumName = nameApi.dataType(node.enum.name);
                     const enumFunction = nameApi.discriminatedUnionFunction(node.enum.name);
-                    const importFrom = node.enum.importFrom ?? 'generatedTypes';
+                    const importFrom = getImportFrom(node.enum);
 
                     const enumNode = linkables.get(node.enum)?.type;
                     const isScalar =

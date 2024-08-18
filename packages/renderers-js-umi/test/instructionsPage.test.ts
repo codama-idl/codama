@@ -57,7 +57,7 @@ test('it renders instruction accounts with linked PDAs as default value', async 
             'resolvedAccounts.counter.value = findCounterPda( context, { authority: expectPublicKey ( resolvedAccounts.authority.value ) } ); ' +
             '}',
     ]);
-    renderMapContainsImports(renderMap, 'instructions/increment.ts', { '../accounts': ['findCounterPda'] });
+    await renderMapContainsImports(renderMap, 'instructions/increment.ts', { '../accounts': ['findCounterPda'] });
 });
 
 test('it renders instruction accounts with inlined PDAs as default value', async () => {

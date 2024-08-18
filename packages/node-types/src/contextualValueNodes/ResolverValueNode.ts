@@ -1,4 +1,4 @@
-import type { CamelCaseString, Docs, ImportFrom } from '../shared';
+import type { CamelCaseString, Docs } from '../shared';
 import type { AccountValueNode } from './AccountValueNode';
 import type { ArgumentValueNode } from './ArgumentValueNode';
 
@@ -9,7 +9,6 @@ export interface ResolverValueNode<
 
     // Data.
     readonly name: CamelCaseString;
-    readonly importFrom?: ImportFrom;
     readonly docs: Docs;
 
     // Children.

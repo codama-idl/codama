@@ -20,7 +20,7 @@ import {
 import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@kinobi-so/visitors-core';
 
 import { ImportMap } from './ImportMap';
-import { getBytesFromBytesValueNode, jsDocblock, ParsedCustomDataOptions } from './utils';
+import { getBytesFromBytesValueNode, GetImportFromFunction, jsDocblock, ParsedCustomDataOptions } from './utils';
 
 export type TypeManifest = {
     isEnum: boolean;
@@ -51,11 +51,12 @@ function typeManifest(): TypeManifest {
 export function getTypeManifestVisitor(input: {
     customAccountData: ParsedCustomDataOptions;
     customInstructionData: ParsedCustomDataOptions;
+    getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
     nonScalarEnums: CamelCaseString[];
     parentName?: { loose: string; strict: string };
 }) {
-    const { linkables, nonScalarEnums, customAccountData, customInstructionData } = input;
+    const { linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
     let parentName = input.parentName ?? null;
     let parentSize: NumberTypeNode | number | null = null;
 
@@ -265,7 +266,7 @@ export function getTypeManifestVisitor(input: {
                 visitDefinedTypeLink(node) {
                     const pascalCaseDefinedType = pascalCase(node.name);
                     const serializerName = `get${pascalCaseDefinedType}Serializer`;
-                    const importFrom = node.importFrom ?? 'generatedTypes';
+                    const importFrom = getImportFrom(node);
 
                     return {
                         isEnum: false,
@@ -415,7 +416,7 @@ export function getTypeManifestVisitor(input: {
                     const imports = new ImportMap();
                     const enumName = pascalCase(node.enum.name);
                     const variantName = pascalCase(node.variant);
-                    const importFrom = node.enum.importFrom ?? 'generatedTypes';
+                    const importFrom = getImportFrom(node.enum);
 
                     const enumNode = linkables.get(node.enum)?.type;
                     const isScalar =

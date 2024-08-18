@@ -5,12 +5,14 @@ import { ResolvedInstructionInput, visit } from '@kinobi-so/visitors-core';
 import { ContextMap } from './ContextMap';
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
+import { GetImportFromFunction } from './utils';
 
 export function renderInstructionDefaults(
     input: ResolvedInstructionInput,
     typeManifestVisitor: ReturnType<typeof getTypeManifestVisitor>,
     optionalAccountStrategy: 'omitted' | 'programId',
     argObject: string,
+    getImportFrom: GetImportFromFunction,
 ): {
     imports: ImportMap;
     interfaces: ContextMap;
@@ -127,8 +129,7 @@ export function renderInstructionDefaults(
 
             // Linked PDA value.
             const pdaFunction = `find${pascalCase(defaultValue.pda.name)}Pda`;
-            const pdaImportFrom = defaultValue.pda.importFrom ?? 'generatedAccounts';
-            imports.add(pdaImportFrom, pdaFunction);
+            imports.add(getImportFrom(defaultValue.pda), pdaFunction);
             interfaces.add('eddsa');
             const pdaArgs = ['context'];
             const pdaSeeds = defaultValue.seeds.map((seed): string => {
@@ -159,9 +160,8 @@ export function renderInstructionDefaults(
                 false,
             );
         case 'programLinkNode':
-            const importFrom = defaultValue.importFrom ?? 'generatedPrograms';
             const functionName = `get${pascalCase(defaultValue.name)}ProgramId`;
-            imports.add(importFrom, functionName);
+            imports.add(getImportFrom(defaultValue), functionName);
             return render(`${functionName}(context)`, false);
         case 'programIdValueNode':
             if (
@@ -193,7 +193,7 @@ export function renderInstructionDefaults(
         case 'resolverValueNode':
             const resolverName = camelCase(defaultValue.name);
             const isWritable = input.kind === 'instructionAccountNode' && input.isWritable ? 'true' : 'false';
-            imports.add(defaultValue.importFrom ?? 'hooked', resolverName);
+            imports.add(getImportFrom(defaultValue), resolverName);
             interfaces.add(['eddsa', 'identity', 'payer']);
             return render(`${resolverName}(context, resolvedAccounts, ${argObject}, programId, ${isWritable})`);
         case 'conditionalValueNode':
@@ -203,6 +203,7 @@ export function renderInstructionDefaults(
                 optionalAccountStrategy,
                 defaultValue.ifTrue,
                 argObject,
+                getImportFrom,
             );
             const ifFalseRenderer = renderNestedInstructionDefault(
                 input,
@@ -210,6 +211,7 @@ export function renderInstructionDefaults(
                 optionalAccountStrategy,
                 defaultValue.ifFalse,
                 argObject,
+                getImportFrom,
             );
             if (!ifTrueRenderer && !ifFalseRenderer) {
                 return { imports, interfaces, render: '' };
@@ -229,7 +231,7 @@ export function renderInstructionDefaults(
                 const conditionalResolverName = camelCase(defaultValue.condition.name);
                 const conditionalIsWritable =
                     input.kind === 'instructionAccountNode' && input.isWritable ? 'true' : 'false';
-                imports.add(defaultValue.condition.importFrom ?? 'hooked', conditionalResolverName);
+                imports.add(getImportFrom(defaultValue.condition), conditionalResolverName);
                 interfaces.add(['eddsa', 'identity', 'payer']);
                 condition = `${conditionalResolverName}(context, resolvedAccounts, ${argObject}, programId, ${conditionalIsWritable})`;
                 condition = negatedCondition ? `!${condition}` : condition;
@@ -273,6 +275,7 @@ function renderNestedInstructionDefault(
     optionalAccountStrategy: 'omitted' | 'programId',
     defaultValue: InstructionInputValueNode | undefined,
     argObject: string,
+    getImportFrom: GetImportFromFunction,
 ):
     | {
           imports: ImportMap;
@@ -286,5 +289,6 @@ function renderNestedInstructionDefault(
         typeManifestVisitor,
         optionalAccountStrategy,
         argObject,
+        getImportFrom,
     );
 }

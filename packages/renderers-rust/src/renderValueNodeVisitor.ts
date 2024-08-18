@@ -10,19 +10,23 @@ import {
 import { visit, Visitor } from '@kinobi-so/visitors-core';
 
 import { ImportMap } from './ImportMap';
-import { getBytesFromBytesValueNode } from './utils';
+import { getBytesFromBytesValueNode, GetImportFromFunction } from './utils';
 
 export function renderValueNode(
     value: ValueNode,
+    getImportFrom: GetImportFromFunction,
     useStr: boolean = false,
 ): {
     imports: ImportMap;
     render: string;
 } {
-    return visit(value, renderValueNodeVisitor(useStr));
+    return visit(value, renderValueNodeVisitor(getImportFrom, useStr));
 }
 
-export function renderValueNodeVisitor(useStr: boolean = false): Visitor<
+export function renderValueNodeVisitor(
+    getImportFrom: GetImportFromFunction,
+    useStr: boolean = false,
+): Visitor<
     {
         imports: ImportMap;
         render: string;
@@ -68,7 +72,7 @@ export function renderValueNodeVisitor(useStr: boolean = false): Visitor<
             const imports = new ImportMap();
             const enumName = pascalCase(node.enum.name);
             const variantName = pascalCase(node.variant);
-            const importFrom = node.enum.importFrom ?? 'generatedTypes';
+            const importFrom = getImportFrom(node.enum);
             imports.add(`${importFrom}::${enumName}`);
             if (!node.value) {
                 return { imports, render: `${enumName}::${variantName}` };

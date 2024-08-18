@@ -39,7 +39,7 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
 
                         const { seeds, pda, ...assignableUpdates } = updates;
                         let newPda = node.pda;
-                        if (pda && !pda.importFrom && seeds !== undefined) {
+                        if (pda && seeds !== undefined) {
                             newPda = pda;
                             pdasToUpsert.push({
                                 pda: pdaNode({ name: pda.name, seeds }),
@@ -95,7 +95,6 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                         select: ['[accountLinkNode]', selector],
                         transform: node => {
                             assertIsNode(node, 'accountLinkNode');
-                            if (node.importFrom) return node;
                             return accountLinkNode(newName);
                         },
                     },
@@ -110,7 +109,6 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                         select: ['[pdaLinkNode]', selector],
                         transform: node => {
                             assertIsNode(node, 'pdaLinkNode');
-                            if (node.importFrom) return node;
                             return pdaLinkNode(newName);
                         },
                     },

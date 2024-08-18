@@ -4,7 +4,6 @@ import {
     getAllDefinedTypes,
     getAllInstructionsWithSubs,
     getAllPrograms,
-    ImportFrom,
     InstructionNode,
     isNode,
     isNodeFilter,
@@ -28,10 +27,11 @@ import {
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
-import { render } from './utils';
+import { getImportFromFactory, LinkOverrides, render } from './utils';
 
 export type GetRenderMapOptions = {
-    dependencyMap?: Record<ImportFrom, string>;
+    dependencyMap?: Record<string, string>;
+    linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
 };
 
@@ -41,7 +41,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
     const renderParentInstructions = options.renderParentInstructions ?? false;
     const dependencyMap = options.dependencyMap ?? {};
-    const typeManifestVisitor = getTypeManifestVisitor();
+    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom });
 
     return pipe(
         staticVisitor(
@@ -68,7 +69,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             return seed;
                         }
                         const seedManifest = visit(seed.type, typeManifestVisitor);
-                        const valueManifest = renderValueNode(seed.value, true);
+                        const valueManifest = renderValueNode(seed.value, getImportFrom, true);
                         seedsImports.mergeWith(valueManifest.imports);
                         const resolvedType = resolveNestedTypeNode(seed.type);
                         return { ...seed, resolvedType, typeManifest: seedManifest, valueManifest };
@@ -145,6 +146,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     node.arguments.forEach(argument => {
                         const argumentVisitor = getTypeManifestVisitor({
+                            getImportFrom,
                             nestedStruct: true,
                             parentName: `${pascalCase(node.name)}InstructionData`,
                         });
@@ -157,7 +159,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         const hasDefaultValue = !!argument.defaultValue && isNode(argument.defaultValue, VALUE_NODES);
                         let renderValue: string | null = null;
                         if (hasDefaultValue) {
-                            const { imports: argImports, render: value } = renderValueNode(argument.defaultValue);
+                            const { imports: argImports, render: value } = renderValueNode(
+                                argument.defaultValue,
+                                getImportFrom,
+                            );
                             imports.mergeWith(argImports);
                             renderValue = value;
                         }
@@ -181,6 +186,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const struct = structTypeNodeFromInstructionArgumentNodes(node.arguments);
                     const structVisitor = getTypeManifestVisitor({
+                        getImportFrom,
                         parentName: `${pascalCase(node.name)}InstructionData`,
                     });
                     const typeManifest = visit(struct, structVisitor);

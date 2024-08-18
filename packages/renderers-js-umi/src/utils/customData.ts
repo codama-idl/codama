@@ -6,7 +6,6 @@ import {
     definedTypeLinkNode,
     DefinedTypeNode,
     definedTypeNode,
-    ImportFrom,
     InstructionNode,
     isNode,
     structTypeNodeFromInstructionArgumentNodes,
@@ -18,7 +17,7 @@ export type CustomDataOptions =
           extract?: boolean;
           extractAs?: string;
           importAs?: string;
-          importFrom?: ImportFrom;
+          importFrom?: string;
           name: string;
       };
 
@@ -28,7 +27,7 @@ export type ParsedCustomDataOptions = Map<
         extract: boolean;
         extractAs: CamelCaseString;
         importAs: CamelCaseString;
-        importFrom: ImportFrom;
+        importFrom: string;
         linkNode: DefinedTypeLinkNode;
     }
 >;
@@ -49,7 +48,7 @@ export const parseCustomDataOptions = (
                     extractAs: options.extractAs ? camelCase(options.extractAs) : importAs,
                     importAs,
                     importFrom,
-                    linkNode: definedTypeLinkNode(importAs, importFrom),
+                    linkNode: definedTypeLinkNode(importAs),
                 },
             ];
         }),

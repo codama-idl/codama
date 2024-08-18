@@ -7,13 +7,14 @@ import { isAsyncDefaultValue } from '../utils';
 import { Fragment, fragment, mergeFragments } from './common';
 
 export function getInstructionInputDefaultFragment(
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'> & {
         input: ResolvedInstructionInput;
         optionalAccountStrategy: 'omitted' | 'programId';
         useAsync: boolean;
     },
 ): Fragment {
-    const { input, optionalAccountStrategy, asyncResolvers, useAsync, nameApi, typeManifestVisitor } = scope;
+    const { input, optionalAccountStrategy, asyncResolvers, useAsync, nameApi, typeManifestVisitor, getImportFrom } =
+        scope;
     if (!input.defaultValue) {
         return fragment('');
     }
@@ -121,7 +122,6 @@ export function getInstructionInputDefaultFragment(
 
             // Linked PDA value.
             const pdaFunction = nameApi.pdaFindFunction(defaultValue.pda.name);
-            const pdaImportFrom = defaultValue.pda.importFrom ?? 'generatedPdas';
             const pdaArgs = [];
             const pdaSeeds = defaultValue.seeds.map((seed): Fragment => {
                 if (isNode(seed.value, 'accountValueNode')) {
@@ -143,7 +143,7 @@ export function getInstructionInputDefaultFragment(
             }
             return defaultFragment(`await ${pdaFunction}(${pdaArgs.join(', ')})`)
                 .mergeImportsWith(pdaSeedsFragment)
-                .addImports(pdaImportFrom, pdaFunction);
+                .addImports(getImportFrom(defaultValue.pda), pdaFunction);
 
         case 'publicKeyValueNode':
             return defaultFragment(`'${defaultValue.publicKey}' as Address<'${defaultValue.publicKey}'>`).addImports(
@@ -153,8 +153,7 @@ export function getInstructionInputDefaultFragment(
 
         case 'programLinkNode':
             const programAddress = nameApi.programAddressConstant(defaultValue.name);
-            const importFrom = defaultValue.importFrom ?? 'generatedPrograms';
-            return defaultFragment(programAddress, false).addImports(importFrom, programAddress);
+            return defaultFragment(programAddress, false).addImports(getImportFrom(defaultValue), programAddress);
 
         case 'programIdValueNode':
             if (
@@ -185,7 +184,7 @@ export function getInstructionInputDefaultFragment(
             const resolverFunction = nameApi.resolverFunction(defaultValue.name);
             const resolverAwait = useAsync && asyncResolvers.includes(defaultValue.name) ? 'await ' : '';
             return defaultFragment(`${resolverAwait}${resolverFunction}(resolverScope)`)
-                .addImports(defaultValue.importFrom ?? 'hooked', resolverFunction)
+                .addImports(getImportFrom(defaultValue), resolverFunction)
                 .addFeatures(['instruction:resolverScopeVariable']);
 
         case 'conditionalValueNode':
@@ -213,7 +212,7 @@ export function getInstructionInputDefaultFragment(
             if (isNode(defaultValue.condition, 'resolverValueNode')) {
                 const conditionalResolverFunction = nameApi.resolverFunction(defaultValue.condition.name);
                 conditionalFragment
-                    .addImports(defaultValue.condition.importFrom ?? 'hooked', conditionalResolverFunction)
+                    .addImports(getImportFrom(defaultValue.condition), conditionalResolverFunction)
                     .addFeatures(['instruction:resolverScopeVariable']);
                 const conditionalResolverAwait =
                     useAsync && asyncResolvers.includes(defaultValue.condition.name) ? 'await ' : '';

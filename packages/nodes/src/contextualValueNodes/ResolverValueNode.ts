@@ -1,4 +1,4 @@
-import type { AccountValueNode, ArgumentValueNode, ImportFrom, ResolverValueNode } from '@kinobi-so/node-types';
+import type { AccountValueNode, ArgumentValueNode, ResolverValueNode } from '@kinobi-so/node-types';
 
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
@@ -7,7 +7,6 @@ export function resolverValueNode<const TDependsOn extends (AccountValueNode | A
     options: {
         dependsOn?: TDependsOn;
         docs?: DocsInput;
-        importFrom?: ImportFrom;
     } = {},
 ): ResolverValueNode<TDependsOn> {
     return Object.freeze({
@@ -15,7 +14,6 @@ export function resolverValueNode<const TDependsOn extends (AccountValueNode | A
 
         // Data.
         name: camelCase(name),
-        ...(options.importFrom && { importFrom: options.importFrom }),
         docs: parseDocs(options.docs),
 
         // Children.

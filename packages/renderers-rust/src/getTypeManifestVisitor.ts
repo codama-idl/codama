@@ -17,7 +17,7 @@ import {
 import { extendVisitor, mergeVisitor, pipe, visit } from '@kinobi-so/visitors-core';
 
 import { ImportMap } from './ImportMap';
-import { rustDocblock } from './utils';
+import { GetImportFromFunction, rustDocblock } from './utils';
 
 export type TypeManifest = {
     imports: ImportMap;
@@ -25,7 +25,12 @@ export type TypeManifest = {
     type: string;
 };
 
-export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parentName?: string | null } = {}) {
+export function getTypeManifestVisitor(options: {
+    getImportFrom: GetImportFromFunction;
+    nestedStruct?: boolean;
+    parentName?: string | null;
+}) {
+    const { getImportFrom } = options;
     let parentName: string | null = options.parentName ?? null;
     let nestedStruct: boolean = options.nestedStruct ?? false;
     let inlineStruct: boolean = false;
@@ -175,7 +180,7 @@ export function getTypeManifestVisitor(options: { nestedStruct?: boolean; parent
 
                 visitDefinedTypeLink(node) {
                     const pascalCaseDefinedType = pascalCase(node.name);
-                    const importFrom = node.importFrom ?? 'generatedTypes';
+                    const importFrom = getImportFrom(node);
                     return {
                         imports: new ImportMap().add(`${importFrom}::${pascalCaseDefinedType}`),
                         nestedStructs: [],

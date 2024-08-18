@@ -11,7 +11,7 @@ import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';
 
 export function getInstructionRemainingAccountsFragment(
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         instructionNode: InstructionNode;
         useAsync: boolean;
     },
@@ -29,7 +29,7 @@ export function getInstructionRemainingAccountsFragment(
 
 function getRemainingAccountsFragment(
     remainingAccounts: InstructionRemainingAccountsNode,
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         instructionNode: InstructionNode;
         useAsync: boolean;
     },
@@ -94,7 +94,7 @@ function getArgumentValueNodeFragment(
 
 function getResolverValueNodeFragment(
     remainingAccounts: InstructionRemainingAccountsNode,
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         useAsync: boolean;
     },
 ): Fragment | null {
@@ -105,6 +105,6 @@ function getResolverValueNodeFragment(
     const awaitKeyword = scope.useAsync && isAsync ? 'await ' : '';
     const functionName = scope.nameApi.resolverFunction(remainingAccounts.value.name);
     return fragment(`${awaitKeyword}${functionName}(resolverScope)`)
-        .addImports(remainingAccounts.value.importFrom ?? 'hooked', functionName)
+        .addImports(scope.getImportFrom(remainingAccounts.value), functionName)
         .addFeatures(['instruction:resolverScopeVariable']);
 }

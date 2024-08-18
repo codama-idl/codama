@@ -52,7 +52,6 @@ export function updateDefinedTypesVisitor(map: Record<string, DefinedTypeUpdates
                     select: ['[definedTypeLinkNode]', selector],
                     transform: node => {
                         assertIsNode(node, 'definedTypeLinkNode');
-                        if (node.importFrom) return node;
                         return definedTypeLinkNode(newName);
                     },
                 });

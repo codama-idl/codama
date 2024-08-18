@@ -1,5 +1,3 @@
-import { ImportFrom } from '@kinobi-so/nodes';
-
 import { TypeManifest } from './getTypeManifestVisitor';
 
 const DEFAULT_MODULE_MAP: Record<string, string> = {
@@ -11,11 +9,11 @@ const DEFAULT_MODULE_MAP: Record<string, string> = {
 };
 
 export class ImportMap {
-    protected readonly _imports: Map<ImportFrom, Set<string>> = new Map();
+    protected readonly _imports: Map<string, Set<string>> = new Map();
 
-    protected readonly _aliases: Map<ImportFrom, Record<string, string>> = new Map();
+    protected readonly _aliases: Map<string, Record<string, string>> = new Map();
 
-    add(module: ImportFrom, imports: Set<string> | string[] | string): ImportMap {
+    add(module: string, imports: Set<string> | string[] | string): ImportMap {
         const currentImports = this._imports.get(module) ?? new Set();
         const newImports = typeof imports === 'string' ? [imports] : imports;
         newImports.forEach(i => currentImports.add(i));
@@ -23,7 +21,7 @@ export class ImportMap {
         return this;
     }
 
-    remove(module: ImportFrom, imports: Set<string> | string[] | string): ImportMap {
+    remove(module: string, imports: Set<string> | string[] | string): ImportMap {
         const currentImports = this._imports.get(module) ?? new Set();
         const importsToRemove = typeof imports === 'string' ? [imports] : imports;
         importsToRemove.forEach(i => currentImports.delete(i));
@@ -53,7 +51,7 @@ export class ImportMap {
         return this.mergeWith(manifest.strictImports, manifest.looseImports, manifest.serializerImports);
     }
 
-    addAlias(module: ImportFrom, name: string, alias: string): ImportMap {
+    addAlias(module: string, name: string, alias: string): ImportMap {
         const currentAliases = this._aliases.get(module) ?? {};
         currentAliases[name] = alias;
         this._aliases.set(module, currentAliases);
@@ -64,7 +62,7 @@ export class ImportMap {
         return this._imports.size === 0;
     }
 
-    toString(dependencies: Record<ImportFrom, string>): string {
+    toString(dependencies: Record<string, string>): string {
         const dependencyMap = { ...DEFAULT_MODULE_MAP, ...dependencies };
         const importStatements = [...this._imports.entries()]
             .map(([module, imports]) => {

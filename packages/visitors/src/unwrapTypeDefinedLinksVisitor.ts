@@ -14,7 +14,6 @@ export function unwrapTypeDefinedLinksVisitor(definedLinksType: string[]) {
         select: ['[definedTypeLinkNode]', selector],
         transform: node => {
             assertIsNode(node, 'definedTypeLinkNode');
-            if (node.importFrom) return node;
             return linkables.getOrThrow(node).type;
         },
     }));

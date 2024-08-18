@@ -8,12 +8,11 @@ This node acts as a fallback node for any value or logic that cannot easily be d
 
 ### Data
 
-| Attribute    | Type                  | Description                                                                                                                                                                                                                                                                                                                        |
-| ------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `kind`       | `"resolverValueNode"` | The node discriminator.                                                                                                                                                                                                                                                                                                            |
-| `name`       | `CamelCaseString`     | A unique name for the resolver. This will typically be the name of the function that the renderers will try to invoke.                                                                                                                                                                                                             |
-| `docs`       | `string[]`            | Detailed Markdown documentation for the resolver.                                                                                                                                                                                                                                                                                  |
-| `importFrom` | `string`              | (Optional) A unique string that identifies the module from which the resolver should be imported. Defaults to `"hooked"` meaning the function is locally available next to the generated code. Note that this is a renderer-specific piece of data that may be removed in the future and pushed to the renderers' options instead. |
+| Attribute | Type                  | Description                                                                                                            |
+| --------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `kind`    | `"resolverValueNode"` | The node discriminator.                                                                                                |
+| `name`    | `CamelCaseString`     | A unique name for the resolver. This will typically be the name of the function that the renderers will try to invoke. |
+| `docs`    | `string[]`            | Detailed Markdown documentation for the resolver.                                                                      |
 
 ### Children
 
