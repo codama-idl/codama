@@ -1,5 +1,13 @@
 # @kinobi-so/nodes
 
+## 0.21.2
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @kinobi-so/errors@0.21.2
+    -   @kinobi-so/node-types@0.21.2
+
 ## 0.21.1
 
 ### Patch Changes

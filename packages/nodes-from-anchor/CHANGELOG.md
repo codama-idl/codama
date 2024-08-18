@@ -1,5 +1,18 @@
 # @kinobi-so/nodes-from-anchor
 
+## 0.21.0
+
+### Minor Changes
+
+-   [`f13abb0`](https://github.com/kinobi-so/kinobi/commit/f13abb01fc4a6fc76fe4566e3f667aab92b43480) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Bring some packages to 0.21 range
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @kinobi-so/visitors@0.21.2
+    -   @kinobi-so/errors@0.21.2
+    -   @kinobi-so/nodes@0.21.2
+
 ## 0.20.10
 
 ### Patch Changes
