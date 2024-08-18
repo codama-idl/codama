@@ -1,5 +1,15 @@
 # kinobi
 
+## 0.21.2
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @kinobi-so/validators@0.21.2
+    -   @kinobi-so/visitors@0.21.2
+    -   @kinobi-so/errors@0.21.2
+    -   @kinobi-so/nodes@0.21.2
+
 ## 0.21.1
 
 ### Patch Changes
