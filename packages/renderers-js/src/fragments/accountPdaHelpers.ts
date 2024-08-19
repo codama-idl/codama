@@ -21,6 +21,9 @@ export function getAccountPdaHelpersFragment(
         ? typeManifest.strictType.clone()
         : fragment(nameApi.dataType(accountNode.name));
 
+    // Here we cannot use the `getImportFrom` function because
+    // we need to know the seeds of the PDA in order to know
+    // if we need to render a `seeds` argument or not.
     const importFrom = 'generatedPdas';
     const pdaSeedsType = nameApi.pdaSeedsType(pdaNode.name);
     const findPdaFunction = nameApi.pdaFindFunction(pdaNode.name);
