@@ -18,6 +18,6 @@
   "linked": [],
   "ignore": ["@kinobi-so/internals"],
   "access": "public",
-  "baseBranch": "0.21",
+  "baseBranch": "main",
   "updateInternalDependencies": "patch"
 }
