@@ -1,4 +1,5 @@
 {
+    "name": "kinobi-monorepo",
     "private": true,
     "workspaces": [
         "packages/*"
@@ -26,10 +27,10 @@
         "eslint-plugin-sort-keys-fix": "^1.1.2",
         "eslint-plugin-typescript-sort-keys": "^3.2.0",
         "happy-dom": "^14.12.3",
-        "prettier": "^3.2.5",
+        "prettier": "^3.3.3",
         "rimraf": "6.0.1",
         "tsup": "^8.2.4",
-        "turbo": "^1.13.0",
+        "turbo": "^2.0.14",
         "typescript": "^5.5.4",
         "vitest": "^2.0.5",
         "zx": "^8.1.4"

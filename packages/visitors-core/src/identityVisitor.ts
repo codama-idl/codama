@@ -122,7 +122,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const data = visit(this)(node.data);
             if (data === null) return null;
             assertIsNode(data, 'structTypeNode');
-            const pda = node.pda ? visit(this)(node.pda) ?? undefined : undefined;
+            const pda = node.pda ? (visit(this)(node.pda) ?? undefined) : undefined;
             if (pda) assertIsNode(pda, 'pdaLinkNode');
             return accountNode({ ...node, data, pda });
         };
@@ -165,7 +165,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
 
     if (castedNodeKeys.includes('instructionAccountNode')) {
         visitor.visitInstructionAccount = function visitInstructionAccount(node) {
-            const defaultValue = node.defaultValue ? visit(this)(node.defaultValue) ?? undefined : undefined;
+            const defaultValue = node.defaultValue ? (visit(this)(node.defaultValue) ?? undefined) : undefined;
             if (defaultValue) assertIsNode(defaultValue, INSTRUCTION_INPUT_VALUE_NODES);
             return instructionAccountNode({ ...node, defaultValue });
         };
@@ -176,7 +176,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const type = visit(this)(node.type);
             if (type === null) return null;
             assertIsNode(type, TYPE_NODES);
-            const defaultValue = node.defaultValue ? visit(this)(node.defaultValue) ?? undefined : undefined;
+            const defaultValue = node.defaultValue ? (visit(this)(node.defaultValue) ?? undefined) : undefined;
             if (defaultValue) assertIsNode(defaultValue, INSTRUCTION_INPUT_VALUE_NODES);
             return instructionArgumentNode({ ...node, defaultValue, type });
         };
@@ -290,7 +290,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const item = visit(this)(node.item);
             if (item === null) return null;
             assertIsNode(item, TYPE_NODES);
-            const zeroValue = node.zeroValue ? visit(this)(node.zeroValue) ?? undefined : undefined;
+            const zeroValue = node.zeroValue ? (visit(this)(node.zeroValue) ?? undefined) : undefined;
             if (zeroValue) assertIsNode(zeroValue, 'constantValueNode');
             return zeroableOptionTypeNode(item, zeroValue);
         };
@@ -338,7 +338,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const type = visit(this)(node.type);
             if (type === null) return null;
             assertIsNode(type, TYPE_NODES);
-            const defaultValue = node.defaultValue ? visit(this)(node.defaultValue) ?? undefined : undefined;
+            const defaultValue = node.defaultValue ? (visit(this)(node.defaultValue) ?? undefined) : undefined;
             if (defaultValue) assertIsNode(defaultValue, VALUE_NODES);
             return structFieldTypeNode({ ...node, defaultValue, type });
         };
@@ -410,7 +410,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const enumLink = visit(this)(node.enum);
             if (enumLink === null) return null;
             assertIsNode(enumLink, ['definedTypeLinkNode']);
-            const value = node.value ? visit(this)(node.value) ?? undefined : undefined;
+            const value = node.value ? (visit(this)(node.value) ?? undefined) : undefined;
             if (value) assertIsNode(value, ['structValueNode', 'tupleValueNode']);
             return enumValueNode(enumLink, node.variant, value);
         };
@@ -512,11 +512,11 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const condition = visit(this)(node.condition);
             if (condition === null) return null;
             assertIsNode(condition, ['resolverValueNode', 'accountValueNode', 'argumentValueNode']);
-            const value = node.value ? visit(this)(node.value) ?? undefined : undefined;
+            const value = node.value ? (visit(this)(node.value) ?? undefined) : undefined;
             if (value) assertIsNode(value, VALUE_NODES);
-            const ifTrue = node.ifTrue ? visit(this)(node.ifTrue) ?? undefined : undefined;
+            const ifTrue = node.ifTrue ? (visit(this)(node.ifTrue) ?? undefined) : undefined;
             if (ifTrue) assertIsNode(ifTrue, INSTRUCTION_INPUT_VALUE_NODES);
-            const ifFalse = node.ifFalse ? visit(this)(node.ifFalse) ?? undefined : undefined;
+            const ifFalse = node.ifFalse ? (visit(this)(node.ifFalse) ?? undefined) : undefined;
             if (ifFalse) assertIsNode(ifFalse, INSTRUCTION_INPUT_VALUE_NODES);
             if (!ifTrue && !ifFalse) return null;
             return conditionalValueNode({ condition, ifFalse, ifTrue, value });

@@ -9,6 +9,7 @@ env:
   # Among other things, opts out of Turborepo telemetry. See https://consoledonottrack.com/.
   DO_NOT_TRACK: '1'
   NODE_VERSION: 18
+  KINOBI_VERSION: 0.22
   SOLANA_VERSION: 1.18.12
 
 jobs:
@@ -94,8 +95,8 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          commit: 'Publish packages'
-          title: 'Publish packages'
+          commit: '[${{ env.KINOBI_VERSION }}] Publish packages'
+          title: '[${{ env.KINOBI_VERSION }}] Publish packages'
           publish: pnpm publish-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
