@@ -1,8 +1,11 @@
 ---
+'@kinobi-so/renderers': minor
+'@kinobi-so/renderers-core': minor
 '@kinobi-so/renderers-js-umi': minor
 '@kinobi-so/renderers-rust': minor
 '@kinobi-so/visitors-core': minor
 '@kinobi-so/renderers-js': minor
+'@kinobi-so/node-from-anchor': minor
 '@kinobi-so/node-types': minor
 '@kinobi-so/validators': minor
 '@kinobi-so/visitors': minor
