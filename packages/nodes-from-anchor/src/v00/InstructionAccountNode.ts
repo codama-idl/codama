@@ -16,7 +16,7 @@ export function instructionAccountNodeFromAnchorV00(idl: IdlV00Account): Instruc
     return instructionAccountNode({
         docs: idl.docs ?? desc ?? [],
         isOptional,
-        isSigner: idl.isOptionalSigner ? 'either' : idl.isSigner ?? false,
+        isSigner: idl.isOptionalSigner ? 'either' : (idl.isSigner ?? false),
         isWritable: idl.isMut ?? false,
         name: idl.name ?? '',
     });
