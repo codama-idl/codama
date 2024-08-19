@@ -185,7 +185,7 @@ function getRemainingAccountsFragment(instructionNode: InstructionNode): Fragmen
         if (argumentExists) return [];
 
         const isSigner = remainingAccountsNode.isSigner ?? false;
-        const optionalSign = remainingAccountsNode.isOptional ?? false ? '?' : '';
+        const optionalSign = (remainingAccountsNode.isOptional ?? false) ? '?' : '';
         const signerFragment = fragment(`TransactionSigner`).addImports('solanaSigners', ['type TransactionSigner']);
         const addressFragment = fragment(`Address`).addImports('solanaAddresses', ['type Address']);
         return (() => {

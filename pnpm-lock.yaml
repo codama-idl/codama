@@ -22,7 +22,7 @@ importers:
         version: 3.0.3(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4))(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.0))(eslint-plugin-simple-import-sort@10.0.0(eslint@8.57.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.2.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4)
       '@solana/prettier-config-solana':
         specifier: 0.0.5
-        version: 0.0.5(prettier@3.2.5)
+        version: 0.0.5(prettier@3.3.3)
       '@types/node':
         specifier: ^20
         version: 20.16.1
@@ -54,8 +54,8 @@ importers:
         specifier: ^14.12.3
         version: 14.12.3
       prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
+        specifier: ^3.3.3
+        version: 3.3.3
       rimraf:
         specifier: 6.0.1
         version: 6.0.1
@@ -182,8 +182,8 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
       prettier:
-        specifier: ^3.3.0
-        version: 3.3.2
+        specifier: ^3.3.3
+        version: 3.3.3
     devDependencies:
       '@types/nunjucks':
         specifier: ^3.2.6
@@ -213,8 +213,8 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
       prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
+        specifier: ^3.3.3
+        version: 3.3.3
     devDependencies:
       '@types/nunjucks':
         specifier: ^3.2.6
@@ -1988,13 +1988,8 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
-  prettier@3.2.5:
-    resolution: {integrity: sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==}
-    engines: {node: '>=14'}
-    hasBin: true
-
-  prettier@3.3.2:
-    resolution: {integrity: sha512-rAVeHYMcv8ATV5d508CFdn+8/pHPpXeIid1DdrPwXnaAdH7cqjVbpJaT5eq4yRAFU/lsbwYwSF/n5iNrdJHPQA==}
+  prettier@3.3.3:
+    resolution: {integrity: sha512-i2tDNA0O5IrMO757lfrdQZCc2jPNDVntV0m/+4whiDfWaTKfMNgR7Qz0NAeGz/nRqF4m5/6CLzbP4/liHt12Ew==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -2942,9 +2937,9 @@ snapshots:
       eslint-plugin-typescript-sort-keys: 3.2.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4)
       typescript: 5.5.4
 
-  '@solana/prettier-config-solana@0.0.5(prettier@3.2.5)':
+  '@solana/prettier-config-solana@0.0.5(prettier@3.3.3)':
     dependencies:
-      prettier: 3.2.5
+      prettier: 3.3.3
 
   '@types/estree@1.0.5': {}
 
@@ -4125,9 +4120,7 @@ snapshots:
 
   prettier@2.8.8: {}
 
-  prettier@3.2.5: {}
-
-  prettier@3.3.2: {}
+  prettier@3.3.3: {}
 
   pseudomap@1.0.2: {}
 
