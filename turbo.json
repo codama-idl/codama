@@ -1,7 +1,10 @@
 {
     "$schema": "https://turbo.build/schema.json",
     "globalEnv": ["NODE_ENV"],
-    "pipeline": {
+    "remoteCache": {
+        "signature": true
+    },
+    "tasks": {
         "build": {
             "dependsOn": ["^build"]
         },
@@ -23,8 +26,5 @@
         "test:types": {},
         "lint": {},
         "lint:fix": {}
-    },
-    "remoteCache": {
-        "signature": true
     }
 }

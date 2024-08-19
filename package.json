@@ -1,4 +1,5 @@
 {
+    "name": "kinobi-monorepo",
     "private": true,
     "workspaces": [
         "packages/*"
