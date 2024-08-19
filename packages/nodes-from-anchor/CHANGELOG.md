@@ -1,5 +1,16 @@
 # @kinobi-so/nodes-from-anchor
 
+## 0.21.1
+
+### Patch Changes
+
+-   [#123](https://github.com/kinobi-so/kinobi/pull/123) [`59ceb1d`](https://github.com/kinobi-so/kinobi/commit/59ceb1d7803307b3a1a5e23ea3267934ad87bfc6) Thanks [@dependabot](https://github.com/apps/dependabot)! - Update prettier
+
+-   Updated dependencies []:
+    -   @kinobi-so/visitors@0.21.3
+    -   @kinobi-so/errors@0.21.3
+    -   @kinobi-so/nodes@0.21.3
+
 ## 0.21.0
 
 ### Minor Changes
