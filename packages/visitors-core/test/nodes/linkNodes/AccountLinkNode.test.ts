@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = accountLinkNode('token');
+const node = accountLinkNode('token', 'splToken');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -23,5 +23,5 @@ test('deleteNodesVisitor', () => {
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `accountLinkNode [token]`);
+    expectDebugStringVisitor(node, `accountLinkNode [splToken.token]`);
 });

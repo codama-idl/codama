@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = definedTypeLinkNode('tokenState');
+const node = definedTypeLinkNode('tokenState', 'splToken');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -23,5 +23,5 @@ test('deleteNodesVisitor', () => {
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `definedTypeLinkNode [tokenState]`);
+    expectDebugStringVisitor(node, `definedTypeLinkNode [splToken.tokenState]`);
 });

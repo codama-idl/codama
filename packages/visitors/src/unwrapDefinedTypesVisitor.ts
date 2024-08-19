@@ -16,7 +16,6 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
 
     return pipe(
         nonNullableIdentityVisitor(),
-        v => recordLinkablesVisitor(v, linkables),
         v =>
             extendVisitor(v, {
                 visitDefinedTypeLink(linkType, { self }) {
@@ -42,5 +41,6 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     });
                 },
             }),
+        v => recordLinkablesVisitor(v, linkables),
     );
 }

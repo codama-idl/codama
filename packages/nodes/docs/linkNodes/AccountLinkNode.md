@@ -13,14 +13,17 @@ This node represents a reference to an existing [`AccountNode`](../AccountNode.m
 
 ### Children
 
-_This node has no children._
+| Attribute | Type                                      | Description                                                                                                     |
+| --------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `program` | [`ProgramLinkNode`](./ProgramLinkNode.md) | (Optional) The program associated with the linked account. Default to using the program we are currently under. |
 
 ## Functions
 
-### `accountLinkNode(name)`
+### `accountLinkNode(name, program?)`
 
-Helper function that creates a `AccountLinkNode` object from the name of the `AccountNode` we are referring to.
+Helper function that creates a `AccountLinkNode` object from the name of the `AccountNode` we are referring to. If the account is from another program, the `program` parameter must be provided as either a `string` or a `ProgramLinkNode`.
 
 ```ts
 const node = accountLinkNode('myAccount');
+const nodeFromAnotherProgram = accountLinkNode('myAccount', 'myOtherProgram');
 ```

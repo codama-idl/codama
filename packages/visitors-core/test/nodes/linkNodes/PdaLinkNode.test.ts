@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = pdaLinkNode('associatedToken');
+const node = pdaLinkNode('associatedToken', 'splToken');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -23,5 +23,5 @@ test('deleteNodesVisitor', () => {
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `pdaLinkNode [associatedToken]`);
+    expectDebugStringVisitor(node, `pdaLinkNode [splToken.associatedToken]`);
 });

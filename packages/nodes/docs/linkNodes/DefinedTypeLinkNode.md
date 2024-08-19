@@ -13,14 +13,17 @@ This node represents a reference to an existing [`DefinedTypeNode`](../DefinedTy
 
 ### Children
 
-_This node has no children._
+| Attribute | Type                                      | Description                                                                                                  |
+| --------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `program` | [`ProgramLinkNode`](./ProgramLinkNode.md) | (Optional) The program associated with the linked type. Default to using the program we are currently under. |
 
 ## Functions
 
-### `definedTypeLinkNode(name)`
+### `definedTypeLinkNode(name, program?)`
 
-Helper function that creates a `DefinedTypeLinkNode` object from the name of the `DefinedTypeNode` we are referring to.
+Helper function that creates a `DefinedTypeLinkNode` object from the name of the `DefinedTypeNode` we are referring to. If the defined type is from another program, the `program` parameter must be provided as either a `string` or a `ProgramLinkNode`.
 
 ```ts
 const node = definedTypeLinkNode('myDefinedType');
+const nodeFromAnotherProgram = definedTypeLinkNode('myDefinedType', 'myOtherProgram');
 ```
