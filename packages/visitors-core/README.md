@@ -651,11 +651,11 @@ It offers the following API:
 ```ts
 const linkables = new LinkableDictionary();
 
-// Record any linkable node — such as programs, PDAs, accounts and defined types.
+// Record program nodes.
 linkables.record(programNode);
 
-// Record multiple linkable nodes at once.
-linkables.recordAll([...accountNodes, ...pdaNodes]);
+// Record other linkable nodes with their associated program node.
+linkables.record(accountNode);
 
 // Get a linkable node using a link node, or throw an error if it is not found.
 const programNode = linkables.getOrThrow(programLinkNode);
@@ -663,6 +663,8 @@ const programNode = linkables.getOrThrow(programLinkNode);
 // Get a linkable node using a link node, or return undefined if it is not found.
 const accountNode = linkables.get(accountLinkNode);
 ```
+
+Note that this API must be used in conjunction with the `recordLinkablesVisitor` to record the linkable nodes and, later on, resolve the link nodes as we traverse the nodes. This is because the `LinkableDictionary` instance keeps track of its own internal `NodeStack` in order to understand which program node should be used for a given link node.
 
 ### `recordLinkablesVisitor`
 
@@ -676,14 +678,16 @@ Here's an example that records a `LinkableDictionary` and uses it to log the amo
 const linkables = new LinkableDictionary();
 const visitor = pipe(
     baseVisitor,
-    v => recordLinkablesVisitor(v, linkables),
     v =>
         tapVisitor(v, 'pdaLinkNode', node => {
             const pdaNode = linkables.getOrThrow(node);
             console.log(`${pdaNode.seeds.length} seeds`);
         }),
+    v => recordLinkablesVisitor(v, linkables),
 );
 ```
+
+Note that the `recordLinkablesVisitor` should always be the last visitor in the pipe to ensure that all linkable nodes are recorded before being used.
 
 ## Other useful visitors
 

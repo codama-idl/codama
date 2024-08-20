@@ -64,10 +64,11 @@ function getNodeDetails(node: Node): string[] {
         case 'errorNode':
             return [node.code.toString(), node.name];
         case 'programLinkNode':
+            return [node.name];
         case 'pdaLinkNode':
         case 'accountLinkNode':
         case 'definedTypeLinkNode':
-            return [node.name];
+            return [...(node.program ? [node.program.name] : []), node.name];
         case 'numberTypeNode':
             return [node.format, ...(node.endian === 'be' ? ['bigEndian'] : [])];
         case 'amountTypeNode':
