@@ -19,5 +19,9 @@
   "ignore": ["@kinobi-so/internals"],
   "access": "public",
   "baseBranch": "main",
+  "privatePackages": {
+        "version": false,
+        "tag": false
+  },
   "updateInternalDependencies": "patch"
 }
