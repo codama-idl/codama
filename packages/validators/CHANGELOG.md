@@ -1,5 +1,14 @@
 # @kinobi-so/validators
 
+## 0.21.4
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @kinobi-so/errors@0.21.4
+    -   @kinobi-so/nodes@0.21.4
+    -   @kinobi-so/visitors-core@0.21.4
+
 ## 0.21.3
 
 ### Patch Changes
