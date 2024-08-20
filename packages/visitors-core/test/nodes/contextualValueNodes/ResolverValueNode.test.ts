@@ -10,7 +10,6 @@ import {
 
 const node = resolverValueNode('myCustomResolver', {
     dependsOn: [accountValueNode('mint'), argumentValueNode('tokenStandard')],
-    importFrom: 'hooked',
 });
 
 test('mergeVisitor', () => {
@@ -30,7 +29,7 @@ test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-resolverValueNode [myCustomResolver.from:hooked]
+resolverValueNode [myCustomResolver]
 |   accountValueNode [mint]
 |   argumentValueNode [tokenStandard]`,
     );

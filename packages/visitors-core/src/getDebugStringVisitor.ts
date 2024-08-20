@@ -67,7 +67,7 @@ function getNodeDetails(node: Node): string[] {
         case 'pdaLinkNode':
         case 'accountLinkNode':
         case 'definedTypeLinkNode':
-            return [node.name, ...(node.importFrom ? [`from:${node.importFrom}`] : [])];
+            return [node.name];
         case 'numberTypeNode':
             return [node.format, ...(node.endian === 'be' ? ['bigEndian'] : [])];
         case 'amountTypeNode':
@@ -91,7 +91,7 @@ function getNodeDetails(node: Node): string[] {
         case 'enumValueNode':
             return [node.variant];
         case 'resolverValueNode':
-            return [node.name, ...(node.importFrom ? [`from:${node.importFrom}`] : [])];
+            return [node.name];
         case 'constantDiscriminatorNode':
             return [...(node.offset > 0 ? [`offset:${node.offset}`] : [])];
         case 'fieldDiscriminatorNode':

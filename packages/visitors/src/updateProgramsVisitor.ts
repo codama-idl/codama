@@ -27,7 +27,6 @@ export function updateProgramsVisitor(map: Record<string, ProgramUpdates>) {
                     select: `[programLinkNode]${name}`,
                     transform: node => {
                         assertIsNode(node, 'programLinkNode');
-                        if (node.importFrom) return node;
                         return programLinkNode(newName);
                     },
                 });

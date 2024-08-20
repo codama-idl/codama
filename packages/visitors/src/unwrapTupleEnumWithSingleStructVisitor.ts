@@ -49,7 +49,6 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
                         if (tupleNode.items.length !== 1) return node;
                         let item = tupleNode.items[0];
                         if (isNode(item, 'definedTypeLinkNode')) {
-                            if (item.importFrom) return node;
                             const definedType = definedTypes.get(item.name);
                             if (!definedType) return node;
                             if (!isNode(definedType.type, 'structTypeNode')) return node;

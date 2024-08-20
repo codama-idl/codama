@@ -1,6 +1,5 @@
 import { join } from 'node:path';
 
-import { ImportFrom } from '@kinobi-so/nodes';
 import { ConfigureOptions } from 'nunjucks';
 
 import { ImportMap } from '../ImportMap';
@@ -45,12 +44,12 @@ export class Fragment {
         return this;
     }
 
-    addImports(module: ImportFrom, imports: Set<string> | string[] | string): this {
+    addImports(module: string, imports: Set<string> | string[] | string): this {
         this.imports.add(module, imports);
         return this;
     }
 
-    removeImports(module: ImportFrom, imports: Set<string> | string[] | string): this {
+    removeImports(module: string, imports: Set<string> | string[] | string): this {
         this.imports.remove(module, imports);
         return this;
     }
@@ -60,7 +59,7 @@ export class Fragment {
         return this;
     }
 
-    addImportAlias(module: ImportFrom, name: string, alias: string): this {
+    addImportAlias(module: string, name: string, alias: string): this {
         this.imports.addAlias(module, name, alias);
         return this;
     }

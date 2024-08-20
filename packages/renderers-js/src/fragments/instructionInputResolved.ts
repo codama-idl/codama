@@ -6,7 +6,7 @@ import { Fragment, fragment, mergeFragments } from './common';
 import { getInstructionInputDefaultFragment } from './instructionInputDefault';
 
 export function getInstructionInputResolvedFragment(
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'> & {
         instructionNode: InstructionNode;
         resolvedInputs: ResolvedInstructionInput[];
         useAsync: boolean;

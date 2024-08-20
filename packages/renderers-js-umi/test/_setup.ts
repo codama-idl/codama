@@ -26,16 +26,21 @@ export async function codeContains(actual: string, expected: (RegExp | string)[]
     const normalizedActual = await normalizeCode(actual);
     expectedArray.forEach(expectedResult => {
         if (typeof expectedResult === 'string') {
-            const stringAsRegex = escapeRegex(expectedResult)
-                // Transform spaces between words into required whitespace.
-                .replace(/(\w)\s+(\w)/g, '$1\\s+$2')
-                // Do it again for single-character words — e.g. "as[ ]a[ ]token".
-                .replace(/(\w)\s+(\w)/g, '$1\\s+$2')
-                // Transform other spaces into optional whitespace.
-                .replace(/\s+/g, '\\s*');
-            expect(normalizedActual).toMatch(new RegExp(stringAsRegex));
+            expect(normalizedActual).toMatch(codeStringAsRegex(expectedResult));
         } else {
             expect(normalizedActual).toMatch(expectedResult);
+        }
+    });
+}
+
+export async function codeDoesNotContain(actual: string, expected: (RegExp | string)[] | RegExp | string) {
+    const expectedArray = Array.isArray(expected) ? expected : [expected];
+    const normalizedActual = await normalizeCode(actual);
+    expectedArray.forEach(expectedResult => {
+        if (typeof expectedResult === 'string') {
+            expect(normalizedActual).not.toMatch(codeStringAsRegex(expectedResult));
+        } else {
+            expect(normalizedActual).not.toMatch(expectedResult);
         }
     });
 }
@@ -54,6 +59,17 @@ export async function codeContainsImports(actual: string, expectedImports: Recor
     importPairs.forEach(([importFrom, importValue]) => {
         expect(normalizedActual).toMatch(new RegExp(`import{[^}]*\\b${importValue}\\b[^}]*}from'${importFrom}'`));
     });
+}
+
+export function codeStringAsRegex(code: string) {
+    const stringAsRegex = escapeRegex(code)
+        // Transform spaces between words into required whitespace.
+        .replace(/(\w)\s+(\w)/g, '$1\\s+$2')
+        // Do it again for single-character words — e.g. "as[ ]a[ ]token".
+        .replace(/(\w)\s+(\w)/g, '$1\\s+$2')
+        // Transform other spaces into optional whitespace.
+        .replace(/\s+/g, '\\s*');
+    return new RegExp(stringAsRegex);
 }
 
 async function normalizeCode(code: string) {

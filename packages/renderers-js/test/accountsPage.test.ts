@@ -22,7 +22,7 @@ import { visit } from '@kinobi-so/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
-import { renderMapContains } from './_setup';
+import { renderMapContains, renderMapContainsImports } from './_setup';
 
 test('it renders PDA helpers for PDA with no seeds', async () => {
     // Given the following program with 1 account and 1 pda with empty seeds.
@@ -143,5 +143,48 @@ test('it renders constants for account constant discriminators', async () => {
         'export function getMyAccountDiscriminatorBytes() { return getBytesEncoder().encode(MY_ACCOUNT_DISCRIMINATOR); }',
         'export const MY_ACCOUNT_DISCRIMINATOR2 = new Uint8Array([ 34, 34 ]);',
         'export function getMyAccountDiscriminator2Bytes() { return getBytesEncoder().encode(MY_ACCOUNT_DISCRIMINATOR2); }',
+    ]);
+});
+
+test('it can extracts account data and import it from another source', async () => {
+    // Given the following account.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
+                name: 'counter',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it using the following custom account data options.
+    const renderMap = visit(
+        node,
+        getRenderMapVisitor({
+            customAccountData: [
+                {
+                    extract: true,
+                    importFrom: 'someModule',
+                    name: 'counter',
+                },
+            ],
+        }),
+    );
+
+    // Then we expect the account data to be fetched from the hooked directory (by default).
+    await renderMapContainsImports(renderMap, 'accounts/counter.ts', {
+        someModule: ['getCounterAccountDataDecoder', 'type CounterAccountData'],
+    });
+
+    // And we expect the existing account data to be extracted into a new type
+    // so it can be imported from the hooked directory.
+    await renderMapContains(renderMap, 'types/counterAccountData.ts', [
+        'export type CounterAccountData',
+        'export type CounterAccountDataArgs',
+        'export function getCounterAccountDataEncoder',
+        'export function getCounterAccountDataDecoder',
+        'export function getCounterAccountDataCodec',
     ]);
 });

@@ -357,3 +357,43 @@ test('it renders constants for instruction constant discriminators', async () =>
         'export function getMyInstructionDiscriminator2Bytes() { return getBytesEncoder().encode(MY_INSTRUCTION_DISCRIMINATOR2); }',
     ]);
 });
+
+test('it can override the import of a resolver value node', async () => {
+    // Given the following node with a resolver value node.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({
+                        defaultValue: resolverValueNode('myResolver'),
+                        isSigner: false,
+                        isWritable: false,
+                        name: 'myAccount',
+                    }),
+                ],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        pdas: [pdaNode({ name: 'counter', seeds: [] })],
+        publicKey: '1111',
+    });
+
+    // When we render it using a custom import.
+    const renderMap = visit(
+        node,
+        getRenderMapVisitor({
+            linkOverrides: {
+                resolvers: { myResolver: 'someModule' },
+            },
+        }),
+    );
+
+    // Then we expect the resolver to be exported.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', ['myResolver(resolverScope)']);
+
+    // And its import path to be overridden.
+    await renderMapContainsImports(renderMap, 'instructions/myInstruction.ts', {
+        someModule: ['myResolver'],
+    });
+});

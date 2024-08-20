@@ -59,8 +59,6 @@ export function getByteSizeVisitor(linkables: LinkableDictionary): Visitor<numbe
         },
 
         visitDefinedTypeLink(node) {
-            if (node.importFrom) return null;
-
             // Fetch the linked type and return null if not found.
             // The validator visitor will throw a proper error later on.
             const linkedDefinedType = linkables.get(node);

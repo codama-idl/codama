@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = programLinkNode('mplCandyGuard', 'mplCandyMachine');
+const node = programLinkNode('mplCandyGuard');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -23,5 +23,5 @@ test('deleteNodesVisitor', () => {
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `programLinkNode [mplCandyGuard.from:mplCandyMachine]`);
+    expectDebugStringVisitor(node, `programLinkNode [mplCandyGuard]`);
 });

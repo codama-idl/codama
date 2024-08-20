@@ -6,11 +6,10 @@ This node represents a reference to an existing [`DefinedTypeNode`](../DefinedTy
 
 ### Data
 
-| Attribute    | Type                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `kind`       | `"definedTypeLinkNode"` | The node discriminator.                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `name`       | `CamelCaseString`       | The name of the [`DefinedTypeNode`](../DefinedTypeNode.md) we are referring to.                                                                                                                                                                                                                                                                                                                                                |
-| `importFrom` | `CamelCaseString`       | (Optional) The reference of the module we are importing from or `"hooked"` if the type is defined in the same module but manually written when rendering clients. Default to referrencing directly from the Kinobi IDL instead of using an external referrence. Note that this information is only used for rendering clients. This, it will likely be removed from the Kinobi IDL and pushed to the renderer options instead. |
+| Attribute | Type                    | Description                                                                     |
+| --------- | ----------------------- | ------------------------------------------------------------------------------- |
+| `kind`    | `"definedTypeLinkNode"` | The node discriminator.                                                         |
+| `name`    | `CamelCaseString`       | The name of the [`DefinedTypeNode`](../DefinedTypeNode.md) we are referring to. |
 
 ### Children
 
@@ -18,7 +17,7 @@ _This node has no children._
 
 ## Functions
 
-### `definedTypeLinkNode(name, importFrom?)`
+### `definedTypeLinkNode(name)`
 
 Helper function that creates a `DefinedTypeLinkNode` object from the name of the `DefinedTypeNode` we are referring to.
 

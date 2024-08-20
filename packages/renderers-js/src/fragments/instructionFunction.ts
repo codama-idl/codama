@@ -20,7 +20,10 @@ import { getInstructionInputTypeFragment } from './instructionInputType';
 import { getInstructionRemainingAccountsFragment } from './instructionRemainingAccounts';
 
 export function getInstructionFunctionFragment(
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'customInstructionData' | 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<
+        GlobalFragmentScope,
+        'asyncResolvers' | 'customInstructionData' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'
+    > & {
         dataArgsManifest: TypeManifest;
         extraArgsManifest: TypeManifest;
         instructionNode: InstructionNode;

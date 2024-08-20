@@ -4,7 +4,7 @@ import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';
 
 export function getInstructionByteDeltaFragment(
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         instructionNode: InstructionNode;
         useAsync: boolean;
     },
@@ -22,7 +22,7 @@ export function getInstructionByteDeltaFragment(
 
 function getByteDeltaFragment(
     byteDelta: InstructionByteDeltaNode,
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         useAsync: boolean;
     },
 ): Fragment[] {
@@ -68,17 +68,16 @@ function getArgumentValueNodeFragment(byteDelta: InstructionByteDeltaNode): Frag
 
 function getAccountLinkNodeFragment(
     byteDelta: InstructionByteDeltaNode,
-    scope: Pick<GlobalFragmentScope, 'nameApi'>,
+    scope: Pick<GlobalFragmentScope, 'getImportFrom' | 'nameApi'>,
 ): Fragment {
     assertIsNode(byteDelta.value, 'accountLinkNode');
     const functionName = scope.nameApi.accountGetSizeFunction(byteDelta.value.name);
-    const importFrom = byteDelta.value.importFrom ?? 'generatedAccounts';
-    return fragment(`${functionName}()`).addImports(importFrom, functionName);
+    return fragment(`${functionName}()`).addImports(scope.getImportFrom(byteDelta.value), functionName);
 }
 
 function getResolverValueNodeFragment(
     byteDelta: InstructionByteDeltaNode,
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'nameApi'> & {
+    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         useAsync: boolean;
     },
 ): Fragment | null {
@@ -89,6 +88,6 @@ function getResolverValueNodeFragment(
     const awaitKeyword = scope.useAsync && isAsync ? 'await ' : '';
     const functionName = scope.nameApi.resolverFunction(byteDelta.value.name);
     return fragment(`${awaitKeyword}${functionName}(resolverScope)`)
-        .addImports(byteDelta.value.importFrom ?? 'hooked', functionName)
+        .addImports(scope.getImportFrom(byteDelta.value), functionName)
         .addFeatures(['instruction:resolverScopeVariable']);
 }

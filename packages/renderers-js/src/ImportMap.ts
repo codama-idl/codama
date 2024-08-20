@@ -1,5 +1,3 @@
-import { ImportFrom } from '@kinobi-so/nodes';
-
 import { Fragment } from './fragments';
 import { TypeManifest } from './TypeManifest';
 
@@ -48,11 +46,11 @@ const DEFAULT_INTERNAL_MODULE_MAP: Record<string, string> = {
 };
 
 export class ImportMap {
-    protected readonly _imports: Map<ImportFrom, Set<string>> = new Map();
+    protected readonly _imports: Map<string, Set<string>> = new Map();
 
-    protected readonly _aliases: Map<ImportFrom, Record<string, string>> = new Map();
+    protected readonly _aliases: Map<string, Record<string, string>> = new Map();
 
-    add(module: ImportFrom, imports: Set<string> | string[] | string): ImportMap {
+    add(module: string, imports: Set<string> | string[] | string): ImportMap {
         const newImports = new Set(typeof imports === 'string' ? [imports] : imports);
         if (newImports.size === 0) return this;
         const currentImports = this._imports.get(module) ?? new Set();
@@ -61,7 +59,7 @@ export class ImportMap {
         return this;
     }
 
-    remove(module: ImportFrom, imports: Set<string> | string[] | string): ImportMap {
+    remove(module: string, imports: Set<string> | string[] | string): ImportMap {
         const importsToRemove = new Set(typeof imports === 'string' ? [imports] : imports);
         if (importsToRemove.size === 0) return this;
         const currentImports = this._imports.get(module) ?? new Set();
@@ -93,7 +91,7 @@ export class ImportMap {
         return this.mergeWith(manifest.strictType, manifest.looseType, manifest.encoder, manifest.decoder);
     }
 
-    addAlias(module: ImportFrom, name: string, alias: string): ImportMap {
+    addAlias(module: string, name: string, alias: string): ImportMap {
         const currentAliases = this._aliases.get(module) ?? {};
         currentAliases[name] = alias;
         this._aliases.set(module, currentAliases);
@@ -104,9 +102,9 @@ export class ImportMap {
         return this._imports.size === 0;
     }
 
-    resolve(dependencies: Record<ImportFrom, string> = {}, useGranularImports = false): Map<ImportFrom, Set<string>> {
+    resolve(dependencies: Record<string, string> = {}, useGranularImports = false): Map<string, Set<string>> {
         // Resolve aliases.
-        const aliasedMap = new Map<ImportFrom, Set<string>>(
+        const aliasedMap = new Map<string, Set<string>>(
             [...this._imports.entries()].map(([module, imports]) => {
                 const aliasMap = this._aliases.get(module) ?? {};
                 const joinedImports = [...imports].map(i => (aliasMap[i] ? `${i} as ${aliasMap[i]}` : i));
@@ -120,7 +118,7 @@ export class ImportMap {
             ...DEFAULT_INTERNAL_MODULE_MAP,
             ...dependencies,
         };
-        const resolvedMap = new Map<ImportFrom, Set<string>>();
+        const resolvedMap = new Map<string, Set<string>>();
         aliasedMap.forEach((imports, module) => {
             const resolvedModule: string = dependencyMap[module] ?? module;
             const currentImports = resolvedMap.get(resolvedModule) ?? new Set();
@@ -131,7 +129,7 @@ export class ImportMap {
         return resolvedMap;
     }
 
-    toString(dependencies: Record<ImportFrom, string> = {}, useGranularImports = false): string {
+    toString(dependencies: Record<string, string> = {}, useGranularImports = false): string {
         return [...this.resolve(dependencies, useGranularImports).entries()]
             .sort(([a], [b]) => {
                 const aIsRelative = a.startsWith('.');

@@ -9,7 +9,6 @@ import {
     getAllInstructionsWithSubs,
     getAllPdas,
     getAllPrograms,
-    ImportFrom,
     InstructionNode,
     ProgramNode,
     resolveNestedTypeNode,
@@ -52,6 +51,9 @@ import { DEFAULT_NAME_TRANSFORMERS, getNameApi, NameApi, NameTransformers } from
 import {
     CustomDataOptions,
     getDefinedTypeNodesToExtract,
+    getImportFromFactory,
+    GetImportFromFunction,
+    LinkOverrides,
     parseCustomDataOptions,
     ParsedCustomDataOptions,
     render as baseRender,
@@ -61,8 +63,9 @@ export type GetRenderMapOptions = {
     asyncResolvers?: string[];
     customAccountData?: CustomDataOptions[];
     customInstructionData?: CustomDataOptions[];
-    dependencyMap?: Record<ImportFrom, string>;
+    dependencyMap?: Record<string, string>;
     internalNodes?: string[];
+    linkOverrides?: LinkOverrides;
     nameTransformers?: Partial<NameTransformers>;
     nonScalarEnums?: string[];
     renderParentInstructions?: boolean;
@@ -73,6 +76,7 @@ export type GlobalFragmentScope = {
     asyncResolvers: CamelCaseString[];
     customAccountData: ParsedCustomDataOptions;
     customInstructionData: ParsedCustomDataOptions;
+    getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
     nameApi: NameApi;
     nonScalarEnums: CamelCaseString[];
@@ -97,11 +101,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const internalNodes = (options.internalNodes ?? []).map(camelCase);
     const customAccountData = parseCustomDataOptions(options.customAccountData ?? [], 'AccountData');
     const customInstructionData = parseCustomDataOptions(options.customInstructionData ?? [], 'InstructionData');
+    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {}, customAccountData, customInstructionData);
 
     const getTypeManifestVisitor = (parentName?: { loose: string; strict: string }) =>
         baseGetTypeManifestVisitor({
             customAccountData,
             customInstructionData,
+            getImportFrom,
             linkables,
             nameApi,
             nonScalarEnums,
@@ -114,6 +120,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         asyncResolvers,
         customAccountData,
         customInstructionData,
+        getImportFrom,
         linkables,
         nameApi,
         nonScalarEnums,

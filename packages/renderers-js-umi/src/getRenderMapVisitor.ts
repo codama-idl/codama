@@ -8,7 +8,6 @@ import {
     getAllInstructionArguments,
     getAllInstructionsWithSubs,
     getAllPrograms,
-    ImportFrom,
     InstructionNode,
     isDataEnum,
     isNode,
@@ -43,6 +42,8 @@ import {
     CustomDataOptions,
     getDefinedTypeNodesToExtract,
     getGpaFieldsFromAccount,
+    getImportFromFactory,
+    LinkOverrides,
     parseCustomDataOptions,
     render,
 } from './utils';
@@ -50,8 +51,9 @@ import {
 export type GetRenderMapOptions = {
     customAccountData?: CustomDataOptions[];
     customInstructionData?: CustomDataOptions[];
-    dependencyMap?: Record<ImportFrom, string>;
+    dependencyMap?: Record<string, string>;
     internalNodes?: string[];
+    linkOverrides?: LinkOverrides;
     nonScalarEnums?: string[];
     renderParentInstructions?: boolean;
 };
@@ -72,8 +74,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
         ...options.dependencyMap,
 
         generatedAccounts: '../accounts',
-
         generatedErrors: '../errors',
+
         // Custom relative dependencies to link generated files together.
         generatedPrograms: '../programs',
         generatedTypes: '../types',
@@ -82,11 +84,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
     const internalNodes = (options.internalNodes ?? []).map(camelCase);
     const customAccountData = parseCustomDataOptions(options.customAccountData ?? [], 'AccountData');
     const customInstructionData = parseCustomDataOptions(options.customInstructionData ?? [], 'InstructionData');
+    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {}, customAccountData, customInstructionData);
 
     const getTypeManifestVisitor = (parentName?: { loose: string; strict: string }) =>
         baseGetTypeManifestVisitor({
             customAccountData,
             customInstructionData,
+            getImportFrom,
             linkables,
             nonScalarEnums,
             parentName,
@@ -336,6 +340,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                                 typeManifestVisitor,
                                 node.optionalAccountStrategy,
                                 argObject,
+                                getImportFrom,
                             );
                             imports.mergeWith(renderedInput.imports);
                             interfaces.mergeWith(renderedInput.interfaces);
@@ -388,10 +393,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     // Arg defaults.
                     allArgumentsWithDefaultValue.forEach(argument => {
                         if (isNode(argument.defaultValue, 'resolverValueNode')) {
-                            imports.add(
-                                argument.defaultValue.importFrom ?? 'hooked',
-                                camelCase(argument.defaultValue.name),
-                            );
+                            imports.add(getImportFrom(argument.defaultValue), camelCase(argument.defaultValue.name));
                         }
                     });
                     if (argsWithDefaults.length > 0) {
@@ -404,18 +406,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     }
                     if (byteDelta && isNode(byteDelta.value, 'accountLinkNode')) {
                         const accountName = pascalCase(byteDelta.value.name);
-                        const importFrom = byteDelta.value.importFrom ?? 'generatedAccounts';
-                        imports.add(importFrom, `get${accountName}Size`);
+                        imports.add(getImportFrom(byteDelta.value), `get${accountName}Size`);
                     } else if (byteDelta && isNode(byteDelta.value, 'resolverValueNode')) {
-                        imports.add(byteDelta.value.importFrom ?? 'hooked', camelCase(byteDelta.value.name));
+                        imports.add(getImportFrom(byteDelta.value), camelCase(byteDelta.value.name));
                     }
 
                     // Remaining accounts.
                     if (remainingAccounts && isNode(remainingAccounts.value, 'resolverValueNode')) {
-                        imports.add(
-                            remainingAccounts.value.importFrom ?? 'hooked',
-                            camelCase(remainingAccounts.value.name),
-                        );
+                        imports.add(getImportFrom(remainingAccounts.value), camelCase(remainingAccounts.value.name));
                     }
 
                     return new RenderMap().add(

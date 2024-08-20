@@ -1,5 +1,3 @@
-import { ImportFrom } from '@kinobi-so/nodes';
-
 import { TypeManifest } from './getTypeManifestVisitor';
 
 const DEFAULT_MODULE_MAP: Record<string, string> = {
@@ -58,7 +56,7 @@ export class ImportMap {
         return this._imports.size === 0;
     }
 
-    resolveDependencyMap(dependencies: Record<ImportFrom, string>): ImportMap {
+    resolveDependencyMap(dependencies: Record<string, string>): ImportMap {
         const dependencyMap = { ...DEFAULT_MODULE_MAP, ...dependencies };
         const newImportMap = new ImportMap();
         const resolveDependency = (i: string): string => {
@@ -72,7 +70,7 @@ export class ImportMap {
         return newImportMap;
     }
 
-    toString(dependencies: Record<ImportFrom, string>): string {
+    toString(dependencies: Record<string, string>): string {
         const resolvedMap = this.resolveDependencyMap(dependencies);
         const importStatements = [...resolvedMap.imports].map(i => {
             const alias = resolvedMap.aliases.get(i);

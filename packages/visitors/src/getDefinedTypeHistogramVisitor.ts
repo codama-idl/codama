@@ -67,10 +67,6 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                 },
 
                 visitDefinedTypeLink(node) {
-                    if (node.importFrom) {
-                        return {};
-                    }
-
                     return {
                         [node.name]: {
                             directlyAsInstructionArgs: Number(mode === 'instruction' && stackLevel <= 1),
