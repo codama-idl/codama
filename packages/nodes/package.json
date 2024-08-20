@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/nodes",
-    "version": "0.21.2",
+    "version": "0.21.3",
     "description": "Node specifications and helpers for the Kinobi standard",
     "exports": {
         "types": "./dist/types/index.d.ts",
