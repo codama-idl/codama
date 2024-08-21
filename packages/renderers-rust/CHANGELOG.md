@@ -1,5 +1,15 @@
 # @kinobi-so/renderers-rust
 
+## 0.21.6
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @kinobi-so/errors@0.21.4
+    -   @kinobi-so/nodes@0.21.4
+    -   @kinobi-so/visitors-core@0.21.4
+    -   @kinobi-so/renderers-core@0.21.2
+
 ## 0.21.5
 
 ### Patch Changes

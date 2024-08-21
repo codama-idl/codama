@@ -4,18 +4,18 @@ import { assertIsNode, KinobiVersion, Node, RootNode } from '@kinobi-so/nodes';
 import { visit, Visitor } from '@kinobi-so/visitors';
 
 export interface Kinobi {
-    accept<T>(visitor: Visitor<T>): T;
+    accept<T>(visitor: Visitor<T, 'rootNode'>): T;
     clone(): Kinobi;
     getJson(): string;
     getRoot(): RootNode;
-    update(visitor: Visitor<Node | null>): void;
+    update(visitor: Visitor<Node | null, 'rootNode'>): void;
 }
 
 export function createFromRoot(root: RootNode): Kinobi {
     let currentRoot = root;
     validateKinobiVersion(currentRoot.version);
     return {
-        accept<T>(visitor: Visitor<T>): T {
+        accept<T>(visitor: Visitor<T, 'rootNode'>): T {
             return visit(currentRoot, visitor);
         },
         clone(): Kinobi {
@@ -27,7 +27,7 @@ export function createFromRoot(root: RootNode): Kinobi {
         getRoot(): RootNode {
             return currentRoot;
         },
-        update(visitor: Visitor<Node | null>): void {
+        update(visitor: Visitor<Node | null, 'rootNode'>): void {
             const newRoot = visit(currentRoot, visitor);
             assertIsNode(newRoot, 'rootNode');
             currentRoot = newRoot;

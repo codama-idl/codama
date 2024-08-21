@@ -1,5 +1,17 @@
 # kinobi
 
+## 0.21.4
+
+### Patch Changes
+
+-   [#181](https://github.com/kinobi-so/kinobi/pull/181) [`28f3d38`](https://github.com/kinobi-so/kinobi/commit/28f3d381f570859cbea1c72b7e352ad3e72db37f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix TS bug on `accept` and `update` Kinobi function
+
+-   Updated dependencies []:
+    -   @kinobi-so/errors@0.21.4
+    -   @kinobi-so/nodes@0.21.4
+    -   @kinobi-so/validators@0.21.4
+    -   @kinobi-so/visitors@0.21.4
+
 ## 0.21.3
 
 ### Patch Changes
