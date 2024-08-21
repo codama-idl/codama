@@ -2,10 +2,15 @@ import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@kinobi-so/err
 import {
     AccountLinkNode,
     AccountNode,
-    camelCase,
     CamelCaseString,
     DefinedTypeLinkNode,
     DefinedTypeNode,
+    InstructionAccountLinkNode,
+    InstructionAccountNode,
+    InstructionArgumentLinkNode,
+    InstructionArgumentNode,
+    InstructionLinkNode,
+    InstructionNode,
     isNode,
     LinkNode,
     PdaLinkNode,
@@ -16,44 +21,43 @@ import {
 
 import { NodeStack } from './NodeStack';
 
-export type LinkableNode = AccountNode | DefinedTypeNode | PdaNode | ProgramNode;
+export type LinkableNode =
+    | AccountNode
+    | DefinedTypeNode
+    | InstructionAccountNode
+    | InstructionArgumentNode
+    | InstructionNode
+    | PdaNode
+    | ProgramNode;
 
-export const LINKABLE_NODES: LinkableNode['kind'][] = ['accountNode', 'definedTypeNode', 'pdaNode', 'programNode'];
+export const LINKABLE_NODES: LinkableNode['kind'][] = [
+    'accountNode',
+    'definedTypeNode',
+    'instructionAccountNode',
+    'instructionArgumentNode',
+    'instructionNode',
+    'pdaNode',
+    'programNode',
+];
 
 type ProgramDictionary = {
     accounts: Map<string, AccountNode>;
     definedTypes: Map<string, DefinedTypeNode>;
+    instructions: Map<string, InstructionDictionary>;
     pdas: Map<string, PdaNode>;
     program: ProgramNode;
 };
 
-type ProgramInput = ProgramLinkNode | ProgramNode | string;
-
-function getProgramName(program: ProgramInput): CamelCaseString;
-function getProgramName(program: ProgramInput | undefined): CamelCaseString | undefined;
-function getProgramName(program: ProgramInput | undefined): CamelCaseString | undefined {
-    if (!program) return undefined;
-    return typeof program === 'string' ? camelCase(program) : program.name;
-}
+type InstructionDictionary = {
+    accounts: Map<string, InstructionAccountNode>;
+    arguments: Map<string, InstructionArgumentNode>;
+    instruction: InstructionNode;
+};
 
 export class LinkableDictionary {
     readonly programs: Map<string, ProgramDictionary> = new Map();
 
     readonly stack: NodeStack = new NodeStack();
-
-    private getOrCreateProgramDictionary(node: ProgramNode): ProgramDictionary {
-        let programDictionary = this.programs.get(node.name);
-        if (!programDictionary) {
-            programDictionary = {
-                accounts: new Map(),
-                definedTypes: new Map(),
-                pdas: new Map(),
-                program: node,
-            };
-            this.programs.set(node.name, programDictionary);
-        }
-        return programDictionary;
-    }
 
     record(node: LinkableNode): this {
         if (isNode(node, 'programNode')) {
@@ -66,20 +70,43 @@ export class LinkableDictionary {
         if (!program) return this;
 
         const programDictionary = this.getOrCreateProgramDictionary(program);
-        if (isNode(node, 'pdaNode')) {
-            programDictionary.pdas.set(node.name, node);
-        } else if (isNode(node, 'accountNode')) {
+        if (isNode(node, 'accountNode')) {
             programDictionary.accounts.set(node.name, node);
+            return this;
         } else if (isNode(node, 'definedTypeNode')) {
             programDictionary.definedTypes.set(node.name, node);
+            return this;
+        } else if (isNode(node, 'pdaNode')) {
+            programDictionary.pdas.set(node.name, node);
+            return this;
         }
+
+        if (isNode(node, 'instructionNode')) {
+            this.getOrCreateInstructionDictionary(programDictionary, node);
+            return this;
+        }
+
+        // Do not record instruction-specific nodes that are outside of an instruction.
+        const instruction = this.stack.getInstruction();
+        if (!instruction) return this;
+
+        const instructionDictionary = this.getOrCreateInstructionDictionary(programDictionary, instruction);
+        if (isNode(node, 'instructionAccountNode')) {
+            instructionDictionary.accounts.set(node.name, node);
+        } else if (isNode(node, 'instructionArgumentNode')) {
+            instructionDictionary.arguments.set(node.name, node);
+        }
+
         return this;
     }
 
-    getOrThrow(linkNode: ProgramLinkNode): ProgramNode;
-    getOrThrow(linkNode: PdaLinkNode): PdaNode;
     getOrThrow(linkNode: AccountLinkNode): AccountNode;
     getOrThrow(linkNode: DefinedTypeLinkNode): DefinedTypeNode;
+    getOrThrow(linkNode: InstructionAccountLinkNode): InstructionAccountNode;
+    getOrThrow(linkNode: InstructionArgumentLinkNode): InstructionArgumentNode;
+    getOrThrow(linkNode: InstructionLinkNode): InstructionNode;
+    getOrThrow(linkNode: PdaLinkNode): PdaNode;
+    getOrThrow(linkNode: ProgramLinkNode): ProgramNode;
     getOrThrow(linkNode: LinkNode): LinkableNode {
         const node = this.get(linkNode as ProgramLinkNode) as LinkableNode | undefined;
 
@@ -89,7 +116,7 @@ export class LinkableDictionary {
                 linkNode,
                 name: linkNode.name,
                 program: isNode(linkNode, 'pdaLinkNode')
-                    ? getProgramName(linkNode.program ?? this.stack.getProgram())
+                    ? (linkNode.program ?? this.stack.getProgram())?.name
                     : undefined,
             });
         }
@@ -97,51 +124,118 @@ export class LinkableDictionary {
         return node;
     }
 
-    get(linkNode: ProgramLinkNode): ProgramNode | undefined;
-    get(linkNode: PdaLinkNode): PdaNode | undefined;
     get(linkNode: AccountLinkNode): AccountNode | undefined;
     get(linkNode: DefinedTypeLinkNode): DefinedTypeNode | undefined;
+    get(linkNode: InstructionAccountLinkNode): InstructionAccountNode | undefined;
+    get(linkNode: InstructionArgumentLinkNode): InstructionArgumentNode | undefined;
+    get(linkNode: InstructionLinkNode): InstructionNode | undefined;
+    get(linkNode: PdaLinkNode): PdaNode | undefined;
+    get(linkNode: ProgramLinkNode): ProgramNode | undefined;
     get(linkNode: LinkNode): LinkableNode | undefined {
-        if (isNode(linkNode, 'programLinkNode')) {
-            return this.programs.get(linkNode.name)?.program;
-        }
-
-        const programName = getProgramName(linkNode.program ?? this.stack.getProgram());
-        if (!programName) return undefined;
-
-        const programDictionary = this.programs.get(programName);
+        const programDictionary = this.getProgramDictionary(linkNode);
         if (!programDictionary) return undefined;
+        const instructionDictionary = this.getInstructionDictionary(programDictionary, linkNode);
 
-        if (isNode(linkNode, 'pdaLinkNode')) {
-            return programDictionary.pdas.get(linkNode.name);
-        } else if (isNode(linkNode, 'accountLinkNode')) {
+        if (isNode(linkNode, 'accountLinkNode')) {
             return programDictionary.accounts.get(linkNode.name);
         } else if (isNode(linkNode, 'definedTypeLinkNode')) {
             return programDictionary.definedTypes.get(linkNode.name);
+        } else if (isNode(linkNode, 'instructionAccountLinkNode')) {
+            return instructionDictionary?.accounts.get(linkNode.name);
+        } else if (isNode(linkNode, 'instructionArgumentLinkNode')) {
+            return instructionDictionary?.arguments.get(linkNode.name);
+        } else if (isNode(linkNode, 'instructionLinkNode')) {
+            return instructionDictionary?.instruction;
+        } else if (isNode(linkNode, 'pdaLinkNode')) {
+            return programDictionary.pdas.get(linkNode.name);
+        } else if (isNode(linkNode, 'programLinkNode')) {
+            return programDictionary.program;
         }
 
         return undefined;
     }
 
     has(linkNode: LinkNode): boolean {
-        if (isNode(linkNode, 'programLinkNode')) {
-            return this.programs.has(linkNode.name);
-        }
-
-        const programName = getProgramName(linkNode.program ?? this.stack.getProgram());
-        if (!programName) return false;
-
-        const programDictionary = this.programs.get(programName);
+        const programDictionary = this.getProgramDictionary(linkNode);
         if (!programDictionary) return false;
+        const instructionDictionary = this.getInstructionDictionary(programDictionary, linkNode);
 
-        if (isNode(linkNode, 'pdaLinkNode')) {
-            return programDictionary.pdas.has(linkNode.name);
-        } else if (isNode(linkNode, 'accountLinkNode')) {
+        if (isNode(linkNode, 'accountLinkNode')) {
             return programDictionary.accounts.has(linkNode.name);
         } else if (isNode(linkNode, 'definedTypeLinkNode')) {
             return programDictionary.definedTypes.has(linkNode.name);
+        } else if (isNode(linkNode, 'instructionAccountLinkNode')) {
+            return !!instructionDictionary && instructionDictionary.accounts.has(linkNode.name);
+        } else if (isNode(linkNode, 'instructionArgumentLinkNode')) {
+            return !!instructionDictionary && instructionDictionary.arguments.has(linkNode.name);
+        } else if (isNode(linkNode, 'instructionLinkNode')) {
+            return programDictionary.instructions.has(linkNode.name);
+        } else if (isNode(linkNode, 'pdaLinkNode')) {
+            return programDictionary.pdas.has(linkNode.name);
+        } else if (isNode(linkNode, 'programLinkNode')) {
+            return true;
         }
 
         return false;
+    }
+
+    private getProgramDictionary(linkNode: LinkNode): ProgramDictionary | undefined {
+        let programName: CamelCaseString | undefined = undefined;
+        if (isNode(linkNode, 'programLinkNode')) {
+            programName = linkNode.name;
+        } else if ('program' in linkNode) {
+            programName = linkNode.program?.name;
+        } else if ('instruction' in linkNode) {
+            programName = linkNode.instruction?.program?.name;
+        }
+        programName = programName ?? this.stack.getProgram()?.name;
+
+        return programName ? this.programs.get(programName) : undefined;
+    }
+
+    private getInstructionDictionary(
+        programDictionary: ProgramDictionary,
+        linkNode: LinkNode,
+    ): InstructionDictionary | undefined {
+        let instructionName: CamelCaseString | undefined = undefined;
+        if (isNode(linkNode, 'instructionLinkNode')) {
+            instructionName = linkNode.name;
+        } else if ('instruction' in linkNode) {
+            instructionName = linkNode.instruction?.name;
+        }
+        instructionName = instructionName ?? this.stack.getInstruction()?.name;
+
+        return instructionName ? programDictionary.instructions.get(instructionName) : undefined;
+    }
+
+    private getOrCreateProgramDictionary(node: ProgramNode): ProgramDictionary {
+        let programDictionary = this.programs.get(node.name);
+        if (!programDictionary) {
+            programDictionary = {
+                accounts: new Map(),
+                definedTypes: new Map(),
+                instructions: new Map(),
+                pdas: new Map(),
+                program: node,
+            };
+            this.programs.set(node.name, programDictionary);
+        }
+        return programDictionary;
+    }
+
+    private getOrCreateInstructionDictionary(
+        programDictionary: ProgramDictionary,
+        node: InstructionNode,
+    ): InstructionDictionary {
+        let instructionDictionary = programDictionary.instructions.get(node.name);
+        if (!instructionDictionary) {
+            instructionDictionary = {
+                accounts: new Map(),
+                arguments: new Map(),
+                instruction: node,
+            };
+            programDictionary.instructions.set(node.name, instructionDictionary);
+        }
+        return instructionDictionary;
     }
 }
