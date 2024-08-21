@@ -11,7 +11,7 @@ import {
 const node = pdaLinkNode('associatedToken', 'splToken');
 
 test('mergeVisitor', () => {
-    expectMergeVisitorCount(node, 1);
+    expectMergeVisitorCount(node, 2);
 });
 
 test('identityVisitor', () => {
@@ -20,8 +20,14 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[pdaLinkNode]', null);
+    expectDeleteNodesVisitor(node, '[programLinkNode]', pdaLinkNode('associatedToken'));
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `pdaLinkNode [splToken.associatedToken]`);
+    expectDebugStringVisitor(
+        node,
+        `
+pdaLinkNode [associatedToken]
+|   programLinkNode [splToken]`,
+    );
 });

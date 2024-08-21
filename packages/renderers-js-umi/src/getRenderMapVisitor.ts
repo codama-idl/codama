@@ -73,10 +73,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
         umiSerializers: '@metaplex-foundation/umi/serializers',
         ...options.dependencyMap,
 
+        // Custom relative dependencies to link generated files together.
         generatedAccounts: '../accounts',
         generatedErrors: '../errors',
-
-        // Custom relative dependencies to link generated files together.
+        generatedInstructions: '../instructions',
         generatedPrograms: '../programs',
         generatedTypes: '../types',
     };

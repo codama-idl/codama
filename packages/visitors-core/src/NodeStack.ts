@@ -1,4 +1,4 @@
-import { GetNodeFromKind, isNode, Node, NodeKind, ProgramNode } from '@kinobi-so/nodes';
+import { GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@kinobi-so/nodes';
 
 export class NodeStack {
     private readonly stack: Node[];
@@ -29,6 +29,10 @@ export class NodeStack {
 
     public getProgram(): ProgramNode | undefined {
         return this.find('programNode');
+    }
+
+    public getInstruction(): InstructionNode | undefined {
+        return this.find('instructionNode');
     }
 
     public all(): readonly Node[] {

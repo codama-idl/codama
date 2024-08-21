@@ -63,12 +63,14 @@ function getNodeDetails(node: Node): string[] {
             return [...(node.subtract ? ['subtract'] : []), ...(node.withHeader ? ['withHeader'] : [])];
         case 'errorNode':
             return [node.code.toString(), node.name];
-        case 'programLinkNode':
-            return [node.name];
-        case 'pdaLinkNode':
         case 'accountLinkNode':
         case 'definedTypeLinkNode':
-            return [...(node.program ? [node.program.name] : []), node.name];
+        case 'instructionAccountLinkNode':
+        case 'instructionArgumentLinkNode':
+        case 'instructionLinkNode':
+        case 'pdaLinkNode':
+        case 'programLinkNode':
+            return [node.name];
         case 'numberTypeNode':
             return [node.format, ...(node.endian === 'be' ? ['bigEndian'] : [])];
         case 'amountTypeNode':

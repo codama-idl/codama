@@ -1,4 +1,4 @@
-import { definedTypeLinkNode } from '@kinobi-so/nodes';
+import { instructionLinkNode } from '@kinobi-so/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = definedTypeLinkNode('tokenState', 'splToken');
+const node = instructionLinkNode('transferTokens', 'splToken');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);
@@ -19,15 +19,15 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[definedTypeLinkNode]', null);
-    expectDeleteNodesVisitor(node, '[programLinkNode]', definedTypeLinkNode('tokenState'));
+    expectDeleteNodesVisitor(node, '[instructionLinkNode]', null);
+    expectDeleteNodesVisitor(node, '[programLinkNode]', instructionLinkNode('transferTokens'));
 });
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-definedTypeLinkNode [tokenState]
+instructionLinkNode [transferTokens]
 |   programLinkNode [splToken]`,
     );
 });
