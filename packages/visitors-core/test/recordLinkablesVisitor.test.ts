@@ -1,3 +1,4 @@
+import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
 import {
     accountLinkNode,
     AccountNode,
@@ -305,4 +306,31 @@ test('it does not record linkable types that are not under a program node', () =
 
     // Then we expect the account node to not be recorded.
     expect(linkables.has(accountLinkNode('someAccount'))).toBe(false);
+});
+
+test('it can throw an exception when trying to retrieve a missing linked node', () => {
+    // Given the following program node with one account.
+    const node = programNode({
+        accounts: [accountNode({ name: 'myAccount' })],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // And a recorded LinkableDictionary.
+    const linkables = new LinkableDictionary();
+    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    visit(node, visitor);
+
+    // When we try to retrieve a missing account node.
+    const getMissingAccount = () => linkables.getOrThrow(accountLinkNode('missingAccount', 'myProgram'));
+
+    // Then we expect an exception to be thrown.
+    expect(getMissingAccount).toThrow(
+        new KinobiError(KINOBI_ERROR__LINKED_NODE_NOT_FOUND, {
+            kind: 'accountLinkNode',
+            linkNode: accountLinkNode('missingAccount', 'myProgram'),
+            name: 'missingAccount',
+            stack: [],
+        }),
+    );
 });
