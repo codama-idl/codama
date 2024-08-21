@@ -443,10 +443,12 @@ const lastNode = nodeStack.pop();
 const lastNode = nodeStack.peek();
 // Get all the nodes in the stack as an array.
 const nodes = nodeStack.all();
-// Get the first node in the stack matching one or several node kinds.
+// Get the closest node in the stack matching one or several node kinds.
 const nodes = nodeStack.find('accountNode');
-// Get the first program node in the stack.
+// Get the closest program node in the stack.
 const nodes = nodeStack.getProgram();
+// Get the closest instruction node in the stack.
+const nodes = nodeStack.getInstruction();
 // Check if the stack is empty.
 const isEmpty = nodeStack.isEmpty();
 // Clone the stack.

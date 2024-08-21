@@ -4,5 +4,8 @@ The `LinkNode` type helper represents all nodes that link to other nodes. Note t
 
 -   [`AccountLinkNode`](./AccountLinkNode.md)
 -   [`DefinedTypeLinkNode`](./DefinedTypeLinkNode.md)
+-   [`InstructionAccountLinkNode`](./InstructionAccountLinkNode.md)
+-   [`InstructionArgumentLinkNode`](./InstructionArgumentLinkNode.md)
+-   [`InstructionLinkNode`](./InstructionLinkNode.md)
 -   [`PdaLinkNode`](./PdaLinkNode.md)
 -   [`ProgramLinkNode`](./ProgramLinkNode.md)

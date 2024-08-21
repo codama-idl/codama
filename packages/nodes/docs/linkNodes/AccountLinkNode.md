@@ -21,7 +21,7 @@ This node represents a reference to an existing [`AccountNode`](../AccountNode.m
 
 ### `accountLinkNode(name, program?)`
 
-Helper function that creates a `AccountLinkNode` object from the name of the `AccountNode` we are referring to. If the account is from another program, the `program` parameter must be provided as either a `string` or a `ProgramLinkNode`.
+Helper function that creates an `AccountLinkNode` object from the name of the `AccountNode` we are referring to. If the account is from another program, the `program` parameter must be provided as either a `string` or a `ProgramLinkNode`.
 
 ```ts
 const node = accountLinkNode('myAccount');
