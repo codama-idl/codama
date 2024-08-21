@@ -350,5 +350,41 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
+    if (castedNodeKeys.includes('accountLinkNode')) {
+        visitor.visitAccountLink = function visitAccountLink(node) {
+            return merge(node, node.program ? visit(this)(node.program) : []);
+        };
+    }
+
+    if (castedNodeKeys.includes('definedTypeLinkNode')) {
+        visitor.visitDefinedTypeLink = function visitDefinedTypeLink(node) {
+            return merge(node, node.program ? visit(this)(node.program) : []);
+        };
+    }
+
+    if (castedNodeKeys.includes('instructionLinkNode')) {
+        visitor.visitInstructionLink = function visitInstructionLink(node) {
+            return merge(node, node.program ? visit(this)(node.program) : []);
+        };
+    }
+
+    if (castedNodeKeys.includes('instructionAccountLinkNode')) {
+        visitor.visitInstructionAccountLink = function visitInstructionAccountLink(node) {
+            return merge(node, node.instruction ? visit(this)(node.instruction) : []);
+        };
+    }
+
+    if (castedNodeKeys.includes('instructionArgumentLinkNode')) {
+        visitor.visitInstructionArgumentLink = function visitInstructionArgumentLink(node) {
+            return merge(node, node.instruction ? visit(this)(node.instruction) : []);
+        };
+    }
+
+    if (castedNodeKeys.includes('pdaLinkNode')) {
+        visitor.visitPdaLink = function visitPdaLink(node) {
+            return merge(node, node.program ? visit(this)(node.program) : []);
+        };
+    }
+
     return visitor as Visitor<TReturn, TNodeKind>;
 }

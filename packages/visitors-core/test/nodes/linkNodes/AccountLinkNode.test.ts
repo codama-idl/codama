@@ -11,7 +11,7 @@ import {
 const node = accountLinkNode('token', 'splToken');
 
 test('mergeVisitor', () => {
-    expectMergeVisitorCount(node, 1);
+    expectMergeVisitorCount(node, 2);
 });
 
 test('identityVisitor', () => {
@@ -20,8 +20,14 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[accountLinkNode]', null);
+    expectDeleteNodesVisitor(node, '[programLinkNode]', accountLinkNode('token'));
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `accountLinkNode [splToken.token]`);
+    expectDebugStringVisitor(
+        node,
+        `
+accountLinkNode [token]
+|   programLinkNode [splToken]`,
+    );
 });

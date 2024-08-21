@@ -1,4 +1,5 @@
 import {
+    accountLinkNode,
     accountNode,
     amountTypeNode,
     arrayTypeNode,
@@ -12,6 +13,7 @@ import {
     constantValueNode,
     COUNT_NODES,
     dateTimeTypeNode,
+    definedTypeLinkNode,
     definedTypeNode,
     DISCRIMINATOR_NODES,
     ENUM_VARIANT_TYPE_NODES,
@@ -24,9 +26,12 @@ import {
     hiddenPrefixTypeNode,
     hiddenSuffixTypeNode,
     INSTRUCTION_INPUT_VALUE_NODES,
+    instructionAccountLinkNode,
     instructionAccountNode,
+    instructionArgumentLinkNode,
     instructionArgumentNode,
     instructionByteDeltaNode,
+    instructionLinkNode,
     instructionNode,
     instructionRemainingAccountsNode,
     mapEntryValueNode,
@@ -36,6 +41,7 @@ import {
     NodeKind,
     optionTypeNode,
     PDA_SEED_NODES,
+    pdaLinkNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
@@ -621,6 +627,54 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             if (constant === null) return null;
             assertIsNode(constant, 'constantValueNode');
             return constantDiscriminatorNode(constant, node.offset);
+        };
+    }
+
+    if (castedNodeKeys.includes('accountLinkNode')) {
+        visitor.visitAccountLink = function visitAccountLink(node) {
+            const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
+            if (program) assertIsNode(program, 'programLinkNode');
+            return accountLinkNode(node.name, program);
+        };
+    }
+
+    if (castedNodeKeys.includes('definedTypeLinkNode')) {
+        visitor.visitDefinedTypeLink = function visitDefinedTypeLink(node) {
+            const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
+            if (program) assertIsNode(program, 'programLinkNode');
+            return definedTypeLinkNode(node.name, program);
+        };
+    }
+
+    if (castedNodeKeys.includes('instructionLinkNode')) {
+        visitor.visitInstructionLink = function visitInstructionLink(node) {
+            const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
+            if (program) assertIsNode(program, 'programLinkNode');
+            return instructionLinkNode(node.name, program);
+        };
+    }
+
+    if (castedNodeKeys.includes('instructionAccountLinkNode')) {
+        visitor.visitInstructionAccountLink = function visitInstructionAccountLink(node) {
+            const instruction = node.instruction ? (visit(this)(node.instruction) ?? undefined) : undefined;
+            if (instruction) assertIsNode(instruction, 'instructionLinkNode');
+            return instructionAccountLinkNode(node.name, instruction);
+        };
+    }
+
+    if (castedNodeKeys.includes('instructionArgumentLinkNode')) {
+        visitor.visitInstructionArgumentLink = function visitInstructionArgumentLink(node) {
+            const instruction = node.instruction ? (visit(this)(node.instruction) ?? undefined) : undefined;
+            if (instruction) assertIsNode(instruction, 'instructionLinkNode');
+            return instructionArgumentLinkNode(node.name, instruction);
+        };
+    }
+
+    if (castedNodeKeys.includes('pdaLinkNode')) {
+        visitor.visitPdaLink = function visitPdaLink(node) {
+            const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
+            if (program) assertIsNode(program, 'programLinkNode');
+            return pdaLinkNode(node.name, program);
         };
     }
 
