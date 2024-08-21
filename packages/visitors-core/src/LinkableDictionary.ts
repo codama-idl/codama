@@ -60,40 +60,19 @@ export class LinkableDictionary {
     readonly stack: NodeStack = new NodeStack();
 
     record(node: LinkableNode): this {
-        if (isNode(node, 'programNode')) {
-            this.getOrCreateProgramDictionary(node);
-            return this;
-        }
+        const programDictionary = this.getOrCreateProgramDictionary(node);
+        if (!programDictionary) return this; // Do not record nodes that are outside of a program.
+        const instructionDictionary = this.getOrCreateInstructionDictionary(programDictionary, node);
 
-        // Do not record nodes that are outside of a program.
-        const program = this.stack.getProgram();
-        if (!program) return this;
-
-        const programDictionary = this.getOrCreateProgramDictionary(program);
         if (isNode(node, 'accountNode')) {
             programDictionary.accounts.set(node.name, node);
-            return this;
         } else if (isNode(node, 'definedTypeNode')) {
             programDictionary.definedTypes.set(node.name, node);
-            return this;
         } else if (isNode(node, 'pdaNode')) {
             programDictionary.pdas.set(node.name, node);
-            return this;
-        }
-
-        if (isNode(node, 'instructionNode')) {
-            this.getOrCreateInstructionDictionary(programDictionary, node);
-            return this;
-        }
-
-        // Do not record instruction-specific nodes that are outside of an instruction.
-        const instruction = this.stack.getInstruction();
-        if (!instruction) return this;
-
-        const instructionDictionary = this.getOrCreateInstructionDictionary(programDictionary, instruction);
-        if (isNode(node, 'instructionAccountNode')) {
+        } else if (instructionDictionary && isNode(node, 'instructionAccountNode')) {
             instructionDictionary.accounts.set(node.name, node);
-        } else if (isNode(node, 'instructionArgumentNode')) {
+        } else if (instructionDictionary && isNode(node, 'instructionArgumentNode')) {
             instructionDictionary.arguments.set(node.name, node);
         }
 
@@ -179,6 +158,45 @@ export class LinkableDictionary {
         return false;
     }
 
+    private getOrCreateProgramDictionary(node: LinkableNode): ProgramDictionary | undefined {
+        const programNode = isNode(node, 'programNode') ? node : this.stack.getProgram();
+        if (!programNode) return undefined;
+
+        let programDictionary = this.programs.get(programNode.name);
+        if (!programDictionary) {
+            programDictionary = {
+                accounts: new Map(),
+                definedTypes: new Map(),
+                instructions: new Map(),
+                pdas: new Map(),
+                program: programNode,
+            };
+            this.programs.set(programNode.name, programDictionary);
+        }
+
+        return programDictionary;
+    }
+
+    private getOrCreateInstructionDictionary(
+        programDictionary: ProgramDictionary,
+        node: LinkableNode,
+    ): InstructionDictionary | undefined {
+        const instructionNode = isNode(node, 'instructionNode') ? node : this.stack.getInstruction();
+        if (!instructionNode) return undefined;
+
+        let instructionDictionary = programDictionary.instructions.get(instructionNode.name);
+        if (!instructionDictionary) {
+            instructionDictionary = {
+                accounts: new Map(),
+                arguments: new Map(),
+                instruction: instructionNode,
+            };
+            programDictionary.instructions.set(instructionNode.name, instructionDictionary);
+        }
+
+        return instructionDictionary;
+    }
+
     private getProgramDictionary(linkNode: LinkNode): ProgramDictionary | undefined {
         let programName: CamelCaseString | undefined = undefined;
         if (isNode(linkNode, 'programLinkNode')) {
@@ -206,36 +224,5 @@ export class LinkableDictionary {
         instructionName = instructionName ?? this.stack.getInstruction()?.name;
 
         return instructionName ? programDictionary.instructions.get(instructionName) : undefined;
-    }
-
-    private getOrCreateProgramDictionary(node: ProgramNode): ProgramDictionary {
-        let programDictionary = this.programs.get(node.name);
-        if (!programDictionary) {
-            programDictionary = {
-                accounts: new Map(),
-                definedTypes: new Map(),
-                instructions: new Map(),
-                pdas: new Map(),
-                program: node,
-            };
-            this.programs.set(node.name, programDictionary);
-        }
-        return programDictionary;
-    }
-
-    private getOrCreateInstructionDictionary(
-        programDictionary: ProgramDictionary,
-        node: InstructionNode,
-    ): InstructionDictionary {
-        let instructionDictionary = programDictionary.instructions.get(node.name);
-        if (!instructionDictionary) {
-            instructionDictionary = {
-                accounts: new Map(),
-                arguments: new Map(),
-                instruction: node,
-            };
-            programDictionary.instructions.set(node.name, instructionDictionary);
-        }
-        return instructionDictionary;
     }
 }
