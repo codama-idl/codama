@@ -75,7 +75,7 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         kind: LinkNode['kind'];
         linkNode: LinkNode;
         name: CamelCaseString;
-        program?: CamelCaseString;
+        stack: Node[];
     };
     [KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
         fsFunction: string;

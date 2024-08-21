@@ -94,9 +94,7 @@ export class LinkableDictionary {
                 kind: linkNode.kind,
                 linkNode,
                 name: linkNode.name,
-                program: isNode(linkNode, 'pdaLinkNode')
-                    ? (linkNode.program ?? this.stack.getProgram())?.name
-                    : undefined,
+                stack: this.stack.all(),
             });
         }
 
