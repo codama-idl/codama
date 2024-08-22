@@ -51,8 +51,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.5.4))(eslint@8.57.0)(typescript@5.5.4)
       happy-dom:
-        specifier: ^14.12.3
-        version: 14.12.3
+        specifier: ^15.0.0
+        version: 15.0.0
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
@@ -70,7 +70,7 @@ importers:
         version: 5.5.4
       vitest:
         specifier: ^2.0.5
-        version: 2.0.5(@types/node@20.16.1)(happy-dom@14.12.3)
+        version: 2.0.5(@types/node@20.16.1)(happy-dom@15.0.0)
       zx:
         specifier: ^8.1.4
         version: 8.1.4
@@ -1528,9 +1528,9 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  happy-dom@14.12.3:
-    resolution: {integrity: sha512-vsYlEs3E9gLwA1Hp+w3qzu+RUDFf4VTT8cyKqVICoZ2k7WM++Qyd2LwzyTi5bqMJFiIC/vNpTDYuxdreENRK/g==}
-    engines: {node: '>=16.0.0'}
+  happy-dom@15.0.0:
+    resolution: {integrity: sha512-DsvANUcxxY20iCo3Yllm7dqwzPVPduGfVFxa7mONwMBLczFeQgkN0LpDir1kIY322JMh+hrcPV3aGLyHCESDlA==}
+    engines: {node: '>=18.0.0'}
 
   has-flag@3.0.0:
     resolution: {integrity: sha512-sKJf1+ceQBr4SMkvQnBDNDtf4TXpVhVGateu0t918bl30FnbE2m4vNLX+VWe/dpjlb+HugGYzW7uQXH98HPEYw==}
@@ -3750,7 +3750,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  happy-dom@14.12.3:
+  happy-dom@15.0.0:
     dependencies:
       entities: 4.5.0
       webidl-conversions: 7.0.0
@@ -4437,7 +4437,7 @@ snapshots:
       '@types/node': 20.16.1
       fsevents: 2.3.3
 
-  vitest@2.0.5(@types/node@20.16.1)(happy-dom@14.12.3):
+  vitest@2.0.5(@types/node@20.16.1)(happy-dom@15.0.0):
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@vitest/expect': 2.0.5
@@ -4460,7 +4460,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.16.1
-      happy-dom: 14.12.3
+      happy-dom: 15.0.0
     transitivePeerDependencies:
       - less
       - lightningcss
