@@ -22,7 +22,7 @@
         "@typescript-eslint/parser": "^6.0.0",
         "agadoo": "^3.0.0",
         "eslint": "^8.57.0",
-        "eslint-config-turbo": "^2.0.14",
+        "eslint-config-turbo": "^2.1.0",
         "eslint-plugin-simple-import-sort": "^10.0.0",
         "eslint-plugin-sort-keys-fix": "^1.1.2",
         "eslint-plugin-typescript-sort-keys": "^3.2.0",
