@@ -7,7 +7,7 @@ import { ImportMap } from '../ImportMap';
 import { render } from '../utils';
 
 export function fragment(render: string, imports?: ImportMap): Fragment {
-    return new Fragment(render, imports);
+    return new Fragment(render, imports ? new ImportMap().mergeWith(imports) : undefined);
 }
 
 export function fragmentFromTemplate(fragmentFile: string, context?: object, options?: ConfigureOptions): Fragment {
