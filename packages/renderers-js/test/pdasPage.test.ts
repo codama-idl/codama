@@ -1,6 +1,7 @@
 import {
     constantPdaSeedNodeFromString,
     numberTypeNode,
+    optionTypeNode,
     pdaNode,
     programNode,
     publicKeyTypeNode,
@@ -10,7 +11,7 @@ import { visit } from '@kinobi-so/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
-import { renderMapContains } from './_setup';
+import { renderMapContains, renderMapContainsImports, renderMapDoesNotContainImports } from './_setup';
 
 test('it renders a PDA helper function and its input type', async () => {
     // Given the following PDA node.
@@ -81,4 +82,31 @@ test('it renders an empty array of seeds for seedless PDAs', async () => {
         'export async function findFooPda',
         'getProgramDerivedAddress({ programAddress, seeds: [] })',
     ]);
+});
+
+test('it does not import strict types for variable seeds', async () => {
+    // Given the following PDA node.
+    const node = programNode({
+        name: 'myProgram',
+        pdas: [
+            pdaNode({
+                name: 'foo',
+                seeds: [variablePdaSeedNode('myAccount', optionTypeNode(publicKeyTypeNode()))],
+            }),
+        ],
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then the `Option` string type should not be imported.
+    await renderMapDoesNotContainImports(renderMap, 'pdas/foo.ts', {
+        '@solana/web3.js': ['type Option'],
+    });
+
+    // But the `OptionOrNullable` loose type should be imported.
+    await renderMapContainsImports(renderMap, 'pdas/foo.ts', {
+        '@solana/web3.js': ['type OptionOrNullable'],
+    });
 });

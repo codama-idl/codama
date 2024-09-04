@@ -31,8 +31,8 @@ export class Fragment {
 
     constructor(render: string, imports?: ImportMap, features?: Set<FragmentFeature>) {
         this.render = render;
-        this.imports = imports ?? new ImportMap();
-        this.features = features ?? new Set();
+        this.imports = imports ? new ImportMap().mergeWith(imports) : new ImportMap();
+        this.features = new Set([...(features ?? [])]);
     }
 
     setRender(render: string): this {
