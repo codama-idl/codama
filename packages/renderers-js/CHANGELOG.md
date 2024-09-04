@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-js
 
+## 0.21.8
+
+### Patch Changes
+
+-   [#200](https://github.com/kinobi-so/kinobi/pull/200) [`6639091`](https://github.com/kinobi-so/kinobi/commit/6639091714ae3b5c4330f0b1f43816fea373d55f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix a bug that reuses the same `ImportMap` within different code fragments
+
 ## 0.21.7
 
 ### Patch Changes
