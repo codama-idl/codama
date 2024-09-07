@@ -130,6 +130,7 @@ export function getResolvedInstructionInputsVisitor(
                     const dependency = visitedAccounts.get(seed.value.name)!;
                     if (dependency.resolvedIsOptional) {
                         throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
+                            instruction: instruction,
                             instructionAccount: account,
                             instructionAccountName: account.name,
                             instructionName: instruction.name,

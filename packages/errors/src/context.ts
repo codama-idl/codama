@@ -117,6 +117,7 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         conflictingAttributes: CamelCaseString[];
     };
     [KINOBI_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE]: {
+        instruction: InstructionNode;
         instructionAccount: InstructionAccountNode;
         instructionAccountName: CamelCaseString;
         instructionName: CamelCaseString;
