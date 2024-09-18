@@ -72,8 +72,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(@types/node@20.16.5)(happy-dom@15.7.4)
       zx:
-        specifier: ^8.1.6
-        version: 8.1.6
+        specifier: ^8.1.7
+        version: 8.1.7
 
   packages/errors:
     dependencies:
@@ -2376,8 +2376,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zx@8.1.6:
-    resolution: {integrity: sha512-SYAriWG+i2CFqMOJcF8QayI8wprlMYQsrmP6tFD7rSPnDLcImNSW7n/8crOYvNVrB2EFgz8LAQk23U1+Y7WrKA==}
+  zx@8.1.7:
+    resolution: {integrity: sha512-vPXetXOnlJ6a6bGSCIN1iaxjK2QZbOqwyOfMhFzqUpKF1aHPGQvQXu8ijwDQMe4lUMyk1Mo0qpIhrNzYXES6nw==}
     engines: {node: '>= 12.17.0'}
     hasBin: true
 
@@ -4402,7 +4402,7 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zx@8.1.6:
+  zx@8.1.7:
     optionalDependencies:
       '@types/fs-extra': 11.0.4
       '@types/node': 20.16.5
