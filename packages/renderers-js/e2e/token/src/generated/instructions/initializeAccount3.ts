@@ -106,15 +106,17 @@ export type InitializeAccount3Input<
 export function getInitializeAccount3Instruction<
   TAccountAccount extends string,
   TAccountMint extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
-  input: InitializeAccount3Input<TAccountAccount, TAccountMint>
+  input: InitializeAccount3Input<TAccountAccount, TAccountMint>,
+  config?: { programAddress?: TProgramAddress }
 ): InitializeAccount3Instruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAccount,
   TAccountMint
 > {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -137,7 +139,7 @@ export function getInitializeAccount3Instruction<
       args as InitializeAccount3InstructionDataArgs
     ),
   } as InitializeAccount3Instruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAccount,
     TAccountMint
   >;

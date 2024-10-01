@@ -88,7 +88,7 @@ export function getInstructionFunctionFragment(
         ? nameApi.instructionAsyncFunction(instructionNode.name)
         : nameApi.instructionSyncFunction(instructionNode.name);
 
-    const typeParamsFragment = getTypeParams(instructionNode);
+    const typeParamsFragment = getTypeParams(instructionNode, programAddressConstant);
     const instructionTypeFragment = getInstructionType(scope);
 
     // Input.
@@ -162,23 +162,19 @@ export function getInstructionFunctionFragment(
     return functionFragment;
 }
 
-function getTypeParams(instructionNode: InstructionNode): Fragment {
-    if (instructionNode.accounts.length === 0) return fragment('');
+function getTypeParams(instructionNode: InstructionNode, programAddressConstant: string): Fragment {
     const typeParams = instructionNode.accounts.map(account => `TAccount${pascalCase(account.name)} extends string`);
-    return fragment(typeParams.filter(x => !!x).join(', ')).mapRender(r => `<${r}>`);
+    // after all accounts, add an optional type for program address
+    typeParams.push(`TProgramAddress extends Address = typeof ${programAddressConstant}`);
+    return fragment(typeParams.filter(x => !!x).join(', '))
+        .mapRender(r => `<${r}>`)
+        .addImports('generatedPrograms', [programAddressConstant]);
 }
 
-function getInstructionType(scope: {
-    instructionNode: InstructionNode;
-    nameApi: NameApi;
-    programNode: ProgramNode;
-}): Fragment {
-    const { instructionNode, programNode, nameApi } = scope;
+function getInstructionType(scope: { instructionNode: InstructionNode; nameApi: NameApi }): Fragment {
+    const { instructionNode, nameApi } = scope;
     const instructionTypeName = nameApi.instructionType(instructionNode.name);
-    const programAddressConstant = nameApi.programAddressConstant(programNode.name);
-    const programAddressFragment = fragment(`typeof ${programAddressConstant}`).addImports('generatedPrograms', [
-        programAddressConstant,
-    ]);
+    const programAddressFragment = fragment('TProgramAddress');
     const accountTypeParamsFragments = instructionNode.accounts.map(account => {
         const typeParam = `TAccount${pascalCase(account.name)}`;
         const camelName = camelCase(account.name);

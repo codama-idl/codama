@@ -134,15 +134,17 @@ export function getApproveCheckedInstruction<
   TAccountMint extends string,
   TAccountDelegate extends string,
   TAccountOwner extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
   input: ApproveCheckedInput<
     TAccountSource,
     TAccountMint,
     TAccountDelegate,
     TAccountOwner
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): ApproveCheckedInstruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountSource,
   TAccountMint,
   TAccountDelegate,
@@ -151,7 +153,7 @@ export function getApproveCheckedInstruction<
     : TAccountOwner
 > {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -191,7 +193,7 @@ export function getApproveCheckedInstruction<
       args as ApproveCheckedInstructionDataArgs
     ),
   } as ApproveCheckedInstruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSource,
     TAccountMint,
     TAccountDelegate,

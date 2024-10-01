@@ -134,15 +134,17 @@ export function getTransferCheckedInstruction<
   TAccountMint extends string,
   TAccountDestination extends string,
   TAccountAuthority extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
   input: TransferCheckedInput<
     TAccountSource,
     TAccountMint,
     TAccountDestination,
     TAccountAuthority
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): TransferCheckedInstruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountSource,
   TAccountMint,
   TAccountDestination,
@@ -152,7 +154,7 @@ export function getTransferCheckedInstruction<
     : TAccountAuthority
 > {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -192,7 +194,7 @@ export function getTransferCheckedInstruction<
       args as TransferCheckedInstructionDataArgs
     ),
   } as TransferCheckedInstruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSource,
     TAccountMint,
     TAccountDestination,

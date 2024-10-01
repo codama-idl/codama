@@ -224,6 +224,7 @@ export async function getCreateGuardInstructionAsync<
   TAccountAssociatedTokenProgram extends string,
   TAccountTokenProgram extends string,
   TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: CreateGuardAsyncInput<
     TAccountGuard,
@@ -234,10 +235,11 @@ export async function getCreateGuardInstructionAsync<
     TAccountAssociatedTokenProgram,
     TAccountTokenProgram,
     TAccountSystemProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): Promise<
   CreateGuardInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountGuard,
     TAccountMint,
     TAccountMintTokenAccount,
@@ -249,7 +251,8 @@ export async function getCreateGuardInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -336,7 +339,7 @@ export async function getCreateGuardInstructionAsync<
       args as CreateGuardInstructionDataArgs
     ),
   } as CreateGuardInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountGuard,
     TAccountMint,
     TAccountMintTokenAccount,
@@ -385,6 +388,7 @@ export function getCreateGuardInstruction<
   TAccountAssociatedTokenProgram extends string,
   TAccountTokenProgram extends string,
   TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: CreateGuardInput<
     TAccountGuard,
@@ -395,9 +399,10 @@ export function getCreateGuardInstruction<
     TAccountAssociatedTokenProgram,
     TAccountTokenProgram,
     TAccountSystemProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): CreateGuardInstruction<
-  typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountGuard,
   TAccountMint,
   TAccountMintTokenAccount,
@@ -408,7 +413,8 @@ export function getCreateGuardInstruction<
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -466,7 +472,7 @@ export function getCreateGuardInstruction<
       args as CreateGuardInstructionDataArgs
     ),
   } as CreateGuardInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountGuard,
     TAccountMint,
     TAccountMintTokenAccount,

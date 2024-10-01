@@ -147,6 +147,7 @@ export async function getExecuteInstructionAsync<
   TAccountExtraMetasAccount extends string,
   TAccountGuard extends string,
   TAccountInstructionSysvarAccount extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: ExecuteAsyncInput<
     TAccountSourceAccount,
@@ -156,10 +157,11 @@ export async function getExecuteInstructionAsync<
     TAccountExtraMetasAccount,
     TAccountGuard,
     TAccountInstructionSysvarAccount
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): Promise<
   ExecuteInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSourceAccount,
     TAccountMint,
     TAccountDestinationAccount,
@@ -170,7 +172,8 @@ export async function getExecuteInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -235,7 +238,7 @@ export async function getExecuteInstructionAsync<
       args as ExecuteInstructionDataArgs
     ),
   } as ExecuteInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSourceAccount,
     TAccountMint,
     TAccountDestinationAccount,
@@ -275,6 +278,7 @@ export function getExecuteInstruction<
   TAccountExtraMetasAccount extends string,
   TAccountGuard extends string,
   TAccountInstructionSysvarAccount extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: ExecuteInput<
     TAccountSourceAccount,
@@ -284,9 +288,10 @@ export function getExecuteInstruction<
     TAccountExtraMetasAccount,
     TAccountGuard,
     TAccountInstructionSysvarAccount
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): ExecuteInstruction<
-  typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountSourceAccount,
   TAccountMint,
   TAccountDestinationAccount,
@@ -296,7 +301,8 @@ export function getExecuteInstruction<
   TAccountInstructionSysvarAccount
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -347,7 +353,7 @@ export function getExecuteInstruction<
       args as ExecuteInstructionDataArgs
     ),
   } as ExecuteInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSourceAccount,
     TAccountMint,
     TAccountDestinationAccount,

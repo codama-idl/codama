@@ -116,16 +116,18 @@ export function getInitializeAccount2Instruction<
   TAccountAccount extends string,
   TAccountMint extends string,
   TAccountRent extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
-  input: InitializeAccount2Input<TAccountAccount, TAccountMint, TAccountRent>
+  input: InitializeAccount2Input<TAccountAccount, TAccountMint, TAccountRent>,
+  config?: { programAddress?: TProgramAddress }
 ): InitializeAccount2Instruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAccount,
   TAccountMint,
   TAccountRent
 > {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -159,7 +161,7 @@ export function getInitializeAccount2Instruction<
       args as InitializeAccount2InstructionDataArgs
     ),
   } as InitializeAccount2Instruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAccount,
     TAccountMint,
     TAccountRent

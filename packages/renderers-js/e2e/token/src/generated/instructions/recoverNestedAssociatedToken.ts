@@ -152,6 +152,7 @@ export async function getRecoverNestedAssociatedTokenInstructionAsync<
   TAccountOwnerTokenMintAddress extends string,
   TAccountWalletAddress extends string,
   TAccountTokenProgram extends string,
+  TProgramAddress extends Address = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
 >(
   input: RecoverNestedAssociatedTokenAsyncInput<
     TAccountNestedAssociatedAccountAddress,
@@ -161,10 +162,11 @@ export async function getRecoverNestedAssociatedTokenInstructionAsync<
     TAccountOwnerTokenMintAddress,
     TAccountWalletAddress,
     TAccountTokenProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): Promise<
   RecoverNestedAssociatedTokenInstruction<
-    typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountNestedAssociatedAccountAddress,
     TAccountNestedTokenMintAddress,
     TAccountDestinationAssociatedAccountAddress,
@@ -175,7 +177,8 @@ export async function getRecoverNestedAssociatedTokenInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress = ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -252,7 +255,7 @@ export async function getRecoverNestedAssociatedTokenInstructionAsync<
     programAddress,
     data: getRecoverNestedAssociatedTokenInstructionDataEncoder().encode({}),
   } as RecoverNestedAssociatedTokenInstruction<
-    typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountNestedAssociatedAccountAddress,
     TAccountNestedTokenMintAddress,
     TAccountDestinationAssociatedAccountAddress,
@@ -298,6 +301,7 @@ export function getRecoverNestedAssociatedTokenInstruction<
   TAccountOwnerTokenMintAddress extends string,
   TAccountWalletAddress extends string,
   TAccountTokenProgram extends string,
+  TProgramAddress extends Address = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
 >(
   input: RecoverNestedAssociatedTokenInput<
     TAccountNestedAssociatedAccountAddress,
@@ -307,9 +311,10 @@ export function getRecoverNestedAssociatedTokenInstruction<
     TAccountOwnerTokenMintAddress,
     TAccountWalletAddress,
     TAccountTokenProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): RecoverNestedAssociatedTokenInstruction<
-  typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountNestedAssociatedAccountAddress,
   TAccountNestedTokenMintAddress,
   TAccountDestinationAssociatedAccountAddress,
@@ -319,7 +324,8 @@ export function getRecoverNestedAssociatedTokenInstruction<
   TAccountTokenProgram
 > {
   // Program address.
-  const programAddress = ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -371,7 +377,7 @@ export function getRecoverNestedAssociatedTokenInstruction<
     programAddress,
     data: getRecoverNestedAssociatedTokenInstructionDataEncoder().encode({}),
   } as RecoverNestedAssociatedTokenInstruction<
-    typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountNestedAssociatedAccountAddress,
     TAccountNestedTokenMintAddress,
     TAccountDestinationAssociatedAccountAddress,

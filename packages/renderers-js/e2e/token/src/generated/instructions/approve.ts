@@ -119,10 +119,12 @@ export function getApproveInstruction<
   TAccountSource extends string,
   TAccountDelegate extends string,
   TAccountOwner extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
-  input: ApproveInput<TAccountSource, TAccountDelegate, TAccountOwner>
+  input: ApproveInput<TAccountSource, TAccountDelegate, TAccountOwner>,
+  config?: { programAddress?: TProgramAddress }
 ): ApproveInstruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountSource,
   TAccountDelegate,
   (typeof input)['owner'] extends TransactionSigner<TAccountOwner>
@@ -130,7 +132,7 @@ export function getApproveInstruction<
     : TAccountOwner
 > {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -168,7 +170,7 @@ export function getApproveInstruction<
       args as ApproveInstructionDataArgs
     ),
   } as ApproveInstruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSource,
     TAccountDelegate,
     (typeof input)['owner'] extends TransactionSigner<TAccountOwner>

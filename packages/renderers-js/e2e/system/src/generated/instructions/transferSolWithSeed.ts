@@ -131,20 +131,22 @@ export function getTransferSolWithSeedInstruction<
   TAccountSource extends string,
   TAccountBaseAccount extends string,
   TAccountDestination extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
 >(
   input: TransferSolWithSeedInput<
     TAccountSource,
     TAccountBaseAccount,
     TAccountDestination
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): TransferSolWithSeedInstruction<
-  typeof SYSTEM_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountSource,
   TAccountBaseAccount,
   TAccountDestination
 > {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -172,7 +174,7 @@ export function getTransferSolWithSeedInstruction<
       args as TransferSolWithSeedInstructionDataArgs
     ),
   } as TransferSolWithSeedInstruction<
-    typeof SYSTEM_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSource,
     TAccountBaseAccount,
     TAccountDestination
