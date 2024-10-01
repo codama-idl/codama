@@ -397,3 +397,27 @@ test('it can override the import of a resolver value node', async () => {
         someModule: ['myResolver'],
     });
 });
+
+test('it renders optional config that can override the program address', async () => {
+    // Given the following instruction
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                accounts: [],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect an optional config parameter with an optional programAddress field
+    // And we expect this to be used to override programAddress if it is set
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', [
+        'config?: { programAddress?: TProgramAddress }',
+        'programAddress = config?.programAddress ?? MY_PROGRAM_PROGRAM_ADDRESS',
+    ]);
+});
