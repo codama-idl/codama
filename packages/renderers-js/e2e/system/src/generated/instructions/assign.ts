@@ -91,11 +91,15 @@ export type AssignInput<TAccountAccount extends string = string> = {
   programAddress: AssignInstructionDataArgs['programAddress'];
 };
 
-export function getAssignInstruction<TAccountAccount extends string>(
-  input: AssignInput<TAccountAccount>
-): AssignInstruction<typeof SYSTEM_PROGRAM_ADDRESS, TAccountAccount> {
+export function getAssignInstruction<
+  TAccountAccount extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
+>(
+  input: AssignInput<TAccountAccount>,
+  config?: { programAddress?: TProgramAddress }
+): AssignInstruction<TProgramAddress, TAccountAccount> {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -116,7 +120,7 @@ export function getAssignInstruction<TAccountAccount extends string>(
     data: getAssignInstructionDataEncoder().encode(
       args as AssignInstructionDataArgs
     ),
-  } as AssignInstruction<typeof SYSTEM_PROGRAM_ADDRESS, TAccountAccount>;
+  } as AssignInstruction<TProgramAddress, TAccountAccount>;
 
   return instruction;
 }

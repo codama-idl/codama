@@ -84,14 +84,13 @@ export type InitializeImmutableOwnerInput<
 
 export function getInitializeImmutableOwnerInstruction<
   TAccountAccount extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
-  input: InitializeImmutableOwnerInput<TAccountAccount>
-): InitializeImmutableOwnerInstruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountAccount
-> {
+  input: InitializeImmutableOwnerInput<TAccountAccount>,
+  config?: { programAddress?: TProgramAddress }
+): InitializeImmutableOwnerInstruction<TProgramAddress, TAccountAccount> {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -107,10 +106,7 @@ export function getInitializeImmutableOwnerInstruction<
     accounts: [getAccountMeta(accounts.account)],
     programAddress,
     data: getInitializeImmutableOwnerInstructionDataEncoder().encode({}),
-  } as InitializeImmutableOwnerInstruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
-    TAccountAccount
-  >;
+  } as InitializeImmutableOwnerInstruction<TProgramAddress, TAccountAccount>;
 
   return instruction;
 }

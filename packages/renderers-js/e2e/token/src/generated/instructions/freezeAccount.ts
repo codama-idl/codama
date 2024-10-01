@@ -103,10 +103,12 @@ export function getFreezeAccountInstruction<
   TAccountAccount extends string,
   TAccountMint extends string,
   TAccountOwner extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
-  input: FreezeAccountInput<TAccountAccount, TAccountMint, TAccountOwner>
+  input: FreezeAccountInput<TAccountAccount, TAccountMint, TAccountOwner>,
+  config?: { programAddress?: TProgramAddress }
 ): FreezeAccountInstruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAccount,
   TAccountMint,
   (typeof input)['owner'] extends TransactionSigner<TAccountOwner>
@@ -114,7 +116,7 @@ export function getFreezeAccountInstruction<
     : TAccountOwner
 > {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -150,7 +152,7 @@ export function getFreezeAccountInstruction<
     programAddress,
     data: getFreezeAccountInstructionDataEncoder().encode({}),
   } as FreezeAccountInstruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAccount,
     TAccountMint,
     (typeof input)['owner'] extends TransactionSigner<TAccountOwner>

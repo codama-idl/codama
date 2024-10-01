@@ -119,10 +119,12 @@ export function getTransferInstruction<
   TAccountSource extends string,
   TAccountDestination extends string,
   TAccountAuthority extends string,
+  TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
 >(
-  input: TransferInput<TAccountSource, TAccountDestination, TAccountAuthority>
+  input: TransferInput<TAccountSource, TAccountDestination, TAccountAuthority>,
+  config?: { programAddress?: TProgramAddress }
 ): TransferInstruction<
-  typeof TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountSource,
   TAccountDestination,
   (typeof input)['authority'] extends TransactionSigner<TAccountAuthority>
@@ -131,7 +133,7 @@ export function getTransferInstruction<
     : TAccountAuthority
 > {
   // Program address.
-  const programAddress = TOKEN_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -169,7 +171,7 @@ export function getTransferInstruction<
       args as TransferInstructionDataArgs
     ),
   } as TransferInstruction<
-    typeof TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountSource,
     TAccountDestination,
     (typeof input)['authority'] extends TransactionSigner<TAccountAuthority>

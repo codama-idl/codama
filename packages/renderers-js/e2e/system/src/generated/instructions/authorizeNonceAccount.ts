@@ -108,18 +108,20 @@ export type AuthorizeNonceAccountInput<
 export function getAuthorizeNonceAccountInstruction<
   TAccountNonceAccount extends string,
   TAccountNonceAuthority extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
 >(
   input: AuthorizeNonceAccountInput<
     TAccountNonceAccount,
     TAccountNonceAuthority
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): AuthorizeNonceAccountInstruction<
-  typeof SYSTEM_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountNonceAccount,
   TAccountNonceAuthority
 > {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -145,7 +147,7 @@ export function getAuthorizeNonceAccountInstruction<
       args as AuthorizeNonceAccountInstructionDataArgs
     ),
   } as AuthorizeNonceAccountInstruction<
-    typeof SYSTEM_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountNonceAccount,
     TAccountNonceAuthority
   >;

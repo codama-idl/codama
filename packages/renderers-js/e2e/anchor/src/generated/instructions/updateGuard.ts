@@ -185,6 +185,7 @@ export async function getUpdateGuardInstructionAsync<
   TAccountGuardAuthority extends string,
   TAccountTokenProgram extends string,
   TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: UpdateGuardAsyncInput<
     TAccountGuard,
@@ -193,10 +194,11 @@ export async function getUpdateGuardInstructionAsync<
     TAccountGuardAuthority,
     TAccountTokenProgram,
     TAccountSystemProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): Promise<
   UpdateGuardInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountGuard,
     TAccountMint,
     TAccountTokenAccount,
@@ -206,7 +208,8 @@ export async function getUpdateGuardInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -279,7 +282,7 @@ export async function getUpdateGuardInstructionAsync<
       args as UpdateGuardInstructionDataArgs
     ),
   } as UpdateGuardInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountGuard,
     TAccountMint,
     TAccountTokenAccount,
@@ -317,6 +320,7 @@ export function getUpdateGuardInstruction<
   TAccountGuardAuthority extends string,
   TAccountTokenProgram extends string,
   TAccountSystemProgram extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: UpdateGuardInput<
     TAccountGuard,
@@ -325,9 +329,10 @@ export function getUpdateGuardInstruction<
     TAccountGuardAuthority,
     TAccountTokenProgram,
     TAccountSystemProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): UpdateGuardInstruction<
-  typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountGuard,
   TAccountMint,
   TAccountTokenAccount,
@@ -336,7 +341,8 @@ export function getUpdateGuardInstruction<
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -380,7 +386,7 @@ export function getUpdateGuardInstruction<
       args as UpdateGuardInstructionDataArgs
     ),
   } as UpdateGuardInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountGuard,
     TAccountMint,
     TAccountTokenAccount,
