@@ -119,15 +119,17 @@ export type AssignWithSeedInput<
 export function getAssignWithSeedInstruction<
   TAccountAccount extends string,
   TAccountBaseAccount extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
 >(
-  input: AssignWithSeedInput<TAccountAccount, TAccountBaseAccount>
+  input: AssignWithSeedInput<TAccountAccount, TAccountBaseAccount>,
+  config?: { programAddress?: TProgramAddress }
 ): AssignWithSeedInstruction<
-  typeof SYSTEM_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountAccount,
   TAccountBaseAccount
 > {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -153,7 +155,7 @@ export function getAssignWithSeedInstruction<
       args as AssignWithSeedInstructionDataArgs
     ),
   } as AssignWithSeedInstruction<
-    typeof SYSTEM_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountAccount,
     TAccountBaseAccount
   >;

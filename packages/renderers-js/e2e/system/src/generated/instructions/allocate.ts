@@ -88,11 +88,15 @@ export type AllocateInput<TAccountNewAccount extends string = string> = {
   space: AllocateInstructionDataArgs['space'];
 };
 
-export function getAllocateInstruction<TAccountNewAccount extends string>(
-  input: AllocateInput<TAccountNewAccount>
-): AllocateInstruction<typeof SYSTEM_PROGRAM_ADDRESS, TAccountNewAccount> {
+export function getAllocateInstruction<
+  TAccountNewAccount extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
+>(
+  input: AllocateInput<TAccountNewAccount>,
+  config?: { programAddress?: TProgramAddress }
+): AllocateInstruction<TProgramAddress, TAccountNewAccount> {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -113,7 +117,7 @@ export function getAllocateInstruction<TAccountNewAccount extends string>(
     data: getAllocateInstructionDataEncoder().encode(
       args as AllocateInstructionDataArgs
     ),
-  } as AllocateInstruction<typeof SYSTEM_PROGRAM_ADDRESS, TAccountNewAccount>;
+  } as AllocateInstruction<TProgramAddress, TAccountNewAccount>;
 
   return instruction;
 }

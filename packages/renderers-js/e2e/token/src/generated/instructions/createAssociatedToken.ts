@@ -136,6 +136,7 @@ export async function getCreateAssociatedTokenInstructionAsync<
   TAccountMint extends string,
   TAccountSystemProgram extends string,
   TAccountTokenProgram extends string,
+  TProgramAddress extends Address = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
 >(
   input: CreateAssociatedTokenAsyncInput<
     TAccountPayer,
@@ -144,10 +145,11 @@ export async function getCreateAssociatedTokenInstructionAsync<
     TAccountMint,
     TAccountSystemProgram,
     TAccountTokenProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): Promise<
   CreateAssociatedTokenInstruction<
-    typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountPayer,
     TAccountAta,
     TAccountOwner,
@@ -157,7 +159,8 @@ export async function getCreateAssociatedTokenInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress = ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -203,7 +206,7 @@ export async function getCreateAssociatedTokenInstructionAsync<
     programAddress,
     data: getCreateAssociatedTokenInstructionDataEncoder().encode({}),
   } as CreateAssociatedTokenInstruction<
-    typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountPayer,
     TAccountAta,
     TAccountOwner,
@@ -244,6 +247,7 @@ export function getCreateAssociatedTokenInstruction<
   TAccountMint extends string,
   TAccountSystemProgram extends string,
   TAccountTokenProgram extends string,
+  TProgramAddress extends Address = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
 >(
   input: CreateAssociatedTokenInput<
     TAccountPayer,
@@ -252,9 +256,10 @@ export function getCreateAssociatedTokenInstruction<
     TAccountMint,
     TAccountSystemProgram,
     TAccountTokenProgram
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): CreateAssociatedTokenInstruction<
-  typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountPayer,
   TAccountAta,
   TAccountOwner,
@@ -263,7 +268,8 @@ export function getCreateAssociatedTokenInstruction<
   TAccountTokenProgram
 > {
   // Program address.
-  const programAddress = ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -302,7 +308,7 @@ export function getCreateAssociatedTokenInstruction<
     programAddress,
     data: getCreateAssociatedTokenInstructionDataEncoder().encode({}),
   } as CreateAssociatedTokenInstruction<
-    typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountPayer,
     TAccountAta,
     TAccountOwner,

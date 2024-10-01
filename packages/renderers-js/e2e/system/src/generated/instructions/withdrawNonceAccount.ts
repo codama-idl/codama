@@ -134,6 +134,7 @@ export function getWithdrawNonceAccountInstruction<
   TAccountRecentBlockhashesSysvar extends string,
   TAccountRentSysvar extends string,
   TAccountNonceAuthority extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
 >(
   input: WithdrawNonceAccountInput<
     TAccountNonceAccount,
@@ -141,9 +142,10 @@ export function getWithdrawNonceAccountInstruction<
     TAccountRecentBlockhashesSysvar,
     TAccountRentSysvar,
     TAccountNonceAuthority
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): WithdrawNonceAccountInstruction<
-  typeof SYSTEM_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountNonceAccount,
   TAccountRecipientAccount,
   TAccountRecentBlockhashesSysvar,
@@ -151,7 +153,7 @@ export function getWithdrawNonceAccountInstruction<
   TAccountNonceAuthority
 > {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -199,7 +201,7 @@ export function getWithdrawNonceAccountInstruction<
       args as WithdrawNonceAccountInstructionDataArgs
     ),
   } as WithdrawNonceAccountInstruction<
-    typeof SYSTEM_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountNonceAccount,
     TAccountRecipientAccount,
     TAccountRecentBlockhashesSysvar,

@@ -59,11 +59,14 @@ export type AddMemoInput = {
   signers?: Array<TransactionSigner>;
 };
 
-export function getAddMemoInstruction(
-  input: AddMemoInput
-): AddMemoInstruction<typeof MEMO_PROGRAM_ADDRESS> {
+export function getAddMemoInstruction<
+  TProgramAddress extends Address = typeof MEMO_PROGRAM_ADDRESS,
+>(
+  input: AddMemoInput,
+  config?: { programAddress?: TProgramAddress }
+): AddMemoInstruction<TProgramAddress> {
   // Program address.
-  const programAddress = MEMO_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? MEMO_PROGRAM_ADDRESS;
 
   // Original args.
   const args = { ...input };
@@ -83,7 +86,7 @@ export function getAddMemoInstruction(
     data: getAddMemoInstructionDataEncoder().encode(
       args as AddMemoInstructionDataArgs
     ),
-  } as AddMemoInstruction<typeof MEMO_PROGRAM_ADDRESS>;
+  } as AddMemoInstruction<TProgramAddress>;
 
   return instruction;
 }

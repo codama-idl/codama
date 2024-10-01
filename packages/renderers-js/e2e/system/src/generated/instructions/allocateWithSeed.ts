@@ -126,15 +126,17 @@ export type AllocateWithSeedInput<
 export function getAllocateWithSeedInstruction<
   TAccountNewAccount extends string,
   TAccountBaseAccount extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
 >(
-  input: AllocateWithSeedInput<TAccountNewAccount, TAccountBaseAccount>
+  input: AllocateWithSeedInput<TAccountNewAccount, TAccountBaseAccount>,
+  config?: { programAddress?: TProgramAddress }
 ): AllocateWithSeedInstruction<
-  typeof SYSTEM_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountNewAccount,
   TAccountBaseAccount
 > {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -160,7 +162,7 @@ export function getAllocateWithSeedInstruction<
       args as AllocateWithSeedInstructionDataArgs
     ),
   } as AllocateWithSeedInstruction<
-    typeof SYSTEM_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountNewAccount,
     TAccountBaseAccount
   >;

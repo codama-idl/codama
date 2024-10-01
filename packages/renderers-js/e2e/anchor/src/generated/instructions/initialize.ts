@@ -136,6 +136,7 @@ export async function getInitializeInstructionAsync<
   TAccountTransferHookAuthority extends string,
   TAccountSystemProgram extends string,
   TAccountPayer extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: InitializeAsyncInput<
     TAccountExtraMetasAccount,
@@ -144,10 +145,11 @@ export async function getInitializeInstructionAsync<
     TAccountTransferHookAuthority,
     TAccountSystemProgram,
     TAccountPayer
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): Promise<
   InitializeInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountExtraMetasAccount,
     TAccountGuard,
     TAccountMint,
@@ -157,7 +159,8 @@ export async function getInitializeInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -212,7 +215,7 @@ export async function getInitializeInstructionAsync<
     programAddress,
     data: getInitializeInstructionDataEncoder().encode({}),
   } as InitializeInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountExtraMetasAccount,
     TAccountGuard,
     TAccountMint,
@@ -247,6 +250,7 @@ export function getInitializeInstruction<
   TAccountTransferHookAuthority extends string,
   TAccountSystemProgram extends string,
   TAccountPayer extends string,
+  TProgramAddress extends Address = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
 >(
   input: InitializeInput<
     TAccountExtraMetasAccount,
@@ -255,9 +259,10 @@ export function getInitializeInstruction<
     TAccountTransferHookAuthority,
     TAccountSystemProgram,
     TAccountPayer
-  >
+  >,
+  config?: { programAddress?: TProgramAddress }
 ): InitializeInstruction<
-  typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+  TProgramAddress,
   TAccountExtraMetasAccount,
   TAccountGuard,
   TAccountMint,
@@ -266,7 +271,8 @@ export function getInitializeInstruction<
   TAccountPayer
 > {
   // Program address.
-  const programAddress = WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? WEN_TRANSFER_GUARD_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -307,7 +313,7 @@ export function getInitializeInstruction<
     programAddress,
     data: getInitializeInstructionDataEncoder().encode({}),
   } as InitializeInstruction<
-    typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
+    TProgramAddress,
     TAccountExtraMetasAccount,
     TAccountGuard,
     TAccountMint,

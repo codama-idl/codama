@@ -83,14 +83,13 @@ export type UpgradeNonceAccountInput<
 
 export function getUpgradeNonceAccountInstruction<
   TAccountNonceAccount extends string,
+  TProgramAddress extends Address = typeof SYSTEM_PROGRAM_ADDRESS,
 >(
-  input: UpgradeNonceAccountInput<TAccountNonceAccount>
-): UpgradeNonceAccountInstruction<
-  typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountNonceAccount
-> {
+  input: UpgradeNonceAccountInput<TAccountNonceAccount>,
+  config?: { programAddress?: TProgramAddress }
+): UpgradeNonceAccountInstruction<TProgramAddress, TAccountNonceAccount> {
   // Program address.
-  const programAddress = SYSTEM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -106,10 +105,7 @@ export function getUpgradeNonceAccountInstruction<
     accounts: [getAccountMeta(accounts.nonceAccount)],
     programAddress,
     data: getUpgradeNonceAccountInstructionDataEncoder().encode({}),
-  } as UpgradeNonceAccountInstruction<
-    typeof SYSTEM_PROGRAM_ADDRESS,
-    TAccountNonceAccount
-  >;
+  } as UpgradeNonceAccountInstruction<TProgramAddress, TAccountNonceAccount>;
 
   return instruction;
 }
