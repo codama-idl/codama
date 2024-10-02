@@ -1,5 +1,18 @@
 # @kinobi-so/renderers-js
 
+## 0.21.9
+
+### Patch Changes
+
+-   [`4f6c8a9`](https://github.com/kinobi-so/kinobi/commit/4f6c8a971e70010d246b2691ccde847f0162b981) Thanks [@mcintyre94](https://github.com/mcintyre94)! - Add an optional programAddress override to instruction builders
+
+-   Updated dependencies [[`a6849d3`](https://github.com/kinobi-so/kinobi/commit/a6849d36a828e2b6b703f2a86d2ea0ae6d2fa0d8)]:
+    -   @kinobi-so/errors@0.21.5
+    -   @kinobi-so/nodes@0.21.5
+    -   @kinobi-so/nodes-from-anchor@0.21.3
+    -   @kinobi-so/renderers-core@0.21.3
+    -   @kinobi-so/visitors-core@0.21.5
+
 ## 0.21.8
 
 ### Patch Changes
