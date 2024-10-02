@@ -1,5 +1,16 @@
 # @kinobi-so/renderers-js-umi
 
+## 0.21.7
+
+### Patch Changes
+
+-   Updated dependencies [[`a6849d3`](https://github.com/kinobi-so/kinobi/commit/a6849d36a828e2b6b703f2a86d2ea0ae6d2fa0d8)]:
+    -   @kinobi-so/errors@0.21.5
+    -   @kinobi-so/nodes@0.21.5
+    -   @kinobi-so/renderers-core@0.21.3
+    -   @kinobi-so/validators@0.21.5
+    -   @kinobi-so/visitors-core@0.21.5
+
 ## 0.21.6
 
 ### Patch Changes
