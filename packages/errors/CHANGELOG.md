@@ -1,5 +1,14 @@
 # @kinobi-so/errors
 
+## 0.21.5
+
+### Patch Changes
+
+-   [#204](https://github.com/kinobi-so/kinobi/pull/204) [`a6849d3`](https://github.com/kinobi-so/kinobi/commit/a6849d36a828e2b6b703f2a86d2ea0ae6d2fa0d8) Thanks [@aspnxdd](https://github.com/aspnxdd)! - Fix `KINOBI_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE` instructionName string to actually print the instructionName.
+
+-   Updated dependencies []:
+    -   @kinobi-so/node-types@0.21.5
+
 ## 0.21.4
 
 ### Patch Changes
