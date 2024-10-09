@@ -1,5 +1,11 @@
 # @kinobi-so/renderers-rust
 
+## 0.21.8
+
+### Patch Changes
+
+-   [#231](https://github.com/kinobi-so/kinobi/pull/231) [`3c18cee`](https://github.com/kinobi-so/kinobi/commit/3c18ceeffb97922db500138af85d20fce00f80b2) Thanks [@aoikurokawa](https://github.com/aoikurokawa)! - Fix typo in generated comment
+
 ## 0.21.7
 
 ### Patch Changes
