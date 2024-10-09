@@ -2,7 +2,7 @@
 
 This node defines an error that can be returned by a program.
 
-![Diagram](https://github.com/codama/kinobi/assets/3642397/0bde98ea-0327-404b-bf38-137d105826b0)
+![Diagram](https://github.com/codama/codama/assets/3642397/0bde98ea-0327-404b-bf38-137d105826b0)
 
 ## Attributes
 

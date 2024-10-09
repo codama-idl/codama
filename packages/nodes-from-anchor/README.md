@@ -16,7 +16,7 @@ pnpm install @codama/nodes-from-anchor
 ```
 
 > [!NOTE]
-> This package is **not** included in the main [`kinobi`](../library) package.
+> This package is **not** included in the main [`codama`](../library) package.
 
 ## Functions
 
@@ -25,9 +25,9 @@ pnpm install @codama/nodes-from-anchor
 This function takes a valid Anchor IDL and returns a `RootNode`.
 
 ```js
-// node ./kinobi.mjs
+// node ./codama.mjs
 import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
-import { createFromRoot } from 'kinobi';
+import { createFromRoot } from 'codama';
 import { readFileSync } from 'node:fs';
 import path from 'path';
 
@@ -36,5 +36,5 @@ const anchorIdlPath = path.join(__dirname, 'target', 'idl', 'anchor_program.json
 const anchorIdl = JSON.parse(readFileSync(anchorIdlPath, 'utf-8'));
 
 // Parse it into a Kinobi IDL.
-const kinobi = createFromRoot(rootNodeFromAnchor(anchorIdl));
+const codama = createFromRoot(rootNodeFromAnchor(anchorIdl));
 ```

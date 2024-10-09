@@ -8,7 +8,7 @@ export interface RootNode<
     readonly kind: 'rootNode';
 
     // Data.
-    readonly standard: 'kinobi';
+    readonly standard: 'codama';
     readonly version: KinobiVersion;
 
     // Children.

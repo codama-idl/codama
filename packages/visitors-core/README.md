@@ -16,11 +16,11 @@ pnpm install @codama/visitors-core
 ```
 
 > [!NOTE]
-> This package is included in the [`@codama/visitors`](../visitors) package and in the main [`kinobi`](../library) library. Meaning, you already have access to its content if you are installing Kinobi in one of these ways.
+> This package is included in the [`@codama/visitors`](../visitors) package and in the main [`codama`](../library) library. Meaning, you already have access to its content if you are installing Kinobi in one of these ways.
 >
 > ```sh
 > pnpm install @codama/visitors
-> pnpm install kinobi
+> pnpm install codama
 > ```
 
 ## Getting started with visitors
@@ -78,14 +78,14 @@ The `visitOrElse` function can also be used to gracefully handle the case where 
 const counter: number = visit(stringTypeNode, accountCounterVisitor(), () => 0);
 ```
 
-Also note that, if you are using [the `Kinobi` interface](../library/README#kinobi) — which is a simple wrapper around a `RootNode` — you may visit that root node using the provided helpers:
+Also note that, if you are using [the `Kinobi` interface](../library/README#codama) — which is a simple wrapper around a `RootNode` — you may visit that root node using the provided helpers:
 
 ```ts
 // Runs the visitor and returns the result.
-const result: number = kinobi.accept(myNumberVisitor());
+const result: number = codama.accept(myNumberVisitor());
 
 // Runs the visitor and updates the wrapped `RootNode` with the result.
-kinobi.update(myTransformerVisitor());
+codama.update(myTransformerVisitor());
 ```
 
 ## Core visitors

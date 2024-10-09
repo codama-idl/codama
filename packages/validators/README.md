@@ -16,10 +16,10 @@ pnpm install @codama/validators
 ```
 
 > [!NOTE]
-> This package is included in the main [`kinobi`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
 >
 > ```sh
-> pnpm install kinobi
+> pnpm install codama
 > ```
 
 ## Types
@@ -50,7 +50,7 @@ The `getValidationItemsVisitor` function returns a visitor that collects all val
 ```ts
 import { getValidationItemsVisitor } from '@codama/validators';
 
-const validationItems = kinobi.accept(getValidationItemsVisitor());
+const validationItems = codama.accept(getValidationItemsVisitor());
 ```
 
 ### `throwValidatorItemsVisitor(visitor)`
@@ -61,8 +61,8 @@ The `throwValidatorItemsVisitor` function accepts a `Visitor<ValidationItemp[]>`
 import { throwValidatorItemsVisitor, getValidationItemsVisitor } from '@codama/validators';
 
 // Throw if any "error" items are found.
-kinobi.accept(throwValidatorItemsVisitor(getValidationItemsVisitor()));
+codama.accept(throwValidatorItemsVisitor(getValidationItemsVisitor()));
 
 // Throw if any "warn" or "error" items are found.
-kinobi.accept(throwValidatorItemsVisitor(getValidationItemsVisitor(), 'warn'));
+codama.accept(throwValidatorItemsVisitor(getValidationItemsVisitor(), 'warn'));
 ```

@@ -16,7 +16,7 @@ pnpm install @codama/renderers
 ```
 
 > [!NOTE]
-> This package is **not** included in the main [`kinobi`](../library) package.
+> This package is **not** included in the main [`codama`](../library) package.
 
 ## Available renderers
 
@@ -27,10 +27,10 @@ The following renderer packages are included in this package:
 -   [`@codama/renderers-rust`](../renderers-rust) as `renderRustVisitor`
 
 ```ts
-// node ./kinobi.mjs
+// node ./codama.mjs
 import { renderJavaScriptVisitor, renderJavaScriptUmiVisitor, renderRustVisitor } from '@codama/renderers';
 
-kinobi.accept(renderJavaScriptVisitor('clients/js/src/generated'));
-kinobi.accept(renderJavaScriptUmiVisitor('clients/js-umi/src/generated'));
-kinobi.accept(renderRustVisitor('clients/rust/src/generated'));
+codama.accept(renderJavaScriptVisitor('clients/js/src/generated'));
+codama.accept(renderJavaScriptUmiVisitor('clients/js-umi/src/generated'));
+codama.accept(renderRustVisitor('clients/rust/src/generated'));
 ```

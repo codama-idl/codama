@@ -1,5 +1,5 @@
 {
-    "name": "kinobi-monorepo",
+    "name": "codama-monorepo",
     "private": true,
     "workspaces": [
         "packages/*"

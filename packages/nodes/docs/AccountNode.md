@@ -2,7 +2,7 @@
 
 This node defines an on-chain account. It is characterized by its name, data structure, and optional attributes such as PDA definition and account discriminators.
 
-![Diagram](https://github.com/codama/kinobi/assets/3642397/77974dad-212e-49b1-8e41-5d466c273a02)
+![Diagram](https://github.com/codama/codama/assets/3642397/77974dad-212e-49b1-8e41-5d466c273a02)
 
 ## Attributes
 

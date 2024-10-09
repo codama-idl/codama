@@ -16,10 +16,10 @@ pnpm install @codama/visitors
 ```
 
 > [!NOTE]
-> This package is included in the main [`kinobi`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
 >
 > ```sh
-> pnpm install kinobi
+> pnpm install codama
 > ```
 
 ## Understanding visitors
@@ -41,7 +41,7 @@ Let's go through all of them alphabetically.
 This visitor adds `PdaNodes` to the desired `ProgramNodes`. It accepts an object where the keys are the program names and the values are the `PdaNodes` to add within these programs.
 
 ```ts
-kinobi.update(
+codama.update(
     addPdasVisitor({
         // Add a PDA to the 'token' program.
         token: [
@@ -77,7 +77,7 @@ kinobi.update(
 This visitor splits an instruction into multiple sub-instructions by using an enum argument such that each of its variants creates a different sub-instruction. It accepts an object where the keys are the instruction names and the values are the enum argument names that will be used to split the instruction.
 
 ```ts
-kinobi.update(
+codama.update(
     createSubInstructionsFromEnumArgsVisitor({
         mint: 'mintArgs',
         transfer: 'transferArgs',
@@ -91,7 +91,7 @@ kinobi.update(
 This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Kinobi IDL and removes any duplicates. A `DefinedTypeNode` is considered a duplicate if it has the same name and data structure as another `DefinedTypeNode`. This is useful when you have multiple programs that share the same types.
 
 ```ts
-kinobi.update(deduplicateIdenticalDefinedTypesVisitor());
+codama.update(deduplicateIdenticalDefinedTypesVisitor());
 ```
 
 ### `fillDefaultPdaSeedValuesVisitor`
@@ -107,7 +107,7 @@ It also requires a [`LinkableDictionary`](../visitors-core/README.md#linkable-di
 Note that this visitor is mainly used for internal purposes.
 
 ```ts
-kinobi.update(fillDefaultPdaSeedValuesVisitor(instructionNode, linkables, strictMode));
+codama.update(fillDefaultPdaSeedValuesVisitor(instructionNode, linkables, strictMode));
 ```
 
 ### `flattenInstructionDataArgumentsVisitor`
@@ -115,7 +115,7 @@ kinobi.update(fillDefaultPdaSeedValuesVisitor(instructionNode, linkables, strict
 This visitor flattens any instruction arguments of type `StructTypeNode` such that their fields are no longer nested. This can be useful to simplify the data structure of an instruction.
 
 ```ts
-kinobi.update(flattenInstructionDataArgumentsVisitor());
+codama.update(flattenInstructionDataArgumentsVisitor());
 ```
 
 ### `flattenStructVisitor`
@@ -123,7 +123,7 @@ kinobi.update(flattenInstructionDataArgumentsVisitor());
 This visitor flattens any struct fields that are also structs such that their fields are no longer nested. It accepts an object such that the keys are the struct names and the values are the field names to flatten or `"*"` to flatten all struct fields.
 
 ```ts
-kinobi.update(
+codama.update(
     flattenStructVisitor({
         counter: ['data', 'config'],
         escrow: '*',
@@ -136,7 +136,7 @@ kinobi.update(
 This visitor goes through all `DefinedTypeNodes` and outputs a histogram of how many times each type is used in the Kinobi IDL.
 
 ```ts
-const histogram = kinobi.accept(getDefinedTypeHistogramVisitor());
+const histogram = codama.accept(getDefinedTypeHistogramVisitor());
 ```
 
 The returned histogram is an object such that the keys are the names of visited `DefinedTypeNodes` and the values are objects with properties described below.
@@ -165,7 +165,7 @@ This histogram is used internally in other visitors to understand how types are 
 This visitor helps set account discriminators based on a field in the account data and the value it should take. This is typically used on the very first field of the account data which usually refers to a discriminator value that helps distinguish between multiple accounts in a program.
 
 ```ts
-kinobi.update(
+codama.update(
     setAccountDiscriminatorFromFieldVisitor({
         counter: { field: 'discriminator', value: k.enumValueNode('accountState', 'counter') },
         escrow: { field: 'discriminator', value: k.enumValueNode('accountState', 'escrow') },
@@ -179,7 +179,7 @@ kinobi.update(
 This visitor uses the [`getByteSizeVisitor`](../visitors-core/README.md#getbytesizevisitor) to check the size of all `AccountNodes` and, if a fixed-size is identified, it sets the `size` property of the account to that value.
 
 ```ts
-kinobi.update(setFixedAccountSizesVisitor());
+codama.update(setFixedAccountSizesVisitor());
 ```
 
 ### `setInstructionAccountDefaultValuesVisitor`
@@ -187,7 +187,7 @@ kinobi.update(setFixedAccountSizesVisitor());
 This visitor helps set the default values of instruction accounts in bulk. It accepts an array of "rule" objects that must contain the default value to set and the name of the instruction account to set it on. The account name may also be a regular expression to match more complex patterns.
 
 ```ts
-kinobi.update(
+codama.update(
     setInstructionAccountDefaultValuesVisitor([
         {
             // Set this public key as default value to any account named 'counterProgram'.
@@ -208,7 +208,7 @@ kinobi.update(
 This visitor adds a new instruction argument to each of the provided instruction names. The new argument is added before any existing argument and marked as a discriminator of the instruction. This is useful if your Kinobi IDL is missing discriminators in the instruction data.
 
 ```ts
-kinobi.update(
+codama.update(
     setInstructionDiscriminatorsVisitor({
         mint: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(0) },
         transfer: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(1) },
@@ -222,7 +222,7 @@ kinobi.update(
 This visitor helps wrap `NumberTypeNodes` matching a given name with a specific number wrapper.
 
 ```ts
-kinobi.update(
+codama.update(
     setNumberWrappersVisitor({
         lamports: { kind: 'SolAmount' },
         timestamp: { kind: 'DateTime' },
@@ -236,7 +236,7 @@ kinobi.update(
 This visitor sets default values for all provided fields of a struct. It accepts an object where the keys are the struct names and the values are objects that map field names to their new default values.
 
 ```ts
-kinobi.update(
+codama.update(
     setStructDefaultValuesVisitor({
         person: {
             age: numberValueNode(42),
@@ -254,7 +254,7 @@ kinobi.update(
 This visitor transforms `DefinedTypeNodes` matching the provided names into `AccountNodes` within the same `ProgramNode`.
 
 ```ts
-kinobi.update(transformDefinedTypesIntoAccountsVisitor(['counter', 'escrow']));
+codama.update(transformDefinedTypesIntoAccountsVisitor(['counter', 'escrow']));
 ```
 
 ### `transformU8ArraysToBytesVisitor`
@@ -262,7 +262,7 @@ kinobi.update(transformDefinedTypesIntoAccountsVisitor(['counter', 'escrow']));
 This visitor transforms any fixed-size array of `u8` numbers into a fixed-size `BytesTypeNode`.
 
 ```ts
-kinobi.update(transformU8ArraysToBytesVisitor());
+codama.update(transformU8ArraysToBytesVisitor());
 ```
 
 ### `unwrapDefinedTypesVisitor`
@@ -272,7 +272,7 @@ This visitor replaces any `DefinedTypeLinkNode` with the actual `DefinedTypeNode
 Note that if multiple link nodes point to the same defined type, each link node will be replaced by a copy of the defined type.
 
 ```ts
-kinobi.update(unwrapDefinedTypesVisitor(['counter', 'escrow']));
+codama.update(unwrapDefinedTypesVisitor(['counter', 'escrow']));
 ```
 
 ### `unwrapInstructionArgsDefinedTypesVisitor`
@@ -280,7 +280,7 @@ kinobi.update(unwrapDefinedTypesVisitor(['counter', 'escrow']));
 This visitor replaces `DefinedTypeLinkNodes` used only once inside an instruction argument with the actual `DefinedTypeNodes` they refer to.
 
 ```ts
-kinobi.update(unwrapInstructionArgsDefinedTypesVisitor());
+codama.update(unwrapInstructionArgsDefinedTypesVisitor());
 ```
 
 ### `unwrapTupleEnumWithSingleStructVisitor`
@@ -288,7 +288,7 @@ kinobi.update(unwrapInstructionArgsDefinedTypesVisitor());
 This visitor transforms `EnumTupleVariantTypeNodes` with a single `StructTypeNode` item into `EnumStructVariantTypeNodes`. By default, it will unwrap all tuple variants matching that criteria, but you can provide an array of names to only unwrap specific variants.
 
 ```ts
-kinobi.update(unwrapTupleEnumWithSingleStructVisitor());
+codama.update(unwrapTupleEnumWithSingleStructVisitor());
 ```
 
 ### `unwrapTypeDefinedLinksVisitor`
@@ -298,7 +298,7 @@ This visitor replaces any `DefinedTypeLinkNode` matching the provided `NodeSelec
 Contrary to the `unwrapDefinedTypesVisitor` though, it only replaces the requested `DefinedTypeLinkNodes` and does not remove the associated `DefinedTypeNode` from its `ProgramNode`.
 
 ```ts
-kinobi.update(unwrapTypeDefinedLinksVisitor(['[accountNode]counter.data', '[instructionNode]transfer.config']));
+codama.update(unwrapTypeDefinedLinksVisitor(['[accountNode]counter.data', '[instructionNode]transfer.config']));
 ```
 
 ### `updateAccountsVisitor`
@@ -306,7 +306,7 @@ kinobi.update(unwrapTypeDefinedLinksVisitor(['[accountNode]counter.data', '[inst
 This visitor allows us to update various aspects of `AccountNodes` and/or delete them. It accepts an object where the keys are the account names and the values are the operations to apply to these accounts.
 
 ```ts
-kinobi.update(
+codama.update(
     updateAccountsVisitor({
         vault: {
             // Rename the 'vault' account to 'safe'.
@@ -329,7 +329,7 @@ kinobi.update(
 This visitor allows us to update various aspects of `DefinedTypeNode` and/or delete them. It accepts an object where the keys are the defined type names and the values are the operations to apply to these types.
 
 ```ts
-kinobi.update(
+codama.update(
     updateDefinedTypesVisitor({
         options: {
             // Rename the 'options' type to 'configs'.
@@ -350,7 +350,7 @@ kinobi.update(
 This visitor allows us to update various aspects of `ErrorNodes` and/or delete them. It accepts an object where the keys are the error names and the values are the operations to apply to these errors.
 
 ```ts
-kinobi.update(
+codama.update(
     updateErrorsVisitor({
         invalidPda: {
             // Rename the 'invalidPda' error to 'invalidProgramDerivedAddress'.
@@ -373,7 +373,7 @@ kinobi.update(
 This visitor allows us to update various aspects of `InstructionNodes` and/or delete them. It accepts an object where the keys are the instruction names and the values are the operations to apply to these instructions.
 
 ```ts
-kinobi.update(
+codama.update(
     updateInstructionsVisitor({
         send: {
             // Rename the 'send' instruction to 'transfer'.
@@ -408,7 +408,7 @@ kinobi.update(
 This visitor allows us to update various aspects of `ProgramNodes` and/or delete them. It accepts an object where the keys are the program names and the values are the operations to apply to these programs.
 
 ```ts
-kinobi.update(
+codama.update(
     updateProgramsVisitor({
         splToken: {
             // Rename the 'splToken' program to 'token'.

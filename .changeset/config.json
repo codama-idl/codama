@@ -2,12 +2,12 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
   "changelog": [
     "@changesets/changelog-github",
-    { "repo": "codama/kinobi" }
+    { "repo": "codama/codama" }
   ],
   "commit": false,
   "fixed": [
         [
-            "kinobi",
+            "codama",
             "@codama/errors",
             "@codama/node-types",
             "@codama/nodes",

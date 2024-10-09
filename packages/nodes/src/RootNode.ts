@@ -8,7 +8,7 @@ export function rootNode<TProgram extends ProgramNode, const TAdditionalPrograms
         kind: 'rootNode',
 
         // Data.
-        standard: 'kinobi',
+        standard: 'codama',
         version: __VERSION__ as KinobiVersion,
 
         // Children.

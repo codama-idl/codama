@@ -16,7 +16,7 @@ pnpm install @codama/renderers-js
 ```
 
 > [!NOTE]
-> This package is **not** included in the main [`kinobi`](../library) package.
+> This package is **not** included in the main [`codama`](../library) package.
 >
 > However, note that the [`renderers`](../renderers) package re-exports the `renderVisitor` function of this package as `renderJavaScriptVisitor`.
 
@@ -25,12 +25,12 @@ pnpm install @codama/renderers-js
 Once you have a Kinobi IDL, you can use the `renderVisitor` of this package to generate JavaScript clients. You will need to provide the base directory where the generated files will be saved and an optional set of options to customize the output.
 
 ```ts
-// node ./kinobi.mjs
+// node ./codama.mjs
 import { renderVisitor } from '@codama/renderers-js';
 
 const pathToGeneratedFolder = path.join(__dirname, 'clients', 'js', 'src', 'generated');
 const options = {}; // See below.
-kinobi.accept(renderVisitor(pathToGeneratedFolder, options));
+codama.accept(renderVisitor(pathToGeneratedFolder, options));
 ```
 
 ## Options

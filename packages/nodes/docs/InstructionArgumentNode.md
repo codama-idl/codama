@@ -2,7 +2,7 @@
 
 This node defines an argument that is passed to an instruction. When all arguments are combined and serialized next to each other, they form the instruction's data.
 
-![Diagram](https://github.com/codama/kinobi/assets/3642397/7e2def82-949a-4663-bdc3-ac599d39d2d2)
+![Diagram](https://github.com/codama/codama/assets/3642397/7e2def82-949a-4663-bdc3-ac599d39d2d2)
 
 ## Attributes
 

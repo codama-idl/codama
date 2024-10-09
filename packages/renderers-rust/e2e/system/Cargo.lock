@@ -2158,7 +2158,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "kinobi-renderers-rust-e2e-system"
+name = "codama-renderers-rust-e2e-system"
 version = "0.0.0"
 dependencies = [
  "anchor-lang",

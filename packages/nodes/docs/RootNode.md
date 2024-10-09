@@ -2,7 +2,7 @@
 
 This node represents the starting point of the Kinobi IDL. It contains a single `ProgramNode` which the Kinobi IDL is describing as well as any additional programs that may be referenced by the main program. This node is also responsible for setting the standard and version of the IDL.
 
-![Diagram](https://github.com/codama/kinobi/assets/3642397/96c43c75-5925-4b6b-a1e0-8b8c61317cfe)
+![Diagram](https://github.com/codama/codama/assets/3642397/96c43c75-5925-4b6b-a1e0-8b8c61317cfe)
 
 ## Attributes
 
@@ -11,7 +11,7 @@ This node represents the starting point of the Kinobi IDL. It contains a single 
 | Attribute  | Type         | Description                                                                                                                                                                                   |
 | ---------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `kind`     | `"rootNode"` | The node discriminator.                                                                                                                                                                       |
-| `standard` | `"kinobi"`   | The IDL standard used by the `RootNode` which is always `"kinobi"`. This can help other communities fork the Kinobi standard.                                                                 |
+| `standard` | `"codama"`   | The IDL standard used by the `RootNode` which is always `"codama"`. This can help other communities fork the Kinobi standard.                                                                 |
 | `version`  | `\d.\d.\d`   | The semantic version of the standard used by the `RootNode`. That is — unless a different standard is used — this will be the Kinobi version from which this entire tree of node was created. |
 
 ### Children
@@ -25,7 +25,7 @@ This node represents the starting point of the Kinobi IDL. It contains a single 
 
 ### `rootNode(program, additionalPrograms?)`
 
-Helper function that creates a `RootNode` object from a `ProgramNode` and an optional array of additional `ProgramNodes`. Note that the `standard` is automatically set to `"kinobi"` and the `version` is set to the Kinobi version installed.
+Helper function that creates a `RootNode` object from a `ProgramNode` and an optional array of additional `ProgramNodes`. Note that the `standard` is automatically set to `"codama"` and the `version` is set to the Kinobi version installed.
 
 ```ts
 const node = rootNode(programNode({ ... }));

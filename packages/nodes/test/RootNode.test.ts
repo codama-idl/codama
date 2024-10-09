@@ -10,7 +10,7 @@ test('it returns the right node kind', () => {
 
 test('it returns the right Kinobi standard', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
-    expect(root.standard).toBe('kinobi');
+    expect(root.standard).toBe('codama');
 });
 
 test('it returns the right Kinobi version', () => {

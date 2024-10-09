@@ -16,7 +16,7 @@ pnpm install @codama/renderers-core
 ```
 
 > [!NOTE]
-> This package is **not** included in the main [`kinobi`](../library) package.
+> This package is **not** included in the main [`codama`](../library) package.
 
 ## Filesystem wrappers
 
@@ -137,7 +137,7 @@ When building renderers, you will most likely create a visitor that traverses th
 ```ts
 import { getRenderMapVisitor } from '@codama/renderers-js';
 
-const renderMap = kinobi.accept(getRenderMapVisitor());
+const renderMap = codama.accept(getRenderMapVisitor());
 ```
 
 If you have access to a visitor that returns a `RenderMap` — also described as `Visitor<RenderMap>` — then, you can wrap it inside the `writeRenderMapVisitor` to directly write the content to the filesystem at the given base directory.
@@ -145,7 +145,7 @@ If you have access to a visitor that returns a `RenderMap` — also described as
 ```ts
 import { getRenderMapVisitor } from '@codama/renderers-js';
 
-kinobi.accept(writeRenderMapVisitor(getRenderMapVisitor(), 'src/generated'));
+codama.accept(writeRenderMapVisitor(getRenderMapVisitor(), 'src/generated'));
 ```
 
 Note however that, if you are writing your own renderer, you should probably offer a higher-level visitor that includes this logic and also does some additional work such as deleting the base directory before writing the new content if it already exists.
@@ -155,7 +155,7 @@ For instance, the recommended way of using the `@codama/renderers-js` package is
 ```ts
 import { renderVisitor } from '@codama/renderers-js';
 
-kinobi.accept(renderVisitor('src/generated'));
+codama.accept(renderVisitor('src/generated'));
 ```
 
 Here's a simple example of how to set up the basis of a renderer from an existing `getRenderMapVisitor`.

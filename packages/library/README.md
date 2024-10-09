@@ -3,16 +3,16 @@
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/kinobi.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/kinobi.svg?style=flat&label=%40kinobi-so%2Fnodes
-[npm-url]: https://www.npmjs.com/package/kinobi
+[npm-downloads-image]: https://img.shields.io/npm/dm/codama.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/codama.svg?style=flat&label=%40kinobi-so%2Fnodes
+[npm-url]: https://www.npmjs.com/package/codama
 
 This package is the main library for Kinobi. It re-exports most of the other packages in the Kinobi monorepo and offers a `Kinobi` type with a few helpers to help bind everything together.
 
 ## Installation
 
 ```sh
-pnpm install kinobi
+pnpm install codama
 ```
 
 ## Packages included
@@ -48,17 +48,17 @@ The `accept` function allows us to visit the wrapped `RootNode` using the provid
 
 ```ts
 // Log the Kinobi IDL in the console.
-kinobi.accept(consoleLogVisitor(getDebugStringVisitor({ indent: true })));
+codama.accept(consoleLogVisitor(getDebugStringVisitor({ indent: true })));
 ```
 
 The `update` function also accepts a visitor, but it uses the return value of that visitor to update the wrapped `RootNode`. This means that, given a `RootNode`, the provided visitor should also return a `RootNode`. An error will be thrown otherwise.
 
 ```ts
 // Delete account nodes named "mint".
-kinobi.update(deleteNodesVisitor(['[accountNode]mint']));
+codama.update(deleteNodesVisitor(['[accountNode]mint']));
 
 // Transform all number nodes into u64 number nodes.
-kinobi.update(
+codama.update(
     bottomUpTransformerVisitor([
         {
             select: '[numberTypeNode]',
@@ -75,9 +75,9 @@ Other helper functions include:
 -   `getRoot()`: Returns the wrapped `RootNode`.
 
 ```ts
-const clonedKinobi = kinobi.clone();
-const jsonIdl = kinobi.getJson();
-const rootNode = kinobi.getRoot();
+const clonedKinobi = codama.clone();
+const jsonIdl = codama.getJson();
+const rootNode = codama.getRoot();
 ```
 
 ### `createFromRoot(rootNode)`
@@ -85,7 +85,7 @@ const rootNode = kinobi.getRoot();
 The `createFromRoot` function creates a new instance of the `Kinobi` interface from a `RootNode`.
 
 ```ts
-const kinobi = createFromRoot(rootNode(programNode({ ... })));
+const codama = createFromRoot(rootNode(programNode({ ... })));
 ```
 
 ### `createFromJson(jsonIdl)`
@@ -94,5 +94,5 @@ The `createFromJson` function creates a new instance of the `Kinobi` interface f
 
 ```ts
 const json: string = fs.readFileSync('path/to/kinobiIdl.json', 'utf-8');
-const kinobi = createFromJson(json);
+const codama = createFromJson(json);
 ```

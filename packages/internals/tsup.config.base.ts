@@ -37,7 +37,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         },
         external: ['node:fs', 'node:path', 'node:url'],
         format,
-        globalName: 'globalThis.kinobi',
+        globalName: 'globalThis.codama',
         name: platform,
         // Inline private, non-published packages.
         // WARNING: This inlines packages recursively. Make sure these don't have deep dep trees.

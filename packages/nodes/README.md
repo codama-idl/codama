@@ -16,10 +16,10 @@ pnpm install @codama/nodes
 ```
 
 > [!NOTE]
-> This package is included in the main [`kinobi`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
 >
 > ```sh
-> pnpm install kinobi
+> pnpm install codama
 > ```
 
 ## All available nodes

@@ -16,10 +16,10 @@ pnpm install @codama/errors
 ```
 
 > [!NOTE]
-> This package is included in the main [`kinobi`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
 >
 > ```sh
-> pnpm install kinobi
+> pnpm install codama
 > ```
 
 ## Reading error messages
@@ -46,7 +46,7 @@ When you catch a `KinobiError` and assert its error code using `isKinobiError()`
 import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, isKinobiError } from '@codama/errors';
 
 try {
-    const kinobi = createFromJson(jsonIdl);
+    const codama = createFromJson(jsonIdl);
 } catch (e) {
     if (isKinobiError(e, KINOBI_ERROR__UNEXPECTED_NODE_KIND)) {
         const { expectedKinds, kind, node } = e.context;
@@ -71,7 +71,7 @@ To add a new error in Kinobi, follow these steps:
 3. If you would like the new error to encapsulate context about the error itself define that context in `src/context.ts`.
 4. Add the error's message to `src/messages.ts`. Any context values that you defined above will be interpolated into the message wherever you write `$key`, where `key` is the index of a value in the context (eg. ``'Unrecognized node `$kind`.'``).
 5. Publish a new version of `@codama/errors` using changesets — maintainers will handle this via tha changesets CI workflow.
-6. Bump the version of `@codama/errors` or `kinobi` in the consumer package from which the error is thrown.
+6. Bump the version of `@codama/errors` or `codama` in the consumer package from which the error is thrown.
 
 ### Removing an error message
 

@@ -1,5 +1,5 @@
 {
-    "name": "kinobi",
+    "name": "codama",
     "version": "0.22.0",
     "description": "A Solana framework for building standardised programs",
     "exports": {
@@ -61,10 +61,10 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/codama/kinobi"
+        "url": "https://github.com/codama/codama"
     },
     "bugs": {
-        "url": "http://github.com/codama/kinobi/issues"
+        "url": "http://github.com/codama/codama/issues"
     },
     "browserslist": [
         "supports bigint and not dead",
