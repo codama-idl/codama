@@ -1,6 +1,6 @@
 {
     "name": "@kinobi-so/nodes-from-anchor",
-    "version": "0.21.3",
+    "version": "0.22.0",
     "description": "Node specifications and helpers for the Kinobi standard",
     "exports": {
         "types": "./dist/types/index.d.ts",

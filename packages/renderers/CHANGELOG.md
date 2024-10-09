@@ -1,5 +1,20 @@
 # @kinobi-so/renderers
 
+## 0.22.0
+
+### Minor Changes
+
+-   [#175](https://github.com/kinobi-so/kinobi/pull/175) [`2b1259b`](https://github.com/kinobi-so/kinobi/commit/2b1259b566aa439ca61c28f7ef72ff9c0817e540) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove `importFrom` attributes from link nodes and resolvers
+
+    Instead, a new `linkOverrides` attribute is introduced on all renderers to redirect a link node or a resolver to a custom path or module.
+
+### Patch Changes
+
+-   Updated dependencies [[`c8c5934`](https://github.com/kinobi-so/kinobi/commit/c8c593466294f3ec7dca1fb828254e10aa312925), [`345a145`](https://github.com/kinobi-so/kinobi/commit/345a145bb9a9b181c8db9435a46d35dacbfced41), [`2b1259b`](https://github.com/kinobi-so/kinobi/commit/2b1259b566aa439ca61c28f7ef72ff9c0817e540)]:
+    -   @kinobi-so/renderers-js-umi@0.22.0
+    -   @kinobi-so/renderers-rust@0.22.0
+    -   @kinobi-so/renderers-js@0.22.0
+
 ## 0.21.5
 
 ### Patch Changes

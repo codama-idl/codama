@@ -1,5 +1,20 @@
 # @kinobi-so/validators
 
+## 0.22.0
+
+### Minor Changes
+
+-   [#175](https://github.com/kinobi-so/kinobi/pull/175) [`2b1259b`](https://github.com/kinobi-so/kinobi/commit/2b1259b566aa439ca61c28f7ef72ff9c0817e540) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove `importFrom` attributes from link nodes and resolvers
+
+    Instead, a new `linkOverrides` attribute is introduced on all renderers to redirect a link node or a resolver to a custom path or module.
+
+### Patch Changes
+
+-   Updated dependencies [[`c8c5934`](https://github.com/kinobi-so/kinobi/commit/c8c593466294f3ec7dca1fb828254e10aa312925), [`2b1259b`](https://github.com/kinobi-so/kinobi/commit/2b1259b566aa439ca61c28f7ef72ff9c0817e540), [`93a318a`](https://github.com/kinobi-so/kinobi/commit/93a318a9b7ee435eb37934b0ab390e160d50968b)]:
+    -   @kinobi-so/visitors-core@0.22.0
+    -   @kinobi-so/errors@0.22.0
+    -   @kinobi-so/nodes@0.22.0
+
 ## 0.21.5
 
 ### Patch Changes
