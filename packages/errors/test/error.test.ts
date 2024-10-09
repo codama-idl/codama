@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest';
 
 import {
-    isCodamaError,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
     CodamaError,
+    isCodamaError,
 } from '../src';
 
 test('it exposes the Codama error context', () => {

@@ -1,6 +1,6 @@
 import { PublicKeyTypeNode } from '@codama/node-types';
 
-import { isCodamaError, CodamaError, CodamaErrorCode } from '../src';
+import { CodamaError, CodamaErrorCode, isCodamaError } from '../src';
 import * as CodamaErrorCodeModule from '../src/codes';
 import { CodamaErrorContext } from '../src/context';
 
