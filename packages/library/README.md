@@ -93,6 +93,6 @@ const codama = createFromRoot(rootNode(programNode({ ... })));
 The `createFromJson` function creates a new instance of the `Codama` interface from a JSON representation of a `RootNode`.
 
 ```ts
-const json: string = fs.readFileSync('path/to/kinobiIdl.json', 'utf-8');
+const json: string = fs.readFileSync('path/to/codamaIdl.json', 'utf-8');
 const codama = createFromJson(json);
 ```

@@ -40,12 +40,12 @@ export function createFromJson(json: string): Codama {
 }
 
 function validateKinobiVersion(rootVersion: KinobiVersion): void {
-    const kinobiVersion = __VERSION__;
-    if (rootVersion === kinobiVersion) return;
+    const codamaVersion = __VERSION__;
+    if (rootVersion === codamaVersion) return;
     const [rootMajor, rootMinor] = rootVersion.split('.').map(Number);
-    const [KinobiMajor, KinobiMinor] = kinobiVersion.split('.').map(Number);
+    const [KinobiMajor, KinobiMinor] = codamaVersion.split('.').map(Number);
     const isZeroMajor = rootMajor === 0 && KinobiMajor === 0;
     if (isZeroMajor && rootMinor === KinobiMinor) return;
     if (rootMajor === KinobiMajor) return;
-    throw new KinobiError(CODAMA_ERROR__VERSION_MISMATCH, { kinobiVersion, rootVersion });
+    throw new KinobiError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion, rootVersion });
 }

@@ -52,7 +52,7 @@ try {
         const { expectedKinds, kind, node } = e.context;
         // ...
     } else if (isKinobiError(e, CODAMA_ERROR__VERSION_MISMATCH)) {
-        const { kinobiVersion, rootVersion } = e.context;
+        const { codamaVersion, rootVersion } = e.context;
         // ...
     } else {
         throw e;

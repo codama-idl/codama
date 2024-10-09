@@ -98,7 +98,7 @@ export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         kind: string;
     };
     [CODAMA_ERROR__VERSION_MISMATCH]: {
-        kinobiVersion: string;
+        codamaVersion: string;
         rootVersion: string;
     };
     [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: {

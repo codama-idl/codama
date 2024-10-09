@@ -53,7 +53,7 @@ export const KinobiErrorMessages: Readonly<{
     [CODAMA_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got [$kind].',
     [CODAMA_ERROR__UNRECOGNIZED_NODE_KIND]: 'Unrecognized node kind [$kind].',
     [CODAMA_ERROR__VERSION_MISMATCH]:
-        'The provided RootNode version [$rootVersion] is not compatible with the installed Codama version [$kinobiVersion].',
+        'The provided RootNode version [$rootVersion] is not compatible with the installed Codama version [$codamaVersion].',
     [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: 'Account [$name] does not have a field named [$missingField].',
     [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:
         'Cannot add PDAs to program [$programName] because the following PDA names already exist [$duplicatedPdaNames].',
