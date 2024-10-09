@@ -12,7 +12,7 @@
 
 Codama is a tool that describes any Solana program in a powerful standardised format known as the Codama IDL. This IDL can then be used to create a variety of utility such as rendering client code for your programs in various languages/frameworks, generating CLIs and providing more information to explorers.
 
-![Codama header: A small double-sided mind-map with the Codama logo in the middle. On the left, we see the various ways to get a Codama IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/codama-idl/codama/assets/3642397/11161fb6-1ef4-446d-bf73-ce04484519a0)
+![Codama header: A small double-sided mind-map with the Codama logo in the middle. On the left, we see the various ways to get a Codama IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/user-attachments/assets/029af336-ea71-4e7f-9612-ef5bb187e3a0)
 
 ## Nodes and visitors
 
