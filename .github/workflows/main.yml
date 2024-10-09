@@ -9,7 +9,7 @@ env:
   # Among other things, opts out of Turborepo telemetry. See https://consoledonottrack.com/.
   DO_NOT_TRACK: '1'
   NODE_VERSION: 18
-  CODAMA_VERSION: 0.22
+  CODAMA_VERSION: 1.x
   SOLANA_VERSION: 1.18.12
 
 jobs:
