@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/renderers-rust.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/renderers-rust.svg?style=flat&label=%40kinobi-so%2Frenderers-rust
+[npm-image]: https://img.shields.io/npm/v/@codama/renderers-rust.svg?style=flat&label=%40codama%2Frenderers-rust
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-rust
 
 This package generates Rust clients from your Codama IDLs.

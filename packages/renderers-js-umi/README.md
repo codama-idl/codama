@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/renderers-js-umi.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/renderers-js-umi.svg?style=flat&label=%40kinobi-so%2Frenderers-js-umi
+[npm-image]: https://img.shields.io/npm/v/@codama/renderers-js-umi.svg?style=flat&label=%40codama%2Frenderers-js-umi
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-js-umi
 
 This package generates JavaScript clients from your Codama IDLs. The generated clients are compatible with Metaplex's [Umi framework](https://github.com/metaplex-foundation/umi).

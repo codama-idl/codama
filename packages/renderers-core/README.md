@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/renderers-core.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/renderers-core.svg?style=flat&label=%40kinobi-so%2Frenderers-core
+[npm-image]: https://img.shields.io/npm/v/@codama/renderers-core.svg?style=flat&label=%40codama%2Frenderers-core
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-core
 
 This package provides the core utility for generating clients from Codama IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@codama/renderers-js`](../renderers-js) and [`@codama/renderers-rust`](../renderers-rust).

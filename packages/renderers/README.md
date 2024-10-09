@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/renderers.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/renderers.svg?style=flat&label=%40kinobi-so%2Frenderers
+[npm-image]: https://img.shields.io/npm/v/@codama/renderers.svg?style=flat&label=%40codama%2Frenderers
 [npm-url]: https://www.npmjs.com/package/@codama/renderers
 
 This package re-exports all available renderers for Codama IDLs.

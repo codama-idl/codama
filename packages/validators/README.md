@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/validators.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/validators.svg?style=flat&label=%40kinobi-so%2Fvalidators
+[npm-image]: https://img.shields.io/npm/v/@codama/validators.svg?style=flat&label=%40codama%2Fvalidators
 [npm-url]: https://www.npmjs.com/package/@codama/validators
 
 This package offers a set of validation rules for Codama IDLs to ensure that they are correctly formatted.

@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/codama.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/codama.svg?style=flat&label=%40kinobi-so%2Fnodes
+[npm-image]: https://img.shields.io/npm/v/codama.svg?style=flat&label=%40codama%2Fnodes
 [npm-url]: https://www.npmjs.com/package/codama
 
 This package is the main library for Codama. It re-exports most of the other packages in the Codama monorepo and offers a `Codama` type with a few helpers to help bind everything together.

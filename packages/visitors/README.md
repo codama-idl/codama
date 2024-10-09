@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/visitors.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/visitors.svg?style=flat&label=%40kinobi-so%2Fvisitors
+[npm-image]: https://img.shields.io/npm/v/@codama/visitors.svg?style=flat&label=%40codama%2Fvisitors
 [npm-url]: https://www.npmjs.com/package/@codama/visitors
 
 This package offers various visitors for Codama IDLs to traverse and manipulate their nodes.

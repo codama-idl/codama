@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/errors.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/errors.svg?style=flat&label=%40kinobi-so%2Ferrors
+[npm-image]: https://img.shields.io/npm/v/@codama/errors.svg?style=flat&label=%40codama%2Ferrors
 [npm-url]: https://www.npmjs.com/package/@codama/errors
 
 This package defines a `KinobiError` class that accepts a specific error code and a context object based on that code. It enables us to catch and handle errors in a more structured way.

@@ -4,7 +4,7 @@
 [![npm-downloads][npm-downloads-image]][npm-url]
 
 [npm-downloads-image]: https://img.shields.io/npm/dm/@codama/nodes-from-anchor.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@codama/nodes-from-anchor.svg?style=flat&label=%40kinobi-so%2Fnodes-from-anchor
+[npm-image]: https://img.shields.io/npm/v/@codama/nodes-from-anchor.svg?style=flat&label=%40codama%2Fnodes-from-anchor
 [npm-url]: https://www.npmjs.com/package/@codama/nodes-from-anchor
 
 This package converts Anchor IDLs from various versions into Codama IDLs.
