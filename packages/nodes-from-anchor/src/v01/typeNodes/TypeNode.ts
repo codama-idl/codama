@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@codama/errors';
 import {
     booleanTypeNode,
     bytesTypeNode,
@@ -59,7 +59,7 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
 
     // Ensure eveything else is an object.
     if (typeof idlType !== 'object') {
-        throw new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
+        throw new KinobiError(CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
             idlType: JSON.stringify(idlType),
         });
     }
@@ -105,7 +105,7 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
         }
     }
 
-    throw new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
+    throw new KinobiError(CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
         idlType: JSON.stringify(idlType),
     });
 };

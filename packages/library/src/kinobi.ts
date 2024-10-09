@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VERSION_MISMATCH } from '@codama/errors';
+import { CODAMA_ERROR__VERSION_MISMATCH } from '@codama/errors';
 import { KinobiError } from '@codama/errors';
 import { assertIsNode, KinobiVersion, Node, RootNode } from '@codama/nodes';
 import { visit, Visitor } from '@codama/visitors';
@@ -47,5 +47,5 @@ function validateKinobiVersion(rootVersion: KinobiVersion): void {
     const isZeroMajor = rootMajor === 0 && KinobiMajor === 0;
     if (isZeroMajor && rootMinor === KinobiMinor) return;
     if (rootMajor === KinobiMajor) return;
-    throw new KinobiError(KINOBI_ERROR__VERSION_MISMATCH, { kinobiVersion, rootVersion });
+    throw new KinobiError(CODAMA_ERROR__VERSION_MISMATCH, { kinobiVersion, rootVersion });
 }

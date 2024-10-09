@@ -1,8 +1,8 @@
 import {
-    KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
-    KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
-    KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
-    KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING,
+    CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
+    CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING,
     KinobiError,
 } from '@codama/errors';
 import {
@@ -82,14 +82,14 @@ export function instructionAccountNodeFromAnchorV01(
                                 const accountName = camelCase(seed.account ?? '');
                                 const accountNode = allAccounts.find(({ name }) => name === accountName);
                                 if (!accountNode) {
-                                    throw new KinobiError(KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, { kind });
+                                    throw new KinobiError(CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, { kind });
                                 }
 
                                 const fieldName = camelCase(path[1]);
                                 const accountFields = resolveNestedTypeNode(accountNode.data).fields;
                                 const fieldNode = accountFields.find(({ name }) => name === fieldName);
                                 if (!fieldNode) {
-                                    throw new KinobiError(KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING, {
+                                    throw new KinobiError(CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING, {
                                         idlType: seed.account,
                                         path: seed.path,
                                     });
@@ -98,7 +98,7 @@ export function instructionAccountNodeFromAnchorV01(
                                 const seedName = camelCase(seed.path);
                                 return [[...seeds, variablePdaSeedNode(seedName, fieldNode.type)], []];
                             } else {
-                                throw new KinobiError(KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING, {
+                                throw new KinobiError(CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING, {
                                     idlType: seed,
                                     path: seed.path,
                                 });
@@ -108,7 +108,7 @@ export function instructionAccountNodeFromAnchorV01(
                             const argumentName = camelCase(seed.path);
                             const argumentNode = instructionArguments.find(({ name }) => name === argumentName);
                             if (!argumentNode) {
-                                throw new KinobiError(KINOBI_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: seed.path });
+                                throw new KinobiError(CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: seed.path });
                             }
 
                             return [
@@ -117,7 +117,7 @@ export function instructionAccountNodeFromAnchorV01(
                             ];
                         }
                         default:
-                            throw new KinobiError(KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED, { kind });
+                            throw new KinobiError(CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED, { kind });
                     }
                 },
                 <[PdaSeedNode[], PdaSeedValueNode[]]>[[], []],

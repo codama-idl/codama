@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, KinobiError } from '@codama/errors';
 import {
     accountValueNode,
     argumentValueNode,
@@ -42,7 +42,7 @@ export function fillDefaultPdaSeedValuesVisitor(
                 if (!foundPda) return visitedNode;
                 const seeds = addDefaultSeedValuesFromPdaWhenMissing(instruction, foundPda, visitedNode.seeds);
                 if (strictMode && !allSeedsAreValid(instruction, foundPda, seeds)) {
-                    throw new KinobiError(KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, {
+                    throw new KinobiError(CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, {
                         instruction,
                         instructionName: instruction.name,
                         pda: foundPda,

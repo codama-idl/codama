@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, KinobiError } from '@codama/errors';
 
 import { createFile } from './fs';
 
@@ -35,7 +35,7 @@ export class RenderMap {
     get(key: string): string {
         const value = this.safeGet(key);
         if (value === undefined) {
-            throw new KinobiError(KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, { key });
+            throw new KinobiError(CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, { key });
         }
         return value;
     }

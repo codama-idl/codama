@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, KinobiError } from '@codama/errors';
 import type { GetNodeFromKind, Node, NodeKind } from '@codama/node-types';
 
 import { REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS } from './contextualValueNodes/ContextualValueNode';
@@ -47,7 +47,7 @@ export function assertIsNode<TKind extends NodeKind>(
 ): asserts node is GetNodeFromKind<TKind> {
     const kinds = Array.isArray(kind) ? kind : [kind];
     if (!isNode(node, kinds)) {
-        throw new KinobiError(KINOBI_ERROR__UNEXPECTED_NODE_KIND, {
+        throw new KinobiError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
             expectedKinds: kinds,
             kind: node?.kind ?? null,
             node,

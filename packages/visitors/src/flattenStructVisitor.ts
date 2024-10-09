@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, KinobiError } from '@codama/errors';
 import {
     assertIsNode,
     camelCase,
@@ -41,7 +41,7 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
     const hasConflictingNames = uniqueDuplicates.length > 0;
 
     if (hasConflictingNames) {
-        throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
+        throw new KinobiError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
             conflictingAttributes: uniqueDuplicates,
         });
     }

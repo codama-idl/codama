@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, KinobiError } from '@codama/errors';
 import {
     constantPdaSeedNodeFromProgramId,
     constantPdaSeedNodeFromString,
@@ -92,7 +92,7 @@ test('it fails to add a PDA if its name conflicts with an existing PDA on the pr
 
     // Then we expect the following error to be thrown.
     expect(fn).toThrow(
-        new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
+        new KinobiError(CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
             duplicatedPdaNames: ['myPda'],
             program: node,
             programName: 'myProgram',

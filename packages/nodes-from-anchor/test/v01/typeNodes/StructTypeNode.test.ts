@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@codama/errors';
 import {
     arrayTypeNode,
     numberTypeNode,
@@ -58,7 +58,7 @@ test('it fails when a mixture of named and unnamed fields are provided', () => {
 
     // @ts-expect-error Invalid IDL type because of mixed named and unnamed fields.
     expect(() => typeNodeFromAnchorV01(anchorIdl)).toThrow(
-        new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
+        new KinobiError(CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
             idlType: JSON.stringify(anchorIdl),
         }),
     );

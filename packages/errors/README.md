@@ -43,15 +43,15 @@ npx @codama/errors decode -- 123
 When you catch a `KinobiError` and assert its error code using `isKinobiError()`, TypeScript will refine the error's context to the type associated with that error code. You can use that context to render useful error messages, or to make context-aware decisions that help your application to recover from the error.
 
 ```ts
-import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, isKinobiError } from '@codama/errors';
+import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, isKinobiError } from '@codama/errors';
 
 try {
     const codama = createFromJson(jsonIdl);
 } catch (e) {
-    if (isKinobiError(e, KINOBI_ERROR__UNEXPECTED_NODE_KIND)) {
+    if (isKinobiError(e, CODAMA_ERROR__UNEXPECTED_NODE_KIND)) {
         const { expectedKinds, kind, node } = e.context;
         // ...
-    } else if (isKinobiError(e, KINOBI_ERROR__VERSION_MISMATCH)) {
+    } else if (isKinobiError(e, CODAMA_ERROR__VERSION_MISMATCH)) {
         const { kinobiVersion, rootVersion } = e.context;
         // ...
     } else {

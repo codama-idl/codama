@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, KinobiError } from '@codama/errors';
 import { type GetNodeFromKind, type Node, type NodeKind, pascalCase, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 export type Visitor<TReturn, TNodeKind extends NodeKind = NodeKind> = {
@@ -25,7 +25,7 @@ export function visitOrElse<TReturn, TNode extends Node, TNodeKind extends NodeK
 
 export function getVisitFunctionName<TNodeKind extends NodeKind>(nodeKind: TNodeKind) {
     if (!REGISTERED_NODE_KINDS.includes(nodeKind)) {
-        throw new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: nodeKind });
+        throw new KinobiError(CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, { kind: nodeKind });
     }
 
     return `visit${pascalCase(nodeKind.slice(0, -4))}` as GetVisitorFunctionName<TNodeKind>;

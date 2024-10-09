@@ -20,7 +20,7 @@ pnpm install @codama/renderers-core
 
 ## Filesystem wrappers
 
-This package offers several helper functions that delegate to the native Filesystem API — i.e. `node:fs` — when using the Node.js runtime. However, in any other environment — such as the browser — these functions will throw a `KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error as a Filesystem API is not available. This enables us to write renderers regardless of the runtime environment.
+This package offers several helper functions that delegate to the native Filesystem API — i.e. `node:fs` — when using the Node.js runtime. However, in any other environment — such as the browser — these functions will throw a `CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error as a Filesystem API is not available. This enables us to write renderers regardless of the runtime environment.
 
 ```ts
 // Reads the UTF-8 content of a file as a JSON object.
@@ -72,7 +72,7 @@ renderMap.remove('programs/token.ts');
 
 ### Accessing content from a `RenderMap`
 
-The `RenderMap` class provides several methods to access the content of the files it manages. The `get` method returns the content of a file from its relative path. If the file does not exist on the `RenderMap`, a `KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND` error will be thrown.
+The `RenderMap` class provides several methods to access the content of the files it manages. The `get` method returns the content of a file from its relative path. If the file does not exist on the `RenderMap`, a `CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND` error will be thrown.
 
 ```ts
 const content: string = renderMap.get('programs/token.ts');

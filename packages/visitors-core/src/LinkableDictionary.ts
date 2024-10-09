@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@codama/errors';
 import {
     AccountLinkNode,
     AccountNode,
@@ -90,7 +90,7 @@ export class LinkableDictionary {
         const node = this.get(linkNode as ProgramLinkNode) as LinkableNode | undefined;
 
         if (!node) {
-            throw new KinobiError(KINOBI_ERROR__LINKED_NODE_NOT_FOUND, {
+            throw new KinobiError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
                 kind: linkNode.kind,
                 linkNode,
                 name: linkNode.name,
