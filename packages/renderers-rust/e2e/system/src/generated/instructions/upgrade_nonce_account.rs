@@ -77,7 +77,7 @@ impl UpgradeNonceAccountBuilder {
         self.nonce_account = Some(nonce_account);
         self
     }
-    /// Add an aditional account to the instruction.
+    /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
