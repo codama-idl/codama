@@ -1,7 +1,7 @@
 {
     "name": "@codama/validators",
     "version": "0.22.0",
-    "description": "Validator visitors for the Kinobi framework",
+    "description": "Validator visitors for the Codama framework",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",

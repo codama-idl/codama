@@ -1,4 +1,4 @@
-# Kinobi ➤ Renderers ➤ JavaScript
+# Codama ➤ Renderers ➤ JavaScript
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/renderers-js.svg?style=flat&label=%40kinobi-so%2Frenderers-js
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-js
 
-This package generates JavaScript clients from your Kinobi IDLs. The generated clients are compatible with the soon-to-be-released 2.0 line of [`@solana/web3.js`](https://github.com/solana-labs/solana-web3.js).
+This package generates JavaScript clients from your Codama IDLs. The generated clients are compatible with the soon-to-be-released 2.0 line of [`@solana/web3.js`](https://github.com/solana-labs/solana-web3.js).
 
 ## Installation
 
@@ -22,7 +22,7 @@ pnpm install @codama/renderers-js
 
 ## Usage
 
-Once you have a Kinobi IDL, you can use the `renderVisitor` of this package to generate JavaScript clients. You will need to provide the base directory where the generated files will be saved and an optional set of options to customize the output.
+Once you have a Codama IDL, you can use the `renderVisitor` of this package to generate JavaScript clients. You will need to provide the base directory where the generated files will be saved and an optional set of options to customize the output.
 
 ```ts
 // node ./codama.mjs
@@ -49,6 +49,6 @@ The `renderVisitor` accepts the following options.
 | `dependencyMap`               | `Record<string, string>`                                                                                                | `{}`    | A mapping between import aliases and their actual package name or path in JavaScript.                                                                                                                                                                           |
 | `internalNodes`               | `string[]`                                                                                                              | `[]`    | The names of all nodes that should be generated but not exported by the `index.ts` files.                                                                                                                                                                       |
 | `nameTransformers`            | `Partial<NameTransformers>`                                                                                             | `{}`    | An object that enables us to override the names of any generated type, constant or function.                                                                                                                                                                    |
-| `nonScalarEnums`              | `string[]`                                                                                                              | `[]`    | The names of enum variants with no data that should be treated as a data union instead of a native `enum` type. This is only useful if you are referencing an enum value in your Kinobi IDL.                                                                    |
+| `nonScalarEnums`              | `string[]`                                                                                                              | `[]`    | The names of enum variants with no data that should be treated as a data union instead of a native `enum` type. This is only useful if you are referencing an enum value in your Codama IDL.                                                                    |
 | `renderParentInstructions`    | `boolean`                                                                                                               | `false` | When using nested instructions, whether the parent instructions should also be rendered. When set to `false` (default), only the instruction leaves are being rendered.                                                                                         |
 | `useGranularImports`          | `boolean`                                                                                                               | `false` | Whether to import the `@solana/web3.js` library using sub-packages such as `@solana/addresses` or `@solana/codecs-strings`. When set to `true`, the main `@solana/web3.js` library is used which enables generated clients to install it as a `peerDependency`. |

@@ -61,7 +61,7 @@ export const KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED = 2100004 as const;
 export const KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE = 2800000 as const;
 
 /**
- * A union of every Kinobi error code
+ * A union of every Codama error code
  *
  * You might be wondering why this is not a TypeScript enum or const enum.
  *

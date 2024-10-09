@@ -1,7 +1,7 @@
 {
     "name": "@codama/renderers-core",
     "version": "0.22.0",
-    "description": "Core types and helpers for Kinobi renderers to use",
+    "description": "Core types and helpers for Codama renderers to use",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",

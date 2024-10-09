@@ -1,4 +1,4 @@
-# Kinobi ➤ Renderers ➤ Core
+# Codama ➤ Renderers ➤ Core
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/renderers-core.svg?style=flat&label=%40kinobi-so%2Frenderers-core
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-core
 
-This package provides the core utility for generating clients from Kinobi IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@codama/renderers-js`](../renderers-js) and [`@codama/renderers-rust`](../renderers-rust).
+This package provides the core utility for generating clients from Codama IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@codama/renderers-js`](../renderers-js) and [`@codama/renderers-rust`](../renderers-rust).
 
 ## Installation
 
@@ -132,7 +132,7 @@ renderMap.write('src/generated');
 
 ### Using visitors
 
-When building renderers, you will most likely create a visitor that traverses the Kinobi IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](../renderers-js) package exports a `getRenderMapVisitor` function that does just that.
+When building renderers, you will most likely create a visitor that traverses the Codama IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](../renderers-js) package exports a `getRenderMapVisitor` function that does just that.
 
 ```ts
 import { getRenderMapVisitor } from '@codama/renderers-js';

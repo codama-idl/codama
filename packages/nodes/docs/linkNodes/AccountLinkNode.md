@@ -1,6 +1,6 @@
 # `AccountLinkNode`
 
-This node represents a reference to an existing [`AccountNode`](../AccountNode.md) in the Kinobi IDL.
+This node represents a reference to an existing [`AccountNode`](../AccountNode.md) in the Codama IDL.
 
 ## Attributes
 

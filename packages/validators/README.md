@@ -1,4 +1,4 @@
-# Kinobi ➤ Validators
+# Codama ➤ Validators
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/validators.svg?style=flat&label=%40kinobi-so%2Fvalidators
 [npm-url]: https://www.npmjs.com/package/@codama/validators
 
-This package offers a set of validation rules for Kinobi IDLs to ensure that they are correctly formatted.
+This package offers a set of validation rules for Codama IDLs to ensure that they are correctly formatted.
 
 ## Installation
 
@@ -16,7 +16,7 @@ pnpm install @codama/validators
 ```
 
 > [!NOTE]
-> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Codama this way.
 >
 > ```sh
 > pnpm install codama
@@ -26,7 +26,7 @@ pnpm install @codama/validators
 
 ### `ValidationItem`
 
-A validation item describes a single piece of information — typically a warning or an error — about a node in the Kinobi IDL.
+A validation item describes a single piece of information — typically a warning or an error — about a node in the Codama IDL.
 
 ```ts
 type ValidationItem = {
@@ -45,7 +45,7 @@ type ValidationItem = {
 
 ### `getValidationItemsVisitor(visitor)`
 
-The `getValidationItemsVisitor` function returns a visitor that collects all validation items from a Kinobi IDL. Note that this visitor is still a work in progress and does not cover all validation rules.
+The `getValidationItemsVisitor` function returns a visitor that collects all validation items from a Codama IDL. Note that this visitor is still a work in progress and does not cover all validation rules.
 
 ```ts
 import { getValidationItemsVisitor } from '@codama/validators';

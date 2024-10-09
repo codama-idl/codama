@@ -3,22 +3,22 @@ import { KinobiError } from '@codama/errors';
 import { assertIsNode, KinobiVersion, Node, RootNode } from '@codama/nodes';
 import { visit, Visitor } from '@codama/visitors';
 
-export interface Kinobi {
+export interface Codama {
     accept<T>(visitor: Visitor<T, 'rootNode'>): T;
-    clone(): Kinobi;
+    clone(): Codama;
     getJson(): string;
     getRoot(): RootNode;
     update(visitor: Visitor<Node | null, 'rootNode'>): void;
 }
 
-export function createFromRoot(root: RootNode): Kinobi {
+export function createFromRoot(root: RootNode): Codama {
     let currentRoot = root;
     validateKinobiVersion(currentRoot.version);
     return {
         accept<T>(visitor: Visitor<T, 'rootNode'>): T {
             return visit(currentRoot, visitor);
         },
-        clone(): Kinobi {
+        clone(): Codama {
             return createFromRoot({ ...currentRoot });
         },
         getJson(): string {
@@ -35,7 +35,7 @@ export function createFromRoot(root: RootNode): Kinobi {
     };
 }
 
-export function createFromJson(json: string): Kinobi {
+export function createFromJson(json: string): Codama {
     return createFromRoot(JSON.parse(json) as RootNode);
 }
 

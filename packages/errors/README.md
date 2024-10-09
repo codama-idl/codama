@@ -1,4 +1,4 @@
-# Kinobi ➤ Errors
+# Codama ➤ Errors
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -16,7 +16,7 @@ pnpm install @codama/errors
 ```
 
 > [!NOTE]
-> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Codama this way.
 >
 > ```sh
 > pnpm install codama
@@ -64,7 +64,7 @@ try {
 
 ### Adding a new error
 
-To add a new error in Kinobi, follow these steps:
+To add a new error in Codama, follow these steps:
 
 1. Add a new exported error code constant to `src/codes.ts`. Find the most appropriate group for your error and ensure it is appended to the end of that group.
 2. Add that new constant to the `KinobiErrorCode` union in `src/codes.ts`.

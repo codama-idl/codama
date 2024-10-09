@@ -1,7 +1,7 @@
 {
     "name": "@codama/renderers",
     "version": "0.22.0",
-    "description": "Exports all Kinobi renderers",
+    "description": "Exports all Codama renderers",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "node": {

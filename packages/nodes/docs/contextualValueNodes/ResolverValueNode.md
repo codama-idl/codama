@@ -2,7 +2,7 @@
 
 A node that represents any custom value or logic described by some documentation.
 
-This node acts as a fallback node for any value or logic that cannot easily be described by the other nodes. Instead, the program maintainer can use this node to describe the value or logic in detail. Visitors that render code from Kinobi IDLs will treat these `ResolverValueNodes` as functions that can be injected into the generated code.
+This node acts as a fallback node for any value or logic that cannot easily be described by the other nodes. Instead, the program maintainer can use this node to describe the value or logic in detail. Visitors that render code from Codama IDLs will treat these `ResolverValueNodes` as functions that can be injected into the generated code.
 
 ## Attributes
 

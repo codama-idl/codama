@@ -1,7 +1,7 @@
 {
     "name": "@codama/nodes-from-anchor",
     "version": "0.22.0",
-    "description": "Node specifications and helpers for the Kinobi standard",
+    "description": "Node specifications and helpers for the Codama standard",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",

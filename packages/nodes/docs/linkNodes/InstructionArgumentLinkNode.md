@@ -1,6 +1,6 @@
 # `InstructionArgumentLinkNode`
 
-This node represents a reference to an existing [`InstructionArgumentNode`](../InstructionArgumentNode.md) in the Kinobi IDL.
+This node represents a reference to an existing [`InstructionArgumentNode`](../InstructionArgumentNode.md) in the Codama IDL.
 
 ## Attributes
 

@@ -14,7 +14,7 @@ import { KinobiErrorMessages } from './messages';
 
 const program = new Command();
 
-program.name('@codama/errors').description('Decode Kinobi JavaScript errors thrown in production').version(version);
+program.name('@codama/errors').description('Decode Codama JavaScript errors thrown in production').version(version);
 
 program
     .command('decode')
@@ -50,7 +50,7 @@ ${
             chalk.rgb(79, 212, 181)('e') +
             chalk.rgb(57, 227, 166)('d') +
             chalk.rgb(19, 241, 149)(']'),
-    ) + chalk.rgb(19, 241, 149)(' Kinobi error code #' + code)
+    ) + chalk.rgb(19, 241, 149)(' Codama error code #' + code)
 }
     - ${message}`);
         if (context) {

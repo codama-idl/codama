@@ -1,7 +1,7 @@
 {
     "name": "@codama/errors",
     "version": "0.22.0",
-    "description": "Error management for Kinobi",
+    "description": "Error management for Codama",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",

@@ -7,12 +7,12 @@ import {
     KinobiError,
 } from '../src';
 
-test('it exposes the Kinobi error context', () => {
+test('it exposes the Codama error context', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
     expect(error.context.kind).toBe('missingNode');
 });
 
-test('it exposes the Kinobi error code', () => {
+test('it exposes the Codama error code', () => {
     const error = new KinobiError(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, { kind: 'missingNode' });
     expect(error.context.__code).toBe(KINOBI_ERROR__UNRECOGNIZED_NODE_KIND);
 });

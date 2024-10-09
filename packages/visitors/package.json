@@ -1,7 +1,7 @@
 {
     "name": "@codama/visitors",
     "version": "0.22.0",
-    "description": "All visitors for the Kinobi framework",
+    "description": "All visitors for the Codama framework",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",

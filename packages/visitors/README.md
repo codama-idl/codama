@@ -1,4 +1,4 @@
-# Kinobi ➤ Visitors
+# Codama ➤ Visitors
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/visitors.svg?style=flat&label=%40kinobi-so%2Fvisitors
 [npm-url]: https://www.npmjs.com/package/@codama/visitors
 
-This package offers various visitors for Kinobi IDLs to traverse and manipulate their nodes.
+This package offers various visitors for Codama IDLs to traverse and manipulate their nodes.
 
 ## Installation
 
@@ -16,7 +16,7 @@ pnpm install @codama/visitors
 ```
 
 > [!NOTE]
-> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Codama this way.
 >
 > ```sh
 > pnpm install codama
@@ -28,7 +28,7 @@ This package includes and re-exports the [`@codama/visitors-core`](../visitors-c
 
 To get a better understanding of visitors and how they work, please refer to the [`@codama/visitors-core` documentation](../visitors-core/README.md).
 
-In the rest of this documentation, we focus on the high-level visitors that are only available in this package. The main goal of these visitors is to provide a set of specific operations that can be applied to Kinobi IDLs — as opposed to the generic primitives provided by the core package.
+In the rest of this documentation, we focus on the high-level visitors that are only available in this package. The main goal of these visitors is to provide a set of specific operations that can be applied to Codama IDLs — as opposed to the generic primitives provided by the core package.
 
 For instance, this package offers visitors that unwrap link nodes, update instructions, add PDAs, set default values, and more.
 
@@ -88,7 +88,7 @@ codama.update(
 
 ### `deduplicateIdenticalDefinedTypesVisitor`
 
-This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Kinobi IDL and removes any duplicates. A `DefinedTypeNode` is considered a duplicate if it has the same name and data structure as another `DefinedTypeNode`. This is useful when you have multiple programs that share the same types.
+This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Codama IDL and removes any duplicates. A `DefinedTypeNode` is considered a duplicate if it has the same name and data structure as another `DefinedTypeNode`. This is useful when you have multiple programs that share the same types.
 
 ```ts
 codama.update(deduplicateIdenticalDefinedTypesVisitor());
@@ -133,7 +133,7 @@ codama.update(
 
 ### `getDefinedTypeHistogramVisitor`
 
-This visitor goes through all `DefinedTypeNodes` and outputs a histogram of how many times each type is used in the Kinobi IDL.
+This visitor goes through all `DefinedTypeNodes` and outputs a histogram of how many times each type is used in the Codama IDL.
 
 ```ts
 const histogram = codama.accept(getDefinedTypeHistogramVisitor());
@@ -205,7 +205,7 @@ codama.update(
 
 ### `setInstructionDiscriminatorsVisitor`
 
-This visitor adds a new instruction argument to each of the provided instruction names. The new argument is added before any existing argument and marked as a discriminator of the instruction. This is useful if your Kinobi IDL is missing discriminators in the instruction data.
+This visitor adds a new instruction argument to each of the provided instruction names. The new argument is added before any existing argument and marked as a discriminator of the instruction. This is useful if your Codama IDL is missing discriminators in the instruction data.
 
 ```ts
 codama.update(

@@ -5,7 +5,7 @@ import type { NodeStack } from './NodeStack';
 export type NodeSelector = NodeSelectorFunction | NodeSelectorPath;
 
 /**
- * A string that can be used to select a node in a Kinobi tree.
+ * A string that can be used to select a node in a Codama tree.
  * - `*` matches any node.
  * - `someText` matches the name of a node, if any.
  * - `[someNode]` matches a node of the given kind.

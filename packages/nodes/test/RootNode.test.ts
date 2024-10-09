@@ -8,12 +8,12 @@ test('it returns the right node kind', () => {
     expect(root.kind).toBe('rootNode');
 });
 
-test('it returns the right Kinobi standard', () => {
+test('it returns the right Codama standard', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
     expect(root.standard).toBe('codama');
 });
 
-test('it returns the right Kinobi version', () => {
+test('it returns the right Codama version', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
     expect(root.version).toBe(__VERSION__);
     expectTypeOf(root.version).toMatchTypeOf<KinobiVersion>();

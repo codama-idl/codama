@@ -1,4 +1,4 @@
-# Kinobi ➤ Renderers ➤ Rust
+# Codama ➤ Renderers ➤ Rust
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/renderers-rust.svg?style=flat&label=%40kinobi-so%2Frenderers-rust
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-rust
 
-This package generates Rust clients from your Kinobi IDLs.
+This package generates Rust clients from your Codama IDLs.
 
 ## Installation
 
@@ -22,7 +22,7 @@ pnpm install @codama/renderers-rust
 
 ## Usage
 
-Once you have a Kinobi IDL, you can use the `renderVisitor` of this package to generate Rust clients. You will need to provide the base directory where the generated files will be saved and an optional set of options to customize the output.
+Once you have a Codama IDL, you can use the `renderVisitor` of this package to generate Rust clients. You will need to provide the base directory where the generated files will be saved and an optional set of options to customize the output.
 
 ```ts
 // node ./codama.mjs

@@ -1,4 +1,4 @@
-# Kinobi ➤ Nodes
+# Codama ➤ Nodes
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/nodes.svg?style=flat&label=%40kinobi-so%2Fnodes
 [npm-url]: https://www.npmjs.com/package/@codama/nodes
 
-This package defines the various nodes that make up the Kinobi IDL. It provides types and helper functions to work with these nodes. If you are looking for a type-only version of these nodes, you can find them in the [`@codama/node-types`](../node-types) package.
+This package defines the various nodes that make up the Codama IDL. It provides types and helper functions to work with these nodes. If you are looking for a type-only version of these nodes, you can find them in the [`@codama/node-types`](../node-types) package.
 
 ## Installation
 
@@ -16,7 +16,7 @@ pnpm install @codama/nodes
 ```
 
 > [!NOTE]
-> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Codama this way.
 >
 > ```sh
 > pnpm install codama
@@ -24,7 +24,7 @@ pnpm install @codama/nodes
 
 ## All available nodes
 
-The Kinobi IDL is composed of various nodes that describe different aspects of a Solana program. Some nodes are categorised together as they share a similar purpose. For instance, all the nodes that describe a data structure that can be encoded and decoded into buffers are grouped under the `TypeNode` category.
+The Codama IDL is composed of various nodes that describe different aspects of a Solana program. Some nodes are categorised together as they share a similar purpose. For instance, all the nodes that describe a data structure that can be encoded and decoded into buffers are grouped under the `TypeNode` category.
 
 Below are all of the available nodes and their documentation. Also note that you can refer to any node using the [`Node`](./docs/README.md) helper type.
 

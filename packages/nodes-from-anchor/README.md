@@ -1,4 +1,4 @@
-# Kinobi ➤ Nodes From Anchor
+# Codama ➤ Nodes From Anchor
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/nodes-from-anchor.svg?style=flat&label=%40kinobi-so%2Fnodes-from-anchor
 [npm-url]: https://www.npmjs.com/package/@codama/nodes-from-anchor
 
-This package converts Anchor IDLs from various versions into Kinobi IDLs.
+This package converts Anchor IDLs from various versions into Codama IDLs.
 
 ## Installation
 
@@ -35,6 +35,6 @@ import path from 'path';
 const anchorIdlPath = path.join(__dirname, 'target', 'idl', 'anchor_program.json');
 const anchorIdl = JSON.parse(readFileSync(anchorIdlPath, 'utf-8'));
 
-// Parse it into a Kinobi IDL.
+// Parse it into a Codama IDL.
 const codama = createFromRoot(rootNodeFromAnchor(anchorIdl));
 ```

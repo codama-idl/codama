@@ -1,4 +1,4 @@
-# Kinobi ➤ Renderers
+# Codama ➤ Renderers
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/renderers.svg?style=flat&label=%40kinobi-so%2Frenderers
 [npm-url]: https://www.npmjs.com/package/@codama/renderers
 
-This package re-exports all available renderers for Kinobi IDLs.
+This package re-exports all available renderers for Codama IDLs.
 
 ## Installation
 
