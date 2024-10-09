@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/errors.svg?style=flat&label=%40codama%2Ferrors
 [npm-url]: https://www.npmjs.com/package/@codama/errors
 
-This package defines a `KinobiError` class that accepts a specific error code and a context object based on that code. It enables us to catch and handle errors in a more structured way.
+This package defines a `CodamaError` class that accepts a specific error code and a context object based on that code. It enables us to catch and handle errors in a more structured way.
 
 ## Installation
 
@@ -40,18 +40,18 @@ npx @codama/errors decode -- 123
 
 ## Catching errors
 
-When you catch a `KinobiError` and assert its error code using `isKinobiError()`, TypeScript will refine the error's context to the type associated with that error code. You can use that context to render useful error messages, or to make context-aware decisions that help your application to recover from the error.
+When you catch a `CodamaError` and assert its error code using `isCodamaError()`, TypeScript will refine the error's context to the type associated with that error code. You can use that context to render useful error messages, or to make context-aware decisions that help your application to recover from the error.
 
 ```ts
-import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, isKinobiError } from '@codama/errors';
+import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, isCodamaError } from '@codama/errors';
 
 try {
     const codama = createFromJson(jsonIdl);
 } catch (e) {
-    if (isKinobiError(e, CODAMA_ERROR__UNEXPECTED_NODE_KIND)) {
+    if (isCodamaError(e, CODAMA_ERROR__UNEXPECTED_NODE_KIND)) {
         const { expectedKinds, kind, node } = e.context;
         // ...
-    } else if (isKinobiError(e, CODAMA_ERROR__VERSION_MISMATCH)) {
+    } else if (isCodamaError(e, CODAMA_ERROR__VERSION_MISMATCH)) {
         const { codamaVersion, rootVersion } = e.context;
         // ...
     } else {
@@ -67,7 +67,7 @@ try {
 To add a new error in Codama, follow these steps:
 
 1. Add a new exported error code constant to `src/codes.ts`. Find the most appropriate group for your error and ensure it is appended to the end of that group.
-2. Add that new constant to the `KinobiErrorCode` union in `src/codes.ts`.
+2. Add that new constant to the `CodamaErrorCode` union in `src/codes.ts`.
 3. If you would like the new error to encapsulate context about the error itself define that context in `src/context.ts`.
 4. Add the error's message to `src/messages.ts`. Any context values that you defined above will be interpolated into the message wherever you write `$key`, where `key` is the index of a value in the context (eg. ``'Unrecognized node `$kind`.'``).
 5. Publish a new version of `@codama/errors` using changesets — maintainers will handle this via tha changesets CI workflow.

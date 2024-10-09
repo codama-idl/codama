@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
     accountNode,
     assertIsNode,
@@ -24,7 +24,7 @@ export function setAccountDiscriminatorFromFieldVisitor(
                     const accountData = resolveNestedTypeNode(node.data);
                     const fieldIndex = accountData.fields.findIndex(f => f.name === field);
                     if (fieldIndex < 0) {
-                        throw new KinobiError(CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
+                        throw new CodamaError(CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
                             account: node,
                             missingField: field,
                             name: node.name,

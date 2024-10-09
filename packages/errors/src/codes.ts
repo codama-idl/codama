@@ -75,7 +75,7 @@ export const CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE = 2800000 as const;
  * actually used. Unfortunately exporting ambient (const) enums from a library like `@codama/errors`
  * is not safe, for a variety of reasons covered here: https://stackoverflow.com/a/28818850
  */
-export type KinobiErrorCode =
+export type CodamaErrorCode =
     | typeof CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING
     | typeof CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING
     | typeof CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED

@@ -7,10 +7,10 @@ import chalk from 'chalk';
 import { Command, InvalidArgumentError } from 'commander';
 
 import { version } from '../package.json';
-import { KinobiErrorCode } from './codes';
+import { CodamaErrorCode } from './codes';
 import { decodeEncodedContext } from './context';
 import { getHumanReadableErrorMessage } from './message-formatter';
-import { KinobiErrorMessages } from './messages';
+import { CodamaErrorMessages } from './messages';
 
 const program = new Command();
 
@@ -18,13 +18,13 @@ program.name('@codama/errors').description('Decode Codama JavaScript errors thro
 
 program
     .command('decode')
-    .description('Decode a `KinobiErrorCode` to a human-readable message')
+    .description('Decode a `CodamaErrorCode` to a human-readable message')
     .argument('<code>', 'numeric error code to decode', rawCode => {
         const code = parseInt(rawCode, 10);
         if (isNaN(code) || `${code}` !== rawCode) {
             throw new InvalidArgumentError('It must be an integer');
         }
-        if (!(code in KinobiErrorMessages)) {
+        if (!(code in CodamaErrorMessages)) {
             throw new InvalidArgumentError('There exists no error with that code');
         }
         return code;
@@ -37,7 +37,7 @@ program
         }
     })
     .action((code: number, context) => {
-        const message = getHumanReadableErrorMessage(code as KinobiErrorCode, context);
+        const message = getHumanReadableErrorMessage(code as CodamaErrorCode, context);
         console.log(`
 ${
     chalk.bold(

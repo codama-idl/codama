@@ -43,18 +43,18 @@ import {
     CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
     CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
-    KinobiErrorCode,
+    CodamaErrorCode,
 } from './codes';
 
 type DefaultUnspecifiedErrorContextToUndefined<T> = {
-    [P in KinobiErrorCode]: P extends keyof T ? T[P] : undefined;
+    [P in CodamaErrorCode]: P extends keyof T ? T[P] : undefined;
 };
 
 /**
  * WARNING:
  *   - Don't change or remove members of an error's context.
  */
-export type KinobiErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
+export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: {
         name: string;
     };

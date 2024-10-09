@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, CodamaError } from '@codama/errors';
 import {
     AccountNode,
     accountNode,
@@ -20,7 +20,7 @@ export function accountNodeFromAnchorV01(idl: IdlV01Account, types: IdlV01TypeDe
     const type = types.find(({ name }) => name === idl.name);
 
     if (!type) {
-        throw new KinobiError(CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, { name: idl.name });
+        throw new CodamaError(CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, { name: idl.name });
     }
 
     const data = typeNodeFromAnchorV01(type.type);

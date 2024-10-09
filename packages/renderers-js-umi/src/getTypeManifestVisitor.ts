@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/errors';
 import {
     ArrayTypeNode,
     camelCase,
@@ -603,7 +603,7 @@ export function getTypeManifestVisitor(input: {
                 },
 
                 visitRemainderOptionType(node) {
-                    throw new KinobiError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
 
                 visitSetType(setType, { self }) {
@@ -833,7 +833,7 @@ export function getTypeManifestVisitor(input: {
                 },
 
                 visitZeroableOptionType(node) {
-                    throw new KinobiError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
     );

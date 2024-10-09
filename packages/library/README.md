@@ -75,7 +75,7 @@ Other helper functions include:
 -   `getRoot()`: Returns the wrapped `RootNode`.
 
 ```ts
-const clonedKinobi = codama.clone();
+const clonedCodama = codama.clone();
 const jsonIdl = codama.getJson();
 const rootNode = codama.getRoot();
 ```

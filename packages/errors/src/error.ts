@@ -3,38 +3,38 @@
  * @see https://github.com/solana-labs/solana-web3.js/blob/master/packages/errors
  */
 
-import { KinobiErrorCode } from './codes';
-import { KinobiErrorContext } from './context';
+import { CodamaErrorCode } from './codes';
+import { CodamaErrorContext } from './context';
 import { getErrorMessage } from './message-formatter';
 
-export function isKinobiError<TErrorCode extends KinobiErrorCode>(
+export function isCodamaError<TErrorCode extends CodamaErrorCode>(
     e: unknown,
     code?: TErrorCode,
-): e is KinobiError<TErrorCode> {
-    const isKinobiError = e instanceof Error && e.name === 'KinobiError';
-    if (isKinobiError) {
+): e is CodamaError<TErrorCode> {
+    const isCodamaError = e instanceof Error && e.name === 'CodamaError';
+    if (isCodamaError) {
         if (code !== undefined) {
-            return (e as KinobiError<TErrorCode>).context.__code === code;
+            return (e as CodamaError<TErrorCode>).context.__code === code;
         }
         return true;
     }
     return false;
 }
 
-type KinobiErrorCodedContext = Readonly<{
-    [P in KinobiErrorCode]: (KinobiErrorContext[P] extends undefined ? object : KinobiErrorContext[P]) & {
+type CodamaErrorCodedContext = Readonly<{
+    [P in CodamaErrorCode]: (CodamaErrorContext[P] extends undefined ? object : CodamaErrorContext[P]) & {
         __code: P;
     };
 }>;
 
-export class KinobiError<TErrorCode extends KinobiErrorCode = KinobiErrorCode> extends Error {
-    readonly context: KinobiErrorCodedContext[TErrorCode];
+export class CodamaError<TErrorCode extends CodamaErrorCode = CodamaErrorCode> extends Error {
+    readonly context: CodamaErrorCodedContext[TErrorCode];
     constructor(
-        ...[code, contextAndErrorOptions]: KinobiErrorContext[TErrorCode] extends undefined
+        ...[code, contextAndErrorOptions]: CodamaErrorContext[TErrorCode] extends undefined
             ? [code: TErrorCode, errorOptions?: ErrorOptions | undefined]
-            : [code: TErrorCode, contextAndErrorOptions: KinobiErrorContext[TErrorCode] & (ErrorOptions | undefined)]
+            : [code: TErrorCode, contextAndErrorOptions: CodamaErrorContext[TErrorCode] & (ErrorOptions | undefined)]
     ) {
-        let context: KinobiErrorContext[TErrorCode] | undefined;
+        let context: CodamaErrorContext[TErrorCode] | undefined;
         let errorOptions: ErrorOptions | undefined;
         if (contextAndErrorOptions) {
             // If the `ErrorOptions` type ever changes, update this code.
@@ -43,7 +43,7 @@ export class KinobiError<TErrorCode extends KinobiErrorCode = KinobiErrorCode> e
                 errorOptions = { cause };
             }
             if (Object.keys(contextRest).length > 0) {
-                context = contextRest as KinobiErrorContext[TErrorCode];
+                context = contextRest as CodamaErrorContext[TErrorCode];
             }
         }
         const message = getErrorMessage(code, context);
@@ -51,9 +51,9 @@ export class KinobiError<TErrorCode extends KinobiErrorCode = KinobiErrorCode> e
         this.context = {
             __code: code,
             ...context,
-        } as KinobiErrorCodedContext[TErrorCode];
-        // This is necessary so that `isKinobiError()` can identify a `KinobiError` without having
+        } as CodamaErrorCodedContext[TErrorCode];
+        // This is necessary so that `isCodamaError()` can identify a `CodamaError` without having
         // to import the class for use in an `instanceof` check.
-        this.name = 'KinobiError';
+        this.name = 'CodamaError';
     }
 }

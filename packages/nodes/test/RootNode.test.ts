@@ -1,4 +1,4 @@
-import type { KinobiVersion } from '@codama/node-types';
+import type { CodamaVersion } from '@codama/node-types';
 import { expect, expectTypeOf, test } from 'vitest';
 
 import { programNode, rootNode } from '../src';
@@ -16,7 +16,7 @@ test('it returns the right Codama standard', () => {
 test('it returns the right Codama version', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
     expect(root.version).toBe(__VERSION__);
-    expectTypeOf(root.version).toMatchTypeOf<KinobiVersion>();
+    expectTypeOf(root.version).toMatchTypeOf<CodamaVersion>();
 });
 
 test('it returns a frozen object', () => {

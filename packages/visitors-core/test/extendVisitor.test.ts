@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, CodamaError } from '@codama/errors';
 import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
@@ -59,7 +59,7 @@ test('it cannot extends nodes that are not supported by the base visitor', () =>
             visitNumberType: () => undefined,
         }),
     ).toThrow(
-        new KinobiError(CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
+        new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
             visitFunction: 'visitNumberType',
         }),
     );

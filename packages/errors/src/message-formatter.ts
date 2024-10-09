@@ -3,22 +3,22 @@
  * @see https://github.com/solana-labs/solana-web3.js/blob/master/packages/errors
  */
 
-import { KinobiErrorCode } from './codes';
+import { CodamaErrorCode } from './codes';
 import { encodeContextObject } from './context';
-import { KinobiErrorMessages } from './messages';
+import { CodamaErrorMessages } from './messages';
 
-export function getHumanReadableErrorMessage<TErrorCode extends KinobiErrorCode>(
+export function getHumanReadableErrorMessage<TErrorCode extends CodamaErrorCode>(
     code: TErrorCode,
     context: object = {},
 ): string {
-    const messageFormatString = KinobiErrorMessages[code];
+    const messageFormatString = CodamaErrorMessages[code];
     const message = messageFormatString.replace(/(?<!\\)\$(\w+)/g, (substring, variableName) =>
         variableName in context ? `${context[variableName as keyof typeof context]}` : substring,
     );
     return message;
 }
 
-export function getErrorMessage<TErrorCode extends KinobiErrorCode>(code: TErrorCode, context: object = {}): string {
+export function getErrorMessage<TErrorCode extends CodamaErrorCode>(code: TErrorCode, context: object = {}): string {
     if (process.env.NODE_ENV !== 'production') {
         return getHumanReadableErrorMessage(code, context);
     } else {

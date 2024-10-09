@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
     accountLinkNode,
     AccountNode,
@@ -326,7 +326,7 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
 
     // Then we expect an exception to be thrown.
     expect(getMissingAccount).toThrow(
-        new KinobiError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
+        new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
             kind: 'accountLinkNode',
             linkNode: accountLinkNode('missingAccount', 'myProgram'),
             name: 'missingAccount',

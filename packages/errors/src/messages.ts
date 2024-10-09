@@ -28,17 +28,17 @@ import {
     CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
     CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
-    KinobiErrorCode,
+    CodamaErrorCode,
 } from './codes';
 
 /**
  * WARNING:
  *   - Don't change the meaning of an error message.
  */
-export const KinobiErrorMessages: Readonly<{
+export const CodamaErrorMessages: Readonly<{
     // This type makes this data structure exhaustive with respect to `SolanaErrorCode`.
     // TypeScript will fail to build this project if add an error code without a message.
-    [P in KinobiErrorCode]: string;
+    [P in CodamaErrorCode]: string;
 }> = {
     [CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: 'Account type [$name] is missing from the IDL types.',
     [CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING]: 'Argument name [$name] is missing from the instruction definition.',

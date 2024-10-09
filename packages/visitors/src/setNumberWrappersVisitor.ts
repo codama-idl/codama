@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, KinobiError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, CodamaError } from '@codama/errors';
 import { amountTypeNode, assertIsNestedTypeNode, dateTimeTypeNode, solAmountTypeNode } from '@codama/nodes';
 import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
@@ -24,7 +24,7 @@ export function setNumberWrappersVisitor(map: NumberWrapperMap) {
                         case 'Amount':
                             return amountTypeNode(node, wrapper.decimals, wrapper.unit);
                         default:
-                            throw new KinobiError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, { wrapper });
+                            throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, { wrapper });
                     }
                 },
             }),
