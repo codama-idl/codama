@@ -6,7 +6,7 @@ import {
     numberTypeNode,
     structFieldTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { accountNodeFromAnchorV01, getAnchorDiscriminatorV01 } from '../../src';

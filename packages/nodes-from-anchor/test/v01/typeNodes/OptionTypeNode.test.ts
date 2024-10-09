@@ -1,4 +1,4 @@
-import { numberTypeNode, optionTypeNode } from '@kinobi-so/nodes';
+import { numberTypeNode, optionTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV01 } from '../../../src';

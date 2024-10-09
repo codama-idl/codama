@@ -9,7 +9,7 @@ import {
     resolveNestedTypeNode,
     StructTypeNode,
     transformNestedTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import {
     bottomUpTransformerVisitor,
     getNodeSelectorFunction,
@@ -17,7 +17,7 @@ import {
     NodeStack,
     rootNodeVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { getDefinedTypeHistogramVisitor } from './getDefinedTypeHistogramVisitor';
 import { unwrapDefinedTypesVisitor } from './unwrapDefinedTypesVisitor';

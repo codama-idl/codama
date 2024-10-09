@@ -1,4 +1,4 @@
-import { BooleanValueNode } from '@kinobi-so/node-types';
+import { BooleanValueNode } from '@codama/node-types';
 
 export function booleanValueNode(boolean: boolean): BooleanValueNode {
     return Object.freeze({

@@ -1,4 +1,4 @@
-import { Node, NodeKind, REGISTERED_NODE_KINDS } from '@kinobi-so/nodes';
+import { Node, NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { getVisitFunctionName, GetVisitorFunctionName, Visitor } from './visitor';
 

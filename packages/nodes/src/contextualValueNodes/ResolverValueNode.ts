@@ -1,4 +1,4 @@
-import type { AccountValueNode, ArgumentValueNode, ResolverValueNode } from '@kinobi-so/node-types';
+import type { AccountValueNode, ArgumentValueNode, ResolverValueNode } from '@codama/node-types';
 
 import { camelCase, DocsInput, parseDocs } from '../shared';
 

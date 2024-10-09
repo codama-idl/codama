@@ -1,4 +1,4 @@
-import { assertIsNodeFilter, camelCase, CamelCaseString, programNode } from '@kinobi-so/nodes';
+import { assertIsNodeFilter, camelCase, CamelCaseString, programNode } from '@codama/nodes';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -6,7 +6,7 @@ import {
     pipe,
     recordLinkablesVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
     const linkables = new LinkableDictionary();

@@ -9,7 +9,7 @@ import {
     InstructionNode,
     isNode,
     structTypeNodeFromInstructionArgumentNodes,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 export type CustomDataOptions =
     | string

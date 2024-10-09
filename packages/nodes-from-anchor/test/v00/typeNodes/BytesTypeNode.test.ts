@@ -1,4 +1,4 @@
-import { bytesTypeNode, numberTypeNode, sizePrefixTypeNode } from '@kinobi-so/nodes';
+import { bytesTypeNode, numberTypeNode, sizePrefixTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV00 } from '../../../src';

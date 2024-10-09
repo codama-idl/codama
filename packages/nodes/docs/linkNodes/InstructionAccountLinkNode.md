@@ -1,6 +1,6 @@
 # `InstructionAccountLinkNode`
 
-This node represents a reference to an existing [`InstructionAccountNode`](../InstructionAccountNode.md) in the Kinobi IDL.
+This node represents a reference to an existing [`InstructionAccountNode`](../InstructionAccountNode.md) in the Codama IDL.
 
 ## Attributes
 

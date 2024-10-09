@@ -1,4 +1,4 @@
-import type { RegisteredCountNode } from '@kinobi-so/node-types';
+import type { RegisteredCountNode } from '@codama/node-types';
 
 import { REGISTERED_COUNT_NODE_KINDS } from '../../src';
 

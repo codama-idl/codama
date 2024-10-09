@@ -1,4 +1,4 @@
-import { camelCase, capitalize, kebabCase, pascalCase, snakeCase, titleCase } from '@kinobi-so/nodes';
+import { camelCase, capitalize, kebabCase, pascalCase, snakeCase, titleCase } from '@codama/nodes';
 
 export type NameTransformerHelpers = {
     camelCase: (name: string) => string;

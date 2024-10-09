@@ -1,33 +1,33 @@
-# Kinobi ➤ Visitors ➤ Core
+# Codama ➤ Visitors ➤ Core
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/visitors-core.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/visitors-core.svg?style=flat&label=%40kinobi-so%2Fvisitors-core
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/visitors-core
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/visitors-core.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/visitors-core.svg?style=flat&label=%40codama%2Fvisitors-core
+[npm-url]: https://www.npmjs.com/package/@codama/visitors-core
 
-This package provides core interfaces and utilities for creating visitors for Kinobi IDLs.
+This package provides core interfaces and utilities for creating visitors for Codama IDLs.
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/visitors-core
+pnpm install @codama/visitors-core
 ```
 
 > [!NOTE]
-> This package is included in the [`@kinobi-so/visitors`](../visitors) package and in the main [`kinobi`](../library) library. Meaning, you already have access to its content if you are installing Kinobi in one of these ways.
+> This package is included in the [`@codama/visitors`](../visitors) package and in the main [`codama`](../library) library. Meaning, you already have access to its content if you are installing Codama in one of these ways.
 >
 > ```sh
-> pnpm install @kinobi-so/visitors
-> pnpm install kinobi
+> pnpm install @codama/visitors
+> pnpm install codama
 > ```
 
 ## Getting started with visitors
 
 ### The `Visitor` type
 
-The type `Visitor<T>` is the core interface for defining Kinobi visitors. The type parameter `T` is used to determine the return type of the visitor. For instance, here's the definition of a visitor that goes through the nodes and returns a number.
+The type `Visitor<T>` is the core interface for defining Codama visitors. The type parameter `T` is used to determine the return type of the visitor. For instance, here's the definition of a visitor that goes through the nodes and returns a number.
 
 ```ts
 let myNumberVisitor: Visitor<number>;
@@ -78,14 +78,14 @@ The `visitOrElse` function can also be used to gracefully handle the case where 
 const counter: number = visit(stringTypeNode, accountCounterVisitor(), () => 0);
 ```
 
-Also note that, if you are using [the `Kinobi` interface](../library/README#kinobi) — which is a simple wrapper around a `RootNode` — you may visit that root node using the provided helpers:
+Also note that, if you are using [the `Codama` interface](../library/README#codama) — which is a simple wrapper around a `RootNode` — you may visit that root node using the provided helpers:
 
 ```ts
 // Runs the visitor and returns the result.
-const result: number = kinobi.accept(myNumberVisitor());
+const result: number = codama.accept(myNumberVisitor());
 
 // Runs the visitor and updates the wrapped `RootNode` with the result.
-kinobi.update(myTransformerVisitor());
+codama.update(myTransformerVisitor());
 ```
 
 ## Core visitors
@@ -186,7 +186,7 @@ const node = visit(numberTypeNode('u32'), nonNullableIdentityVisitor());
 
 The `mergeVisitor` returns a `Visitor<T>` by accepting two functions such that:
 
--   The first function is used on the leaves of the Kinobi IDL and returns a type `T`.
+-   The first function is used on the leaves of the Codama IDL and returns a type `T`.
 -   The second function is used to merge the values `T[]` of the children of a node and aggregate them into a type `T`.
 
 For instance, here is how we can use the `mergeVisitor` to create a nested string representation of node kinds.

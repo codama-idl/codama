@@ -1,5 +1,5 @@
-import { camelCase, InstructionNode, isNode } from '@kinobi-so/nodes';
-import { ResolvedInstructionInput } from '@kinobi-so/visitors-core';
+import { camelCase, InstructionNode, isNode } from '@codama/nodes';
+import { ResolvedInstructionInput } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';

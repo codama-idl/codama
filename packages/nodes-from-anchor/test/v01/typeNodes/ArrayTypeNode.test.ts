@@ -1,4 +1,4 @@
-import { arrayTypeNode, fixedCountNode, numberTypeNode, prefixedCountNode } from '@kinobi-so/nodes';
+import { arrayTypeNode, fixedCountNode, numberTypeNode, prefixedCountNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV01 } from '../../../src';

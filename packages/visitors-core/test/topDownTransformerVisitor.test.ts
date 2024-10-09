@@ -1,4 +1,4 @@
-import { assertIsNode, isNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
+import { assertIsNode, isNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { topDownTransformerVisitor, visit } from '../src';

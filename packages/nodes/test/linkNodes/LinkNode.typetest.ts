@@ -1,4 +1,4 @@
-import type { RegisteredLinkNode } from '@kinobi-so/node-types';
+import type { RegisteredLinkNode } from '@codama/node-types';
 
 import { REGISTERED_LINK_NODE_KINDS } from '../../src';
 

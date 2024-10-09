@@ -1,4 +1,4 @@
-import { ArrayTypeNode, arrayTypeNode, fixedCountNode, numberTypeNode, prefixedCountNode } from '@kinobi-so/nodes';
+import { ArrayTypeNode, arrayTypeNode, fixedCountNode, numberTypeNode, prefixedCountNode } from '@codama/nodes';
 
 import { IdlV01TypeArray, IdlV01TypeVec } from '../idl';
 import { typeNodeFromAnchorV01 } from './TypeNode';

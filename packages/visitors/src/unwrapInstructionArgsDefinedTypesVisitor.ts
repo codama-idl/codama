@@ -1,5 +1,5 @@
-import { assertIsNode, CamelCaseString, getAllDefinedTypes, isNode } from '@kinobi-so/nodes';
-import { rootNodeVisitor, visit } from '@kinobi-so/visitors-core';
+import { assertIsNode, CamelCaseString, getAllDefinedTypes, isNode } from '@codama/nodes';
+import { rootNodeVisitor, visit } from '@codama/visitors-core';
 
 import { getDefinedTypeHistogramVisitor } from './getDefinedTypeHistogramVisitor';
 import { unwrapDefinedTypesVisitor } from './unwrapDefinedTypesVisitor';

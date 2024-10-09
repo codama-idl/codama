@@ -1,5 +1,5 @@
 [package]
-name = "kinobi-renderers-rust-e2e-memo"
+name = "codama-renderers-rust-e2e-memo"
 version = "0.0.0"
 edition = "2021"
 

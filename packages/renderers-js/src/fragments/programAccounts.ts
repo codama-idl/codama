@@ -1,4 +1,4 @@
-import { ProgramNode, resolveNestedTypeNode } from '@kinobi-so/nodes';
+import { ProgramNode, resolveNestedTypeNode } from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';

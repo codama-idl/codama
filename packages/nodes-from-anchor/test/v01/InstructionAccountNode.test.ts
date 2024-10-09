@@ -15,7 +15,7 @@ import {
     structFieldTypeNode,
     structTypeNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV01 } from '../../src';

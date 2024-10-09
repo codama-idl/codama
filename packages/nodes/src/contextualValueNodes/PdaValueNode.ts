@@ -1,4 +1,4 @@
-import type { PdaLinkNode, PdaNode, PdaSeedValueNode, PdaValueNode } from '@kinobi-so/node-types';
+import type { PdaLinkNode, PdaNode, PdaSeedValueNode, PdaValueNode } from '@codama/node-types';
 
 import { pdaLinkNode } from '../linkNodes';
 

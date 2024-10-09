@@ -1,4 +1,4 @@
-import type { AccountBumpValueNode } from '@kinobi-so/node-types';
+import type { AccountBumpValueNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

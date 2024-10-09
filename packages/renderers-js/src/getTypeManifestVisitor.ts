@@ -12,7 +12,7 @@ import {
     structTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
     TypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -22,7 +22,7 @@ import {
     staticVisitor,
     visit,
     Visitor,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { Fragment, fragment, mergeFragments } from './fragments';
 import { ImportMap } from './ImportMap';

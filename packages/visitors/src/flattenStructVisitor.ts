@@ -1,7 +1,4 @@
-import {
-    KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
-    KinobiError,
-} from '@kinobi-so/errors';
+import { CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, CodamaError } from '@codama/errors';
 import {
     assertIsNode,
     camelCase,
@@ -10,8 +7,8 @@ import {
     StructFieldTypeNode,
     StructTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export type FlattenStructOptions = string[] | '*';
 
@@ -44,7 +41,7 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
     const hasConflictingNames = uniqueDuplicates.length > 0;
 
     if (hasConflictingNames) {
-        throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
+        throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
             conflictingAttributes: uniqueDuplicates,
         });
     }

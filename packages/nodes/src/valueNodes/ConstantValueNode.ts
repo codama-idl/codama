@@ -1,4 +1,4 @@
-import type { BytesEncoding, ConstantValueNode, TypeNode, ValueNode } from '@kinobi-so/node-types';
+import type { BytesEncoding, ConstantValueNode, TypeNode, ValueNode } from '@codama/node-types';
 
 import { bytesTypeNode, stringTypeNode } from '../typeNodes';
 import { bytesValueNode } from './BytesValueNode';

@@ -8,7 +8,7 @@ import {
     InstructionNode,
     instructionNode,
     numberValueNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { getAnchorInstructionDiscriminatorV00 } from '../discriminators';
 import { IdlV00Instruction } from './idl';

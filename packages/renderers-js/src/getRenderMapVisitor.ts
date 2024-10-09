@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { logWarn } from '@kinobi-so/errors';
+import { logWarn } from '@codama/errors';
 import {
     camelCase,
     CamelCaseString,
@@ -13,8 +13,8 @@ import {
     ProgramNode,
     resolveNestedTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
-} from '@kinobi-so/nodes';
-import { RenderMap } from '@kinobi-so/renderers-core';
+} from '@codama/nodes';
+import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     getResolvedInstructionInputsVisitor,
@@ -23,7 +23,7 @@ import {
     recordLinkablesVisitor,
     staticVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 import type { ConfigureOptions } from 'nunjucks';
 
 import {

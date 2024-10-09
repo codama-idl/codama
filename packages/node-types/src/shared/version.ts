@@ -1,4 +1,4 @@
 type SemanticVersion = `${number}.${number}.${number}`;
 
-export type KinobiVersion = SemanticVersion;
+export type CodamaVersion = SemanticVersion;
 export type ProgramVersion = SemanticVersion;

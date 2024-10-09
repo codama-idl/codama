@@ -7,7 +7,7 @@ import type {
     InstructionRemainingAccountsNode,
     ProgramNode,
     RootNode,
-} from '@kinobi-so/node-types';
+} from '@codama/node-types';
 
 import { isNode } from './Node';
 import { getAllInstructions } from './ProgramNode';

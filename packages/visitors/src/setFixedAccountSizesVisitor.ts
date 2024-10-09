@@ -1,11 +1,11 @@
-import { accountNode, assertIsNode, isNode } from '@kinobi-so/nodes';
+import { accountNode, assertIsNode, isNode } from '@codama/nodes';
 import {
     getByteSizeVisitor,
     LinkableDictionary,
     recordLinkablesVisitor,
     topDownTransformerVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 export function setFixedAccountSizesVisitor() {
     const linkables = new LinkableDictionary();

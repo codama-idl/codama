@@ -1,4 +1,4 @@
-import type { Node } from '@kinobi-so/nodes';
+import type { Node } from '@codama/nodes';
 import { expect } from 'vitest';
 
 import {

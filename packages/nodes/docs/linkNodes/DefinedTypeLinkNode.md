@@ -1,6 +1,6 @@
 # `DefinedTypeLinkNode`
 
-This node represents a reference to an existing [`DefinedTypeNode`](../DefinedTypeNode.md) in the Kinobi IDL.
+This node represents a reference to an existing [`DefinedTypeNode`](../DefinedTypeNode.md) in the Codama IDL.
 
 ## Attributes
 

@@ -1,5 +1,5 @@
-import { CamelCaseString } from '@kinobi-so/nodes';
-import { extendVisitor, interceptVisitor, mergeVisitor, pipe, visit, Visitor } from '@kinobi-so/visitors-core';
+import { CamelCaseString } from '@codama/nodes';
+import { extendVisitor, interceptVisitor, mergeVisitor, pipe, visit, Visitor } from '@codama/visitors-core';
 
 export type DefinedTypeHistogram = {
     [key: CamelCaseString]: {

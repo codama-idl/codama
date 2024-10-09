@@ -1,11 +1,11 @@
-import { assertIsNode } from '@kinobi-so/nodes';
+import { assertIsNode } from '@codama/nodes';
 import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
     pipe,
     recordLinkablesVisitor,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 export function unwrapTypeDefinedLinksVisitor(definedLinksType: string[]) {
     const linkables = new LinkableDictionary();

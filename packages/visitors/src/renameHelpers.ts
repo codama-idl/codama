@@ -9,7 +9,7 @@ import {
     structFieldTypeNode,
     StructTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 export function renameStructNode(node: StructTypeNode, map: Record<string, string>): StructTypeNode {
     return structTypeNode(

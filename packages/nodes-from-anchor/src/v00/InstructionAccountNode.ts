@@ -1,4 +1,4 @@
-import { InstructionAccountNode, instructionAccountNode } from '@kinobi-so/nodes';
+import { InstructionAccountNode, instructionAccountNode } from '@codama/nodes';
 
 import { IdlV00Account, IdlV00AccountItem } from './idl';
 

@@ -1,4 +1,4 @@
-import type { ErrorNode } from '@kinobi-so/node-types';
+import type { ErrorNode } from '@codama/node-types';
 
 import { camelCase, DocsInput, parseDocs } from './shared';
 

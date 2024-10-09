@@ -1,4 +1,4 @@
-import { booleanValueNode } from '@kinobi-so/nodes';
+import { booleanValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

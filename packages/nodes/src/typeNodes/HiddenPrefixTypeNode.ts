@@ -1,4 +1,4 @@
-import type { ConstantValueNode, HiddenPrefixTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { ConstantValueNode, HiddenPrefixTypeNode, TypeNode } from '@codama/node-types';
 
 export function hiddenPrefixTypeNode<TType extends TypeNode, const TPrefix extends ConstantValueNode[]>(
     type: TType,

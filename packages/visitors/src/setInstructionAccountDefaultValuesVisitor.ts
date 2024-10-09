@@ -8,7 +8,7 @@ import {
     payerValueNode,
     programIdValueNode,
     publicKeyValueNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -16,7 +16,7 @@ import {
     pipe,
     recordLinkablesVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { fillDefaultPdaSeedValuesVisitor } from './fillDefaultPdaSeedValuesVisitor';
 

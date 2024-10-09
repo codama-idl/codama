@@ -1,4 +1,4 @@
-import { RootNode, rootNode } from '@kinobi-so/nodes';
+import { RootNode, rootNode } from '@codama/nodes';
 
 import { IdlV00 } from './idl';
 import { programNodeFromAnchorV00 } from './ProgramNode';

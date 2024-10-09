@@ -19,7 +19,7 @@ import {
     rootNode,
     structFieldTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import {

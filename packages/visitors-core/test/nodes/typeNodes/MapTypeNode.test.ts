@@ -5,7 +5,7 @@ import {
     prefixedCountNode,
     publicKeyTypeNode,
     stringTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

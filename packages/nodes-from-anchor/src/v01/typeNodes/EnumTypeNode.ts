@@ -1,4 +1,4 @@
-import { EnumTypeNode, enumTypeNode, EnumVariantTypeNode, NumberTypeNode } from '@kinobi-so/nodes';
+import { EnumTypeNode, enumTypeNode, EnumVariantTypeNode, NumberTypeNode } from '@codama/nodes';
 
 import { IdlV01DefinedFieldsNamed, IdlV01DefinedFieldsTuple, IdlV01EnumVariant, IdlV01TypeDefTyEnum } from '../idl';
 import { enumEmptyVariantTypeNodeFromAnchorV01 } from './EnumEmptyVariantTypeNode';

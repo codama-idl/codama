@@ -1,4 +1,4 @@
-import { logWarn } from '@kinobi-so/errors';
+import { logWarn } from '@codama/errors';
 import {
     getAllAccounts,
     getAllDefinedTypes,
@@ -13,8 +13,8 @@ import {
     snakeCase,
     structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
-} from '@kinobi-so/nodes';
-import { RenderMap } from '@kinobi-so/renderers-core';
+} from '@codama/nodes';
+import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -22,7 +22,7 @@ import {
     recordLinkablesVisitor,
     staticVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';

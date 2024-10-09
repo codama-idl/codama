@@ -6,7 +6,7 @@ import {
     sizeDiscriminatorNode,
     structFieldTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

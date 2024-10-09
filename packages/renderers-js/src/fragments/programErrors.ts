@@ -1,4 +1,4 @@
-import { ProgramNode } from '@kinobi-so/nodes';
+import { ProgramNode } from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragmentFromTemplate } from './common';

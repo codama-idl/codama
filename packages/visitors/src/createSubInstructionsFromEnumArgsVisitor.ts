@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
     assertIsNode,
     camelCase,
@@ -9,13 +9,13 @@ import {
     isNode,
     numberTypeNode,
     numberValueNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
     recordLinkablesVisitor,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { flattenInstructionArguments } from './flattenInstructionDataArgumentsVisitor';
 
@@ -34,7 +34,7 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                     const argFieldIndex = argFields.findIndex(field => field.name === argName);
                     const argField = argFieldIndex >= 0 ? argFields[argFieldIndex] : null;
                     if (!argField) {
-                        throw new KinobiError(KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
+                        throw new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
                             argumentName: argName,
                             instruction: node,
                             instructionName: node.name,
@@ -49,7 +49,7 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                         assertIsNode(linkedType, 'enumTypeNode');
                         argType = linkedType;
                     } else {
-                        throw new KinobiError(KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
+                        throw new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
                             argumentName: argName,
                             instruction: node,
                             instructionName: node.name,

@@ -1,4 +1,4 @@
-import { mapEntryValueNode, publicKeyValueNode, stringValueNode } from '@kinobi-so/nodes';
+import { mapEntryValueNode, publicKeyValueNode, stringValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

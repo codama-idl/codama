@@ -1,4 +1,4 @@
-import { instructionAccountLinkNode, instructionLinkNode } from '@kinobi-so/nodes';
+import { instructionAccountLinkNode, instructionLinkNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

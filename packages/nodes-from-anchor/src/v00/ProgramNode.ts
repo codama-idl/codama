@@ -1,4 +1,4 @@
-import { ProgramNode, programNode, ProgramVersion } from '@kinobi-so/nodes';
+import { ProgramNode, programNode, ProgramVersion } from '@codama/nodes';
 
 import { accountNodeFromAnchorV00 } from './AccountNode';
 import { definedTypeNodeFromAnchorV00 } from './DefinedTypeNode';

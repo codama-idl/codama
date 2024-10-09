@@ -1,26 +1,26 @@
-# Kinobi ➤ Renderers ➤ Core
+# Codama ➤ Renderers ➤ Core
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/renderers-core.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/renderers-core.svg?style=flat&label=%40kinobi-so%2Frenderers-core
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/renderers-core
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/renderers-core.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/renderers-core.svg?style=flat&label=%40codama%2Frenderers-core
+[npm-url]: https://www.npmjs.com/package/@codama/renderers-core
 
-This package provides the core utility for generating clients from Kinobi IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@kinobi-so/renderers-js`](../renderers-js) and [`@kinobi-so/renderers-rust`](../renderers-rust).
+This package provides the core utility for generating clients from Codama IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@codama/renderers-js`](../renderers-js) and [`@codama/renderers-rust`](../renderers-rust).
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/renderers-core
+pnpm install @codama/renderers-core
 ```
 
 > [!NOTE]
-> This package is **not** included in the main [`kinobi`](../library) package.
+> This package is **not** included in the main [`codama`](../library) package.
 
 ## Filesystem wrappers
 
-This package offers several helper functions that delegate to the native Filesystem API — i.e. `node:fs` — when using the Node.js runtime. However, in any other environment — such as the browser — these functions will throw a `KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error as a Filesystem API is not available. This enables us to write renderers regardless of the runtime environment.
+This package offers several helper functions that delegate to the native Filesystem API — i.e. `node:fs` — when using the Node.js runtime. However, in any other environment — such as the browser — these functions will throw a `CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error as a Filesystem API is not available. This enables us to write renderers regardless of the runtime environment.
 
 ```ts
 // Reads the UTF-8 content of a file as a JSON object.
@@ -72,7 +72,7 @@ renderMap.remove('programs/token.ts');
 
 ### Accessing content from a `RenderMap`
 
-The `RenderMap` class provides several methods to access the content of the files it manages. The `get` method returns the content of a file from its relative path. If the file does not exist on the `RenderMap`, a `KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND` error will be thrown.
+The `RenderMap` class provides several methods to access the content of the files it manages. The `get` method returns the content of a file from its relative path. If the file does not exist on the `RenderMap`, a `CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND` error will be thrown.
 
 ```ts
 const content: string = renderMap.get('programs/token.ts');
@@ -132,37 +132,37 @@ renderMap.write('src/generated');
 
 ### Using visitors
 
-When building renderers, you will most likely create a visitor that traverses the Kinobi IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@kinobi-so/renderers-js`](../renderers-js) package exports a `getRenderMapVisitor` function that does just that.
+When building renderers, you will most likely create a visitor that traverses the Codama IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](../renderers-js) package exports a `getRenderMapVisitor` function that does just that.
 
 ```ts
-import { getRenderMapVisitor } from '@kinobi-so/renderers-js';
+import { getRenderMapVisitor } from '@codama/renderers-js';
 
-const renderMap = kinobi.accept(getRenderMapVisitor());
+const renderMap = codama.accept(getRenderMapVisitor());
 ```
 
 If you have access to a visitor that returns a `RenderMap` — also described as `Visitor<RenderMap>` — then, you can wrap it inside the `writeRenderMapVisitor` to directly write the content to the filesystem at the given base directory.
 
 ```ts
-import { getRenderMapVisitor } from '@kinobi-so/renderers-js';
+import { getRenderMapVisitor } from '@codama/renderers-js';
 
-kinobi.accept(writeRenderMapVisitor(getRenderMapVisitor(), 'src/generated'));
+codama.accept(writeRenderMapVisitor(getRenderMapVisitor(), 'src/generated'));
 ```
 
 Note however that, if you are writing your own renderer, you should probably offer a higher-level visitor that includes this logic and also does some additional work such as deleting the base directory before writing the new content if it already exists.
 
-For instance, the recommended way of using the `@kinobi-so/renderers-js` package is to use the following `renderVisitor` function.
+For instance, the recommended way of using the `@codama/renderers-js` package is to use the following `renderVisitor` function.
 
 ```ts
-import { renderVisitor } from '@kinobi-so/renderers-js';
+import { renderVisitor } from '@codama/renderers-js';
 
-kinobi.accept(renderVisitor('src/generated'));
+codama.accept(renderVisitor('src/generated'));
 ```
 
 Here's a simple example of how to set up the basis of a renderer from an existing `getRenderMapVisitor`.
 
 ```ts
-import { deleteDirectory } from '@kinobi-so/renderers-core';
-import { rootNodeVisitor, visit } from '@kinobi-so/visitors-core';
+import { deleteDirectory } from '@codama/renderers-core';
+import { rootNodeVisitor, visit } from '@codama/visitors-core';
 
 type RenderOptions = {
     deleteFolderBeforeRendering?: boolean;

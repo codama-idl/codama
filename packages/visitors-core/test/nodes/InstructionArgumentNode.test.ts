@@ -1,4 +1,4 @@
-import { instructionArgumentNode, numberTypeNode, numberValueNode } from '@kinobi-so/nodes';
+import { instructionArgumentNode, numberTypeNode, numberValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

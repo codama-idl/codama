@@ -1,4 +1,4 @@
-export * from '@kinobi-so/node-types';
+export * from '@codama/node-types';
 
 export * from './contextualValueNodes';
 export * from './countNodes';

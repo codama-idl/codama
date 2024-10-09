@@ -1,4 +1,4 @@
-import { Node } from '@kinobi-so/nodes';
+import { Node } from '@codama/nodes';
 
 import { interceptVisitor } from './interceptVisitor';
 import { mergeVisitor } from './mergeVisitor';

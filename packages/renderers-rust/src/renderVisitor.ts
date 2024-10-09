@@ -1,6 +1,6 @@
-import { logError, logWarn } from '@kinobi-so/errors';
-import { deleteDirectory, writeRenderMapVisitor } from '@kinobi-so/renderers-core';
-import { rootNodeVisitor, visit } from '@kinobi-so/visitors-core';
+import { logError, logWarn } from '@codama/errors';
+import { deleteDirectory, writeRenderMapVisitor } from '@codama/renderers-core';
+import { rootNodeVisitor, visit } from '@codama/visitors-core';
 import { spawnSync } from 'child_process';
 
 import { GetRenderMapOptions, getRenderMapVisitor } from './getRenderMapVisitor';

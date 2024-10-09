@@ -1,4 +1,4 @@
-import { camelCase, getAllInstructionArguments, isNode } from '@kinobi-so/nodes';
+import { camelCase, getAllInstructionArguments, isNode } from '@codama/nodes';
 import {
     extendVisitor,
     getResolvedInstructionInputsVisitor,
@@ -10,7 +10,7 @@ import {
     recordNodeStackVisitor,
     visit,
     Visitor,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { ValidationItem, validationItem } from './ValidationItem';
 

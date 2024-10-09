@@ -1,4 +1,4 @@
-import type { Node, PublicKeyTypeNode, TupleTypeNode } from '@kinobi-so/node-types';
+import type { Node, PublicKeyTypeNode, TupleTypeNode } from '@codama/node-types';
 
 import {
     assertIsNode,

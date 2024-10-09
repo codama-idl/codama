@@ -1,4 +1,4 @@
-import { InstructionNode, ProgramNode } from '@kinobi-so/nodes';
+import { InstructionNode, ProgramNode } from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';

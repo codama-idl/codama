@@ -1,4 +1,4 @@
-import type { NumberValueNode } from '@kinobi-so/node-types';
+import type { NumberValueNode } from '@codama/node-types';
 
 export function numberValueNode(number: number): NumberValueNode {
     return Object.freeze({

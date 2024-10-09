@@ -1,4 +1,4 @@
-import { TupleTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
+import { TupleTypeNode, tupleTypeNode } from '@codama/nodes';
 
 import { IdlV01DefinedFieldsTuple } from '../idl';
 import { typeNodeFromAnchorV01 } from './TypeNode';

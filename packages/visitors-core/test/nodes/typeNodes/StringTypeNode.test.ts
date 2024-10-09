@@ -1,4 +1,4 @@
-import { stringTypeNode } from '@kinobi-so/nodes';
+import { stringTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

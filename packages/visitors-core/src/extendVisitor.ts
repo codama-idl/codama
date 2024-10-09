@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, KinobiError } from '@kinobi-so/errors';
-import { GetNodeFromKind, Node, NodeKind, REGISTERED_NODE_KINDS } from '@kinobi-so/nodes';
+import { CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, CodamaError } from '@codama/errors';
+import { GetNodeFromKind, Node, NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { getVisitFunctionName, GetVisitorFunctionName, Visitor } from './visitor';
 
@@ -33,7 +33,7 @@ export function extendVisitor<TReturn, TNodeKind extends NodeKind>(
             const castedKey = key as GetVisitorFunctionName<TNodeKind>;
 
             if (!visitor[castedKey]) {
-                throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
+                throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
                     visitFunction: castedKey,
                 });
             }

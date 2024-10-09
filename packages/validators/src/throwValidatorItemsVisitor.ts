@@ -1,6 +1,6 @@
-import { KINOBI_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE, KinobiError } from '@kinobi-so/errors';
-import { NodeKind } from '@kinobi-so/nodes';
-import { mapVisitor, Visitor } from '@kinobi-so/visitors-core';
+import { CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE, CodamaError } from '@codama/errors';
+import { NodeKind } from '@codama/nodes';
+import { mapVisitor, Visitor } from '@codama/visitors-core';
 
 import { getLevelIndex, LogLevel, ValidationItem } from './ValidationItem';
 
@@ -26,7 +26,7 @@ export function throwValidatorItemsVisitor<TNodeKind extends NodeKind = NodeKind
             const formattedHistogram = Object.keys(levelHistogram)
                 .map(level => `${level}s: ${levelHistogram[level as LogLevel]}`)
                 .join(', ');
-            throw new KinobiError(KINOBI_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE, {
+            throw new CodamaError(CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE, {
                 formattedHistogram,
                 validationItems,
             });

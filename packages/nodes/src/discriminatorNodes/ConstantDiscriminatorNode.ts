@@ -1,4 +1,4 @@
-import type { ConstantDiscriminatorNode, ConstantValueNode } from '@kinobi-so/node-types';
+import type { ConstantDiscriminatorNode, ConstantValueNode } from '@codama/node-types';
 
 export function constantDiscriminatorNode<TConstant extends ConstantValueNode>(
     constant: TConstant,

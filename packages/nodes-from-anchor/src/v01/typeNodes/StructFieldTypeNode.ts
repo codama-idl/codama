@@ -1,12 +1,12 @@
-import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@kinobi-so/errors';
-import { StructFieldTypeNode, structFieldTypeNode } from '@kinobi-so/nodes';
+import { CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, CodamaError } from '@codama/errors';
+import { StructFieldTypeNode, structFieldTypeNode } from '@codama/nodes';
 
 import { IdlV01Field, IdlV01Type } from '../idl';
 import { typeNodeFromAnchorV01 } from './TypeNode';
 
 export function structFieldTypeNodeFromAnchorV01(idl: IdlV01Field | IdlV01Type): StructFieldTypeNode {
     if (!isStructField(idl)) {
-        throw new KinobiError(KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
+        throw new CodamaError(CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {
             idlType: JSON.stringify(idl),
         });
     }

@@ -1,4 +1,4 @@
-import { constantDiscriminatorNode, constantValueNodeFromBytes } from '@kinobi-so/nodes';
+import { constantDiscriminatorNode, constantValueNodeFromBytes } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@kinobi-so/errors';
+import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/errors';
 import {
     ArrayTypeNode,
     camelCase,
@@ -16,8 +16,8 @@ import {
     structTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
     TypeNode,
-} from '@kinobi-so/nodes';
-import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { getBytesFromBytesValueNode, GetImportFromFunction, jsDocblock, ParsedCustomDataOptions } from './utils';
@@ -603,7 +603,7 @@ export function getTypeManifestVisitor(input: {
                 },
 
                 visitRemainderOptionType(node) {
-                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
 
                 visitSetType(setType, { self }) {
@@ -833,7 +833,7 @@ export function getTypeManifestVisitor(input: {
                 },
 
                 visitZeroableOptionType(node) {
-                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
     );

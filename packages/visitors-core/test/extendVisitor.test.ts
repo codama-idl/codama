@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, KinobiError } from '@kinobi-so/errors';
-import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
+import { CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, CodamaError } from '@codama/errors';
+import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { extendVisitor, mergeVisitor, visit, voidVisitor } from '../src';
@@ -59,7 +59,7 @@ test('it cannot extends nodes that are not supported by the base visitor', () =>
             visitNumberType: () => undefined,
         }),
     ).toThrow(
-        new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
+        new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, {
             visitFunction: 'visitNumberType',
         }),
     );

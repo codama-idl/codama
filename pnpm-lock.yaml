@@ -14,7 +14,7 @@ importers:
       '@changesets/cli':
         specifier: ^2.27.9
         version: 2.27.9
-      '@kinobi-so/internals':
+      '@codama/internals':
         specifier: workspace:*
         version: link:packages/internals
       '@solana/eslint-config-solana':
@@ -77,7 +77,7 @@ importers:
 
   packages/errors:
     dependencies:
-      '@kinobi-so/node-types':
+      '@codama/node-types':
         specifier: workspace:*
         version: link:../node-types
       chalk:
@@ -95,16 +95,16 @@ importers:
 
   packages/library:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/validators':
+      '@codama/validators':
         specifier: workspace:*
         version: link:../validators
-      '@kinobi-so/visitors':
+      '@codama/visitors':
         specifier: workspace:*
         version: link:../visitors
 
@@ -112,22 +112,22 @@ importers:
 
   packages/nodes:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/node-types':
+      '@codama/node-types':
         specifier: workspace:*
         version: link:../node-types
 
   packages/nodes-from-anchor:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/visitors':
+      '@codama/visitors':
         specifier: workspace:*
         version: link:../visitors
       '@noble/hashes':
@@ -136,43 +136,43 @@ importers:
 
   packages/renderers:
     dependencies:
-      '@kinobi-so/renderers-js':
+      '@codama/renderers-js':
         specifier: workspace:*
         version: link:../renderers-js
-      '@kinobi-so/renderers-js-umi':
+      '@codama/renderers-js-umi':
         specifier: workspace:*
         version: link:../renderers-js-umi
-      '@kinobi-so/renderers-rust':
+      '@codama/renderers-rust':
         specifier: workspace:*
         version: link:../renderers-rust
 
   packages/renderers-core:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/visitors-core':
+      '@codama/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core
 
   packages/renderers-js:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/nodes-from-anchor':
+      '@codama/nodes-from-anchor':
         specifier: workspace:*
         version: link:../nodes-from-anchor
-      '@kinobi-so/renderers-core':
+      '@codama/renderers-core':
         specifier: workspace:*
         version: link:../renderers-core
-      '@kinobi-so/visitors-core':
+      '@codama/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
@@ -191,19 +191,19 @@ importers:
 
   packages/renderers-js-umi:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/renderers-core':
+      '@codama/renderers-core':
         specifier: workspace:*
         version: link:../renderers-core
-      '@kinobi-so/validators':
+      '@codama/validators':
         specifier: workspace:*
         version: link:../validators
-      '@kinobi-so/visitors-core':
+      '@codama/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
@@ -222,16 +222,16 @@ importers:
 
   packages/renderers-rust:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/renderers-core':
+      '@codama/renderers-core':
         specifier: workspace:*
         version: link:../renderers-core
-      '@kinobi-so/visitors-core':
+      '@codama/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
@@ -247,34 +247,34 @@ importers:
 
   packages/validators:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/visitors-core':
+      '@codama/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core
 
   packages/visitors:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@kinobi-so/visitors-core':
+      '@codama/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core
 
   packages/visitors-core:
     dependencies:
-      '@kinobi-so/errors':
+      '@codama/errors':
         specifier: workspace:*
         version: link:../errors
-      '@kinobi-so/nodes':
+      '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
       json-stable-stringify:

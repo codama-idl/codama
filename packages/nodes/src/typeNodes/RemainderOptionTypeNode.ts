@@ -1,4 +1,4 @@
-import type { RemainderOptionTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { RemainderOptionTypeNode, TypeNode } from '@codama/node-types';
 
 export function remainderOptionTypeNode<TItem extends TypeNode>(item: TItem): RemainderOptionTypeNode<TItem> {
     return Object.freeze({

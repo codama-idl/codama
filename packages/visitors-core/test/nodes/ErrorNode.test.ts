@@ -1,4 +1,4 @@
-import { errorNode } from '@kinobi-so/nodes';
+import { errorNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

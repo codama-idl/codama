@@ -1,4 +1,4 @@
-import { getAllPrograms, Node, NodeKind, REGISTERED_NODE_KINDS } from '@kinobi-so/nodes';
+import { getAllPrograms, Node, NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { staticVisitor } from './staticVisitor';
 import { visit as baseVisit, Visitor } from './visitor';

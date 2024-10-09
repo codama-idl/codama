@@ -1,4 +1,4 @@
-import type { AccountValueNode, ArgumentValueNode, PdaSeedValueNode, ValueNode } from '@kinobi-so/node-types';
+import type { AccountValueNode, ArgumentValueNode, PdaSeedValueNode, ValueNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

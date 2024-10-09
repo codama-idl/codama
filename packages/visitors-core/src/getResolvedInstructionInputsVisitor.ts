@@ -1,10 +1,10 @@
 /* eslint-disable no-case-declarations */
 import {
-    KINOBI_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
-    KINOBI_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
-    KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
-    KinobiError,
-} from '@kinobi-so/errors';
+    CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
+    CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+    CodamaError,
+} from '@codama/errors';
 import {
     AccountValueNode,
     accountValueNode,
@@ -18,7 +18,7 @@ import {
     InstructionNode,
     isNode,
     VALUE_NODES,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { singleNodeVisitor } from './singleNodeVisitor';
 import { Visitor } from './visitor';
@@ -58,8 +58,8 @@ export function getResolvedInstructionInputsVisitor(
         const isCircular = stack.some(({ kind, name }) => kind === input.kind && name === input.name);
         if (isCircular) {
             const cycle = [...stack, input];
-            throw new KinobiError(
-                KINOBI_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+            throw new CodamaError(
+                CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
                 {
                     cycle,
                     formattedCycle: cycle.map(({ name }) => name).join(' -> '),
@@ -129,7 +129,7 @@ export function getResolvedInstructionInputsVisitor(
                     if (!isNode(seed.value, 'accountValueNode')) return;
                     const dependency = visitedAccounts.get(seed.value.name)!;
                     if (dependency.resolvedIsOptional) {
-                        throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
+                        throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
                             instruction: instruction,
                             instructionAccount: account,
                             instructionAccountName: account.name,
@@ -174,7 +174,7 @@ export function getResolvedInstructionInputsVisitor(
             if (isNode(dependency, 'accountValueNode')) {
                 const dependencyAccount = instruction.accounts.find(a => a.name === dependency.name);
                 if (!dependencyAccount) {
-                    throw new KinobiError(KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
+                    throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
                         dependency,
                         dependencyKind: dependency.kind,
                         dependencyName: dependency.name,
@@ -191,7 +191,7 @@ export function getResolvedInstructionInputsVisitor(
                     a => a.name === dependency.name,
                 );
                 if (!dependencyArgument) {
-                    throw new KinobiError(KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
+                    throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
                         dependency,
                         dependencyKind: dependency.kind,
                         dependencyName: dependency.name,

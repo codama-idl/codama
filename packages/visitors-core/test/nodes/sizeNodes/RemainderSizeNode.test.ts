@@ -1,4 +1,4 @@
-import { remainderCountNode } from '@kinobi-so/nodes';
+import { remainderCountNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

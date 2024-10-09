@@ -1,4 +1,4 @@
-import type { BytesTypeNode } from '@kinobi-so/node-types';
+import type { BytesTypeNode } from '@codama/node-types';
 
 export function bytesTypeNode(): BytesTypeNode {
     return Object.freeze({ kind: 'bytesTypeNode' });

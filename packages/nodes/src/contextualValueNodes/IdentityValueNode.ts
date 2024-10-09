@@ -1,4 +1,4 @@
-import type { IdentityValueNode } from '@kinobi-so/node-types';
+import type { IdentityValueNode } from '@codama/node-types';
 
 export function identityValueNode(): IdentityValueNode {
     return Object.freeze({ kind: 'identityValueNode' });

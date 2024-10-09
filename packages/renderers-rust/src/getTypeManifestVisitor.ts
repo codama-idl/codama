@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@kinobi-so/errors';
+import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/errors';
 import {
     arrayTypeNode,
     CountNode,
@@ -13,8 +13,8 @@ import {
     remainderCountNode,
     resolveNestedTypeNode,
     snakeCase,
-} from '@kinobi-so/nodes';
-import { extendVisitor, mergeVisitor, pipe, visit } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { GetImportFromFunction, rustDocblock } from './utils';
@@ -324,7 +324,7 @@ export function getTypeManifestVisitor(options: {
                 },
 
                 visitRemainderOptionType(node) {
-                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
 
                 visitSetType(setType, { self }) {
@@ -481,7 +481,7 @@ export function getTypeManifestVisitor(options: {
                 },
 
                 visitZeroableOptionType(node) {
-                    throw new KinobiError(KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
     );

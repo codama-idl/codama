@@ -1,7 +1,7 @@
 import { dirname as pathDirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { camelCase, kebabCase, pascalCase, snakeCase, titleCase } from '@kinobi-so/nodes';
+import { camelCase, kebabCase, pascalCase, snakeCase, titleCase } from '@codama/nodes';
 import nunjucks, { ConfigureOptions as NunJucksOptions } from 'nunjucks';
 
 export function rustDocblock(docs: string[]): string {

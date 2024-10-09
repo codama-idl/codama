@@ -1,6 +1,6 @@
 # `PdaLinkNode`
 
-This node represents a reference to an existing [`PdaNode`](../PdaNode.md) in the Kinobi IDL.
+This node represents a reference to an existing [`PdaNode`](../PdaNode.md) in the Codama IDL.
 
 ## Attributes
 

@@ -1025,6 +1025,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-renderers-rust-e2e-memo"
+version = "0.0.0"
+dependencies = [
+ "anchor-lang",
+ "assert_matches",
+ "borsh 0.10.3",
+ "kaigan",
+ "num-derive 0.3.3",
+ "num-traits",
+ "serde",
+ "serde_with 3.8.0",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "thiserror",
+]
+
+[[package]]
 name = "combine"
 version = "3.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2164,24 +2182,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ecc2af9a1119c51f12a14607e783cb977bde58bc069ff0c3da1095e635d70654"
 dependencies = [
  "cpufeatures",
-]
-
-[[package]]
-name = "kinobi-renderers-rust-e2e-memo"
-version = "0.0.0"
-dependencies = [
- "anchor-lang",
- "assert_matches",
- "borsh 0.10.3",
- "kaigan",
- "num-derive 0.3.3",
- "num-traits",
- "serde",
- "serde_with 3.8.0",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "thiserror",
 ]
 
 [[package]]

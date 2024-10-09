@@ -1,4 +1,4 @@
-import type { SizeDiscriminatorNode } from '@kinobi-so/node-types';
+import type { SizeDiscriminatorNode } from '@codama/node-types';
 
 export function sizeDiscriminatorNode(size: number): SizeDiscriminatorNode {
     return Object.freeze({

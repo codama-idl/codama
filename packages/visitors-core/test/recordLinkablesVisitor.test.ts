@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
     accountLinkNode,
     AccountNode,
@@ -19,7 +19,7 @@ import {
     programLinkNode,
     programNode,
     rootNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import {
@@ -326,7 +326,7 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
 
     // Then we expect an exception to be thrown.
     expect(getMissingAccount).toThrow(
-        new KinobiError(KINOBI_ERROR__LINKED_NODE_NOT_FOUND, {
+        new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
             kind: 'accountLinkNode',
             linkNode: accountLinkNode('missingAccount', 'myProgram'),
             name: 'missingAccount',

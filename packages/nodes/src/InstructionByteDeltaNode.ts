@@ -1,4 +1,4 @@
-import type { InstructionByteDeltaNode } from '@kinobi-so/node-types';
+import type { InstructionByteDeltaNode } from '@codama/node-types';
 
 import { isNode } from './Node';
 

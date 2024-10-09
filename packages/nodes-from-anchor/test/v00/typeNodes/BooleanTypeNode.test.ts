@@ -1,4 +1,4 @@
-import { booleanTypeNode } from '@kinobi-so/nodes';
+import { booleanTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV00 } from '../../../src';

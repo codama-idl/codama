@@ -1,4 +1,4 @@
-import { assertIsNode, camelCase, InstructionByteDeltaNode, InstructionNode, isNode } from '@kinobi-so/nodes';
+import { assertIsNode, camelCase, InstructionByteDeltaNode, InstructionNode, isNode } from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';

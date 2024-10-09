@@ -70,7 +70,7 @@ import {
     VALUE_NODES,
     variablePdaSeedNode,
     zeroableOptionTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { staticVisitor } from './staticVisitor';
 import { visit as baseVisit, Visitor } from './visitor';

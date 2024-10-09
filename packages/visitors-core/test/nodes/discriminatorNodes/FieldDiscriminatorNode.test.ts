@@ -1,4 +1,4 @@
-import { fieldDiscriminatorNode } from '@kinobi-so/nodes';
+import { fieldDiscriminatorNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

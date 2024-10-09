@@ -1,4 +1,4 @@
-import { RenderMap } from '@kinobi-so/renderers-core';
+import { RenderMap } from '@codama/renderers-core';
 import * as estreePlugin from 'prettier/plugins/estree';
 import * as typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';

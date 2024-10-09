@@ -1,4 +1,4 @@
-import type { NestedTypeNode, NumberTypeNode, OptionTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { NestedTypeNode, NumberTypeNode, OptionTypeNode, TypeNode } from '@codama/node-types';
 
 import { numberTypeNode } from './NumberTypeNode';
 

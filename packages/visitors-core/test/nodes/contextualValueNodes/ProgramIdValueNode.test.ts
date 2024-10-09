@@ -1,4 +1,4 @@
-import { programIdValueNode } from '@kinobi-so/nodes';
+import { programIdValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

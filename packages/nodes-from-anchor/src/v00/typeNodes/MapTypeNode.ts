@@ -6,7 +6,7 @@ import {
     numberTypeNode,
     prefixedCountNode,
     remainderCountNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { IdlV00TypeMap } from '../idl';
 import { typeNodeFromAnchorV00 } from './TypeNode';

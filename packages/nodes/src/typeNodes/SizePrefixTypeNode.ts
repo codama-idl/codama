@@ -1,4 +1,4 @@
-import type { NestedTypeNode, NumberTypeNode, SizePrefixTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { NestedTypeNode, NumberTypeNode, SizePrefixTypeNode, TypeNode } from '@codama/node-types';
 
 export function sizePrefixTypeNode<
     TType extends TypeNode = TypeNode,

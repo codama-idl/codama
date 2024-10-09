@@ -1,4 +1,4 @@
-import type { ProgramLinkNode } from '@kinobi-so/node-types';
+import type { ProgramLinkNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

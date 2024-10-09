@@ -1,7 +1,4 @@
-import {
-    KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
-    KinobiError,
-} from '@kinobi-so/errors';
+import { CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, CodamaError } from '@codama/errors';
 import {
     assertIsNode,
     camelCase,
@@ -9,8 +6,8 @@ import {
     instructionArgumentNode,
     instructionNode,
     isNode,
-} from '@kinobi-so/nodes';
-import { bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export function flattenInstructionDataArgumentsVisitor() {
     return bottomUpTransformerVisitor([
@@ -49,7 +46,7 @@ export const flattenInstructionArguments = (
     const hasConflictingNames = uniqueDuplicates.length > 0;
 
     if (hasConflictingNames) {
-        throw new KinobiError(KINOBI_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
+        throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
             conflictingAttributes: uniqueDuplicates,
         });
     }

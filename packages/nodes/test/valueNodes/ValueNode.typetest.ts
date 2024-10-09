@@ -1,4 +1,4 @@
-import type { RegisteredValueNode } from '@kinobi-so/node-types';
+import type { RegisteredValueNode } from '@codama/node-types';
 
 import { REGISTERED_VALUE_NODE_KINDS } from '../../src';
 

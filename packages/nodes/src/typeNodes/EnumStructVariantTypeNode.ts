@@ -1,4 +1,4 @@
-import type { EnumStructVariantTypeNode, NestedTypeNode, StructTypeNode } from '@kinobi-so/node-types';
+import type { EnumStructVariantTypeNode, NestedTypeNode, StructTypeNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

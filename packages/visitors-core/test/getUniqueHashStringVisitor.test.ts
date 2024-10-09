@@ -1,10 +1,4 @@
-import {
-    numberTypeNode,
-    publicKeyTypeNode,
-    structFieldTypeNode,
-    structTypeNode,
-    tupleTypeNode,
-} from '@kinobi-so/nodes';
+import { numberTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { getUniqueHashStringVisitor, visit } from '../src';

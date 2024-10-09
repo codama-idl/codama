@@ -3,10 +3,10 @@
 const path = require('node:path');
 const process = require('node:process');
 
-const { rootNode } = require('@kinobi-so/nodes');
-const { rootNodeFromAnchor } = require('@kinobi-so/nodes-from-anchor');
-const { readJson } = require('@kinobi-so/renderers-core');
-const { visit } = require('@kinobi-so/visitors-core');
+const { rootNode } = require('@codama/nodes');
+const { rootNodeFromAnchor } = require('@codama/nodes-from-anchor');
+const { readJson } = require('@codama/renderers-core');
+const { visit } = require('@codama/visitors-core');
 
 const { renderVisitor } = require('../dist/index.node.cjs');
 

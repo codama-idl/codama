@@ -1,4 +1,4 @@
-import type { ConstantValueNode, TypeNode, ZeroableOptionTypeNode } from '@kinobi-so/node-types';
+import type { ConstantValueNode, TypeNode, ZeroableOptionTypeNode } from '@codama/node-types';
 
 export function zeroableOptionTypeNode<TItem extends TypeNode, TZeroValue extends ConstantValueNode | undefined>(
     item: TItem,

@@ -1,43 +1,43 @@
-# Kinobi ➤ Main Library
+# Codama ➤ Main Library
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/kinobi.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/kinobi.svg?style=flat&label=%40kinobi-so%2Fnodes
-[npm-url]: https://www.npmjs.com/package/kinobi
+[npm-downloads-image]: https://img.shields.io/npm/dm/codama.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/codama.svg?style=flat&label=%40codama%2Fnodes
+[npm-url]: https://www.npmjs.com/package/codama
 
-This package is the main library for Kinobi. It re-exports most of the other packages in the Kinobi monorepo and offers a `Kinobi` type with a few helpers to help bind everything together.
+This package is the main library for Codama. It re-exports most of the other packages in the Codama monorepo and offers a `Codama` type with a few helpers to help bind everything together.
 
 ## Installation
 
 ```sh
-pnpm install kinobi
+pnpm install codama
 ```
 
 ## Packages included
 
 This package includes the following packages. Note that some of them also re-export other packages.
 
--   [`@kinobi-so/errors`](../errors)
--   [`@kinobi-so/nodes`](../nodes)
-    -   [`@kinobi-so/node-types`](../node-types)
--   [`@kinobi-so/validators`](../validators)
--   [`@kinobi-so/visitors`](../visitors)
-    -   [`@kinobi-so/visitor-core`](../visitor-core)
+-   [`@codama/errors`](../errors)
+-   [`@codama/nodes`](../nodes)
+    -   [`@codama/node-types`](../node-types)
+-   [`@codama/validators`](../validators)
+-   [`@codama/visitors`](../visitors)
+    -   [`@codama/visitor-core`](../visitor-core)
 
-## The Kinobi helper
+## The Codama helper
 
-Additionally, this package offers a `Kinobi` type and a few helper functions to help you work with Kinobi IDLs.
+Additionally, this package offers a `Codama` type and a few helper functions to help you work with Codama IDLs.
 
-### `Kinobi`
+### `Codama`
 
-The `Kinobi` interface wraps a `RootNode` and offers some helper methods to work with it.
+The `Codama` interface wraps a `RootNode` and offers some helper methods to work with it.
 
 ```ts
-export interface Kinobi {
+export interface Codama {
     accept<T>(visitor: Visitor<T>): T;
-    clone(): Kinobi;
+    clone(): Codama;
     getJson(): string;
     getRoot(): RootNode;
     update(visitor: Visitor<Node | null>): void;
@@ -47,18 +47,18 @@ export interface Kinobi {
 The `accept` function allows us to visit the wrapped `RootNode` using the provided visitor.
 
 ```ts
-// Log the Kinobi IDL in the console.
-kinobi.accept(consoleLogVisitor(getDebugStringVisitor({ indent: true })));
+// Log the Codama IDL in the console.
+codama.accept(consoleLogVisitor(getDebugStringVisitor({ indent: true })));
 ```
 
 The `update` function also accepts a visitor, but it uses the return value of that visitor to update the wrapped `RootNode`. This means that, given a `RootNode`, the provided visitor should also return a `RootNode`. An error will be thrown otherwise.
 
 ```ts
 // Delete account nodes named "mint".
-kinobi.update(deleteNodesVisitor(['[accountNode]mint']));
+codama.update(deleteNodesVisitor(['[accountNode]mint']));
 
 // Transform all number nodes into u64 number nodes.
-kinobi.update(
+codama.update(
     bottomUpTransformerVisitor([
         {
             select: '[numberTypeNode]',
@@ -70,29 +70,29 @@ kinobi.update(
 
 Other helper functions include:
 
--   `clone()`: Creates a new instance of the `Kinobi` interface with a deep copy of the wrapped `RootNode`.
--   `getJson()`: Returns the JSON representation of the Kinobi IDL.
+-   `clone()`: Creates a new instance of the `Codama` interface with a deep copy of the wrapped `RootNode`.
+-   `getJson()`: Returns the JSON representation of the Codama IDL.
 -   `getRoot()`: Returns the wrapped `RootNode`.
 
 ```ts
-const clonedKinobi = kinobi.clone();
-const jsonIdl = kinobi.getJson();
-const rootNode = kinobi.getRoot();
+const clonedCodama = codama.clone();
+const jsonIdl = codama.getJson();
+const rootNode = codama.getRoot();
 ```
 
 ### `createFromRoot(rootNode)`
 
-The `createFromRoot` function creates a new instance of the `Kinobi` interface from a `RootNode`.
+The `createFromRoot` function creates a new instance of the `Codama` interface from a `RootNode`.
 
 ```ts
-const kinobi = createFromRoot(rootNode(programNode({ ... })));
+const codama = createFromRoot(rootNode(programNode({ ... })));
 ```
 
 ### `createFromJson(jsonIdl)`
 
-The `createFromJson` function creates a new instance of the `Kinobi` interface from a JSON representation of a `RootNode`.
+The `createFromJson` function creates a new instance of the `Codama` interface from a JSON representation of a `RootNode`.
 
 ```ts
-const json: string = fs.readFileSync('path/to/kinobiIdl.json', 'utf-8');
-const kinobi = createFromJson(json);
+const json: string = fs.readFileSync('path/to/codamaIdl.json', 'utf-8');
+const codama = createFromJson(json);
 ```

@@ -11,7 +11,7 @@ import {
     instructionNode,
     InstructionNodeInput,
     TYPE_NODES,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
@@ -19,7 +19,7 @@ import {
     pipe,
     recordLinkablesVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { fillDefaultPdaSeedValuesVisitor } from './fillDefaultPdaSeedValuesVisitor';
 

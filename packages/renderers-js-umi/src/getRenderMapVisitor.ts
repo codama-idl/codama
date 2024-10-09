@@ -1,4 +1,4 @@
-import { logWarn } from '@kinobi-so/errors';
+import { logWarn } from '@codama/errors';
 import {
     camelCase,
     CamelCaseString,
@@ -18,8 +18,8 @@ import {
     SizeDiscriminatorNode,
     structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
-} from '@kinobi-so/nodes';
-import { RenderMap } from '@kinobi-so/renderers-core';
+} from '@codama/nodes';
+import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     getByteSizeVisitor,
@@ -32,7 +32,7 @@ import {
     staticVisitor,
     visit,
     Visitor,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { ContextMap } from './ContextMap';
 import { getTypeManifestVisitor as baseGetTypeManifestVisitor } from './getTypeManifestVisitor';

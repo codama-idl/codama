@@ -1,4 +1,4 @@
-import { sizeDiscriminatorNode } from '@kinobi-so/nodes';
+import { sizeDiscriminatorNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

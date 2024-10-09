@@ -1,5 +1,5 @@
 {
-    "name": "@kinobi-so/renderers-rust",
+    "name": "@codama/renderers-rust",
     "version": "0.22.0",
     "description": "Renders Rust clients for your programs",
     "exports": {
@@ -29,23 +29,23 @@
     ],
     "scripts": {
         "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs node",
-        "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node --watch",
-        "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
+        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
+        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
+        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
+        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
+        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e && pnpm test:exports",
         "test:e2e": "./e2e/test.sh",
         "test:exports": "node ./test/exports/module.mjs && node ./test/exports/commonjs.cjs",
-        "test:node": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node",
-        "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
-        "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
+        "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
+        "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
+        "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
     },
     "dependencies": {
-        "@kinobi-so/errors": "workspace:*",
-        "@kinobi-so/nodes": "workspace:*",
-        "@kinobi-so/renderers-core": "workspace:*",
-        "@kinobi-so/visitors-core": "workspace:*",
+        "@codama/errors": "workspace:*",
+        "@codama/nodes": "workspace:*",
+        "@codama/renderers-core": "workspace:*",
+        "@codama/visitors-core": "workspace:*",
         "@solana/codecs-strings": "rc",
         "nunjucks": "^3.2.4"
     },
@@ -55,10 +55,10 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/kinobi-so/kinobi"
+        "url": "https://github.com/codama-idl/codama"
     },
     "bugs": {
-        "url": "http://github.com/kinobi-so/kinobi/issues"
+        "url": "http://github.com/codama-idl/codama/issues"
     },
     "browserslist": [
         "supports bigint and not dead",

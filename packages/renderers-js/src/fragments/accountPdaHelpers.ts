@@ -1,4 +1,4 @@
-import { AccountNode, isNodeFilter, ProgramNode } from '@kinobi-so/nodes';
+import { AccountNode, isNodeFilter, ProgramNode } from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import type { TypeManifest } from '../TypeManifest';

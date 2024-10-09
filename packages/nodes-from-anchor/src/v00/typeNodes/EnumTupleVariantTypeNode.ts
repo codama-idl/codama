@@ -1,4 +1,4 @@
-import { EnumTupleVariantTypeNode, enumTupleVariantTypeNode, TupleTypeNode } from '@kinobi-so/nodes';
+import { EnumTupleVariantTypeNode, enumTupleVariantTypeNode, TupleTypeNode } from '@codama/nodes';
 
 import { IdlV00EnumFieldsTuple, IdlV00EnumVariant } from '../idl';
 import { tupleTypeNodeFromAnchorV00 } from './TupleTypeNode';

@@ -1,4 +1,4 @@
-import type { PublicKeyTypeNode } from '@kinobi-so/node-types';
+import type { PublicKeyTypeNode } from '@codama/node-types';
 
 export function publicKeyTypeNode(): PublicKeyTypeNode {
     return Object.freeze({ kind: 'publicKeyTypeNode' });

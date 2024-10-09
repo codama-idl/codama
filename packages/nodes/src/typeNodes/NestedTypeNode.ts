@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
-import type { NestedTypeNode, Node, TypeNode } from '@kinobi-so/node-types';
+import { CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND, CodamaError } from '@codama/errors';
+import type { NestedTypeNode, Node, TypeNode } from '@codama/node-types';
 
 import { isNode } from '../Node';
 import { TYPE_NODES } from './TypeNode';
@@ -56,7 +56,7 @@ export function assertIsNestedTypeNode<TKind extends TypeNode['kind']>(
 ): asserts node is NestedTypeNode<Extract<TypeNode, { kind: TKind }>> {
     const kinds = Array.isArray(kind) ? kind : [kind];
     if (!isNestedTypeNode(node, kinds)) {
-        throw new KinobiError(KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND, {
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND, {
             expectedKinds: kinds,
             kind: node?.kind ?? null,
             node,

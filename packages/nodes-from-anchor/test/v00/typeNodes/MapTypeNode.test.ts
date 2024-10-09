@@ -5,7 +5,7 @@ import {
     numberTypeNode,
     prefixedCountNode,
     remainderCountNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV00 } from '../../../src';

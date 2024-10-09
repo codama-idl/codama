@@ -12,8 +12,8 @@ import {
     resolveNestedTypeNode,
     structFieldTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { setStructDefaultValuesVisitor } from '../src';

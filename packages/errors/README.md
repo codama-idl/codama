@@ -1,25 +1,25 @@
-# Kinobi ➤ Errors
+# Codama ➤ Errors
 
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/errors.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/errors.svg?style=flat&label=%40kinobi-so%2Ferrors
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/errors
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/errors.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/errors.svg?style=flat&label=%40codama%2Ferrors
+[npm-url]: https://www.npmjs.com/package/@codama/errors
 
-This package defines a `KinobiError` class that accepts a specific error code and a context object based on that code. It enables us to catch and handle errors in a more structured way.
+This package defines a `CodamaError` class that accepts a specific error code and a context object based on that code. It enables us to catch and handle errors in a more structured way.
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/errors
+pnpm install @codama/errors
 ```
 
 > [!NOTE]
-> This package is included in the main [`kinobi`](../library) package. Meaning, you already have access to its content if you are installing Kinobi this way.
+> This package is included in the main [`codama`](../library) package. Meaning, you already have access to its content if you are installing Codama this way.
 >
 > ```sh
-> pnpm install kinobi
+> pnpm install codama
 > ```
 
 ## Reading error messages
@@ -35,24 +35,24 @@ On the other hand, when `NODE_ENV` is set to `"production"`, error messages will
 For instance, to recover the error text for the error with code `123`:
 
 ```shell
-npx @kinobi-so/errors decode -- 123
+npx @codama/errors decode -- 123
 ```
 
 ## Catching errors
 
-When you catch a `KinobiError` and assert its error code using `isKinobiError()`, TypeScript will refine the error's context to the type associated with that error code. You can use that context to render useful error messages, or to make context-aware decisions that help your application to recover from the error.
+When you catch a `CodamaError` and assert its error code using `isCodamaError()`, TypeScript will refine the error's context to the type associated with that error code. You can use that context to render useful error messages, or to make context-aware decisions that help your application to recover from the error.
 
 ```ts
-import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, isKinobiError } from '@kinobi-so/errors';
+import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, isCodamaError } from '@codama/errors';
 
 try {
-    const kinobi = createFromJson(jsonIdl);
+    const codama = createFromJson(jsonIdl);
 } catch (e) {
-    if (isKinobiError(e, KINOBI_ERROR__UNEXPECTED_NODE_KIND)) {
+    if (isCodamaError(e, CODAMA_ERROR__UNEXPECTED_NODE_KIND)) {
         const { expectedKinds, kind, node } = e.context;
         // ...
-    } else if (isKinobiError(e, KINOBI_ERROR__VERSION_MISMATCH)) {
-        const { kinobiVersion, rootVersion } = e.context;
+    } else if (isCodamaError(e, CODAMA_ERROR__VERSION_MISMATCH)) {
+        const { codamaVersion, rootVersion } = e.context;
         // ...
     } else {
         throw e;
@@ -64,14 +64,14 @@ try {
 
 ### Adding a new error
 
-To add a new error in Kinobi, follow these steps:
+To add a new error in Codama, follow these steps:
 
 1. Add a new exported error code constant to `src/codes.ts`. Find the most appropriate group for your error and ensure it is appended to the end of that group.
-2. Add that new constant to the `KinobiErrorCode` union in `src/codes.ts`.
+2. Add that new constant to the `CodamaErrorCode` union in `src/codes.ts`.
 3. If you would like the new error to encapsulate context about the error itself define that context in `src/context.ts`.
 4. Add the error's message to `src/messages.ts`. Any context values that you defined above will be interpolated into the message wherever you write `$key`, where `key` is the index of a value in the context (eg. ``'Unrecognized node `$kind`.'``).
-5. Publish a new version of `@kinobi-so/errors` using changesets — maintainers will handle this via tha changesets CI workflow.
-6. Bump the version of `@kinobi-so/errors` or `kinobi` in the consumer package from which the error is thrown.
+5. Publish a new version of `@codama/errors` using changesets — maintainers will handle this via tha changesets CI workflow.
+6. Bump the version of `@codama/errors` or `codama` in the consumer package from which the error is thrown.
 
 ### Removing an error message
 

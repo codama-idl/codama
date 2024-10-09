@@ -1,4 +1,4 @@
-import { ErrorNode, errorNode } from '@kinobi-so/nodes';
+import { ErrorNode, errorNode } from '@codama/nodes';
 
 import { IdlV00ErrorCode } from './idl';
 

@@ -6,7 +6,7 @@ import type {
     PdaNode,
     ProgramNode,
     RootNode,
-} from '@kinobi-so/node-types';
+} from '@codama/node-types';
 
 import { camelCase, DocsInput, parseDocs } from './shared';
 

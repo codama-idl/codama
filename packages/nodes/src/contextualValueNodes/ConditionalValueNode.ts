@@ -5,7 +5,7 @@ import type {
     InstructionInputValueNode,
     ResolverValueNode,
     ValueNode,
-} from '@kinobi-so/node-types';
+} from '@codama/node-types';
 
 type ConditionNode = AccountValueNode | ArgumentValueNode | ResolverValueNode;
 

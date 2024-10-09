@@ -1,4 +1,4 @@
-import { EnumEmptyVariantTypeNode, enumEmptyVariantTypeNode } from '@kinobi-so/nodes';
+import { EnumEmptyVariantTypeNode, enumEmptyVariantTypeNode } from '@codama/nodes';
 
 import { IdlV00EnumVariant } from '../idl';
 

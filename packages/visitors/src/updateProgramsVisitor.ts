@@ -1,5 +1,5 @@
-import { assertIsNode, camelCase, programLinkNode, programNode, ProgramNodeInput } from '@kinobi-so/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+import { assertIsNode, camelCase, programLinkNode, programNode, ProgramNodeInput } from '@codama/nodes';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export type ProgramUpdates =
     | Partial<Omit<ProgramNodeInput, 'accounts' | 'definedTypes' | 'errors' | 'instructions'>>

@@ -1,4 +1,4 @@
-import { numberValueNode, publicKeyValueNode, stringValueNode, tupleValueNode } from '@kinobi-so/nodes';
+import { numberValueNode, publicKeyValueNode, stringValueNode, tupleValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

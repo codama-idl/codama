@@ -3,7 +3,7 @@ import {
     InstructionNode,
     ProgramNode,
     structTypeNodeFromInstructionArgumentNodes,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';

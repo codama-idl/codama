@@ -1,4 +1,4 @@
-import type { StructFieldTypeNode, TypeNode, ValueNode } from '@kinobi-so/node-types';
+import type { StructFieldTypeNode, TypeNode, ValueNode } from '@codama/node-types';
 
 import { camelCase, DocsInput, parseDocs } from '../shared';
 

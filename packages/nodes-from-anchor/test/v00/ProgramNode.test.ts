@@ -8,7 +8,7 @@ import {
     pdaNode,
     programNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { programNodeFromAnchorV00 } from '../../src';

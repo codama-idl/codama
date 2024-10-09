@@ -4,8 +4,8 @@ import {
     InstructionNode,
     pascalCase,
     ProgramNode,
-} from '@kinobi-so/nodes';
-import { LinkableDictionary } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { LinkableDictionary } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';

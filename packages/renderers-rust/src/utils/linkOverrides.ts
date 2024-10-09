@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
+import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, CodamaError } from '@codama/errors';
 import {
     AccountLinkNode,
     DefinedTypeLinkNode,
@@ -6,7 +6,7 @@ import {
     PdaLinkNode,
     ProgramLinkNode,
     ResolverValueNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 export type LinkOverrides = {
     accounts?: Record<string, string>;
@@ -53,7 +53,7 @@ export function getImportFromFactory(overrides: LinkOverrides): GetImportFromFun
             case 'resolverValueNode':
                 return linkOverrides.resolvers[node.name] ?? 'hooked';
             default:
-                throw new KinobiError(KINOBI_ERROR__UNEXPECTED_NODE_KIND, {
+                throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                     expectedKinds: [
                         'AccountLinkNode',
                         'DefinedTypeLinkNode',

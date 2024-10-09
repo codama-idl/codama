@@ -1,13 +1,6 @@
-import { camelCase, isDataEnum, isNode, Node, pascalCase, resolveNestedTypeNode, titleCase } from '@kinobi-so/nodes';
-import { ValidationItem, validationItem } from '@kinobi-so/validators';
-import {
-    extendVisitor,
-    mergeVisitor,
-    NodeStack,
-    pipe,
-    recordNodeStackVisitor,
-    Visitor,
-} from '@kinobi-so/visitors-core';
+import { camelCase, isDataEnum, isNode, Node, pascalCase, resolveNestedTypeNode, titleCase } from '@codama/nodes';
+import { ValidationItem, validationItem } from '@codama/validators';
+import { extendVisitor, mergeVisitor, NodeStack, pipe, recordNodeStackVisitor, Visitor } from '@codama/visitors-core';
 
 export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> {
     const exportMap: Map<string, { exportType: string; node: Node; stack: NodeStack }> = new Map();

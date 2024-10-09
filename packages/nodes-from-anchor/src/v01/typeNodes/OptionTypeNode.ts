@@ -1,4 +1,4 @@
-import { numberTypeNode, OptionTypeNode, optionTypeNode } from '@kinobi-so/nodes';
+import { numberTypeNode, OptionTypeNode, optionTypeNode } from '@codama/nodes';
 
 import { IdlV01TypeCOption, IdlV01TypeOption } from '../idl';
 import { typeNodeFromAnchorV01 } from './TypeNode';

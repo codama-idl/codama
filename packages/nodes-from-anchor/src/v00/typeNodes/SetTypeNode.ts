@@ -5,7 +5,7 @@ import {
     remainderCountNode,
     SetTypeNode,
     setTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { IdlV00TypeSet } from '../idl';
 import { typeNodeFromAnchorV00 } from './TypeNode';

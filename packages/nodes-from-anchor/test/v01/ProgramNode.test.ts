@@ -19,7 +19,7 @@ import {
     structFieldTypeNode,
     structTypeNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { getAnchorDiscriminatorV01, programNodeFromAnchorV01 } from '../../src';

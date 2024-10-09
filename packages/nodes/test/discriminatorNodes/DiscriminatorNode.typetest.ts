@@ -1,4 +1,4 @@
-import type { RegisteredDiscriminatorNode } from '@kinobi-so/node-types';
+import type { RegisteredDiscriminatorNode } from '@codama/node-types';
 
 import { REGISTERED_DISCRIMINATOR_NODE_KINDS } from '../../src';
 

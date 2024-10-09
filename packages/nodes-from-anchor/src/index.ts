@@ -1,5 +1,5 @@
-import { RootNode } from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors';
+import { RootNode } from '@codama/nodes';
+import { visit } from '@codama/visitors';
 
 import { defaultVisitor } from './defaultVisitor';
 import { IdlV00, rootNodeFromAnchorV00 } from './v00';
