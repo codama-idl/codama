@@ -1,4 +1,4 @@
-import { constantPdaSeedNode, numberTypeNode, numberValueNode } from '@kinobi-so/nodes';
+import { constantPdaSeedNode, numberTypeNode, numberValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

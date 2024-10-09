@@ -3,16 +3,16 @@
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/nodes.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/nodes.svg?style=flat&label=%40kinobi-so%2Fnodes
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/nodes
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/nodes.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/nodes.svg?style=flat&label=%40kinobi-so%2Fnodes
+[npm-url]: https://www.npmjs.com/package/@codama/nodes
 
-This package defines the various nodes that make up the Kinobi IDL. It provides types and helper functions to work with these nodes. If you are looking for a type-only version of these nodes, you can find them in the [`@kinobi-so/node-types`](../node-types) package.
+This package defines the various nodes that make up the Kinobi IDL. It provides types and helper functions to work with these nodes. If you are looking for a type-only version of these nodes, you can find them in the [`@codama/node-types`](../node-types) package.
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/nodes
+pnpm install @codama/nodes
 ```
 
 > [!NOTE]

@@ -1,4 +1,4 @@
-import type { ArrayTypeNode, CountNode, TypeNode } from '@kinobi-so/node-types';
+import type { ArrayTypeNode, CountNode, TypeNode } from '@codama/node-types';
 
 export function arrayTypeNode<TItem extends TypeNode, TCount extends CountNode>(
     item: TItem,

@@ -1,4 +1,4 @@
-import type { NestedTypeNode, NumberTypeNode, PrefixedCountNode } from '@kinobi-so/node-types';
+import type { NestedTypeNode, NumberTypeNode, PrefixedCountNode } from '@codama/node-types';
 
 export function prefixedCountNode<TPrefix extends NestedTypeNode<NumberTypeNode>>(
     prefix: TPrefix,

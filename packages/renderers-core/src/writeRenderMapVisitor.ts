@@ -1,5 +1,5 @@
-import { NodeKind } from '@kinobi-so/nodes';
-import { mapVisitor, Visitor } from '@kinobi-so/visitors-core';
+import { NodeKind } from '@codama/nodes';
+import { mapVisitor, Visitor } from '@codama/visitors-core';
 
 import { RenderMap } from './RenderMap';
 

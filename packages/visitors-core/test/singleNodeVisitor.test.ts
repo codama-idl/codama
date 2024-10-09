@@ -1,4 +1,4 @@
-import { numberTypeNode, ProgramNode, publicKeyTypeNode, rootNode, tupleTypeNode } from '@kinobi-so/nodes';
+import { numberTypeNode, ProgramNode, publicKeyTypeNode, rootNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { rootNodeVisitor, singleNodeVisitor, visit } from '../src';

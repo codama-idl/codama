@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, KinobiError } from '@codama/errors';
 import {
     accountNode,
     assertIsNode,
@@ -8,8 +8,8 @@ import {
     structTypeNode,
     transformNestedTypeNode,
     ValueNode,
-} from '@kinobi-so/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export function setAccountDiscriminatorFromFieldVisitor(
     map: Record<string, { field: string; offset?: number; value: ValueNode }>,

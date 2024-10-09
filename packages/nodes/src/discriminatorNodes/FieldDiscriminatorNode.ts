@@ -1,4 +1,4 @@
-import type { FieldDiscriminatorNode } from '@kinobi-so/node-types';
+import type { FieldDiscriminatorNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

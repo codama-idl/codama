@@ -1,4 +1,4 @@
-import { preOffsetTypeNode, stringTypeNode } from '@kinobi-so/nodes';
+import { preOffsetTypeNode, stringTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

@@ -1,4 +1,4 @@
-import { instructionAccountNode } from '@kinobi-so/nodes';
+import { instructionAccountNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { instructionAccountNodeFromAnchorV00, instructionAccountNodesFromAnchorV00 } from '../../src';

@@ -1,4 +1,4 @@
-import { programNode, rootNode } from '@kinobi-so/nodes';
+import { programNode, rootNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

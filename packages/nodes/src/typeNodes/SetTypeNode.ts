@@ -1,4 +1,4 @@
-import type { CountNode, SetTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { CountNode, SetTypeNode, TypeNode } from '@codama/node-types';
 
 export function setTypeNode<TItem extends TypeNode, TCount extends CountNode>(
     item: TItem,

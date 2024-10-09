@@ -1,4 +1,4 @@
-import type { ConstantValueNode, SentinelTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { ConstantValueNode, SentinelTypeNode, TypeNode } from '@codama/node-types';
 
 export function sentinelTypeNode<TType extends TypeNode, TSentinel extends ConstantValueNode>(
     type: TType,

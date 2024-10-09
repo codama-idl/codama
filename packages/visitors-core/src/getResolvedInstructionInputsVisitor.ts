@@ -4,7 +4,7 @@ import {
     KINOBI_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
     KINOBI_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     KinobiError,
-} from '@kinobi-so/errors';
+} from '@codama/errors';
 import {
     AccountValueNode,
     accountValueNode,
@@ -18,7 +18,7 @@ import {
     InstructionNode,
     isNode,
     VALUE_NODES,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { singleNodeVisitor } from './singleNodeVisitor';
 import { Visitor } from './visitor';

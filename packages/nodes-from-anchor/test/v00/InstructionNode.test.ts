@@ -7,7 +7,7 @@ import {
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { instructionNodeFromAnchorV00 } from '../../src';

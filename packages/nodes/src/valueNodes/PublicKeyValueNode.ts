@@ -1,4 +1,4 @@
-import type { PublicKeyValueNode } from '@kinobi-so/node-types';
+import type { PublicKeyValueNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

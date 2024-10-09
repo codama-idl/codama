@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
-import { camelCase, InstructionInputValueNode, isNode, pascalCase } from '@kinobi-so/nodes';
-import { ResolvedInstructionInput, visit } from '@kinobi-so/visitors-core';
+import { camelCase, InstructionInputValueNode, isNode, pascalCase } from '@codama/nodes';
+import { ResolvedInstructionInput, visit } from '@codama/visitors-core';
 
 import { ContextMap } from './ContextMap';
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';

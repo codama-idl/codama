@@ -2,7 +2,7 @@
 
 This node represents an instruction in a program.
 
-![Diagram](https://github.com/kinobi-so/kinobi/assets/3642397/0d8edced-cfa4-4500-b80c-ebc56181a338)
+![Diagram](https://github.com/codama/kinobi/assets/3642397/0d8edced-cfa4-4500-b80c-ebc56181a338)
 
 ## Attributes
 

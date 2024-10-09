@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, KinobiError } from '@kinobi-so/errors';
-import { GetNodeFromKind, Node, NodeKind, REGISTERED_NODE_KINDS } from '@kinobi-so/nodes';
+import { KINOBI_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION, KinobiError } from '@codama/errors';
+import { GetNodeFromKind, Node, NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { getVisitFunctionName, GetVisitorFunctionName, Visitor } from './visitor';
 

@@ -1,4 +1,4 @@
-import { bytesTypeNode } from '@kinobi-so/nodes';
+import { bytesTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

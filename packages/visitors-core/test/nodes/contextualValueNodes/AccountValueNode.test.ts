@@ -1,4 +1,4 @@
-import { accountValueNode } from '@kinobi-so/nodes';
+import { accountValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

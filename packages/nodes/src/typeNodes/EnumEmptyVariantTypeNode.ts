@@ -1,4 +1,4 @@
-import type { EnumEmptyVariantTypeNode } from '@kinobi-so/node-types';
+import type { EnumEmptyVariantTypeNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

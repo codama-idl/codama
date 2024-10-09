@@ -5,7 +5,7 @@ import {
     instructionNode,
     numberTypeNode,
     publicKeyTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { getResolvedInstructionInputsVisitor, visit } from '../src';

@@ -1,5 +1,5 @@
-import { isNode, isNodeFilter, PdaNode, ProgramNode } from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
+import { isNode, isNodeFilter, PdaNode, ProgramNode } from '@codama/nodes';
+import { visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';

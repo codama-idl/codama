@@ -1,4 +1,4 @@
-import { EnumStructVariantTypeNode, enumStructVariantTypeNode, StructTypeNode } from '@kinobi-so/nodes';
+import { EnumStructVariantTypeNode, enumStructVariantTypeNode, StructTypeNode } from '@codama/nodes';
 
 import { IdlV01DefinedFieldsNamed, IdlV01EnumVariant } from '../idl';
 import { structTypeNodeFromAnchorV01 } from './StructTypeNode';

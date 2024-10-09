@@ -1,4 +1,4 @@
-import { definedTypeNode, numberTypeNode, structFieldTypeNode, structTypeNode } from '@kinobi-so/nodes';
+import { definedTypeNode, numberTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { definedTypeNodeFromAnchorV01 } from '../../src';

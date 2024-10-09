@@ -13,8 +13,8 @@ import {
     programNode,
     publicKeyTypeNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
-import { LinkableDictionary, visit } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { LinkableDictionary, visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { fillDefaultPdaSeedValuesVisitor } from '../src';

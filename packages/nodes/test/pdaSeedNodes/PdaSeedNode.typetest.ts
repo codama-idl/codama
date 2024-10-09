@@ -1,4 +1,4 @@
-import type { RegisteredPdaSeedNode } from '@kinobi-so/node-types';
+import type { RegisteredPdaSeedNode } from '@codama/node-types';
 
 import { REGISTERED_PDA_SEED_NODE_KINDS } from '../../src';
 

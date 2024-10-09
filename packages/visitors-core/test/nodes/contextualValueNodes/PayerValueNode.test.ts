@@ -1,4 +1,4 @@
-import { payerValueNode } from '@kinobi-so/nodes';
+import { payerValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

@@ -1,4 +1,4 @@
-import { BytesValueNode } from '@kinobi-so/nodes';
+import { BytesValueNode } from '@codama/nodes';
 import { getBase16Encoder, getBase58Encoder, getBase64Encoder, getUtf8Encoder } from '@solana/codecs-strings';
 
 export function getBytesFromBytesValueNode(node: BytesValueNode): Uint8Array {

@@ -1,4 +1,4 @@
-import { fixedCountNode } from '@kinobi-so/nodes';
+import { fixedCountNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

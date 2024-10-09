@@ -1,5 +1,5 @@
-import { type AccountNode, type RegisteredTypeNode, resolveNestedTypeNode, type TypeNode } from '@kinobi-so/nodes';
-import { visit, Visitor } from '@kinobi-so/visitors-core';
+import { type AccountNode, type RegisteredTypeNode, resolveNestedTypeNode, type TypeNode } from '@codama/nodes';
+import { visit, Visitor } from '@codama/visitors-core';
 
 export type GpaField = {
     name: string;

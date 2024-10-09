@@ -1,4 +1,4 @@
-import type { ArgumentValueNode } from '@kinobi-so/node-types';
+import type { ArgumentValueNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

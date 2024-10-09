@@ -1,4 +1,4 @@
-import type { EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, NumberTypeNode } from '@kinobi-so/node-types';
+import type { EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, NumberTypeNode } from '@codama/node-types';
 
 import { numberTypeNode } from './NumberTypeNode';
 

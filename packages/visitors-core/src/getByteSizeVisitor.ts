@@ -1,4 +1,4 @@
-import { isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@kinobi-so/nodes';
+import { isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@codama/nodes';
 
 import { LinkableDictionary } from './LinkableDictionary';
 import { mergeVisitor } from './mergeVisitor';

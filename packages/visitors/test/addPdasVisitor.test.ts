@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, KinobiError } from '@codama/errors';
 import {
     constantPdaSeedNodeFromProgramId,
     constantPdaSeedNodeFromString,
@@ -6,8 +6,8 @@ import {
     programNode,
     publicKeyTypeNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { addPdasVisitor } from '../src';

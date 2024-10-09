@@ -1,4 +1,4 @@
-import { enumEmptyVariantTypeNode } from '@kinobi-so/nodes';
+import { enumEmptyVariantTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

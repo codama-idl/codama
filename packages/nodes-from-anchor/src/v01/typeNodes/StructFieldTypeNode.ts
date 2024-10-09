@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@kinobi-so/errors';
-import { StructFieldTypeNode, structFieldTypeNode } from '@kinobi-so/nodes';
+import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@codama/errors';
+import { StructFieldTypeNode, structFieldTypeNode } from '@codama/nodes';
 
 import { IdlV01Field, IdlV01Type } from '../idl';
 import { typeNodeFromAnchorV01 } from './TypeNode';

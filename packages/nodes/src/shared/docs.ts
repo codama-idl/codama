@@ -1,4 +1,4 @@
-import type { Docs } from '@kinobi-so/node-types';
+import type { Docs } from '@codama/node-types';
 
 export type DocsInput = string[] | string;
 

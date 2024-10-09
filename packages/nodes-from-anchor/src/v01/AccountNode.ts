@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, KinobiError } from '@codama/errors';
 import {
     AccountNode,
     accountNode,
@@ -9,7 +9,7 @@ import {
     fixedSizeTypeNode,
     structFieldTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { getAnchorDiscriminatorV01 } from './../discriminators';
 import { IdlV01Account, IdlV01TypeDef } from './idl';

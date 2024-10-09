@@ -1,4 +1,4 @@
-import type { PostOffsetTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { PostOffsetTypeNode, TypeNode } from '@codama/node-types';
 
 export function postOffsetTypeNode<TType extends TypeNode>(
     type: TType,

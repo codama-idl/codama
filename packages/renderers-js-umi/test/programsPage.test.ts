@@ -1,5 +1,5 @@
-import { programNode } from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
+import { programNode } from '@codama/nodes';
+import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';

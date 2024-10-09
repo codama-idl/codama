@@ -1,4 +1,4 @@
-import { accountBumpValueNode } from '@kinobi-so/nodes';
+import { accountBumpValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

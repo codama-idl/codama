@@ -1,4 +1,4 @@
-export * from '@kinobi-so/visitors-core';
+export * from '@codama/visitors-core';
 
 export * from './addPdasVisitor';
 export * from './createSubInstructionsFromEnumArgsVisitor';

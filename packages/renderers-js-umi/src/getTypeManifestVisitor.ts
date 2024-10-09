@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE, KinobiError } from '@codama/errors';
 import {
     ArrayTypeNode,
     camelCase,
@@ -16,8 +16,8 @@ import {
     structTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
     TypeNode,
-} from '@kinobi-so/nodes';
-import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { getBytesFromBytesValueNode, GetImportFromFunction, jsDocblock, ParsedCustomDataOptions } from './utils';

@@ -6,8 +6,8 @@ import {
     fixedSizeTypeNode,
     isNode,
     TYPE_NODES,
-} from '@kinobi-so/nodes';
-import { extendVisitor, nonNullableIdentityVisitor, pipe, visit } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { extendVisitor, nonNullableIdentityVisitor, pipe, visit } from '@codama/visitors-core';
 
 export function transformU8ArraysToBytesVisitor(sizes: number[] | '*' = [32, 64]) {
     const hasRequiredSize = (count: ArrayTypeNode['count']): boolean => {

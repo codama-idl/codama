@@ -1,4 +1,4 @@
-import { InstructionArgumentNode, instructionArgumentNode } from '@kinobi-so/nodes';
+import { InstructionArgumentNode, instructionArgumentNode } from '@codama/nodes';
 
 import { IdlV01Field } from './idl';
 import { typeNodeFromAnchorV01 } from './typeNodes';

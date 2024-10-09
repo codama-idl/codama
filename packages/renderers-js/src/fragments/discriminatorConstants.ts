@@ -8,8 +8,8 @@ import {
     isNodeFilter,
     StructFieldTypeNode,
     VALUE_NODES,
-} from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, mergeFragments } from './common';

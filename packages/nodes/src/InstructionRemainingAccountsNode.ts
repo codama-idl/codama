@@ -1,4 +1,4 @@
-import type { ArgumentValueNode, InstructionRemainingAccountsNode, ResolverValueNode } from '@kinobi-so/node-types';
+import type { ArgumentValueNode, InstructionRemainingAccountsNode, ResolverValueNode } from '@codama/node-types';
 
 import { DocsInput, parseDocs } from './shared';
 

@@ -1,4 +1,4 @@
-import { dateTimeTypeNode, numberTypeNode } from '@kinobi-so/nodes';
+import { dateTimeTypeNode, numberTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

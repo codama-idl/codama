@@ -1,11 +1,11 @@
-import { assertIsNode, DefinedTypeNode, getAllPrograms, ProgramNode } from '@kinobi-so/nodes';
+import { assertIsNode, DefinedTypeNode, getAllPrograms, ProgramNode } from '@codama/nodes';
 import {
     deleteNodesVisitor,
     getUniqueHashStringVisitor,
     NodeSelector,
     rootNodeVisitor,
     visit,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 type DefinedTypeWithProgram = {
     program: ProgramNode;

@@ -1,10 +1,4 @@
-import type {
-    BytesEncoding,
-    ConstantPdaSeedNode,
-    ProgramIdValueNode,
-    TypeNode,
-    ValueNode,
-} from '@kinobi-so/node-types';
+import type { BytesEncoding, ConstantPdaSeedNode, ProgramIdValueNode, TypeNode, ValueNode } from '@codama/node-types';
 
 import { programIdValueNode } from '../contextualValueNodes/ProgramIdValueNode';
 import { bytesTypeNode } from '../typeNodes/BytesTypeNode';

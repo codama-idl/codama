@@ -1,5 +1,5 @@
-import { accountNode, assertIsNode, programNode } from '@kinobi-so/nodes';
-import { extendVisitor, nonNullableIdentityVisitor, pipe } from '@kinobi-so/visitors-core';
+import { accountNode, assertIsNode, programNode } from '@codama/nodes';
+import { extendVisitor, nonNullableIdentityVisitor, pipe } from '@codama/visitors-core';
 
 export function transformDefinedTypesIntoAccountsVisitor(definedTypes: string[]) {
     return pipe(nonNullableIdentityVisitor(['rootNode', 'programNode']), v =>

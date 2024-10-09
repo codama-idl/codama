@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, KinobiError } from '@codama/errors';
 import {
     AccountLinkNode,
     DefinedTypeLinkNode,
@@ -6,7 +6,7 @@ import {
     PdaLinkNode,
     ProgramLinkNode,
     ResolverValueNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 export type LinkOverrides = {
     accounts?: Record<string, string>;

@@ -1,4 +1,4 @@
-import { DefinedTypeNode, definedTypeNode } from '@kinobi-so/nodes';
+import { DefinedTypeNode, definedTypeNode } from '@codama/nodes';
 
 import { IdlV00TypeDef } from './idl';
 import { typeNodeFromAnchorV00 } from './typeNodes';

@@ -5,7 +5,7 @@ import {
     publicKeyTypeNode,
     TupleTypeNode,
     tupleTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { visit, Visitor, visitOrElse } from '../src';

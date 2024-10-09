@@ -4,7 +4,7 @@ import {
     KINOBI_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     KINOBI_ERROR__ANCHOR__TYPE_PATH_MISSING,
     KinobiError,
-} from '@kinobi-so/errors';
+} from '@codama/errors';
 import {
     AccountNode,
     accountValueNode,
@@ -25,7 +25,7 @@ import {
     publicKeyValueNode,
     resolveNestedTypeNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { hex } from '../utils';
 import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';

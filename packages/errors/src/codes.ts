@@ -72,7 +72,7 @@ export const KINOBI_ERROR__RENDERERS__UNSUPPORTED_NODE = 2800000 as const;
  * single error code) would be forced to bundle every code and its label.
  *
  * Const enums appear to solve this problem by letting the compiler inline only the codes that are
- * actually used. Unfortunately exporting ambient (const) enums from a library like `@kinobi-so/errors`
+ * actually used. Unfortunately exporting ambient (const) enums from a library like `@codama/errors`
  * is not safe, for a variety of reasons covered here: https://stackoverflow.com/a/28818850
  */
 export type KinobiErrorCode =

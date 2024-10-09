@@ -22,7 +22,7 @@ export function getErrorMessage<TErrorCode extends KinobiErrorCode>(code: TError
     if (process.env.NODE_ENV !== 'production') {
         return getHumanReadableErrorMessage(code, context);
     } else {
-        let decodingAdviceMessage = `Kinobi error #${code}; Decode this error by running \`npx @kinobi-so/errors decode -- ${code}`;
+        let decodingAdviceMessage = `Kinobi error #${code}; Decode this error by running \`npx @codama/errors decode -- ${code}`;
         if (Object.keys(context).length) {
             /**
              * DANGER: Be sure that the shell command is escaped in such a way that makes it

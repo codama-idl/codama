@@ -6,8 +6,8 @@ import {
     isNodeFilter,
     pascalCase,
     ProgramNode,
-} from '@kinobi-so/nodes';
-import { ResolvedInstructionInput } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { ResolvedInstructionInput } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { NameApi } from '../nameTransformers';

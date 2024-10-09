@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, KinobiError } from '@codama/errors';
 import {
     assertIsNode,
     camelCase,
@@ -9,13 +9,13 @@ import {
     isNode,
     numberTypeNode,
     numberValueNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
     recordLinkablesVisitor,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import { flattenInstructionArguments } from './flattenInstructionDataArgumentsVisitor';
 

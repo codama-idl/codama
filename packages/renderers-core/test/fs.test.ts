@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, KinobiError } from '@codama/errors';
 import { expect, test } from 'vitest';
 
 import { createDirectory, createFile, deleteDirectory, readJson } from '../src';

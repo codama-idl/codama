@@ -1,5 +1,5 @@
-const { definedTypeNode, numberTypeNode } = require('@kinobi-so/nodes');
-const { visit } = require('@kinobi-so/visitors-core');
+const { definedTypeNode, numberTypeNode } = require('@codama/nodes');
+const { visit } = require('@codama/visitors-core');
 
 const { getRenderMapVisitor } = require('../../dist/index.node.cjs');
 

@@ -1,4 +1,4 @@
-import type { StructFieldValueNode, StructValueNode } from '@kinobi-so/node-types';
+import type { StructFieldValueNode, StructValueNode } from '@codama/node-types';
 
 export function structValueNode<const TFields extends StructFieldValueNode[]>(
     fields: TFields,

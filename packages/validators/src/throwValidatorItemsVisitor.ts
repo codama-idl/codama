@@ -1,6 +1,6 @@
-import { KINOBI_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE, KinobiError } from '@kinobi-so/errors';
-import { NodeKind } from '@kinobi-so/nodes';
-import { mapVisitor, Visitor } from '@kinobi-so/visitors-core';
+import { KINOBI_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE, KinobiError } from '@codama/errors';
+import { NodeKind } from '@codama/nodes';
+import { mapVisitor, Visitor } from '@codama/visitors-core';
 
 import { getLevelIndex, LogLevel, ValidationItem } from './ValidationItem';
 

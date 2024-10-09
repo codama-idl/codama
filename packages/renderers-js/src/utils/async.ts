@@ -9,8 +9,8 @@ import {
     InstructionInputValueNode,
     InstructionNode,
     isNode,
-} from '@kinobi-so/nodes';
-import { deduplicateInstructionDependencies, ResolvedInstructionInput } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { deduplicateInstructionDependencies, ResolvedInstructionInput } from '@codama/visitors-core';
 
 export function hasAsyncFunction(
     instructionNode: InstructionNode,

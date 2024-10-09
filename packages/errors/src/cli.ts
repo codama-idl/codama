@@ -14,7 +14,7 @@ import { KinobiErrorMessages } from './messages';
 
 const program = new Command();
 
-program.name('@kinobi-so/errors').description('Decode Kinobi JavaScript errors thrown in production').version(version);
+program.name('@codama/errors').description('Decode Kinobi JavaScript errors thrown in production').version(version);
 
 program
     .command('decode')

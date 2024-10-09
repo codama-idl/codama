@@ -5,7 +5,7 @@ import {
     pdaNode,
     publicKeyTypeNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

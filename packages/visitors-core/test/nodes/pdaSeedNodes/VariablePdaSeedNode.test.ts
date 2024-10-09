@@ -1,4 +1,4 @@
-import { publicKeyTypeNode, variablePdaSeedNode } from '@kinobi-so/nodes';
+import { publicKeyTypeNode, variablePdaSeedNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

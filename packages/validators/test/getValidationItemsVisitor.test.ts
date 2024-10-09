@@ -1,5 +1,5 @@
-import { programNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
+import { programNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@codama/nodes';
+import { visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { getValidationItemsVisitor, validationItem } from '../src';

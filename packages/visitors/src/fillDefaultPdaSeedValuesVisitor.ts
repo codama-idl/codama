@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, KinobiError } from '@codama/errors';
 import {
     accountValueNode,
     argumentValueNode,
@@ -13,8 +13,8 @@ import {
     PdaSeedValueNode,
     pdaSeedValueNode,
     pdaValueNode,
-} from '@kinobi-so/nodes';
-import { extendVisitor, identityVisitor, LinkableDictionary, pipe, Visitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { extendVisitor, identityVisitor, LinkableDictionary, pipe, Visitor } from '@codama/visitors-core';
 
 /**
  * Fills in default values for variable PDA seeds that are not explicitly provided.

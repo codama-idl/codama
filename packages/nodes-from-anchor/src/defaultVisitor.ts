@@ -1,4 +1,4 @@
-import { assertIsNode, Node, RootNode } from '@kinobi-so/nodes';
+import { assertIsNode, Node, RootNode } from '@codama/nodes';
 import {
     deduplicateIdenticalDefinedTypesVisitor,
     flattenInstructionDataArgumentsVisitor,
@@ -10,7 +10,7 @@ import {
     unwrapInstructionArgsDefinedTypesVisitor,
     visit,
     Visitor,
-} from '@kinobi-so/visitors';
+} from '@codama/visitors';
 
 export function defaultVisitor() {
     return rootNodeVisitor(currentRoot => {

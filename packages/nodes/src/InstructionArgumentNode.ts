@@ -1,4 +1,4 @@
-import type { InstructionArgumentNode, InstructionInputValueNode } from '@kinobi-so/node-types';
+import type { InstructionArgumentNode, InstructionInputValueNode } from '@codama/node-types';
 
 import { isNode } from './Node';
 import { camelCase, DocsInput, parseDocs } from './shared';

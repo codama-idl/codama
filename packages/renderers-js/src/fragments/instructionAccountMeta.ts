@@ -1,4 +1,4 @@
-import { InstructionAccountNode, pascalCase } from '@kinobi-so/nodes';
+import { InstructionAccountNode, pascalCase } from '@codama/nodes';
 
 import { Fragment, fragment } from './common';
 

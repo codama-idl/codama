@@ -11,7 +11,7 @@ import {
     stringTypeNode,
     stringValueNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { IdlV00PdaDef } from './idl';
 import { typeNodeFromAnchorV00 } from './typeNodes';

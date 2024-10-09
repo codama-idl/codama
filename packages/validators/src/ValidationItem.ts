@@ -1,5 +1,5 @@
-import { Node } from '@kinobi-so/nodes';
-import { NodeStack } from '@kinobi-so/visitors-core';
+import { Node } from '@codama/nodes';
+import { NodeStack } from '@codama/visitors-core';
 
 export const LOG_LEVELS = ['debug', 'trace', 'info', 'warn', 'error'] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];

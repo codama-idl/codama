@@ -3,16 +3,16 @@
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/nodes-from-anchor.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/nodes-from-anchor.svg?style=flat&label=%40kinobi-so%2Fnodes-from-anchor
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/nodes-from-anchor
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/nodes-from-anchor.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/nodes-from-anchor.svg?style=flat&label=%40kinobi-so%2Fnodes-from-anchor
+[npm-url]: https://www.npmjs.com/package/@codama/nodes-from-anchor
 
 This package converts Anchor IDLs from various versions into Kinobi IDLs.
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/nodes-from-anchor
+pnpm install @codama/nodes-from-anchor
 ```
 
 > [!NOTE]
@@ -26,7 +26,7 @@ This function takes a valid Anchor IDL and returns a `RootNode`.
 
 ```js
 // node ./kinobi.mjs
-import { rootNodeFromAnchor } from '@kinobi-so/nodes-from-anchor';
+import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
 import { createFromRoot } from 'kinobi';
 import { readFileSync } from 'node:fs';
 import path from 'path';

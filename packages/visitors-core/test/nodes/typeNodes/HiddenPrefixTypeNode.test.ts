@@ -3,7 +3,7 @@ import {
     constantValueNodeFromString,
     hiddenPrefixTypeNode,
     numberTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

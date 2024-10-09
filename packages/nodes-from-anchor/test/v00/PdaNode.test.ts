@@ -5,7 +5,7 @@ import {
     numberValueNode,
     pdaNode,
     variablePdaSeedNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { pdaNodeFromAnchorV00 } from '../../src';

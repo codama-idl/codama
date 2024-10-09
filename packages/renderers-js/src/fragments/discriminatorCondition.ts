@@ -10,8 +10,8 @@ import {
     type ProgramNode,
     type SizeDiscriminatorNode,
     type StructTypeNode,
-} from '@kinobi-so/nodes';
-import { visit } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { visit } from '@codama/visitors-core';
 import { getBase64Decoder } from '@solana/codecs-strings';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';

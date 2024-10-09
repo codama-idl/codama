@@ -1,7 +1,7 @@
-import { KINOBI_ERROR__VERSION_MISMATCH } from '@kinobi-so/errors';
-import { KinobiError } from '@kinobi-so/errors';
-import { assertIsNode, KinobiVersion, Node, RootNode } from '@kinobi-so/nodes';
-import { visit, Visitor } from '@kinobi-so/visitors';
+import { KINOBI_ERROR__VERSION_MISMATCH } from '@codama/errors';
+import { KinobiError } from '@codama/errors';
+import { assertIsNode, KinobiVersion, Node, RootNode } from '@codama/nodes';
+import { visit, Visitor } from '@codama/visitors';
 
 export interface Kinobi {
     accept<T>(visitor: Visitor<T, 'rootNode'>): T;

@@ -1,5 +1,5 @@
-import { assertIsNode, errorNode, ErrorNodeInput } from '@kinobi-so/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+import { assertIsNode, errorNode, ErrorNodeInput } from '@codama/nodes';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export type ErrorUpdates = Partial<ErrorNodeInput> | { delete: true };
 

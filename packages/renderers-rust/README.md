@@ -3,16 +3,16 @@
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/renderers-rust.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/renderers-rust.svg?style=flat&label=%40kinobi-so%2Frenderers-rust
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/renderers-rust
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/renderers-rust.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/renderers-rust.svg?style=flat&label=%40kinobi-so%2Frenderers-rust
+[npm-url]: https://www.npmjs.com/package/@codama/renderers-rust
 
 This package generates Rust clients from your Kinobi IDLs.
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/renderers-rust
+pnpm install @codama/renderers-rust
 ```
 
 > [!NOTE]
@@ -26,7 +26,7 @@ Once you have a Kinobi IDL, you can use the `renderVisitor` of this package to g
 
 ```ts
 // node ./kinobi.mjs
-import { renderVisitor } from '@kinobi-so/renderers-rust';
+import { renderVisitor } from '@codama/renderers-rust';
 
 const pathToGeneratedFolder = path.join(__dirname, 'clients', 'rust', 'src', 'generated');
 const options = {}; // See below.

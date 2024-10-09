@@ -1,4 +1,4 @@
-import type { NestedTypeNode, NumberTypeNode, SolAmountTypeNode } from '@kinobi-so/node-types';
+import type { NestedTypeNode, NumberTypeNode, SolAmountTypeNode } from '@codama/node-types';
 
 export function solAmountTypeNode<TNumber extends NestedTypeNode<NumberTypeNode>>(
     number: TNumber,

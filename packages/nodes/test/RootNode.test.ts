@@ -1,4 +1,4 @@
-import type { KinobiVersion } from '@kinobi-so/node-types';
+import type { KinobiVersion } from '@codama/node-types';
 import { expect, expectTypeOf, test } from 'vitest';
 
 import { programNode, rootNode } from '../src';

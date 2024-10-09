@@ -1,4 +1,4 @@
-import { argumentValueNode } from '@kinobi-so/nodes';
+import { argumentValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@codama/errors';
 import {
     AccountLinkNode,
     AccountNode,
@@ -17,7 +17,7 @@ import {
     PdaNode,
     ProgramLinkNode,
     ProgramNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { NodeStack } from './NodeStack';
 

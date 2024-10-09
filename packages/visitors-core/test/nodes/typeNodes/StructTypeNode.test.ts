@@ -1,4 +1,4 @@
-import { numberTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@kinobi-so/nodes';
+import { numberTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

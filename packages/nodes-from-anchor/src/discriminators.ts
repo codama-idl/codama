@@ -1,4 +1,4 @@
-import { BytesValueNode, bytesValueNode, pascalCase, snakeCase } from '@kinobi-so/nodes';
+import { BytesValueNode, bytesValueNode, pascalCase, snakeCase } from '@codama/nodes';
 import { sha256 } from '@noble/hashes/sha256';
 
 import { hex } from './utils';

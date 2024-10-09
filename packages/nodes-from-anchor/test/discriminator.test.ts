@@ -1,4 +1,4 @@
-import { bytesValueNode } from '@kinobi-so/nodes';
+import { bytesValueNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { getAnchorAccountDiscriminatorV00, getAnchorInstructionDiscriminatorV00 } from '../src/index.js';

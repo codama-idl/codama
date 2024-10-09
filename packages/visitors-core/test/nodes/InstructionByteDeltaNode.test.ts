@@ -1,4 +1,4 @@
-import { instructionByteDeltaNode, numberValueNode } from '@kinobi-so/nodes';
+import { instructionByteDeltaNode, numberValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

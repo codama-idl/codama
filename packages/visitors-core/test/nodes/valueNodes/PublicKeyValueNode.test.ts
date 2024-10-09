@@ -1,4 +1,4 @@
-import { publicKeyValueNode } from '@kinobi-so/nodes';
+import { publicKeyValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

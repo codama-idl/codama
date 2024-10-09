@@ -1,4 +1,4 @@
-import type { RegisteredContextualValueNode } from '@kinobi-so/node-types';
+import type { RegisteredContextualValueNode } from '@codama/node-types';
 
 import { REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS } from '../../src';
 

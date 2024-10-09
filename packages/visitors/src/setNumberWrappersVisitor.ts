@@ -1,6 +1,6 @@
-import { KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, KinobiError } from '@kinobi-so/errors';
-import { amountTypeNode, assertIsNestedTypeNode, dateTimeTypeNode, solAmountTypeNode } from '@kinobi-so/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+import { KINOBI_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, KinobiError } from '@codama/errors';
+import { amountTypeNode, assertIsNestedTypeNode, dateTimeTypeNode, solAmountTypeNode } from '@codama/nodes';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export type NumberWrapper =
     | { decimals: number; kind: 'Amount'; unit?: string }

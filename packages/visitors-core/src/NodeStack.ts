@@ -1,4 +1,4 @@
-import { GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@kinobi-so/nodes';
+import { GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
 
 export class NodeStack {
     private readonly stack: Node[];

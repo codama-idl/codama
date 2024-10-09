@@ -5,8 +5,8 @@ import {
     definedTypeNode,
     DefinedTypeNodeInput,
     isNode,
-} from '@kinobi-so/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 import { renameEnumNode, renameStructNode } from './renameHelpers';
 

@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
-import type { NestedTypeNode, Node, TypeNode } from '@kinobi-so/node-types';
+import { KINOBI_ERROR__UNEXPECTED_NESTED_NODE_KIND, KinobiError } from '@codama/errors';
+import type { NestedTypeNode, Node, TypeNode } from '@codama/node-types';
 
 import { isNode } from '../Node';
 import { TYPE_NODES } from './TypeNode';

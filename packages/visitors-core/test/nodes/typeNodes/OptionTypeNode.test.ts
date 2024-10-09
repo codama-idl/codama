@@ -1,4 +1,4 @@
-import { numberTypeNode, optionTypeNode, publicKeyTypeNode } from '@kinobi-so/nodes';
+import { numberTypeNode, optionTypeNode, publicKeyTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

@@ -1,4 +1,4 @@
-import type { NumberFormat, NumberTypeNode } from '@kinobi-so/node-types';
+import type { NumberFormat, NumberTypeNode } from '@codama/node-types';
 
 export function numberTypeNode<TFormat extends NumberFormat = NumberFormat>(
     format: TFormat,

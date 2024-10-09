@@ -6,8 +6,8 @@ import {
     numberTypeNode,
     TypeNode,
     ValueNode,
-} from '@kinobi-so/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 type Discriminator = {
     /** @defaultValue `[]` */

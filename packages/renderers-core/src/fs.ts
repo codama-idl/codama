@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
-import { KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, KinobiError } from '@codama/errors';
 
 export function readJson<T extends object>(value: string): T {
     if (!__NODEJS__) {

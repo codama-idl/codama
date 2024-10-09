@@ -1,4 +1,4 @@
-import { constantValueNodeFromBytes, sentinelTypeNode, stringTypeNode } from '@kinobi-so/nodes';
+import { constantValueNodeFromBytes, sentinelTypeNode, stringTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

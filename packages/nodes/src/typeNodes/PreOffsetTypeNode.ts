@@ -1,4 +1,4 @@
-import type { PreOffsetTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { PreOffsetTypeNode, TypeNode } from '@codama/node-types';
 
 export function preOffsetTypeNode<TType extends TypeNode>(
     type: TType,

@@ -1,4 +1,4 @@
-import { NodeKind } from '@kinobi-so/nodes';
+import { NodeKind } from '@codama/nodes';
 
 import { mapVisitor } from './mapVisitor';
 import { Visitor } from './visitor';

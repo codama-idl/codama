@@ -1,4 +1,4 @@
-import { definedTypeLinkNode } from '@kinobi-so/nodes';
+import { definedTypeLinkNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

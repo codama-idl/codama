@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
-import type { GetNodeFromKind, Node, NodeKind } from '@kinobi-so/node-types';
+import { KINOBI_ERROR__UNEXPECTED_NODE_KIND, KinobiError } from '@codama/errors';
+import type { GetNodeFromKind, Node, NodeKind } from '@codama/node-types';
 
 import { REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS } from './contextualValueNodes/ContextualValueNode';
 import { REGISTERED_COUNT_NODE_KINDS } from './countNodes/CountNode';

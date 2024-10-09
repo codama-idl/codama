@@ -1,4 +1,4 @@
-import { camelCase, CamelCaseString, Node } from '@kinobi-so/nodes';
+import { camelCase, CamelCaseString, Node } from '@codama/nodes';
 
 import type { NodeStack } from './NodeStack';
 

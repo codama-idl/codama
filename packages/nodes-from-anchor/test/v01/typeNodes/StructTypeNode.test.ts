@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, KinobiError } from '@codama/errors';
 import {
     arrayTypeNode,
     numberTypeNode,
@@ -9,7 +9,7 @@ import {
     structFieldTypeNode,
     structTypeNode,
     tupleTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV01 } from '../../../src';

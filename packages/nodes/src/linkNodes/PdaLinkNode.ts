@@ -1,4 +1,4 @@
-import type { PdaLinkNode, ProgramLinkNode } from '@kinobi-so/node-types';
+import type { PdaLinkNode, ProgramLinkNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 import { programLinkNode } from './ProgramLinkNode';

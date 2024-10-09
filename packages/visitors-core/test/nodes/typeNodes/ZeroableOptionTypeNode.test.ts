@@ -1,4 +1,4 @@
-import { constantValueNodeFromBytes, publicKeyTypeNode, zeroableOptionTypeNode } from '@kinobi-so/nodes';
+import { constantValueNodeFromBytes, publicKeyTypeNode, zeroableOptionTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

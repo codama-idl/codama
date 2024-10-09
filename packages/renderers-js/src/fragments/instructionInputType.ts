@@ -5,12 +5,12 @@ import {
     InstructionNode,
     isNode,
     pascalCase,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import {
     ResolvedInstructionAccount,
     ResolvedInstructionArgument,
     ResolvedInstructionInput,
-} from '@kinobi-so/visitors-core';
+} from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';

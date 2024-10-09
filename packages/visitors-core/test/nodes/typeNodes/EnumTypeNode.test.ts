@@ -9,7 +9,7 @@ import {
     structFieldTypeNode,
     structTypeNode,
     tupleTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

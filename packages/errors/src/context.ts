@@ -16,7 +16,7 @@ import {
     PdaNode,
     PdaSeedValueNode,
     ProgramNode,
-} from '@kinobi-so/node-types';
+} from '@codama/node-types';
 
 import {
     KINOBI_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,

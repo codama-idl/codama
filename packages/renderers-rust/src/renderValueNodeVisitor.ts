@@ -6,8 +6,8 @@ import {
     pascalCase,
     RegisteredValueNode,
     ValueNode,
-} from '@kinobi-so/nodes';
-import { visit, Visitor } from '@kinobi-so/visitors-core';
+} from '@codama/nodes';
+import { visit, Visitor } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { getBytesFromBytesValueNode, GetImportFromFunction } from './utils';

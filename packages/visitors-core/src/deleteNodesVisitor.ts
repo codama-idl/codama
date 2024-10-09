@@ -1,4 +1,4 @@
-import { NodeKind } from '@kinobi-so/nodes';
+import { NodeKind } from '@codama/nodes';
 
 import { NodeSelector } from './NodeSelector';
 import { TopDownNodeTransformerWithSelector, topDownTransformerVisitor } from './topDownTransformerVisitor';

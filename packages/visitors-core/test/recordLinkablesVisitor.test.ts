@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__LINKED_NODE_NOT_FOUND, KinobiError } from '@codama/errors';
 import {
     accountLinkNode,
     AccountNode,
@@ -19,7 +19,7 @@ import {
     programLinkNode,
     programNode,
     rootNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import {

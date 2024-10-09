@@ -1,4 +1,4 @@
-import type { InstructionAccountLinkNode, InstructionLinkNode } from '@kinobi-so/node-types';
+import type { InstructionAccountLinkNode, InstructionLinkNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 import { instructionLinkNode } from './InstructionLinkNode';

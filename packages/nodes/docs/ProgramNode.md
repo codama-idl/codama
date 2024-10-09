@@ -2,7 +2,7 @@
 
 This node represents an entire program deployed on-chain. It defines all elements of a program such as accounts, instructions, PDAs, errors, etc.
 
-![Diagram](https://github.com/kinobi-so/kinobi/assets/3642397/37ec38ea-66df-4c08-81c3-822ef4388580)
+![Diagram](https://github.com/codama/kinobi/assets/3642397/37ec38ea-66df-4c08-81c3-822ef4388580)
 
 ## Attributes
 

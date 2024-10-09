@@ -1,6 +1,6 @@
-export * from '@kinobi-so/errors';
-export * from '@kinobi-so/nodes';
-export * from '@kinobi-so/validators';
-export * from '@kinobi-so/visitors';
+export * from '@codama/errors';
+export * from '@codama/nodes';
+export * from '@codama/validators';
+export * from '@codama/visitors';
 
 export * from './kinobi';

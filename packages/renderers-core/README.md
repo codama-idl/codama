@@ -3,16 +3,16 @@
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/renderers-core.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/renderers-core.svg?style=flat&label=%40kinobi-so%2Frenderers-core
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/renderers-core
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/renderers-core.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/renderers-core.svg?style=flat&label=%40kinobi-so%2Frenderers-core
+[npm-url]: https://www.npmjs.com/package/@codama/renderers-core
 
-This package provides the core utility for generating clients from Kinobi IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@kinobi-so/renderers-js`](../renderers-js) and [`@kinobi-so/renderers-rust`](../renderers-rust).
+This package provides the core utility for generating clients from Kinobi IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@codama/renderers-js`](../renderers-js) and [`@codama/renderers-rust`](../renderers-rust).
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/renderers-core
+pnpm install @codama/renderers-core
 ```
 
 > [!NOTE]
@@ -132,10 +132,10 @@ renderMap.write('src/generated');
 
 ### Using visitors
 
-When building renderers, you will most likely create a visitor that traverses the Kinobi IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@kinobi-so/renderers-js`](../renderers-js) package exports a `getRenderMapVisitor` function that does just that.
+When building renderers, you will most likely create a visitor that traverses the Kinobi IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](../renderers-js) package exports a `getRenderMapVisitor` function that does just that.
 
 ```ts
-import { getRenderMapVisitor } from '@kinobi-so/renderers-js';
+import { getRenderMapVisitor } from '@codama/renderers-js';
 
 const renderMap = kinobi.accept(getRenderMapVisitor());
 ```
@@ -143,17 +143,17 @@ const renderMap = kinobi.accept(getRenderMapVisitor());
 If you have access to a visitor that returns a `RenderMap` — also described as `Visitor<RenderMap>` — then, you can wrap it inside the `writeRenderMapVisitor` to directly write the content to the filesystem at the given base directory.
 
 ```ts
-import { getRenderMapVisitor } from '@kinobi-so/renderers-js';
+import { getRenderMapVisitor } from '@codama/renderers-js';
 
 kinobi.accept(writeRenderMapVisitor(getRenderMapVisitor(), 'src/generated'));
 ```
 
 Note however that, if you are writing your own renderer, you should probably offer a higher-level visitor that includes this logic and also does some additional work such as deleting the base directory before writing the new content if it already exists.
 
-For instance, the recommended way of using the `@kinobi-so/renderers-js` package is to use the following `renderVisitor` function.
+For instance, the recommended way of using the `@codama/renderers-js` package is to use the following `renderVisitor` function.
 
 ```ts
-import { renderVisitor } from '@kinobi-so/renderers-js';
+import { renderVisitor } from '@codama/renderers-js';
 
 kinobi.accept(renderVisitor('src/generated'));
 ```
@@ -161,8 +161,8 @@ kinobi.accept(renderVisitor('src/generated'));
 Here's a simple example of how to set up the basis of a renderer from an existing `getRenderMapVisitor`.
 
 ```ts
-import { deleteDirectory } from '@kinobi-so/renderers-core';
-import { rootNodeVisitor, visit } from '@kinobi-so/visitors-core';
+import { deleteDirectory } from '@codama/renderers-core';
+import { rootNodeVisitor, visit } from '@codama/visitors-core';
 
 type RenderOptions = {
     deleteFolderBeforeRendering?: boolean;

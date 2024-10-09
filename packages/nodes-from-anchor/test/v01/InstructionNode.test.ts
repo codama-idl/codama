@@ -10,7 +10,7 @@ import {
     publicKeyTypeNode,
     structFieldTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { getAnchorDiscriminatorV01, instructionNodeFromAnchorV01 } from '../../src';

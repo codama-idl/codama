@@ -1,4 +1,4 @@
-import { KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, KinobiError } from '@kinobi-so/errors';
+import { KINOBI_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, KinobiError } from '@codama/errors';
 
 import { createFile } from './fs';
 

@@ -1,4 +1,4 @@
-import type { TypeNode, VariablePdaSeedNode } from '@kinobi-so/node-types';
+import type { TypeNode, VariablePdaSeedNode } from '@codama/node-types';
 
 import { camelCase, DocsInput, parseDocs } from '../shared';
 

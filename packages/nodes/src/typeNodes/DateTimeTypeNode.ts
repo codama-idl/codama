@@ -1,4 +1,4 @@
-import type { DateTimeTypeNode, NestedTypeNode, NumberTypeNode } from '@kinobi-so/node-types';
+import type { DateTimeTypeNode, NestedTypeNode, NumberTypeNode } from '@codama/node-types';
 
 export function dateTimeTypeNode<TNumber extends NestedTypeNode<NumberTypeNode> = NestedTypeNode<NumberTypeNode>>(
     number: TNumber,

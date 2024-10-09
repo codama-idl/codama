@@ -1,5 +1,5 @@
-import { KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, KinobiError } from '@kinobi-so/errors';
-import { type GetNodeFromKind, type Node, type NodeKind, pascalCase, REGISTERED_NODE_KINDS } from '@kinobi-so/nodes';
+import { KINOBI_ERROR__UNRECOGNIZED_NODE_KIND, KinobiError } from '@codama/errors';
+import { type GetNodeFromKind, type Node, type NodeKind, pascalCase, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 export type Visitor<TReturn, TNodeKind extends NodeKind = NodeKind> = {
     [K in TNodeKind as GetVisitorFunctionName<K>]: (node: GetNodeFromKind<K>) => TReturn;

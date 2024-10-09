@@ -1,5 +1,5 @@
 {
-  "name": "@kinobi-so/renderers-js-umi-e2e-system",
+  "name": "@codama/renderers-js-umi-e2e-system",
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",

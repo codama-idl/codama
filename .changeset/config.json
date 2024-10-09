@@ -2,21 +2,21 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
   "changelog": [
     "@changesets/changelog-github",
-    { "repo": "kinobi-so/kinobi" }
+    { "repo": "codama/kinobi" }
   ],
   "commit": false,
   "fixed": [
         [
             "kinobi",
-            "@kinobi-so/errors",
-            "@kinobi-so/node-types",
-            "@kinobi-so/nodes",
-            "@kinobi-so/validators",
-            "@kinobi-so/visitors*"
+            "@codama/errors",
+            "@codama/node-types",
+            "@codama/nodes",
+            "@codama/validators",
+            "@codama/visitors*"
         ]
     ],
   "linked": [],
-  "ignore": ["@kinobi-so/internals"],
+  "ignore": ["@codama/internals"],
   "access": "public",
   "baseBranch": "main",
   "privatePackages": {

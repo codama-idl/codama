@@ -11,7 +11,7 @@ import {
     structFieldTypeNode,
     StructTypeNode,
     structTypeNode,
-} from '@kinobi-so/nodes';
+} from '@codama/nodes';
 
 import { getAnchorAccountDiscriminatorV00 } from '../discriminators';
 import { IdlV00AccountDef } from './idl';

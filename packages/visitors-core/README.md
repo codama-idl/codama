@@ -3,23 +3,23 @@
 [![npm][npm-image]][npm-url]
 [![npm-downloads][npm-downloads-image]][npm-url]
 
-[npm-downloads-image]: https://img.shields.io/npm/dm/@kinobi-so/visitors-core.svg?style=flat
-[npm-image]: https://img.shields.io/npm/v/@kinobi-so/visitors-core.svg?style=flat&label=%40kinobi-so%2Fvisitors-core
-[npm-url]: https://www.npmjs.com/package/@kinobi-so/visitors-core
+[npm-downloads-image]: https://img.shields.io/npm/dm/@codama/visitors-core.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/@codama/visitors-core.svg?style=flat&label=%40kinobi-so%2Fvisitors-core
+[npm-url]: https://www.npmjs.com/package/@codama/visitors-core
 
 This package provides core interfaces and utilities for creating visitors for Kinobi IDLs.
 
 ## Installation
 
 ```sh
-pnpm install @kinobi-so/visitors-core
+pnpm install @codama/visitors-core
 ```
 
 > [!NOTE]
-> This package is included in the [`@kinobi-so/visitors`](../visitors) package and in the main [`kinobi`](../library) library. Meaning, you already have access to its content if you are installing Kinobi in one of these ways.
+> This package is included in the [`@codama/visitors`](../visitors) package and in the main [`kinobi`](../library) library. Meaning, you already have access to its content if you are installing Kinobi in one of these ways.
 >
 > ```sh
-> pnpm install @kinobi-so/visitors
+> pnpm install @codama/visitors
 > pnpm install kinobi
 > ```
 

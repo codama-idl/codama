@@ -1,4 +1,4 @@
-import type { DefinedTypeLinkNode, EnumValueNode, StructValueNode, TupleValueNode } from '@kinobi-so/node-types';
+import type { DefinedTypeLinkNode, EnumValueNode, StructValueNode, TupleValueNode } from '@codama/node-types';
 
 import { definedTypeLinkNode } from '../linkNodes';
 import { camelCase } from '../shared';

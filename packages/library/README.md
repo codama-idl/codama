@@ -19,12 +19,12 @@ pnpm install kinobi
 
 This package includes the following packages. Note that some of them also re-export other packages.
 
--   [`@kinobi-so/errors`](../errors)
--   [`@kinobi-so/nodes`](../nodes)
-    -   [`@kinobi-so/node-types`](../node-types)
--   [`@kinobi-so/validators`](../validators)
--   [`@kinobi-so/visitors`](../visitors)
-    -   [`@kinobi-so/visitor-core`](../visitor-core)
+-   [`@codama/errors`](../errors)
+-   [`@codama/nodes`](../nodes)
+    -   [`@codama/node-types`](../node-types)
+-   [`@codama/validators`](../validators)
+-   [`@codama/visitors`](../visitors)
+    -   [`@codama/visitor-core`](../visitor-core)
 
 ## The Kinobi helper
 

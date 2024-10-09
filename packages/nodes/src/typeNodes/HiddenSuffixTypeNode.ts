@@ -1,4 +1,4 @@
-import type { ConstantValueNode, HiddenSuffixTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { ConstantValueNode, HiddenSuffixTypeNode, TypeNode } from '@codama/node-types';
 
 export function hiddenSuffixTypeNode<TType extends TypeNode, const TSuffix extends ConstantValueNode[]>(
     type: TType,

@@ -1,4 +1,4 @@
-import { isNode, type NodeKind } from '@kinobi-so/nodes';
+import { isNode, type NodeKind } from '@codama/nodes';
 
 import { interceptFirstVisitVisitor } from './interceptFirstVisitVisitor';
 import { interceptVisitor } from './interceptVisitor';

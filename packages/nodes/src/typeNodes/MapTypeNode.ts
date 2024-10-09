@@ -1,4 +1,4 @@
-import type { CountNode, MapTypeNode, TypeNode } from '@kinobi-so/node-types';
+import type { CountNode, MapTypeNode, TypeNode } from '@codama/node-types';
 
 export function mapTypeNode<TKey extends TypeNode, TValue extends TypeNode, TCount extends CountNode>(
     key: TKey,

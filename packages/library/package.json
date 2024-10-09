@@ -40,31 +40,31 @@
     ],
     "scripts": {
         "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@kinobi-so/internals/scripts/build-src.mjs library",
-        "build:types": "zx ../../node_modules/@kinobi-so/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node --watch",
-        "lint": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@kinobi-so/internals/scripts/lint.mjs --fix",
+        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs library",
+        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
+        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
+        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
+        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:browser && pnpm test:node && pnpm test:react-native",
-        "test:browser": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs browser",
-        "test:node": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs node",
-        "test:react-native": "zx ../../node_modules/@kinobi-so/internals/scripts/test-unit.mjs react-native",
-        "test:treeshakability": "zx ../../node_modules/@kinobi-so/internals/scripts/test-treeshakability.mjs",
-        "test:types": "zx ../../node_modules/@kinobi-so/internals/scripts/test-types.mjs"
+        "test:browser": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs browser",
+        "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
+        "test:react-native": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs react-native",
+        "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
+        "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
     },
     "dependencies": {
-        "@kinobi-so/errors": "workspace:*",
-        "@kinobi-so/nodes": "workspace:*",
-        "@kinobi-so/validators": "workspace:*",
-        "@kinobi-so/visitors": "workspace:*"
+        "@codama/errors": "workspace:*",
+        "@codama/nodes": "workspace:*",
+        "@codama/validators": "workspace:*",
+        "@codama/visitors": "workspace:*"
     },
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/kinobi-so/kinobi"
+        "url": "https://github.com/codama/kinobi"
     },
     "bugs": {
-        "url": "http://github.com/kinobi-so/kinobi/issues"
+        "url": "http://github.com/codama/kinobi/issues"
     },
     "browserslist": [
         "supports bigint and not dead",

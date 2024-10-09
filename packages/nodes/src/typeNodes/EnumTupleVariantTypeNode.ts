@@ -1,4 +1,4 @@
-import type { EnumTupleVariantTypeNode, NestedTypeNode, TupleTypeNode } from '@kinobi-so/node-types';
+import type { EnumTupleVariantTypeNode, NestedTypeNode, TupleTypeNode } from '@codama/node-types';
 
 import { camelCase } from '../shared';
 

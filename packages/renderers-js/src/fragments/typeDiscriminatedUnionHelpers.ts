@@ -1,4 +1,4 @@
-import { isDataEnum, isNode, TypeNode } from '@kinobi-so/nodes';
+import { isDataEnum, isNode, TypeNode } from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, fragmentFromTemplate } from './common';

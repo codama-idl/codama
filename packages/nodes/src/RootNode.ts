@@ -1,4 +1,4 @@
-import type { KinobiVersion, ProgramNode, RootNode } from '@kinobi-so/node-types';
+import type { KinobiVersion, ProgramNode, RootNode } from '@codama/node-types';
 
 export function rootNode<TProgram extends ProgramNode, const TAdditionalPrograms extends ProgramNode[] = []>(
     program: TProgram,

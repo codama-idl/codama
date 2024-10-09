@@ -1,4 +1,4 @@
-import { StructFieldTypeNode, structFieldTypeNode } from '@kinobi-so/nodes';
+import { StructFieldTypeNode, structFieldTypeNode } from '@codama/nodes';
 
 import { IdlV00Field } from '../idl';
 import { typeNodeFromAnchorV00 } from './TypeNode';

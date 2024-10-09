@@ -1,4 +1,4 @@
-import type { BooleanTypeNode, NestedTypeNode, NumberTypeNode } from '@kinobi-so/node-types';
+import type { BooleanTypeNode, NestedTypeNode, NumberTypeNode } from '@codama/node-types';
 
 import { numberTypeNode } from './NumberTypeNode';
 

@@ -1,4 +1,4 @@
-import { numberValueNode, stringValueNode, structFieldValueNode, structValueNode } from '@kinobi-so/nodes';
+import { numberValueNode, stringValueNode, structFieldValueNode, structValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

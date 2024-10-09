@@ -1,4 +1,4 @@
-import { PublicKeyTypeNode } from '@kinobi-so/node-types';
+import { PublicKeyTypeNode } from '@codama/node-types';
 
 import { isKinobiError, KinobiError, KinobiErrorCode } from '../src';
 import * as KinobiErrorCodeModule from '../src/codes';

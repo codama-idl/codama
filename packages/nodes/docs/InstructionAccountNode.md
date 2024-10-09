@@ -2,7 +2,7 @@
 
 This node defines an account used by an instruction. It is characterized by its name and various requirements such as whether it needs to be writable or a signer.
 
-![Diagram](https://github.com/kinobi-so/kinobi/assets/3642397/4656a08b-2f89-49c2-b428-5378cb1a0b9e)
+![Diagram](https://github.com/codama/kinobi/assets/3642397/4656a08b-2f89-49c2-b428-5378cb1a0b9e)
 
 ## Attributes
 

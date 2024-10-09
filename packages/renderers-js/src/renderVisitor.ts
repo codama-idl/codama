@@ -1,5 +1,5 @@
-import { deleteDirectory } from '@kinobi-so/renderers-core';
-import { rootNodeVisitor, visit } from '@kinobi-so/visitors-core';
+import { deleteDirectory } from '@codama/renderers-core';
+import { rootNodeVisitor, visit } from '@codama/visitors-core';
 import * as estreePlugin from 'prettier/plugins/estree';
 import * as typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';

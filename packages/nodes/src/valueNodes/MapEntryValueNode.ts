@@ -1,4 +1,4 @@
-import type { MapEntryValueNode, ValueNode } from '@kinobi-so/node-types';
+import type { MapEntryValueNode, ValueNode } from '@codama/node-types';
 
 export function mapEntryValueNode<TKey extends ValueNode, TValue extends ValueNode>(
     key: TKey,
