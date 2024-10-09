@@ -2,7 +2,7 @@
 
 This node represents the starting point of the Codama IDL. It contains a single `ProgramNode` which the Codama IDL is describing as well as any additional programs that may be referenced by the main program. This node is also responsible for setting the standard and version of the IDL.
 
-![Diagram](https://github.com/codama/codama/assets/3642397/96c43c75-5925-4b6b-a1e0-8b8c61317cfe)
+![Diagram](https://github.com/codama-idl/codama/assets/3642397/96c43c75-5925-4b6b-a1e0-8b8c61317cfe)
 
 ## Attributes
 

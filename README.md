@@ -7,22 +7,22 @@
 [npm-downloads-image]: https://img.shields.io/npm/dm/codama.svg?style=flat
 [npm-image]: https://img.shields.io/npm/v/codama.svg?style=flat
 [npm-url]: https://www.npmjs.com/package/codama
-[ci-image]: https://img.shields.io/github/actions/workflow/status/codama/codama/main.yml?logo=GitHub
-[ci-url]: https://github.com/codama/codama/actions/workflows/main.yml
+[ci-image]: https://img.shields.io/github/actions/workflow/status/codama-idl/codama/main.yml?logo=GitHub
+[ci-url]: https://github.com/codama-idl/codama/actions/workflows/main.yml
 
 Codama is a tool that describes any Solana program in a powerful standardised format known as the Codama IDL. This IDL can then be used to create a variety of utility such as rendering client code for your programs in various languages/frameworks, generating CLIs and providing more information to explorers.
 
-![Codama header: A small double-sided mind-map with the Codama logo in the middle. On the left, we see the various ways to get a Codama IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/codama/codama/assets/3642397/11161fb6-1ef4-446d-bf73-ce04484519a0)
+![Codama header: A small double-sided mind-map with the Codama logo in the middle. On the left, we see the various ways to get a Codama IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/codama-idl/codama/assets/3642397/11161fb6-1ef4-446d-bf73-ce04484519a0)
 
 ## Nodes and visitors
 
 The Codama IDL is designed as a tree of nodes starting with the `RootNode` which contains a `ProgramNode` and additional data such as the Codama version used when the IDL was created. Codama provides over 60 different types of nodes that help describe just about any aspect of your Solana programs. [You can read more about the Codama nodes here](./packages/nodes).
 
-![A small example of a Codama IDL as a tree of nodes. It starts with a RootNode and goes down to ProgramNode, AccountNode, InstructionNode, etc.](https://github.com/codama/codama/assets/3642397/9d53485d-a4f6-459a-b7eb-58faab716bc1)
+![A small example of a Codama IDL as a tree of nodes. It starts with a RootNode and goes down to ProgramNode, AccountNode, InstructionNode, etc.](https://github.com/codama-idl/codama/assets/3642397/9d53485d-a4f6-459a-b7eb-58faab716bc1)
 
 Because everything is designed as a `Node`, we can transform the IDL, aggregate information and output various utility tools using special objects that can traverse node trees known as visitors. [See this documentation to learn more about Codama visitors](./packages/visitors).
 
-![A small example of how a visitor can transform a Codama IDL into another Codama IDL. This example illustrates the "deleteNodesVisitor" which recursively removes NumberTypeNodes from a tree of nested TypleTypeNodes.](https://github.com/codama/codama/assets/3642397/f54e83d1-eade-4674-80dc-7ddc360f5f66)
+![A small example of how a visitor can transform a Codama IDL into another Codama IDL. This example illustrates the "deleteNodesVisitor" which recursively removes NumberTypeNodes from a tree of nested TypleTypeNodes.](https://github.com/codama-idl/codama/assets/3642397/f54e83d1-eade-4674-80dc-7ddc360f5f66)
 
 ## From program to Codama
 

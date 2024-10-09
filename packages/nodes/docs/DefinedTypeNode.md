@@ -2,7 +2,7 @@
 
 This node defines a named type that can be reused in other types using a [`DefinedTypeLinkNode`](./linkNodes/DefinedTypeLinkNode.md).
 
-![Diagram](https://github.com/codama/codama/assets/3642397/6049cf77-9a70-4915-8276-dd571d2f8828)
+![Diagram](https://github.com/codama-idl/codama/assets/3642397/6049cf77-9a70-4915-8276-dd571d2f8828)
 
 ## Attributes
 
