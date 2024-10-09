@@ -1,5 +1,18 @@
 # @codama/renderers
 
+## 1.0.0
+
+### Major Changes
+
+-   [#236](https://github.com/codama-idl/codama/pull/236) [`4057b0d`](https://github.com/codama-idl/codama/commit/4057b0d6bb28a207ff6d473aa117d81336a323d8) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Publish codama v1 packages
+
+### Patch Changes
+
+-   Updated dependencies [[`4057b0d`](https://github.com/codama-idl/codama/commit/4057b0d6bb28a207ff6d473aa117d81336a323d8)]:
+    -   @codama/renderers-js@1.0.0
+    -   @codama/renderers-js-umi@1.0.0
+    -   @codama/renderers-rust@1.0.0
+
 ## 0.22.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-js-umi",
-    "version": "0.22.0",
+    "version": "1.0.0",
     "description": "JavaScript renderer compatible with the Umi framework",
     "exports": {
         "types": "./dist/types/index.d.ts",
