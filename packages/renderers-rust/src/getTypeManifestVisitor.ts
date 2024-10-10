@@ -163,7 +163,7 @@ export function getTypeManifestVisitor(options: {
                         return {
                             ...manifest,
                             nestedStructs,
-                            type: `pub type ${pascalCase(definedType.name)} = ${manifest.type}`,
+                            type: `pub type ${pascalCase(definedType.name)} = ${manifest.type};`,
                         };
                     }
 
