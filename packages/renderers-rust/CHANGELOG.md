@@ -1,5 +1,11 @@
 # @codama/renderers-rust
 
+## 1.0.1
+
+### Patch Changes
+
+-   [#238](https://github.com/codama-idl/codama/pull/238) [`8dc7092`](https://github.com/codama-idl/codama/commit/8dc70921ba9f37bb8f3f654b82a3b5f3ffbc1339) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix missing semicolon in generated Rust code
+
 ## 1.0.0
 
 ### Major Changes
