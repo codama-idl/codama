@@ -6,7 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
-import { Program, ProgramError } from '@metaplex-foundation/umi';
+import { ProgramError, type Program } from '@metaplex-foundation/umi';
 
 type ProgramErrorConstructor = new (
   program: Program,

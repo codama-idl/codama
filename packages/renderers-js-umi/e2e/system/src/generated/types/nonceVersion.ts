@@ -7,8 +7,8 @@
  */
 
 import {
-  Serializer,
   scalarEnum,
+  type Serializer,
   u32,
 } from '@metaplex-foundation/umi/serializers';
 

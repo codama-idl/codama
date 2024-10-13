@@ -13,8 +13,8 @@ test('it renders JavaScript import statements', () => {
 
     // Then we expect the following import statements.
     expect(importStatements).toBe(
-        "import { Metadata } from '@metaplex-foundation/mpl-token-metadata';\n" +
-            "import { PublicKey, publicKey } from '@metaplex-foundation/umi';",
+        "import { type Metadata } from '@metaplex-foundation/mpl-token-metadata';\n" +
+            "import { publicKey, type PublicKey } from '@metaplex-foundation/umi';",
     );
 });
 
@@ -43,7 +43,7 @@ test('it offers some default dependency mappings', () => {
 
     // Then we expect the following import statements.
     expect(importStatements).toBe(
-        "import { PublicKey, publicKey } from '@metaplex-foundation/umi';\n" +
+        "import { publicKey, type PublicKey } from '@metaplex-foundation/umi';\n" +
             "import { u16 } from '@metaplex-foundation/umi/serializers';\n" +
             "import { myHelper } from '../shared';",
     );
@@ -59,5 +59,5 @@ test('it supports custom dependency mappings', () => {
     });
 
     // Then we expect the following import statement.
-    expect(importStatements).toBe("import { MyType } from 'my/custom/path';");
+    expect(importStatements).toBe("import { type MyType } from 'my/custom/path';");
 });

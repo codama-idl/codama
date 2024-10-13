@@ -7,23 +7,23 @@
  */
 
 import {
-  Context,
-  PublicKey,
-  Signer,
-  TransactionBuilder,
   transactionBuilder,
+  type Context,
+  type PublicKey,
+  type Signer,
+  type TransactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
-  Serializer,
   mapSerializer,
   publicKey as publicKeySerializer,
   struct,
+  type Serializer,
   u32,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  ResolvedAccount,
-  ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
+  type ResolvedAccount,
+  type ResolvedAccountsWithIndices,
 } from '../shared';
 
 // Accounts.

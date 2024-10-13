@@ -7,12 +7,12 @@
  */
 
 import {
-  AccountMeta,
+  type AccountMeta,
   isSigner,
-  Pda,
+  type Pda,
   publicKey,
-  PublicKey,
-  Signer,
+  type PublicKey,
+  type Signer,
   isPda,
 } from '@metaplex-foundation/umi';
 

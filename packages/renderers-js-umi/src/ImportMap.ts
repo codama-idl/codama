@@ -8,9 +8,7 @@ const DEFAULT_MODULE_MAP: Record<string, string> = {
     umiSerializers: '@metaplex-foundation/umi/serializers',
 };
 
-const verbatimModuleSyntaxExceptions = new Set([
-    "ProgramError",
-]);
+const verbatimModuleSyntaxExceptions = new Set(['ProgramError']);
 
 export class ImportMap {
     protected readonly _imports: Map<string, Set<string>> = new Map();
