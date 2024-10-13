@@ -8,6 +8,10 @@ const DEFAULT_MODULE_MAP: Record<string, string> = {
     umiSerializers: '@metaplex-foundation/umi/serializers',
 };
 
+const verbatimModuleSyntaxExceptions = new Set([
+    "ProgramError",
+]);
+
 export class ImportMap {
     protected readonly _imports: Map<string, Set<string>> = new Map();
 
@@ -62,7 +66,26 @@ export class ImportMap {
         return this._imports.size === 0;
     }
 
+    fixVerbatimModuleSyntax(): void {
+        for (const [_module, imports] of this._imports.entries()) {
+            for (const imp of imports) {
+                if (verbatimModuleSyntaxExceptions.has(imp)) continue;
+
+                // Check if import is PascalCase
+                if (!imp.match(/^[A-Z]/)) continue;
+
+                // Check so it's not constant
+                if (imp.match(/^[A-Z_]+$/)) continue;
+
+                imports.delete(imp);
+                imports.add(`type ${imp}`);
+            }
+        }
+    }
+
     toString(dependencies: Record<string, string>): string {
+        this.fixVerbatimModuleSyntax();
+
         const dependencyMap = { ...DEFAULT_MODULE_MAP, ...dependencies };
         const importStatements = [...this._imports.entries()]
             .map(([module, imports]) => {
