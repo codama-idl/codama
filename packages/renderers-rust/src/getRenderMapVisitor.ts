@@ -27,12 +27,14 @@ import {
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
-import { getImportFromFactory, LinkOverrides, render } from './utils';
+import { getImportFromFactory, LinkOverrides, render, TraitOptions } from './utils';
 
 export type GetRenderMapOptions = {
+    defaultTraitOverrides?: string[];
     dependencyMap?: Record<string, string>;
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
+    traitOverrides?: TraitOptions;
 };
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
