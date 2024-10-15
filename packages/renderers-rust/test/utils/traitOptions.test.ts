@@ -87,34 +87,20 @@ describe('default values', () => {
         ]);
     });
 
-    test('it defaults to a set of traits for aliases', () => {
-        // Given a defined type node that is not an enum or struct.
-        const node = definedTypeNode({
-            name: 'Score',
-            type: numberTypeNode('u64'),
-        });
-
-        // When we get the traits from the node using the default options.
-        const { render, imports } = getTraitsFromNode(node);
-
-        // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n`);
-
-        // And the following imports to be used.
-        expect([...imports.imports]).toStrictEqual(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
-    });
-
     test('it does not use default traits if they are overridden', () => {
         // Given a defined type node that should use custom traits.
-        const node = definedTypeNode({
-            name: 'Score',
-            type: numberTypeNode('u64'),
+        const node = accountNode({
+            data: structTypeNode([
+                structFieldTypeNode({ name: 'x', type: numberTypeNode('u64') }),
+                structFieldTypeNode({ name: 'y', type: numberTypeNode('u64') }),
+            ]),
+            name: 'Coordinates',
         });
 
         // When we get the traits from the node using the
         // default options with the overrides attribute.
         const { render, imports } = getTraitsFromNode(node, {
-            overrides: { score: ['My', 'special::Traits'] },
+            overrides: { coordinates: ['My', 'special::Traits'] },
         });
 
         // Then we expect the following traits to be rendered.
@@ -126,15 +112,18 @@ describe('default values', () => {
 
     test('it still uses feature flags for overridden traits', () => {
         // Given a defined type node that should use custom traits.
-        const node = definedTypeNode({
-            name: 'Score',
-            type: numberTypeNode('u64'),
+        const node = accountNode({
+            data: structTypeNode([
+                structFieldTypeNode({ name: 'x', type: numberTypeNode('u64') }),
+                structFieldTypeNode({ name: 'y', type: numberTypeNode('u64') }),
+            ]),
+            name: 'Coordinates',
         });
 
         // When we get the traits from the node using custom traits
         // such that some are part of the feature flag defaults.
         const { render, imports } = getTraitsFromNode(node, {
-            overrides: { score: ['My', 'special::Traits', 'serde::Serialize'] },
+            overrides: { coordinates: ['My', 'special::Traits', 'serde::Serialize'] },
         });
 
         // Then we expect the following traits to be rendered.
@@ -146,7 +135,6 @@ describe('default values', () => {
 });
 
 const RESET_OPTIONS: Required<TraitOptions> = {
-    aliasDefaults: [],
     baseDefaults: [],
     dataEnumDefaults: [],
     featureFlags: {},
@@ -220,22 +208,21 @@ describe('base traits', () => {
         expect(render).toBe(`#[derive(MyBaseTrait, MyStructTrait)]\n`);
     });
 
-    test('it uses both the base and alias traits', () => {
+    test('it never uses traits for type aliases', () => {
         // Given a defined type node that is not an enum or struct.
         const node = definedTypeNode({
             name: 'Score',
             type: numberTypeNode('u64'),
         });
 
-        // When we get the traits from the node using custom base and alias defaults.
+        // When we get the traits from the node such that we have base defaults.
         const { render } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
-            aliasDefaults: ['MyAliasTrait'],
             baseDefaults: ['MyBaseTrait'],
         });
 
-        // Then we expect both the base and alias traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyAliasTrait)]\n`);
+        // Then we expect no traits to be rendered.
+        expect(render).toBe('');
     });
 
     test('it identifies feature flags under all default traits', () => {

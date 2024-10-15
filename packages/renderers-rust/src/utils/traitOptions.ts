@@ -3,8 +3,6 @@ import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode, isScalar
 import { ImportMap } from '../ImportMap';
 
 export type TraitOptions = {
-    /** The default traits to implement for type aliases only — on top of the base defaults. */
-    aliasDefaults?: string[];
     /** The default traits to implement for all types. */
     baseDefaults?: string[];
     /**
@@ -32,7 +30,6 @@ export type TraitOptions = {
 };
 
 export const DEFAULT_TRAIT_OPTIONS: Required<TraitOptions> = {
-    aliasDefaults: [],
     baseDefaults: ['borsh::BorshSerialize', 'borsh::BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'],
     dataEnumDefaults: [],
     featureFlags: { serde: ['serde::Serialize', 'serde::Deserialize'] },
@@ -55,8 +52,13 @@ export function getTraitsFromNode(
     assertIsNode(node, ['accountNode', 'definedTypeNode']);
     const options: Required<TraitOptions> = { ...DEFAULT_TRAIT_OPTIONS, ...userOptions };
 
-    // Find all the FQN traits for the node.
+    // Get the node type and return early if it's a type alias.
     const nodeType = getNodeType(node);
+    if (nodeType === 'alias') {
+        return { imports: new ImportMap(), render: '' };
+    }
+
+    // Find all the FQN traits for the node.
     const sanitizedOverrides = Object.fromEntries(
         Object.entries(options.overrides).map(([key, value]) => [camelCase(key), value]),
     );
@@ -98,21 +100,18 @@ function getNodeType(node: AccountNode | DefinedTypeNode): 'alias' | 'dataEnum' 
 }
 
 function getDefaultTraits(
-    nodeType: 'alias' | 'dataEnum' | 'scalarEnum' | 'struct',
+    nodeType: 'dataEnum' | 'scalarEnum' | 'struct',
     options: Pick<
         Required<TraitOptions>,
-        'aliasDefaults' | 'baseDefaults' | 'dataEnumDefaults' | 'scalarEnumDefaults' | 'structDefaults'
+        'baseDefaults' | 'dataEnumDefaults' | 'scalarEnumDefaults' | 'structDefaults'
     >,
 ): string[] {
     switch (nodeType) {
-        case 'alias':
-            return [...options.baseDefaults, ...options.aliasDefaults];
         case 'dataEnum':
             return [...options.baseDefaults, ...options.dataEnumDefaults];
         case 'scalarEnum':
             return [...options.baseDefaults, ...options.scalarEnumDefaults];
         case 'struct':
-        default:
             return [...options.baseDefaults, ...options.structDefaults];
     }
 }

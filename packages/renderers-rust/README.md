@@ -60,13 +60,11 @@ Using the `traitOptions` attribute, you may configure the default traits that wi
 -   `dataEnumDefaults`: The default traits to implement for all data enum types, in addition to the `baseDefaults` traits. Data enums are enums with at least one non-unit variant — e.g. `pub enum Command { Write(String), Quit }`.
 -   `scalarEnumDefaults`: The default traits to implement for all scalar enum types, in addition to the `baseDefaults` traits. Scalar enums are enums with unit variants only — e.g. `pub enum Feedback { Good, Bad }`.
 -   `structDefaults`: The default traits to implement for all struct types, in addition to the `baseDefaults` traits.
--   `aliasDefaults`: The default traits to implement for all type aliases, in addition to the `baseDefaults` traits.
 
 Note that you must provide the fully qualified name of the traits you provide (e.g. `serde::Serialize`). Here are the default values for these attributes:
 
 ```ts
 const traitOptions = {
-    aliasDefaults: [],
     baseDefaults: ['borsh::BorshSerialize', 'borsh::BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'],
     dataEnumDefaults: [],
     scalarEnumDefaults: ['Copy', 'PartialOrd', 'Hash', 'num_derive::FromPrimitive'],
