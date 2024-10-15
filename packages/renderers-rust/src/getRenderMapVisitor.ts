@@ -27,14 +27,14 @@ import {
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
-import { getImportFromFactory, LinkOverrides, render, TraitOptions } from './utils';
+import { getImportFromFactory, getTraitsFromNodeFactory, LinkOverrides, render, TraitOptions } from './utils';
 
 export type GetRenderMapOptions = {
     defaultTraitOverrides?: string[];
     dependencyMap?: Record<string, string>;
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
-    traitOverrides?: TraitOptions;
+    traitOptions?: TraitOptions;
 };
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
@@ -44,7 +44,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const renderParentInstructions = options.renderParentInstructions ?? false;
     const dependencyMap = options.dependencyMap ?? {};
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
-    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom });
+    const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
+    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
         staticVisitor(
@@ -149,6 +150,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     node.arguments.forEach(argument => {
                         const argumentVisitor = getTypeManifestVisitor({
                             getImportFrom,
+                            getTraitsFromNode,
                             nestedStruct: true,
                             parentName: `${pascalCase(node.name)}InstructionData`,
                         });
@@ -189,6 +191,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const struct = structTypeNodeFromInstructionArgumentNodes(node.arguments);
                     const structVisitor = getTypeManifestVisitor({
                         getImportFrom,
+                        getTraitsFromNode,
                         parentName: `${pascalCase(node.name)}InstructionData`,
                     });
                     const typeManifest = visit(struct, structVisitor);

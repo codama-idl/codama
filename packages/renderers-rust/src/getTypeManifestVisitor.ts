@@ -17,7 +17,7 @@ import {
 import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
-import { GetImportFromFunction, rustDocblock } from './utils';
+import { GetImportFromFunction, GetTraitsFromNodeFunction, rustDocblock } from './utils';
 
 export type TypeManifest = {
     imports: ImportMap;
@@ -27,10 +27,11 @@ export type TypeManifest = {
 
 export function getTypeManifestVisitor(options: {
     getImportFrom: GetImportFromFunction;
+    getTraitsFromNode: GetTraitsFromNodeFunction;
     nestedStruct?: boolean;
     parentName?: string | null;
 }) {
-    const { getImportFrom } = options;
+    const { getImportFrom, getTraitsFromNode } = options;
     let parentName: string | null = options.parentName ?? null;
     let nestedStruct: boolean = options.nestedStruct ?? false;
     let inlineStruct: boolean = false;
@@ -50,14 +51,12 @@ export function getTypeManifestVisitor(options: {
                 visitAccount(account, { self }) {
                     parentName = pascalCase(account.name);
                     const manifest = visit(account.data, self);
-                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
+                    const traits = getTraitsFromNode(account);
+                    manifest.imports.mergeWith(traits.imports);
                     parentName = null;
                     return {
                         ...manifest,
-                        type:
-                            '#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n' +
-                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                            `${manifest.type}`,
+                        type: traits.render + manifest.type,
                     };
                 },
 
