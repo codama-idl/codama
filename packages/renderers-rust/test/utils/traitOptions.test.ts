@@ -130,4 +130,85 @@ const RESET_OPTIONS: Required<TraitOptions> = {
     structDefaults: [],
     useFullyQualifiedName: false,
 };
-console.log({ RESET_OPTIONS });
+
+describe('base traits', () => {
+    test('it uses both the base and enum traits', () => {
+        // Given a scalar enum defined type.
+        const node = definedTypeNode({
+            name: 'Feedback',
+            type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
+        });
+
+        // When we get the traits from the node using custom base and enum defaults.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            baseDefaults: ['MyBaseTrait'],
+            enumDefaults: ['MyEnumTrait'],
+        });
+
+        // Then we expect both the base and enum traits to be rendered.
+        expect(render).toBe(`#[derive(MyBaseTrait, MyEnumTrait)]`);
+    });
+
+    test('it uses both the base and struct traits', () => {
+        // Given an account node.
+        const node = accountNode({
+            data: structTypeNode([
+                structFieldTypeNode({ name: 'x', type: numberTypeNode('u64') }),
+                structFieldTypeNode({ name: 'y', type: numberTypeNode('u64') }),
+            ]),
+            name: 'Coordinates',
+        });
+
+        // When we get the traits from the node using custom base and struct defaults.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            baseDefaults: ['MyBaseTrait'],
+            structDefaults: ['MyStructTrait'],
+        });
+
+        // Then we expect both the base and struct traits to be rendered.
+        expect(render).toBe(`#[derive(MyBaseTrait, MyStructTrait)]`);
+    });
+
+    test('it uses both the base and alias traits', () => {
+        // Given a defined type node that is not an enum or struct.
+        const node = definedTypeNode({
+            name: 'Score',
+            type: numberTypeNode('u64'),
+        });
+
+        // When we get the traits from the node using custom base and alias defaults.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            aliasDefaults: ['MyAliasTrait'],
+            baseDefaults: ['MyBaseTrait'],
+        });
+
+        // Then we expect both the base and alias traits to be rendered.
+        expect(render).toBe(`#[derive(MyBaseTrait, MyAliasTrait)]`);
+    });
+});
+
+describe('overridden  traits', () => {
+    test('it replaces all default traits with the overridden traits', () => {
+        // Given a scalar enum defined type.
+        const node = definedTypeNode({
+            name: 'Feedback',
+            type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
+        });
+
+        // When we get the traits from the node such that:
+        // - We provide custom base and enum defaults.
+        // - We override the feedback type with custom traits.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            baseDefaults: ['MyBaseTrait'],
+            enumDefaults: ['MyEnumTrait'],
+            overrides: { feedback: ['MyFeedbackTrait'] },
+        });
+
+        // Then we expect only the feedback traits to be rendered.
+        expect(render).toBe(`#[derive(MyFeedbackTrait)]`);
+    });
+});
