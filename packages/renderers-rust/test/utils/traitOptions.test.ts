@@ -63,9 +63,27 @@ describe('default values', () => {
         ]);
     });
 
-    test.todo('it defaults to a set of traits for aliases');
+    test('it defaults to a set of traits for aliases', () => {
+        // Given a defined type node that is not an enum or struct.
+        const node = definedTypeNode({
+            name: 'Score',
+            type: numberTypeNode('u64'),
+        });
+
+        // When we get the traits from the node using the default options.
+        const { render, imports } = getTraitsFromNode(node);
+
+        // Then we expect the following traits to be rendered.
+        expect(render).toBe(`#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]`);
+
+        // And the following imports to be used.
+        expect([...imports.imports]).toStrictEqual(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
+    });
+
     test.todo('it defaults to not using fully qualified names');
     test.todo('it defaults to a set of feature flags for traits');
+    test.todo('it does not use default traits if they are overridden');
+    test.todo('it still uses feature flags for overridden traits');
 });
 
 const RESET_OPTIONS: Required<TraitOptions> = {
