@@ -30,7 +30,10 @@ describe('default values', () => {
         const { render, imports } = getTraitsFromNode(node);
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n`);
+        expect(render).toBe(
+            `#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n` +
+                `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
+        );
 
         // And the following imports to be used.
         expect([...imports.imports]).toStrictEqual(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
@@ -48,7 +51,8 @@ describe('default values', () => {
 
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
-            `#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, Copy, PartialOrd, Hash, FromPrimitive)]\n`,
+            `#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, Copy, PartialOrd, Hash, FromPrimitive)]\n` +
+                `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
         );
 
         // And the following imports to be used.
@@ -75,16 +79,11 @@ describe('default values', () => {
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
             `#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n` +
-                `#[cfg(feature = "serde", derive(Serialize, Deserialize))]\n`,
+                `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
         );
 
         // And the following imports to be used.
-        expect([...imports.imports]).toStrictEqual([
-            'borsh::BorshSerialize',
-            'borsh::BorshDeserialize',
-            'serde::Serialize',
-            'serde::Deserialize',
-        ]);
+        expect([...imports.imports]).toStrictEqual(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
     });
 
     test('it does not use default traits if they are overridden', () => {
@@ -122,15 +121,12 @@ describe('default values', () => {
 
         // When we get the traits from the node using custom traits
         // such that some are part of the feature flag defaults.
-        const { render, imports } = getTraitsFromNode(node, {
+        const { render } = getTraitsFromNode(node, {
             overrides: { coordinates: ['My', 'special::Traits', 'serde::Serialize'] },
         });
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(My, Traits)]\n#[cfg(feature = "serde", derive(Serialize))]\n`);
-
-        // And the following imports to be used.
-        expect([...imports.imports]).toStrictEqual(['special::Traits', 'serde::Serialize']);
+        expect(render).toBe(`#[derive(My, Traits)]\n#[cfg_attr(feature = "serde", derive(serde::Serialize))]\n`);
     });
 });
 
@@ -248,8 +244,8 @@ describe('base traits', () => {
         // Then we expect both the base and enum traits to be rendered as separate feature flags.
         expect(render).toBe(
             `#[derive(MyNonFeatureTrait)]\n` +
-                `#[cfg(feature = "base", derive(MyBaseTrait))]\n` +
-                `#[cfg(feature = "enum", derive(MyScalarEnumTrait))]\n`,
+                `#[cfg_attr(feature = "base", derive(MyBaseTrait))]\n` +
+                `#[cfg_attr(feature = "enum", derive(MyScalarEnumTrait))]\n`,
         );
     });
 
@@ -274,7 +270,7 @@ describe('base traits', () => {
 
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
-            `#[cfg(feature = "base", derive(MyBaseTrait))]\n#[cfg(feature = "enum", derive(MyScalarEnumTrait))]\n`,
+            `#[cfg_attr(feature = "base", derive(MyBaseTrait))]\n#[cfg_attr(feature = "enum", derive(MyScalarEnumTrait))]\n`,
         );
     });
 });
@@ -336,7 +332,7 @@ describe('overridden traits', () => {
         });
 
         // Then we expect some of the overridden traits to be rendered under feature flags.
-        expect(render).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg(feature = "custom", derive(MyFeedbackTrait))]\n`);
+        expect(render).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg_attr(feature = "custom", derive(MyFeedbackTrait))]\n`);
     });
 });
 
