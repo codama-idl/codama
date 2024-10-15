@@ -33,6 +33,12 @@ export const DEFAULT_TRAIT_OPTIONS: Required<TraitOptions> = {
     useFullyQualifiedName: false,
 };
 
+export type GetTraitsFromNodeFunction = (node: AccountNode | DefinedTypeNode) => { imports: ImportMap; render: string };
+
+export function getTraitsFromNodeFactory(options: TraitOptions = {}): GetTraitsFromNodeFunction {
+    return node => getTraitsFromNode(node, options);
+}
+
 export function getTraitsFromNode(
     node: AccountNode | DefinedTypeNode,
     userOptions: TraitOptions = {},
@@ -64,13 +70,13 @@ export function getTraitsFromNode(
 
     // Render the trait lines.
     const traitLines: string[] = [
-        ...(unfeaturedTraits.length > 0 ? [`#[derive(${unfeaturedTraits.join(', ')})]`] : []),
+        ...(unfeaturedTraits.length > 0 ? [`#[derive(${unfeaturedTraits.join(', ')})]\n`] : []),
         ...Object.entries(featuredTraits).map(([feature, traits]) => {
-            return `#[cfg(feature = "${feature}", derive(${traits.join(', ')}))]`;
+            return `#[cfg(feature = "${feature}", derive(${traits.join(', ')}))]\n`;
         }),
     ];
 
-    return { imports, render: traitLines.join('\n') };
+    return { imports, render: traitLines.join('') };
 }
 
 function getNodeType(node: AccountNode | DefinedTypeNode): 'alias' | 'enum' | 'struct' {

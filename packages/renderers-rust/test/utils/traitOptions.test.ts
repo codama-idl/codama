@@ -24,7 +24,7 @@ describe('default values', () => {
 
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
-            `#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, Copy, PartialOrd, Hash, FromPrimitive)]`,
+            `#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, Copy, PartialOrd, Hash, FromPrimitive)]\n`,
         );
 
         // And the following imports to be used.
@@ -51,7 +51,7 @@ describe('default values', () => {
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
             `#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n` +
-                `#[cfg(feature = "serde", derive(Serialize, Deserialize))]`,
+                `#[cfg(feature = "serde", derive(Serialize, Deserialize))]\n`,
         );
 
         // And the following imports to be used.
@@ -74,7 +74,7 @@ describe('default values', () => {
         const { render, imports } = getTraitsFromNode(node);
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]`);
+        expect(render).toBe(`#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n`);
 
         // And the following imports to be used.
         expect([...imports.imports]).toStrictEqual(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
@@ -94,7 +94,7 @@ describe('default values', () => {
         });
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(My, Traits)]`);
+        expect(render).toBe(`#[derive(My, Traits)]\n`);
 
         // And the following imports to be used.
         expect([...imports.imports]).toStrictEqual(['special::Traits']);
@@ -114,7 +114,7 @@ describe('default values', () => {
         });
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(My, Traits)]\n#[cfg(feature = "serde", derive(Serialize))]`);
+        expect(render).toBe(`#[derive(My, Traits)]\n#[cfg(feature = "serde", derive(Serialize))]\n`);
 
         // And the following imports to be used.
         expect([...imports.imports]).toStrictEqual(['special::Traits', 'serde::Serialize']);
@@ -147,7 +147,7 @@ describe('base traits', () => {
         });
 
         // Then we expect both the base and enum traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyEnumTrait)]`);
+        expect(render).toBe(`#[derive(MyBaseTrait, MyEnumTrait)]\n`);
     });
 
     test('it uses both the base and struct traits', () => {
@@ -168,7 +168,7 @@ describe('base traits', () => {
         });
 
         // Then we expect both the base and struct traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyStructTrait)]`);
+        expect(render).toBe(`#[derive(MyBaseTrait, MyStructTrait)]\n`);
     });
 
     test('it uses both the base and alias traits', () => {
@@ -186,7 +186,7 @@ describe('base traits', () => {
         });
 
         // Then we expect both the base and alias traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyAliasTrait)]`);
+        expect(render).toBe(`#[derive(MyBaseTrait, MyAliasTrait)]\n`);
     });
 
     test('it identifies feature flags under all default traits', () => {
@@ -213,7 +213,7 @@ describe('base traits', () => {
         expect(render).toBe(
             `#[derive(MyNonFeatureTrait)]\n` +
                 `#[cfg(feature = "base", derive(MyBaseTrait))]\n` +
-                `#[cfg(feature = "enum", derive(MyEnumTrait))]`,
+                `#[cfg(feature = "enum", derive(MyEnumTrait))]\n`,
         );
     });
 
@@ -238,7 +238,7 @@ describe('base traits', () => {
 
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
-            `#[cfg(feature = "base", derive(MyBaseTrait))]\n#[cfg(feature = "enum", derive(MyEnumTrait))]`,
+            `#[cfg(feature = "base", derive(MyBaseTrait))]\n#[cfg(feature = "enum", derive(MyEnumTrait))]\n`,
         );
     });
 });
@@ -262,7 +262,7 @@ describe('overridden traits', () => {
         });
 
         // Then we expect only the feedback traits to be rendered.
-        expect(render).toBe(`#[derive(MyFeedbackTrait)]`);
+        expect(render).toBe(`#[derive(MyFeedbackTrait)]\n`);
     });
 
     test('it finds traits to override when using pascal case', () => {
@@ -280,7 +280,7 @@ describe('overridden traits', () => {
         });
 
         // Then we still expect the custom feedback traits to be rendered.
-        expect(render).toBe(`#[derive(MyFeedbackTrait)]`);
+        expect(render).toBe(`#[derive(MyFeedbackTrait)]\n`);
     });
 
     test('it identifies feature flags under all overridden traits', () => {
@@ -300,7 +300,7 @@ describe('overridden traits', () => {
         });
 
         // Then we expect some of the overridden traits to be rendered under feature flags.
-        expect(render).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg(feature = "custom", derive(MyFeedbackTrait))]`);
+        expect(render).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg(feature = "custom", derive(MyFeedbackTrait))]\n`);
     });
 });
 
@@ -320,7 +320,7 @@ describe('fully qualified name traits', () => {
         });
 
         // Then we expect the fully qualified names to be used for the traits.
-        expect(render).toBe(`#[derive(fruits::Apple, fruits::Banana, vegetables::Carrot)]`);
+        expect(render).toBe(`#[derive(fruits::Apple, fruits::Banana, vegetables::Carrot)]\n`);
 
         // And no imports should be used.
         expect([...imports.imports]).toStrictEqual([]);
