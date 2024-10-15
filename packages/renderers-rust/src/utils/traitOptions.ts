@@ -30,12 +30,21 @@ export type TraitOptions = {
 };
 
 export const DEFAULT_TRAIT_OPTIONS: Required<TraitOptions> = {
-    baseDefaults: ['borsh::BorshSerialize', 'borsh::BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'],
+    baseDefaults: [
+        'borsh::BorshSerialize',
+        'borsh::BorshDeserialize',
+        'serde::Serialize',
+        'serde::Deserialize',
+        'Clone',
+        'Debug',
+        'Eq',
+        'PartialEq',
+    ],
     dataEnumDefaults: [],
     featureFlags: { serde: ['serde::Serialize', 'serde::Deserialize'] },
     overrides: {},
     scalarEnumDefaults: ['Copy', 'PartialOrd', 'Hash', 'num_derive::FromPrimitive'],
-    structDefaults: ['serde::Serialize', 'serde::Deserialize'],
+    structDefaults: [],
     useFullyQualifiedName: false,
 };
 
@@ -66,24 +75,20 @@ export function getTraitsFromNode(
     const allTraits = nodeOverrides === undefined ? getDefaultTraits(nodeType, options) : nodeOverrides;
 
     // Wrap the traits in feature flags if necessary.
-    let [unfeaturedTraits, featuredTraits] = partitionTraitsInFeatures(allTraits, options.featureFlags);
+    const partitionedTraits = partitionTraitsInFeatures(allTraits, options.featureFlags);
 
     // Import the traits if necessary.
     const imports = new ImportMap();
     if (!options.useFullyQualifiedName) {
-        unfeaturedTraits = extractFullyQualifiedNames(unfeaturedTraits, imports);
-        featuredTraits = Object.fromEntries(
-            Object.entries(featuredTraits).map(([feature, traits]) => {
-                return [feature, extractFullyQualifiedNames(traits, imports)];
-            }),
-        );
+        partitionedTraits[0] = extractFullyQualifiedNames(partitionedTraits[0], imports);
     }
+    const [unfeaturedTraits, featuredTraits] = partitionedTraits;
 
     // Render the trait lines.
     const traitLines: string[] = [
         ...(unfeaturedTraits.length > 0 ? [`#[derive(${unfeaturedTraits.join(', ')})]\n`] : []),
         ...Object.entries(featuredTraits).map(([feature, traits]) => {
-            return `#[cfg(feature = "${feature}", derive(${traits.join(', ')}))]\n`;
+            return `#[cfg_attr(feature = "${feature}", derive(${traits.join(', ')}))]\n`;
         }),
     ];
 
