@@ -243,7 +243,7 @@ describe('base traits', () => {
     });
 });
 
-describe('overridden  traits', () => {
+describe('overridden traits', () => {
     test('it replaces all default traits with the overridden traits', () => {
         // Given a scalar enum defined type.
         const node = definedTypeNode({
@@ -283,5 +283,28 @@ describe('overridden  traits', () => {
 
         // Then we expect some of the overridden traits to be rendered under feature flags.
         expect(render).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg(feature = "custom", derive(MyFeedbackTrait))]`);
+    });
+});
+
+describe('fully qualified name traits', () => {
+    test('it can use fully qualified names for traits instead of importing them', () => {
+        // Given a scalar enum defined type.
+        const node = definedTypeNode({
+            name: 'Feedback',
+            type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
+        });
+
+        // When we get the traits from the node such that we use fully qualified names.
+        const { render, imports } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            baseDefaults: ['fruits::Apple', 'fruits::Banana', 'vegetables::Carrot'],
+            useFullyQualifiedName: true,
+        });
+
+        // Then we expect the fully qualified names to be used for the traits.
+        expect(render).toBe(`#[derive(fruits::Apple, fruits::Banana, vegetables::Carrot)]`);
+
+        // And no imports should be used.
+        expect([...imports.imports]).toStrictEqual([]);
     });
 });
