@@ -112,7 +112,7 @@ function partitionTraitsInFeatures(
     const featuredTraits: Record<string, string[]> = {};
     for (const trait of traits) {
         const feature: string | undefined = reverseFeatureFlags[trait];
-        if (feature !== undefined) unfeaturedTraits.push(trait);
+        if (feature === undefined) unfeaturedTraits.push(trait);
         if (!featuredTraits[feature]) featuredTraits[feature] = [];
         featuredTraits[feature].push(trait);
     }
