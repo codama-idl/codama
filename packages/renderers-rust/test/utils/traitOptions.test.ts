@@ -188,6 +188,59 @@ describe('base traits', () => {
         // Then we expect both the base and alias traits to be rendered.
         expect(render).toBe(`#[derive(MyBaseTrait, MyAliasTrait)]`);
     });
+
+    test('it identifies feature flags under all default traits', () => {
+        // Given a scalar enum defined type.
+        const node = definedTypeNode({
+            name: 'Feedback',
+            type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
+        });
+
+        // When we get the traits from the node such that:
+        // - We provide custom base and enum defaults.
+        // - We provide custom feature flags for traits in both categories.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            baseDefaults: ['MyBaseTrait', 'MyNonFeatureTrait'],
+            enumDefaults: ['MyEnumTrait'],
+            featureFlags: {
+                base: ['MyBaseTrait'],
+                enum: ['MyEnumTrait'],
+            },
+        });
+
+        // Then we expect both the base and enum traits to be rendered as separate feature flags.
+        expect(render).toBe(
+            `#[derive(MyNonFeatureTrait)]\n` +
+                `#[cfg(feature = "base", derive(MyBaseTrait))]\n` +
+                `#[cfg(feature = "enum", derive(MyEnumTrait))]`,
+        );
+    });
+
+    test('it renders traits correctly when they are all under feature flags', () => {
+        // Given a scalar enum defined type.
+        const node = definedTypeNode({
+            name: 'Feedback',
+            type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
+        });
+
+        // When we get the traits from the node such that
+        // all traits are under feature flags.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            baseDefaults: ['MyBaseTrait'],
+            enumDefaults: ['MyEnumTrait'],
+            featureFlags: {
+                base: ['MyBaseTrait'],
+                enum: ['MyEnumTrait'],
+            },
+        });
+
+        // Then we expect the following traits to be rendered.
+        expect(render).toBe(
+            `#[cfg(feature = "base", derive(MyBaseTrait))]\n#[cfg(feature = "enum", derive(MyEnumTrait))]`,
+        );
+    });
 });
 
 describe('overridden  traits', () => {
@@ -210,5 +263,25 @@ describe('overridden  traits', () => {
 
         // Then we expect only the feedback traits to be rendered.
         expect(render).toBe(`#[derive(MyFeedbackTrait)]`);
+    });
+
+    test('it identifies feature flags under all overridden traits', () => {
+        // Given a scalar enum defined type.
+        const node = definedTypeNode({
+            name: 'Feedback',
+            type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
+        });
+
+        // When we get the traits from the node such that:
+        // - We override the feedback type with custom traits.
+        // - We provide custom feature flags for these some of these custom traits.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            featureFlags: { custom: ['MyFeedbackTrait'] },
+            overrides: { feedback: ['MyFeedbackTrait', 'MyNonFeatureTrait'] },
+        });
+
+        // Then we expect some of the overridden traits to be rendered under feature flags.
+        expect(render).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg(feature = "custom", derive(MyFeedbackTrait))]`);
     });
 });

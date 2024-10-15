@@ -61,7 +61,7 @@ export function getTraitsFromNode(
 
     // Render the trait lines.
     const traitLines: string[] = [
-        `#[derive(${unfeaturedTraits.join(', ')})]`,
+        ...(unfeaturedTraits.length > 0 ? [`#[derive(${unfeaturedTraits.join(', ')})]`] : []),
         ...Object.entries(featuredTraits).map(([feature, traits]) => {
             return `#[cfg(feature = "${feature}", derive(${traits.join(', ')}))]`;
         }),
