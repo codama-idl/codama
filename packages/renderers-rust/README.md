@@ -86,3 +86,52 @@ const traitOptions = {
     },
 };
 ```
+
+### Feature Flags
+
+You may also configure which traits should be rendered under a feature flag by using the `featureFlags` attribute. This attribute is a map where the keys are feature flag names and the values are the traits that should be rendered under that feature flag. Here is an example:
+
+```ts
+const traitOptions = {
+    featureFlags: { fruits: ['fruits::Apple', 'fruits::Banana'] },
+};
+```
+
+Now, if at any point, we encounter a `fruits::Apple` or `fruits::Banana` trait to be rendered (either as default traits or as overridden traits), they will be rendered under the `fruits` feature flag. For instance:
+
+```rust
+#[cfg(feature = "fruits", derive(fruits::Apple, fruits::Banana))]
+```
+
+By default, the `featureFlags` option is set to the following:
+
+```ts
+const traitOptions = {
+    featureFlags: { serde: ['serde::Serialize', 'serde::Deserialize'] },
+};
+```
+
+### Using the Fully Qualified Name
+
+By default, all traits are imported using the provided Fully Qualified Name which means their short name will be used within the `derive` attributes.
+
+However, you may want to avoid importing these traits and use the Fully Qualified Name directly in the generated code. To do so, you may use the `useFullyQualifiedName` attribute of the `traitOptions` object by setting it to `true`:
+
+```ts
+const traitOptions = {
+    useFullyQualifiedName: true,
+};
+```
+
+Here is an example of rendered traits with this option set to `true` and `false` (which is the default):
+
+```rust
+// With `useFullyQualifiedName` set to `false` (default).
+use serde::Serialize;
+use serde::Deserialize;
+// ...
+#[derive(Serialize, Deserialize)]
+
+// With `useFullyQualifiedName` set to `true`.
+#[derive(serde::Serialize, serde::Deserialize)]
+```
