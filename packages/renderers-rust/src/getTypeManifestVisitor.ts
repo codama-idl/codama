@@ -2,9 +2,9 @@ import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/
 import {
     arrayTypeNode,
     CountNode,
+    definedTypeNode,
     fixedCountNode,
     isNode,
-    isScalarEnum,
     NumberTypeNode,
     numberTypeNode,
     pascalCase,
@@ -13,6 +13,7 @@ import {
     remainderCountNode,
     resolveNestedTypeNode,
     snakeCase,
+    structTypeNode,
 } from '@codama/nodes';
 import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
@@ -140,41 +141,25 @@ export function getTypeManifestVisitor(options: {
                 visitDefinedType(definedType, { self }) {
                     parentName = pascalCase(definedType.name);
                     const manifest = visit(definedType.type, self);
+                    const traits = getTraitsFromNode(definedType);
+                    manifest.imports.mergeWith(traits.imports);
                     parentName = null;
-                    const traits = ['BorshSerialize', 'BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'];
 
-                    if (isNode(definedType.type, 'enumTypeNode') && isScalarEnum(definedType.type)) {
-                        traits.push('Copy', 'PartialOrd', 'Hash', 'FromPrimitive');
-                        manifest.imports.add(['num_derive::FromPrimitive']);
-                    }
+                    const nestedStructs = manifest.nestedStructs.map(struct => {
+                        const nestedTraits = getTraitsFromNode(
+                            definedTypeNode({
+                                name: struct.match(/^pub struct (\w+)/)?.[1] ?? '',
+                                type: structTypeNode([]),
+                            }),
+                        );
+                        manifest.imports.mergeWith(nestedTraits.imports);
+                        return `${nestedTraits.render}${struct}`;
+                    });
+                    const renderedType = isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])
+                        ? manifest.type
+                        : `pub type ${pascalCase(definedType.name)} = ${manifest.type};`;
 
-                    const nestedStructs = manifest.nestedStructs.map(
-                        struct =>
-                            `#[derive(${traits.join(', ')})]\n` +
-                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                            `${struct}`,
-                    );
-
-                    if (!isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])) {
-                        if (nestedStructs.length > 0) {
-                            manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
-                        }
-                        return {
-                            ...manifest,
-                            nestedStructs,
-                            type: `pub type ${pascalCase(definedType.name)} = ${manifest.type};`,
-                        };
-                    }
-
-                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
-                    return {
-                        ...manifest,
-                        nestedStructs,
-                        type:
-                            `#[derive(${traits.join(', ')})]\n` +
-                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                            `${manifest.type}`,
-                    };
+                    return { ...manifest, nestedStructs, type: `${traits.render}${renderedType}` };
                 },
 
                 visitDefinedTypeLink(node) {

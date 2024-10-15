@@ -1,4 +1,4 @@
-import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode, isScalarEnum } from '@codama/nodes';
+import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode } from '@codama/nodes';
 
 import { ImportMap } from '../ImportMap';
 
@@ -82,7 +82,7 @@ export function getTraitsFromNode(
 function getNodeType(node: AccountNode | DefinedTypeNode): 'alias' | 'enum' | 'struct' {
     if (isNode(node, 'accountNode')) return 'struct';
     if (isNode(node.type, 'structTypeNode')) return 'struct';
-    if (isNode(node.type, 'enumTypeNode') && isScalarEnum(node.type)) return 'enum';
+    if (isNode(node.type, 'enumTypeNode')) return 'enum';
     return 'alias';
 }
 
