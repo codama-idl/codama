@@ -76,13 +76,14 @@ export function getTraitsFromNode(
 
     // Wrap the traits in feature flags if necessary.
     const partitionedTraits = partitionTraitsInFeatures(allTraits, options.featureFlags);
+    let unfeaturedTraits = partitionedTraits[0];
+    const featuredTraits = partitionedTraits[1];
 
     // Import the traits if necessary.
     const imports = new ImportMap();
     if (!options.useFullyQualifiedName) {
-        partitionedTraits[0] = extractFullyQualifiedNames(partitionedTraits[0], imports);
+        unfeaturedTraits = extractFullyQualifiedNames(unfeaturedTraits, imports);
     }
-    const [unfeaturedTraits, featuredTraits] = partitionedTraits;
 
     // Render the trait lines.
     const traitLines: string[] = [

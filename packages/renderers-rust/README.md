@@ -65,10 +65,19 @@ Note that you must provide the fully qualified name of the traits you provide (e
 
 ```ts
 const traitOptions = {
-    baseDefaults: ['borsh::BorshSerialize', 'borsh::BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'],
+    baseDefaults: [
+        'borsh::BorshSerialize',
+        'borsh::BorshDeserialize',
+        'serde::Serialize',
+        'serde::Deserialize',
+        'Clone',
+        'Debug',
+        'Eq',
+        'PartialEq',
+    ],
     dataEnumDefaults: [],
     scalarEnumDefaults: ['Copy', 'PartialOrd', 'Hash', 'num_derive::FromPrimitive'],
-    structDefaults: ['serde::Serialize', 'serde::Deserialize'],
+    structDefaults: [],
 };
 ```
 
@@ -135,3 +144,5 @@ use serde::Deserialize;
 // With `useFullyQualifiedName` set to `true`.
 #[derive(serde::Serialize, serde::Deserialize)]
 ```
+
+Note that any trait rendered under a feature flag will always use the Fully Qualified Name in order to ensure we only reference the trait when the feature is enabled.
