@@ -265,6 +265,24 @@ describe('overridden traits', () => {
         expect(render).toBe(`#[derive(MyFeedbackTrait)]`);
     });
 
+    test('it finds traits to override when using pascal case', () => {
+        // Given a scalar enum defined type.
+        const node = definedTypeNode({
+            name: 'Feedback',
+            type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
+        });
+
+        // When we get the traits from the node such that
+        // we use PascalCase for the type name.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            overrides: { Feedback: ['MyFeedbackTrait'] },
+        });
+
+        // Then we still expect the custom feedback traits to be rendered.
+        expect(render).toBe(`#[derive(MyFeedbackTrait)]`);
+    });
+
     test('it identifies feature flags under all overridden traits', () => {
         // Given a scalar enum defined type.
         const node = definedTypeNode({

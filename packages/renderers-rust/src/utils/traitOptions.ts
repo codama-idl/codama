@@ -1,4 +1,4 @@
-import { AccountNode, assertIsNode, DefinedTypeNode, isNode, isScalarEnum } from '@codama/nodes';
+import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode, isScalarEnum } from '@codama/nodes';
 
 import { ImportMap } from '../ImportMap';
 
@@ -42,7 +42,10 @@ export function getTraitsFromNode(
 
     // Find all the FQN traits for the node.
     const nodeType = getNodeType(node);
-    const nodeOverrides: string[] | undefined = options.overrides[node.name];
+    const sanitizedOverrides = Object.fromEntries(
+        Object.entries(options.overrides).map(([key, value]) => [camelCase(key), value]),
+    );
+    const nodeOverrides: string[] | undefined = sanitizedOverrides[node.name];
     const allTraits = nodeOverrides === undefined ? getDefaultTraits(nodeType, options) : nodeOverrides;
 
     // Wrap the traits in feature flags if necessary.
