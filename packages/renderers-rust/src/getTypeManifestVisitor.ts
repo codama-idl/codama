@@ -13,7 +13,6 @@ import {
     remainderCountNode,
     resolveNestedTypeNode,
     snakeCase,
-    structTypeNode,
 } from '@codama/nodes';
 import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
@@ -145,21 +144,11 @@ export function getTypeManifestVisitor(options: {
                     manifest.imports.mergeWith(traits.imports);
                     parentName = null;
 
-                    const nestedStructs = manifest.nestedStructs.map(struct => {
-                        const nestedTraits = getTraitsFromNode(
-                            definedTypeNode({
-                                name: struct.match(/^pub struct (\w+)/)?.[1] ?? '',
-                                type: structTypeNode([]),
-                            }),
-                        );
-                        manifest.imports.mergeWith(nestedTraits.imports);
-                        return `${nestedTraits.render}${struct}`;
-                    });
                     const renderedType = isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])
                         ? manifest.type
                         : `pub type ${pascalCase(definedType.name)} = ${manifest.type};`;
 
-                    return { ...manifest, nestedStructs, type: `${traits.render}${renderedType}` };
+                    return { ...manifest, type: `${traits.render}${renderedType}` };
                 },
 
                 visitDefinedTypeLink(node) {
@@ -434,11 +423,15 @@ export function getTypeManifestVisitor(options: {
                     const mergedManifest = mergeManifests(fields);
 
                     if (nestedStruct) {
+                        const nestedTraits = getTraitsFromNode(
+                            definedTypeNode({ name: originalParentName, type: structType }),
+                        );
+                        mergedManifest.imports.mergeWith(nestedTraits.imports);
                         return {
                             ...mergedManifest,
                             nestedStructs: [
                                 ...mergedManifest.nestedStructs,
-                                `pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
+                                `${nestedTraits.render}pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
                             ],
                             type: pascalCase(originalParentName),
                         };
