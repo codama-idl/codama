@@ -80,10 +80,45 @@ describe('default values', () => {
         expect([...imports.imports]).toStrictEqual(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
     });
 
-    test.todo('it defaults to not using fully qualified names');
-    test.todo('it defaults to a set of feature flags for traits');
-    test.todo('it does not use default traits if they are overridden');
-    test.todo('it still uses feature flags for overridden traits');
+    test('it does not use default traits if they are overridden', () => {
+        // Given a defined type node that should use custom traits.
+        const node = definedTypeNode({
+            name: 'Score',
+            type: numberTypeNode('u64'),
+        });
+
+        // When we get the traits from the node using the
+        // default options with the overrides attribute.
+        const { render, imports } = getTraitsFromNode(node, {
+            overrides: { score: ['My', 'special::Traits'] },
+        });
+
+        // Then we expect the following traits to be rendered.
+        expect(render).toBe(`#[derive(My, Traits)]`);
+
+        // And the following imports to be used.
+        expect([...imports.imports]).toStrictEqual(['special::Traits']);
+    });
+
+    test('it still uses feature flags for overridden traits', () => {
+        // Given a defined type node that should use custom traits.
+        const node = definedTypeNode({
+            name: 'Score',
+            type: numberTypeNode('u64'),
+        });
+
+        // When we get the traits from the node using custom traits
+        // such that some are part of the feature flag defaults.
+        const { render, imports } = getTraitsFromNode(node, {
+            overrides: { score: ['My', 'special::Traits', 'serde::Serialize'] },
+        });
+
+        // Then we expect the following traits to be rendered.
+        expect(render).toBe(`#[derive(My, Traits)]\n#[cfg(feature = "serde", derive(Serialize))]`);
+
+        // And the following imports to be used.
+        expect([...imports.imports]).toStrictEqual(['special::Traits', 'serde::Serialize']);
+    });
 });
 
 const RESET_OPTIONS: Required<TraitOptions> = {
