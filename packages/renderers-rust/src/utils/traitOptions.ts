@@ -1,4 +1,4 @@
-import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode } from '@codama/nodes';
+import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode, isScalarEnum } from '@codama/nodes';
 
 import { ImportMap } from '../ImportMap';
 
@@ -7,8 +7,11 @@ export type TraitOptions = {
     aliasDefaults?: string[];
     /** The default traits to implement for all types. */
     baseDefaults?: string[];
-    /** The default traits to implement for enums only — on top of the base defaults. */
-    enumDefaults?: string[];
+    /**
+     * The default traits to implement for data enums only — on top of the base defaults.
+     * Data enums are enums with at least one non-unit variant.
+     */
+    dataEnumDefaults?: string[];
     /**
      * The mapping of feature flags to traits.
      * For each entry, the traits will be rendered within a
@@ -17,6 +20,11 @@ export type TraitOptions = {
     featureFlags?: Record<string, string[]>;
     /** The complete trait overrides of specific types. */
     overrides?: Record<string, string[]>;
+    /**
+     * The default traits to implement for scalar enums only — on top of the base defaults.
+     * Scalar enums are enums with no variants or only unit variants.
+     */
+    scalarEnumDefaults?: string[];
     /** The default traits to implement for structs only — on top of the base defaults. */
     structDefaults?: string[];
     /** Whether or not to use the fully qualified name for traits, instead of importing them. */
@@ -26,9 +34,10 @@ export type TraitOptions = {
 export const DEFAULT_TRAIT_OPTIONS: Required<TraitOptions> = {
     aliasDefaults: [],
     baseDefaults: ['borsh::BorshSerialize', 'borsh::BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'],
-    enumDefaults: ['Copy', 'PartialOrd', 'Hash', 'num_derive::FromPrimitive'],
+    dataEnumDefaults: [],
     featureFlags: { serde: ['serde::Serialize', 'serde::Deserialize'] },
     overrides: {},
+    scalarEnumDefaults: ['Copy', 'PartialOrd', 'Hash', 'num_derive::FromPrimitive'],
     structDefaults: ['serde::Serialize', 'serde::Deserialize'],
     useFullyQualifiedName: false,
 };
@@ -79,22 +88,29 @@ export function getTraitsFromNode(
     return { imports, render: traitLines.join('') };
 }
 
-function getNodeType(node: AccountNode | DefinedTypeNode): 'alias' | 'enum' | 'struct' {
+function getNodeType(node: AccountNode | DefinedTypeNode): 'alias' | 'dataEnum' | 'scalarEnum' | 'struct' {
     if (isNode(node, 'accountNode')) return 'struct';
     if (isNode(node.type, 'structTypeNode')) return 'struct';
-    if (isNode(node.type, 'enumTypeNode')) return 'enum';
+    if (isNode(node.type, 'enumTypeNode')) {
+        return isScalarEnum(node.type) ? 'scalarEnum' : 'dataEnum';
+    }
     return 'alias';
 }
 
 function getDefaultTraits(
-    nodeType: 'alias' | 'enum' | 'struct',
-    options: Pick<Required<TraitOptions>, 'aliasDefaults' | 'baseDefaults' | 'enumDefaults' | 'structDefaults'>,
+    nodeType: 'alias' | 'dataEnum' | 'scalarEnum' | 'struct',
+    options: Pick<
+        Required<TraitOptions>,
+        'aliasDefaults' | 'baseDefaults' | 'dataEnumDefaults' | 'scalarEnumDefaults' | 'structDefaults'
+    >,
 ): string[] {
     switch (nodeType) {
         case 'alias':
             return [...options.baseDefaults, ...options.aliasDefaults];
-        case 'enum':
-            return [...options.baseDefaults, ...options.enumDefaults];
+        case 'dataEnum':
+            return [...options.baseDefaults, ...options.dataEnumDefaults];
+        case 'scalarEnum':
+            return [...options.baseDefaults, ...options.scalarEnumDefaults];
         case 'struct':
         default:
             return [...options.baseDefaults, ...options.structDefaults];

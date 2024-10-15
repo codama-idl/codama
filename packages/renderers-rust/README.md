@@ -57,7 +57,8 @@ The Rust renderer provides sensible default traits when generating the various R
 Using the `traitOptions` attribute, you may configure the default traits that will be applied to every Rust type. These default traits can be configured using 4 different attributes:
 
 -   `baseDefaults`: The default traits to implement for all types.
--   `enumDefaults`: The default traits to implement for all enum types, in addition to the `baseDefaults` traits.
+-   `dataEnumDefaults`: The default traits to implement for all data enum types, in addition to the `baseDefaults` traits. Data enums are enums with at least one non-unit variant — e.g. `pub enum Command { Write(String), Quit }`.
+-   `scalarEnumDefaults`: The default traits to implement for all scalar enum types, in addition to the `baseDefaults` traits. Scalar enums are enums with unit variants only — e.g. `pub enum Feedback { Good, Bad }`.
 -   `structDefaults`: The default traits to implement for all struct types, in addition to the `baseDefaults` traits.
 -   `aliasDefaults`: The default traits to implement for all type aliases, in addition to the `baseDefaults` traits.
 
@@ -67,7 +68,8 @@ Note that you must provide the fully qualified name of the traits you provide (e
 const traitOptions = {
     aliasDefaults: [],
     baseDefaults: ['borsh::BorshSerialize', 'borsh::BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'],
-    enumDefaults: ['Copy', 'PartialOrd', 'Hash', 'num_derive::FromPrimitive'],
+    dataEnumDefaults: [],
+    scalarEnumDefaults: ['Copy', 'PartialOrd', 'Hash', 'num_derive::FromPrimitive'],
     structDefaults: ['serde::Serialize', 'serde::Deserialize'],
 };
 ```

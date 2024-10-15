@@ -2,6 +2,7 @@ import {
     accountNode,
     definedTypeNode,
     enumEmptyVariantTypeNode,
+    enumStructVariantTypeNode,
     enumTypeNode,
     numberTypeNode,
     structFieldTypeNode,
@@ -12,7 +13,30 @@ import { describe, expect, test } from 'vitest';
 import { getTraitsFromNode, TraitOptions } from '../../src/utils';
 
 describe('default values', () => {
-    test('it defaults to a set of traits for enums', () => {
+    test('it defaults to a set of traits for data enums', () => {
+        // Given a data enum defined type.
+        const node = definedTypeNode({
+            name: 'Command',
+            type: enumTypeNode([
+                enumStructVariantTypeNode(
+                    'Play',
+                    structTypeNode([structFieldTypeNode({ name: 'guess', type: numberTypeNode('u16') })]),
+                ),
+                enumEmptyVariantTypeNode('Quit'),
+            ]),
+        });
+
+        // When we get the traits from the node using the default options.
+        const { render, imports } = getTraitsFromNode(node);
+
+        // Then we expect the following traits to be rendered.
+        expect(render).toBe(`#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n`);
+
+        // And the following imports to be used.
+        expect([...imports.imports]).toStrictEqual(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
+    });
+
+    test('it defaults to a set of traits for scalar enums', () => {
         // Given a scalar enum defined type.
         const node = definedTypeNode({
             name: 'Feedback',
@@ -124,30 +148,55 @@ describe('default values', () => {
 const RESET_OPTIONS: Required<TraitOptions> = {
     aliasDefaults: [],
     baseDefaults: [],
-    enumDefaults: [],
+    dataEnumDefaults: [],
     featureFlags: {},
     overrides: {},
+    scalarEnumDefaults: [],
     structDefaults: [],
     useFullyQualifiedName: false,
 };
 
 describe('base traits', () => {
-    test('it uses both the base and enum traits', () => {
+    test('it uses both the base and data enum traits', () => {
+        // Given a data enum defined type.
+        const node = definedTypeNode({
+            name: 'Command',
+            type: enumTypeNode([
+                enumStructVariantTypeNode(
+                    'Play',
+                    structTypeNode([structFieldTypeNode({ name: 'guess', type: numberTypeNode('u16') })]),
+                ),
+                enumEmptyVariantTypeNode('Quit'),
+            ]),
+        });
+
+        // When we get the traits from the node using custom base and data enum defaults.
+        const { render } = getTraitsFromNode(node, {
+            ...RESET_OPTIONS,
+            baseDefaults: ['MyBaseTrait'],
+            dataEnumDefaults: ['MyDataEnumTrait'],
+        });
+
+        // Then we expect both the base and data enum traits to be rendered.
+        expect(render).toBe(`#[derive(MyBaseTrait, MyDataEnumTrait)]\n`);
+    });
+
+    test('it uses both the base and scalar enum traits', () => {
         // Given a scalar enum defined type.
         const node = definedTypeNode({
             name: 'Feedback',
             type: enumTypeNode([enumEmptyVariantTypeNode('Good'), enumEmptyVariantTypeNode('Bad')]),
         });
 
-        // When we get the traits from the node using custom base and enum defaults.
+        // When we get the traits from the node using custom base and scalar enum defaults.
         const { render } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
-            enumDefaults: ['MyEnumTrait'],
+            scalarEnumDefaults: ['MyScalarEnumTrait'],
         });
 
-        // Then we expect both the base and enum traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyEnumTrait)]\n`);
+        // Then we expect both the base and scalar enum traits to be rendered.
+        expect(render).toBe(`#[derive(MyBaseTrait, MyScalarEnumTrait)]\n`);
     });
 
     test('it uses both the base and struct traits', () => {
@@ -197,23 +246,23 @@ describe('base traits', () => {
         });
 
         // When we get the traits from the node such that:
-        // - We provide custom base and enum defaults.
+        // - We provide custom base and scalar enum defaults.
         // - We provide custom feature flags for traits in both categories.
         const { render } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait', 'MyNonFeatureTrait'],
-            enumDefaults: ['MyEnumTrait'],
             featureFlags: {
                 base: ['MyBaseTrait'],
-                enum: ['MyEnumTrait'],
+                enum: ['MyScalarEnumTrait'],
             },
+            scalarEnumDefaults: ['MyScalarEnumTrait'],
         });
 
         // Then we expect both the base and enum traits to be rendered as separate feature flags.
         expect(render).toBe(
             `#[derive(MyNonFeatureTrait)]\n` +
                 `#[cfg(feature = "base", derive(MyBaseTrait))]\n` +
-                `#[cfg(feature = "enum", derive(MyEnumTrait))]\n`,
+                `#[cfg(feature = "enum", derive(MyScalarEnumTrait))]\n`,
         );
     });
 
@@ -229,16 +278,16 @@ describe('base traits', () => {
         const { render } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
-            enumDefaults: ['MyEnumTrait'],
             featureFlags: {
                 base: ['MyBaseTrait'],
-                enum: ['MyEnumTrait'],
+                enum: ['MyScalarEnumTrait'],
             },
+            scalarEnumDefaults: ['MyScalarEnumTrait'],
         });
 
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
-            `#[cfg(feature = "base", derive(MyBaseTrait))]\n#[cfg(feature = "enum", derive(MyEnumTrait))]\n`,
+            `#[cfg(feature = "base", derive(MyBaseTrait))]\n#[cfg(feature = "enum", derive(MyScalarEnumTrait))]\n`,
         );
     });
 });
@@ -257,8 +306,8 @@ describe('overridden traits', () => {
         const { render } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
-            enumDefaults: ['MyEnumTrait'],
             overrides: { feedback: ['MyFeedbackTrait'] },
+            scalarEnumDefaults: ['MyScalarEnumTrait'],
         });
 
         // Then we expect only the feedback traits to be rendered.
