@@ -109,7 +109,7 @@ const traitOptions = {
 Now, if at any point, we encounter a `fruits::Apple` or `fruits::Banana` trait to be rendered (either as default traits or as overridden traits), they will be rendered under the `fruits` feature flag. For instance:
 
 ```rust
-#[cfg(feature = "fruits", derive(fruits::Apple, fruits::Banana))]
+#[cfg_attr(feature = "fruits", derive(fruits::Apple, fruits::Banana))]
 ```
 
 By default, the `featureFlags` option is set to the following:
@@ -119,6 +119,8 @@ const traitOptions = {
     featureFlags: { serde: ['serde::Serialize', 'serde::Deserialize'] },
 };
 ```
+
+Note that for feature flags to be effective, they must be added to the `Cargo.toml` file of the generated Rust client.
 
 ### Using the Fully Qualified Name
 

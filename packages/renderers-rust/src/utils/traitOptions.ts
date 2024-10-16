@@ -13,7 +13,7 @@ export type TraitOptions = {
     /**
      * The mapping of feature flags to traits.
      * For each entry, the traits will be rendered within a
-     * `#[cfg(feature = "feature_name", derive(Traits))]` attribute.
+     * `#[cfg_attr(feature = "feature_name", derive(Traits))]` attribute.
      */
     featureFlags?: Record<string, string[]>;
     /** The complete trait overrides of specific types. */
