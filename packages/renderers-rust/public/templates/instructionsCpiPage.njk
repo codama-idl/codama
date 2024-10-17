@@ -87,7 +87,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity({{ instruction.accounts.length }} + remaining_accounts.len());
+    let mut accounts = Vec::with_capacity({{ instruction.accounts.length + '+' if instruction.accounts.length > 0}} remaining_accounts.len());
     {% for account in instruction.accounts %}
       {% if account.isSigner === 'either' %}
         {% if account.isOptional and instruction.optionalAccountStrategy === 'programId' %}
@@ -161,7 +161,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity({{ instruction.accounts.length }} + 1 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity({{ instruction.accounts.length + 1 }} + remaining_accounts.len());
     account_infos.push(self.__program.clone());
     {% for account in instruction.accounts %}
       {% if account.isOptional %}

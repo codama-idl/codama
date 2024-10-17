@@ -25,7 +25,7 @@ impl AddMemo {
         args: AddMemoInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(0 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(remaining_accounts.len());
         accounts.extend_from_slice(remaining_accounts);
         let mut data = AddMemoInstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
@@ -159,7 +159,7 @@ impl<'a, 'b> AddMemoCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(0 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(remaining_accounts.len());
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
@@ -176,7 +176,7 @@ impl<'a, 'b> AddMemoCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(0 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         remaining_accounts
             .iter()

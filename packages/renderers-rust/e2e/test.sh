@@ -7,5 +7,6 @@ function test_project() {
     cd ../..
 }
 
+test_project dummy
 test_project system
 test_project memo
