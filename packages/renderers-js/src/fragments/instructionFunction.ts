@@ -72,6 +72,7 @@ export function getInstructionFunctionFragment(
     const hasRemainingAccountArgs =
         (instructionNode.remainingAccounts ?? []).filter(({ value }) => isNode(value, 'argumentValueNode')).length > 0;
     const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
+    const hasInput = hasAccounts || hasAnyArgs;
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     const encoderFunction = customData
@@ -125,6 +126,7 @@ export function getInstructionFunctionFragment(
         hasData,
         hasDataArgs,
         hasExtraArgs,
+        hasInput,
         hasLegacyOptionalAccounts,
         hasRemainingAccounts,
         hasResolver,
