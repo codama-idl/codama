@@ -1,6 +1,6 @@
 {{ inputTypeFragment }}
 
-export {{ 'async' if useAsync }} function {{ functionName }}{{ typeParamsFragment }}(input: {{ inputTypeCallFragment }}, config?: { programAddress?: TProgramAddress } ): {{ getReturnType(instructionTypeFragment) }} {
+export {{ 'async' if useAsync }} function {{ functionName }}{{ typeParamsFragment }}({% if hasInput %}input: {{ inputTypeCallFragment }}, {% endif %}config?: { programAddress?: TProgramAddress } ): {{ getReturnType(instructionTypeFragment) }} {
   // Program address.
   const programAddress = config?.programAddress ?? {{ programAddressConstant }};
 
