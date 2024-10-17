@@ -1,0 +1,47 @@
+{
+  "name": "@codama/renderers-js-umi-e2e-dummy",
+  "private": true,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "sideEffects": false,
+  "scripts": {
+    "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+    "test": "ava",
+    "lint": "eslint --ext js,ts,tsx src && prettier --check src test",
+    "lint:fix": "eslint --fix --ext js,ts,tsx src && prettier --write src test"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@metaplex-foundation/umi": "^0.9.0"
+  },
+  "devDependencies": {
+    "@ava/typescript": "^4.1.0",
+    "@metaplex-foundation/umi": "^0.9.0",
+    "@metaplex-foundation/umi-bundle-tests": "^0.9.0",
+    "@solana/eslint-config-solana": "^3.0.0",
+    "@solana/web3.js": "1.91.7",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "ava": "^6.1.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "tsup": "^8.0.2",
+    "typedoc": "^0.25.12",
+    "typedoc-plugin-missing-exports": "^2.2.0",
+    "typescript": "^5.4.2"
+  },
+  "ava": {
+    "typescript": {
+      "compile": false,
+      "rewritePaths": {
+        "test/": "dist/test/"
+      }
+    }
+  },
+  "packageManager": "pnpm@9.1.0"
+}
