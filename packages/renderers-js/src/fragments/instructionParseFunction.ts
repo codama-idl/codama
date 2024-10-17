@@ -21,10 +21,6 @@ export function getInstructionParseFunctionFragment(
             : instructionNode.accounts.length;
     const hasData = !!customData || instructionNode.arguments.length > 0;
 
-    if (!hasAccounts && !hasData) {
-        return fragment('');
-    }
-
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     const dataTypeFragment = fragment(

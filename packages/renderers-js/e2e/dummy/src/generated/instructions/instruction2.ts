@@ -48,3 +48,17 @@ export function getInstruction2Instruction<
 
   return instruction;
 }
+
+export type ParsedInstruction2Instruction<
+  TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
+> = {
+  programAddress: Address<TProgram>;
+};
+
+export function parseInstruction2Instruction<TProgram extends string>(
+  instruction: IInstruction<TProgram>
+): ParsedInstruction2Instruction<TProgram> {
+  return {
+    programAddress: instruction.programAddress,
+  };
+}
