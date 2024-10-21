@@ -1,5 +1,11 @@
 # @codama/renderers-rust
 
+## 1.0.3
+
+### Patch Changes
+
+-   [#250](https://github.com/codama-idl/codama/pull/250) [`0c96251`](https://github.com/codama-idl/codama/commit/0c962519c470d6dcc29fcb3db6195b06222fac5d) Thanks [@febo](https://github.com/febo)! - Add anchorTraits option to Rust renderer
+
 ## 1.0.2
 
 ### Patch Changes
