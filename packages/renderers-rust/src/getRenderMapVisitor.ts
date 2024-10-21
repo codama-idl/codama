@@ -30,6 +30,7 @@ import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, getTraitsFromNodeFactory, LinkOverrides, render, TraitOptions } from './utils';
 
 export type GetRenderMapOptions = {
+    anchorTraits?: boolean;
     defaultTraitOverrides?: string[];
     dependencyMap?: Record<string, string>;
     linkOverrides?: LinkOverrides;
@@ -46,6 +47,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
     const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
     const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
+    const anchorTraits = options.anchorTraits ?? true;
 
     return pipe(
         staticVisitor(
@@ -92,6 +94,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         `accounts/${snakeCase(node.name)}.rs`,
                         render('accountsPage.njk', {
                             account: node,
+                            anchorTraits,
                             constantSeeds,
                             hasVariableSeeds,
                             imports: imports
