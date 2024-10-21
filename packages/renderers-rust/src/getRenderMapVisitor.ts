@@ -35,6 +35,7 @@ export type GetRenderMapOptions = {
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
     traitOptions?: TraitOptions;
+    anchorTraits?: boolean;
 };
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
@@ -46,6 +47,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
     const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
     const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
+    const anchorTraits = options.anchorTraits ?? true;
 
     return pipe(
         staticVisitor(
@@ -101,6 +103,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             program,
                             seeds,
                             typeManifest,
+                            anchorTraits,
                         }),
                     );
                 },
