@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK, CodamaError } from '@codama/errors';
 import { GetNodeFromKind, Node, NodeKind } from '@codama/nodes';
 
 import { assertIsNodePath, NodePath } from './NodePath';
@@ -45,9 +46,10 @@ export class NodeStack {
     }
 
     public popPath(): NodePath {
-        if (this.stack.length === 0) {
-            // TODO: Coded error
-            throw new Error('The stack of paths can never be empty.');
+        if (this.stack.length <= 1) {
+            throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK, {
+                path: [...this.stack[this.stack.length - 1]],
+            });
         }
         return [...this.stack.pop()!];
     }
