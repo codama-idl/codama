@@ -14,7 +14,7 @@ import {
     pdaSeedValueNode,
     pdaValueNode,
 } from '@codama/nodes';
-import { extendVisitor, identityVisitor, LinkableDictionary, pipe, Visitor } from '@codama/visitors-core';
+import { extendVisitor, identityVisitor, LinkableDictionary, NodeStack, pipe, Visitor } from '@codama/visitors-core';
 
 /**
  * Fills in default values for variable PDA seeds that are not explicitly provided.
@@ -30,6 +30,7 @@ import { extendVisitor, identityVisitor, LinkableDictionary, pipe, Visitor } fro
  */
 export function fillDefaultPdaSeedValuesVisitor(
     instruction: InstructionNode,
+    stack: NodeStack,
     linkables: LinkableDictionary,
     strictMode: boolean = false,
 ) {
@@ -38,7 +39,9 @@ export function fillDefaultPdaSeedValuesVisitor(
             visitPdaValue(node, { next }) {
                 const visitedNode = next(node);
                 assertIsNode(visitedNode, 'pdaValueNode');
-                const foundPda = isNode(visitedNode.pda, 'pdaNode') ? visitedNode.pda : linkables.get(visitedNode.pda);
+                const foundPda = isNode(visitedNode.pda, 'pdaNode')
+                    ? visitedNode.pda
+                    : linkables.get(visitedNode.pda, stack);
                 if (!foundPda) return visitedNode;
                 const seeds = addDefaultSeedValuesFromPdaWhenMissing(instruction, foundPda, visitedNode.seeds);
                 if (strictMode && !allSeedsAreValid(instruction, foundPda, seeds)) {

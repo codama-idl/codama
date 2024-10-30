@@ -1,4 +1,5 @@
-import { InstructionNode, pascalCase, ProgramNode } from '@codama/nodes';
+import { InstructionNode, pascalCase } from '@codama/nodes';
+import { NodeStack } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragmentFromTemplate, mergeFragments } from './common';
@@ -8,10 +9,11 @@ import { getInstructionAccountTypeParamFragment } from './instructionAccountType
 export function getInstructionTypeFragment(
     scope: Pick<GlobalFragmentScope, 'customInstructionData' | 'linkables' | 'nameApi'> & {
         instructionNode: InstructionNode;
-        programNode: ProgramNode;
+        instructionStack: NodeStack;
     },
 ): Fragment {
-    const { instructionNode, programNode, nameApi, customInstructionData } = scope;
+    const { instructionNode, instructionStack, nameApi, customInstructionData } = scope;
+    const programNode = instructionStack.getProgram()!;
     const hasAccounts = instructionNode.accounts.length > 0;
     const customData = customInstructionData.get(instructionNode.name);
     const hasData = !!customData || instructionNode.arguments.length > 0;

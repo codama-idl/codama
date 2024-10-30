@@ -14,13 +14,17 @@ import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
-    recordLinkablesVisitor,
+    NodeStack,
+    pipe,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
 } from '@codama/visitors-core';
 
 import { flattenInstructionArguments } from './flattenInstructionDataArgumentsVisitor';
 
 export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, string>) {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
 
     const visitor = bottomUpTransformerVisitor(
         Object.entries(map).map(
@@ -44,8 +48,8 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                     let argType: EnumTypeNode;
                     if (isNode(argField.type, 'enumTypeNode')) {
                         argType = argField.type;
-                    } else if (isNode(argField.type, 'definedTypeLinkNode') && linkables.has(argField.type)) {
-                        const linkedType = linkables.get(argField.type)?.type ?? null;
+                    } else if (isNode(argField.type, 'definedTypeLinkNode') && linkables.has(argField.type, stack)) {
+                        const linkedType = linkables.get(argField.type, stack)?.type ?? null;
                         assertIsNode(linkedType, 'enumTypeNode');
                         argType = linkedType;
                     } else {
@@ -100,5 +104,9 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
         ),
     );
 
-    return recordLinkablesVisitor(visitor, linkables);
+    return pipe(
+        visitor,
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
+    );
 }

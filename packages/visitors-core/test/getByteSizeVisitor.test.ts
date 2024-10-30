@@ -15,10 +15,12 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getByteSizeVisitor, LinkableDictionary, visit, Visitor } from '../src';
+import { getByteSizeVisitor, LinkableDictionary, NodeStack, visit, Visitor } from '../src';
 
 const expectSize = (node: Node, expectedSize: number | null) => {
-    expect(visit(node, getByteSizeVisitor(new LinkableDictionary()) as Visitor<number | null>)).toBe(expectedSize);
+    expect(visit(node, getByteSizeVisitor(new LinkableDictionary(), new NodeStack()) as Visitor<number | null>)).toBe(
+        expectedSize,
+    );
 };
 
 test.each([

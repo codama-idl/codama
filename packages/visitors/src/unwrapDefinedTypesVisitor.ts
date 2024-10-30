@@ -2,14 +2,17 @@ import { assertIsNodeFilter, camelCase, CamelCaseString, programNode } from '@co
 import {
     extendVisitor,
     LinkableDictionary,
+    NodeStack,
     nonNullableIdentityVisitor,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     visit,
 } from '@codama/visitors-core';
 
 export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
     const typesToInlineMainCased = typesToInline === '*' ? '*' : typesToInline.map(camelCase);
     const shouldInline = (definedType: CamelCaseString): boolean =>
         typesToInlineMainCased === '*' || typesToInlineMainCased.includes(definedType);
@@ -22,7 +25,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     if (!shouldInline(linkType.name)) {
                         return linkType;
                     }
-                    return visit(linkables.getOrThrow(linkType).type, self);
+                    return visit(linkables.getOrThrow(linkType, stack).type, self);
                 },
 
                 visitProgram(program, { self }) {
@@ -41,6 +44,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     });
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }

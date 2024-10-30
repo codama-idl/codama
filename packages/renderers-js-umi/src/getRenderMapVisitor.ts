@@ -25,8 +25,10 @@ import {
     getByteSizeVisitor,
     getResolvedInstructionInputsVisitor,
     LinkableDictionary,
+    NodeStack,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     ResolvedInstructionAccount,
     ResolvedInstructionInput,
     staticVisitor,
@@ -60,7 +62,8 @@ export type GetRenderMapOptions = {
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<RenderMap> {
     const linkables = new LinkableDictionary();
-    const byteSizeVisitor = getByteSizeVisitor(linkables);
+    const stack = new NodeStack();
+    const byteSizeVisitor = getByteSizeVisitor(linkables, stack);
     let program: ProgramNode | null = null;
 
     const renderParentInstructions = options.renderParentInstructions ?? false;
@@ -201,7 +204,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     }
 
                     // Seeds.
-                    const pda = node.pda ? linkables.get(node.pda) : undefined;
+                    const pda = node.pda ? linkables.get(node.pda, stack) : undefined;
                     const pdaSeeds = pda?.seeds ?? [];
                     const seeds = pdaSeeds.map(seed => {
                         if (isNode(seed, 'variablePdaSeedNode')) {
@@ -540,6 +543,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }

@@ -10,7 +10,6 @@ import {
     getAllPdas,
     getAllPrograms,
     InstructionNode,
-    ProgramNode,
     resolveNestedTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
 } from '@codama/nodes';
@@ -19,8 +18,10 @@ import {
     extendVisitor,
     getResolvedInstructionInputsVisitor,
     LinkableDictionary,
+    NodeStack,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
@@ -86,7 +87,7 @@ export type GlobalFragmentScope = {
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
-    let program: ProgramNode | null = null;
+    const stack = new NodeStack();
 
     const nameTransformers = {
         ...DEFAULT_NAME_TRANSFORMERS,
@@ -140,14 +141,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v =>
             extendVisitor(v, {
                 visitAccount(node) {
-                    if (!program) {
+                    if (!stack.getProgram()) {
                         throw new Error('Account must be visited inside a program.');
                     }
 
                     const scope = {
                         ...globalScope,
                         accountNode: node,
-                        programNode: program,
+                        accountStack: stack.clone(),
                         typeManifest: visit(node, typeManifestVisitor),
                     };
 
@@ -221,7 +222,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitInstruction(node) {
-                    if (!program) {
+                    if (!stack.getProgram()) {
                         throw new Error('Instruction must be visited inside a program.');
                     }
 
@@ -237,7 +238,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             }),
                         ),
                         instructionNode: node,
-                        programNode: program,
+                        instructionStack: stack,
                         renamedArgs: getRenamedArgsMap(node),
                         resolvedInputs: visit(node, resolvedInstructionInputVisitor),
                     };
@@ -290,11 +291,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitPda(node) {
-                    if (!program) {
+                    if (!stack.getProgram()) {
                         throw new Error('Account must be visited inside a program.');
                     }
 
-                    const scope = { ...globalScope, pdaNode: node, programNode: program };
+                    const scope = { ...globalScope, pdaNode: node, pdaStack: stack };
                     const pdaFunctionFragment = getPdaFunctionFragment(scope);
                     const imports = new ImportMap().mergeWith(pdaFunctionFragment);
 
@@ -308,7 +309,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitProgram(node, { self }) {
-                    program = node;
                     const customDataDefinedType = [
                         ...getDefinedTypeNodesToExtract(node.accounts, customAccountData),
                         ...getDefinedTypeNodesToExtract(node.instructions, customInstructionData),
@@ -349,11 +349,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     );
 
                     renderMap.mergeWith(
-                        ...getAllInstructionsWithSubs(program, {
+                        ...getAllInstructionsWithSubs(node, {
                             leavesOnly: !renderParentInstructions,
                         }).map(ix => visit(ix, self)),
                     );
-                    program = null;
                     return renderMap;
                 },
 
@@ -435,7 +434,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
 

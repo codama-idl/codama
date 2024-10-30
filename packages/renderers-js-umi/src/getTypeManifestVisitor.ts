@@ -17,7 +17,16 @@ import {
     structTypeNodeFromInstructionArgumentNodes,
     TypeNode,
 } from '@codama/nodes';
-import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@codama/visitors-core';
+import {
+    extendVisitor,
+    LinkableDictionary,
+    NodeStack,
+    pipe,
+    recordNodeStackVisitor,
+    staticVisitor,
+    visit,
+    Visitor,
+} from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { getBytesFromBytesValueNode, GetImportFromFunction, jsDocblock, ParsedCustomDataOptions } from './utils';
@@ -59,6 +68,7 @@ export function getTypeManifestVisitor(input: {
     const { linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
     let parentName = input.parentName ?? null;
     let parentSize: NumberTypeNode | number | null = null;
+    const stack = new NodeStack();
 
     return pipe(
         staticVisitor(
@@ -418,7 +428,8 @@ export function getTypeManifestVisitor(input: {
                     const variantName = pascalCase(node.variant);
                     const importFrom = getImportFrom(node.enum);
 
-                    const enumNode = linkables.get(node.enum)?.type;
+                    // FIXME(loris): No program node can ever be in this stack.
+                    const enumNode = linkables.get(node.enum, stack)?.type;
                     const isScalar =
                         enumNode && isNode(enumNode, 'enumTypeNode')
                             ? isScalarEnum(enumNode)
@@ -836,6 +847,7 @@ export function getTypeManifestVisitor(input: {
                     throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
+        v => recordNodeStackVisitor(v, stack),
     );
 }
 

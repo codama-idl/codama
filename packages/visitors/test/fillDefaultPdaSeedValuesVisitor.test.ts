@@ -14,7 +14,7 @@ import {
     publicKeyTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
-import { LinkableDictionary, visit } from '@codama/visitors-core';
+import { LinkableDictionary, NodeStack, visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { fillDefaultPdaSeedValuesVisitor } from '../src';
@@ -39,8 +39,7 @@ test('it fills missing pda seed values with default values', () => {
 
     // And a linkable dictionary that recorded this PDA.
     const linkables = new LinkableDictionary();
-    linkables.stack.push(program);
-    linkables.record(pda);
+    linkables.record(pda, new NodeStack([program, pda]));
 
     // And a pdaValueNode with a single seed filled.
     const node = pdaValueNode('myPda', [pdaSeedValueNode('seed1', numberValueNode(42))]);
@@ -57,9 +56,10 @@ test('it fills missing pda seed values with default values', () => {
         arguments: [instructionArgumentNode({ name: 'seed2', type: numberTypeNode('u64') })],
         name: 'myInstruction',
     });
+    const instructionStack = new NodeStack([program, instruction]);
 
     // When we fill the PDA seeds with default values.
-    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, linkables));
+    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, instructionStack, linkables));
 
     // Then we expect the following pdaValueNode to be returned.
     expect(result).toEqual(
@@ -91,8 +91,7 @@ test('it fills nested pda value nodes', () => {
 
     // And a linkable dictionary that recorded this PDA.
     const linkables = new LinkableDictionary();
-    linkables.stack.push(program);
-    linkables.record(pda);
+    linkables.record(pda, new NodeStack([program, pda]));
 
     // And a pdaValueNode nested inside a conditionalValueNode.
     const node = conditionalValueNode({
@@ -112,9 +111,10 @@ test('it fills nested pda value nodes', () => {
         arguments: [instructionArgumentNode({ name: 'seed2', type: numberTypeNode('u64') })],
         name: 'myInstruction',
     });
+    const instructionStack = new NodeStack([program, instruction]);
 
     // When we fill the PDA seeds with default values.
-    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, linkables));
+    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, instructionStack, linkables));
 
     // Then we expect the following conditionalValueNode to be returned.
     expect(result).toEqual(
@@ -149,8 +149,7 @@ test('it ignores default seeds missing from the instruction', () => {
 
     // And a linkable dictionary that recorded this PDA.
     const linkables = new LinkableDictionary();
-    linkables.stack.push(program);
-    linkables.record(pda);
+    linkables.record(pda, new NodeStack([program, pda]));
 
     // And a pdaValueNode with a single seed filled.
     const node = pdaValueNode('myPda', [pdaSeedValueNode('seed1', numberValueNode(42))]);
@@ -160,9 +159,10 @@ test('it ignores default seeds missing from the instruction', () => {
         arguments: [instructionArgumentNode({ name: 'seed2', type: numberTypeNode('u64') })],
         name: 'myInstruction',
     });
+    const instructionStack = new NodeStack([program, instruction]);
 
     // When we fill the PDA seeds with default values.
-    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, linkables));
+    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, instructionStack, linkables));
 
     // Then we expect the following pdaValueNode to be returned.
     expect(result).toEqual(

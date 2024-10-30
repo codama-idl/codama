@@ -1,4 +1,5 @@
-import { AccountNode, isNodeFilter, ProgramNode } from '@codama/nodes';
+import { AccountNode, isNodeFilter } from '@codama/nodes';
+import { NodeStack } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import type { TypeManifest } from '../TypeManifest';
@@ -7,12 +8,12 @@ import { Fragment, fragment, fragmentFromTemplate } from './common';
 export function getAccountPdaHelpersFragment(
     scope: Pick<GlobalFragmentScope, 'customAccountData' | 'linkables' | 'nameApi'> & {
         accountNode: AccountNode;
-        programNode: ProgramNode;
+        accountStack: NodeStack;
         typeManifest: TypeManifest;
     },
 ): Fragment {
-    const { accountNode, programNode, nameApi, linkables, customAccountData, typeManifest } = scope;
-    const pdaNode = accountNode.pda ? linkables.get(accountNode.pda) : undefined;
+    const { accountNode, accountStack, nameApi, linkables, customAccountData, typeManifest } = scope;
+    const pdaNode = accountNode.pda ? linkables.get(accountNode.pda, accountStack) : undefined;
     if (!pdaNode) {
         return fragment('');
     }
@@ -38,7 +39,7 @@ export function getAccountPdaHelpersFragment(
         findPdaFunction,
         hasVariableSeeds,
         pdaSeedsType,
-        program: programNode,
+        program: accountStack.getProgram(),
     })
         .mergeImportsWith(accountTypeFragment)
         .addImports(importFrom, hasVariableSeeds ? [pdaSeedsType, findPdaFunction] : [findPdaFunction])
