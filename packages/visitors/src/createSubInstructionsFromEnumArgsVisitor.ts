@@ -14,23 +14,20 @@ import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
-    NodeStack,
     pipe,
     recordLinkablesOnFirstVisitVisitor,
-    recordNodeStackVisitor,
 } from '@codama/visitors-core';
 
 import { flattenInstructionArguments } from './flattenInstructionDataArgumentsVisitor';
 
 export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, string>) {
     const linkables = new LinkableDictionary();
-    const stack = new NodeStack();
 
     const visitor = bottomUpTransformerVisitor(
         Object.entries(map).map(
             ([selector, argNameInput]): BottomUpNodeTransformerWithSelector => ({
                 select: ['[instructionNode]', selector],
-                transform: node => {
+                transform: (node, stack) => {
                     assertIsNode(node, 'instructionNode');
 
                     const argFields = node.arguments;
@@ -48,8 +45,11 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                     let argType: EnumTypeNode;
                     if (isNode(argField.type, 'enumTypeNode')) {
                         argType = argField.type;
-                    } else if (isNode(argField.type, 'definedTypeLinkNode') && linkables.has(argField.type, stack)) {
-                        const linkedType = linkables.get(argField.type, stack)?.type ?? null;
+                    } else if (
+                        isNode(argField.type, 'definedTypeLinkNode') &&
+                        linkables.has([...stack.getPath(), argField.type])
+                    ) {
+                        const linkedType = linkables.get([...stack.getPath(), argField.type])?.type;
                         assertIsNode(linkedType, 'enumTypeNode');
                         argType = linkedType;
                     } else {
@@ -104,9 +104,5 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
         ),
     );
 
-    return pipe(
-        visitor,
-        v => recordNodeStackVisitor(v, stack),
-        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
-    );
+    return pipe(visitor, v => recordLinkablesOnFirstVisitVisitor(v, linkables));
 }

@@ -47,7 +47,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     const items = [] as ValidationItem[];
                     if (!node.name) {
                         items.push(validationItem('error', 'Pointing to a defined type with no name.', node, stack));
-                    } else if (!linkables.has(node, stack)) {
+                    } else if (!linkables.has(stack.getPath())) {
                         items.push(
                             validationItem(
                                 'error',

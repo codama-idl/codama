@@ -13,7 +13,7 @@ export function getAccountPdaHelpersFragment(
     },
 ): Fragment {
     const { accountNode, accountStack, nameApi, linkables, customAccountData, typeManifest } = scope;
-    const pdaNode = accountNode.pda ? linkables.get(accountNode.pda, accountStack) : undefined;
+    const pdaNode = accountNode.pda ? linkables.get([...accountStack.getPath(), accountNode.pda]) : undefined;
     if (!pdaNode) {
         return fragment('');
     }

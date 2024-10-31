@@ -75,7 +75,7 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         kind: LinkNode['kind'];
         linkNode: LinkNode;
         name: CamelCaseString;
-        stack: Node[];
+        path: readonly Node[];
     };
     [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
         fsFunction: string;
@@ -169,7 +169,7 @@ type ValidationItem = {
     level: 'debug' | 'error' | 'info' | 'trace' | 'warn';
     message: string;
     node: Node;
-    stack: Node[];
+    path: Node[];
 };
 
 export function decodeEncodedContext(encodedContext: string): object {

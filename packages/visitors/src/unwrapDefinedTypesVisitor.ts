@@ -25,7 +25,9 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     if (!shouldInline(linkType.name)) {
                         return linkType;
                     }
-                    return visit(linkables.getOrThrow(linkType, stack).type, self);
+                    const definedType = linkables.getOrThrow(stack.getPath('definedTypeLinkNode'));
+                    // FIXME: Wrap in heap.pushStack() and heap.popStack().
+                    return visit(definedType.type, self);
                 },
 
                 visitProgram(program, { self }) {

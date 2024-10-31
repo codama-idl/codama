@@ -45,10 +45,9 @@ test('it records program nodes', () => {
     // When we visit the tree.
     visit(node, visitor);
 
-    // Then we expect program nodes to be recorded and retrievable.
-    const emptyStack = new NodeStack();
-    expect(linkables.get(programLinkNode('programA'), emptyStack)).toEqual(node.program);
-    expect(linkables.get(programLinkNode('programB'), emptyStack)).toEqual(node.additionalPrograms[0]);
+    // Then we expect program paths to be recorded and retrievable.
+    expect(linkables.getPath([programLinkNode('programA')])).toEqual([node, node.program]);
+    expect(linkables.getPath([programLinkNode('programB')])).toEqual([node, node.additionalPrograms[0]]);
 });
 
 test('it records account nodes', () => {
@@ -66,10 +65,9 @@ test('it records account nodes', () => {
     // When we visit the tree.
     visit(node, visitor);
 
-    // Then we expect account nodes to be recorded and retrievable.
-    const emptyStack = new NodeStack();
-    expect(linkables.get(accountLinkNode('accountA', 'myProgram'), emptyStack)).toEqual(node.accounts[0]);
-    expect(linkables.get(accountLinkNode('accountB', 'myProgram'), emptyStack)).toEqual(node.accounts[1]);
+    // Then we expect account paths to be recorded and retrievable.
+    expect(linkables.getPath([accountLinkNode('accountA', 'myProgram')])).toEqual([node, node.accounts[0]]);
+    expect(linkables.getPath([accountLinkNode('accountB', 'myProgram')])).toEqual([node, node.accounts[1]]);
 });
 
 test('it records defined type nodes', () => {
@@ -90,10 +88,9 @@ test('it records defined type nodes', () => {
     // When we visit the tree.
     visit(node, visitor);
 
-    // Then we expect defined type nodes to be recorded and retrievable.
-    const emptyStack = new NodeStack();
-    expect(linkables.get(definedTypeLinkNode('typeA', 'myProgram'), emptyStack)).toEqual(node.definedTypes[0]);
-    expect(linkables.get(definedTypeLinkNode('typeB', 'myProgram'), emptyStack)).toEqual(node.definedTypes[1]);
+    // Then we expect defined type paths to be recorded and retrievable.
+    expect(linkables.getPath([definedTypeLinkNode('typeA', 'myProgram')])).toEqual([node, node.definedTypes[0]]);
+    expect(linkables.getPath([definedTypeLinkNode('typeB', 'myProgram')])).toEqual([node, node.definedTypes[1]]);
 });
 
 test('it records pda nodes', () => {
@@ -111,10 +108,9 @@ test('it records pda nodes', () => {
     // When we visit the tree.
     visit(node, visitor);
 
-    // Then we expect pda nodes to be recorded and retrievable.
-    const emptyStack = new NodeStack();
-    expect(linkables.get(pdaLinkNode('pdaA', 'myProgram'), emptyStack)).toEqual(node.pdas[0]);
-    expect(linkables.get(pdaLinkNode('pdaB', 'myProgram'), emptyStack)).toEqual(node.pdas[1]);
+    // Then we expect pda paths to be recorded and retrievable.
+    expect(linkables.getPath([pdaLinkNode('pdaA', 'myProgram')])).toEqual([node, node.pdas[0]]);
+    expect(linkables.getPath([pdaLinkNode('pdaB', 'myProgram')])).toEqual([node, node.pdas[1]]);
 });
 
 test('it records instruction nodes', () => {
@@ -132,10 +128,9 @@ test('it records instruction nodes', () => {
     // When we visit the tree.
     visit(node, visitor);
 
-    // Then we expect instruction nodes to be recorded and retrievable.
-    const emptyStack = new NodeStack();
-    expect(linkables.get(instructionLinkNode('instructionA', 'myProgram'), emptyStack)).toEqual(node.instructions[0]);
-    expect(linkables.get(instructionLinkNode('instructionB', 'myProgram'), emptyStack)).toEqual(node.instructions[1]);
+    // Then we expect instruction paths to be recorded and retrievable.
+    expect(linkables.getPath([instructionLinkNode('instructionA', 'myProgram')])).toEqual([node, node.instructions[0]]);
+    expect(linkables.getPath([instructionLinkNode('instructionB', 'myProgram')])).toEqual([node, node.instructions[1]]);
 });
 
 test('it records instruction account nodes', () => {
@@ -157,15 +152,18 @@ test('it records instruction account nodes', () => {
     // When we visit the tree.
     visit(node, visitor);
 
-    // Then we expect instruction account nodes to be recorded and retrievable.
-    const emptyStack = new NodeStack();
+    // Then we expect instruction account paths to be recorded and retrievable.
     const instruction = instructionLinkNode('myInstruction', 'myProgram');
-    expect(linkables.get(instructionAccountLinkNode('accountA', instruction), emptyStack)).toEqual(
+    expect(linkables.getPath([instructionAccountLinkNode('accountA', instruction)])).toEqual([
+        node,
+        node.instructions[0],
         instructionAccounts[0],
-    );
-    expect(linkables.get(instructionAccountLinkNode('accountB', instruction), emptyStack)).toEqual(
+    ]);
+    expect(linkables.getPath([instructionAccountLinkNode('accountB', instruction)])).toEqual([
+        node,
+        node.instructions[0],
         instructionAccounts[1],
-    );
+    ]);
 });
 
 test('it records instruction argument nodes', () => {
@@ -187,15 +185,18 @@ test('it records instruction argument nodes', () => {
     // When we visit the tree.
     visit(node, visitor);
 
-    // Then we expect instruction argument nodes to be recorded and retrievable.
-    const emptyStack = new NodeStack();
+    // Then we expect instruction argument paths to be recorded and retrievable.
     const instruction = instructionLinkNode('myInstruction', 'myProgram');
-    expect(linkables.get(instructionArgumentLinkNode('argumentA', instruction), emptyStack)).toEqual(
+    expect(linkables.getPath([instructionArgumentLinkNode('argumentA', instruction)])).toEqual([
+        node,
+        node.instructions[0],
         instructionArguments[0],
-    );
-    expect(linkables.get(instructionArgumentLinkNode('argumentB', instruction), emptyStack)).toEqual(
+    ]);
+    expect(linkables.getPath([instructionArgumentLinkNode('argumentB', instruction)])).toEqual([
+        node,
+        node.instructions[0],
         instructionArguments[1],
-    );
+    ]);
 });
 
 test('it records all linkable before the first visit of the base visitor', () => {
@@ -207,11 +208,10 @@ test('it records all linkable before the first visit of the base visitor', () =>
     // And a recordLinkablesOnFirstVisitVisitor extending a base visitor that
     // stores the linkable programs available at every visit.
     const linkables = new LinkableDictionary();
-    const emptyStack = new NodeStack();
     const events: string[] = [];
     const baseVisitor = interceptFirstVisitVisitor(voidVisitor(), (node, next) => {
-        events.push(`programA:${linkables.has(programLinkNode('programA'), emptyStack)}`);
-        events.push(`programB:${linkables.has(programLinkNode('programB'), emptyStack)}`);
+        events.push(`programA:${linkables.has([programLinkNode('programA')])}`);
+        events.push(`programB:${linkables.has([programLinkNode('programB')])}`);
         next(node);
     });
     const visitor = recordLinkablesOnFirstVisitVisitor(baseVisitor, linkables);
@@ -245,7 +245,7 @@ test('it keeps track of the current program when extending a visitor', () => {
     const baseVisitor = interceptVisitor(voidVisitor(), (node, next) => {
         stack.push(node);
         if (isNode(node, 'programNode')) {
-            dictionary[node.name] = linkables.getOrThrow(accountLinkNode('someAccount'), stack);
+            dictionary[node.name] = linkables.getOrThrow([...stack.getPath(), accountLinkNode('someAccount')]);
         }
         next(node);
         stack.pop();
@@ -285,7 +285,10 @@ test('it keeps track of the current instruction when extending a visitor', () =>
     const baseVisitor = interceptVisitor(voidVisitor(), (node, next) => {
         stack.push(node);
         if (isNode(node, 'instructionNode')) {
-            dictionary[node.name] = linkables.getOrThrow(instructionAccountLinkNode('someAccount'), stack);
+            dictionary[node.name] = linkables.getOrThrow([
+                ...stack.getPath(),
+                instructionAccountLinkNode('someAccount'),
+            ]);
         }
         next(node);
         stack.pop();
@@ -312,8 +315,7 @@ test('it does not record linkable types that are not under a program node', () =
     visit(node, visitor);
 
     // Then we expect the account node to not be recorded.
-    const emptyStack = new NodeStack();
-    expect(linkables.has(accountLinkNode('someAccount'), emptyStack)).toBe(false);
+    expect(linkables.has([accountLinkNode('someAccount')])).toBe(false);
 });
 
 test('it can throw an exception when trying to retrieve a missing linked node', () => {
@@ -330,8 +332,7 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
     visit(node, visitor);
 
     // When we try to retrieve a missing account node.
-    const emptyStack = new NodeStack();
-    const getMissingAccount = () => linkables.getOrThrow(accountLinkNode('missingAccount', 'myProgram'), emptyStack);
+    const getMissingAccount = () => linkables.getOrThrow([node, accountLinkNode('missingAccount', 'myProgram')]);
 
     // Then we expect an exception to be thrown.
     expect(getMissingAccount).toThrow(
