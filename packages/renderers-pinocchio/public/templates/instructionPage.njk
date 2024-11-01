@@ -1,0 +1,46 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+
+{{ imports }}
+
+/// `{{ instruction.name | snakeCase }}` CPI helper.
+pub struct {{ instruction.name | pascalCase }}{{ '<\'a>' if instruction.accounts.length > 0 }} {
+  {# Accounts #}
+  {% for account in instruction.accounts %}
+    {% if account.docs.length > 0 %}
+      {{ macros.docblock(account.docs) }}
+    {% endif %}
+
+    {% if account.isSigner === 'either' %}
+      {% set type = '(&\'a pinocchio::account_info::AccountInfo, bool)' %}
+    {% else %}
+      {% set type = '&\'a pinocchio::account_info::AccountInfo' %}
+    {% endif %}
+
+    {% if account.isOptional %}
+      pub {{ account.name | snakeCase }}: Option<{{ type }}>,
+    {% else %}
+      pub {{ account.name | snakeCase }}: {{ type }},
+    {% endif %}
+  {% endfor %}
+  {% for arg in instructionArgs %}
+    {% if not arg.default %}
+      pub {{ arg.name | snakeCase }}: {{ arg.type }},
+    {% endif %}
+  {% endfor %}
+}
+
+impl{{ '<\'a>' if instruction.accounts.length > 0 }} {{ instruction.name | pascalCase }}{{ '<\'a>' if instruction.accounts.length > 0 }} {
+    #[inline(always)]
+    pub fn invoke(&self) -> pinocchio::ProgramResult {
+        self.invoke_signed(&[])
+    }
+
+    pub fn invoke_signed(&self, _signers: &[pinocchio::instruction::Signer]) -> pinocchio::ProgramResult {
+      Ok(())
+    }
+}
+
+{% endblock %}
