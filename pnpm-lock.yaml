@@ -25,7 +25,7 @@ importers:
         version: 0.0.5(prettier@3.3.3)
       '@types/node':
         specifier: ^20
-        version: 20.17.2
+        version: 20.17.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3)
@@ -70,7 +70,7 @@ importers:
         version: 5.6.3
       vitest:
         specifier: ^2.1.4
-        version: 2.1.4(@types/node@20.17.2)(happy-dom@15.7.4)
+        version: 2.1.4(@types/node@20.17.5)(happy-dom@15.7.4)
       zx:
         specifier: ^8.1.9
         version: 8.1.9
@@ -177,7 +177,7 @@ importers:
         version: link:../visitors-core
       '@solana/codecs-strings':
         specifier: rc
-        version: 2.0.0-rc.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+        version: 2.0.0-rc.3(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -208,7 +208,7 @@ importers:
         version: link:../visitors-core
       '@solana/codecs-strings':
         specifier: rc
-        version: 2.0.0-rc.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+        version: 2.0.0-rc.3(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -236,7 +236,7 @@ importers:
         version: link:../visitors-core
       '@solana/codecs-strings':
         specifier: rc
-        version: 2.0.0-rc.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+        version: 2.0.0-rc.3(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -816,27 +816,27 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@solana/codecs-core@2.0.0-rc.2':
-    resolution: {integrity: sha512-UHSdAmbiFYuCwb2UmYZkOIj2oTKuYqje1LZ1VWCdnpp2qf+XAGbxIHyL/auV91/nK8iggL9417BMS2Q3AfMzFg==}
+  '@solana/codecs-core@2.0.0-rc.3':
+    resolution: {integrity: sha512-Z+KkHRHxxN/Ei4ujIxZeNiSuhioGSKnxNbswBvd/nNAv6Q9zi1DJMV2gIE1MKE/H6ZtrLCAiiHYBRtHpdAyndg==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       typescript: '>=5'
 
-  '@solana/codecs-numbers@2.0.0-rc.2':
-    resolution: {integrity: sha512-cQoTXVYF+nQjIh6VtrD4i7rfyJL0q46TMOd64+J/+2bQG2UT4Cwwo0b2lHuqtQr+2+BYjHPFDSNLaa3IWpPNog==}
+  '@solana/codecs-numbers@2.0.0-rc.3':
+    resolution: {integrity: sha512-ii05vAeZt5c5wbA8KLSLiV2WR5hHcnk1cp57UnjvIs2kX2oORXP0xKonK9AX0YxEc66ZnMBnE9e0wW28M4Bk/A==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       typescript: '>=5'
 
-  '@solana/codecs-strings@2.0.0-rc.2':
-    resolution: {integrity: sha512-EAFAkztLYqOwHG+C4pbRQn8GcPi5yW3lh162m+OSKJJdcMAnpFBG4jN7eJPVgyRMfToxknjFB8veZN7XmNdqqg==}
+  '@solana/codecs-strings@2.0.0-rc.3':
+    resolution: {integrity: sha512-eSYCPOEY1OARiP+i0ovrTyzRPlRVp8e8fmtGwSXKQoqvsdTJCWm80YVc6IeP8pIQD4KLO39Xae2WNq13e94CMg==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       fastestsmallesttextencoderdecoder: ^1.0.22
       typescript: '>=5'
 
-  '@solana/errors@2.0.0-rc.2':
-    resolution: {integrity: sha512-2NPRQYOLwpwP2J4KC0+Vc+qmwTGcu6VrKA9iRBLP0axR+49er9AqpoK3EowTmt0BvAvyArOJRuaPRIFMQI2IdA==}
+  '@solana/errors@2.0.0-rc.3':
+    resolution: {integrity: sha512-bFEOfktu53RzZw9VVeFS+tHXmHEXD9KYtRu764Z4QxKe33RqwZgHiLh4MHvPska8BPN3VAw4azotF+KWVMGztw==}
     engines: {node: '>=20.18.0'}
     hasBin: true
     peerDependencies:
@@ -878,8 +878,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@20.17.2':
-    resolution: {integrity: sha512-OOHK4sjXqkL7yQ7VEEHcf6+0jSvKjWqwnaCtY7AKD/VLEvRHMsxxu7eI8ErnjxHS8VwmekD4PeVCpu4qZEZSxg==}
+  '@types/node@20.17.5':
+    resolution: {integrity: sha512-n8FYY/pRxu496441gIcAQFZPKXbhsd6VZygcq+PTSZ75eMh/Ke0hCAROdUa21qiFqKNsPPYic46yXDO1JGiPBQ==}
 
   '@types/nunjucks@3.2.6':
     resolution: {integrity: sha512-pHiGtf83na1nCzliuAdq8GowYiXvH5l931xZ0YEHaLMNFgynpEqx+IPStlu7UaDkehfvl01e4x/9Tpwhy7Ue3w==}
@@ -2836,26 +2836,26 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.24.2':
     optional: true
 
-  '@solana/codecs-core@2.0.0-rc.2(typescript@5.6.3)':
+  '@solana/codecs-core@2.0.0-rc.3(typescript@5.6.3)':
     dependencies:
-      '@solana/errors': 2.0.0-rc.2(typescript@5.6.3)
+      '@solana/errors': 2.0.0-rc.3(typescript@5.6.3)
       typescript: 5.6.3
 
-  '@solana/codecs-numbers@2.0.0-rc.2(typescript@5.6.3)':
+  '@solana/codecs-numbers@2.0.0-rc.3(typescript@5.6.3)':
     dependencies:
-      '@solana/codecs-core': 2.0.0-rc.2(typescript@5.6.3)
-      '@solana/errors': 2.0.0-rc.2(typescript@5.6.3)
+      '@solana/codecs-core': 2.0.0-rc.3(typescript@5.6.3)
+      '@solana/errors': 2.0.0-rc.3(typescript@5.6.3)
       typescript: 5.6.3
 
-  '@solana/codecs-strings@2.0.0-rc.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
+  '@solana/codecs-strings@2.0.0-rc.3(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
     dependencies:
-      '@solana/codecs-core': 2.0.0-rc.2(typescript@5.6.3)
-      '@solana/codecs-numbers': 2.0.0-rc.2(typescript@5.6.3)
-      '@solana/errors': 2.0.0-rc.2(typescript@5.6.3)
+      '@solana/codecs-core': 2.0.0-rc.3(typescript@5.6.3)
+      '@solana/codecs-numbers': 2.0.0-rc.3(typescript@5.6.3)
+      '@solana/errors': 2.0.0-rc.3(typescript@5.6.3)
       fastestsmallesttextencoderdecoder: 1.0.22
       typescript: 5.6.3
 
-  '@solana/errors@2.0.0-rc.2(typescript@5.6.3)':
+  '@solana/errors@2.0.0-rc.3(typescript@5.6.3)':
     dependencies:
       chalk: 5.3.0
       commander: 12.1.0
@@ -2882,7 +2882,7 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 20.17.2
+      '@types/node': 20.17.5
     optional: true
 
   '@types/json-schema@7.0.15': {}
@@ -2891,12 +2891,12 @@ snapshots:
 
   '@types/jsonfile@6.1.4':
     dependencies:
-      '@types/node': 20.17.2
+      '@types/node': 20.17.5
     optional: true
 
   '@types/node@12.20.55': {}
 
-  '@types/node@20.17.2':
+  '@types/node@20.17.5':
     dependencies:
       undici-types: 6.19.6
 
@@ -3048,13 +3048,13 @@ snapshots:
       chai: 5.1.2
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.4(vite@5.2.11(@types/node@20.17.2))':
+  '@vitest/mocker@2.1.4(vite@5.2.11(@types/node@20.17.5))':
     dependencies:
       '@vitest/spy': 2.1.4
       estree-walker: 3.0.3
       magic-string: 0.30.12
     optionalDependencies:
-      vite: 5.2.11(@types/node@20.17.2)
+      vite: 5.2.11(@types/node@20.17.5)
 
   '@vitest/pretty-format@2.1.4':
     dependencies:
@@ -4280,12 +4280,12 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  vite-node@2.1.4(@types/node@20.17.2):
+  vite-node@2.1.4(@types/node@20.17.5):
     dependencies:
       cac: 6.7.14
       debug: 4.3.7
       pathe: 1.1.2
-      vite: 5.2.11(@types/node@20.17.2)
+      vite: 5.2.11(@types/node@20.17.5)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -4296,19 +4296,19 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.2.11(@types/node@20.17.2):
+  vite@5.2.11(@types/node@20.17.5):
     dependencies:
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.24.2
     optionalDependencies:
-      '@types/node': 20.17.2
+      '@types/node': 20.17.5
       fsevents: 2.3.3
 
-  vitest@2.1.4(@types/node@20.17.2)(happy-dom@15.7.4):
+  vitest@2.1.4(@types/node@20.17.5)(happy-dom@15.7.4):
     dependencies:
       '@vitest/expect': 2.1.4
-      '@vitest/mocker': 2.1.4(vite@5.2.11(@types/node@20.17.2))
+      '@vitest/mocker': 2.1.4(vite@5.2.11(@types/node@20.17.5))
       '@vitest/pretty-format': 2.1.4
       '@vitest/runner': 2.1.4
       '@vitest/snapshot': 2.1.4
@@ -4324,11 +4324,11 @@ snapshots:
       tinyexec: 0.3.1
       tinypool: 1.0.1
       tinyrainbow: 1.2.0
-      vite: 5.2.11(@types/node@20.17.2)
-      vite-node: 2.1.4(@types/node@20.17.2)
+      vite: 5.2.11(@types/node@20.17.5)
+      vite-node: 2.1.4(@types/node@20.17.5)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.17.2
+      '@types/node': 20.17.5
       happy-dom: 15.7.4
     transitivePeerDependencies:
       - less
@@ -4395,4 +4395,4 @@ snapshots:
   zx@8.1.9:
     optionalDependencies:
       '@types/fs-extra': 11.0.4
-      '@types/node': 20.17.2
+      '@types/node': 20.17.5
