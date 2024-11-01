@@ -167,6 +167,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
         v =>
             extendVisitor(v, {
                 visitInstruction(node) {
+                    const instructionPath = stack.getPath('instructionNode');
                     const instructionAccounts = node.accounts.map((account): InstructionAccountNode => {
                         const rule = matchRule(node, account);
                         if (!rule) return account;
@@ -180,7 +181,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
                                 ...account,
                                 defaultValue: visit(
                                     rule.defaultValue,
-                                    fillDefaultPdaSeedValuesVisitor(node, stack, linkables, true),
+                                    fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, true),
                                 ),
                             };
                         } catch (error) {

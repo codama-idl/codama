@@ -14,7 +14,7 @@ import {
     publicKeyTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
-import { LinkableDictionary, NodeStack, visit } from '@codama/visitors-core';
+import { LinkableDictionary, visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { fillDefaultPdaSeedValuesVisitor } from '../src';
@@ -56,10 +56,9 @@ test('it fills missing pda seed values with default values', () => {
         arguments: [instructionArgumentNode({ name: 'seed2', type: numberTypeNode('u64') })],
         name: 'myInstruction',
     });
-    const instructionStack = new NodeStack([program, instruction]);
 
     // When we fill the PDA seeds with default values.
-    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, instructionStack, linkables));
+    const result = visit(node, fillDefaultPdaSeedValuesVisitor([program, instruction], linkables));
 
     // Then we expect the following pdaValueNode to be returned.
     expect(result).toEqual(
@@ -111,10 +110,9 @@ test('it fills nested pda value nodes', () => {
         arguments: [instructionArgumentNode({ name: 'seed2', type: numberTypeNode('u64') })],
         name: 'myInstruction',
     });
-    const instructionStack = new NodeStack([program, instruction]);
 
     // When we fill the PDA seeds with default values.
-    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, instructionStack, linkables));
+    const result = visit(node, fillDefaultPdaSeedValuesVisitor([program, instruction], linkables));
 
     // Then we expect the following conditionalValueNode to be returned.
     expect(result).toEqual(
@@ -159,10 +157,9 @@ test('it ignores default seeds missing from the instruction', () => {
         arguments: [instructionArgumentNode({ name: 'seed2', type: numberTypeNode('u64') })],
         name: 'myInstruction',
     });
-    const instructionStack = new NodeStack([program, instruction]);
 
     // When we fill the PDA seeds with default values.
-    const result = visit(node, fillDefaultPdaSeedValuesVisitor(instruction, instructionStack, linkables));
+    const result = visit(node, fillDefaultPdaSeedValuesVisitor([program, instruction], linkables));
 
     // Then we expect the following pdaValueNode to be returned.
     expect(result).toEqual(
