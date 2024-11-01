@@ -1,5 +1,5 @@
 import { InstructionNode, pascalCase } from '@codama/nodes';
-import { NodeStack } from '@codama/visitors-core';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragmentFromTemplate, mergeFragments } from './common';
@@ -8,12 +8,12 @@ import { getInstructionAccountTypeParamFragment } from './instructionAccountType
 
 export function getInstructionTypeFragment(
     scope: Pick<GlobalFragmentScope, 'customInstructionData' | 'linkables' | 'nameApi'> & {
-        instructionNode: InstructionNode;
-        instructionStack: NodeStack;
+        instructionPath: NodePath<InstructionNode>;
     },
 ): Fragment {
-    const { instructionNode, instructionStack, nameApi, customInstructionData } = scope;
-    const programNode = instructionStack.getProgram()!;
+    const { instructionPath, nameApi, customInstructionData } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
+    const programNode = findProgramNodeFromPath(instructionPath)!;
     const hasAccounts = instructionNode.accounts.length > 0;
     const customData = customInstructionData.get(instructionNode.name);
     const hasData = !!customData || instructionNode.arguments.length > 0;
@@ -25,7 +25,7 @@ export function getInstructionTypeFragment(
             getInstructionAccountTypeParamFragment({
                 ...scope,
                 allowAccountMeta: true,
-                instructionAccountNode: account,
+                instructionAccountPath: [...instructionPath, account],
             }),
         ),
         renders => renders.join(', '),

@@ -6,17 +6,18 @@ import {
     InstructionRemainingAccountsNode,
     isNode,
 } from '@codama/nodes';
+import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';
 
 export function getInstructionRemainingAccountsFragment(
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         useAsync: boolean;
     },
 ): Fragment {
-    const { remainingAccounts } = scope.instructionNode;
+    const { remainingAccounts } = getLastNodeFromPath(scope.instructionPath);
     const fragments = (remainingAccounts ?? []).flatMap(r => getRemainingAccountsFragment(r, scope));
     if (fragments.length === 0) return fragment('');
     return mergeFragments(
@@ -30,7 +31,7 @@ export function getInstructionRemainingAccountsFragment(
 function getRemainingAccountsFragment(
     remainingAccounts: InstructionRemainingAccountsNode,
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         useAsync: boolean;
     },
 ): Fragment[] {
@@ -50,9 +51,9 @@ function getRemainingAccountsFragment(
 
 function getArgumentValueNodeFragment(
     remainingAccounts: InstructionRemainingAccountsNode,
-    scope: { instructionNode: InstructionNode },
+    scope: { instructionPath: NodePath<InstructionNode> },
 ): Fragment {
-    const { instructionNode } = scope;
+    const instructionNode = getLastNodeFromPath(scope.instructionPath);
     assertIsNode(remainingAccounts.value, 'argumentValueNode');
     const argumentName = camelCase(remainingAccounts.value.name);
     const isOptional = remainingAccounts.isOptional ?? false;

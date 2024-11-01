@@ -147,8 +147,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const scope = {
                         ...globalScope,
-                        accountNode: node,
-                        accountStack: stack.clone(),
+                        accountPath: stack.getPath('accountNode'),
                         typeManifest: visit(node, typeManifestVisitor),
                     };
 
@@ -237,8 +236,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 strict: nameApi.dataType(instructionExtraName),
                             }),
                         ),
-                        instructionNode: node,
-                        instructionStack: stack,
+                        instructionPath: stack.getPath('instructionNode'),
                         renamedArgs: getRenamedArgsMap(node),
                         resolvedInputs: visit(node, resolvedInstructionInputVisitor),
                     };
@@ -295,7 +293,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         throw new Error('Account must be visited inside a program.');
                     }
 
-                    const scope = { ...globalScope, pdaNode: node, pdaStack: stack };
+                    const scope = { ...globalScope, pdaPath: stack.getPath('pdaNode') };
                     const pdaFunctionFragment = getPdaFunctionFragment(scope);
                     const imports = new ImportMap().mergeWith(pdaFunctionFragment);
 
