@@ -1,4 +1,6 @@
 import {
+    definedTypeLinkNode,
+    definedTypeNode,
     enumEmptyVariantTypeNode,
     enumStructVariantTypeNode,
     enumTupleVariantTypeNode,
@@ -7,7 +9,10 @@ import {
     Node,
     NumberFormat,
     numberTypeNode,
+    programLinkNode,
+    programNode,
     publicKeyTypeNode,
+    rootNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -15,7 +20,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getByteSizeVisitor, LinkableDictionary, NodeStack, visit, Visitor } from '../src';
+import { getByteSizeVisitor, getRecordLinkablesVisitor, LinkableDictionary, NodeStack, visit, Visitor } from '../src';
 
 const expectSize = (node: Node, expectedSize: number | null) => {
     expect(visit(node, getByteSizeVisitor(new LinkableDictionary(), new NodeStack()) as Visitor<number | null>)).toBe(
@@ -103,4 +108,39 @@ test('it gets the size of variable data enums', () => {
         ]),
         null,
     );
+});
+
+test('it follows linked nodes using the correct paths', () => {
+    // Given two link nodes designed so that the path would
+    // fail if we did not save and restored linked paths.
+    const programA = programNode({
+        definedTypes: [
+            definedTypeNode({
+                name: 'typeA',
+                type: definedTypeLinkNode('typeB1', programLinkNode('programB')),
+            }),
+        ],
+        name: 'programA',
+        publicKey: '1111',
+    });
+    const programB = programNode({
+        definedTypes: [
+            definedTypeNode({ name: 'typeB1', type: definedTypeLinkNode('typeB2') }),
+            definedTypeNode({ name: 'typeB2', type: numberTypeNode('u64') }),
+        ],
+        name: 'programB',
+        publicKey: '2222',
+    });
+    const root = rootNode(programA, [programB]);
+
+    // And given a recorded linkables dictionary.
+    const linkables = new LinkableDictionary();
+    visit(root, getRecordLinkablesVisitor(linkables));
+
+    // When we visit the first defined type.
+    const visitor = getByteSizeVisitor(linkables, new NodeStack([root, programA]));
+    const result = visit(programA.definedTypes[0], visitor);
+
+    // Then we expect the final linkable to be resolved.
+    expect(result).toBe(8);
 });
