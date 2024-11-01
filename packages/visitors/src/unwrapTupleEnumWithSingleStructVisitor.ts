@@ -3,7 +3,6 @@ import {
     CamelCaseString,
     DefinedTypeNode,
     enumStructVariantTypeNode,
-    EnumTupleVariantTypeNode,
     getAllDefinedTypes,
     isNode,
     resolveNestedTypeNode,
@@ -28,8 +27,7 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
             ? [() => true]
             : enumsOrVariantsToUnwrap.map(selector => getNodeSelectorFunction(selector));
 
-    const shouldUnwrap = (node: EnumTupleVariantTypeNode, stack: NodeStack): boolean =>
-        selectorFunctions.some(selector => selector(node, stack));
+    const shouldUnwrap = (stack: NodeStack): boolean => selectorFunctions.some(selector => selector(stack.getPath()));
 
     return rootNodeVisitor(root => {
         const typesToPotentiallyUnwrap: string[] = [];
@@ -44,7 +42,7 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
                     select: '[enumTupleVariantTypeNode]',
                     transform: (node, stack) => {
                         assertIsNode(node, 'enumTupleVariantTypeNode');
-                        if (!shouldUnwrap(node, stack)) return node;
+                        if (!shouldUnwrap(stack)) return node;
                         const tupleNode = resolveNestedTypeNode(node.tuple);
                         if (tupleNode.items.length !== 1) return node;
                         let item = tupleNode.items[0];

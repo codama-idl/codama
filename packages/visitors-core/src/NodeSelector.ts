@@ -1,6 +1,6 @@
 import { camelCase, CamelCaseString, Node } from '@codama/nodes';
 
-import type { NodeStack } from './NodeStack';
+import { NodePath } from './NodePath';
 
 export type NodeSelector = NodeSelectorFunction | NodeSelectorPath;
 
@@ -11,11 +11,11 @@ export type NodeSelector = NodeSelectorFunction | NodeSelectorPath;
  * - `[someNode]` matches a node of the given kind.
  * - `[someNode|someOtherNode]` matches a node with any of the given kind.
  * - `[someNode]someText` matches both the kind and the name of a node.
- * - `a.b.c` matches a node `c` such that its parent stack contains `a` and `b` in order (but not necessarily subsequent).
+ * - `a.b.c` matches a node `c` such that its ancestors contains `a` and `b` in order (but not necessarily subsequent).
  */
 export type NodeSelectorPath = string;
 
-export type NodeSelectorFunction = (node: Node, stack: NodeStack) => boolean;
+export type NodeSelectorFunction = (path: NodePath) => boolean;
 
 export const getNodeSelectorFunction = (selector: NodeSelector): NodeSelectorFunction => {
     if (typeof selector === 'function') return selector;
@@ -40,25 +40,29 @@ export const getNodeSelectorFunction = (selector: NodeSelector): NodeSelectorFun
         return true;
     };
 
-    const checkStack = (nodeStack: Node[], nodeSelectors: string[]): boolean => {
+    const checkPath = (path: Node[], nodeSelectors: string[]): boolean => {
         if (nodeSelectors.length === 0) return true;
-        if (nodeStack.length === 0) return false;
-        const lastNode = nodeStack.pop() as Node;
+        if (path.length === 0) return false;
+        const lastNode = path.pop() as Node;
         const lastNodeSelector = nodeSelectors.pop() as string;
         return checkNode(lastNode, lastNodeSelector)
-            ? checkStack(nodeStack, nodeSelectors)
-            : checkStack(nodeStack, [...nodeSelectors, lastNodeSelector]);
+            ? checkPath(path, nodeSelectors)
+            : checkPath(path, [...nodeSelectors, lastNodeSelector]);
+    };
+
+    const checkInitialPath = (path: Node[], nodeSelectors: string[]): boolean => {
+        if (nodeSelectors.length === 0 || path.length === 0) return false;
+        const lastNode = path.pop() as Node;
+        const lastNodeSelector = nodeSelectors.pop() as string;
+        return checkNode(lastNode, lastNodeSelector) && checkPath(path, nodeSelectors);
     };
 
     const nodeSelectors = selector.split('.');
-    const lastNodeSelector = nodeSelectors.pop() as string;
-
-    return (node, stack) =>
-        checkNode(node, lastNodeSelector) && checkStack(stack.getPath() as Node[], [...nodeSelectors]);
+    return path => checkInitialPath([...path], [...nodeSelectors]);
 };
 
 export const getConjunctiveNodeSelectorFunction = (selector: NodeSelector | NodeSelector[]): NodeSelectorFunction => {
     const selectors = Array.isArray(selector) ? selector : [selector];
     const selectorFunctions = selectors.map(getNodeSelectorFunction);
-    return (node, stack) => selectorFunctions.every(fn => fn(node, stack));
+    return path => selectorFunctions.every(fn => fn(path));
 };

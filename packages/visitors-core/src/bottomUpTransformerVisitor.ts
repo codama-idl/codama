@@ -8,11 +8,11 @@ import { pipe } from './pipe';
 import { recordNodeStackVisitor } from './recordNodeStackVisitor';
 import { Visitor } from './visitor';
 
-export type BottomUpNodeTransformer<TNode extends Node = Node> = (node: TNode, stack: NodeStack) => Node | null;
+export type BottomUpNodeTransformer = (node: Node, stack: NodeStack) => Node | null;
 
-export type BottomUpNodeTransformerWithSelector<TNode extends Node = Node> = {
+export type BottomUpNodeTransformerWithSelector = {
     select: NodeSelector | NodeSelector[];
-    transform: BottomUpNodeTransformer<TNode>;
+    transform: BottomUpNodeTransformer;
 };
 
 export function bottomUpTransformerVisitor<TNodeKind extends NodeKind = NodeKind>(
@@ -22,7 +22,7 @@ export function bottomUpTransformerVisitor<TNodeKind extends NodeKind = NodeKind
     const transformerFunctions = transformers.map((transformer): BottomUpNodeTransformer => {
         if (typeof transformer === 'function') return transformer;
         return (node, stack) =>
-            getConjunctiveNodeSelectorFunction(transformer.select)(node, stack)
+            getConjunctiveNodeSelectorFunction(transformer.select)(stack.getPath())
                 ? transformer.transform(node, stack)
                 : node;
     });
@@ -30,13 +30,13 @@ export function bottomUpTransformerVisitor<TNodeKind extends NodeKind = NodeKind
     const stack = new NodeStack();
     return pipe(
         identityVisitor(nodeKeys),
-        v => recordNodeStackVisitor(v, stack),
         v =>
-            interceptVisitor(v, (node, next) =>
-                transformerFunctions.reduce(
-                    (acc, transformer) => (acc === null ? null : transformer(acc, stack.clone())),
+            interceptVisitor(v, (node, next) => {
+                return transformerFunctions.reduce(
+                    (acc, transformer) => (acc === null ? null : transformer(acc, stack)),
                     next(node),
-                ),
-            ),
+                );
+            }),
+        v => recordNodeStackVisitor(v, stack),
     );
 }

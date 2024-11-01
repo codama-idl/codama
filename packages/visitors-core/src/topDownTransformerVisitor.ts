@@ -8,14 +8,11 @@ import { pipe } from './pipe';
 import { recordNodeStackVisitor } from './recordNodeStackVisitor';
 import { Visitor } from './visitor';
 
-export type TopDownNodeTransformer<TNode extends Node = Node> = <T extends TNode = TNode>(
-    node: T,
-    stack: NodeStack,
-) => T | null;
+export type TopDownNodeTransformer = <TNode extends Node>(node: TNode, stack: NodeStack) => TNode | null;
 
-export type TopDownNodeTransformerWithSelector<TNode extends Node = Node> = {
+export type TopDownNodeTransformerWithSelector = {
     select: NodeSelector | NodeSelector[];
-    transform: TopDownNodeTransformer<TNode>;
+    transform: TopDownNodeTransformer;
 };
 
 export function topDownTransformerVisitor<TNodeKind extends NodeKind = NodeKind>(
@@ -25,7 +22,7 @@ export function topDownTransformerVisitor<TNodeKind extends NodeKind = NodeKind>
     const transformerFunctions = transformers.map((transformer): TopDownNodeTransformer => {
         if (typeof transformer === 'function') return transformer;
         return (node, stack) =>
-            getConjunctiveNodeSelectorFunction(transformer.select)(node, stack)
+            getConjunctiveNodeSelectorFunction(transformer.select)(stack.getPath())
                 ? transformer.transform(node, stack)
                 : node;
     });
@@ -33,15 +30,15 @@ export function topDownTransformerVisitor<TNodeKind extends NodeKind = NodeKind>
     const stack = new NodeStack();
     return pipe(
         identityVisitor(nodeKeys),
-        v => recordNodeStackVisitor(v, stack),
         v =>
             interceptVisitor(v, (node, next) => {
                 const appliedNode = transformerFunctions.reduce(
-                    (acc, transformer) => (acc === null ? null : transformer(acc, stack.clone())),
+                    (acc, transformer) => (acc === null ? null : transformer(acc, stack)),
                     node as Parameters<typeof next>[0] | null,
                 );
                 if (appliedNode === null) return null;
                 return next(appliedNode);
             }),
+        v => recordNodeStackVisitor(v, stack),
     );
 }
