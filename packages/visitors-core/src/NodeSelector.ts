@@ -53,7 +53,8 @@ export const getNodeSelectorFunction = (selector: NodeSelector): NodeSelectorFun
     const nodeSelectors = selector.split('.');
     const lastNodeSelector = nodeSelectors.pop() as string;
 
-    return (node, stack) => checkNode(node, lastNodeSelector) && checkStack(stack.all() as Node[], [...nodeSelectors]);
+    return (node, stack) =>
+        checkNode(node, lastNodeSelector) && checkStack(stack.getPath() as Node[], [...nodeSelectors]);
 };
 
 export const getConjunctiveNodeSelectorFunction = (selector: NodeSelector | NodeSelector[]): NodeSelectorFunction => {

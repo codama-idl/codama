@@ -37,7 +37,7 @@ type ValidationItem = {
     // The node that the validation item is related to.
     node: Node;
     // The path of nodes that led to the node above (including the node itself).
-    path: readonly Node[];
+    path: NodePath;
 };
 ```
 
