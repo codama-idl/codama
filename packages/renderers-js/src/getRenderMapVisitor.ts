@@ -136,10 +136,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     };
 
     return pipe(
-        staticVisitor(
-            () => new RenderMap(),
-            ['rootNode', 'programNode', 'pdaNode', 'accountNode', 'definedTypeNode', 'instructionNode'],
-        ),
+        staticVisitor(() => new RenderMap(), {
+            keys: ['rootNode', 'programNode', 'pdaNode', 'accountNode', 'definedTypeNode', 'instructionNode'],
+        }),
         v =>
             extendVisitor(v, {
                 visitAccount(node) {

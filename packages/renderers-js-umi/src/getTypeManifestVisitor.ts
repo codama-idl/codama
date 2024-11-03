@@ -85,14 +85,16 @@ export function getTypeManifestVisitor(input: {
                     value: '',
                     valueImports: new ImportMap(),
                 }) as TypeManifest,
-            [
-                ...REGISTERED_TYPE_NODE_KINDS,
-                ...REGISTERED_VALUE_NODE_KINDS,
-                'definedTypeLinkNode',
-                'definedTypeNode',
-                'accountNode',
-                'instructionNode',
-            ],
+            {
+                keys: [
+                    ...REGISTERED_TYPE_NODE_KINDS,
+                    ...REGISTERED_VALUE_NODE_KINDS,
+                    'definedTypeLinkNode',
+                    'definedTypeNode',
+                    'accountNode',
+                    'instructionNode',
+                ],
+            },
         ),
         v =>
             extendVisitor(v, {

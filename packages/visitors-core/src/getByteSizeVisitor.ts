@@ -19,8 +19,10 @@ export type ByteSizeVisitorKeys =
 
 export function getByteSizeVisitor(
     linkables: LinkableDictionary,
-    stack: NodeStack,
+    options: { stack?: NodeStack } = {},
 ): Visitor<number | null, ByteSizeVisitorKeys> {
+    const stack = options.stack ?? new NodeStack();
+
     const visitedDefinedTypes = new Map<string, number | null>();
     const definedTypeStack: string[] = [];
 
@@ -30,14 +32,16 @@ export function getByteSizeVisitor(
     const baseVisitor = mergeVisitor(
         () => null as number | null,
         (_, values) => sumSizes(values),
-        [
-            ...REGISTERED_TYPE_NODE_KINDS,
-            'definedTypeLinkNode',
-            'definedTypeNode',
-            'accountNode',
-            'instructionNode',
-            'instructionArgumentNode',
-        ],
+        {
+            keys: [
+                ...REGISTERED_TYPE_NODE_KINDS,
+                'definedTypeLinkNode',
+                'definedTypeNode',
+                'accountNode',
+                'instructionNode',
+                'instructionArgumentNode',
+            ],
+        },
     );
 
     return pipe(

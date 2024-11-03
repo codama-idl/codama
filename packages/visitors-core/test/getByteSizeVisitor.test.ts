@@ -23,9 +23,7 @@ import { expect, test } from 'vitest';
 import { getByteSizeVisitor, getRecordLinkablesVisitor, LinkableDictionary, NodeStack, visit, Visitor } from '../src';
 
 const expectSize = (node: Node, expectedSize: number | null) => {
-    expect(visit(node, getByteSizeVisitor(new LinkableDictionary(), new NodeStack()) as Visitor<number | null>)).toBe(
-        expectedSize,
-    );
+    expect(visit(node, getByteSizeVisitor(new LinkableDictionary()) as Visitor<number | null>)).toBe(expectedSize);
 };
 
 test.each([
@@ -138,7 +136,7 @@ test('it follows linked nodes using the correct paths', () => {
     visit(root, getRecordLinkablesVisitor(linkables));
 
     // When we visit the first defined type.
-    const visitor = getByteSizeVisitor(linkables, new NodeStack([root, programA]));
+    const visitor = getByteSizeVisitor(linkables, { stack: new NodeStack([root, programA]) });
     const result = visit(programA.definedTypes[0], visitor);
 
     // Then we expect the final linkable to be resolved.

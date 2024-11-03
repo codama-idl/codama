@@ -21,7 +21,7 @@ test('it can create partial visitor', () => {
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
     // And a static visitor that supports only 2 of these nodes.
-    const visitor = staticVisitor(node => node.kind, ['tupleTypeNode', 'numberTypeNode']);
+    const visitor = staticVisitor(node => node.kind, { keys: ['tupleTypeNode', 'numberTypeNode'] });
 
     // Then we expect the following results when visiting supported nodes.
     expect(visit(node, visitor)).toBe('tupleTypeNode');

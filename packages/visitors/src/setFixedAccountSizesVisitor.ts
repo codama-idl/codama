@@ -19,13 +19,13 @@ export function setFixedAccountSizesVisitor() {
                 select: path => isNodePath(path, 'accountNode') && getLastNodeFromPath(path).size === undefined,
                 transform: (node, stack) => {
                     assertIsNode(node, 'accountNode');
-                    const size = visit(node.data, getByteSizeVisitor(linkables, stack));
+                    const size = visit(node.data, getByteSizeVisitor(linkables, { stack }));
                     if (size === null) return node;
                     return accountNode({ ...node, size }) as typeof node;
                 },
             },
         ],
-        ['rootNode', 'programNode', 'accountNode'],
+        { keys: ['rootNode', 'programNode', 'accountNode'] },
     );
 
     return pipe(visitor, v => recordLinkablesOnFirstVisitVisitor(v, linkables));
