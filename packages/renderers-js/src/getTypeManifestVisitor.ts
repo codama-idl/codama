@@ -41,9 +41,10 @@ export function getTypeManifestVisitor(input: {
     nameApi: NameApi;
     nonScalarEnums: CamelCaseString[];
     parentName?: { loose: string; strict: string };
+    stack?: NodeStack;
 }) {
     const { nameApi, linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
-    const stack = new NodeStack();
+    const stack = input.stack ?? new NodeStack();
     let parentName = input.parentName ?? null;
 
     return pipe(
@@ -355,7 +356,6 @@ export function getTypeManifestVisitor(input: {
                     const enumFunction = nameApi.discriminatedUnionFunction(node.enum.name);
                     const importFrom = getImportFrom(node.enum);
 
-                    // FIXME(loris): No program node can ever be in this stack.
                     const enumNode = linkables.get([...stack.getPath(), node.enum])?.type;
                     const isScalar =
                         enumNode && isNode(enumNode, 'enumTypeNode')

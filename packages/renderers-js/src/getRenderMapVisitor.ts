@@ -114,6 +114,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
             nameApi,
             nonScalarEnums,
             parentName,
+            stack,
         });
     const typeManifestVisitor = getTypeManifestVisitor();
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
