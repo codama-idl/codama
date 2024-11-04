@@ -1,5 +1,5 @@
 import { AccountNode, isNodeFilter } from '@codama/nodes';
-import { NodeStack } from '@codama/visitors-core';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import type { TypeManifest } from '../TypeManifest';
@@ -7,13 +7,14 @@ import { Fragment, fragment, fragmentFromTemplate } from './common';
 
 export function getAccountPdaHelpersFragment(
     scope: Pick<GlobalFragmentScope, 'customAccountData' | 'linkables' | 'nameApi'> & {
-        accountNode: AccountNode;
-        accountStack: NodeStack;
+        accountPath: NodePath<AccountNode>;
         typeManifest: TypeManifest;
     },
 ): Fragment {
-    const { accountNode, accountStack, nameApi, linkables, customAccountData, typeManifest } = scope;
-    const pdaNode = accountNode.pda ? linkables.get([...accountStack.getPath(), accountNode.pda]) : undefined;
+    const { accountPath, nameApi, linkables, customAccountData, typeManifest } = scope;
+    const accountNode = getLastNodeFromPath(accountPath);
+    const programNode = findProgramNodeFromPath(accountPath)!;
+    const pdaNode = accountNode.pda ? linkables.get([...accountPath, accountNode.pda]) : undefined;
     if (!pdaNode) {
         return fragment('');
     }
@@ -39,7 +40,7 @@ export function getAccountPdaHelpersFragment(
         findPdaFunction,
         hasVariableSeeds,
         pdaSeedsType,
-        program: accountStack.getProgram(),
+        program: programNode,
     })
         .mergeImportsWith(accountTypeFragment)
         .addImports(importFrom, hasVariableSeeds ? [pdaSeedsType, findPdaFunction] : [findPdaFunction])

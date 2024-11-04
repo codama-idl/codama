@@ -1,5 +1,5 @@
 import { InstructionNode } from '@codama/nodes';
-import { NodeStack } from '@codama/visitors-core';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
@@ -8,11 +8,12 @@ import { Fragment, fragment, fragmentFromTemplate } from './common';
 export function getInstructionParseFunctionFragment(
     scope: Pick<GlobalFragmentScope, 'customInstructionData' | 'nameApi'> & {
         dataArgsManifest: TypeManifest;
-        instructionNode: InstructionNode;
-        instructionStack: NodeStack;
+        instructionPath: NodePath<InstructionNode>;
     },
 ): Fragment {
-    const { instructionNode, instructionStack, dataArgsManifest, nameApi, customInstructionData } = scope;
+    const { instructionPath, dataArgsManifest, nameApi, customInstructionData } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
+    const programNode = findProgramNodeFromPath(instructionPath)!;
     const customData = customInstructionData.get(instructionNode.name);
     const hasAccounts = instructionNode.accounts.length > 0;
     const hasOptionalAccounts = instructionNode.accounts.some(account => account.isOptional);
@@ -23,7 +24,7 @@ export function getInstructionParseFunctionFragment(
     const hasData = !!customData || instructionNode.arguments.length > 0;
 
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
-    const programAddressConstant = nameApi.programAddressConstant(instructionStack.getProgram()!.name);
+    const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     const dataTypeFragment = fragment(
         customData ? dataArgsManifest.strictType.render : nameApi.dataType(instructionDataName),
     );

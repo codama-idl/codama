@@ -1,5 +1,5 @@
 import { camelCase, InstructionNode, isNode } from '@codama/nodes';
-import { ResolvedInstructionInput } from '@codama/visitors-core';
+import { getLastNodeFromPath, NodePath, ResolvedInstructionInput } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';
@@ -7,16 +7,17 @@ import { getInstructionInputDefaultFragment } from './instructionInputDefault';
 
 export function getInstructionInputResolvedFragment(
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'> & {
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         resolvedInputs: ResolvedInstructionInput[];
         useAsync: boolean;
     },
 ): Fragment {
+    const instructionNode = getLastNodeFromPath(scope.instructionPath);
     const resolvedInputFragments = scope.resolvedInputs.flatMap((input: ResolvedInstructionInput): Fragment[] => {
         const inputFragment = getInstructionInputDefaultFragment({
             ...scope,
             input,
-            optionalAccountStrategy: scope.instructionNode.optionalAccountStrategy,
+            optionalAccountStrategy: instructionNode.optionalAccountStrategy,
         });
         if (!inputFragment.render) return [];
         const camelName = camelCase(input.name);

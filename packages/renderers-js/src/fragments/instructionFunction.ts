@@ -1,5 +1,10 @@
 import { camelCase, InstructionArgumentNode, InstructionNode, isNode, isNodeFilter, pascalCase } from '@codama/nodes';
-import { NodeStack, ResolvedInstructionInput } from '@codama/visitors-core';
+import {
+    findProgramNodeFromPath,
+    getLastNodeFromPath,
+    NodePath,
+    ResolvedInstructionInput,
+} from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { NameApi } from '../nameTransformers';
@@ -18,8 +23,7 @@ export function getInstructionFunctionFragment(
     > & {
         dataArgsManifest: TypeManifest;
         extraArgsManifest: TypeManifest;
-        instructionNode: InstructionNode;
-        instructionStack: NodeStack;
+        instructionPath: NodePath<InstructionNode>;
         renamedArgs: Map<string, string>;
         resolvedInputs: ResolvedInstructionInput[];
         useAsync: boolean;
@@ -27,8 +31,7 @@ export function getInstructionFunctionFragment(
 ): Fragment {
     const {
         useAsync,
-        instructionNode,
-        instructionStack,
+        instructionPath,
         resolvedInputs,
         renamedArgs,
         dataArgsManifest,
@@ -36,6 +39,8 @@ export function getInstructionFunctionFragment(
         nameApi,
         customInstructionData,
     } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
+    const programNode = findProgramNodeFromPath(instructionPath)!;
     if (useAsync && !hasAsyncFunction(instructionNode, resolvedInputs, asyncResolvers)) {
         return fragment('');
     }
@@ -66,7 +71,7 @@ export function getInstructionFunctionFragment(
     const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
     const hasInput = hasAccounts || hasAnyArgs;
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
-    const programAddressConstant = nameApi.programAddressConstant(instructionStack.getProgram()!.name);
+    const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     const encoderFunction = customData
         ? dataArgsManifest.encoder.render
         : `${nameApi.encoderFunction(instructionDataName)}()`;
@@ -165,8 +170,9 @@ function getTypeParams(instructionNode: InstructionNode, programAddressConstant:
         .addImports('generatedPrograms', [programAddressConstant]);
 }
 
-function getInstructionType(scope: { instructionNode: InstructionNode; nameApi: NameApi }): Fragment {
-    const { instructionNode, nameApi } = scope;
+function getInstructionType(scope: { instructionPath: NodePath<InstructionNode>; nameApi: NameApi }): Fragment {
+    const { instructionPath, nameApi } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
     const instructionTypeName = nameApi.instructionType(instructionNode.name);
     const programAddressFragment = fragment('TProgramAddress');
     const accountTypeParamsFragments = instructionNode.accounts.map(account => {
@@ -192,8 +198,13 @@ function getInstructionType(scope: { instructionNode: InstructionNode; nameApi: 
     ).mapRender(r => `${instructionTypeName}<${r}>`);
 }
 
-function getInputTypeCall(scope: { instructionNode: InstructionNode; nameApi: NameApi; useAsync: boolean }): Fragment {
-    const { instructionNode, useAsync, nameApi } = scope;
+function getInputTypeCall(scope: {
+    instructionPath: NodePath<InstructionNode>;
+    nameApi: NameApi;
+    useAsync: boolean;
+}): Fragment {
+    const { instructionPath, useAsync, nameApi } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
     const inputTypeName = useAsync
         ? nameApi.instructionAsyncInputType(instructionNode.name)
         : nameApi.instructionSyncInputType(instructionNode.name);

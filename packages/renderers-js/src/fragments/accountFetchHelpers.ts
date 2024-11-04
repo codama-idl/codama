@@ -1,4 +1,5 @@
 import { AccountNode } from '@codama/nodes';
+import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
@@ -6,11 +7,12 @@ import { Fragment, fragment, fragmentFromTemplate } from './common';
 
 export function getAccountFetchHelpersFragment(
     scope: Pick<GlobalFragmentScope, 'customAccountData' | 'nameApi'> & {
-        accountNode: AccountNode;
+        accountPath: NodePath<AccountNode>;
         typeManifest: TypeManifest;
     },
 ): Fragment {
-    const { accountNode, typeManifest, nameApi, customAccountData } = scope;
+    const { accountPath, typeManifest, nameApi, customAccountData } = scope;
+    const accountNode = getLastNodeFromPath(accountPath);
     const hasCustomData = customAccountData.has(accountNode.name);
     const accountTypeFragment = hasCustomData
         ? typeManifest.strictType.clone()
