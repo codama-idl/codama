@@ -2,14 +2,18 @@ import { accountNode, assertIsNode, isNode } from '@codama/nodes';
 import {
     getByteSizeVisitor,
     LinkableDictionary,
-    recordLinkablesVisitor,
+    NodeStack,
+    pipe,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     topDownTransformerVisitor,
     visit,
 } from '@codama/visitors-core';
 
 export function setFixedAccountSizesVisitor() {
     const linkables = new LinkableDictionary();
-    const byteSizeVisitor = getByteSizeVisitor(linkables);
+    const stack = new NodeStack();
+    const byteSizeVisitor = getByteSizeVisitor(linkables, stack);
 
     const visitor = topDownTransformerVisitor(
         [
@@ -26,5 +30,9 @@ export function setFixedAccountSizesVisitor() {
         ['rootNode', 'programNode', 'accountNode'],
     );
 
-    return recordLinkablesVisitor(visitor, linkables);
+    return pipe(
+        visitor,
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
+    );
 }

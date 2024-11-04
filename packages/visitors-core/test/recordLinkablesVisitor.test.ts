@@ -26,7 +26,8 @@ import {
     interceptFirstVisitVisitor,
     interceptVisitor,
     LinkableDictionary,
-    recordLinkablesVisitor,
+    NodeStack,
+    recordLinkablesOnFirstVisitVisitor,
     visit,
     voidVisitor,
 } from '../src';
@@ -37,16 +38,17 @@ test('it records program nodes', () => {
         programNode({ name: 'programB', publicKey: '2222' }),
     ]);
 
-    // And a recordLinkablesVisitor extending any visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the tree.
     visit(node, visitor);
 
     // Then we expect program nodes to be recorded and retrievable.
-    expect(linkables.get(programLinkNode('programA'))).toEqual(node.program);
-    expect(linkables.get(programLinkNode('programB'))).toEqual(node.additionalPrograms[0]);
+    const emptyStack = new NodeStack();
+    expect(linkables.get(programLinkNode('programA'), emptyStack)).toEqual(node.program);
+    expect(linkables.get(programLinkNode('programB'), emptyStack)).toEqual(node.additionalPrograms[0]);
 });
 
 test('it records account nodes', () => {
@@ -57,16 +59,17 @@ test('it records account nodes', () => {
         publicKey: '1111',
     });
 
-    // And a recordLinkablesVisitor extending any visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the tree.
     visit(node, visitor);
 
     // Then we expect account nodes to be recorded and retrievable.
-    expect(linkables.get(accountLinkNode('accountA', 'myProgram'))).toEqual(node.accounts[0]);
-    expect(linkables.get(accountLinkNode('accountB', 'myProgram'))).toEqual(node.accounts[1]);
+    const emptyStack = new NodeStack();
+    expect(linkables.get(accountLinkNode('accountA', 'myProgram'), emptyStack)).toEqual(node.accounts[0]);
+    expect(linkables.get(accountLinkNode('accountB', 'myProgram'), emptyStack)).toEqual(node.accounts[1]);
 });
 
 test('it records defined type nodes', () => {
@@ -80,16 +83,17 @@ test('it records defined type nodes', () => {
         publicKey: '1111',
     });
 
-    // And a recordLinkablesVisitor extending any visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the tree.
     visit(node, visitor);
 
     // Then we expect defined type nodes to be recorded and retrievable.
-    expect(linkables.get(definedTypeLinkNode('typeA', 'myProgram'))).toEqual(node.definedTypes[0]);
-    expect(linkables.get(definedTypeLinkNode('typeB', 'myProgram'))).toEqual(node.definedTypes[1]);
+    const emptyStack = new NodeStack();
+    expect(linkables.get(definedTypeLinkNode('typeA', 'myProgram'), emptyStack)).toEqual(node.definedTypes[0]);
+    expect(linkables.get(definedTypeLinkNode('typeB', 'myProgram'), emptyStack)).toEqual(node.definedTypes[1]);
 });
 
 test('it records pda nodes', () => {
@@ -100,16 +104,17 @@ test('it records pda nodes', () => {
         publicKey: '1111',
     });
 
-    // And a recordLinkablesVisitor extending any visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the tree.
     visit(node, visitor);
 
     // Then we expect pda nodes to be recorded and retrievable.
-    expect(linkables.get(pdaLinkNode('pdaA', 'myProgram'))).toEqual(node.pdas[0]);
-    expect(linkables.get(pdaLinkNode('pdaB', 'myProgram'))).toEqual(node.pdas[1]);
+    const emptyStack = new NodeStack();
+    expect(linkables.get(pdaLinkNode('pdaA', 'myProgram'), emptyStack)).toEqual(node.pdas[0]);
+    expect(linkables.get(pdaLinkNode('pdaB', 'myProgram'), emptyStack)).toEqual(node.pdas[1]);
 });
 
 test('it records instruction nodes', () => {
@@ -120,81 +125,76 @@ test('it records instruction nodes', () => {
         publicKey: '1111',
     });
 
-    // And a recordLinkablesVisitor extending any visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the tree.
     visit(node, visitor);
 
     // Then we expect instruction nodes to be recorded and retrievable.
-    expect(linkables.get(instructionLinkNode('instructionA', 'myProgram'))).toEqual(node.instructions[0]);
-    expect(linkables.get(instructionLinkNode('instructionB', 'myProgram'))).toEqual(node.instructions[1]);
+    const emptyStack = new NodeStack();
+    expect(linkables.get(instructionLinkNode('instructionA', 'myProgram'), emptyStack)).toEqual(node.instructions[0]);
+    expect(linkables.get(instructionLinkNode('instructionB', 'myProgram'), emptyStack)).toEqual(node.instructions[1]);
 });
 
 test('it records instruction account nodes', () => {
     // Given the following instruction node containing multiple accounts.
+    const instructionAccounts = [
+        instructionAccountNode({ isSigner: true, isWritable: false, name: 'accountA' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
+    ];
     const node = programNode({
-        instructions: [
-            instructionNode({
-                accounts: [
-                    instructionAccountNode({ isSigner: true, isWritable: false, name: 'accountA' }),
-                    instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
-                ],
-                name: 'myInstruction',
-            }),
-        ],
+        instructions: [instructionNode({ accounts: instructionAccounts, name: 'myInstruction' })],
         name: 'myProgram',
         publicKey: '1111',
     });
 
-    // And a recordLinkablesVisitor extending any visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the tree.
     visit(node, visitor);
 
     // Then we expect instruction account nodes to be recorded and retrievable.
+    const emptyStack = new NodeStack();
     const instruction = instructionLinkNode('myInstruction', 'myProgram');
-    expect(linkables.get(instructionAccountLinkNode('accountA', instruction))).toEqual(
-        node.instructions[0].accounts[0],
+    expect(linkables.get(instructionAccountLinkNode('accountA', instruction), emptyStack)).toEqual(
+        instructionAccounts[0],
     );
-    expect(linkables.get(instructionAccountLinkNode('accountB', instruction))).toEqual(
-        node.instructions[0].accounts[1],
+    expect(linkables.get(instructionAccountLinkNode('accountB', instruction), emptyStack)).toEqual(
+        instructionAccounts[1],
     );
 });
 
 test('it records instruction argument nodes', () => {
     // Given the following instruction node containing multiple arguments.
+    const instructionArguments = [
+        instructionArgumentNode({ name: 'argumentA', type: numberTypeNode('u32') }),
+        instructionArgumentNode({ name: 'argumentB', type: numberTypeNode('u32') }),
+    ];
     const node = programNode({
-        instructions: [
-            instructionNode({
-                arguments: [
-                    instructionArgumentNode({ name: 'argumentA', type: numberTypeNode('u32') }),
-                    instructionArgumentNode({ name: 'argumentB', type: numberTypeNode('u32') }),
-                ],
-                name: 'myInstruction',
-            }),
-        ],
+        instructions: [instructionNode({ arguments: instructionArguments, name: 'myInstruction' })],
         name: 'myProgram',
         publicKey: '1111',
     });
 
-    // And a recordLinkablesVisitor extending any visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the tree.
     visit(node, visitor);
 
     // Then we expect instruction argument nodes to be recorded and retrievable.
+    const emptyStack = new NodeStack();
     const instruction = instructionLinkNode('myInstruction', 'myProgram');
-    expect(linkables.get(instructionArgumentLinkNode('argumentA', instruction))).toEqual(
-        node.instructions[0].arguments[0],
+    expect(linkables.get(instructionArgumentLinkNode('argumentA', instruction), emptyStack)).toEqual(
+        instructionArguments[0],
     );
-    expect(linkables.get(instructionArgumentLinkNode('argumentB', instruction))).toEqual(
-        node.instructions[0].arguments[1],
+    expect(linkables.get(instructionArgumentLinkNode('argumentB', instruction), emptyStack)).toEqual(
+        instructionArguments[1],
     );
 });
 
@@ -204,16 +204,17 @@ test('it records all linkable before the first visit of the base visitor', () =>
         programNode({ name: 'programB', publicKey: '2222' }),
     ]);
 
-    // And a recordLinkablesVisitor extending a base visitor that
+    // And a recordLinkablesOnFirstVisitVisitor extending a base visitor that
     // stores the linkable programs available at every visit.
     const linkables = new LinkableDictionary();
+    const emptyStack = new NodeStack();
     const events: string[] = [];
     const baseVisitor = interceptFirstVisitVisitor(voidVisitor(), (node, next) => {
-        events.push(`programA:${linkables.has(programLinkNode('programA'))}`);
-        events.push(`programB:${linkables.has(programLinkNode('programB'))}`);
+        events.push(`programA:${linkables.has(programLinkNode('programA'), emptyStack)}`);
+        events.push(`programB:${linkables.has(programLinkNode('programB'), emptyStack)}`);
         next(node);
     });
-    const visitor = recordLinkablesVisitor(baseVisitor, linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(baseVisitor, linkables);
 
     // When we visit the tree.
     visit(node, visitor);
@@ -236,17 +237,20 @@ test('it keeps track of the current program when extending a visitor', () => {
     });
     const node = rootNode(programA, [programB]);
 
-    // And a recordLinkablesVisitor extending a base visitor that checks
+    // And a recordLinkablesOnFirstVisitVisitor extending a base visitor that checks
     // the result of getting the linkable node with the same name for each program.
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
     const dictionary: Record<string, AccountNode> = {};
     const baseVisitor = interceptVisitor(voidVisitor(), (node, next) => {
+        stack.push(node);
         if (isNode(node, 'programNode')) {
-            dictionary[node.name] = linkables.getOrThrow(accountLinkNode('someAccount'));
+            dictionary[node.name] = linkables.getOrThrow(accountLinkNode('someAccount'), stack);
         }
         next(node);
+        stack.pop();
     });
-    const visitor = recordLinkablesVisitor(baseVisitor, linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(baseVisitor, linkables);
 
     // When we visit the tree.
     visit(node, visitor);
@@ -273,17 +277,20 @@ test('it keeps track of the current instruction when extending a visitor', () =>
         publicKey: '1111',
     });
 
-    // And a recordLinkablesVisitor extending a base visitor that checks
+    // And a recordLinkablesOnFirstVisitVisitor extending a base visitor that checks
     // the result of getting the linkable node with the same name for each instruction.
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
     const dictionary: Record<string, InstructionAccountNode> = {};
     const baseVisitor = interceptVisitor(voidVisitor(), (node, next) => {
+        stack.push(node);
         if (isNode(node, 'instructionNode')) {
-            dictionary[node.name] = linkables.getOrThrow(instructionAccountLinkNode('someAccount'));
+            dictionary[node.name] = linkables.getOrThrow(instructionAccountLinkNode('someAccount'), stack);
         }
         next(node);
+        stack.pop();
     });
-    const visitor = recordLinkablesVisitor(baseVisitor, linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(baseVisitor, linkables);
 
     // When we visit the tree.
     visit(node, visitor);
@@ -297,15 +304,16 @@ test('it does not record linkable types that are not under a program node', () =
     // Given the following account node that is not under a program node.
     const node = accountNode({ name: 'someAccount' });
 
-    // And a recordLinkablesVisitor extending a void visitor.
+    // And a recordLinkablesOnFirstVisitVisitor extending a void visitor.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
 
     // When we visit the node.
     visit(node, visitor);
 
     // Then we expect the account node to not be recorded.
-    expect(linkables.has(accountLinkNode('someAccount'))).toBe(false);
+    const emptyStack = new NodeStack();
+    expect(linkables.has(accountLinkNode('someAccount'), emptyStack)).toBe(false);
 });
 
 test('it can throw an exception when trying to retrieve a missing linked node', () => {
@@ -318,11 +326,12 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
 
     // And a recorded LinkableDictionary.
     const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesVisitor(voidVisitor(), linkables);
+    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
     visit(node, visitor);
 
     // When we try to retrieve a missing account node.
-    const getMissingAccount = () => linkables.getOrThrow(accountLinkNode('missingAccount', 'myProgram'));
+    const emptyStack = new NodeStack();
+    const getMissingAccount = () => linkables.getOrThrow(accountLinkNode('missingAccount', 'myProgram'), emptyStack);
 
     // Then we expect an exception to be thrown.
     expect(getMissingAccount).toThrow(

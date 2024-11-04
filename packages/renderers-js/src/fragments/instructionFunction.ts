@@ -1,13 +1,5 @@
-import {
-    camelCase,
-    InstructionArgumentNode,
-    InstructionNode,
-    isNode,
-    isNodeFilter,
-    pascalCase,
-    ProgramNode,
-} from '@codama/nodes';
-import { ResolvedInstructionInput } from '@codama/visitors-core';
+import { camelCase, InstructionArgumentNode, InstructionNode, isNode, isNodeFilter, pascalCase } from '@codama/nodes';
+import { NodeStack, ResolvedInstructionInput } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { NameApi } from '../nameTransformers';
@@ -27,7 +19,7 @@ export function getInstructionFunctionFragment(
         dataArgsManifest: TypeManifest;
         extraArgsManifest: TypeManifest;
         instructionNode: InstructionNode;
-        programNode: ProgramNode;
+        instructionStack: NodeStack;
         renamedArgs: Map<string, string>;
         resolvedInputs: ResolvedInstructionInput[];
         useAsync: boolean;
@@ -36,7 +28,7 @@ export function getInstructionFunctionFragment(
     const {
         useAsync,
         instructionNode,
-        programNode,
+        instructionStack,
         resolvedInputs,
         renamedArgs,
         dataArgsManifest,
@@ -74,7 +66,7 @@ export function getInstructionFunctionFragment(
     const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
     const hasInput = hasAccounts || hasAnyArgs;
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
-    const programAddressConstant = nameApi.programAddressConstant(programNode.name);
+    const programAddressConstant = nameApi.programAddressConstant(instructionStack.getProgram()!.name);
     const encoderFunction = customData
         ? dataArgsManifest.encoder.render
         : `${nameApi.encoderFunction(instructionDataName)}()`;

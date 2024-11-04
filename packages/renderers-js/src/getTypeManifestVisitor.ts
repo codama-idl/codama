@@ -354,7 +354,8 @@ export function getTypeManifestVisitor(input: {
                     const enumFunction = nameApi.discriminatedUnionFunction(node.enum.name);
                     const importFrom = getImportFrom(node.enum);
 
-                    const enumNode = linkables.get(node.enum)?.type;
+                    // FIXME(loris): No program node can ever be in this stack.
+                    const enumNode = linkables.get(node.enum, stack)?.type;
                     const isScalar =
                         enumNode && isNode(enumNode, 'enumTypeNode')
                             ? isScalarEnum(enumNode)

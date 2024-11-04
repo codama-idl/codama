@@ -654,23 +654,28 @@ It offers the following API:
 const linkables = new LinkableDictionary();
 
 // Record program nodes.
-linkables.record(programNode);
+linkables.record(programNode, stack);
 
 // Record other linkable nodes with their associated program node.
-linkables.record(accountNode);
+linkables.record(accountNode, stack);
 
 // Get a linkable node using a link node, or throw an error if it is not found.
-const programNode = linkables.getOrThrow(programLinkNode);
+const programNode = linkables.getOrThrow(programLinkNode, stack);
 
 // Get a linkable node using a link node, or return undefined if it is not found.
-const accountNode = linkables.get(accountLinkNode);
+const accountNode = linkables.get(accountLinkNode, stack);
 ```
 
-Note that this API must be used in conjunction with the `recordLinkablesVisitor` to record the linkable nodes and, later on, resolve the link nodes as we traverse the nodes. This is because the `LinkableDictionary` instance keeps track of its own internal `NodeStack` in order to understand which program node should be used for a given link node.
+Note that:
 
-### `recordLinkablesVisitor`
+-   The stack of the recorded node must be provided when recording a linkable node.
+-   The stack of the link node must be provided when getting a linkable node from it.
 
-Much like the `recordNodeStackVisitor`, the `recordLinkablesVisitor` allows us to record linkable nodes as we traverse the tree of nodes. It accepts a base visitor and `LinkableDictionary` instance; and records any linkable node it encounters.
+This API may be used with the `recordLinkablesOnFirstVisitVisitor` to record the linkable nodes before the first node visit; as well as the `recordNodeStackVisitor` to keep track of the current node stack when accessing the linkable nodes.
+
+### `recordLinkablesOnFirstVisitVisitor`
+
+Much like the `recordNodeStackVisitor`, the `recordLinkablesOnFirstVisitVisitor` allows us to record linkable nodes as we traverse the tree of nodes. It accepts a base visitor and `LinkableDictionary` instance; and records any linkable node it encounters.
 
 This means that we can inject the `LinkableDictionary` instance into another extension of the base visitor to resolve any link node we encounter.
 
@@ -678,6 +683,7 @@ Here's an example that records a `LinkableDictionary` and uses it to log the amo
 
 ```ts
 const linkables = new LinkableDictionary();
+const stack = new NodeStack();
 const visitor = pipe(
     baseVisitor,
     v =>
@@ -685,11 +691,12 @@ const visitor = pipe(
             const pdaNode = linkables.getOrThrow(node);
             console.log(`${pdaNode.seeds.length} seeds`);
         }),
-    v => recordLinkablesVisitor(v, linkables),
+    v => recordNodeStackVisitor(v, stack),
+    v => recordLinkablesOnFirstVisitVisitor(v, linkables),
 );
 ```
 
-Note that the `recordLinkablesVisitor` should always be the last visitor in the pipe to ensure that all linkable nodes are recorded before being used.
+Note that the `recordLinkablesOnFirstVisitVisitor` should be the last visitor in the pipe to ensure that all linkable nodes are recorded before being used.
 
 ## Other useful visitors
 

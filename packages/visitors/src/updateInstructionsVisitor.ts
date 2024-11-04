@@ -16,8 +16,10 @@ import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
+    NodeStack,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     visit,
 } from '@codama/visitors-core';
 
@@ -59,6 +61,7 @@ export type InstructionArgumentUpdates = Record<
 
 export function updateInstructionsVisitor(map: Record<string, InstructionUpdates>) {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
 
     const transformers = Object.entries(map).map(
         ([selector, updates]): BottomUpNodeTransformerWithSelector => ({
@@ -72,7 +75,7 @@ export function updateInstructionsVisitor(map: Record<string, InstructionUpdates
                 const { accounts: accountUpdates, arguments: argumentUpdates, ...metadataUpdates } = updates;
                 const { newArguments, newExtraArguments } = handleInstructionArguments(node, argumentUpdates ?? {});
                 const newAccounts = node.accounts.map(account =>
-                    handleInstructionAccount(node, account, accountUpdates ?? {}, linkables),
+                    handleInstructionAccount(node, stack, account, accountUpdates ?? {}, linkables),
                 );
                 return instructionNode({
                     ...node,
@@ -85,11 +88,16 @@ export function updateInstructionsVisitor(map: Record<string, InstructionUpdates
         }),
     );
 
-    return pipe(bottomUpTransformerVisitor(transformers), v => recordLinkablesVisitor(v, linkables));
+    return pipe(
+        bottomUpTransformerVisitor(transformers),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
+    );
 }
 
 function handleInstructionAccount(
     instruction: InstructionNode,
+    stack: NodeStack,
     account: InstructionAccountNode,
     accountUpdates: InstructionAccountUpdates,
     linkables: LinkableDictionary,
@@ -107,7 +115,7 @@ function handleInstructionAccount(
 
     return instructionAccountNode({
         ...acountWithoutDefault,
-        defaultValue: visit(defaultValue, fillDefaultPdaSeedValuesVisitor(instruction, linkables)),
+        defaultValue: visit(defaultValue, fillDefaultPdaSeedValuesVisitor(instruction, stack, linkables)),
     });
 }
 

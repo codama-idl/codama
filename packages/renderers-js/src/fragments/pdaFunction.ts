@@ -1,5 +1,5 @@
-import { isNode, isNodeFilter, PdaNode, ProgramNode } from '@codama/nodes';
-import { visit } from '@codama/visitors-core';
+import { isNode, isNodeFilter, PdaNode } from '@codama/nodes';
+import { NodeStack, visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
@@ -8,10 +8,10 @@ import { Fragment, fragmentFromTemplate } from './common';
 export function getPdaFunctionFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
         pdaNode: PdaNode;
-        programNode: ProgramNode;
+        pdaStack: NodeStack;
     },
 ): Fragment {
-    const { pdaNode, programNode, typeManifestVisitor, nameApi } = scope;
+    const { pdaNode, pdaStack, typeManifestVisitor, nameApi } = scope;
 
     // Seeds.
     const imports = new ImportMap();
@@ -37,7 +37,7 @@ export function getPdaFunctionFragment(
         findPdaFunction: nameApi.pdaFindFunction(pdaNode.name),
         hasVariableSeeds,
         pdaSeedsType: nameApi.pdaSeedsType(pdaNode.name),
-        programAddress: pdaNode.programId ?? programNode.publicKey,
+        programAddress: pdaNode.programId ?? pdaStack.getProgram()!.publicKey,
         seeds,
     })
         .mergeImportsWith(imports)

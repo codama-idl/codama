@@ -12,9 +12,11 @@ import {
 import {
     extendVisitor,
     LinkableDictionary,
+    NodeStack,
     nonNullableIdentityVisitor,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     visit,
 } from '@codama/visitors-core';
 
@@ -136,6 +138,7 @@ export const getCommonInstructionAccountDefaultRules = (): InstructionAccountDef
 
 export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAccountDefaultRule[]) {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
 
     // Place the rules with instructions first.
     const sortedRules = rules.sort((a, b) => {
@@ -161,7 +164,6 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
 
     return pipe(
         nonNullableIdentityVisitor(['rootNode', 'programNode', 'instructionNode']),
-        v => recordLinkablesVisitor(v, linkables),
         v =>
             extendVisitor(v, {
                 visitInstruction(node) {
@@ -178,7 +180,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
                                 ...account,
                                 defaultValue: visit(
                                     rule.defaultValue,
-                                    fillDefaultPdaSeedValuesVisitor(node, linkables, true),
+                                    fillDefaultPdaSeedValuesVisitor(node, stack, linkables, true),
                                 ),
                             };
                         } catch (error) {
@@ -192,5 +194,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
                     });
                 },
             }),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }

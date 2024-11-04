@@ -18,8 +18,10 @@ import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     LinkableDictionary,
+    NodeStack,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
@@ -40,6 +42,7 @@ export type GetRenderMapOptions = {
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
     let program: ProgramNode | null = null;
 
     const renderParentInstructions = options.renderParentInstructions ?? false;
@@ -61,7 +64,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     // Seeds.
                     const seedsImports = new ImportMap();
-                    const pda = node.pda ? linkables.get(node.pda) : undefined;
+                    const pda = node.pda ? linkables.get(node.pda, stack) : undefined;
                     const pdaSeeds = pda?.seeds ?? [];
                     const seeds = pdaSeeds.map(seed => {
                         if (isNode(seed, 'variablePdaSeedNode')) {
@@ -286,7 +289,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
 
