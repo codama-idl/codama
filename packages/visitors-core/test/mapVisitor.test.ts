@@ -27,7 +27,7 @@ test('it creates partial visitors from partial visitors', () => {
     const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
 
     // And partial static visitor A that supports only 2 of these nodes.
-    const visitorA = staticVisitor(node => node.kind, ['tupleTypeNode', 'numberTypeNode']);
+    const visitorA = staticVisitor(node => node.kind, { keys: ['tupleTypeNode', 'numberTypeNode'] });
 
     // And a mapped visitor B that returns the number of characters returned by visitor A.
     const visitorB = mapVisitor(visitorA, value => value.length);

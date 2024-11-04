@@ -76,16 +76,16 @@ import { staticVisitor } from './staticVisitor';
 import { visit as baseVisit, Visitor } from './visitor';
 
 export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
-    nodeKeys: TNodeKind[] = REGISTERED_NODE_KINDS as TNodeKind[],
+    options: { keys?: TNodeKind[] } = {},
 ): Visitor<Node | null, TNodeKind> {
-    const castedNodeKeys: NodeKind[] = nodeKeys;
-    const visitor = staticVisitor(node => Object.freeze({ ...node }), castedNodeKeys) as Visitor<Node | null>;
+    const keys: NodeKind[] = options.keys ?? (REGISTERED_NODE_KINDS as TNodeKind[]);
+    const visitor = staticVisitor(node => Object.freeze({ ...node }), { keys }) as Visitor<Node | null>;
     const visit =
         (v: Visitor<Node | null>) =>
         (node: Node): Node | null =>
-            castedNodeKeys.includes(node.kind) ? baseVisit(node, v) : Object.freeze({ ...node });
+            keys.includes(node.kind) ? baseVisit(node, v) : Object.freeze({ ...node });
 
-    if (castedNodeKeys.includes('rootNode')) {
+    if (keys.includes('rootNode')) {
         visitor.visitRoot = function visitRoot(node) {
             const program = visit(this)(node.program);
             if (program === null) return null;
@@ -97,7 +97,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('programNode')) {
+    if (keys.includes('programNode')) {
         visitor.visitProgram = function visitProgram(node) {
             return programNode({
                 ...node,
@@ -114,7 +114,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('pdaNode')) {
+    if (keys.includes('pdaNode')) {
         visitor.visitPda = function visitPda(node) {
             return pdaNode({
                 ...node,
@@ -123,7 +123,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('accountNode')) {
+    if (keys.includes('accountNode')) {
         visitor.visitAccount = function visitAccount(node) {
             const data = visit(this)(node.data);
             if (data === null) return null;
@@ -134,7 +134,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionNode')) {
+    if (keys.includes('instructionNode')) {
         visitor.visitInstruction = function visitInstruction(node) {
             return instructionNode({
                 ...node,
@@ -169,7 +169,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionAccountNode')) {
+    if (keys.includes('instructionAccountNode')) {
         visitor.visitInstructionAccount = function visitInstructionAccount(node) {
             const defaultValue = node.defaultValue ? (visit(this)(node.defaultValue) ?? undefined) : undefined;
             if (defaultValue) assertIsNode(defaultValue, INSTRUCTION_INPUT_VALUE_NODES);
@@ -177,7 +177,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionArgumentNode')) {
+    if (keys.includes('instructionArgumentNode')) {
         visitor.visitInstructionArgument = function visitInstructionArgument(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -188,7 +188,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionRemainingAccountsNode')) {
+    if (keys.includes('instructionRemainingAccountsNode')) {
         visitor.visitInstructionRemainingAccounts = function visitInstructionRemainingAccounts(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
@@ -197,7 +197,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionByteDeltaNode')) {
+    if (keys.includes('instructionByteDeltaNode')) {
         visitor.visitInstructionByteDelta = function visitInstructionByteDelta(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
@@ -206,7 +206,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('definedTypeNode')) {
+    if (keys.includes('definedTypeNode')) {
         visitor.visitDefinedType = function visitDefinedType(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -215,7 +215,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('arrayTypeNode')) {
+    if (keys.includes('arrayTypeNode')) {
         visitor.visitArrayType = function visitArrayType(node) {
             const size = visit(this)(node.count);
             if (size === null) return null;
@@ -227,7 +227,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('enumTypeNode')) {
+    if (keys.includes('enumTypeNode')) {
         visitor.visitEnumType = function visitEnumType(node) {
             return enumTypeNode(
                 node.variants.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(ENUM_VARIANT_TYPE_NODES)),
@@ -236,7 +236,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('enumStructVariantTypeNode')) {
+    if (keys.includes('enumStructVariantTypeNode')) {
         visitor.visitEnumStructVariantType = function visitEnumStructVariantType(node) {
             const newStruct = visit(this)(node.struct);
             if (!newStruct) {
@@ -250,7 +250,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('enumTupleVariantTypeNode')) {
+    if (keys.includes('enumTupleVariantTypeNode')) {
         visitor.visitEnumTupleVariantType = function visitEnumTupleVariantType(node) {
             const newTuple = visit(this)(node.tuple);
             if (!newTuple) {
@@ -264,7 +264,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('mapTypeNode')) {
+    if (keys.includes('mapTypeNode')) {
         visitor.visitMapType = function visitMapType(node) {
             const size = visit(this)(node.count);
             if (size === null) return null;
@@ -279,7 +279,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('optionTypeNode')) {
+    if (keys.includes('optionTypeNode')) {
         visitor.visitOptionType = function visitOptionType(node) {
             const prefix = visit(this)(node.prefix);
             if (prefix === null) return null;
@@ -291,7 +291,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('zeroableOptionTypeNode')) {
+    if (keys.includes('zeroableOptionTypeNode')) {
         visitor.visitZeroableOptionType = function visitZeroableOptionType(node) {
             const item = visit(this)(node.item);
             if (item === null) return null;
@@ -302,7 +302,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('remainderOptionTypeNode')) {
+    if (keys.includes('remainderOptionTypeNode')) {
         visitor.visitRemainderOptionType = function visitRemainderOptionType(node) {
             const item = visit(this)(node.item);
             if (item === null) return null;
@@ -311,7 +311,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('booleanTypeNode')) {
+    if (keys.includes('booleanTypeNode')) {
         visitor.visitBooleanType = function visitBooleanType(node) {
             const size = visit(this)(node.size);
             if (size === null) return null;
@@ -320,7 +320,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('setTypeNode')) {
+    if (keys.includes('setTypeNode')) {
         visitor.visitSetType = function visitSetType(node) {
             const size = visit(this)(node.count);
             if (size === null) return null;
@@ -332,14 +332,14 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('structTypeNode')) {
+    if (keys.includes('structTypeNode')) {
         visitor.visitStructType = function visitStructType(node) {
             const fields = node.fields.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('structFieldTypeNode'));
             return structTypeNode(fields);
         };
     }
 
-    if (castedNodeKeys.includes('structFieldTypeNode')) {
+    if (keys.includes('structFieldTypeNode')) {
         visitor.visitStructFieldType = function visitStructFieldType(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -350,14 +350,14 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('tupleTypeNode')) {
+    if (keys.includes('tupleTypeNode')) {
         visitor.visitTupleType = function visitTupleType(node) {
             const items = node.items.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(TYPE_NODES));
             return tupleTypeNode(items);
         };
     }
 
-    if (castedNodeKeys.includes('amountTypeNode')) {
+    if (keys.includes('amountTypeNode')) {
         visitor.visitAmountType = function visitAmountType(node) {
             const number = visit(this)(node.number);
             if (number === null) return null;
@@ -366,7 +366,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('dateTimeTypeNode')) {
+    if (keys.includes('dateTimeTypeNode')) {
         visitor.visitDateTimeType = function visitDateTimeType(node) {
             const number = visit(this)(node.number);
             if (number === null) return null;
@@ -375,7 +375,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('solAmountTypeNode')) {
+    if (keys.includes('solAmountTypeNode')) {
         visitor.visitSolAmountType = function visitSolAmountType(node) {
             const number = visit(this)(node.number);
             if (number === null) return null;
@@ -384,7 +384,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('prefixedCountNode')) {
+    if (keys.includes('prefixedCountNode')) {
         visitor.visitPrefixedCount = function visitPrefixedCount(node) {
             const prefix = visit(this)(node.prefix);
             if (prefix === null) return null;
@@ -393,13 +393,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('arrayValueNode')) {
+    if (keys.includes('arrayValueNode')) {
         visitor.visitArrayValue = function visitArrayValue(node) {
             return arrayValueNode(node.items.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODES)));
         };
     }
 
-    if (castedNodeKeys.includes('constantValueNode')) {
+    if (keys.includes('constantValueNode')) {
         visitor.visitConstantValue = function visitConstantValue(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -411,7 +411,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('enumValueNode')) {
+    if (keys.includes('enumValueNode')) {
         visitor.visitEnumValue = function visitEnumValue(node) {
             const enumLink = visit(this)(node.enum);
             if (enumLink === null) return null;
@@ -422,7 +422,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('mapValueNode')) {
+    if (keys.includes('mapValueNode')) {
         visitor.visitMapValue = function visitMapValue(node) {
             return mapValueNode(
                 node.entries.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('mapEntryValueNode')),
@@ -430,7 +430,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('mapEntryValueNode')) {
+    if (keys.includes('mapEntryValueNode')) {
         visitor.visitMapEntryValue = function visitMapEntryValue(node) {
             const key = visit(this)(node.key);
             if (key === null) return null;
@@ -442,13 +442,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('setValueNode')) {
+    if (keys.includes('setValueNode')) {
         visitor.visitSetValue = function visitSetValue(node) {
             return setValueNode(node.items.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODES)));
         };
     }
 
-    if (castedNodeKeys.includes('someValueNode')) {
+    if (keys.includes('someValueNode')) {
         visitor.visitSomeValue = function visitSomeValue(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
@@ -457,7 +457,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('structValueNode')) {
+    if (keys.includes('structValueNode')) {
         visitor.visitStructValue = function visitStructValue(node) {
             return structValueNode(
                 node.fields.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('structFieldValueNode')),
@@ -465,7 +465,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('structFieldValueNode')) {
+    if (keys.includes('structFieldValueNode')) {
         visitor.visitStructFieldValue = function visitStructFieldValue(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
@@ -474,13 +474,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('tupleValueNode')) {
+    if (keys.includes('tupleValueNode')) {
         visitor.visitTupleValue = function visitTupleValue(node) {
             return tupleValueNode(node.items.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODES)));
         };
     }
 
-    if (castedNodeKeys.includes('constantPdaSeedNode')) {
+    if (keys.includes('constantPdaSeedNode')) {
         visitor.visitConstantPdaSeed = function visitConstantPdaSeed(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -492,7 +492,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('variablePdaSeedNode')) {
+    if (keys.includes('variablePdaSeedNode')) {
         visitor.visitVariablePdaSeed = function visitVariablePdaSeed(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -501,7 +501,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('resolverValueNode')) {
+    if (keys.includes('resolverValueNode')) {
         visitor.visitResolverValue = function visitResolverValue(node) {
             const dependsOn = (node.dependsOn ?? [])
                 .map(visit(this))
@@ -513,7 +513,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('conditionalValueNode')) {
+    if (keys.includes('conditionalValueNode')) {
         visitor.visitConditionalValue = function visitConditionalValue(node) {
             const condition = visit(this)(node.condition);
             if (condition === null) return null;
@@ -529,7 +529,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('pdaValueNode')) {
+    if (keys.includes('pdaValueNode')) {
         visitor.visitPdaValue = function visitPdaValue(node) {
             const pda = visit(this)(node.pda);
             if (pda === null) return null;
@@ -539,7 +539,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('pdaSeedValueNode')) {
+    if (keys.includes('pdaSeedValueNode')) {
         visitor.visitPdaSeedValue = function visitPdaSeedValue(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
@@ -548,7 +548,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('fixedSizeTypeNode')) {
+    if (keys.includes('fixedSizeTypeNode')) {
         visitor.visitFixedSizeType = function visitFixedSizeType(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -557,7 +557,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('sizePrefixTypeNode')) {
+    if (keys.includes('sizePrefixTypeNode')) {
         visitor.visitSizePrefixType = function visitSizePrefixType(node) {
             const prefix = visit(this)(node.prefix);
             if (prefix === null) return null;
@@ -569,7 +569,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('preOffsetTypeNode')) {
+    if (keys.includes('preOffsetTypeNode')) {
         visitor.visitPreOffsetType = function visitPreOffsetType(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -578,7 +578,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('postOffsetTypeNode')) {
+    if (keys.includes('postOffsetTypeNode')) {
         visitor.visitPostOffsetType = function visitPostOffsetType(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -587,7 +587,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('sentinelTypeNode')) {
+    if (keys.includes('sentinelTypeNode')) {
         visitor.visitSentinelType = function visitSentinelType(node) {
             const sentinel = visit(this)(node.sentinel);
             if (sentinel === null) return null;
@@ -599,7 +599,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('hiddenPrefixTypeNode')) {
+    if (keys.includes('hiddenPrefixTypeNode')) {
         visitor.visitHiddenPrefixType = function visitHiddenPrefixType(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -610,7 +610,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('hiddenSuffixTypeNode')) {
+    if (keys.includes('hiddenSuffixTypeNode')) {
         visitor.visitHiddenSuffixType = function visitHiddenSuffixType(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
@@ -621,7 +621,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('constantDiscriminatorNode')) {
+    if (keys.includes('constantDiscriminatorNode')) {
         visitor.visitConstantDiscriminator = function visitConstantDiscriminator(node) {
             const constant = visit(this)(node.constant);
             if (constant === null) return null;
@@ -630,7 +630,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('accountLinkNode')) {
+    if (keys.includes('accountLinkNode')) {
         visitor.visitAccountLink = function visitAccountLink(node) {
             const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
             if (program) assertIsNode(program, 'programLinkNode');
@@ -638,7 +638,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('definedTypeLinkNode')) {
+    if (keys.includes('definedTypeLinkNode')) {
         visitor.visitDefinedTypeLink = function visitDefinedTypeLink(node) {
             const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
             if (program) assertIsNode(program, 'programLinkNode');
@@ -646,7 +646,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionLinkNode')) {
+    if (keys.includes('instructionLinkNode')) {
         visitor.visitInstructionLink = function visitInstructionLink(node) {
             const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
             if (program) assertIsNode(program, 'programLinkNode');
@@ -654,7 +654,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionAccountLinkNode')) {
+    if (keys.includes('instructionAccountLinkNode')) {
         visitor.visitInstructionAccountLink = function visitInstructionAccountLink(node) {
             const instruction = node.instruction ? (visit(this)(node.instruction) ?? undefined) : undefined;
             if (instruction) assertIsNode(instruction, 'instructionLinkNode');
@@ -662,7 +662,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionArgumentLinkNode')) {
+    if (keys.includes('instructionArgumentLinkNode')) {
         visitor.visitInstructionArgumentLink = function visitInstructionArgumentLink(node) {
             const instruction = node.instruction ? (visit(this)(node.instruction) ?? undefined) : undefined;
             if (instruction) assertIsNode(instruction, 'instructionLinkNode');
@@ -670,7 +670,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('pdaLinkNode')) {
+    if (keys.includes('pdaLinkNode')) {
         visitor.visitPdaLink = function visitPdaLink(node) {
             const program = node.program ? (visit(this)(node.program) ?? undefined) : undefined;
             if (program) assertIsNode(program, 'programLinkNode');

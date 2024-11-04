@@ -6,22 +6,22 @@ import { visit as baseVisit, Visitor } from './visitor';
 export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     leafValue: (node: Node) => TReturn,
     merge: (node: Node, values: TReturn[]) => TReturn,
-    nodeKeys: TNodeKind[] = REGISTERED_NODE_KINDS as TNodeKind[],
+    options: { keys?: TNodeKind[] } = {},
 ): Visitor<TReturn, TNodeKind> {
-    const castedNodeKeys: NodeKind[] = nodeKeys;
-    const visitor = staticVisitor(leafValue, castedNodeKeys) as Visitor<TReturn>;
+    const keys: NodeKind[] = options.keys ?? (REGISTERED_NODE_KINDS as NodeKind[]);
+    const visitor = staticVisitor(leafValue, { keys }) as Visitor<TReturn>;
     const visit =
         (v: Visitor<TReturn>) =>
         (node: Node): TReturn[] =>
-            castedNodeKeys.includes(node.kind) ? [baseVisit(node, v)] : [];
+            keys.includes(node.kind) ? [baseVisit(node, v)] : [];
 
-    if (castedNodeKeys.includes('rootNode')) {
+    if (keys.includes('rootNode')) {
         visitor.visitRoot = function visitRoot(node) {
             return merge(node, getAllPrograms(node).flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('programNode')) {
+    if (keys.includes('programNode')) {
         visitor.visitProgram = function visitProgram(node) {
             return merge(node, [
                 ...node.pdas.flatMap(visit(this)),
@@ -33,13 +33,13 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('pdaNode')) {
+    if (keys.includes('pdaNode')) {
         visitor.visitPda = function visitPda(node) {
             return merge(node, node.seeds.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('accountNode')) {
+    if (keys.includes('accountNode')) {
         visitor.visitAccount = function visitAccount(node) {
             return merge(node, [
                 ...visit(this)(node.data),
@@ -49,7 +49,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionNode')) {
+    if (keys.includes('instructionNode')) {
         visitor.visitInstruction = function visitInstruction(node) {
             return merge(node, [
                 ...node.accounts.flatMap(visit(this)),
@@ -63,13 +63,13 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionAccountNode')) {
+    if (keys.includes('instructionAccountNode')) {
         visitor.visitInstructionAccount = function visitInstructionAccount(node) {
             return merge(node, [...(node.defaultValue ? visit(this)(node.defaultValue) : [])]);
         };
     }
 
-    if (castedNodeKeys.includes('instructionArgumentNode')) {
+    if (keys.includes('instructionArgumentNode')) {
         visitor.visitInstructionArgument = function visitInstructionArgument(node) {
             return merge(node, [
                 ...visit(this)(node.type),
@@ -78,91 +78,91 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('instructionRemainingAccountsNode')) {
+    if (keys.includes('instructionRemainingAccountsNode')) {
         visitor.visitInstructionRemainingAccounts = function visitInstructionRemainingAccounts(node) {
             return merge(node, visit(this)(node.value));
         };
     }
 
-    if (castedNodeKeys.includes('instructionByteDeltaNode')) {
+    if (keys.includes('instructionByteDeltaNode')) {
         visitor.visitInstructionByteDelta = function visitInstructionByteDelta(node) {
             return merge(node, visit(this)(node.value));
         };
     }
 
-    if (castedNodeKeys.includes('definedTypeNode')) {
+    if (keys.includes('definedTypeNode')) {
         visitor.visitDefinedType = function visitDefinedType(node) {
             return merge(node, visit(this)(node.type));
         };
     }
 
-    if (castedNodeKeys.includes('arrayTypeNode')) {
+    if (keys.includes('arrayTypeNode')) {
         visitor.visitArrayType = function visitArrayType(node) {
             return merge(node, [...visit(this)(node.count), ...visit(this)(node.item)]);
         };
     }
 
-    if (castedNodeKeys.includes('enumTypeNode')) {
+    if (keys.includes('enumTypeNode')) {
         visitor.visitEnumType = function visitEnumType(node) {
             return merge(node, [...visit(this)(node.size), ...node.variants.flatMap(visit(this))]);
         };
     }
 
-    if (castedNodeKeys.includes('enumStructVariantTypeNode')) {
+    if (keys.includes('enumStructVariantTypeNode')) {
         visitor.visitEnumStructVariantType = function visitEnumStructVariantType(node) {
             return merge(node, visit(this)(node.struct));
         };
     }
 
-    if (castedNodeKeys.includes('enumTupleVariantTypeNode')) {
+    if (keys.includes('enumTupleVariantTypeNode')) {
         visitor.visitEnumTupleVariantType = function visitEnumTupleVariantType(node) {
             return merge(node, visit(this)(node.tuple));
         };
     }
 
-    if (castedNodeKeys.includes('mapTypeNode')) {
+    if (keys.includes('mapTypeNode')) {
         visitor.visitMapType = function visitMapType(node) {
             return merge(node, [...visit(this)(node.count), ...visit(this)(node.key), ...visit(this)(node.value)]);
         };
     }
 
-    if (castedNodeKeys.includes('optionTypeNode')) {
+    if (keys.includes('optionTypeNode')) {
         visitor.visitOptionType = function visitOptionType(node) {
             return merge(node, [...visit(this)(node.prefix), ...visit(this)(node.item)]);
         };
     }
 
-    if (castedNodeKeys.includes('zeroableOptionTypeNode')) {
+    if (keys.includes('zeroableOptionTypeNode')) {
         visitor.visitZeroableOptionType = function visitZeroableOptionType(node) {
             return merge(node, [...visit(this)(node.item), ...(node.zeroValue ? visit(this)(node.zeroValue) : [])]);
         };
     }
 
-    if (castedNodeKeys.includes('remainderOptionTypeNode')) {
+    if (keys.includes('remainderOptionTypeNode')) {
         visitor.visitRemainderOptionType = function visitRemainderOptionType(node) {
             return merge(node, visit(this)(node.item));
         };
     }
 
-    if (castedNodeKeys.includes('booleanTypeNode')) {
+    if (keys.includes('booleanTypeNode')) {
         visitor.visitBooleanType = function visitBooleanType(node) {
             return merge(node, visit(this)(node.size));
         };
     }
 
-    if (castedNodeKeys.includes('setTypeNode')) {
+    if (keys.includes('setTypeNode')) {
         visitor.visitSetType = function visitSetType(node) {
             return merge(node, [...visit(this)(node.count), ...visit(this)(node.item)]);
         };
     }
 
-    if (castedNodeKeys.includes('structTypeNode')) {
+    if (keys.includes('structTypeNode')) {
         visitor.visitStructType = function visitStructType(node) {
             return merge(node, node.fields.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('structFieldTypeNode')) {
+    if (keys.includes('structFieldTypeNode')) {
         visitor.visitStructFieldType = function visitStructFieldType(node) {
             return merge(node, [
                 ...visit(this)(node.type),
@@ -171,115 +171,115 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('tupleTypeNode')) {
+    if (keys.includes('tupleTypeNode')) {
         visitor.visitTupleType = function visitTupleType(node) {
             return merge(node, node.items.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('amountTypeNode')) {
+    if (keys.includes('amountTypeNode')) {
         visitor.visitAmountType = function visitAmountType(node) {
             return merge(node, visit(this)(node.number));
         };
     }
 
-    if (castedNodeKeys.includes('dateTimeTypeNode')) {
+    if (keys.includes('dateTimeTypeNode')) {
         visitor.visitDateTimeType = function visitDateTimeType(node) {
             return merge(node, visit(this)(node.number));
         };
     }
 
-    if (castedNodeKeys.includes('solAmountTypeNode')) {
+    if (keys.includes('solAmountTypeNode')) {
         visitor.visitSolAmountType = function visitSolAmountType(node) {
             return merge(node, visit(this)(node.number));
         };
     }
 
-    if (castedNodeKeys.includes('prefixedCountNode')) {
+    if (keys.includes('prefixedCountNode')) {
         visitor.visitPrefixedCount = function visitPrefixedCount(node) {
             return merge(node, visit(this)(node.prefix));
         };
     }
 
-    if (castedNodeKeys.includes('arrayValueNode')) {
+    if (keys.includes('arrayValueNode')) {
         visitor.visitArrayValue = function visitArrayValue(node) {
             return merge(node, node.items.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('constantValueNode')) {
+    if (keys.includes('constantValueNode')) {
         visitor.visitConstantValue = function visitConstantValue(node) {
             return merge(node, [...visit(this)(node.type), ...visit(this)(node.value)]);
         };
     }
 
-    if (castedNodeKeys.includes('enumValueNode')) {
+    if (keys.includes('enumValueNode')) {
         visitor.visitEnumValue = function visitEnumValue(node) {
             return merge(node, [...visit(this)(node.enum), ...(node.value ? visit(this)(node.value) : [])]);
         };
     }
 
-    if (castedNodeKeys.includes('mapValueNode')) {
+    if (keys.includes('mapValueNode')) {
         visitor.visitMapValue = function visitMapValue(node) {
             return merge(node, node.entries.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('mapEntryValueNode')) {
+    if (keys.includes('mapEntryValueNode')) {
         visitor.visitMapEntryValue = function visitMapEntryValue(node) {
             return merge(node, [...visit(this)(node.key), ...visit(this)(node.value)]);
         };
     }
 
-    if (castedNodeKeys.includes('setValueNode')) {
+    if (keys.includes('setValueNode')) {
         visitor.visitSetValue = function visitSetValue(node) {
             return merge(node, node.items.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('someValueNode')) {
+    if (keys.includes('someValueNode')) {
         visitor.visitSomeValue = function visitSomeValue(node) {
             return merge(node, visit(this)(node.value));
         };
     }
 
-    if (castedNodeKeys.includes('structValueNode')) {
+    if (keys.includes('structValueNode')) {
         visitor.visitStructValue = function visitStructValue(node) {
             return merge(node, node.fields.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('structFieldValueNode')) {
+    if (keys.includes('structFieldValueNode')) {
         visitor.visitStructFieldValue = function visitStructFieldValue(node) {
             return merge(node, visit(this)(node.value));
         };
     }
 
-    if (castedNodeKeys.includes('tupleValueNode')) {
+    if (keys.includes('tupleValueNode')) {
         visitor.visitTupleValue = function visitTupleValue(node) {
             return merge(node, node.items.flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('constantPdaSeedNode')) {
+    if (keys.includes('constantPdaSeedNode')) {
         visitor.visitConstantPdaSeed = function visitConstantPdaSeed(node) {
             return merge(node, [...visit(this)(node.type), ...visit(this)(node.value)]);
         };
     }
 
-    if (castedNodeKeys.includes('variablePdaSeedNode')) {
+    if (keys.includes('variablePdaSeedNode')) {
         visitor.visitVariablePdaSeed = function visitVariablePdaSeed(node) {
             return merge(node, visit(this)(node.type));
         };
     }
 
-    if (castedNodeKeys.includes('resolverValueNode')) {
+    if (keys.includes('resolverValueNode')) {
         visitor.visitResolverValue = function visitResolverValue(node) {
             return merge(node, (node.dependsOn ?? []).flatMap(visit(this)));
         };
     }
 
-    if (castedNodeKeys.includes('conditionalValueNode')) {
+    if (keys.includes('conditionalValueNode')) {
         visitor.visitConditionalValue = function visitConditionalValue(node) {
             return merge(node, [
                 ...visit(this)(node.condition),
@@ -290,97 +290,97 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
-    if (castedNodeKeys.includes('pdaValueNode')) {
+    if (keys.includes('pdaValueNode')) {
         visitor.visitPdaValue = function visitPdaValue(node) {
             return merge(node, [...visit(this)(node.pda), ...node.seeds.flatMap(visit(this))]);
         };
     }
 
-    if (castedNodeKeys.includes('pdaSeedValueNode')) {
+    if (keys.includes('pdaSeedValueNode')) {
         visitor.visitPdaSeedValue = function visitPdaSeedValue(node) {
             return merge(node, visit(this)(node.value));
         };
     }
 
-    if (castedNodeKeys.includes('fixedSizeTypeNode')) {
+    if (keys.includes('fixedSizeTypeNode')) {
         visitor.visitFixedSizeType = function visitFixedSizeType(node) {
             return merge(node, visit(this)(node.type));
         };
     }
 
-    if (castedNodeKeys.includes('sizePrefixTypeNode')) {
+    if (keys.includes('sizePrefixTypeNode')) {
         visitor.visitSizePrefixType = function visitSizePrefixType(node) {
             return merge(node, [...visit(this)(node.prefix), ...visit(this)(node.type)]);
         };
     }
 
-    if (castedNodeKeys.includes('preOffsetTypeNode')) {
+    if (keys.includes('preOffsetTypeNode')) {
         visitor.visitPreOffsetType = function visitPreOffsetType(node) {
             return merge(node, visit(this)(node.type));
         };
     }
 
-    if (castedNodeKeys.includes('postOffsetTypeNode')) {
+    if (keys.includes('postOffsetTypeNode')) {
         visitor.visitPostOffsetType = function visitPostOffsetType(node) {
             return merge(node, visit(this)(node.type));
         };
     }
 
-    if (castedNodeKeys.includes('sentinelTypeNode')) {
+    if (keys.includes('sentinelTypeNode')) {
         visitor.visitSentinelType = function visitSentinelType(node) {
             return merge(node, [...visit(this)(node.sentinel), ...visit(this)(node.type)]);
         };
     }
 
-    if (castedNodeKeys.includes('hiddenPrefixTypeNode')) {
+    if (keys.includes('hiddenPrefixTypeNode')) {
         visitor.visitHiddenPrefixType = function visitHiddenPrefixType(node) {
             return merge(node, [...node.prefix.flatMap(visit(this)), ...visit(this)(node.type)]);
         };
     }
 
-    if (castedNodeKeys.includes('hiddenSuffixTypeNode')) {
+    if (keys.includes('hiddenSuffixTypeNode')) {
         visitor.visitHiddenSuffixType = function visitHiddenSuffixType(node) {
             return merge(node, [...visit(this)(node.type), ...node.suffix.flatMap(visit(this))]);
         };
     }
 
-    if (castedNodeKeys.includes('constantDiscriminatorNode')) {
+    if (keys.includes('constantDiscriminatorNode')) {
         visitor.visitConstantDiscriminator = function visitConstantDiscriminator(node) {
             return merge(node, visit(this)(node.constant));
         };
     }
 
-    if (castedNodeKeys.includes('accountLinkNode')) {
+    if (keys.includes('accountLinkNode')) {
         visitor.visitAccountLink = function visitAccountLink(node) {
             return merge(node, node.program ? visit(this)(node.program) : []);
         };
     }
 
-    if (castedNodeKeys.includes('definedTypeLinkNode')) {
+    if (keys.includes('definedTypeLinkNode')) {
         visitor.visitDefinedTypeLink = function visitDefinedTypeLink(node) {
             return merge(node, node.program ? visit(this)(node.program) : []);
         };
     }
 
-    if (castedNodeKeys.includes('instructionLinkNode')) {
+    if (keys.includes('instructionLinkNode')) {
         visitor.visitInstructionLink = function visitInstructionLink(node) {
             return merge(node, node.program ? visit(this)(node.program) : []);
         };
     }
 
-    if (castedNodeKeys.includes('instructionAccountLinkNode')) {
+    if (keys.includes('instructionAccountLinkNode')) {
         visitor.visitInstructionAccountLink = function visitInstructionAccountLink(node) {
             return merge(node, node.instruction ? visit(this)(node.instruction) : []);
         };
     }
 
-    if (castedNodeKeys.includes('instructionArgumentLinkNode')) {
+    if (keys.includes('instructionArgumentLinkNode')) {
         visitor.visitInstructionArgumentLink = function visitInstructionArgumentLink(node) {
             return merge(node, node.instruction ? visit(this)(node.instruction) : []);
         };
     }
 
-    if (castedNodeKeys.includes('pdaLinkNode')) {
+    if (keys.includes('pdaLinkNode')) {
         visitor.visitPdaLink = function visitPdaLink(node) {
             return merge(node, node.program ? visit(this)(node.program) : []);
         };

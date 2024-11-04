@@ -42,7 +42,7 @@ export function fillDefaultPdaSeedValuesVisitor(
     strictMode: boolean = false,
 ) {
     const instruction = getLastNodeFromPath(instructionPath);
-    return pipe(identityVisitor(INSTRUCTION_INPUT_VALUE_NODES), v =>
+    return pipe(identityVisitor({ keys: INSTRUCTION_INPUT_VALUE_NODES }), v =>
         extendVisitor(v, {
             visitPdaValue(node, { next }) {
                 const visitedNode = next(node);

@@ -44,7 +44,7 @@ export function getTypeManifestVisitor(options: {
                 ...mergeManifests(values),
                 type: values.map(v => v.type).join('\n'),
             }),
-            [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'],
+            { keys: [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'] },
         ),
         v =>
             extendVisitor(v, {

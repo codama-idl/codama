@@ -17,7 +17,7 @@ export type TopDownNodeTransformerWithSelector = {
 
 export function topDownTransformerVisitor<TNodeKind extends NodeKind = NodeKind>(
     transformers: (TopDownNodeTransformer | TopDownNodeTransformerWithSelector)[],
-    nodeKeys?: TNodeKind[],
+    options: { keys?: TNodeKind[]; stack?: NodeStack } = {},
 ): Visitor<Node | null, TNodeKind> {
     const transformerFunctions = transformers.map((transformer): TopDownNodeTransformer => {
         if (typeof transformer === 'function') return transformer;
@@ -27,9 +27,9 @@ export function topDownTransformerVisitor<TNodeKind extends NodeKind = NodeKind>
                 : node;
     });
 
-    const stack = new NodeStack();
+    const stack = options.stack ?? new NodeStack();
     return pipe(
-        identityVisitor(nodeKeys),
+        identityVisitor(options),
         v =>
             interceptVisitor(v, (node, next) => {
                 const appliedNode = transformerFunctions.reduce(

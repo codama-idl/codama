@@ -100,7 +100,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
         });
     const typeManifestVisitor = getTypeManifestVisitor();
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
-    const byteSizeVisitor = getByteSizeVisitor(linkables, stack);
+    const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
 
     function getInstructionAccountType(account: ResolvedInstructionAccount): string {
         if (account.isPda && account.isSigner === false) return 'Pda';

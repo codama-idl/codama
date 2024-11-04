@@ -53,10 +53,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const anchorTraits = options.anchorTraits ?? true;
 
     return pipe(
-        staticVisitor(
-            () => new RenderMap(),
-            ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
-        ),
+        staticVisitor(() => new RenderMap(), {
+            keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
+        }),
         v =>
             extendVisitor(v, {
                 visitAccount(node) {

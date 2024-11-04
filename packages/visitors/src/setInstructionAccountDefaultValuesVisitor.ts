@@ -163,7 +163,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
     }
 
     return pipe(
-        nonNullableIdentityVisitor(['rootNode', 'programNode', 'instructionNode']),
+        nonNullableIdentityVisitor({ keys: ['rootNode', 'programNode', 'instructionNode'] }),
         v =>
             extendVisitor(v, {
                 visitInstruction(node) {
