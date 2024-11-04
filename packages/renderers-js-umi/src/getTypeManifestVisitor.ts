@@ -64,11 +64,12 @@ export function getTypeManifestVisitor(input: {
     linkables: LinkableDictionary;
     nonScalarEnums: CamelCaseString[];
     parentName?: { loose: string; strict: string };
+    stack?: NodeStack;
 }) {
     const { linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
     let parentName = input.parentName ?? null;
     let parentSize: NumberTypeNode | number | null = null;
-    const stack = new NodeStack();
+    const stack = input.stack ?? new NodeStack();
 
     return pipe(
         staticVisitor(
@@ -428,7 +429,6 @@ export function getTypeManifestVisitor(input: {
                     const variantName = pascalCase(node.variant);
                     const importFrom = getImportFrom(node.enum);
 
-                    // FIXME(loris): No program node can ever be in this stack.
                     const enumNode = linkables.get([...stack.getPath(), node.enum])?.type;
                     const isScalar =
                         enumNode && isNode(enumNode, 'enumTypeNode')
