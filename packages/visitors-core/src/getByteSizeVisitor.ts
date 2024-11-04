@@ -3,6 +3,7 @@ import { isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } 
 import { extendVisitor } from './extendVisitor';
 import { LinkableDictionary } from './LinkableDictionary';
 import { mergeVisitor } from './mergeVisitor';
+import { getLastNodeFromPath } from './NodePath';
 import { NodeStack } from './NodeStack';
 import { pipe } from './pipe';
 import { recordNodeStackVisitor } from './recordNodeStackVisitor';
@@ -69,11 +70,9 @@ export function getByteSizeVisitor(
                 visitDefinedTypeLink(node, { self }) {
                     // Fetch the linked type and return null if not found.
                     // The validator visitor will throw a proper error later on.
-                    // FIXME: Keep track of our own internal stack within this visitor (starting from a provided NodePath).
-                    const linkedDefinedType = linkables.get([...stack.getPath(), node]);
-                    if (!linkedDefinedType) {
-                        return null;
-                    }
+                    const linkedDefinedPath = linkables.getPath(stack.getPath(node.kind));
+                    if (!linkedDefinedPath) return null;
+                    const linkedDefinedType = getLastNodeFromPath(linkedDefinedPath);
 
                     // This prevents infinite recursion by using assuming
                     // cyclic types don't have a fixed size.
@@ -81,7 +80,10 @@ export function getByteSizeVisitor(
                         return null;
                     }
 
-                    return visit(linkedDefinedType, self);
+                    stack.pushPath(linkedDefinedPath);
+                    const result = visit(linkedDefinedType, self);
+                    stack.popPath();
+                    return result;
                 },
 
                 visitEnumEmptyVariantType() {

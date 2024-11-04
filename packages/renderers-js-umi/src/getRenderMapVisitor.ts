@@ -63,7 +63,6 @@ export type GetRenderMapOptions = {
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<RenderMap> {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
-    const byteSizeVisitor = getByteSizeVisitor(linkables, stack);
     let program: ProgramNode | null = null;
 
     const renderParentInstructions = options.renderParentInstructions ?? false;
@@ -100,6 +99,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
         });
     const typeManifestVisitor = getTypeManifestVisitor();
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
+    const byteSizeVisitor = getByteSizeVisitor(linkables, stack);
 
     function getInstructionAccountType(account: ResolvedInstructionAccount): string {
         if (account.isPda && account.isSigner === false) return 'Pda';
