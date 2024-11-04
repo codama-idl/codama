@@ -16,6 +16,7 @@ import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
+    NodePath,
     NodeStack,
     pipe,
     recordLinkablesOnFirstVisitVisitor,
@@ -72,10 +73,11 @@ export function updateInstructionsVisitor(map: Record<string, InstructionUpdates
                     return null;
                 }
 
+                const instructionPath = stack.getPath('instructionNode');
                 const { accounts: accountUpdates, arguments: argumentUpdates, ...metadataUpdates } = updates;
                 const { newArguments, newExtraArguments } = handleInstructionArguments(node, argumentUpdates ?? {});
                 const newAccounts = node.accounts.map(account =>
-                    handleInstructionAccount(node, stack, account, accountUpdates ?? {}, linkables),
+                    handleInstructionAccount(instructionPath, account, accountUpdates ?? {}, linkables),
                 );
                 return instructionNode({
                     ...node,
@@ -96,8 +98,7 @@ export function updateInstructionsVisitor(map: Record<string, InstructionUpdates
 }
 
 function handleInstructionAccount(
-    instruction: InstructionNode,
-    stack: NodeStack,
+    instructionPath: NodePath<InstructionNode>,
     account: InstructionAccountNode,
     accountUpdates: InstructionAccountUpdates,
     linkables: LinkableDictionary,
@@ -115,7 +116,7 @@ function handleInstructionAccount(
 
     return instructionAccountNode({
         ...acountWithoutDefault,
-        defaultValue: visit(defaultValue, fillDefaultPdaSeedValuesVisitor(instruction, stack, linkables)),
+        defaultValue: visit(defaultValue, fillDefaultPdaSeedValuesVisitor(instructionPath, linkables)),
     });
 }
 
