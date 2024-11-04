@@ -12,6 +12,7 @@ export * from './interceptVisitor';
 export * from './LinkableDictionary';
 export * from './mapVisitor';
 export * from './mergeVisitor';
+export * from './NodePath';
 export * from './NodeSelector';
 export * from './NodeStack';
 export * from './nonNullableIdentityVisitor';
