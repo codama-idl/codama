@@ -1,6 +1,7 @@
 import { assertIsNodeFilter, camelCase, CamelCaseString, programNode } from '@codama/nodes';
 import {
     extendVisitor,
+    getLastNodeFromPath,
     LinkableDictionary,
     NodeStack,
     nonNullableIdentityVisitor,
@@ -25,9 +26,13 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     if (!shouldInline(linkType.name)) {
                         return linkType;
                     }
-                    const definedType = linkables.getOrThrow(stack.getPath('definedTypeLinkNode'));
-                    // FIXME: Wrap in heap.pushStack() and heap.popStack().
-                    return visit(definedType.type, self);
+                    const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
+                    const definedType = getLastNodeFromPath(definedTypePath);
+
+                    stack.pushPath(definedTypePath);
+                    const result = visit(definedType.type, self);
+                    stack.popPath();
+                    return result;
                 },
 
                 visitProgram(program, { self }) {
