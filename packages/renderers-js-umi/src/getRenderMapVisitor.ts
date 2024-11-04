@@ -2,6 +2,7 @@ import { logWarn } from '@codama/errors';
 import {
     camelCase,
     CamelCaseString,
+    definedTypeNode,
     FieldDiscriminatorNode,
     getAllAccounts,
     getAllDefinedTypes,
@@ -37,7 +38,7 @@ import {
 } from '@codama/visitors-core';
 
 import { ContextMap } from './ContextMap';
-import { getTypeManifestVisitor as baseGetTypeManifestVisitor } from './getTypeManifestVisitor';
+import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderInstructionDefaults } from './renderInstructionDefaults';
 import {
@@ -88,17 +89,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
     const customInstructionData = parseCustomDataOptions(options.customInstructionData ?? [], 'InstructionData');
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {}, customAccountData, customInstructionData);
 
-    const getTypeManifestVisitor = (parentName?: { loose: string; strict: string }) =>
-        baseGetTypeManifestVisitor({
-            customAccountData,
-            customInstructionData,
-            getImportFrom,
-            linkables,
-            nonScalarEnums,
-            parentName,
-            stack,
-        });
-    const typeManifestVisitor = getTypeManifestVisitor();
+    const typeManifestVisitor = getTypeManifestVisitor({
+        customAccountData,
+        customInstructionData,
+        getImportFrom,
+        linkables,
+        nonScalarEnums,
+        stack,
+    });
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
     const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
 
@@ -386,12 +384,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     }
 
                     // Extra args.
-                    const extraArgStruct = structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []);
-                    const visitor = getTypeManifestVisitor({
-                        loose: `${node.name}InstructionExtraArgs`,
-                        strict: `${node.name}InstructionExtra`,
+                    const extraArgStruct = definedTypeNode({
+                        name: `${node.name}InstructionExtra`,
+                        type: structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []),
                     });
-                    const extraArgManifest = visit(extraArgStruct, visitor);
+                    const extraArgManifest = visit(extraArgStruct, typeManifestVisitor);
                     imports.mergeWith(extraArgManifest.looseImports);
 
                     // Arg defaults.

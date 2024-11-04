@@ -40,12 +40,11 @@ export function getTypeManifestVisitor(input: {
     linkables: LinkableDictionary;
     nameApi: NameApi;
     nonScalarEnums: CamelCaseString[];
-    parentName?: { loose: string; strict: string };
     stack?: NodeStack;
 }) {
     const { nameApi, linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
     const stack = input.stack ?? new NodeStack();
-    let parentName = input.parentName ?? null;
+    let parentName: { loose: string; strict: string } | null = null;
 
     return pipe(
         staticVisitor(

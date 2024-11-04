@@ -4,6 +4,7 @@ import { logWarn } from '@codama/errors';
 import {
     camelCase,
     CamelCaseString,
+    definedTypeNode,
     getAllAccounts,
     getAllDefinedTypes,
     getAllInstructionsWithSubs,
@@ -47,7 +48,7 @@ import {
     getTypeDiscriminatedUnionHelpersFragment,
     getTypeWithCodecFragment,
 } from './fragments';
-import { getTypeManifestVisitor as baseGetTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
+import { getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { DEFAULT_NAME_TRANSFORMERS, getNameApi, NameApi, NameTransformers } from './nameTransformers';
 import {
@@ -105,18 +106,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const customInstructionData = parseCustomDataOptions(options.customInstructionData ?? [], 'InstructionData');
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {}, customAccountData, customInstructionData);
 
-    const getTypeManifestVisitor = (parentName?: { loose: string; strict: string }) =>
-        baseGetTypeManifestVisitor({
-            customAccountData,
-            customInstructionData,
-            getImportFrom,
-            linkables,
-            nameApi,
-            nonScalarEnums,
-            parentName,
-            stack,
-        });
-    const typeManifestVisitor = getTypeManifestVisitor();
+    const typeManifestVisitor = getTypeManifestVisitor({
+        customAccountData,
+        customInstructionData,
+        getImportFrom,
+        linkables,
+        nameApi,
+        nonScalarEnums,
+        stack,
+    });
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
 
     const globalScope: GlobalFragmentScope = {
@@ -233,11 +231,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...globalScope,
                         dataArgsManifest: visit(node, typeManifestVisitor),
                         extraArgsManifest: visit(
-                            structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []),
-                            getTypeManifestVisitor({
-                                loose: nameApi.dataArgsType(instructionExtraName),
-                                strict: nameApi.dataType(instructionExtraName),
+                            definedTypeNode({
+                                name: instructionExtraName,
+                                type: structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []),
                             }),
+                            typeManifestVisitor,
                         ),
                         instructionPath,
                         renamedArgs: getRenamedArgsMap(node),

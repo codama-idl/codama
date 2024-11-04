@@ -63,13 +63,12 @@ export function getTypeManifestVisitor(input: {
     getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
     nonScalarEnums: CamelCaseString[];
-    parentName?: { loose: string; strict: string };
     stack?: NodeStack;
 }) {
     const { linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
-    let parentName = input.parentName ?? null;
-    let parentSize: NumberTypeNode | number | null = null;
     const stack = input.stack ?? new NodeStack();
+    let parentName: { loose: string; strict: string } | null = null;
+    let parentSize: NumberTypeNode | number | null = null;
 
     return pipe(
         staticVisitor(
