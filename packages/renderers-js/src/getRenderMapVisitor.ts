@@ -16,6 +16,7 @@ import {
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
+    findProgramNodeFromPath,
     getResolvedInstructionInputsVisitor,
     LinkableDictionary,
     NodeStack,
@@ -141,13 +142,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v =>
             extendVisitor(v, {
                 visitAccount(node) {
-                    if (!stack.getProgram()) {
+                    const accountPath = stack.getPath('accountNode');
+                    if (!findProgramNodeFromPath(accountPath)) {
                         throw new Error('Account must be visited inside a program.');
                     }
 
                     const scope = {
                         ...globalScope,
-                        accountPath: stack.getPath('accountNode'),
+                        accountPath,
                         typeManifest: visit(node, typeManifestVisitor),
                     };
 
@@ -221,7 +223,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitInstruction(node) {
-                    if (!stack.getProgram()) {
+                    const instructionPath = stack.getPath('instructionNode');
+                    if (!findProgramNodeFromPath(instructionPath)) {
                         throw new Error('Instruction must be visited inside a program.');
                     }
 
@@ -236,7 +239,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 strict: nameApi.dataType(instructionExtraName),
                             }),
                         ),
-                        instructionPath: stack.getPath('instructionNode'),
+                        instructionPath,
                         renamedArgs: getRenamedArgsMap(node),
                         resolvedInputs: visit(node, resolvedInstructionInputVisitor),
                     };
@@ -289,11 +292,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitPda(node) {
-                    if (!stack.getProgram()) {
+                    const pdaPath = stack.getPath('pdaNode');
+                    if (!findProgramNodeFromPath(pdaPath)) {
                         throw new Error('Account must be visited inside a program.');
                     }
 
-                    const scope = { ...globalScope, pdaPath: stack.getPath('pdaNode') };
+                    const scope = { ...globalScope, pdaPath };
                     const pdaFunctionFragment = getPdaFunctionFragment(scope);
                     const imports = new ImportMap().mergeWith(pdaFunctionFragment);
 

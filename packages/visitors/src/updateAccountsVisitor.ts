@@ -12,7 +12,11 @@ import {
     programNode,
     transformNestedTypeNode,
 } from '@codama/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
+import {
+    BottomUpNodeTransformerWithSelector,
+    bottomUpTransformerVisitor,
+    findProgramNodeFromPath,
+} from '@codama/visitors-core';
 
 import { renameStructNode } from './renameHelpers';
 
@@ -37,26 +41,27 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                         assertIsNode(node, 'accountNode');
                         if ('delete' in updates) return null;
 
+                        const programNode = findProgramNodeFromPath(stack.getPath())!;
                         const { seeds, pda, ...assignableUpdates } = updates;
                         let newPda = node.pda;
                         if (pda && seeds !== undefined) {
                             newPda = pda;
                             pdasToUpsert.push({
                                 pda: pdaNode({ name: pda.name, seeds }),
-                                program: stack.getProgram()!.name,
+                                program: programNode.name,
                             });
                         } else if (pda) {
                             newPda = pda;
                         } else if (seeds !== undefined && node.pda) {
                             pdasToUpsert.push({
                                 pda: pdaNode({ name: node.pda.name, seeds }),
-                                program: stack.getProgram()!.name,
+                                program: programNode.name,
                             });
                         } else if (seeds !== undefined) {
                             newPda = pdaLinkNode(newName ?? node.name);
                             pdasToUpsert.push({
                                 pda: pdaNode({ name: newName ?? node.name, seeds }),
-                                program: stack.getProgram()!.name,
+                                program: programNode.name,
                             });
                         }
 

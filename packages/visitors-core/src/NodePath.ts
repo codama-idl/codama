@@ -1,6 +1,8 @@
 import { assertIsNode, GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
 
-export type NodePath<TNode extends Node = Node> = readonly [...Node[], TNode];
+export type NodePath<TNode extends Node | undefined = undefined> = TNode extends undefined
+    ? readonly Node[]
+    : readonly [...Node[], TNode];
 
 export function getLastNodeFromPath<TNode extends Node>(path: NodePath<TNode>): TNode {
     return path[path.length - 1] as TNode;
@@ -47,16 +49,30 @@ export function getNodePathUntilLastNode<TKind extends NodeKind>(
     return path.slice(0, lastIndex + 1) as unknown as NodePath<GetNodeFromKind<TKind>>;
 }
 
+function isNotEmptyNodePath(path: NodePath | null | undefined): path is NodePath<Node> {
+    return !!path && path.length > 0;
+}
+
 export function isNodePath<TKind extends NodeKind>(
     path: NodePath | null | undefined,
     kind: TKind | TKind[],
 ): path is NodePath<GetNodeFromKind<TKind>> {
-    return isNode(path ? getLastNodeFromPath(path) : null, kind);
+    return isNode(isNotEmptyNodePath(path) ? getLastNodeFromPath<Node>(path) : null, kind);
 }
 
 export function assertIsNodePath<TKind extends NodeKind>(
     path: NodePath | null | undefined,
     kind: TKind | TKind[],
 ): asserts path is NodePath<GetNodeFromKind<TKind>> {
-    assertIsNode(path ? getLastNodeFromPath(path) : null, kind);
+    assertIsNode(isNotEmptyNodePath(path) ? getLastNodeFromPath<Node>(path) : null, kind);
+}
+
+export function nodePathToStringArray(path: NodePath): string[] {
+    return path.map((node): string => {
+        return 'name' in node ? `[${node.kind}]${node.name}` : `[${node.kind}]`;
+    });
+}
+
+export function nodePathToString(path: NodePath): string {
+    return nodePathToStringArray(path).join(' > ');
 }

@@ -15,6 +15,7 @@ import {
 } from '@codama/nodes';
 import {
     extendVisitor,
+    findLastNodeFromPath,
     LinkableDictionary,
     NodeStack,
     pipe,
@@ -830,8 +831,9 @@ export function getTypeManifestVisitor(input: {
                     }
 
                     // Check if we are inside an instruction or account to use discriminator constants when available.
-                    const instructionNode = stack.find('instructionNode');
-                    const accountNode = stack.find('accountNode');
+                    const parentPath = stack.getPath();
+                    const instructionNode = findLastNodeFromPath(parentPath, 'instructionNode');
+                    const accountNode = findLastNodeFromPath(parentPath, 'accountNode');
                     const discriminatorPrefix = instructionNode ? instructionNode.name : accountNode?.name;
                     const discriminators =
                         (instructionNode ? instructionNode.discriminators : accountNode?.discriminators) ?? [];

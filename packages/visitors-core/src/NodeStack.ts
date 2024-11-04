@@ -1,98 +1,72 @@
-import {
-    assertIsNode,
-    GetNodeFromKind,
-    InstructionNode,
-    Node,
-    NodeKind,
-    ProgramNode,
-    REGISTERED_NODE_KINDS,
-} from '@codama/nodes';
+import { GetNodeFromKind, Node, NodeKind } from '@codama/nodes';
 
-import { findLastNodeFromPath, NodePath } from './NodePath';
+import { assertIsNodePath, NodePath } from './NodePath';
+
+type MutableNodePath = Node[];
 
 export class NodeStack {
     /**
-     * Contains all the node stacks saved during the traversal.
+     * Contains all the node paths saved during the traversal.
      *
-     * - The very last stack is the current stack which is being
+     * - The very last path is the current path which is being
      *   used during the traversal.
-     * - The other stacks can be used to save and restore the
-     *   current stack when jumping to different parts of the tree.
+     * - The other paths can be used to save and restore the
+     *   current path when jumping to different parts of the tree.
      *
-     * There must at least be one stack in the heap at all times.
+     * There must at least be one path in the stack at all times.
      */
-    private readonly heap: [...Node[][], Node[]];
+    private readonly stack: [...MutableNodePath[], MutableNodePath];
 
-    constructor(...heap: readonly [...(readonly (readonly Node[])[]), readonly Node[]] | readonly []) {
-        this.heap = heap.length === 0 ? [[]] : ([...heap.map(nodes => [...nodes])] as [...Node[][], Node[]]);
+    constructor(...stack: readonly [...(readonly NodePath[]), NodePath] | readonly []) {
+        this.stack =
+            stack.length === 0
+                ? [[]]
+                : ([...stack.map(nodes => [...nodes])] as [...MutableNodePath[], MutableNodePath]);
     }
 
-    public get stack(): Node[] {
-        return this.heap[this.heap.length - 1];
+    private get currentPath(): MutableNodePath {
+        return this.stack[this.stack.length - 1];
     }
 
     public push(node: Node): void {
-        this.stack.push(node);
+        this.currentPath.push(node);
     }
 
     public pop(): Node | undefined {
-        return this.stack.pop();
+        return this.currentPath.pop();
     }
 
     public peek(): Node | undefined {
-        return this.isEmpty() ? undefined : this.stack[this.stack.length - 1];
+        return this.isEmpty() ? undefined : this.currentPath[this.currentPath.length - 1];
     }
 
-    public pushStack(newStack: readonly Node[] = []): void {
-        this.heap.push([...newStack]);
+    public pushPath(newPath: NodePath = []): void {
+        this.stack.push([...newPath]);
     }
 
-    public popStack(): readonly Node[] {
-        const oldStack = this.heap.pop() as Node[];
-        if (this.heap.length === 0) {
+    public popPath(): NodePath {
+        if (this.stack.length === 0) {
             // TODO: Coded error
-            throw new Error('The heap of stacks can never be empty.');
+            throw new Error('The stack of paths can never be empty.');
         }
-        return [...oldStack] as readonly Node[];
+        return [...this.stack.pop()!];
     }
 
-    public find<TKind extends NodeKind>(kind: TKind | TKind[]): GetNodeFromKind<TKind> | undefined {
-        return findLastNodeFromPath([...this.stack] as unknown as NodePath<GetNodeFromKind<TKind>>, kind);
-    }
-
-    public getProgram(): ProgramNode | undefined {
-        return this.find('programNode');
-    }
-
-    public getInstruction(): InstructionNode | undefined {
-        return this.find('instructionNode');
-    }
-
-    public all(): readonly Node[] {
-        return [...this.stack];
-    }
-
-    public getPath<TKind extends NodeKind>(kind?: TKind | TKind[]): NodePath<GetNodeFromKind<TKind>> {
-        const node = this.peek();
-        assertIsNode(node, kind ?? REGISTERED_NODE_KINDS);
-        return [...this.stack] as unknown as NodePath<GetNodeFromKind<TKind>>;
+    public getPath(): NodePath;
+    public getPath<TKind extends NodeKind>(kind: TKind | TKind[]): NodePath<GetNodeFromKind<TKind>>;
+    public getPath<TKind extends NodeKind>(kind?: TKind | TKind[]): NodePath {
+        const path = [...this.currentPath];
+        if (kind) {
+            assertIsNodePath(path, kind);
+        }
+        return path;
     }
 
     public isEmpty(): boolean {
-        return this.stack.length === 0;
+        return this.currentPath.length === 0;
     }
 
     public clone(): NodeStack {
-        return new NodeStack(...this.heap);
-    }
-
-    public toString(): string {
-        return this.toStringArray().join(' > ');
-    }
-
-    public toStringArray(): string[] {
-        return this.stack.map((node): string => {
-            return 'name' in node ? `[${node.kind}]${node.name}` : `[${node.kind}]`;
-        });
+        return new NodeStack(...this.stack);
     }
 }

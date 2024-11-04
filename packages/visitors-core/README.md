@@ -442,19 +442,11 @@ const lastNode = nodeStack.pop();
 // Peek at the last node in the stack.
 const lastNode = nodeStack.peek();
 // Get all the nodes in the stack as an array.
-const nodes = nodeStack.all();
-// Get the closest node in the stack matching one or several node kinds.
-const nodes = nodeStack.find('accountNode');
-// Get the closest program node in the stack.
-const nodes = nodeStack.getProgram();
-// Get the closest instruction node in the stack.
-const nodes = nodeStack.getInstruction();
+const path = nodeStack.getPath();
 // Check if the stack is empty.
 const isEmpty = nodeStack.isEmpty();
 // Clone the stack.
 const clonedStack = nodeStack.clone();
-// Get a string representation of the stack.
-const stackString = nodeStack.toString();
 ```
 
 ### `recordNodeStackVisitor`
@@ -470,7 +462,7 @@ const visitor = pipe(
     v => recordNodeStackVisitor(v, stack),
     v =>
         interceptVisitor(v, (node, next) => {
-            console.log(stack.clone().toString());
+            console.log(nodePathToString(stack.getPath()));
             return next(node);
         }),
 );
