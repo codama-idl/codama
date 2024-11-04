@@ -18,7 +18,7 @@ export function getRecordLinkablesVisitor<TNodeKind extends NodeKind>(
         v =>
             interceptVisitor(v, (node, next) => {
                 if (isNode(node, LINKABLE_NODES)) {
-                    linkables.record(node, stack);
+                    linkables.recordPath(stack.getPath());
                 }
                 return next(node);
             }),

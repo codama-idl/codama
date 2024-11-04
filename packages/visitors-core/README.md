@@ -653,11 +653,8 @@ It offers the following API:
 ```ts
 const linkables = new LinkableDictionary();
 
-// Record program nodes.
-linkables.record(programNode, stack);
-
-// Record other linkable nodes with their associated program node.
-linkables.record(accountNode, stack);
+// Record linkable nodes via their full path.
+linkables.recordPath([rootNode, programNode, accountNode]);
 
 // Get a linkable node using a link node, or throw an error if it is not found.
 const programNode = linkables.getOrThrow(programLinkNode, stack);

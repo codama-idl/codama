@@ -2,14 +2,13 @@ import {
     assertIsNode,
     GetNodeFromKind,
     InstructionNode,
-    isNode,
     Node,
     NodeKind,
     ProgramNode,
     REGISTERED_NODE_KINDS,
 } from '@codama/nodes';
 
-import { NodePath } from './NodePath';
+import { findLastNodeFromPath, NodePath } from './NodePath';
 
 export class NodeStack {
     /**
@@ -58,11 +57,7 @@ export class NodeStack {
     }
 
     public find<TKind extends NodeKind>(kind: TKind | TKind[]): GetNodeFromKind<TKind> | undefined {
-        for (let index = this.stack.length - 1; index >= 0; index--) {
-            const node = this.stack[index];
-            if (isNode(node, kind)) return node;
-        }
-        return undefined;
+        return findLastNodeFromPath([...this.stack] as unknown as NodePath<GetNodeFromKind<TKind>>, kind);
     }
 
     public getProgram(): ProgramNode | undefined {

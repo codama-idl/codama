@@ -39,7 +39,7 @@ test('it fills missing pda seed values with default values', () => {
 
     // And a linkable dictionary that recorded this PDA.
     const linkables = new LinkableDictionary();
-    linkables.record(pda, new NodeStack([program, pda]));
+    linkables.recordPath([program, pda]);
 
     // And a pdaValueNode with a single seed filled.
     const node = pdaValueNode('myPda', [pdaSeedValueNode('seed1', numberValueNode(42))]);
@@ -91,7 +91,7 @@ test('it fills nested pda value nodes', () => {
 
     // And a linkable dictionary that recorded this PDA.
     const linkables = new LinkableDictionary();
-    linkables.record(pda, new NodeStack([program, pda]));
+    linkables.recordPath([program, pda]);
 
     // And a pdaValueNode nested inside a conditionalValueNode.
     const node = conditionalValueNode({
@@ -149,7 +149,7 @@ test('it ignores default seeds missing from the instruction', () => {
 
     // And a linkable dictionary that recorded this PDA.
     const linkables = new LinkableDictionary();
-    linkables.record(pda, new NodeStack([program, pda]));
+    linkables.recordPath([program, pda]);
 
     // And a pdaValueNode with a single seed filled.
     const node = pdaValueNode('myPda', [pdaSeedValueNode('seed1', numberValueNode(42))]);

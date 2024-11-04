@@ -64,7 +64,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     // Seeds.
                     const seedsImports = new ImportMap();
-                    const pda = node.pda ? linkables.get(node.pda, stack) : undefined;
+                    const pda = node.pda ? linkables.get([...stack.getPath(), node.pda]) : undefined;
                     const pdaSeeds = pda?.seeds ?? [];
                     const seeds = pdaSeeds.map(seed => {
                         if (isNode(seed, 'variablePdaSeedNode')) {

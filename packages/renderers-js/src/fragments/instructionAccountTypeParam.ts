@@ -43,9 +43,8 @@ function getDefaultAddress(
         case 'publicKeyValueNode':
             return `"${defaultValue.publicKey}"`;
         case 'programLinkNode':
-            // FIXME(loris): No need for a stack here.
             // eslint-disable-next-line no-case-declarations
-            const programNode = linkables.get(defaultValue, new NodeStack());
+            const programNode = linkables.get([defaultValue]);
             return programNode ? `"${programNode.publicKey}"` : 'string';
         case 'programIdValueNode':
             return `"${programId}"`;

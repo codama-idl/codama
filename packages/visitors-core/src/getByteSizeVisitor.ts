@@ -69,7 +69,8 @@ export function getByteSizeVisitor(
                 visitDefinedTypeLink(node, { self }) {
                     // Fetch the linked type and return null if not found.
                     // The validator visitor will throw a proper error later on.
-                    const linkedDefinedType = linkables.get(node, stack);
+                    // FIXME: Keep track of our own internal stack within this visitor (starting from a provided NodePath).
+                    const linkedDefinedType = linkables.get([...stack.getPath(), node]);
                     if (!linkedDefinedType) {
                         return null;
                     }

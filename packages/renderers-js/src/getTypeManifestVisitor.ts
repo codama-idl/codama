@@ -355,7 +355,7 @@ export function getTypeManifestVisitor(input: {
                     const importFrom = getImportFrom(node.enum);
 
                     // FIXME(loris): No program node can ever be in this stack.
-                    const enumNode = linkables.get(node.enum, stack)?.type;
+                    const enumNode = linkables.get([...stack.getPath(), node.enum])?.type;
                     const isScalar =
                         enumNode && isNode(enumNode, 'enumTypeNode')
                             ? isScalarEnum(enumNode)

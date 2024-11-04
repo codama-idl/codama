@@ -8,7 +8,7 @@ export type ValidationItem = {
     level: LogLevel;
     message: string;
     node: Node;
-    stack: readonly Node[];
+    path: readonly Node[];
 };
 
 export function validationItem(
@@ -21,7 +21,7 @@ export function validationItem(
         level,
         message,
         node,
-        stack: Array.isArray(stack) ? [...stack] : stack.all(),
+        path: Array.isArray(stack) ? [...stack] : stack.all(),
     };
 }
 
