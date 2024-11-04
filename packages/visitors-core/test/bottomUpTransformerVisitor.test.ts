@@ -94,7 +94,7 @@ test('it can transform nodes using multiple node selectors', () => {
     // - the second one selects all nodes with more than one ancestor.
     const visitor = bottomUpTransformerVisitor([
         {
-            select: ['[numberTypeNode]', (_, nodeStack) => nodeStack.getPath().length > 1],
+            select: ['[numberTypeNode]', path => path.length > 2],
             transform: () => stringTypeNode('utf8'),
         },
     ]);

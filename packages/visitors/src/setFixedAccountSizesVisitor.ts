@@ -1,6 +1,8 @@
-import { accountNode, assertIsNode, isNode } from '@codama/nodes';
+import { accountNode, assertIsNode } from '@codama/nodes';
 import {
     getByteSizeVisitor,
+    getLastNodeFromPath,
+    isNodePath,
     LinkableDictionary,
     NodeStack,
     pipe,
@@ -18,7 +20,7 @@ export function setFixedAccountSizesVisitor() {
     const visitor = topDownTransformerVisitor(
         [
             {
-                select: node => isNode(node, 'accountNode') && node.size === undefined,
+                select: path => isNodePath(path, 'accountNode') && getLastNodeFromPath(path).size === undefined,
                 transform: node => {
                     assertIsNode(node, 'accountNode');
                     const size = visit(node.data, byteSizeVisitor);
