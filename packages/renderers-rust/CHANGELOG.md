@@ -1,5 +1,21 @@
 # @codama/renderers-rust
 
+## 1.0.3
+
+### Patch Changes
+
+-   [#250](https://github.com/codama-idl/codama/pull/250) [`0c96251`](https://github.com/codama-idl/codama/commit/0c962519c470d6dcc29fcb3db6195b06222fac5d) Thanks [@febo](https://github.com/febo)! - Add anchorTraits option to Rust renderer
+
+## 1.0.2
+
+### Patch Changes
+
+-   [#246](https://github.com/codama-idl/codama/pull/246) [`aa6dcd1`](https://github.com/codama-idl/codama/commit/aa6dcd16fbc734c2647a1a920a224dc90c4c0b18) Thanks [@febo](https://github.com/febo)! - Fix Rust rendering when account list is empty
+
+-   [#245](https://github.com/codama-idl/codama/pull/245) [`e02e2ad`](https://github.com/codama-idl/codama/commit/e02e2ad9c03caacb02c4bf24d6b7d962ba3b80c6) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix JS rendering issues for instruction edge cases
+
+-   [#242](https://github.com/codama-idl/codama/pull/242) [`d4736da`](https://github.com/codama-idl/codama/commit/d4736daef236a8c41d53fe1f999f32b9bcbfb8c9) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add options to configure how traits are rendered in Rust
+
 ## 1.0.1
 
 ### Patch Changes

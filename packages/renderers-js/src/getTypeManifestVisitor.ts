@@ -15,6 +15,7 @@ import {
 } from '@codama/nodes';
 import {
     extendVisitor,
+    findLastNodeFromPath,
     LinkableDictionary,
     NodeStack,
     pipe,
@@ -39,11 +40,11 @@ export function getTypeManifestVisitor(input: {
     linkables: LinkableDictionary;
     nameApi: NameApi;
     nonScalarEnums: CamelCaseString[];
-    parentName?: { loose: string; strict: string };
+    stack?: NodeStack;
 }) {
     const { nameApi, linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
-    const stack = new NodeStack();
-    let parentName = input.parentName ?? null;
+    const stack = input.stack ?? new NodeStack();
+    let parentName: { loose: string; strict: string } | null = null;
 
     return pipe(
         staticVisitor(
@@ -56,14 +57,16 @@ export function getTypeManifestVisitor(input: {
                     strictType: fragment(''),
                     value: fragment(''),
                 }) as TypeManifest,
-            [
-                ...REGISTERED_TYPE_NODE_KINDS,
-                ...REGISTERED_VALUE_NODE_KINDS,
-                'definedTypeLinkNode',
-                'definedTypeNode',
-                'accountNode',
-                'instructionNode',
-            ],
+            {
+                keys: [
+                    ...REGISTERED_TYPE_NODE_KINDS,
+                    ...REGISTERED_VALUE_NODE_KINDS,
+                    'definedTypeLinkNode',
+                    'definedTypeNode',
+                    'accountNode',
+                    'instructionNode',
+                ],
+            },
         ),
         visitor =>
             extendVisitor(visitor, {
@@ -354,7 +357,7 @@ export function getTypeManifestVisitor(input: {
                     const enumFunction = nameApi.discriminatedUnionFunction(node.enum.name);
                     const importFrom = getImportFrom(node.enum);
 
-                    const enumNode = linkables.get(node.enum)?.type;
+                    const enumNode = linkables.get([...stack.getPath(), node.enum])?.type;
                     const isScalar =
                         enumNode && isNode(enumNode, 'enumTypeNode')
                             ? isScalarEnum(enumNode)
@@ -829,8 +832,9 @@ export function getTypeManifestVisitor(input: {
                     }
 
                     // Check if we are inside an instruction or account to use discriminator constants when available.
-                    const instructionNode = stack.find('instructionNode');
-                    const accountNode = stack.find('accountNode');
+                    const parentPath = stack.getPath();
+                    const instructionNode = findLastNodeFromPath(parentPath, 'instructionNode');
+                    const accountNode = findLastNodeFromPath(parentPath, 'accountNode');
                     const discriminatorPrefix = instructionNode ? instructionNode.name : accountNode?.name;
                     const discriminators =
                         (instructionNode ? instructionNode.discriminators : accountNode?.discriminators) ?? [];

@@ -2,9 +2,9 @@ import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/
 import {
     arrayTypeNode,
     CountNode,
+    definedTypeNode,
     fixedCountNode,
     isNode,
-    isScalarEnum,
     NumberTypeNode,
     numberTypeNode,
     pascalCase,
@@ -17,7 +17,7 @@ import {
 import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
-import { GetImportFromFunction, rustDocblock } from './utils';
+import { GetImportFromFunction, GetTraitsFromNodeFunction, rustDocblock } from './utils';
 
 export type TypeManifest = {
     imports: ImportMap;
@@ -27,10 +27,11 @@ export type TypeManifest = {
 
 export function getTypeManifestVisitor(options: {
     getImportFrom: GetImportFromFunction;
+    getTraitsFromNode: GetTraitsFromNodeFunction;
     nestedStruct?: boolean;
     parentName?: string | null;
 }) {
-    const { getImportFrom } = options;
+    const { getImportFrom, getTraitsFromNode } = options;
     let parentName: string | null = options.parentName ?? null;
     let nestedStruct: boolean = options.nestedStruct ?? false;
     let inlineStruct: boolean = false;
@@ -43,21 +44,19 @@ export function getTypeManifestVisitor(options: {
                 ...mergeManifests(values),
                 type: values.map(v => v.type).join('\n'),
             }),
-            [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'],
+            { keys: [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'] },
         ),
         v =>
             extendVisitor(v, {
                 visitAccount(account, { self }) {
                     parentName = pascalCase(account.name);
                     const manifest = visit(account.data, self);
-                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
+                    const traits = getTraitsFromNode(account);
+                    manifest.imports.mergeWith(traits.imports);
                     parentName = null;
                     return {
                         ...manifest,
-                        type:
-                            '#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]\n' +
-                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                            `${manifest.type}`,
+                        type: traits.render + manifest.type,
                     };
                 },
 
@@ -141,41 +140,15 @@ export function getTypeManifestVisitor(options: {
                 visitDefinedType(definedType, { self }) {
                     parentName = pascalCase(definedType.name);
                     const manifest = visit(definedType.type, self);
+                    const traits = getTraitsFromNode(definedType);
+                    manifest.imports.mergeWith(traits.imports);
                     parentName = null;
-                    const traits = ['BorshSerialize', 'BorshDeserialize', 'Clone', 'Debug', 'Eq', 'PartialEq'];
 
-                    if (isNode(definedType.type, 'enumTypeNode') && isScalarEnum(definedType.type)) {
-                        traits.push('Copy', 'PartialOrd', 'Hash', 'FromPrimitive');
-                        manifest.imports.add(['num_derive::FromPrimitive']);
-                    }
+                    const renderedType = isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])
+                        ? manifest.type
+                        : `pub type ${pascalCase(definedType.name)} = ${manifest.type};`;
 
-                    const nestedStructs = manifest.nestedStructs.map(
-                        struct =>
-                            `#[derive(${traits.join(', ')})]\n` +
-                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                            `${struct}`,
-                    );
-
-                    if (!isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])) {
-                        if (nestedStructs.length > 0) {
-                            manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
-                        }
-                        return {
-                            ...manifest,
-                            nestedStructs,
-                            type: `pub type ${pascalCase(definedType.name)} = ${manifest.type};`,
-                        };
-                    }
-
-                    manifest.imports.add(['borsh::BorshSerialize', 'borsh::BorshDeserialize']);
-                    return {
-                        ...manifest,
-                        nestedStructs,
-                        type:
-                            `#[derive(${traits.join(', ')})]\n` +
-                            '#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n' +
-                            `${manifest.type}`,
-                    };
+                    return { ...manifest, type: `${traits.render}${renderedType}` };
                 },
 
                 visitDefinedTypeLink(node) {
@@ -450,11 +423,15 @@ export function getTypeManifestVisitor(options: {
                     const mergedManifest = mergeManifests(fields);
 
                     if (nestedStruct) {
+                        const nestedTraits = getTraitsFromNode(
+                            definedTypeNode({ name: originalParentName, type: structType }),
+                        );
+                        mergedManifest.imports.mergeWith(nestedTraits.imports);
                         return {
                             ...mergedManifest,
                             nestedStructs: [
                                 ...mergedManifest.nestedStructs,
-                                `pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
+                                `${nestedTraits.render}pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
                             ],
                             type: pascalCase(originalParentName),
                         };

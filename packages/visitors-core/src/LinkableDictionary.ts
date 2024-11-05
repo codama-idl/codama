@@ -1,25 +1,25 @@
 import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
-    AccountLinkNode,
     AccountNode,
     CamelCaseString,
-    DefinedTypeLinkNode,
     DefinedTypeNode,
-    InstructionAccountLinkNode,
     InstructionAccountNode,
-    InstructionArgumentLinkNode,
     InstructionArgumentNode,
-    InstructionLinkNode,
     InstructionNode,
     isNode,
     LinkNode,
-    PdaLinkNode,
     PdaNode,
-    ProgramLinkNode,
     ProgramNode,
 } from '@codama/nodes';
 
-import { NodeStack } from './NodeStack';
+import {
+    findInstructionNodeFromPath,
+    findProgramNodeFromPath,
+    getLastNodeFromPath,
+    getNodePathUntilLastNode,
+    isNodePath,
+    NodePath,
+} from './NodePath';
 
 export type LinkableNode =
     | AccountNode
@@ -40,102 +40,114 @@ export const LINKABLE_NODES: LinkableNode['kind'][] = [
     'programNode',
 ];
 
+export type GetLinkableFromLinkNode<TLinkNode extends LinkNode> = {
+    accountLinkNode: AccountNode;
+    definedTypeLinkNode: DefinedTypeNode;
+    instructionAccountLinkNode: InstructionAccountNode;
+    instructionArgumentLinkNode: InstructionArgumentNode;
+    instructionLinkNode: InstructionNode;
+    pdaLinkNode: PdaNode;
+    programLinkNode: ProgramNode;
+}[TLinkNode['kind']];
+
 type ProgramDictionary = {
-    accounts: Map<string, AccountNode>;
-    definedTypes: Map<string, DefinedTypeNode>;
+    accounts: Map<string, NodePath<AccountNode>>;
+    definedTypes: Map<string, NodePath<DefinedTypeNode>>;
     instructions: Map<string, InstructionDictionary>;
-    pdas: Map<string, PdaNode>;
-    program: ProgramNode;
+    pdas: Map<string, NodePath<PdaNode>>;
+    program: NodePath<ProgramNode>;
 };
 
 type InstructionDictionary = {
-    accounts: Map<string, InstructionAccountNode>;
-    arguments: Map<string, InstructionArgumentNode>;
-    instruction: InstructionNode;
+    accounts: Map<string, NodePath<InstructionAccountNode>>;
+    arguments: Map<string, NodePath<InstructionArgumentNode>>;
+    instruction: NodePath<InstructionNode>;
 };
 
 export class LinkableDictionary {
     readonly programs: Map<string, ProgramDictionary> = new Map();
 
-    readonly stack: NodeStack = new NodeStack();
-
-    record(node: LinkableNode): this {
-        const programDictionary = this.getOrCreateProgramDictionary(node);
+    recordPath(linkablePath: NodePath<LinkableNode>): this {
+        const linkableNode = getLastNodeFromPath(linkablePath);
+        const programDictionary = this.getOrCreateProgramDictionary(linkablePath);
         if (!programDictionary) return this; // Do not record nodes that are outside of a program.
-        const instructionDictionary = this.getOrCreateInstructionDictionary(programDictionary, node);
+        const instructionDictionary = this.getOrCreateInstructionDictionary(programDictionary, linkablePath);
 
-        if (isNode(node, 'accountNode')) {
-            programDictionary.accounts.set(node.name, node);
-        } else if (isNode(node, 'definedTypeNode')) {
-            programDictionary.definedTypes.set(node.name, node);
-        } else if (isNode(node, 'pdaNode')) {
-            programDictionary.pdas.set(node.name, node);
-        } else if (instructionDictionary && isNode(node, 'instructionAccountNode')) {
-            instructionDictionary.accounts.set(node.name, node);
-        } else if (instructionDictionary && isNode(node, 'instructionArgumentNode')) {
-            instructionDictionary.arguments.set(node.name, node);
+        if (isNodePath(linkablePath, 'accountNode')) {
+            programDictionary.accounts.set(linkableNode.name, linkablePath);
+        } else if (isNodePath(linkablePath, 'definedTypeNode')) {
+            programDictionary.definedTypes.set(linkableNode.name, linkablePath);
+        } else if (isNodePath(linkablePath, 'pdaNode')) {
+            programDictionary.pdas.set(linkableNode.name, linkablePath);
+        } else if (instructionDictionary && isNodePath(linkablePath, 'instructionAccountNode')) {
+            instructionDictionary.accounts.set(linkableNode.name, linkablePath);
+        } else if (instructionDictionary && isNodePath(linkablePath, 'instructionArgumentNode')) {
+            instructionDictionary.arguments.set(linkableNode.name, linkablePath);
         }
 
         return this;
     }
 
-    getOrThrow(linkNode: AccountLinkNode): AccountNode;
-    getOrThrow(linkNode: DefinedTypeLinkNode): DefinedTypeNode;
-    getOrThrow(linkNode: InstructionAccountLinkNode): InstructionAccountNode;
-    getOrThrow(linkNode: InstructionArgumentLinkNode): InstructionArgumentNode;
-    getOrThrow(linkNode: InstructionLinkNode): InstructionNode;
-    getOrThrow(linkNode: PdaLinkNode): PdaNode;
-    getOrThrow(linkNode: ProgramLinkNode): ProgramNode;
-    getOrThrow(linkNode: LinkNode): LinkableNode {
-        const node = this.get(linkNode as ProgramLinkNode) as LinkableNode | undefined;
+    getPathOrThrow<TLinkNode extends LinkNode>(
+        linkPath: NodePath<TLinkNode>,
+    ): NodePath<GetLinkableFromLinkNode<TLinkNode>> {
+        const linkablePath = this.getPath(linkPath);
 
-        if (!node) {
+        if (!linkablePath) {
+            const linkNode = getLastNodeFromPath(linkPath);
             throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
                 kind: linkNode.kind,
                 linkNode,
                 name: linkNode.name,
-                stack: this.stack.all(),
+                path: linkablePath,
             });
         }
 
-        return node;
+        return linkablePath;
     }
 
-    get(linkNode: AccountLinkNode): AccountNode | undefined;
-    get(linkNode: DefinedTypeLinkNode): DefinedTypeNode | undefined;
-    get(linkNode: InstructionAccountLinkNode): InstructionAccountNode | undefined;
-    get(linkNode: InstructionArgumentLinkNode): InstructionArgumentNode | undefined;
-    get(linkNode: InstructionLinkNode): InstructionNode | undefined;
-    get(linkNode: PdaLinkNode): PdaNode | undefined;
-    get(linkNode: ProgramLinkNode): ProgramNode | undefined;
-    get(linkNode: LinkNode): LinkableNode | undefined {
-        const programDictionary = this.getProgramDictionary(linkNode);
+    getPath<TLinkNode extends LinkNode>(
+        linkPath: NodePath<TLinkNode>,
+    ): NodePath<GetLinkableFromLinkNode<TLinkNode>> | undefined {
+        const linkNode = getLastNodeFromPath(linkPath);
+        const programDictionary = this.getProgramDictionary(linkPath);
         if (!programDictionary) return undefined;
-        const instructionDictionary = this.getInstructionDictionary(programDictionary, linkNode);
+        const instructionDictionary = this.getInstructionDictionary(programDictionary, linkPath);
+        type LinkablePath = NodePath<GetLinkableFromLinkNode<TLinkNode>> | undefined;
 
         if (isNode(linkNode, 'accountLinkNode')) {
-            return programDictionary.accounts.get(linkNode.name);
+            return programDictionary.accounts.get(linkNode.name) as LinkablePath;
         } else if (isNode(linkNode, 'definedTypeLinkNode')) {
-            return programDictionary.definedTypes.get(linkNode.name);
+            return programDictionary.definedTypes.get(linkNode.name) as LinkablePath;
         } else if (isNode(linkNode, 'instructionAccountLinkNode')) {
-            return instructionDictionary?.accounts.get(linkNode.name);
+            return instructionDictionary?.accounts.get(linkNode.name) as LinkablePath;
         } else if (isNode(linkNode, 'instructionArgumentLinkNode')) {
-            return instructionDictionary?.arguments.get(linkNode.name);
+            return instructionDictionary?.arguments.get(linkNode.name) as LinkablePath;
         } else if (isNode(linkNode, 'instructionLinkNode')) {
-            return instructionDictionary?.instruction;
+            return instructionDictionary?.instruction as LinkablePath;
         } else if (isNode(linkNode, 'pdaLinkNode')) {
-            return programDictionary.pdas.get(linkNode.name);
+            return programDictionary.pdas.get(linkNode.name) as LinkablePath;
         } else if (isNode(linkNode, 'programLinkNode')) {
-            return programDictionary.program;
+            return programDictionary.program as LinkablePath;
         }
 
         return undefined;
     }
 
-    has(linkNode: LinkNode): boolean {
-        const programDictionary = this.getProgramDictionary(linkNode);
+    getOrThrow<TLinkNode extends LinkNode>(linkPath: NodePath<TLinkNode>): GetLinkableFromLinkNode<TLinkNode> {
+        return getLastNodeFromPath(this.getPathOrThrow(linkPath));
+    }
+
+    get<TLinkNode extends LinkNode>(linkPath: NodePath<TLinkNode>): GetLinkableFromLinkNode<TLinkNode> | undefined {
+        const path = this.getPath(linkPath);
+        return path ? getLastNodeFromPath(path) : undefined;
+    }
+
+    has(linkPath: NodePath<LinkNode>): boolean {
+        const linkNode = getLastNodeFromPath(linkPath);
+        const programDictionary = this.getProgramDictionary(linkPath);
         if (!programDictionary) return false;
-        const instructionDictionary = this.getInstructionDictionary(programDictionary, linkNode);
+        const instructionDictionary = this.getInstructionDictionary(programDictionary, linkPath);
 
         if (isNode(linkNode, 'accountLinkNode')) {
             return programDictionary.accounts.has(linkNode.name);
@@ -156,8 +168,9 @@ export class LinkableDictionary {
         return false;
     }
 
-    private getOrCreateProgramDictionary(node: LinkableNode): ProgramDictionary | undefined {
-        const programNode = isNode(node, 'programNode') ? node : this.stack.getProgram();
+    private getOrCreateProgramDictionary(linkablePath: NodePath<LinkableNode>): ProgramDictionary | undefined {
+        const linkableNode = getLastNodeFromPath(linkablePath);
+        const programNode = isNode(linkableNode, 'programNode') ? linkableNode : findProgramNodeFromPath(linkablePath);
         if (!programNode) return undefined;
 
         let programDictionary = this.programs.get(programNode.name);
@@ -167,7 +180,7 @@ export class LinkableDictionary {
                 definedTypes: new Map(),
                 instructions: new Map(),
                 pdas: new Map(),
-                program: programNode,
+                program: getNodePathUntilLastNode(linkablePath, 'programNode')!,
             };
             this.programs.set(programNode.name, programDictionary);
         }
@@ -177,9 +190,12 @@ export class LinkableDictionary {
 
     private getOrCreateInstructionDictionary(
         programDictionary: ProgramDictionary,
-        node: LinkableNode,
+        linkablePath: NodePath<LinkableNode>,
     ): InstructionDictionary | undefined {
-        const instructionNode = isNode(node, 'instructionNode') ? node : this.stack.getInstruction();
+        const linkableNode = getLastNodeFromPath(linkablePath);
+        const instructionNode = isNode(linkableNode, 'instructionNode')
+            ? linkableNode
+            : findInstructionNodeFromPath(linkablePath);
         if (!instructionNode) return undefined;
 
         let instructionDictionary = programDictionary.instructions.get(instructionNode.name);
@@ -187,7 +203,7 @@ export class LinkableDictionary {
             instructionDictionary = {
                 accounts: new Map(),
                 arguments: new Map(),
-                instruction: instructionNode,
+                instruction: getNodePathUntilLastNode(linkablePath, 'instructionNode')!,
             };
             programDictionary.instructions.set(instructionNode.name, instructionDictionary);
         }
@@ -195,7 +211,8 @@ export class LinkableDictionary {
         return instructionDictionary;
     }
 
-    private getProgramDictionary(linkNode: LinkNode): ProgramDictionary | undefined {
+    private getProgramDictionary(linkPath: NodePath<LinkNode>): ProgramDictionary | undefined {
+        const linkNode = getLastNodeFromPath(linkPath);
         let programName: CamelCaseString | undefined = undefined;
         if (isNode(linkNode, 'programLinkNode')) {
             programName = linkNode.name;
@@ -204,22 +221,23 @@ export class LinkableDictionary {
         } else if ('instruction' in linkNode) {
             programName = linkNode.instruction?.program?.name;
         }
-        programName = programName ?? this.stack.getProgram()?.name;
+        programName = programName ?? findProgramNodeFromPath(linkPath)?.name;
 
         return programName ? this.programs.get(programName) : undefined;
     }
 
     private getInstructionDictionary(
         programDictionary: ProgramDictionary,
-        linkNode: LinkNode,
+        linkPath: NodePath<LinkNode>,
     ): InstructionDictionary | undefined {
+        const linkNode = getLastNodeFromPath(linkPath);
         let instructionName: CamelCaseString | undefined = undefined;
         if (isNode(linkNode, 'instructionLinkNode')) {
             instructionName = linkNode.name;
         } else if ('instruction' in linkNode) {
             instructionName = linkNode.instruction?.name;
         }
-        instructionName = instructionName ?? this.stack.getInstruction()?.name;
+        instructionName = instructionName ?? findInstructionNodeFromPath(linkPath)?.name;
 
         return instructionName ? programDictionary.instructions.get(instructionName) : undefined;
     }

@@ -1,5 +1,11 @@
 # @codama/renderers-js
 
+## 1.0.1
+
+### Patch Changes
+
+-   [#245](https://github.com/codama-idl/codama/pull/245) [`e02e2ad`](https://github.com/codama-idl/codama/commit/e02e2ad9c03caacb02c4bf24d6b7d962ba3b80c6) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix JS rendering issues for instruction edge cases
+
 ## 1.0.0
 
 ### Major Changes

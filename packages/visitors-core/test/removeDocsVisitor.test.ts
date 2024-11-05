@@ -76,7 +76,7 @@ test('it can create partial visitors', () => {
     ]);
 
     // And a remove docs visitor that only supports struct type nodes.
-    const visitor = removeDocsVisitor(['structTypeNode']);
+    const visitor = removeDocsVisitor({ keys: ['structTypeNode'] });
 
     // When we use it on our struct node.
     const result = visit(node, visitor);

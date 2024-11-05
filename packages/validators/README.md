@@ -36,8 +36,8 @@ type ValidationItem = {
     message: string;
     // The node that the validation item is related to.
     node: Node;
-    // The stack of nodes that led to the node above.
-    stack: readonly Node[];
+    // The path of nodes that led to the node above (including the node itself).
+    path: NodePath;
 };
 ```
 

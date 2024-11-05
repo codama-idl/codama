@@ -1,30 +1,32 @@
-import { accountNode, assertIsNode, isNode } from '@codama/nodes';
+import { accountNode, assertIsNode } from '@codama/nodes';
 import {
     getByteSizeVisitor,
+    getLastNodeFromPath,
+    isNodePath,
     LinkableDictionary,
-    recordLinkablesVisitor,
+    pipe,
+    recordLinkablesOnFirstVisitVisitor,
     topDownTransformerVisitor,
     visit,
 } from '@codama/visitors-core';
 
 export function setFixedAccountSizesVisitor() {
     const linkables = new LinkableDictionary();
-    const byteSizeVisitor = getByteSizeVisitor(linkables);
 
     const visitor = topDownTransformerVisitor(
         [
             {
-                select: node => isNode(node, 'accountNode') && node.size === undefined,
-                transform: node => {
+                select: path => isNodePath(path, 'accountNode') && getLastNodeFromPath(path).size === undefined,
+                transform: (node, stack) => {
                     assertIsNode(node, 'accountNode');
-                    const size = visit(node.data, byteSizeVisitor);
+                    const size = visit(node.data, getByteSizeVisitor(linkables, { stack }));
                     if (size === null) return node;
                     return accountNode({ ...node, size }) as typeof node;
                 },
             },
         ],
-        ['rootNode', 'programNode', 'accountNode'],
+        { keys: ['rootNode', 'programNode', 'accountNode'] },
     );
 
-    return recordLinkablesVisitor(visitor, linkables);
+    return pipe(visitor, v => recordLinkablesOnFirstVisitVisitor(v, linkables));
 }

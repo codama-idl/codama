@@ -1,15 +1,19 @@
 import { assertIsNodeFilter, camelCase, CamelCaseString, programNode } from '@codama/nodes';
 import {
     extendVisitor,
+    getLastNodeFromPath,
     LinkableDictionary,
+    NodeStack,
     nonNullableIdentityVisitor,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     visit,
 } from '@codama/visitors-core';
 
 export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
     const typesToInlineMainCased = typesToInline === '*' ? '*' : typesToInline.map(camelCase);
     const shouldInline = (definedType: CamelCaseString): boolean =>
         typesToInlineMainCased === '*' || typesToInlineMainCased.includes(definedType);
@@ -22,7 +26,13 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     if (!shouldInline(linkType.name)) {
                         return linkType;
                     }
-                    return visit(linkables.getOrThrow(linkType).type, self);
+                    const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
+                    const definedType = getLastNodeFromPath(definedTypePath);
+
+                    stack.pushPath(definedTypePath);
+                    const result = visit(definedType.type, self);
+                    stack.popPath();
+                    return result;
                 },
 
                 visitProgram(program, { self }) {
@@ -41,6 +51,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     });
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }

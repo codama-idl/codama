@@ -1,4 +1,5 @@
 import { InstructionNode } from '@codama/nodes';
+import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
@@ -7,10 +8,11 @@ import { Fragment, fragment, fragmentFromTemplate } from './common';
 export function getInstructionExtraArgsFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi'> & {
         extraArgsManifest: TypeManifest;
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
     },
 ): Fragment {
-    const { instructionNode, extraArgsManifest, nameApi } = scope;
+    const { instructionPath, extraArgsManifest, nameApi } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
     if ((instructionNode.extraArguments ?? []).length === 0) {
         return fragment('');
     }

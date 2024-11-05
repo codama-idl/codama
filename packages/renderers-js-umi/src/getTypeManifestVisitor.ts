@@ -17,7 +17,16 @@ import {
     structTypeNodeFromInstructionArgumentNodes,
     TypeNode,
 } from '@codama/nodes';
-import { extendVisitor, LinkableDictionary, pipe, staticVisitor, visit, Visitor } from '@codama/visitors-core';
+import {
+    extendVisitor,
+    LinkableDictionary,
+    NodeStack,
+    pipe,
+    recordNodeStackVisitor,
+    staticVisitor,
+    visit,
+    Visitor,
+} from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { getBytesFromBytesValueNode, GetImportFromFunction, jsDocblock, ParsedCustomDataOptions } from './utils';
@@ -54,10 +63,11 @@ export function getTypeManifestVisitor(input: {
     getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
     nonScalarEnums: CamelCaseString[];
-    parentName?: { loose: string; strict: string };
+    stack?: NodeStack;
 }) {
     const { linkables, nonScalarEnums, customAccountData, customInstructionData, getImportFrom } = input;
-    let parentName = input.parentName ?? null;
+    const stack = input.stack ?? new NodeStack();
+    let parentName: { loose: string; strict: string } | null = null;
     let parentSize: NumberTypeNode | number | null = null;
 
     return pipe(
@@ -74,14 +84,16 @@ export function getTypeManifestVisitor(input: {
                     value: '',
                     valueImports: new ImportMap(),
                 }) as TypeManifest,
-            [
-                ...REGISTERED_TYPE_NODE_KINDS,
-                ...REGISTERED_VALUE_NODE_KINDS,
-                'definedTypeLinkNode',
-                'definedTypeNode',
-                'accountNode',
-                'instructionNode',
-            ],
+            {
+                keys: [
+                    ...REGISTERED_TYPE_NODE_KINDS,
+                    ...REGISTERED_VALUE_NODE_KINDS,
+                    'definedTypeLinkNode',
+                    'definedTypeNode',
+                    'accountNode',
+                    'instructionNode',
+                ],
+            },
         ),
         v =>
             extendVisitor(v, {
@@ -418,7 +430,7 @@ export function getTypeManifestVisitor(input: {
                     const variantName = pascalCase(node.variant);
                     const importFrom = getImportFrom(node.enum);
 
-                    const enumNode = linkables.get(node.enum)?.type;
+                    const enumNode = linkables.get([...stack.getPath(), node.enum])?.type;
                     const isScalar =
                         enumNode && isNode(enumNode, 'enumTypeNode')
                             ? isScalarEnum(enumNode)
@@ -836,6 +848,7 @@ export function getTypeManifestVisitor(input: {
                     throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
+        v => recordNodeStackVisitor(v, stack),
     );
 }
 

@@ -1,7 +1,21 @@
-import { assertIsNode, isNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import {
+    assertIsNode,
+    definedTypeNode,
+    isNode,
+    numberTypeNode,
+    programNode,
+    publicKeyTypeNode,
+    tupleTypeNode,
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { topDownTransformerVisitor, visit } from '../src';
+import {
+    findProgramNodeFromPath,
+    NodeStack,
+    TopDownNodeTransformerWithSelector,
+    topDownTransformerVisitor,
+    visit,
+} from '../src';
 
 test('it can transform nodes to the same kind of node', () => {
     // Given the following tree.
@@ -57,7 +71,7 @@ test('it can create partial transformer visitors', () => {
                 },
             },
         ],
-        ['tupleTypeNode'],
+        { keys: ['tupleTypeNode'] },
     );
 
     // When we visit the tree using that visitor.
@@ -102,7 +116,7 @@ test('it can transform nodes using multiple node selectors', () => {
     // - the second one selects all nodes with more than one ancestor.
     const visitor = topDownTransformerVisitor([
         {
-            select: ['[numberTypeNode]', (_, nodeStack) => nodeStack.all().length > 1],
+            select: ['[numberTypeNode]', path => path.length > 2],
             transform: node => numberTypeNode('u64') as typeof node,
         },
     ]);
@@ -114,4 +128,34 @@ test('it can transform nodes using multiple node selectors', () => {
     expect(result).toEqual(
         tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u64'), publicKeyTypeNode()])]),
     );
+});
+
+test('it can start from an existing stack', () => {
+    // Given the following tuple node inside a program node.
+    const tuple = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const program = programNode({
+        definedTypes: [definedTypeNode({ name: 'myTuple', type: tuple })],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // And a transformer that removes all number nodes
+    // from programs whose public key is '1111'.
+    const transformer: TopDownNodeTransformerWithSelector = {
+        select: ['[numberTypeNode]', path => findProgramNodeFromPath(path)?.publicKey === '1111'],
+        transform: () => null,
+    };
+
+    // When we visit the tuple with an existing stack that contains the program node.
+    const stack = new NodeStack([program, program.definedTypes[0]]);
+    const resultWithStack = visit(tuple, topDownTransformerVisitor([transformer], { stack }));
+
+    // Then we expect the number node to have been removed.
+    expect(resultWithStack).toStrictEqual(tupleTypeNode([publicKeyTypeNode()]));
+
+    // But when we visit the tuple without the stack.
+    const resultWithoutStack = visit(tuple, topDownTransformerVisitor([transformer]));
+
+    // Then we expect the number node to have been kept.
+    expect(resultWithoutStack).toStrictEqual(tuple);
 });

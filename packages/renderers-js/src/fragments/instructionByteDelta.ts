@@ -1,15 +1,16 @@
 import { assertIsNode, camelCase, InstructionByteDeltaNode, InstructionNode, isNode } from '@codama/nodes';
+import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, fragment, mergeFragments } from './common';
 
 export function getInstructionByteDeltaFragment(
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         useAsync: boolean;
     },
 ): Fragment {
-    const { byteDeltas } = scope.instructionNode;
+    const { byteDeltas } = getLastNodeFromPath(scope.instructionPath);
     const fragments = (byteDeltas ?? []).flatMap(r => getByteDeltaFragment(r, scope));
     if (fragments.length === 0) return fragment('');
     return mergeFragments(

@@ -50,7 +50,7 @@ test('it can visit itself using the exposed self argument', () => {
 
 test('it cannot extends nodes that are not supported by the base visitor', () => {
     // Given a base visitor that only supports tuple nodes.
-    const baseVisitor = voidVisitor(['tupleTypeNode']);
+    const baseVisitor = voidVisitor({ keys: ['tupleTypeNode'] });
 
     // Then we expect an error when we try to extend other nodes for that visitor.
     expect(() =>

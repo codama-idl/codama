@@ -19,3 +19,4 @@ test_project anchor
 test_project system
 test_project memo
 test_project token
+test_project dummy

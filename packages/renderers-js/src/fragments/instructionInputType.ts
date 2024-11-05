@@ -7,6 +7,8 @@ import {
     pascalCase,
 } from '@codama/nodes';
 import {
+    getLastNodeFromPath,
+    NodePath,
     ResolvedInstructionAccount,
     ResolvedInstructionArgument,
     ResolvedInstructionInput,
@@ -20,13 +22,14 @@ import { Fragment, fragment, fragmentFromTemplate, mergeFragments } from './comm
 export function getInstructionInputTypeFragment(
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'customInstructionData' | 'nameApi'> & {
         dataArgsManifest: TypeManifest;
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         renamedArgs: Map<string, string>;
         resolvedInputs: ResolvedInstructionInput[];
         useAsync: boolean;
     },
 ): Fragment {
-    const { instructionNode, useAsync, nameApi } = scope;
+    const { instructionPath, useAsync, nameApi } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
 
     const instructionInputType = useAsync
         ? nameApi.instructionAsyncInputType(instructionNode.name)
@@ -57,12 +60,13 @@ export function getInstructionInputTypeFragment(
 
 function getAccountsFragment(
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'customInstructionData' | 'nameApi'> & {
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         resolvedInputs: ResolvedInstructionInput[];
         useAsync: boolean;
     },
 ): Fragment {
-    const { instructionNode, resolvedInputs, useAsync, asyncResolvers } = scope;
+    const { instructionPath, resolvedInputs, useAsync, asyncResolvers } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
 
     const fragments = instructionNode.accounts.map(account => {
         const resolvedAccount = resolvedInputs.find(
@@ -113,12 +117,13 @@ function getAccountTypeFragment(account: Pick<ResolvedInstructionAccount, 'isPda
 function getDataArgumentsFragments(
     scope: Pick<GlobalFragmentScope, 'customInstructionData' | 'nameApi'> & {
         dataArgsManifest: TypeManifest;
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         renamedArgs: Map<string, string>;
         resolvedInputs: ResolvedInstructionInput[];
     },
 ): [Fragment, Fragment] {
-    const { instructionNode, nameApi } = scope;
+    const { instructionPath, nameApi } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
 
     const customData = scope.customInstructionData.get(instructionNode.name);
     if (customData) {
@@ -143,12 +148,13 @@ function getDataArgumentsFragments(
 
 function getExtraArgumentsFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi'> & {
-        instructionNode: InstructionNode;
+        instructionPath: NodePath<InstructionNode>;
         renamedArgs: Map<string, string>;
         resolvedInputs: ResolvedInstructionInput[];
     },
 ): Fragment {
-    const { instructionNode, nameApi } = scope;
+    const { instructionPath, nameApi } = scope;
+    const instructionNode = getLastNodeFromPath(instructionPath);
     const instructionExtraName = nameApi.instructionExtraType(instructionNode.name);
     const extraArgsType = nameApi.dataArgsType(instructionExtraName);
 

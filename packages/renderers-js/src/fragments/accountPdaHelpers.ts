@@ -1,4 +1,5 @@
-import { AccountNode, isNodeFilter, ProgramNode } from '@codama/nodes';
+import { AccountNode, isNodeFilter } from '@codama/nodes';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import type { TypeManifest } from '../TypeManifest';
@@ -6,13 +7,14 @@ import { Fragment, fragment, fragmentFromTemplate } from './common';
 
 export function getAccountPdaHelpersFragment(
     scope: Pick<GlobalFragmentScope, 'customAccountData' | 'linkables' | 'nameApi'> & {
-        accountNode: AccountNode;
-        programNode: ProgramNode;
+        accountPath: NodePath<AccountNode>;
         typeManifest: TypeManifest;
     },
 ): Fragment {
-    const { accountNode, programNode, nameApi, linkables, customAccountData, typeManifest } = scope;
-    const pdaNode = accountNode.pda ? linkables.get(accountNode.pda) : undefined;
+    const { accountPath, nameApi, linkables, customAccountData, typeManifest } = scope;
+    const accountNode = getLastNodeFromPath(accountPath);
+    const programNode = findProgramNodeFromPath(accountPath)!;
+    const pdaNode = accountNode.pda ? linkables.get([...accountPath, accountNode.pda]) : undefined;
     if (!pdaNode) {
         return fragment('');
     }

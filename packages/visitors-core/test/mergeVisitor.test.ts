@@ -44,7 +44,7 @@ test('it can create partial visitors', () => {
     const visitor = mergeVisitor(
         node => node.kind as string,
         (node, values) => `${node.kind}(${values.join(',')})`,
-        ['tupleTypeNode', 'numberTypeNode'],
+        { keys: ['tupleTypeNode', 'numberTypeNode'] },
     );
 
     // When we visit the tree using that visitor.

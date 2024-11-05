@@ -1,11 +1,11 @@
+import { InstructionAccountNode, InstructionInputValueNode, pascalCase } from '@codama/nodes';
 import {
-    InstructionAccountNode,
-    InstructionInputValueNode,
-    InstructionNode,
-    pascalCase,
-    ProgramNode,
-} from '@codama/nodes';
-import { LinkableDictionary } from '@codama/visitors-core';
+    findInstructionNodeFromPath,
+    findProgramNodeFromPath,
+    getLastNodeFromPath,
+    LinkableDictionary,
+    NodePath,
+} from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
@@ -14,12 +14,13 @@ import { Fragment, fragment } from './common';
 export function getInstructionAccountTypeParamFragment(
     scope: Pick<GlobalFragmentScope, 'linkables'> & {
         allowAccountMeta: boolean;
-        instructionAccountNode: InstructionAccountNode;
-        instructionNode: InstructionNode;
-        programNode: ProgramNode;
+        instructionAccountPath: NodePath<InstructionAccountNode>;
     },
 ): Fragment {
-    const { instructionNode, instructionAccountNode, programNode, allowAccountMeta, linkables } = scope;
+    const { instructionAccountPath, allowAccountMeta, linkables } = scope;
+    const instructionAccountNode = getLastNodeFromPath(instructionAccountPath);
+    const instructionNode = findInstructionNodeFromPath(instructionAccountPath)!;
+    const programNode = findProgramNodeFromPath(instructionAccountPath)!;
     const typeParam = `TAccount${pascalCase(instructionAccountNode.name)}`;
     const accountMeta = allowAccountMeta ? ' | IAccountMeta<string>' : '';
     const imports = new ImportMap();
@@ -46,7 +47,7 @@ function getDefaultAddress(
             return `"${defaultValue.publicKey}"`;
         case 'programLinkNode':
             // eslint-disable-next-line no-case-declarations
-            const programNode = linkables.get(defaultValue);
+            const programNode = linkables.get([defaultValue]);
             return programNode ? `"${programNode.publicKey}"` : 'string';
         case 'programIdValueNode':
             return `"${programId}"`;
