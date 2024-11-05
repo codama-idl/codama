@@ -75,6 +75,21 @@ importers:
         specifier: ^8.1.9
         version: 8.1.9
 
+  packages/dynamic-codecs:
+    dependencies:
+      '@codama/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@codama/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@codama/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+      '@solana/codecs':
+        specifier: 2.0.0-rc.4
+        version: 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+
   packages/errors:
     dependencies:
       '@codama/node-types':
@@ -819,11 +834,31 @@ packages:
   '@solana/codecs-core@2.0.0-rc.2':
     resolution: {integrity: sha512-UHSdAmbiFYuCwb2UmYZkOIj2oTKuYqje1LZ1VWCdnpp2qf+XAGbxIHyL/auV91/nK8iggL9417BMS2Q3AfMzFg==}
     engines: {node: '>=20.18.0'}
+    deprecated: This version introduced a bug that broke RPC subscriptions. Please use 2.0.0-rc.3.
+    peerDependencies:
+      typescript: '>=5'
+
+  '@solana/codecs-core@2.0.0-rc.4':
+    resolution: {integrity: sha512-JIrTSps032mSE3wBxW3bXOqWfoy4CMy1CX/XeVCijyh5kLVxZTSDIdRTYdePdL1yzaOZF1Xysvt1DhOUgBdM+A==}
+    engines: {node: '>=20.18.0'}
+    peerDependencies:
+      typescript: '>=5'
+
+  '@solana/codecs-data-structures@2.0.0-rc.4':
+    resolution: {integrity: sha512-smF4Z4WCbr3ppoZhhT7/e5XMG6VFSHFPDLsayt4aHUvP1clZAew5uOy0qLY0qdxbttSmfoxXqf2SUFpJw8Jadg==}
+    engines: {node: '>=20.18.0'}
     peerDependencies:
       typescript: '>=5'
 
   '@solana/codecs-numbers@2.0.0-rc.2':
     resolution: {integrity: sha512-cQoTXVYF+nQjIh6VtrD4i7rfyJL0q46TMOd64+J/+2bQG2UT4Cwwo0b2lHuqtQr+2+BYjHPFDSNLaa3IWpPNog==}
+    engines: {node: '>=20.18.0'}
+    deprecated: This version introduced a bug that broke RPC subscriptions. Please use 2.0.0-rc.3.
+    peerDependencies:
+      typescript: '>=5'
+
+  '@solana/codecs-numbers@2.0.0-rc.4':
+    resolution: {integrity: sha512-ZJR7TaUO65+3Hzo3YOOUCS0wlzh17IW+j0MZC2LCk1R0woaypRpHKj4iSMYeQOZkMxsd9QT3WNvjFrPC2qA6Sw==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       typescript: '>=5'
@@ -835,8 +870,29 @@ packages:
       fastestsmallesttextencoderdecoder: ^1.0.22
       typescript: '>=5'
 
+  '@solana/codecs-strings@2.0.0-rc.4':
+    resolution: {integrity: sha512-LGfK2RL0BKjYYUfzu2FG/gTgCsYOMz9FKVs2ntji6WneZygPxJTV5W98K3J8Rl0JewpCSCFQH3xjLSHBJUS0fA==}
+    engines: {node: '>=20.18.0'}
+    peerDependencies:
+      fastestsmallesttextencoderdecoder: ^1.0.22
+      typescript: '>=5'
+
+  '@solana/codecs@2.0.0-rc.4':
+    resolution: {integrity: sha512-h9GQGYLfBifzLhyZuef5FUaZGxLW7JNLDlEYCErA7x7Ty2ssF98sswsLsWKcbv5Cz1QsW7A6xGv4PCjvIDOCxQ==}
+    engines: {node: '>=20.18.0'}
+    peerDependencies:
+      typescript: '>=5'
+
   '@solana/errors@2.0.0-rc.2':
     resolution: {integrity: sha512-2NPRQYOLwpwP2J4KC0+Vc+qmwTGcu6VrKA9iRBLP0axR+49er9AqpoK3EowTmt0BvAvyArOJRuaPRIFMQI2IdA==}
+    engines: {node: '>=20.18.0'}
+    deprecated: This version introduced a bug that broke RPC subscriptions. Please use 2.0.0-rc.3.
+    hasBin: true
+    peerDependencies:
+      typescript: '>=5'
+
+  '@solana/errors@2.0.0-rc.4':
+    resolution: {integrity: sha512-0PPaMyB81keEHG/1pnyEuiBVKctbXO641M2w3CIOrYT/wzjunfF0FTxsqq9wYJeYo0AyiefCKGgSPs6wiY2PpQ==}
     engines: {node: '>=20.18.0'}
     hasBin: true
     peerDependencies:
@@ -854,6 +910,12 @@ packages:
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-typescript-sort-keys: ^3.2.0
       typescript: ^5.1.6
+
+  '@solana/options@2.0.0-rc.4':
+    resolution: {integrity: sha512-5W8aswMBhcdv2pD5lHLdHIZ98ymhQNBmeFncEoVZLTrshf7KqyxZ8xtILcWNCUgOev1+yp9hMTNV9SEgrgyNrQ==}
+    engines: {node: '>=20.18.0'}
+    peerDependencies:
+      typescript: '>=5'
 
   '@solana/prettier-config-solana@0.0.5':
     resolution: {integrity: sha512-igtLH1QaX5xzSLlqteexRIg9X1QKA03xKYQc2qY1TrMDDhxKXoRZOStQPWdita2FVJzxTGz/tdMGC1vS0biRcg==}
@@ -2841,10 +2903,28 @@ snapshots:
       '@solana/errors': 2.0.0-rc.2(typescript@5.6.3)
       typescript: 5.6.3
 
+  '@solana/codecs-core@2.0.0-rc.4(typescript@5.6.3)':
+    dependencies:
+      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
+      typescript: 5.6.3
+
+  '@solana/codecs-data-structures@2.0.0-rc.4(typescript@5.6.3)':
+    dependencies:
+      '@solana/codecs-core': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-numbers': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
+      typescript: 5.6.3
+
   '@solana/codecs-numbers@2.0.0-rc.2(typescript@5.6.3)':
     dependencies:
       '@solana/codecs-core': 2.0.0-rc.2(typescript@5.6.3)
       '@solana/errors': 2.0.0-rc.2(typescript@5.6.3)
+      typescript: 5.6.3
+
+  '@solana/codecs-numbers@2.0.0-rc.4(typescript@5.6.3)':
+    dependencies:
+      '@solana/codecs-core': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
       typescript: 5.6.3
 
   '@solana/codecs-strings@2.0.0-rc.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
@@ -2855,7 +2935,32 @@ snapshots:
       fastestsmallesttextencoderdecoder: 1.0.22
       typescript: 5.6.3
 
+  '@solana/codecs-strings@2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
+    dependencies:
+      '@solana/codecs-core': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-numbers': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
+      fastestsmallesttextencoderdecoder: 1.0.22
+      typescript: 5.6.3
+
+  '@solana/codecs@2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
+    dependencies:
+      '@solana/codecs-core': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-data-structures': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-numbers': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+      '@solana/options': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - fastestsmallesttextencoderdecoder
+
   '@solana/errors@2.0.0-rc.2(typescript@5.6.3)':
+    dependencies:
+      chalk: 5.3.0
+      commander: 12.1.0
+      typescript: 5.6.3
+
+  '@solana/errors@2.0.0-rc.4(typescript@5.6.3)':
     dependencies:
       chalk: 5.3.0
       commander: 12.1.0
@@ -2872,6 +2977,17 @@ snapshots:
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-typescript-sort-keys: 3.3.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3)
       typescript: 5.6.3
+
+  '@solana/options@2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
+    dependencies:
+      '@solana/codecs-core': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-data-structures': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-numbers': 2.0.0-rc.4(typescript@5.6.3)
+      '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - fastestsmallesttextencoderdecoder
 
   '@solana/prettier-config-solana@0.0.5(prettier@3.3.3)':
     dependencies:
