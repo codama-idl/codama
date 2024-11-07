@@ -1,6 +1,6 @@
 {
     "name": "@codama/dynamic-codecs",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Get codecs on demand for Codama IDLs",
     "exports": {
         "types": "./dist/types/index.d.ts",

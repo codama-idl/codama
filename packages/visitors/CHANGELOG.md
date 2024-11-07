@@ -1,5 +1,24 @@
 # @codama/visitors
 
+## 1.1.0
+
+### Minor Changes
+
+-   [#281](https://github.com/codama-idl/codama/pull/281) [`c78f3ca`](https://github.com/codama-idl/codama/commit/c78f3ca2291d1b6aed48e65dece9f97bc8b27c03) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Use `NodePaths` in `fillDefaultPdaSeedValuesVisitor`
+
+-   [#280](https://github.com/codama-idl/codama/pull/280) [`c31eea8`](https://github.com/codama-idl/codama/commit/c31eea83c3f8659094324acc2b780054d72b7e90) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Use `NodePaths` in `NodeSelectors`
+
+-   [#283](https://github.com/codama-idl/codama/pull/283) [`5bdd745`](https://github.com/codama-idl/codama/commit/5bdd745b313c4611fbc75e3eb03e368c4905ffce) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix LinkNode paths for `unwrapDefinedTypesVisitor`
+
+-   [#285](https://github.com/codama-idl/codama/pull/285) [`ce4936c`](https://github.com/codama-idl/codama/commit/ce4936c031a2ba07f1bdb52cab8debcfec810d8c) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Allow passing `NodeStacks` to nested visitors
+
+### Patch Changes
+
+-   Updated dependencies [[`c31eea8`](https://github.com/codama-idl/codama/commit/c31eea83c3f8659094324acc2b780054d72b7e90), [`81dedc1`](https://github.com/codama-idl/codama/commit/81dedc195feab40bfc3aa676a633a8340ad56e24), [`4799a7f`](https://github.com/codama-idl/codama/commit/4799a7f291677304823aa206bed64baabc20eb5b), [`1f52f00`](https://github.com/codama-idl/codama/commit/1f52f00ba2a75a783879abfbaf4397c3e04e4db4), [`ce4936c`](https://github.com/codama-idl/codama/commit/ce4936c031a2ba07f1bdb52cab8debcfec810d8c), [`e95783b`](https://github.com/codama-idl/codama/commit/e95783bf02fd12327ca5b6f1c1c4e50e189dd241)]:
+    -   @codama/visitors-core@1.1.0
+    -   @codama/errors@1.1.0
+    -   @codama/nodes@1.1.0
+
 ## 1.0.0
 
 ### Major Changes
