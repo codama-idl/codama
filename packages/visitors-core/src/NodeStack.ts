@@ -1,59 +1,74 @@
-import { GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
+import { CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK, CodamaError } from '@codama/errors';
+import { GetNodeFromKind, Node, NodeKind } from '@codama/nodes';
+
+import { assertIsNodePath, NodePath } from './NodePath';
+
+type MutableNodePath = Node[];
 
 export class NodeStack {
-    private readonly stack: Node[];
+    /**
+     * Contains all the node paths saved during the traversal.
+     *
+     * - The very last path is the current path which is being
+     *   used during the traversal.
+     * - The other paths can be used to save and restore the
+     *   current path when jumping to different parts of the tree.
+     *
+     * There must at least be one path in the stack at all times.
+     */
+    private readonly stack: [...MutableNodePath[], MutableNodePath];
 
-    constructor(stack: Node[] = []) {
-        this.stack = [...stack];
+    constructor(...stack: readonly [...(readonly NodePath[]), NodePath] | readonly []) {
+        this.stack =
+            stack.length === 0
+                ? [[]]
+                : ([...stack.map(nodes => [...nodes])] as [...MutableNodePath[], MutableNodePath]);
+    }
+
+    private get currentPath(): MutableNodePath {
+        return this.stack[this.stack.length - 1];
     }
 
     public push(node: Node): void {
-        this.stack.push(node);
+        this.currentPath.push(node);
     }
 
     public pop(): Node | undefined {
-        return this.stack.pop();
+        return this.currentPath.pop();
     }
 
     public peek(): Node | undefined {
-        return this.isEmpty() ? undefined : this.stack[this.stack.length - 1];
+        return this.isEmpty() ? undefined : this.currentPath[this.currentPath.length - 1];
     }
 
-    public find<TKind extends NodeKind>(kind: TKind | TKind[]): GetNodeFromKind<TKind> | undefined {
-        for (let index = this.stack.length - 1; index >= 0; index--) {
-            const node = this.stack[index];
-            if (isNode(node, kind)) return node;
+    public pushPath(newPath: NodePath = []): void {
+        this.stack.push([...newPath]);
+    }
+
+    public popPath(): NodePath {
+        if (this.stack.length <= 1) {
+            throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK, {
+                path: [...this.stack[this.stack.length - 1]],
+            });
         }
-        return undefined;
+        return [...this.stack.pop()!];
     }
 
-    public getProgram(): ProgramNode | undefined {
-        return this.find('programNode');
-    }
-
-    public getInstruction(): InstructionNode | undefined {
-        return this.find('instructionNode');
-    }
-
-    public all(): readonly Node[] {
-        return [...this.stack];
+    public getPath(): NodePath;
+    public getPath<TKind extends NodeKind>(kind: TKind | TKind[]): NodePath<GetNodeFromKind<TKind>>;
+    public getPath<TKind extends NodeKind>(kind?: TKind | TKind[]): NodePath {
+        const path = [...this.currentPath];
+        if (kind) {
+            assertIsNodePath(path, kind);
+        }
+        return path;
     }
 
     public isEmpty(): boolean {
-        return this.stack.length === 0;
+        return this.currentPath.length === 0;
     }
 
     public clone(): NodeStack {
-        return new NodeStack(this.stack);
-    }
-
-    public toString(): string {
-        return this.toStringArray().join(' > ');
-    }
-
-    public toStringArray(): string[] {
-        return this.stack.map((node): string => {
-            return 'name' in node ? `[${node.kind}]${node.name}` : `[${node.kind}]`;
-        });
+        return new NodeStack(...this.stack);
     }
 }

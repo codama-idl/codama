@@ -22,7 +22,13 @@ import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
-import { codeContains, codeDoesNotContain, renderMapContains, renderMapContainsImports } from './_setup';
+import {
+    codeContains,
+    codeDoesNotContain,
+    renderMapContains,
+    renderMapContainsImports,
+    renderMapDoesNotContain,
+} from './_setup';
 
 test('it renders instruction accounts that can either be signer or non-signer', async () => {
     // Given the following instruction with a signer or non-signer account.
@@ -417,7 +423,104 @@ test('it renders optional config that can override the program address', async (
     // Then we expect an optional config parameter with an optional programAddress field
     // And we expect this to be used to override programAddress if it is set
     await renderMapContains(renderMap, 'instructions/myInstruction.ts', [
-        'config?: { programAddress?: TProgramAddress }',
+        'config?: { programAddress?: TProgramAddress; }',
         'programAddress = config?.programAddress ?? MY_PROGRAM_PROGRAM_ADDRESS',
+    ]);
+});
+
+test('it renders instructions with no accounts and no data', async () => {
+    // Given the following instruction with no accounts and no arguments.
+    const node = programNode({
+        instructions: [instructionNode({ name: 'myInstruction' })],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then the instruction input type is generated as an empty object.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', ['export type MyInstructionInput = {};']);
+
+    // But the instruction function does not use it as an argument.
+    await renderMapDoesNotContain(renderMap, 'instructions/myInstruction.ts', ['input: MyInstructionInput']);
+});
+
+test('it renders instructions with no accounts but with some omitted data', async () => {
+    // Given the following instruction with no accounts but with a discriminator argument.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                arguments: [
+                    instructionArgumentNode({
+                        defaultValue: numberValueNode(42),
+                        defaultValueStrategy: 'omitted',
+                        name: 'myDiscriminator',
+                        type: numberTypeNode('u32'),
+                    }),
+                ],
+                discriminators: [fieldDiscriminatorNode('myDiscriminator')],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then the instruction input type is generated as an empty object.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', ['export type MyInstructionInput = {};']);
+
+    // But the instruction function does not use it as an argument.
+    await renderMapDoesNotContain(renderMap, 'instructions/myInstruction.ts', ['input: MyInstructionInput']);
+});
+
+test('it renders instructions with no accounts but with some arguments', async () => {
+    // Given the following instruction with no accounts but with a non-omitted argument.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                arguments: [instructionArgumentNode({ name: 'myArgument', type: numberTypeNode('u32') })],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following input type to be rendered
+    // and used as an argument of the instruction function.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', [
+        "export type MyInstructionInput = { myArgument: MyInstructionInstructionDataArgs['myArgument']; };",
+        'input: MyInstructionInput',
+    ]);
+});
+
+test('it renders instructions with no arguments but with some accounts', async () => {
+    // Given the following instruction with no arguments but with an account.
+    const node = programNode({
+        instructions: [
+            instructionNode({
+                accounts: [instructionAccountNode({ isSigner: false, isWritable: false, name: 'myAccount' })],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following input type to be rendered
+    // and used as an argument of the instruction function.
+    await renderMapContains(renderMap, 'instructions/myInstruction.ts', [
+        'export type MyInstructionInput <TAccountMyAccount extends string = string> = { myAccount: Address<TAccountMyAccount>; };',
+        'input: MyInstructionInput<TAccountMyAccount>',
     ]);
 });

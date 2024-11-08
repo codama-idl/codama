@@ -12,7 +12,7 @@ test('it exports visitors', () => {
 
 test('it accepts visitors', () => {
     const codama = createFromRoot(rootNode(programNode({ name: 'myProgram', publicKey: '1111' })));
-    const visitor = voidVisitor(['rootNode']);
+    const visitor = voidVisitor({ keys: ['rootNode'] });
     const result = codama.accept(visitor) satisfies void;
     expect(typeof result).toBe('undefined');
 });

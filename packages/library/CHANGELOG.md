@@ -1,5 +1,15 @@
 # codama
 
+## 1.1.0
+
+### Patch Changes
+
+-   Updated dependencies [[`c78f3ca`](https://github.com/codama-idl/codama/commit/c78f3ca2291d1b6aed48e65dece9f97bc8b27c03), [`c31eea8`](https://github.com/codama-idl/codama/commit/c31eea83c3f8659094324acc2b780054d72b7e90), [`5bdd745`](https://github.com/codama-idl/codama/commit/5bdd745b313c4611fbc75e3eb03e368c4905ffce), [`ce4936c`](https://github.com/codama-idl/codama/commit/ce4936c031a2ba07f1bdb52cab8debcfec810d8c)]:
+    -   @codama/visitors@1.1.0
+    -   @codama/validators@1.1.0
+    -   @codama/errors@1.1.0
+    -   @codama/nodes@1.1.0
+
 ## 1.0.0
 
 ### Major Changes

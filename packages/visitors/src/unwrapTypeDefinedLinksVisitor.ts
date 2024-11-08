@@ -1,10 +1,9 @@
-import { assertIsNode } from '@codama/nodes';
 import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
 } from '@codama/visitors-core';
 
 export function unwrapTypeDefinedLinksVisitor(definedLinksType: string[]) {
@@ -12,11 +11,11 @@ export function unwrapTypeDefinedLinksVisitor(definedLinksType: string[]) {
 
     const transformers: BottomUpNodeTransformerWithSelector[] = definedLinksType.map(selector => ({
         select: ['[definedTypeLinkNode]', selector],
-        transform: node => {
-            assertIsNode(node, 'definedTypeLinkNode');
-            return linkables.getOrThrow(node).type;
+        transform: (_, stack) => {
+            const definedType = linkables.getOrThrow(stack.getPath('definedTypeLinkNode'));
+            return definedType.type;
         },
     }));
 
-    return pipe(bottomUpTransformerVisitor(transformers), v => recordLinkablesVisitor(v, linkables));
+    return pipe(bottomUpTransformerVisitor(transformers), v => recordLinkablesOnFirstVisitVisitor(v, linkables));
 }

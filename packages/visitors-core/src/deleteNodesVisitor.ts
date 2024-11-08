@@ -5,7 +5,7 @@ import { TopDownNodeTransformerWithSelector, topDownTransformerVisitor } from '.
 
 export function deleteNodesVisitor<TNodeKind extends NodeKind = NodeKind>(
     selectors: NodeSelector[],
-    nodeKeys?: TNodeKind[],
+    options?: Parameters<typeof topDownTransformerVisitor<TNodeKind>>[1],
 ) {
     return topDownTransformerVisitor<TNodeKind>(
         selectors.map(
@@ -14,6 +14,6 @@ export function deleteNodesVisitor<TNodeKind extends NodeKind = NodeKind>(
                 transform: () => null,
             }),
         ),
-        nodeKeys,
+        options,
     );
 }

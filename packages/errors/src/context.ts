@@ -7,6 +7,7 @@ import {
     AccountNode,
     AccountValueNode,
     CamelCaseString,
+    EnumTypeNode,
     InstructionAccountNode,
     InstructionArgumentNode,
     InstructionNode,
@@ -24,17 +25,23 @@ import {
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING,
     CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
+    CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
+    CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
+    CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
     CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE,
     CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
     CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
+    CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
     CODAMA_ERROR__VERSION_MISMATCH,
     CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
     CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
     CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
+    CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK,
     CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
     CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE,
@@ -71,11 +78,22 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: {
         idlType: string;
     };
+    [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: {
+        field: CamelCaseString;
+    };
+    [CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND]: {
+        field: CamelCaseString;
+    };
+    [CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND]: {
+        enum: EnumTypeNode;
+        enumName: CamelCaseString;
+        variant: CamelCaseString;
+    };
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: {
         kind: LinkNode['kind'];
         linkNode: LinkNode;
         name: CamelCaseString;
-        stack: Node[];
+        path: readonly Node[];
     };
     [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
         fsFunction: string;
@@ -94,8 +112,14 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         kind: NodeKind | null;
         node: Node | null | undefined;
     };
+    [CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING]: {
+        encoding: string;
+    };
     [CODAMA_ERROR__UNRECOGNIZED_NODE_KIND]: {
         kind: string;
+    };
+    [CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT]: {
+        format: string;
     };
     [CODAMA_ERROR__VERSION_MISMATCH]: {
         codamaVersion: string;
@@ -116,6 +140,9 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES]: {
         conflictingAttributes: CamelCaseString[];
+    };
+    [CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK]: {
+        path: readonly Node[];
     };
     [CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE]: {
         instruction: InstructionNode;
@@ -169,7 +196,7 @@ type ValidationItem = {
     level: 'debug' | 'error' | 'info' | 'trace' | 'warn';
     message: string;
     node: Node;
-    stack: Node[];
+    path: Node[];
 };
 
 export function decodeEncodedContext(encodedContext: string): object {

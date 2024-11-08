@@ -14,7 +14,8 @@ import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
     LinkableDictionary,
-    recordLinkablesVisitor,
+    pipe,
+    recordLinkablesOnFirstVisitVisitor,
 } from '@codama/visitors-core';
 
 import { flattenInstructionArguments } from './flattenInstructionDataArgumentsVisitor';
@@ -26,7 +27,7 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
         Object.entries(map).map(
             ([selector, argNameInput]): BottomUpNodeTransformerWithSelector => ({
                 select: ['[instructionNode]', selector],
-                transform: node => {
+                transform: (node, stack) => {
                     assertIsNode(node, 'instructionNode');
 
                     const argFields = node.arguments;
@@ -44,8 +45,11 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                     let argType: EnumTypeNode;
                     if (isNode(argField.type, 'enumTypeNode')) {
                         argType = argField.type;
-                    } else if (isNode(argField.type, 'definedTypeLinkNode') && linkables.has(argField.type)) {
-                        const linkedType = linkables.get(argField.type)?.type ?? null;
+                    } else if (
+                        isNode(argField.type, 'definedTypeLinkNode') &&
+                        linkables.has([...stack.getPath(), argField.type])
+                    ) {
+                        const linkedType = linkables.get([...stack.getPath(), argField.type])?.type;
                         assertIsNode(linkedType, 'enumTypeNode');
                         argType = linkedType;
                     } else {
@@ -100,5 +104,5 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
         ),
     );
 
-    return recordLinkablesVisitor(visitor, linkables);
+    return pipe(visitor, v => recordLinkablesOnFirstVisitVisitor(v, linkables));
 }

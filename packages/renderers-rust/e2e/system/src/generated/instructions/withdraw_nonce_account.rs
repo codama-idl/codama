@@ -321,7 +321,7 @@ impl<'a, 'b> WithdrawNonceAccountCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(6 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.nonce_account.clone());
         account_infos.push(self.recipient_account.clone());

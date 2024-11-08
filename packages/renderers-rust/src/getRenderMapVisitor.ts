@@ -18,8 +18,10 @@ import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     LinkableDictionary,
+    NodeStack,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
@@ -27,28 +29,33 @@ import {
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
-import { getImportFromFactory, LinkOverrides, render } from './utils';
+import { getImportFromFactory, getTraitsFromNodeFactory, LinkOverrides, render, TraitOptions } from './utils';
 
 export type GetRenderMapOptions = {
+    anchorTraits?: boolean;
+    defaultTraitOverrides?: string[];
     dependencyMap?: Record<string, string>;
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
+    traitOptions?: TraitOptions;
 };
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
     let program: ProgramNode | null = null;
 
     const renderParentInstructions = options.renderParentInstructions ?? false;
     const dependencyMap = options.dependencyMap ?? {};
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
-    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom });
+    const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
+    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
+    const anchorTraits = options.anchorTraits ?? true;
 
     return pipe(
-        staticVisitor(
-            () => new RenderMap(),
-            ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
-        ),
+        staticVisitor(() => new RenderMap(), {
+            keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
+        }),
         v =>
             extendVisitor(v, {
                 visitAccount(node) {
@@ -56,7 +63,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     // Seeds.
                     const seedsImports = new ImportMap();
-                    const pda = node.pda ? linkables.get(node.pda) : undefined;
+                    const pda = node.pda ? linkables.get([...stack.getPath(), node.pda]) : undefined;
                     const pdaSeeds = pda?.seeds ?? [];
                     const seeds = pdaSeeds.map(seed => {
                         if (isNode(seed, 'variablePdaSeedNode')) {
@@ -89,6 +96,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         `accounts/${snakeCase(node.name)}.rs`,
                         render('accountsPage.njk', {
                             account: node,
+                            anchorTraits,
                             constantSeeds,
                             hasVariableSeeds,
                             imports: imports
@@ -147,6 +155,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     node.arguments.forEach(argument => {
                         const argumentVisitor = getTypeManifestVisitor({
                             getImportFrom,
+                            getTraitsFromNode,
                             nestedStruct: true,
                             parentName: `${pascalCase(node.name)}InstructionData`,
                         });
@@ -187,6 +196,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const struct = structTypeNodeFromInstructionArgumentNodes(node.arguments);
                     const structVisitor = getTypeManifestVisitor({
                         getImportFrom,
+                        getTraitsFromNode,
                         parentName: `${pascalCase(node.name)}InstructionData`,
                     });
                     const typeManifest = visit(struct, structVisitor);
@@ -278,7 +288,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
 

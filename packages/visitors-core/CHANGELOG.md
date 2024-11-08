@@ -1,5 +1,27 @@
 # @codama/visitors-core
 
+## 1.1.0
+
+### Minor Changes
+
+-   [#280](https://github.com/codama-idl/codama/pull/280) [`c31eea8`](https://github.com/codama-idl/codama/commit/c31eea83c3f8659094324acc2b780054d72b7e90) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Use `NodePaths` in `NodeSelectors`
+
+-   [#270](https://github.com/codama-idl/codama/pull/270) [`81dedc1`](https://github.com/codama-idl/codama/commit/81dedc195feab40bfc3aa676a633a8340ad56e24) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Record and resolve `NodePaths` instead of `Nodes` in `LinkableDictionary`
+
+-   [#266](https://github.com/codama-idl/codama/pull/266) [`4799a7f`](https://github.com/codama-idl/codama/commit/4799a7f291677304823aa206bed64baabc20eb5b) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove `LinkableDictionary`'s inner `NodeStack`
+
+-   [#282](https://github.com/codama-idl/codama/pull/282) [`1f52f00`](https://github.com/codama-idl/codama/commit/1f52f00ba2a75a783879abfbaf4397c3e04e4db4) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix LinkNode paths for `getByteSizeVisitor`
+
+-   [#285](https://github.com/codama-idl/codama/pull/285) [`ce4936c`](https://github.com/codama-idl/codama/commit/ce4936c031a2ba07f1bdb52cab8debcfec810d8c) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Allow passing `NodeStacks` to nested visitors
+
+-   [#269](https://github.com/codama-idl/codama/pull/269) [`e95783b`](https://github.com/codama-idl/codama/commit/e95783bf02fd12327ca5b6f1c1c4e50e189dd241) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Introduces the `NodePath` type
+
+### Patch Changes
+
+-   Updated dependencies []:
+    -   @codama/errors@1.1.0
+    -   @codama/nodes@1.1.0
+
 ## 1.0.0
 
 ### Major Changes

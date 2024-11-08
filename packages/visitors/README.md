@@ -96,7 +96,7 @@ codama.update(deduplicateIdenticalDefinedTypesVisitor());
 
 ### `fillDefaultPdaSeedValuesVisitor`
 
-This visitor fills any missing `PdaSeedValueNodes` from `PdaValueNodes` using the provided `InstructionNode` such that:
+This visitor fills any missing `PdaSeedValueNodes` from `PdaValueNodes` using the provided `NodePath<InstructionNode>` such that:
 
 -   If a `VariablePdaSeedNode` is of type `PublicKeyTypeNode` and the name of the seed matches the name of an account in the `InstructionNode`, then a new `PdaSeedValueNode` will be added with the matching account.
 -   Otherwise, if a `VariablePdaSeedNode` is of any other type and the name of the seed matches the name of an argument in the `InstructionNode`, then a new `PdaSeedValueNode` will be added with the matching argument.
@@ -107,7 +107,7 @@ It also requires a [`LinkableDictionary`](../visitors-core/README.md#linkable-di
 Note that this visitor is mainly used for internal purposes.
 
 ```ts
-codama.update(fillDefaultPdaSeedValuesVisitor(instructionNode, linkables, strictMode));
+codama.update(fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, strictMode));
 ```
 
 ### `flattenInstructionDataArgumentsVisitor`

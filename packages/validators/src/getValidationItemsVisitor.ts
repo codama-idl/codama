@@ -6,7 +6,7 @@ import {
     mergeVisitor,
     NodeStack,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
     recordNodeStackVisitor,
     visit,
     Visitor,
@@ -23,7 +23,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
             () => [] as readonly ValidationItem[],
             (_, items) => items.flat(),
         ),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
         v => recordNodeStackVisitor(v, stack),
         v =>
             extendVisitor(v, {
@@ -47,7 +47,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     const items = [] as ValidationItem[];
                     if (!node.name) {
                         items.push(validationItem('error', 'Pointing to a defined type with no name.', node, stack));
-                    } else if (!linkables.has(node)) {
+                    } else if (!linkables.has(stack.getPath(node.kind))) {
                         items.push(
                             validationItem(
                                 'error',

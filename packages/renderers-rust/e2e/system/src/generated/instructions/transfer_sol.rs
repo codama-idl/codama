@@ -228,7 +228,7 @@ impl<'a, 'b> TransferSolCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(2 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(3 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.source.clone());
         account_infos.push(self.destination.clone());

@@ -2,6 +2,7 @@ import { logWarn } from '@codama/errors';
 import {
     camelCase,
     CamelCaseString,
+    definedTypeNode,
     FieldDiscriminatorNode,
     getAllAccounts,
     getAllDefinedTypes,
@@ -25,8 +26,10 @@ import {
     getByteSizeVisitor,
     getResolvedInstructionInputsVisitor,
     LinkableDictionary,
+    NodeStack,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     ResolvedInstructionAccount,
     ResolvedInstructionInput,
     staticVisitor,
@@ -35,7 +38,7 @@ import {
 } from '@codama/visitors-core';
 
 import { ContextMap } from './ContextMap';
-import { getTypeManifestVisitor as baseGetTypeManifestVisitor } from './getTypeManifestVisitor';
+import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderInstructionDefaults } from './renderInstructionDefaults';
 import {
@@ -60,7 +63,7 @@ export type GetRenderMapOptions = {
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<RenderMap> {
     const linkables = new LinkableDictionary();
-    const byteSizeVisitor = getByteSizeVisitor(linkables);
+    const stack = new NodeStack();
     let program: ProgramNode | null = null;
 
     const renderParentInstructions = options.renderParentInstructions ?? false;
@@ -86,17 +89,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
     const customInstructionData = parseCustomDataOptions(options.customInstructionData ?? [], 'InstructionData');
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {}, customAccountData, customInstructionData);
 
-    const getTypeManifestVisitor = (parentName?: { loose: string; strict: string }) =>
-        baseGetTypeManifestVisitor({
-            customAccountData,
-            customInstructionData,
-            getImportFrom,
-            linkables,
-            nonScalarEnums,
-            parentName,
-        });
-    const typeManifestVisitor = getTypeManifestVisitor();
+    const typeManifestVisitor = getTypeManifestVisitor({
+        customAccountData,
+        customInstructionData,
+        getImportFrom,
+        linkables,
+        nonScalarEnums,
+        stack,
+    });
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
+    const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
 
     function getInstructionAccountType(account: ResolvedInstructionAccount): string {
         if (account.isPda && account.isSigner === false) return 'Pda';
@@ -201,7 +203,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     }
 
                     // Seeds.
-                    const pda = node.pda ? linkables.get(node.pda) : undefined;
+                    const pda = node.pda ? linkables.get([...stack.getPath(), node.pda]) : undefined;
                     const pdaSeeds = pda?.seeds ?? [];
                     const seeds = pdaSeeds.map(seed => {
                         if (isNode(seed, 'variablePdaSeedNode')) {
@@ -382,12 +384,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     }
 
                     // Extra args.
-                    const extraArgStruct = structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []);
-                    const visitor = getTypeManifestVisitor({
-                        loose: `${node.name}InstructionExtraArgs`,
-                        strict: `${node.name}InstructionExtra`,
+                    const extraArgStruct = definedTypeNode({
+                        name: `${node.name}InstructionExtra`,
+                        type: structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []),
                     });
-                    const extraArgManifest = visit(extraArgStruct, visitor);
+                    const extraArgManifest = visit(extraArgStruct, typeManifestVisitor);
                     imports.mergeWith(extraArgManifest.looseImports);
 
                     // Arg defaults.
@@ -540,6 +541,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }

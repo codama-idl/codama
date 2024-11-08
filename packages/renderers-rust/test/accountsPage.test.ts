@@ -17,7 +17,7 @@ import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
-import { codeContains } from './_setup';
+import { codeContains, codeDoesNotContains } from './_setup';
 
 test('it renders a byte array seed used on an account', () => {
     // Given the following program with 1 account and 1 pda with a byte array as seeds.
@@ -164,5 +164,35 @@ test('it renders fetch functions', () => {
         'pub fn fetch_maybe_test_account',
         'pub fn fetch_all_test_account',
         'pub fn fetch_all_maybe_test_account',
+    ]);
+});
+
+test('it renders account without anchor traits', () => {
+    // Given the following account.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                discriminators: [
+                    {
+                        kind: 'fieldDiscriminatorNode',
+                        name: camelCase('discriminator'),
+                        offset: 0,
+                    },
+                ],
+                name: 'testAccount',
+                pda: pdaLinkNode('testPda'),
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it with anchor traits disabled.
+    const renderMap = visit(node, getRenderMapVisitor({ anchorTraits: false }));
+
+    // Then we do not expect Anchor traits.
+    codeDoesNotContains(renderMap.get('accounts/test_account.rs'), [
+        '#[cfg(feature = "anchor")]',
+        '#[cfg(feature = "anchor-idl-build")]',
     ]);
 });

@@ -10,7 +10,6 @@ import {
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
-    isNode,
     Node,
     numberTypeNode,
     optionTypeNode,
@@ -23,9 +22,11 @@ import {
 import { expect, test } from 'vitest';
 
 import {
+    getLastNodeFromPath,
     getNodeSelectorFunction,
     identityVisitor,
     interceptVisitor,
+    isNodePath,
     NodeSelector,
     NodeStack,
     pipe,
@@ -196,12 +197,12 @@ const macro = (selector: NodeSelector, expectedSelected: Node[]) => {
         const selected = [] as Node[];
         const visitor = pipe(
             identityVisitor(),
-            v => recordNodeStackVisitor(v, stack),
             v =>
                 interceptVisitor(v, (node, next) => {
-                    if (selectorFunction(node, stack.clone())) selected.push(node);
+                    if (selectorFunction(stack.getPath())) selected.push(node);
                     return next(node);
                 }),
+            v => recordNodeStackVisitor(v, stack),
         );
 
         // When we visit the tree.
@@ -329,4 +330,7 @@ macro('[accountNode]gift.[publicKeyTypeNode|booleanTypeNode]', [
 ]);
 
 // Select using functions.
-macro(node => isNode(node, 'numberTypeNode') && node.format === 'u32', [tokenDelegatedAmountOption.prefix]);
+macro(
+    path => isNodePath(path, 'numberTypeNode') && getLastNodeFromPath(path).format === 'u32',
+    [tokenDelegatedAmountOption.prefix],
+);

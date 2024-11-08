@@ -96,28 +96,27 @@ Therefore, let's start by exploring the core visitors provided by this package.
 
 ### Filtering node kinds
 
-Before we list each available core visitor, it is important to know that each of these functions optionally accepts a node kind or an array of node kinds **as their last argument**. This allows us to restrict the visitor to a specific set of nodes and will return a `Visitor<T, U>` instance where `U` is the union of the provided node kinds.
+Before we list each available core visitor, it is important to know that each of these functions optionally accepts a node kind or an array of node kinds **as a `keys` attribute in their `options`**. This allows us to restrict the visitor to a specific set of nodes and will return a `Visitor<T, U>` instance where `U` is the union of the provided node kinds.
 
 Here are some examples:
 
 ```ts
 // This visitor only accepts `ProgramNodes`.
-const visitor: Visitor<number, 'programNode'> = myNumberVisitor('programNode');
+const visitor: Visitor<number, 'programNode'> = voidVisitor({ keys: 'programNode' });
 
 // This visitor accepts both `NumberTypeNodes` and `StringTypeNodes`.
-const visitor: Visitor<number, 'numberTypeNode' | 'stringTypeNode'> = myNumberVisitor([
-    'numberTypeNode',
-    'stringTypeNode',
-]);
+const visitor: Visitor<number, 'numberTypeNode' | 'stringTypeNode'> = voidVisitor({
+    keys: ['numberTypeNode', 'stringTypeNode'],
+});
 
 // This visitor accepts all type nodes.
-const visitor: Visitor<number, TypeNode['kind']> = myNumberVisitor(TYPE_NODES);
+const visitor: Visitor<number, TypeNode['kind']> = voidVisitor({ keys: TYPE_NODES });
 
 // This visitor accepts all nodes.
-const visitor: Visitor<number> = myNumberVisitor();
+const visitor: Visitor<number> = voidVisitor();
 ```
 
-In the following sections describing the core visitors, this exact pattern can be used to restrict the visitors to specific node kinds. We won't cover this for each visitor but know that you can achieve this via the last argument of each function.
+In the following sections describing the core visitors, this exact pattern can be used to restrict the visitors to specific node kinds. We won't cover this for each visitor but know that you can achieve this via the `keys` option of each function.
 
 ### `voidVisitor`
 
@@ -408,11 +407,55 @@ const visitor = rootNodeVisitor((root: RootNode) => {
 });
 ```
 
-## Recording node stacks
+## Recording node paths
+
+### `NodePath`
+
+The `NodePath` type defines an immutable array of `Nodes` that represents any path of nodes in the Codama IDL. It accepts an optional type parameter that tells us the type of the last node in the path. For instance `NodePath<NumberTypeNode>` represents a path of node ending with a `NumberTypeNode`.
+
+Additionally, there are several utility functions to use with `NodePath` instances:
+
+```ts
+// An example of a node path.
+const path: NodePath<AccountNode> = [rootNode, programNode, accountNode];
+
+// Access the last node in the path. I.e. given NodePath<T>, returns T.
+const lastNode: AccountNode = getLastNodeFromPath(path);
+
+// Access the first/last node of a specific kind in the path.
+const firstProgramNode: ProgramNode | undefined = findFirstNodeFromPath(path, 'programNode');
+const lastProgramNode: ProgramNode | undefined = findLastNodeFromPath(path, 'programNode');
+
+// Access the last program/instruction node in the path (sugar for `findLastNodeFromPath`).
+const programNode: ProgramNode | undefined = findProgramNodeFromPath(path);
+const instructionNode: InstructionNode | undefined = findInstructionNodeFromPath(path);
+
+// Get the subpath of a path from the beginning to the last node matching a specific kind.
+const subpath: NodePath = getNodePathUntilLastNode(path, 'programNode');
+// ^ [rootNode, programNode]
+
+// Check that a path is not empty.
+if (isFilledNodePath(path as NodePath)) {
+    path satisfies NodePath<Node>;
+}
+
+// Check that a path finishes with a node matching the provided kind or kinds.
+if (isNodePath(path as NodePath, ['AccountNode', 'InstructionNode'])) {
+    path satisfies NodePath<AccountNode | InstructionNode>;
+}
+
+// Assert that a path finishes with a node matching the provided kind or kinds.
+assertIsNodePath(path as NodePath, ['AccountNode', 'InstructionNode']);
+path satisfies NodePath<AccountNode | InstructionNode>;
+
+// Display paths as strings or arrays of strings.
+nodePathToStringArray(path); // -> ['[rootNode]', '[programNode]token', '[accountNode]mint']
+nodePathToString(path); // -> "[rootNode] > [programNode]token > [accountNode]mint"
+```
 
 ### `NodeStack`
 
-The `NodeStack` class is a utility that allows us to record the stack of nodes that led to a specific node.
+The `NodeStack` class is a utility that allows us to record the path of nodes that led to the node being currently visited. It is essentially a mutable version of `NodePath` that pushes and pops `Nodes` as we go down and up the tree of nodes.
 
 For instance, consider the following node:
 
@@ -432,34 +475,46 @@ const stack = new NodeStack()
     .push(node.type.items[0]); // -> numberTypeNode.
 ```
 
-Once you have access to a `NodeStack` instance — provided by various utility visitors — you may use the following methods:
+Once you have access to a `NodeStack` instance, you may use the following methods:
 
 ```ts
 // Push a node to the stack.
 nodeStack.push(node);
+
 // Pop the last node out of the stack.
 const lastNode = nodeStack.pop();
+
 // Peek at the last node in the stack.
 const lastNode = nodeStack.peek();
-// Get all the nodes in the stack as an array.
-const nodes = nodeStack.all();
-// Get the closest node in the stack matching one or several node kinds.
-const nodes = nodeStack.find('accountNode');
-// Get the closest program node in the stack.
-const nodes = nodeStack.getProgram();
-// Get the closest instruction node in the stack.
-const nodes = nodeStack.getInstruction();
+
+// Get all the nodes in the stack as an immutable `NodePath` array.
+const path: NodePath = nodeStack.getPath();
+
+// Get a `NodePath` whilst asserting on the last node kind.
+const path: NodePath<AccountNode> = nodeStack.getPath('accountNode');
+
 // Check if the stack is empty.
 const isEmpty = nodeStack.isEmpty();
+
 // Clone the stack.
 const clonedStack = nodeStack.clone();
-// Get a string representation of the stack.
-const stackString = nodeStack.toString();
+```
+
+Additionally, it is possible to save and restore multiple node paths within a `NodeStack` by using the `pushPath` and `popPath` methods. This is for more advanced uses cases where you need to jump from one part of the tree, to a different part of the tree, and back — without loosing the context of the original path. An application of this is when we need to follow a node from a `LinkNode` (see ["Resolving link nodes"](#resolving-link-nodes) below for more details).
+
+```ts
+// Save the current path and push a new path.
+stack.pushPath([rootNode, programNode, linkableNode]);
+
+// Pop the current path and restore the previous path.
+const previousPath = stack.popPath();
 ```
 
 ### `recordNodeStackVisitor`
 
 The `recordNodeStackVisitor` function gives us a convenient way to record the stack of each node currently being visited. It accepts a base visitor and an empty `NodeStack` instance that will automatically be pushed and popped as the visitor traverses the nodes. This means that we can inject the `NodeStack` instance into another extension of the visitor to access the stack whilst visiting the nodes.
+
+Note that the `recordNodeStackVisitor` **should be the last visitor** in the pipe to ensure that the stack is correctly recorded and that the current node visited is part of the stack.
 
 For instance, here's how we can log the `NodeStack` of any base visitor as we visit the nodes.
 
@@ -467,12 +522,28 @@ For instance, here's how we can log the `NodeStack` of any base visitor as we vi
 const stack = new NodeStack();
 const visitor = pipe(
     baseVisitor,
-    v => recordNodeStackVisitor(v, stack),
     v =>
         interceptVisitor(v, (node, next) => {
-            console.log(stack.clone().toString());
+            console.log(nodePathToString(stack.getPath()));
             return next(node);
         }),
+    v => recordNodeStackVisitor(v, stack),
+);
+```
+
+Also note that some core visitors such as the `bottomUpTransformerVisitor` or the `getByteSizeVisitor` use a `NodeStack` internally to keep track of the current path. If you use these visitor within another visitor, you may wish to provide your own `NodeStack` instance as an option so that the same `NodeStack` is used across all visitors throughout the traversal.
+
+```ts
+const stack = new NodeStack();
+const byteSizeVisitor = getByteSizeVisitor(..., { stack });
+
+const visitor = pipe(
+    voidVisitor(),
+    v => tapVisitor(v, 'definedTypeNode', node => {
+        const byteSize = visit(node, byteSizeVisitor);
+        console.log(`The byte size of ${node.name} is ${byteSize}`);
+    }),
+    v => recordNodeStackVisitor(v, stack),
 );
 ```
 
@@ -480,9 +551,9 @@ const visitor = pipe(
 
 When visiting a tree of nodes, it is often useful to be explicit about the paths we want to select. For instance, I may want to delete all accounts from a program node named "token".
 
-To take end, the `NodeSelector` type represents a node selection that can take two forms:
+To that end, the `NodeSelector` type represents a node selection that can take two forms:
 
--   A `NodeSelectorFunction` of type `(node: Node, stack: NodeStack) => boolean`. In this case, the provided function is used to determine if the node should be selected.
+-   A `NodeSelectorFunction` of type `(path: NodePath) => boolean`. In this case, the provided function is used to determine if the last node in the provided `NodePath` should be selected.
 -   A `NodeSelectorPath` of type `string`. In this case, the provided string uses a simple syntax to select nodes.
 
 The `NodeSelectorPath` syntax is as follows:
@@ -568,6 +639,8 @@ const visitor = bottomUpTransformerVisitor([
 ]);
 ```
 
+By default, this visitor will keep track of its own `NodeStack` but you may provide your own via the `stack` option in order to share the same `NodeStack` across multiple visitors.
+
 ### `topDownTransformerVisitor`
 
 The `topDownTransformerVisitor` works the same way as the `bottomUpTransformerVisitor` but intercepts the nodes on the way down. This means that when we reach a node, we have not yet visited its children.
@@ -588,6 +661,8 @@ const visitor = topDownTransformerVisitor([
 ]);
 ```
 
+Here as well, you may use the `stack` option to provide your own `NodeStack` instance.
+
 ### `deleteNodesVisitor`
 
 The `deleteNodesVisitor` accepts an array of `NodeSelectors` and deletes all the nodes that match any of the provided selectors. Therefore, it is equivalent to using a transformer visitor such that the `transform` function returns `null` for the selected nodes.
@@ -596,6 +671,8 @@ The `deleteNodesVisitor` accepts an array of `NodeSelectors` and deletes all the
 // Deletes all account nodes named "mint" and all number type nodes.
 const visitor = deleteNodesVisitor(['[accountNode]mint', '[numberTypeNode]']);
 ```
+
+Here as well, you may use the `stack` option to provide your own `NodeStack` instance.
 
 ## String representations
 
@@ -653,43 +730,63 @@ It offers the following API:
 ```ts
 const linkables = new LinkableDictionary();
 
-// Record program nodes.
-linkables.record(programNode);
+// Record linkable nodes via their full path.
+linkables.recordPath([rootNode, programNode, accountNode]);
 
-// Record other linkable nodes with their associated program node.
-linkables.record(accountNode);
+// Get a linkable node using the full path of a link node, or return undefined if it is not found.
+const programNode: ProgramNode | undefined = linkables.get([...somePath, programLinkNode]);
 
-// Get a linkable node using a link node, or throw an error if it is not found.
-const programNode = linkables.getOrThrow(programLinkNode);
+// Get a linkable node using the full path of a link node, or throw an error if it is not found.
+const programNode: ProgramNode = linkables.getOrThrow([...somePath, programLinkNode]);
 
-// Get a linkable node using a link node, or return undefined if it is not found.
-const accountNode = linkables.get(accountLinkNode);
+// Get the path of a linkable node using the full path of a link node, or return undefined if it is not found.
+const accountPath: NodePath<AccountNode> | undefined = linkables.getPath([...somePath, accountLinkNode]);
+
+// Get the path of a linkable node using the full path of a link node, or throw an error if it is not found.
+const accountPath: NodePath<AccountNode> = linkables.getPathOrThrow([...somePath, accountLinkNode]);
 ```
 
-Note that this API must be used in conjunction with the `recordLinkablesVisitor` to record the linkable nodes and, later on, resolve the link nodes as we traverse the nodes. This is because the `LinkableDictionary` instance keeps track of its own internal `NodeStack` in order to understand which program node should be used for a given link node.
+Note that:
 
-### `recordLinkablesVisitor`
+-   The path of the recorded node must be provided when recording a linkable node.
+-   The path of the link node must be provided when getting a linkable node (or its path) from it.
 
-Much like the `recordNodeStackVisitor`, the `recordLinkablesVisitor` allows us to record linkable nodes as we traverse the tree of nodes. It accepts a base visitor and `LinkableDictionary` instance; and records any linkable node it encounters.
+This API may be used with the `recordLinkablesOnFirstVisitVisitor` to record the linkable nodes before the first node visit; as well as the `recordNodeStackVisitor` to keep track of the current node path when accessing the linkable nodes.
 
-This means that we can inject the `LinkableDictionary` instance into another extension of the base visitor to resolve any link node we encounter.
+### `getRecordLinkablesVisitor`
+
+This visitor accepts a `LinkableDictionary` instance and records all linkable nodes it encounters when visiting the nodes.
+
+```ts
+const linkables = new LinkableDictionary();
+visit(rootNode, getRecordLinkablesVisitor(linkables));
+// Now, all linkable nodes are recorded in the `linkables` dictionary.
+```
+
+### `recordLinkablesOnFirstVisitVisitor`
+
+This visitor is a utility that combines `interceptFirstVisitVisitor` and `getRecordLinkablesVisitor` to record all linkable nodes before the first visit of any node.
+
+It accepts a base visitor and a `LinkableDictionary` instance; and returns a new visitor that records all linkable nodes it encounters before the very first visit of the provided base visitor. This means that we can inject the `LinkableDictionary` instance into other extensions of the base visitor to resolve any link node we encounter.
+
+Note that the `recordLinkablesOnFirstVisitVisitor` **should be the last visitor** in the pipe to ensure that all linkable nodes are recorded before being used.
 
 Here's an example that records a `LinkableDictionary` and uses it to log the amount of seeds in each linked PDA node.
 
 ```ts
 const linkables = new LinkableDictionary();
+const stack = new NodeStack();
 const visitor = pipe(
     baseVisitor,
     v =>
         tapVisitor(v, 'pdaLinkNode', node => {
-            const pdaNode = linkables.getOrThrow(node);
+            const pdaNode = linkables.getOrThrow(stack.getPath(node.kind));
             console.log(`${pdaNode.seeds.length} seeds`);
         }),
-    v => recordLinkablesVisitor(v, linkables),
+    v => recordNodeStackVisitor(v, stack),
+    v => recordLinkablesOnFirstVisitVisitor(v, linkables),
 );
 ```
-
-Note that the `recordLinkablesVisitor` should always be the last visitor in the pipe to ensure that all linkable nodes are recorded before being used.
 
 ## Other useful visitors
 
@@ -704,6 +801,8 @@ const visitor = getByteSizeVisitor(linkables);
 const size = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
 // ^ 36 (4 bytes for the u32 number and 32 bytes for the public key)
 ```
+
+By default, this visitor will keep track of its own `NodeStack` but you may provide your own via the `stack` option in order to share the same `NodeStack` across multiple visitors.
 
 ### `getResolvedInstructionInputsVisitor`
 
