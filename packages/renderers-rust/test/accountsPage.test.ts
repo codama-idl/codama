@@ -134,3 +134,35 @@ test('it renders anchor traits impl', () => {
         'impl anchor_lang::Owner for TestAccount',
     ]);
 });
+
+test('it renders fetch functions', () => {
+    // Given the following account.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                discriminators: [
+                    {
+                        kind: 'fieldDiscriminatorNode',
+                        name: camelCase('discriminator'),
+                        offset: 0,
+                    },
+                ],
+                name: 'testAccount',
+                pda: pdaLinkNode('testPda'),
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we render it.
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then we expect the following fetch functions to be rendered.
+    codeContains(renderMap.get('accounts/test_account.rs'), [
+        'pub fn fetch_test_account',
+        'pub fn fetch_maybe_test_account',
+        'pub fn fetch_all_test_account',
+        'pub fn fetch_all_maybe_test_account',
+    ]);
+});
