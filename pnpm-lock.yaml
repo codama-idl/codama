@@ -51,8 +51,8 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3)
       happy-dom:
-        specifier: ^15.11.0
-        version: 15.11.0
+        specifier: ^15.11.2
+        version: 15.11.2
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
@@ -70,7 +70,7 @@ importers:
         version: 5.6.3
       vitest:
         specifier: ^2.1.4
-        version: 2.1.4(@types/node@20.17.6)(happy-dom@15.11.0)
+        version: 2.1.4(@types/node@20.17.6)(happy-dom@15.11.2)
       zx:
         specifier: ^8.2.1
         version: 8.2.1
@@ -1616,8 +1616,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  happy-dom@15.11.0:
-    resolution: {integrity: sha512-/zyxHbXriYJ8b9Urh43ILk/jd9tC07djURnJuAimJ3tJCOLOzOUp7dEHDwJOZyzROlrrooUhr/0INZIDBj1Bjw==}
+  happy-dom@15.11.2:
+    resolution: {integrity: sha512-MZ8kazOz+8i9G+olnJS836mNaF96UhOTzuECmxdE56+1+juiubqaJHTJUf+1WZ6Vs09lKLdmfX2AxGslfj1XFg==}
     engines: {node: '>=18.0.0'}
 
   has-flag@4.0.0:
@@ -3801,7 +3801,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  happy-dom@15.11.0:
+  happy-dom@15.11.2:
     dependencies:
       entities: 4.5.0
       webidl-conversions: 7.0.0
@@ -4451,7 +4451,7 @@ snapshots:
       '@types/node': 20.17.6
       fsevents: 2.3.3
 
-  vitest@2.1.4(@types/node@20.17.6)(happy-dom@15.11.0):
+  vitest@2.1.4(@types/node@20.17.6)(happy-dom@15.11.2):
     dependencies:
       '@vitest/expect': 2.1.4
       '@vitest/mocker': 2.1.4(vite@5.2.11(@types/node@20.17.6))
@@ -4475,7 +4475,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.17.6
-      happy-dom: 15.11.0
+      happy-dom: 15.11.2
     transitivePeerDependencies:
       - less
       - lightningcss
