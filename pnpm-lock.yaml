@@ -39,8 +39,8 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       eslint-config-turbo:
-        specifier: ^2.2.3
-        version: 2.2.3(eslint@8.57.1)
+        specifier: ^2.3.0
+        version: 2.3.0(eslint@8.57.1)
       eslint-plugin-simple-import-sort:
         specifier: ^10.0.0
         version: 10.0.0(eslint@8.57.1)
@@ -1385,8 +1385,8 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  eslint-config-turbo@2.2.3:
-    resolution: {integrity: sha512-/zwNU+G2w0HszXzWILdl6/Catt86ejUG7vsFSdpnFzFAAUbbT2TxgoCFvC1fKtm6+SkQsXwkRRe9tFz0aMftpg==}
+  eslint-config-turbo@2.3.0:
+    resolution: {integrity: sha512-Nm9WZgNoUIJw4bpYQugGCDjzYy1TlUD4sQ/nGblL+HdNqJWCj5NqXbJ1k+TBfYedhr65dlGoAFPYUOfjUOmKVg==}
     peerDependencies:
       eslint: '>6.6.0'
 
@@ -1418,8 +1418,8 @@ packages:
     resolution: {integrity: sha512-DNPHFGCA0/hZIsfODbeLZqaGY/+q3vgtshF85r+YWDNCQ2apd9PNs/zL6ttKm0nD1IFwvxyg3YOTI7FHl4unrw==}
     engines: {node: '>=0.10.0'}
 
-  eslint-plugin-turbo@2.2.3:
-    resolution: {integrity: sha512-LHt35VwxthdGVO6hQRfvmFb6ee8/exAzAYWCy4o87Bnp7urltP8qg7xMd4dPSLAhtfnI2xSo1WgeVaR3MeItxw==}
+  eslint-plugin-turbo@2.3.0:
+    resolution: {integrity: sha512-2iVUoIhrjp6kI8p0J4NewKPpXaKrHvL4K4eRnNXbqZvP/7xsm4Of+33B3b7m7OsS0UgX8HHOjlB9bEjigKMkMA==}
     peerDependencies:
       eslint: '>6.6.0'
 
@@ -3516,10 +3516,10 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-turbo@2.2.3(eslint@8.57.1):
+  eslint-config-turbo@2.3.0(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
-      eslint-plugin-turbo: 2.2.3(eslint@8.57.1)
+      eslint-plugin-turbo: 2.3.0(eslint@8.57.1)
 
   eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3):
     dependencies:
@@ -3546,7 +3546,7 @@ snapshots:
       natural-compare: 1.4.0
       requireindex: 1.2.0
 
-  eslint-plugin-turbo@2.2.3(eslint@8.57.1):
+  eslint-plugin-turbo@2.3.0(eslint@8.57.1):
     dependencies:
       dotenv: 16.0.3
       eslint: 8.57.1
