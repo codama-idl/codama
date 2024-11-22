@@ -5,7 +5,9 @@ import {
     enumTypeNode,
     instructionArgumentNode,
     instructionNode,
+    numberTypeNode,
     programNode,
+    rootNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
@@ -65,19 +67,63 @@ test('it counts the amount of times defined types are used within the tree', () 
 
     // Then we expect the following histogram.
     expect(histogram).toEqual({
-        myEnum: {
+        'customProgram.myEnum': {
             directlyAsInstructionArgs: 0,
             inAccounts: 1,
             inDefinedTypes: 0,
             inInstructionArgs: 0,
             total: 1,
         },
-        myStruct: {
+        'customProgram.myStruct': {
             directlyAsInstructionArgs: 1,
             inAccounts: 1,
             inDefinedTypes: 0,
             inInstructionArgs: 1,
             total: 2,
+        },
+    });
+});
+
+test('it counts links from different programs separately', () => {
+    // Given a program node with a defined type used in another type.
+    const programA = programNode({
+        definedTypes: [
+            definedTypeNode({ name: 'myType', type: numberTypeNode('u8') }),
+            definedTypeNode({ name: 'myCopyType', type: definedTypeLinkNode('myType') }),
+        ],
+        name: 'programA',
+        publicKey: '1111',
+    });
+
+    // And another program with a defined type sharing the same name.
+    const programB = programNode({
+        definedTypes: [
+            definedTypeNode({ name: 'myType', type: numberTypeNode('u16') }),
+            definedTypeNode({ name: 'myCopyType', type: definedTypeLinkNode('myType') }),
+        ],
+        name: 'programB',
+        publicKey: '2222',
+    });
+
+    // When we unwrap the defined type from programA.
+    const node = rootNode(programA, [programB]);
+    const histogram = visit(node, getDefinedTypeHistogramVisitor());
+
+    // Then we expect programA to have been modified but not programB.
+    expect(histogram).toStrictEqual({
+        'programA.myType': {
+            directlyAsInstructionArgs: 0,
+            inAccounts: 0,
+            inDefinedTypes: 1,
+            inInstructionArgs: 0,
+            total: 1,
+        },
+        'programB.myType': {
+            directlyAsInstructionArgs: 0,
+            inAccounts: 0,
+            inDefinedTypes: 1,
+            inInstructionArgs: 0,
+            total: 1,
         },
     });
 });
