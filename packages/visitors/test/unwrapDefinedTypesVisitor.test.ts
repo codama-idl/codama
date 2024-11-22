@@ -96,7 +96,7 @@ test('it does not unwrap types from the wrong programs', () => {
 
     // When we unwrap the defined type from programA.
     const node = rootNode(programA, [programB]);
-    const result = visit(node, unwrapDefinedTypesVisitor(['myType']));
+    const result = visit(node, unwrapDefinedTypesVisitor(['programA.myType']));
 
     // Then we expect programA to have been modified but not programB.
     assertIsNode(result, 'rootNode');

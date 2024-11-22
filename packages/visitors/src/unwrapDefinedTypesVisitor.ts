@@ -1,6 +1,7 @@
 import { assertIsNodeFilter, camelCase, CamelCaseString, programNode } from '@codama/nodes';
 import {
     extendVisitor,
+    findProgramNodeFromPath,
     getLastNodeFromPath,
     LinkableDictionary,
     NodeStack,
@@ -14,16 +15,25 @@ import {
 export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
-    const typesToInlineMainCased = typesToInline === '*' ? '*' : typesToInline.map(camelCase);
-    const shouldInline = (definedType: CamelCaseString): boolean =>
-        typesToInlineMainCased === '*' || typesToInlineMainCased.includes(definedType);
+    const typesToInlineCamelCased = (typesToInline === '*' ? [] : typesToInline).map(fullPath => {
+        if (!fullPath.includes('.')) return camelCase(fullPath);
+        const [programName, typeName] = fullPath.split('.');
+        return `${camelCase(programName)}.${camelCase(typeName)}`;
+    });
+    const shouldInline = (typeName: CamelCaseString, programName: CamelCaseString | undefined): boolean => {
+        if (typesToInline === '*') return true;
+        const fullPath = `${programName}.${typeName}`;
+        if (!!programName && typesToInlineCamelCased.includes(fullPath)) return true;
+        return typesToInlineCamelCased.includes(typeName);
+    };
 
     return pipe(
         nonNullableIdentityVisitor(),
         v =>
             extendVisitor(v, {
                 visitDefinedTypeLink(linkType, { self }) {
-                    if (!shouldInline(linkType.name)) {
+                    const programName = linkType.program?.name ?? findProgramNodeFromPath(stack.getPath())?.name;
+                    if (!shouldInline(linkType.name, programName)) {
                         return linkType;
                     }
                     const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
@@ -42,7 +52,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                             .map(account => visit(account, self))
                             .filter(assertIsNodeFilter('accountNode')),
                         definedTypes: program.definedTypes
-                            .filter(definedType => !shouldInline(definedType.name))
+                            .filter(definedType => !shouldInline(definedType.name, program.name))
                             .map(type => visit(type, self))
                             .filter(assertIsNodeFilter('definedTypeNode')),
                         instructions: program.instructions
