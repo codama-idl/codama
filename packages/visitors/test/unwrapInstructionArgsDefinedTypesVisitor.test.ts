@@ -38,7 +38,6 @@ test('it unwraps defined type link nodes used as instruction arguments', () => {
             ],
             name: 'MyProgram',
             publicKey: '1111',
-            version: '1.2.3',
         }),
     );
 
@@ -70,7 +69,6 @@ test('it unwraps defined type link nodes used as instruction arguments', () => {
                 ],
                 name: 'MyProgram',
                 publicKey: '1111',
-                version: '1.2.3',
             }),
         ),
     );
@@ -95,7 +93,6 @@ test('it does not unwrap defined type link nodes that are used in more than one 
             ],
             name: 'MyProgram',
             publicKey: '1111',
-            version: '1.2.3',
         }),
     );
 
@@ -129,7 +126,6 @@ test('it only unwraps defined type link nodes if they are direct instruction arg
             ],
             name: 'MyProgram',
             publicKey: '1111',
-            version: '1.2.3',
         }),
     );
 
@@ -152,7 +148,6 @@ test('it does not unwrap defined type link nodes from other programs', () => {
         ],
         name: 'programA',
         publicKey: '1111',
-        version: '1.2.3',
     });
 
     // And another program with a defined type sharing the same name.
@@ -163,7 +158,6 @@ test('it does not unwrap defined type link nodes from other programs', () => {
         ],
         name: 'programB',
         publicKey: '2222',
-        version: '1.2.3',
     });
 
     // When we unwrap defined type link nodes for instruction arguments for both of them.
@@ -182,7 +176,6 @@ test('it does not unwrap defined type link nodes from other programs', () => {
                 ],
                 name: 'programA',
                 publicKey: '1111',
-                version: '1.2.3',
             }),
             [programB],
         ),

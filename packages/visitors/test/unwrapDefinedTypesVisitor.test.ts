@@ -72,3 +72,42 @@ test('it follows linked nodes using the correct paths', () => {
         definedTypeNode({ name: 'typeA', type: numberTypeNode('u64') }),
     );
 });
+
+test('it does not unwrap types from the wrong programs', () => {
+    // Given a program node with a defined type used in another type.
+    const programA = programNode({
+        definedTypes: [
+            definedTypeNode({ name: 'myType', type: numberTypeNode('u8') }),
+            definedTypeNode({ name: 'myCopyType', type: definedTypeLinkNode('myType') }),
+        ],
+        name: 'programA',
+        publicKey: '1111',
+    });
+
+    // And another program with a defined type sharing the same name.
+    const programB = programNode({
+        definedTypes: [
+            definedTypeNode({ name: 'myType', type: numberTypeNode('u16') }),
+            definedTypeNode({ name: 'myCopyType', type: definedTypeLinkNode('myType') }),
+        ],
+        name: 'programB',
+        publicKey: '2222',
+    });
+
+    // When we unwrap the defined type from programA.
+    const node = rootNode(programA, [programB]);
+    const result = visit(node, unwrapDefinedTypesVisitor(['myType']));
+
+    // Then we expect programA to have been modified but not programB.
+    assertIsNode(result, 'rootNode');
+    expect(result).toStrictEqual(
+        rootNode(
+            programNode({
+                definedTypes: [definedTypeNode({ name: 'myCopyType', type: numberTypeNode('u8') })],
+                name: 'programA',
+                publicKey: '1111',
+            }),
+            [programB],
+        ),
+    );
+});
