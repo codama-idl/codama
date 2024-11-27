@@ -1,7 +1,7 @@
 import { deleteDirectory } from '@codama/renderers-core';
 import { rootNodeVisitor, visit } from '@codama/visitors-core';
-import * as estreePlugin from 'prettier/plugins/estree';
-import * as typeScriptPlugin from 'prettier/plugins/typescript';
+import estreePlugin from 'prettier/plugins/estree';
+import typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';
 
 import { GetRenderMapOptions, getRenderMapVisitor } from './getRenderMapVisitor';

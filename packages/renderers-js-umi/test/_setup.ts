@@ -1,6 +1,6 @@
 import { RenderMap } from '@codama/renderers-core';
-import * as estreePlugin from 'prettier/plugins/estree';
-import * as typeScriptPlugin from 'prettier/plugins/typescript';
+import estreePlugin from 'prettier/plugins/estree';
+import typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';
 import { expect } from 'vitest';
 
