@@ -1,0 +1,27 @@
+name: Main
+
+on:
+  pull_request:
+
+env:
+  # Among other things, opts out of Turborepo telemetry. See https://consoledonottrack.com/.
+  DO_NOT_TRACK: '1'
+  NODE_VERSION: 18
+  CODAMA_VERSION: 1.x
+  SOLANA_VERSION: 1.18.12
+
+jobs:
+  after-test:
+    name: After Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI checks
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+          running-workflow-name: 'After Test' # Skip current workflow
+
+      - name: Echo after waiting
+        run: echo "After CI checks..."
