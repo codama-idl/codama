@@ -63,7 +63,12 @@ jobs:
         run: pnpm run test
 
       - name: Ensure working directory is clean
-        run: test -z "$(git status --porcelain)"
+        run: |
+          echo "Git Status:"
+          git status
+          echo "\nDetailed changes:"
+          git diff
+          test -z "$(git status --porcelain)"
 
   release:
     name: Release
