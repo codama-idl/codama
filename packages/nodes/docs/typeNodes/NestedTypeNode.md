@@ -8,13 +8,13 @@ For instance, say we have the following requirement: `NestedTypeNode<StringTypeN
 
 Therefore, when encountering a `NestedTypeNode<T>` requirement, we can either provide the type `T` itself or any nested combination of nodes that includes the following wrappers:
 
--   [`FixedSizeTypeNode`](./FixedSizeTypeNode.md)
--   [`HiddenPrefixTypeNode`](./HiddenPrefixTypeNode.md)
--   [`HiddenSuffixTypeNode`](./HiddenSuffixTypeNode.md)
--   [`PostOffsetTypeNode`](./PostOffsetTypeNode.md)
--   [`PreOffsetTypeNode`](./PreOffsetTypeNode.md)
--   [`SentinelTypeNode`](./SentinelTypeNode.md)
--   [`SizePrefixTypeNode`](./SizePrefixTypeNode.md)
+- [`FixedSizeTypeNode`](./FixedSizeTypeNode.md)
+- [`HiddenPrefixTypeNode`](./HiddenPrefixTypeNode.md)
+- [`HiddenSuffixTypeNode`](./HiddenSuffixTypeNode.md)
+- [`PostOffsetTypeNode`](./PostOffsetTypeNode.md)
+- [`PreOffsetTypeNode`](./PreOffsetTypeNode.md)
+- [`SentinelTypeNode`](./SentinelTypeNode.md)
+- [`SizePrefixTypeNode`](./SizePrefixTypeNode.md)
 
 ## Functions
 
