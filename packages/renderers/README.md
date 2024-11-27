@@ -22,9 +22,9 @@ pnpm install @codama/renderers
 
 The following renderer packages are included in this package:
 
--   [`@codama/renderers-js`](../renderers-js) as `renderJavaScriptVisitor`
--   [`@codama/renderers-js-umi`](../renderers-js-umi) as `renderJavaScriptUmiVisitor`
--   [`@codama/renderers-rust`](../renderers-rust) as `renderRustVisitor`
+- [`@codama/renderers-js`](../renderers-js) as `renderJavaScriptVisitor`
+- [`@codama/renderers-js-umi`](../renderers-js-umi) as `renderJavaScriptUmiVisitor`
+- [`@codama/renderers-rust`](../renderers-rust) as `renderRustVisitor`
 
 ```ts
 // node ./codama.mjs

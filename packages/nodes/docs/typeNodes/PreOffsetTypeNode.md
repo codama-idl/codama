@@ -76,9 +76,9 @@ offset = -2
 >
 > Here is an exhaustive list of all `TypeNodes` that create sub-buffers:
 >
-> -   [`FixedSizeTypeNode`](./FixedSizeTypeNode.md)
-> -   [`SentinelTypeNode`](./SentinelTypeNode.md)
-> -   [`SizePrefixTypeNode`](./SizePrefixTypeNode.md)
+> - [`FixedSizeTypeNode`](./FixedSizeTypeNode.md)
+> - [`SentinelTypeNode`](./SentinelTypeNode.md)
+> - [`SizePrefixTypeNode`](./SizePrefixTypeNode.md)
 
 ### `padded`
 
