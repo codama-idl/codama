@@ -76,7 +76,10 @@ export function codeStringAsRegex(code: string) {
 async function normalizeCode(code: string) {
     try {
         code = await format(code, PRETTIER_OPTIONS);
-    } catch (e) {
+    } catch (
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        e
+    ) {
         // Ignore errors.
     }
     return code.trim();

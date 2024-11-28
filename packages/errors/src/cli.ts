@@ -32,7 +32,10 @@ program
     .argument('[encodedContext]', 'encoded context to interpolate into the error message', encodedContext => {
         try {
             return decodeEncodedContext(encodedContext);
-        } catch (e) {
+        } catch (
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            e
+        ) {
             throw new InvalidArgumentError('Encoded context malformed');
         }
     })
