@@ -1,9 +1,10 @@
 import solanaConfig from '@solana/eslint-config-solana';
+import tseslint from 'typescript-eslint';
 
-export default [
-    ...solanaConfig,
+export default tseslint.config([
     {
-        ignores: ['**/*.njk'],
+        files: ['**/*.ts'],
+        extends: [solanaConfig],
         rules: {
             '@typescript-eslint/no-base-to-string': 'off',
             '@typescript-eslint/no-unsafe-argument': 'off',
@@ -23,8 +24,8 @@ export default [
     {
         files: ['packages/nodes/**', 'packages/node-types/**'],
         rules: {
-            'typescript-sort-keys/interface': 'off',
             'sort-keys-fix/sort-keys-fix': 'off',
+            'typescript-sort-keys/interface': 'off',
         },
     },
-];
+]);
