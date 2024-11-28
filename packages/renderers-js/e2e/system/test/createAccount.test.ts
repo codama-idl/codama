@@ -52,5 +52,6 @@ test('it creates a new empty account', async (t) => {
     address: newAccount.address,
     data: new Uint8Array(Array.from({ length: 42 }, () => 0)),
     exists: true,
+    space: 42n,
   });
 });
