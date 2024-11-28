@@ -44,7 +44,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 `The ${getNodeTitle(node)} ${exportDetails}` +
                 `conflicts with the ${conflictExportDetails}` +
                 `${getNodeTitle(conflictingNode)}.\n` +
-                `|> Conflicting stack: ${exportConflict.stack}.`;
+                `|> Conflicting stack: ${exportConflict.stack.toString()}.`;
             items.push(validationItem('error', message, node, stack));
         });
         return items;

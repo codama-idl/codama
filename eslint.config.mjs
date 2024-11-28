@@ -5,9 +5,6 @@ export default tseslint.config([
     {
         files: ['**/*.ts'],
         extends: [solanaConfig],
-        rules: {
-            '@typescript-eslint/restrict-template-expressions': 'off',
-        },
     },
     {
         files: ['packages/nodes/**', 'packages/node-types/**'],

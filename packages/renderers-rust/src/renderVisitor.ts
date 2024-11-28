@@ -41,9 +41,9 @@ function runFormatter(cmd: string, args: string[]) {
         return;
     }
     if (stdout.length > 0) {
-        logWarn(`(cargo-fmt) ${stdout || error}`);
+        logWarn(`(cargo-fmt) ${stdout ? stdout?.toString() : error}`);
     }
     if (stderr.length > 0) {
-        logError(`(cargo-fmt) ${stderr || error}`);
+        logError(`(cargo-fmt) ${stderr ? stderr.toString() : error}`);
     }
 }
