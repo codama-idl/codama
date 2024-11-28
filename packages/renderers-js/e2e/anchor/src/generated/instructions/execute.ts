@@ -58,7 +58,7 @@ export type ExecuteInstruction<
     | IAccountMeta<string> = 'Sysvar1nstructions1111111111111111111111111',
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<
     [
       TAccountSourceAccount extends string
@@ -389,7 +389,7 @@ export function parseExecuteInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<ReadonlyUint8Array>
 ): ParsedExecuteInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 7) {
     // TODO: Coded error.

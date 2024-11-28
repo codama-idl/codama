@@ -24,6 +24,7 @@ import {
   type IInstructionWithAccounts,
   type IInstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
   type WritableAccount,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
@@ -41,7 +42,7 @@ export type InitializeAccount3Instruction<
   TAccountMint extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<
     [
       TAccountAccount extends string
@@ -167,7 +168,7 @@ export function parseInitializeAccount3Instruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeAccount3Instruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.

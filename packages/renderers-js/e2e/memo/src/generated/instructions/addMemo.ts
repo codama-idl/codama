@@ -21,6 +21,7 @@ import {
   type IInstruction,
   type IInstructionWithAccounts,
   type IInstructionWithData,
+  type ReadonlyUint8Array,
   type TransactionSigner,
 } from '@solana/web3.js';
 import { MEMO_PROGRAM_ADDRESS } from '../programs';
@@ -29,7 +30,7 @@ export type AddMemoInstruction<
   TProgram extends string = typeof MEMO_PROGRAM_ADDRESS,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<TRemainingAccounts>;
 
 export type AddMemoInstructionData = { memo: string };
@@ -99,7 +100,7 @@ export type ParsedAddMemoInstruction<
 };
 
 export function parseAddMemoInstruction<TProgram extends string>(
-  instruction: IInstruction<TProgram> & IInstructionWithData<Uint8Array>
+  instruction: IInstruction<TProgram> & IInstructionWithData<ReadonlyUint8Array>
 ): ParsedAddMemoInstruction<TProgram> {
   return {
     programAddress: instruction.programAddress,

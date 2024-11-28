@@ -21,6 +21,7 @@ import {
   type IInstruction,
   type IInstructionWithAccounts,
   type IInstructionWithData,
+  type ReadonlyUint8Array,
 } from '@solana/web3.js';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
@@ -28,7 +29,7 @@ export type Instruction5Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<TRemainingAccounts>;
 
 export type Instruction5InstructionData = { myArgument: bigint };
@@ -90,7 +91,7 @@ export type ParsedInstruction5Instruction<
 };
 
 export function parseInstruction5Instruction<TProgram extends string>(
-  instruction: IInstruction<TProgram> & IInstructionWithData<Uint8Array>
+  instruction: IInstruction<TProgram> & IInstructionWithData<ReadonlyUint8Array>
 ): ParsedInstruction5Instruction<TProgram> {
   return {
     programAddress: instruction.programAddress,
