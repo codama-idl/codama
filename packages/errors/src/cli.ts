@@ -39,7 +39,7 @@ program
             throw new InvalidArgumentError('Encoded context malformed');
         }
     })
-    .action((code: number, context) => {
+    .action((code: number, context: object | undefined) => {
         const message = getHumanReadableErrorMessage(code as CodamaErrorCode, context);
         console.log(`
 ${
