@@ -22,7 +22,6 @@
     "@ava/typescript": "^4.1.0",
     "@solana/eslint-config-solana": "^3.0.0",
     "@solana/web3.js": "2.1.0-canary-20241128134801",
-    "@solana/webcrypto-ed25519-polyfill": "2.1.0-canary-20241128134801",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@typescript-eslint/parser": "^7.3.1",
     "ava": "^6.1.2",
@@ -35,9 +34,6 @@
     "typescript": "^5.4.2"
   },
   "ava": {
-    "require": [
-      "@solana/webcrypto-ed25519-polyfill"
-    ],
     "typescript": {
       "compile": false,
       "rewritePaths": {
