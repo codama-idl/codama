@@ -6,7 +6,6 @@ export default tseslint.config([
         files: ['**/*.ts'],
         extends: [solanaConfig],
         rules: {
-            '@typescript-eslint/no-base-to-string': 'off',
             '@typescript-eslint/no-unsafe-argument': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
             '@typescript-eslint/no-unsafe-call': 'off',

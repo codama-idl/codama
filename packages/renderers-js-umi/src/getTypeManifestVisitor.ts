@@ -114,7 +114,7 @@ export function getTypeManifestVisitor(input: {
                     if (!isUnsignedInteger(resolvedNode)) {
                         throw new Error(
                             `Amount wrappers can only be applied to unsigned ` +
-                                `integer types. Got type [${amountType.number.toString()}].`,
+                                `integer types. Got format [${resolvedNode.format}].`,
                         );
                     }
                     const { unit, decimals } = amountType;
@@ -251,7 +251,7 @@ export function getTypeManifestVisitor(input: {
                     if (!isInteger(dateTimeNumber)) {
                         throw new Error(
                             `DateTime wrappers can only be applied to integer ` +
-                                `types. Got type [${dateTimeNumber.toString()}].`,
+                                `types. Got format [${dateTimeNumber.format}].`,
                         );
                     }
                     numberManifest.strictImports.add('umi', 'DateTime');
@@ -655,7 +655,7 @@ export function getTypeManifestVisitor(input: {
                     if (!isUnsignedInteger(nestedNumber)) {
                         throw new Error(
                             `Amount wrappers can only be applied to unsigned ` +
-                                `integer types. Got type [${nestedNumber.toString()}].`,
+                                `integer types. Got format [${nestedNumber.format}].`,
                         );
                     }
                     const idAndDecimals = `'SOL', 9`;
