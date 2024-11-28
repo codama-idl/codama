@@ -184,10 +184,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
                                     fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, true),
                                 ),
                             };
-                        } catch (
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            error
-                        ) {
+                        } catch {
                             return account;
                         }
                     });
