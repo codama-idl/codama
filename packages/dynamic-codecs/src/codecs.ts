@@ -249,7 +249,7 @@ export function getNodeCodecVisitor(
             return transformCodec(
                 getMapCodec(key, value, { size }),
                 (value: object) => new Map(Object.entries(value)),
-                (map: Map<unknown, unknown>): object => Object.fromEntries(map),
+                (map: Map<unknown, unknown>) => Object.fromEntries(map) as object,
             ) as Codec<unknown>;
         },
         visitNumberType(node) {

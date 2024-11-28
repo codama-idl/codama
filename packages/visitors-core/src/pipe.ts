@@ -109,5 +109,6 @@ export function pipe<TInitial, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10>(
     r9_r10: (r9: R9) => R10,
 ): R10;
 export function pipe<TInitial>(init: TInitial, ...fns: CallableFunction[]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return fns.reduce((acc, fn) => fn(acc), init);
 }
