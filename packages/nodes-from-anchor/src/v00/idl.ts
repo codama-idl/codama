@@ -11,8 +11,7 @@ export type IdlV00 = {
     version: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type IdlV00Metadata = any;
+export type IdlV00Metadata = object;
 
 export type IdlV00Constant = {
     name: string;

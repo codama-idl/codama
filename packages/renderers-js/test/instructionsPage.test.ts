@@ -199,7 +199,7 @@ test('it renders instruction accounts with linked PDAs as default value', async 
             'accounts.counter.value = await findCounterPda( { authority: expectAddress ( accounts.authority.value ) } ); ' +
             '}',
     ]);
-    renderMapContainsImports(renderMap, 'instructions/increment.ts', { '../pdas': ['findCounterPda'] });
+    await renderMapContainsImports(renderMap, 'instructions/increment.ts', { '../pdas': ['findCounterPda'] });
 });
 
 test('it renders instruction accounts with inlined PDAs as default value', async () => {
@@ -247,7 +247,7 @@ test('it renders instruction accounts with inlined PDAs as default value', async
             '} ); ' +
             '}',
     ]);
-    renderMapContainsImports(renderMap, 'instructions/increment.ts', {
+    await renderMapContainsImports(renderMap, 'instructions/increment.ts', {
         '@solana/web3.js': ['getProgramDerivedAddress'],
     });
 });
@@ -298,7 +298,7 @@ test('it renders instruction accounts with inlined PDAs from another program as 
             '} ); ' +
             '}',
     ]);
-    renderMapContainsImports(renderMap, 'instructions/increment.ts', {
+    await renderMapContainsImports(renderMap, 'instructions/increment.ts', {
         '@solana/web3.js': ['Address', 'getProgramDerivedAddress'],
     });
 });

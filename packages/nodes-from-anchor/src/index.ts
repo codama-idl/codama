@@ -16,7 +16,7 @@ export function rootNodeFromAnchor(idl: AnchorIdl): RootNode {
 }
 
 export function rootNodeFromAnchorWithoutDefaultVisitor(idl: AnchorIdl): RootNode {
-    if (idl.metadata?.spec === '0.1.0') {
+    if ((idl.metadata as { spec?: string })?.spec === '0.1.0') {
         return rootNodeFromAnchorV01(idl as IdlV01);
     }
 

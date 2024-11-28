@@ -105,7 +105,7 @@ export function codeStringAsRegex(code: string) {
 async function normalizeCode(code: string) {
     try {
         code = await format(code, PRETTIER_OPTIONS);
-    } catch (e) {
+    } catch {
         // Ignore errors.
     }
     return code.trim();

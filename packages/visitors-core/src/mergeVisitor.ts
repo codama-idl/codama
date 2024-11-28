@@ -8,7 +8,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     merge: (node: Node, values: TReturn[]) => TReturn,
     options: { keys?: TNodeKind[] } = {},
 ): Visitor<TReturn, TNodeKind> {
-    const keys: NodeKind[] = options.keys ?? (REGISTERED_NODE_KINDS as NodeKind[]);
+    const keys: NodeKind[] = options.keys ?? REGISTERED_NODE_KINDS;
     const visitor = staticVisitor(leafValue, { keys }) as Visitor<TReturn>;
     const visit =
         (v: Visitor<TReturn>) =>

@@ -22,7 +22,6 @@ export function enumTypeNodeFromAnchorV00(
     });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isStructVariant(variant: IdlV00EnumVariant): variant is IdlV00EnumVariant & { fields: IdlV00EnumFieldsNamed } {
     const field = variant.fields![0];
     return typeof field === 'object' && 'name' in field && 'type' in field;
