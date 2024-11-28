@@ -8,7 +8,7 @@ export type {{ instructionType }}<
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram>
   {% if hasData %}
-    & IInstructionWithData<Uint8Array>
+    & IInstructionWithData<ReadonlyUint8Array>
   {% endif %}
   {% if hasAccounts %}
     & IInstructionWithAccounts<[{{ accountMetas }}, ...TRemainingAccounts]>

@@ -51,5 +51,6 @@ export function getInstructionParseFunctionFragment(
         .addImports('generatedPrograms', [programAddressConstant])
         .addImports('solanaInstructions', ['type IInstruction'])
         .addImports('solanaInstructions', hasAccounts ? ['type IInstructionWithAccounts', 'type IAccountMeta'] : [])
-        .addImports('solanaInstructions', hasData ? ['type IInstructionWithData'] : []);
+        .addImports('solanaInstructions', hasData ? ['type IInstructionWithData'] : [])
+        .addImports('solanaCodecsCore', hasData ? ['type ReadonlyUint8Array'] : []);
 }

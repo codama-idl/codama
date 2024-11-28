@@ -48,7 +48,7 @@
         "@codama/renderers-core": "workspace:*",
         "@codama/validators": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/codecs-strings": "rc",
+        "@solana/codecs-strings": "2.1.0-canary-20241128134801",
         "nunjucks": "^3.2.4",
         "prettier": "^3.4.1"
     },
