@@ -17,9 +17,6 @@ importers:
       '@solana/web3.js':
         specifier: 2.1.0-canary-20241128134801
         version: 2.1.0-canary-20241128134801(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(ws@8.17.1)
-      '@solana/webcrypto-ed25519-polyfill':
-        specifier: 2.1.0-canary-20241128134801
-        version: 2.1.0-canary-20241128134801(typescript@5.5.3)
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.3.1
         version: 7.15.0(@typescript-eslint/parser@7.15.0(eslint@8.57.0)(typescript@5.5.3))(eslint@8.57.0)(typescript@5.5.3)
@@ -251,9 +248,6 @@ packages:
   '@mapbox/node-pre-gyp@1.0.11':
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
-
-  '@noble/ed25519@2.1.0':
-    resolution: {integrity: sha512-KM4qTyXPinyCgMzeYJH/UudpdL+paJXtY3CHtHYZQtBkS8MZoPr4rOikZllIutJe0d06QDQKisyn02gxZ8TcQA==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -581,12 +575,6 @@ packages:
 
   '@solana/web3.js@2.1.0-canary-20241128134801':
     resolution: {integrity: sha512-kEL7sl61MX3vO8vSvOjnwGQkdN8jnvS6xUJw6TSSSbPynBNqws27Zn7sHu1n8J9qq+gQNGMy7aJVP8/vsvCpzg==}
-    engines: {node: '>=20.18.0'}
-    peerDependencies:
-      typescript: '>=5'
-
-  '@solana/webcrypto-ed25519-polyfill@2.1.0-canary-20241128134801':
-    resolution: {integrity: sha512-mtoi+P/3BVRM/L5rReM0K0etTwAP1uGsl6mMcbl647qKMHTaXHwdGCqPO6j1uPkeYnt2hEI49e7iKEtDIRpS3Q==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       typescript: '>=5'
@@ -2152,8 +2140,6 @@ snapshots:
       - encoding
       - supports-color
 
-  '@noble/ed25519@2.1.0': {}
-
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -2576,11 +2562,6 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
       - ws
-
-  '@solana/webcrypto-ed25519-polyfill@2.1.0-canary-20241128134801(typescript@5.5.3)':
-    dependencies:
-      '@noble/ed25519': 2.1.0
-      typescript: 5.5.3
 
   '@types/estree@1.0.5': {}
 
