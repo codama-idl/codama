@@ -6,7 +6,6 @@ export default tseslint.config([
         files: ['**/*.ts'],
         extends: [solanaConfig],
         rules: {
-            '@typescript-eslint/no-unsafe-member-access': 'off',
             '@typescript-eslint/only-throw-error': 'off',
             '@typescript-eslint/prefer-promise-reject-errors': 'off',
             '@typescript-eslint/restrict-plus-operands': 'off',
