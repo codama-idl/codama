@@ -18,7 +18,6 @@ export default tseslint.config([
             '@typescript-eslint/restrict-plus-operands': 'off',
             '@typescript-eslint/restrict-template-expressions': 'off',
             '@typescript-eslint/unbound-method': 'off',
-            'sort-keys-fix/sort-keys-fix': 'error',
         },
     },
     {
