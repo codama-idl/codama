@@ -17,11 +17,13 @@ export default [
             '@typescript-eslint/restrict-plus-operands': 'off',
             '@typescript-eslint/restrict-template-expressions': 'off',
             '@typescript-eslint/unbound-method': 'off',
+            'sort-keys-fix/sort-keys-fix': 'error',
         },
     },
     {
         files: ['packages/nodes/**', 'packages/node-types/**'],
         rules: {
+            'typescript-sort-keys/interface': 'off',
             'sort-keys-fix/sort-keys-fix': 'off',
         },
     },
