@@ -26,6 +26,7 @@ import {
   type IInstructionWithData,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/web3.js';
@@ -51,7 +52,7 @@ export type WithdrawNonceAccountInstruction<
   TAccountNonceAuthority extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<
     [
       TAccountNonceAccount extends string
@@ -233,7 +234,7 @@ export function parseWithdrawNonceAccountInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<ReadonlyUint8Array>
 ): ParsedWithdrawNonceAccountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 5) {
     // TODO: Coded error.

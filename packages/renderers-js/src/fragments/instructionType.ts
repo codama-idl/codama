@@ -56,6 +56,7 @@ export function getInstructionTypeFragment(
     })
         .mergeImportsWith(accountTypeParamsFragment, accountMetasFragment)
         .addImports('generatedPrograms', [programAddressConstant])
+        .addImports('solanaCodecsCore', hasData ? ['type ReadonlyUint8Array'] : [])
         .addImports('solanaInstructions', [
             'type IAccountMeta',
             'type IInstruction',

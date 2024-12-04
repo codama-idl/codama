@@ -24,6 +24,7 @@ import {
   type IInstructionWithAccounts,
   type IInstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
   type WritableAccount,
 } from '@solana/web3.js';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
@@ -46,7 +47,7 @@ export type InitializeNonceAccountInstruction<
     | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<
     [
       TAccountNonceAccount extends string
@@ -200,7 +201,7 @@ export function parseInitializeNonceAccountInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeNonceAccountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.

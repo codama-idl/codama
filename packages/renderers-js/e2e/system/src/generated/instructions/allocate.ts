@@ -24,6 +24,7 @@ import {
   type IInstruction,
   type IInstructionWithAccounts,
   type IInstructionWithData,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableSignerAccount,
 } from '@solana/web3.js';
@@ -41,7 +42,7 @@ export type AllocateInstruction<
   TAccountNewAccount extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<
     [
       TAccountNewAccount extends string
@@ -139,7 +140,7 @@ export function parseAllocateInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<ReadonlyUint8Array>
 ): ParsedAllocateInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 1) {
     // TODO: Coded error.
