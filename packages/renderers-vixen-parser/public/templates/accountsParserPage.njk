@@ -18,7 +18,6 @@ pub enum {{ pogram.name | pascalCase }}ProgramState {
 impl {{ program.name | pascalCase }}ProgramState {
     pub fn try_unpack(data_bytes:&[u8]) -> yellowstone_vixen_core::ParseResult<Self>{
         let data_len = data_bytes.len();    
-        let data_bytes = &data_bytes[{{ program.ACCOUNT_DATA_OFFSET }}..];
         match data_len {
             {% for account in program.accounts %}
             {{ account.name }}::LEN => Ok(
