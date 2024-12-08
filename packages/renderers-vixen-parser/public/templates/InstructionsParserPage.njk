@@ -5,6 +5,18 @@
 
 {{ imports }}
 
+{% if program.name | slice(1) === 'O'}
+    use super::instruction_helpers::{
+    OrcaProgramIx, SwapAccounts, SwapIxData, SwapV2Accounts, SwapV2IxData, SWAP_IX_DISC,
+    SWAP_V2_IX_DISC,
+    };
+{% endif %}
+{% if program.name | slice(1) === 'R'}
+    use super::instruction_helpers::{
+    RaydiumProgramIx, SwapAccounts, SwapIxData, SwapV2Accounts, SWAP_IX_DISC, SWAP_V2_IX_DISC,
+    };
+{% endif %}
+
 /// {{ program.name | pascalCase }} Instructions
 #[derive(Debug)]
 pub enum {{ program.name | pascalCase }}ProgramIx {

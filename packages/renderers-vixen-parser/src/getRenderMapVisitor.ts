@@ -61,6 +61,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 visitAccount(node) {
                     const typeManifest = visit(node, typeManifestVisitor);
 
+                    const defaultImport = new ImportMap()
+                    defaultImport.add('spl_pod::solana_program::program_error::ProgramError')
+                    defaultImport.add(['std::borrow::Cow'])
+
                     // Seeds.
                     const seedsImports = new ImportMap();
                     const pda = node.pda ? linkables.get([...stack.getPath(), node.pda]) : undefined;
@@ -91,6 +95,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     if (hasVariableSeeds) {
                         imports.mergeWith(seedsImports);
                     }
+                    imports.mermergeWith(defaultImport)
 
                     return new RenderMap().add(
                         `accounts/${snakeCase(node.name)}.rs`,
@@ -128,6 +133,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     // Imports.
                     const imports = new ImportMap();
                     imports.add(['borsh::BorshDeserialize', 'borsh::BorshSerialize']);
+                    imports.add(['std::borrow::Cow'])
 
                     // canMergeAccountsAndArgs
                     const accountsAndArgsConflicts = getConflictsForInstructionAccountsAndArgs(node);

@@ -3,6 +3,17 @@
 
 {% block main %}
 
+{% if program.name | slice(1) === 'O' %}
+    use orca_whirlpools_client::accounts::{FeeTier, Position, TickArray, Whirlpool, WhirlpoolsConfig};
+{% endif %}
+{% if program.name | slice(1) === 'R' %}
+    use super::account_helpers::{
+    AmmConfig, ObservationState, OperationState, PersonalPositionState, PoolState,
+    ProtocolPositionState, TickArrayBitmapExtension, TickArrayState,
+    };
+    use crate::{helpers::ACC_DISCRIMINATOR_SIZE, raydium::RADIUM_V3_PROGRAM_ID};
+{% endif %}
+
 {{ imports }}
 
 
