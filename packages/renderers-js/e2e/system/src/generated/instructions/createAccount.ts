@@ -29,7 +29,8 @@ import {
   type IInstruction,
   type IInstructionWithAccounts,
   type IInstructionWithData,
-  type LamportsUnsafeBeyond2Pow53Minus1,
+  type Lamports,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableSignerAccount,
 } from '@solana/web3.js';
@@ -52,7 +53,7 @@ export type CreateAccountInstruction<
   TAccountNewAccount extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
+  IInstructionWithData<ReadonlyUint8Array> &
   IInstructionWithAccounts<
     [
       TAccountPayer extends string
@@ -69,13 +70,13 @@ export type CreateAccountInstruction<
 
 export type CreateAccountInstructionData = {
   discriminator: number;
-  lamports: LamportsUnsafeBeyond2Pow53Minus1;
+  lamports: Lamports;
   space: bigint;
   programAddress: Address;
 };
 
 export type CreateAccountInstructionDataArgs = {
-  lamports: LamportsUnsafeBeyond2Pow53Minus1;
+  lamports: Lamports;
   space: number | bigint;
   programAddress: Address;
 };
@@ -194,7 +195,7 @@ export function parseCreateAccountInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<ReadonlyUint8Array>
 ): ParsedCreateAccountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
