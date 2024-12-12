@@ -44,7 +44,7 @@ export function getTypeManifestVisitor(options: {
                 ...mergeManifests(values),
                 type: values.map(v => v.type).join('\n'),
             }),
-            [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'],
+            { keys: [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'] },
         ),
         v =>
             extendVisitor(v, {
@@ -70,8 +70,46 @@ export function getTypeManifestVisitor(options: {
                         };
                     }
 
+                    if (isNode(arrayType.count, 'remainderCountNode')) {
+                        childManifest.imports.add('kaigan::types::RemainderVec');
+                        return {
+                            ...childManifest,
+                            type: `RemainderVec<${childManifest.type}>`,
+                        };
+                    }
+
+                    const prefix = resolveNestedTypeNode(arrayType.count.prefix);
+                    if (prefix.endian === 'le') {
+                        switch (prefix.format) {
+                            case 'u32':
+                                return {
+                                    ...childManifest,
+                                    type: `Vec<${childManifest.type}>`,
+                                };
+                            case 'u8':
+                            case 'u16':
+                            case 'u64': {
+                                const prefixFormat = prefix.format.toUpperCase();
+                                childManifest.imports.add(`kaigan::types::${prefixFormat}PrefixVec`);
+                                return {
+                                    ...childManifest,
+                                    type: `${prefixFormat}PrefixVec<${childManifest.type}>`,
+                                };
+                            }
+                            case 'shortU16': {
+                                childManifest.imports.add('solana_program::short_vec::ShortVec');
+                                return {
+                                    ...childManifest,
+                                    type: `ShortVec<${childManifest.type}>`,
+                                };
+                            }
+                            default:
+                                throw new Error(`Array prefix not supported: ${prefix.format}`);
+                        }
+                    }
+
                     // TODO: Add to the Rust validator.
-                    throw new Error('Array size currently not supported.');
+                    throw new Error('Array size not supported by Borsh');
                 },
 
                 visitBooleanType(booleanType) {
@@ -85,7 +123,7 @@ export function getTypeManifestVisitor(options: {
                     }
 
                     // TODO: Add to the Rust validator.
-                    throw new Error('Bool size currently not supported.');
+                    throw new Error('Bool size not supported by Borsh');
                 },
 
                 visitBytesType(_bytesType, { self }) {
@@ -217,7 +255,7 @@ export function getTypeManifestVisitor(options: {
                 visitNumberType(numberType) {
                     if (numberType.endian !== 'le') {
                         // TODO: Add to the Rust validator.
-                        throw new Error('Number endianness currently not supported.');
+                        throw new Error('Number endianness not supported by Borsh');
                     }
 
                     if (numberType.format === 'shortU16') {
@@ -247,12 +285,12 @@ export function getTypeManifestVisitor(options: {
                     }
 
                     // TODO: Add to the Rust validator.
-                    throw new Error('Option size currently not supported.');
+                    throw new Error('Option size not supported by Borsh');
                 },
 
                 visitPublicKeyType() {
                     return {
-                        imports: new ImportMap().add('pinocchio::pubkey::Pubkey'),
+                        imports: new ImportMap().add('solana_program::pubkey::Pubkey'),
                         nestedStructs: [],
                         type: 'Pubkey',
                     };
@@ -281,9 +319,9 @@ export function getTypeManifestVisitor(options: {
                 visitStringType() {
                     if (!parentSize) {
                         return {
-                            imports: new ImportMap(),
+                            imports: new ImportMap().add(`kaigan::types::RemainderStr`),
                             nestedStructs: [],
-                            type: `str`,
+                            type: `RemainderStr`,
                         };
                     }
 
@@ -314,12 +352,12 @@ export function getTypeManifestVisitor(options: {
                                 };
                             }
                             default:
-                                throw new Error(`String size not supported: ${parentSize.format}`);
+                                throw new Error(`'String size not supported: ${parentSize.format}`);
                         }
                     }
 
                     // TODO: Add to the Rust validator.
-                    throw new Error(`String size currently not supported: ${parentSize}`);
+                    throw new Error('String size not supported by Borsh');
                 },
 
                 visitStructFieldType(structFieldType, { self }) {
