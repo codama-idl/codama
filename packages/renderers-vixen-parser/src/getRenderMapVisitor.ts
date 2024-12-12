@@ -100,6 +100,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const accountParserImports = new ImportMap();
 
+                    accountParserImports.add('borsh::{BorshDeserialize, BorshSerialize}');
+
                     accounts.forEach(acc => {
                         accountParserImports.add(
                             `${codamaSdkName}::accounts::{${acc.name}::${toPascalCase(acc.name)}}`,
@@ -107,6 +109,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     });
 
                     const instructionParserImports = new ImportMap();
+
+                    instructionParserImports.add('borsh::{BorshDeserialize, BorshSerialize}');
 
                     instructions.forEach(ix => {
                         const ixPascalName = fromCamelCasetoPascalCase(ix.name);
