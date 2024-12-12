@@ -42,6 +42,7 @@
         "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
     },
     "dependencies": {
+        "@codama": "workspace:*",
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/renderers-core": "workspace:*",

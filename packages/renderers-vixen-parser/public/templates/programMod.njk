@@ -1,0 +1,8 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+
+/// `{{ program.name | snakeCase }}` program ID.
+pub const {{ program.name | snakeCase | upper }}_ID: Pubkey = pubkey!("{{ program.publicKey }}");
+
+{% endblock %}

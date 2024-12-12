@@ -5,9 +5,9 @@
 
 {{ imports }}
 
-/// {{ program.name | pascalCase }} Instructions
+/// {{ programName | pascalCase }} Instructions
 #[derive(Debug)]
-pub enum {{ program.name | pascalCase }}ProgramIx {
+pub enum {{ programName  | pascalCase }}ProgramIx {
     {% for instruction in instructions %}
     {{ instruction.name | pascalCase }}({{ instruction.name | pascalCase }}IxAccounts, {{ instruction.name | pascalCase }}IxData),
     {% endfor %}
@@ -18,21 +18,21 @@ pub struct InstructionParser;
 
 impl yellowstone_vixen_core::Parser for InstructionParser {
     type Input = yellowstone_vixen_core::InstructionUpdate;
-    type Output = {{ program.name | pascalCase }}ProgramIx;
+    type Output = {{ programName  | pascalCase }}ProgramIx;
 
     fn id(&self) -> std::borrow::Cow<str> {
-        "{{ program.name | pascalCase }}::InstructionParser".into()
+        "{{ programName  | pascalCase }}::InstructionParser".into()
     }
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .program_ids([crate::{{ program.name | snakeCase | upper }}_ID])
+            .program_ids([crate::{{ programName  | snakeCase | upper }}_ID])
             .build()
             .unwrap()
     }
 
     async fn parse(&self, ix_update: &InstructionUpdate) -> yellowstone_vixen_core::ParseResult<Self::Output> {
-        if ix_update.program.equals_ref(crate::{{ program.name | snakeCase | upper }}_ID) {
+        if ix_update.program.equals_ref(crate::{{ programName  | snakeCase | upper }}_ID) {
             InstructionParser::parse_impl(ix_update)
         } else {
             Err(yellowstone_vixen_core::ParseError::Filtered)
@@ -43,18 +43,19 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 impl ProgramParser for InstructionParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
-        crate::{{ program.name | snakeCase | upper }}_ID.to_bytes().into()
+        crate::{{ programName | snakeCase | upper }}_ID.to_bytes().into()
     }
 }
 
 impl InstructionParser {
-    pub(crate) fn parse_impl(ix:&InstructionUpdate) -> yellowstone_vixen_core::ParseResult<{{ program.name | pascalCase }}ProgramIx> {
+    pub(crate) fn parse_impl(ix:&InstructionUpdate) -> yellowstone_vixen_core::ParseResult<{{ programName  | pascalCase }}ProgramIx> {
         let accounts_len = ix.accounts.len();
         let ix_discriminator:[u8; {{ IX_DATA_OFFSET }}] = ix.data[0..{{ IX_DATA_OFFSET }}].try_into()?;
         let mut ix_data = &ix.data[{{ IX_DATA_OFFSET }}..];
 
         match ix_discriminator {
             {% for instruction in instructions %}
+            {% if instruction.discriminator != null %}
             {{ instruction.discriminator }} => {
                 check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
                 let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserilaize::deserialize(&mut ix_data)?;
@@ -63,7 +64,7 @@ impl InstructionParser {
                     {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}],
                     {% endfor %}
                 };
-                Ok({{ program.name | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
+                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
 
                
             },
