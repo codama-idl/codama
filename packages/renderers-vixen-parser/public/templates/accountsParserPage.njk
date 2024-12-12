@@ -6,27 +6,27 @@
 {{ imports }}
 
 
-/// {{ program.name | pascalCase }} Program State
+/// {{ programName | pascalCase }} Program State
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
-pub enum {{ pogram.name | pascalCase }}ProgramState {
-    {% for account in program.accounts %}
+pub enum {{ programName | pascalCase }}ProgramState {
+    {% for account in accounts %}
     {{ account.name | pascalCase }}({{ account.name | pascalCase }}),
     {% endfor %}
 }
 
-impl {{ program.name | pascalCase }}ProgramState {
+impl {{ programName | pascalCase }}ProgramState {
     pub fn try_unpack(data_bytes:&[u8]) -> yellowstone_vixen_core::ParseResult<Self>{
         let data_len = data_bytes.len();    
         match data_len {
-            {% for account in program.accounts %}
-            {{ account.name }}::LEN => Ok(
-                {{ program.name | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                    {{ account.name | pascalCase }}::from_bytes(data_bytes)?
-                )
+        {% for account in accounts %}
+        {{ account.name | pascalCase }}::LEN => Ok(
+            {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+            )
             ),
-            {% endfor %}
-            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
+        {% endfor %}
+        _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
         }
 
      
@@ -38,15 +38,15 @@ pub struct AccountParser;
 
 impl yellowstone_vixen_core::Parser for AccountParser {
     type Input = yellowstone_vixen_core::AccountUpdate;
-    type Output = {{ program.name | pascalCase }}ProgramState;
+    type Output = {{ programName | pascalCase }}ProgramState;
 
     fn id(&self) -> std::borrow::Cow<str> {
-        {{ program.Name | snakeCase }}::AccountParser".into()
+        {{ programName | snakeCase }}::AccountParser.into()
     }
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .account_owners([crate::{{ program.name | snakeCase | upper }}_ID])
+            .account_owners([crate::{{ programName | snakeCase | upper }}_ID])
             .build()
             .unwrap()
     }
@@ -56,14 +56,14 @@ impl yellowstone_vixen_core::Parser for AccountParser {
         acct: &yellowstone_vixen_core::AccountUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         let inner = acct.account.as_ref().ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-           {{ program.Name | snakeCase }}ProgramState::try_unpack(&inner.data)
+           {{ programName | snakeCase }}ProgramState::try_unpack(&inner.data)
     }
 }
 
 impl ProgramParser for AccountParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
-        crate::{{ program.name | snakeCase | upper }}_ID.to_bytes().into()
+        crate::{{ programName | snakeCase | upper }}_ID.to_bytes().into()
     }
 }
 
