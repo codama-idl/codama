@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use borsh::{BorshDeserialize, BorshSerialize};
 use memo_program_sdk::instructions::add_memo::{
     AddMemo as AddMemoIxAccounts, AddMemoInstructionArgs as AddMemoIxData,
 };

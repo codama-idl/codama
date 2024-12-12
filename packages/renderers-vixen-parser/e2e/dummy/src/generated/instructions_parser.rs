@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use borsh::{BorshDeserialize, BorshSerialize};
 use dummy_program_sdk::instructions::instruction1::Instruction1 as Instruction1IxAccounts;
 use dummy_program_sdk::instructions::instruction2::Instruction2 as Instruction2IxAccounts;
 use dummy_program_sdk::instructions::instruction3::{
