@@ -46,7 +46,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .account_owners([crate::{{ programName | snakeCase | upper }}_ID])
+            .account_owners([ID])
             .build()
             .unwrap()
     }
@@ -63,7 +63,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
 impl ProgramParser for AccountParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
-        crate::{{ programName | snakeCase | upper }}_ID.to_bytes().into()
+        ID.to_bytes().into()
     }
 }
 

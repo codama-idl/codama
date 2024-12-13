@@ -26,13 +26,13 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .program_ids([crate::{{ programName  | snakeCase | upper }}_ID])
+            .program_ids([ID])
             .build()
             .unwrap()
     }
 
     async fn parse(&self, ix_update: &InstructionUpdate) -> yellowstone_vixen_core::ParseResult<Self::Output> {
-        if ix_update.program.equals_ref(crate::{{ programName  | snakeCase | upper }}_ID) {
+        if ix_update.program.equals_ref(ID) {
             InstructionParser::parse_impl(ix_update)
         } else {
             Err(yellowstone_vixen_core::ParseError::Filtered)
@@ -43,7 +43,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 impl ProgramParser for InstructionParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
-        crate::{{ programName | snakeCase | upper }}_ID.to_bytes().into()
+        ID.to_bytes().into()
     }
 }
 
@@ -58,7 +58,7 @@ impl InstructionParser {
             {% if instruction.discriminator != null %}
             {{ instruction.discriminator }} => {
                 check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
-                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserilaize::deserialize(&mut ix_data)?;
+                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
                 let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
                     {% for account in instruction.accounts %}
                     {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}],

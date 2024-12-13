@@ -6,21 +6,23 @@
 //!
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use system_program_sdk::accounts::nonce::Nonce;
-use system_program_sdk::ID;
+use wen_transfer_guard_program_sdk::accounts::guardV1::Guardv1;
+use wen_transfer_guard_program_sdk::ID;
 
-/// System Program State
+/// WenTransferGuard Program State
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
-pub enum SystemProgramState {
-    Nonce(Nonce),
+pub enum WenTransferGuardProgramState {
+    GuardV1(GuardV1),
 }
 
-impl SystemProgramState {
+impl WenTransferGuardProgramState {
     pub fn try_unpack(data_bytes: &[u8]) -> yellowstone_vixen_core::ParseResult<Self> {
         let data_len = data_bytes.len();
         match data_len {
-            Nonce::LEN => Ok(SystemProgramState::Nonce(Nonce::from_bytes(data_bytes)?)),
+            GuardV1::LEN => Ok(WenTransferGuardProgramState::GuardV1(GuardV1::from_bytes(
+                data_bytes,
+            )?)),
             _ => Err(yellowstone_vixen_core::ParseError::from(
                 "Invalid Account data length".to_owned(),
             )),
@@ -33,10 +35,10 @@ pub struct AccountParser;
 
 impl yellowstone_vixen_core::Parser for AccountParser {
     type Input = yellowstone_vixen_core::AccountUpdate;
-    type Output = SystemProgramState;
+    type Output = WenTransferGuardProgramState;
 
     fn id(&self) -> std::borrow::Cow<str> {
-        system::AccountParser.into()
+        wen_transfer_guard::AccountParser.into()
     }
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
@@ -54,7 +56,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
             .account
             .as_ref()
             .ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-        systemProgramState::try_unpack(&inner.data)
+        wen_transfer_guardProgramState::try_unpack(&inner.data)
     }
 }
 
