@@ -1,5 +1,5 @@
 [package]
-name = "codama-renderers-vixen-parser-e2e-dummy"
+name = "codama-renderers-vixen-parser-e2e-anchor"
 version = "0.0.0"
 edition = "2021"
 
