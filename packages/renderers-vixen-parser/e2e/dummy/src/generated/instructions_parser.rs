@@ -19,6 +19,7 @@ use dummy_program_sdk::instructions::instruction5::{
 };
 use dummy_program_sdk::instructions::instruction6::Instruction6 as Instruction6IxAccounts;
 use dummy_program_sdk::instructions::instruction7::Instruction7 as Instruction7IxAccounts;
+use dummy_program_sdk::ID;
 
 /// Dummy Instructions
 #[derive(Debug)]
@@ -45,7 +46,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .program_ids([crate::DUMMY_ID])
+            .program_ids([ID])
             .build()
             .unwrap()
     }
@@ -54,7 +55,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
         &self,
         ix_update: &InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
-        if ix_update.program.equals_ref(crate::DUMMY_ID) {
+        if ix_update.program.equals_ref(ID) {
             InstructionParser::parse_impl(ix_update)
         } else {
             Err(yellowstone_vixen_core::ParseError::Filtered)
@@ -65,7 +66,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 impl ProgramParser for InstructionParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
-        crate::DUMMY_ID.to_bytes().into()
+        ID.to_bytes().into()
     }
 }
 
@@ -80,7 +81,7 @@ impl InstructionParser {
         match ix_discriminator {
             42 => {
                 check_min_accounts_req(accounts_len, 0)?;
-                let de_ix_data: Instruction3IxData = BorshDeserilaize::deserialize(&mut ix_data)?;
+                let de_ix_data: Instruction3IxData = BorshDeserialize::deserialize(&mut ix_data)?;
                 let ix_accounts = Instruction3IxAccounts {};
                 Ok(DummyProgramIx::Instruction3(ix_accounts, de_ix_data))
             }

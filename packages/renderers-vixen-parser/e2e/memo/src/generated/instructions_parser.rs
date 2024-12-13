@@ -9,6 +9,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use memo_program_sdk::instructions::add_memo::{
     AddMemo as AddMemoIxAccounts, AddMemoInstructionArgs as AddMemoIxData,
 };
+use memo_program_sdk::ID;
 
 /// Memo Instructions
 #[derive(Debug)]
@@ -29,7 +30,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .program_ids([crate::MEMO_ID])
+            .program_ids([ID])
             .build()
             .unwrap()
     }
@@ -38,7 +39,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
         &self,
         ix_update: &InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
-        if ix_update.program.equals_ref(crate::MEMO_ID) {
+        if ix_update.program.equals_ref(ID) {
             InstructionParser::parse_impl(ix_update)
         } else {
             Err(yellowstone_vixen_core::ParseError::Filtered)
@@ -49,7 +50,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 impl ProgramParser for InstructionParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
-        crate::MEMO_ID.to_bytes().into()
+        ID.to_bytes().into()
     }
 }
 
