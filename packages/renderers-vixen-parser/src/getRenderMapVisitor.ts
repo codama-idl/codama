@@ -77,8 +77,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 );
 
                                 discriminator = value;
-                                if (Array.isArray(value)) {
-                                    IX_DATA_OFFSET = value.length;
+
+                                if (Array.isArray(JSON.parse(value))) {
+                                    IX_DATA_OFFSET = Array.from(JSON.parse(value)).length;
                                 }
                             }
                         }
@@ -96,7 +97,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         };
                     });
 
-                    const codamaSdkName = options.codamaSdkName ?? `${programName}_program_sdk`;
+                    const codamaSdkName = options.codamaSdkName ?? `${toSnakeCase(programName)}_program_sdk`;
 
                     const accountParserImports = new ImportMap();
 
@@ -111,6 +112,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const instructionParserImports = new ImportMap();
 
                     instructionParserImports.add('borsh::{BorshDeserialize, BorshSerialize}');
+
+                    const programIdImport = `${codamaSdkName}::ID`;
+
+                    instructionParserImports.add(programIdImport);
+
+                    accountParserImports.add(programIdImport);
 
                     instructions.forEach(ix => {
                         const ixPascalName = fromCamelCasetoPascalCase(ix.name);
