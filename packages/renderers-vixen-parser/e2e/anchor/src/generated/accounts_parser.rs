@@ -5,7 +5,6 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use borsh::{BorshDeserialize, BorshSerialize};
 use wen_transfer_guard_program_sdk::accounts::guardV1::Guardv1;
 use wen_transfer_guard_program_sdk::ID;
 
@@ -38,7 +37,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
     type Output = WenTransferGuardProgramState;
 
     fn id(&self) -> std::borrow::Cow<str> {
-        wen_transfer_guard::AccountParser.into()
+        "wen_transfer_guard::AccountParser".into()
     }
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
@@ -56,11 +55,11 @@ impl yellowstone_vixen_core::Parser for AccountParser {
             .account
             .as_ref()
             .ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-        wen_transfer_guardProgramState::try_unpack(&inner.data)
+        WenTransferGuardProgramState::try_unpack(&inner.data)
     }
 }
 
-impl ProgramParser for AccountParser {
+impl yellowstone_vixen_core::ProgramParser for AccountParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
         ID.to_bytes().into()

@@ -41,7 +41,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
     type Output = {{ programName | pascalCase }}ProgramState;
 
     fn id(&self) -> std::borrow::Cow<str> {
-        {{ programName | snakeCase }}::AccountParser.into()
+        "{{ programName | snakeCase }}::AccountParser".into()
     }
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
@@ -56,11 +56,11 @@ impl yellowstone_vixen_core::Parser for AccountParser {
         acct: &yellowstone_vixen_core::AccountUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         let inner = acct.account.as_ref().ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-           {{ programName | snakeCase }}ProgramState::try_unpack(&inner.data)
+           {{ programName | pascalCase }}ProgramState::try_unpack(&inner.data)
     }
 }
 
-impl ProgramParser for AccountParser {
+impl yellowstone_vixen_core::ProgramParser for AccountParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
         ID.to_bytes().into()
