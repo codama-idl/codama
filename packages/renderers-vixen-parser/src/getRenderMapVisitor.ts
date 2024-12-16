@@ -20,15 +20,18 @@ export type GetRenderMapOptions = {
     codamaSdkName?: string;
 };
 
+// Account node for the parser
 type ParserAccountNode = {
     name: string;
 };
 
+// Instruction Accounts node for the parser
 type ParserInstructionAccountNode = {
     name: string;
     index: number;
 };
 
+// Instruction node for the parser
 type ParserInstructionNode = {
     discriminator: string | null;
     name: string;
@@ -50,6 +53,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
             extendVisitor(v, {
                 visitRoot(node) {
                     const programsToExport = getAllPrograms(node);
+                    //TODO: handle multiple programs
                     const programName = programsToExport[0]?.name;
                     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
                     const programAccounts = getAllAccounts(node);
@@ -58,12 +62,17 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             name: acc.name,
                         };
                     });
-                    const progranInstructions = getAllInstructionsWithSubs(node, {
+                    const programInstructions = getAllInstructionsWithSubs(node, {
                         leavesOnly: !renderParentInstructions,
                     });
+
+                    // Default value for  Ix discriminator - 1 Byte
+                    // Shank native program uses 1 byte
+                    // anchor uses 8 bytes
                     let IX_DATA_OFFSET = 1;
 
-                    const instructions: ParserInstructionNode[] = progranInstructions.map(ix => {
+                    const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
+                        // checs for discriminator
                         let discriminator = null;
                         let discriminatorIx = ix.arguments.find(arg => arg.name === 'discriminator');
                         if (discriminatorIx) {
@@ -97,6 +106,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         };
                     });
 
+                    // TODO: assuming name of codama generated sdk to be {program_name}_program_sdk for now need to change it
                     const codamaSdkName = options.codamaSdkName ?? `${toSnakeCase(programName)}_program_sdk`;
 
                     const accountParserImports = new ImportMap();
@@ -118,23 +128,23 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     instructionParserImports.add(programIdImport);
 
                     accountParserImports.add(programIdImport);
+                    let ixImports = '';
 
                     instructions.forEach(ix => {
-                        const ixPascalName = fromCamelCasetoPascalCase(ix.name);
-                        const ixSnakeName = toSnakeCase(ix.name);
+                        const ixPascalName = fromCamelToPascalCase(ix.name);
                         const ixAccounts = `${ixPascalName} as ${ixPascalName}IxAccounts`;
 
                         if (ix.hasArgs) {
+                            // Adding alias for IxData
                             const ixData = `${ixPascalName}InstructionArgs as ${ixPascalName}IxData`;
-                            instructionParserImports.add(
-                                `${codamaSdkName}::instructions::{${ixSnakeName}::{${ixAccounts}, ${ixData}}}`,
-                            );
+
+                            ixImports = ixImports + `${ixData}, `;
                         } else {
-                            instructionParserImports.add(
-                                `${codamaSdkName}::instructions::{${ixSnakeName}::${ixAccounts}}`,
-                            );
+                            ixImports = ixImports + `${ixAccounts}, `;
                         }
                     });
+
+                    instructionParserImports.add(`${codamaSdkName}::instructions::{${ixImports}}`);
 
                     const ixCtx = {
                         imports: instructionParserImports,
@@ -151,6 +161,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
 
                     const map = new RenderMap();
+
+                    // only two files are generated as part of account and instruction parser
 
                     if (accCtx.accounts.length > 0) {
                         map.add('accounts_parser.rs', render('accountsParserPage.njk', accCtx));
@@ -175,7 +187,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     );
 }
 
-export const fromCamelCasetoPascalCase = (str: string) => {
+export const fromCamelToPascalCase = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
 };
 

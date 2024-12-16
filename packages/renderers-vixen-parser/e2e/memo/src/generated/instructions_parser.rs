@@ -6,9 +6,7 @@
 //!
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use memo_program_sdk::instructions::add_memo::{
-    AddMemo as AddMemoIxAccounts, AddMemoInstructionArgs as AddMemoIxData,
-};
+use memo_program_sdk::instructions::AddMemoInstructionArgs as AddMemoIxData;
 use memo_program_sdk::ID;
 
 /// Memo Instructions
