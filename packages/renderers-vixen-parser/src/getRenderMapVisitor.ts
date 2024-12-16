@@ -89,6 +89,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                                 if (Array.isArray(JSON.parse(value))) {
                                     IX_DATA_OFFSET = Array.from(JSON.parse(value)).length;
+                                } else {
+                                    discriminator = `[${discriminator}]`;
                                 }
                             }
                         }
@@ -111,8 +113,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const accountParserImports = new ImportMap();
 
-                    accountParserImports.add('borsh::{BorshDeserialize, BorshSerialize}');
-
                     accounts.forEach(acc => {
                         accountParserImports.add(
                             `${codamaSdkName}::accounts::{${acc.name}::${toPascalCase(acc.name)}}`,
@@ -121,7 +121,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const instructionParserImports = new ImportMap();
 
-                    instructionParserImports.add('borsh::{BorshDeserialize, BorshSerialize}');
+                    instructionParserImports.add('borsh::{BorshDeserialize}');
 
                     const programIdImport = `${codamaSdkName}::ID`;
 
@@ -139,6 +139,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             const ixData = `${ixPascalName}InstructionArgs as ${ixPascalName}IxData`;
 
                             ixImports = ixImports + `${ixData}, `;
+                            ixImports = ixImports + `${ixAccounts}, `;
                         } else {
                             ixImports = ixImports + `${ixAccounts}, `;
                         }

@@ -5,19 +5,28 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshDeserialize;
 use system_program_sdk::instructions::{
+    AdvanceNonceAccount as AdvanceNonceAccountIxAccounts,
     AdvanceNonceAccountInstructionArgs as AdvanceNonceAccountIxData,
-    AllocateInstructionArgs as AllocateIxData,
-    AllocateWithSeedInstructionArgs as AllocateWithSeedIxData,
-    AssignInstructionArgs as AssignIxData, AssignWithSeedInstructionArgs as AssignWithSeedIxData,
+    Allocate as AllocateIxAccounts, AllocateInstructionArgs as AllocateIxData,
+    AllocateWithSeed as AllocateWithSeedIxAccounts,
+    AllocateWithSeedInstructionArgs as AllocateWithSeedIxData, Assign as AssignIxAccounts,
+    AssignInstructionArgs as AssignIxData, AssignWithSeed as AssignWithSeedIxAccounts,
+    AssignWithSeedInstructionArgs as AssignWithSeedIxData,
+    AuthorizeNonceAccount as AuthorizeNonceAccountIxAccounts,
     AuthorizeNonceAccountInstructionArgs as AuthorizeNonceAccountIxData,
-    CreateAccountInstructionArgs as CreateAccountIxData,
+    CreateAccount as CreateAccountIxAccounts, CreateAccountInstructionArgs as CreateAccountIxData,
+    CreateAccountWithSeed as CreateAccountWithSeedIxAccounts,
     CreateAccountWithSeedInstructionArgs as CreateAccountWithSeedIxData,
+    InitializeNonceAccount as InitializeNonceAccountIxAccounts,
     InitializeNonceAccountInstructionArgs as InitializeNonceAccountIxData,
-    TransferSolInstructionArgs as TransferSolIxData,
+    TransferSol as TransferSolIxAccounts, TransferSolInstructionArgs as TransferSolIxData,
+    TransferSolWithSeed as TransferSolWithSeedIxAccounts,
     TransferSolWithSeedInstructionArgs as TransferSolWithSeedIxData,
+    UpgradeNonceAccount as UpgradeNonceAccountIxAccounts,
     UpgradeNonceAccountInstructionArgs as UpgradeNonceAccountIxData,
+    WithdrawNonceAccount as WithdrawNonceAccountIxAccounts,
     WithdrawNonceAccountInstructionArgs as WithdrawNonceAccountIxData,
 };
 use system_program_sdk::ID;
@@ -47,7 +56,7 @@ pub enum SystemProgramIx {
 pub struct InstructionParser;
 
 impl yellowstone_vixen_core::Parser for InstructionParser {
-    type Input = yellowstone_vixen_core::InstructionUpdate;
+    type Input = yellowstone_vixen_core::instruction::InstructionUpdate;
     type Output = SystemProgramIx;
 
     fn id(&self) -> std::borrow::Cow<str> {
@@ -56,14 +65,14 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .program_ids([ID])
+            .transaction_accounts([ID])
             .build()
             .unwrap()
     }
 
     async fn parse(
         &self,
-        ix_update: &InstructionUpdate,
+        ix_update: &yellowstone_vixen_core::instruction::InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         if ix_update.program.equals_ref(ID) {
             InstructionParser::parse_impl(ix_update)
@@ -73,7 +82,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
     }
 }
 
-impl ProgramParser for InstructionParser {
+impl yellowstone_vixen_core::ProgramParser for InstructionParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
         ID.to_bytes().into()
@@ -82,14 +91,14 @@ impl ProgramParser for InstructionParser {
 
 impl InstructionParser {
     pub(crate) fn parse_impl(
-        ix: &InstructionUpdate,
+        ix: &yellowstone_vixen_core::instruction::InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<SystemProgramIx> {
         let accounts_len = ix.accounts.len();
         let ix_discriminator: [u8; 1] = ix.data[0..1].try_into()?;
         let mut ix_data = &ix.data[1..];
 
         match ix_discriminator {
-            0 => {
+            [0] => {
                 check_min_accounts_req(accounts_len, 2)?;
                 let de_ix_data: CreateAccountIxData = BorshDeserialize::deserialize(&mut ix_data)?;
                 let ix_accounts = CreateAccountIxAccounts {
@@ -98,7 +107,7 @@ impl InstructionParser {
                 };
                 Ok(SystemProgramIx::CreateAccount(ix_accounts, de_ix_data))
             }
-            1 => {
+            [1] => {
                 check_min_accounts_req(accounts_len, 1)?;
                 let de_ix_data: AssignIxData = BorshDeserialize::deserialize(&mut ix_data)?;
                 let ix_accounts = AssignIxAccounts {
@@ -106,7 +115,7 @@ impl InstructionParser {
                 };
                 Ok(SystemProgramIx::Assign(ix_accounts, de_ix_data))
             }
-            2 => {
+            [2] => {
                 check_min_accounts_req(accounts_len, 2)?;
                 let de_ix_data: TransferSolIxData = BorshDeserialize::deserialize(&mut ix_data)?;
                 let ix_accounts = TransferSolIxAccounts {
@@ -115,7 +124,7 @@ impl InstructionParser {
                 };
                 Ok(SystemProgramIx::TransferSol(ix_accounts, de_ix_data))
             }
-            3 => {
+            [3] => {
                 check_min_accounts_req(accounts_len, 3)?;
                 let de_ix_data: CreateAccountWithSeedIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -129,7 +138,7 @@ impl InstructionParser {
                     de_ix_data,
                 ))
             }
-            4 => {
+            [4] => {
                 check_min_accounts_req(accounts_len, 3)?;
                 let de_ix_data: AdvanceNonceAccountIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -143,7 +152,7 @@ impl InstructionParser {
                     de_ix_data,
                 ))
             }
-            5 => {
+            [5] => {
                 check_min_accounts_req(accounts_len, 5)?;
                 let de_ix_data: WithdrawNonceAccountIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -159,7 +168,7 @@ impl InstructionParser {
                     de_ix_data,
                 ))
             }
-            6 => {
+            [6] => {
                 check_min_accounts_req(accounts_len, 3)?;
                 let de_ix_data: InitializeNonceAccountIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -173,7 +182,7 @@ impl InstructionParser {
                     de_ix_data,
                 ))
             }
-            7 => {
+            [7] => {
                 check_min_accounts_req(accounts_len, 2)?;
                 let de_ix_data: AuthorizeNonceAccountIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -186,7 +195,7 @@ impl InstructionParser {
                     de_ix_data,
                 ))
             }
-            8 => {
+            [8] => {
                 check_min_accounts_req(accounts_len, 1)?;
                 let de_ix_data: AllocateIxData = BorshDeserialize::deserialize(&mut ix_data)?;
                 let ix_accounts = AllocateIxAccounts {
@@ -194,7 +203,7 @@ impl InstructionParser {
                 };
                 Ok(SystemProgramIx::Allocate(ix_accounts, de_ix_data))
             }
-            9 => {
+            [9] => {
                 check_min_accounts_req(accounts_len, 2)?;
                 let de_ix_data: AllocateWithSeedIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -204,7 +213,7 @@ impl InstructionParser {
                 };
                 Ok(SystemProgramIx::AllocateWithSeed(ix_accounts, de_ix_data))
             }
-            10 => {
+            [10] => {
                 check_min_accounts_req(accounts_len, 2)?;
                 let de_ix_data: AssignWithSeedIxData = BorshDeserialize::deserialize(&mut ix_data)?;
                 let ix_accounts = AssignWithSeedIxAccounts {
@@ -213,7 +222,7 @@ impl InstructionParser {
                 };
                 Ok(SystemProgramIx::AssignWithSeed(ix_accounts, de_ix_data))
             }
-            11 => {
+            [11] => {
                 check_min_accounts_req(accounts_len, 3)?;
                 let de_ix_data: TransferSolWithSeedIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -227,7 +236,7 @@ impl InstructionParser {
                     de_ix_data,
                 ))
             }
-            12 => {
+            [12] => {
                 check_min_accounts_req(accounts_len, 1)?;
                 let de_ix_data: UpgradeNonceAccountIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
@@ -243,5 +252,18 @@ impl InstructionParser {
                 "Invalid Instruction discriminator".to_owned(),
             )),
         }
+    }
+}
+
+pub fn check_min_accounts_req(
+    actual: usize,
+    expected: usize,
+) -> yellowstone_vixen_core::ParseResult<()> {
+    if actual < expected {
+        Err(yellowstone_vixen_core::ParseError::from(format!(
+            "Too few accounts provided: expected {expected}, got {actual}"
+        )))
+    } else {
+        Ok(())
     }
 }
