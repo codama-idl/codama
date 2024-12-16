@@ -5,7 +5,6 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use borsh::{BorshDeserialize, BorshSerialize};
 use system_program_sdk::accounts::nonce::Nonce;
 use system_program_sdk::ID;
 
@@ -36,7 +35,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
     type Output = SystemProgramState;
 
     fn id(&self) -> std::borrow::Cow<str> {
-        system::AccountParser.into()
+        "system::AccountParser".into()
     }
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
@@ -54,11 +53,11 @@ impl yellowstone_vixen_core::Parser for AccountParser {
             .account
             .as_ref()
             .ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-        systemProgramState::try_unpack(&inner.data)
+        SystemProgramState::try_unpack(&inner.data)
     }
 }
 
-impl ProgramParser for AccountParser {
+impl yellowstone_vixen_core::ProgramParser for AccountParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
         ID.to_bytes().into()

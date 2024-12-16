@@ -5,8 +5,10 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use borsh::{BorshDeserialize, BorshSerialize};
-use memo_program_sdk::instructions::AddMemoInstructionArgs as AddMemoIxData;
+use borsh::BorshDeserialize;
+use memo_program_sdk::instructions::{
+    AddMemo as AddMemoIxAccounts, AddMemoInstructionArgs as AddMemoIxData,
+};
 use memo_program_sdk::ID;
 
 /// Memo Instructions
@@ -19,7 +21,7 @@ pub enum MemoProgramIx {
 pub struct InstructionParser;
 
 impl yellowstone_vixen_core::Parser for InstructionParser {
-    type Input = yellowstone_vixen_core::InstructionUpdate;
+    type Input = yellowstone_vixen_core::instruction::InstructionUpdate;
     type Output = MemoProgramIx;
 
     fn id(&self) -> std::borrow::Cow<str> {
@@ -28,14 +30,14 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
         yellowstone_vixen_core::Prefilter::builder()
-            .program_ids([ID])
+            .transaction_accounts([ID])
             .build()
             .unwrap()
     }
 
     async fn parse(
         &self,
-        ix_update: &InstructionUpdate,
+        ix_update: &yellowstone_vixen_core::instruction::InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         if ix_update.program.equals_ref(ID) {
             InstructionParser::parse_impl(ix_update)
@@ -45,7 +47,7 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
     }
 }
 
-impl ProgramParser for InstructionParser {
+impl yellowstone_vixen_core::ProgramParser for InstructionParser {
     #[inline]
     fn program_id(&self) -> yellowstone_vixen_core::Pubkey {
         ID.to_bytes().into()
@@ -54,7 +56,7 @@ impl ProgramParser for InstructionParser {
 
 impl InstructionParser {
     pub(crate) fn parse_impl(
-        ix: &InstructionUpdate,
+        ix: &yellowstone_vixen_core::instruction::InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<MemoProgramIx> {
         let accounts_len = ix.accounts.len();
         let ix_discriminator: [u8; 1] = ix.data[0..1].try_into()?;
@@ -65,5 +67,18 @@ impl InstructionParser {
                 "Invalid Instruction discriminator".to_owned(),
             )),
         }
+    }
+}
+
+pub fn check_min_accounts_req(
+    actual: usize,
+    expected: usize,
+) -> yellowstone_vixen_core::ParseResult<()> {
+    if actual < expected {
+        Err(yellowstone_vixen_core::ParseError::from(format!(
+            "Too few accounts provided: expected {expected}, got {actual}"
+        )))
+    } else {
+        Ok(())
     }
 }
