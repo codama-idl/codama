@@ -6,17 +6,9 @@
 //!
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use wen_transfer_guard_program_sdk::instructions::create_guard::{
-    CreateGuard as CreateGuardIxAccounts, CreateGuardInstructionArgs as CreateGuardIxData,
-};
-use wen_transfer_guard_program_sdk::instructions::execute::{
-    Execute as ExecuteIxAccounts, ExecuteInstructionArgs as ExecuteIxData,
-};
-use wen_transfer_guard_program_sdk::instructions::initialize::{
-    Initialize as InitializeIxAccounts, InitializeInstructionArgs as InitializeIxData,
-};
-use wen_transfer_guard_program_sdk::instructions::update_guard::{
-    UpdateGuard as UpdateGuardIxAccounts, UpdateGuardInstructionArgs as UpdateGuardIxData,
+use wen_transfer_guard_program_sdk::instructions::{
+    CreateGuardInstructionArgs as CreateGuardIxData, ExecuteInstructionArgs as ExecuteIxData,
+    InitializeInstructionArgs as InitializeIxData, UpdateGuardInstructionArgs as UpdateGuardIxData,
 };
 use wen_transfer_guard_program_sdk::ID;
 

@@ -6,19 +6,13 @@
 //!
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use dummy_program_sdk::instructions::instruction1::Instruction1 as Instruction1IxAccounts;
-use dummy_program_sdk::instructions::instruction2::Instruction2 as Instruction2IxAccounts;
-use dummy_program_sdk::instructions::instruction3::{
-    Instruction3 as Instruction3IxAccounts, Instruction3InstructionArgs as Instruction3IxData,
+use dummy_program_sdk::instructions::{
+    Instruction1 as Instruction1IxAccounts, Instruction2 as Instruction2IxAccounts,
+    Instruction3InstructionArgs as Instruction3IxData,
+    Instruction4InstructionArgs as Instruction4IxData,
+    Instruction5InstructionArgs as Instruction5IxData, Instruction6 as Instruction6IxAccounts,
+    Instruction7 as Instruction7IxAccounts,
 };
-use dummy_program_sdk::instructions::instruction4::{
-    Instruction4 as Instruction4IxAccounts, Instruction4InstructionArgs as Instruction4IxData,
-};
-use dummy_program_sdk::instructions::instruction5::{
-    Instruction5 as Instruction5IxAccounts, Instruction5InstructionArgs as Instruction5IxData,
-};
-use dummy_program_sdk::instructions::instruction6::Instruction6 as Instruction6IxAccounts;
-use dummy_program_sdk::instructions::instruction7::Instruction7 as Instruction7IxAccounts;
 use dummy_program_sdk::ID;
 
 /// Dummy Instructions
