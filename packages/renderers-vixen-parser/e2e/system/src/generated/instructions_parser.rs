@@ -6,52 +6,18 @@
 //!
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use system_program_sdk::instructions::advance_nonce_account::{
-    AdvanceNonceAccount as AdvanceNonceAccountIxAccounts,
+use system_program_sdk::instructions::{
     AdvanceNonceAccountInstructionArgs as AdvanceNonceAccountIxData,
-};
-use system_program_sdk::instructions::allocate::{
-    Allocate as AllocateIxAccounts, AllocateInstructionArgs as AllocateIxData,
-};
-use system_program_sdk::instructions::allocate_with_seed::{
-    AllocateWithSeed as AllocateWithSeedIxAccounts,
+    AllocateInstructionArgs as AllocateIxData,
     AllocateWithSeedInstructionArgs as AllocateWithSeedIxData,
-};
-use system_program_sdk::instructions::assign::{
-    Assign as AssignIxAccounts, AssignInstructionArgs as AssignIxData,
-};
-use system_program_sdk::instructions::assign_with_seed::{
-    AssignWithSeed as AssignWithSeedIxAccounts,
-    AssignWithSeedInstructionArgs as AssignWithSeedIxData,
-};
-use system_program_sdk::instructions::authorize_nonce_account::{
-    AuthorizeNonceAccount as AuthorizeNonceAccountIxAccounts,
+    AssignInstructionArgs as AssignIxData, AssignWithSeedInstructionArgs as AssignWithSeedIxData,
     AuthorizeNonceAccountInstructionArgs as AuthorizeNonceAccountIxData,
-};
-use system_program_sdk::instructions::create_account::{
-    CreateAccount as CreateAccountIxAccounts, CreateAccountInstructionArgs as CreateAccountIxData,
-};
-use system_program_sdk::instructions::create_account_with_seed::{
-    CreateAccountWithSeed as CreateAccountWithSeedIxAccounts,
+    CreateAccountInstructionArgs as CreateAccountIxData,
     CreateAccountWithSeedInstructionArgs as CreateAccountWithSeedIxData,
-};
-use system_program_sdk::instructions::initialize_nonce_account::{
-    InitializeNonceAccount as InitializeNonceAccountIxAccounts,
     InitializeNonceAccountInstructionArgs as InitializeNonceAccountIxData,
-};
-use system_program_sdk::instructions::transfer_sol::{
-    TransferSol as TransferSolIxAccounts, TransferSolInstructionArgs as TransferSolIxData,
-};
-use system_program_sdk::instructions::transfer_sol_with_seed::{
-    TransferSolWithSeed as TransferSolWithSeedIxAccounts,
+    TransferSolInstructionArgs as TransferSolIxData,
     TransferSolWithSeedInstructionArgs as TransferSolWithSeedIxData,
-};
-use system_program_sdk::instructions::upgrade_nonce_account::{
-    UpgradeNonceAccount as UpgradeNonceAccountIxAccounts,
     UpgradeNonceAccountInstructionArgs as UpgradeNonceAccountIxData,
-};
-use system_program_sdk::instructions::withdraw_nonce_account::{
-    WithdrawNonceAccount as WithdrawNonceAccountIxAccounts,
     WithdrawNonceAccountInstructionArgs as WithdrawNonceAccountIxData,
 };
 use system_program_sdk::ID;
