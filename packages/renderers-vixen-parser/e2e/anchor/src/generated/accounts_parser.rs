@@ -5,7 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use wen_transfer_guard_program_sdk::accounts::guardV1::Guardv1;
+use wen_transfer_guard_program_sdk::accounts::guard_v1::GuardV1;
 use wen_transfer_guard_program_sdk::ID;
 
 /// WenTransferGuard Program State

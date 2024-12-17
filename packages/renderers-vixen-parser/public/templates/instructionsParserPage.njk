@@ -9,7 +9,11 @@
 #[derive(Debug)]
 pub enum {{ programName  | pascalCase }}ProgramIx {
     {% for instruction in instructions %}
-    {{ instruction.name | pascalCase }}({{ instruction.name | pascalCase }}IxAccounts, {{ instruction.name | pascalCase }}IxData),
+        {% if instruction.hasArgs %}
+            {{ instruction.name | pascalCase }}({{ instruction.name | pascalCase }}IxAccounts, {{ instruction.name | pascalCase }}IxData),
+        {% else %}
+            {{ instruction.name | pascalCase }}({{ instruction.name | pascalCase }}IxAccounts),
+        {% endif %}
     {% endfor %}
 }
 
@@ -52,27 +56,34 @@ impl InstructionParser {
         let accounts_len = ix.accounts.len();
         let ix_discriminator:[u8; {{ IX_DATA_OFFSET }}] = ix.data[0..{{ IX_DATA_OFFSET }}].try_into()?;
         let mut ix_data = &ix.data[{{ IX_DATA_OFFSET }}..];
-
-        match ix_discriminator {
-            {% for instruction in instructions %}
-            {% if instruction.discriminator != null %}
-            {{ instruction.discriminator }} => {
-                check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
-                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
-                let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
-                    {% for account in instruction.accounts %}
-                    {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}],
-                    {% endfor %}
-                };
-                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
-
-               
-            },
-            {% endif %}
-            {% endfor %}
-            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Instruction discriminator".to_owned())),
-        }
-       
+        {% if hasDiscriminator %}
+            match ix_discriminator {
+                {% for instruction in instructions %}
+                    {% if instruction.discriminator != null %}
+                        {{ instruction.discriminator }} => {
+                            check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
+                            let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                            let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
+                                {% for account in instruction.accounts %}
+                                    {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}],
+                                {% endfor %}
+                            };
+                            Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
+                        },
+                    {% endif %}
+                {% endfor %}
+                _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Instruction discriminator".to_owned())),
+            }
+        {% else %}
+            check_min_accounts_req(accounts_len, {{ instructions[0].accounts | length }})?;
+            let de_ix_data:{{ instructions[0].name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
+            let ix_accounts = {{ instructions[0].name | pascalCase }}IxAccounts{
+                {% for account in instructions[0].accounts %}
+                    {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}],   
+                {% endfor %}
+            };
+            Ok({{ programName  | pascalCase }}ProgramIx::{{ instructions[0].name | pascalCase }}(ix_accounts, de_ix_data))
+        {% endif %}
     }
 
 }

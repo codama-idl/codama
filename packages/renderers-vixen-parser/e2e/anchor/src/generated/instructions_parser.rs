@@ -67,7 +67,6 @@ impl InstructionParser {
         let accounts_len = ix.accounts.len();
         let ix_discriminator: [u8; 8] = ix.data[0..8].try_into()?;
         let mut ix_data = &ix.data[8..];
-
         match ix_discriminator {
             [251, 254, 17, 198, 219, 218, 154, 99] => {
                 check_min_accounts_req(accounts_len, 8)?;
