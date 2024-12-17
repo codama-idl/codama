@@ -61,12 +61,10 @@ impl InstructionParser {
         let accounts_len = ix.accounts.len();
         let ix_discriminator: [u8; 1] = ix.data[0..1].try_into()?;
         let mut ix_data = &ix.data[1..];
-
-        match ix_discriminator {
-            _ => Err(yellowstone_vixen_core::ParseError::from(
-                "Invalid Instruction discriminator".to_owned(),
-            )),
-        }
+        check_min_accounts_req(accounts_len, 0)?;
+        let de_ix_data: AddMemoIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+        let ix_accounts = AddMemoIxAccounts {};
+        Ok(MemoProgramIx::AddMemo(ix_accounts, de_ix_data))
     }
 }
 

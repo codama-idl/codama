@@ -18,13 +18,13 @@ use dummy_program_sdk::ID;
 /// Dummy Instructions
 #[derive(Debug)]
 pub enum DummyProgramIx {
-    Instruction1(Instruction1IxAccounts, Instruction1IxData),
-    Instruction2(Instruction2IxAccounts, Instruction2IxData),
+    Instruction1(Instruction1IxAccounts),
+    Instruction2(Instruction2IxAccounts),
     Instruction3(Instruction3IxAccounts, Instruction3IxData),
     Instruction4(Instruction4IxAccounts, Instruction4IxData),
     Instruction5(Instruction5IxAccounts, Instruction5IxData),
-    Instruction6(Instruction6IxAccounts, Instruction6IxData),
-    Instruction7(Instruction7IxAccounts, Instruction7IxData),
+    Instruction6(Instruction6IxAccounts),
+    Instruction7(Instruction7IxAccounts),
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -71,7 +71,6 @@ impl InstructionParser {
         let accounts_len = ix.accounts.len();
         let ix_discriminator: [u8; 1] = ix.data[0..1].try_into()?;
         let mut ix_data = &ix.data[1..];
-
         match ix_discriminator {
             [42] => {
                 check_min_accounts_req(accounts_len, 0)?;
