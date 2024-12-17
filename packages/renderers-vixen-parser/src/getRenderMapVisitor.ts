@@ -115,7 +115,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     accounts.forEach(acc => {
                         accountParserImports.add(
-                            `${codamaSdkName}::accounts::{${acc.name}::${toPascalCase(acc.name)}}`,
+                            `${codamaSdkName}::accounts::{${toSnakeCase(acc.name)}::${fromCamelToPascalCase(acc.name)}}`,
                         );
                     });
 
@@ -151,6 +151,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         imports: instructionParserImports,
                         programName,
                         accounts,
+                        hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
                         instructions,
                         IX_DATA_OFFSET,
                     };

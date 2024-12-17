@@ -11,7 +11,7 @@
 #[derive(Debug)]
 pub enum {{ programName | pascalCase }}ProgramState {
     {% for account in accounts %}
-    {{ account.name | pascalCase }}({{ account.name | pascalCase }}),
+        {{ account.name | pascalCase }}({{ account.name | pascalCase }}),
     {% endfor %}
 }
 
@@ -20,16 +20,14 @@ impl {{ programName | pascalCase }}ProgramState {
         let data_len = data_bytes.len();    
         match data_len {
         {% for account in accounts %}
-        {{ account.name | pascalCase }}::LEN => Ok(
-            {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                {{ account.name | pascalCase }}::from_bytes(data_bytes)?
-            )
-            ),
+            {{ account.name | pascalCase }}::LEN => Ok(
+                {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                    {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                )
+                ),
         {% endfor %}
         _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
         }
-
-     
     }
 }
 
