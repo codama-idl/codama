@@ -1,0 +1,11 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+
+{% if hasAccounts %}
+pub mod accounts_parser;
+{% endif %}
+
+pub mod instructions_parser;
+
+{% endblock %}
