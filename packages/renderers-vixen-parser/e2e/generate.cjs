@@ -9,20 +9,32 @@ const { visit } = require('@codama/visitors-core');
 
 const { renderVisitor } = require('../dist/index.node.cjs');
 
+function transformHyphensToUnderscores(input) {
+    return input.replace(/-/g, '_');
+}
+
 async function main() {
     const project = process.argv.slice(2)[0] ?? undefined;
+    const sdkName = process.argv.slice(3)[0] ? transformHyphensToUnderscores(process.argv.slice(3)[0]) : undefined;
+
     if (project === undefined) {
         throw new Error('Project name is required.');
     }
-    await generateProject(project);
+
+    if (sdkName === undefined) {
+        throw new Error('SDK name is required.');
+    }
+
+    await generateProject(project, sdkName);
 }
 
-async function generateProject(project) {
+async function generateProject(project, sdkName) {
     const idl = readJson(path.join(__dirname, project, 'idl.json'));
     const node = rootNode(idl.program);
     visit(
         node,
         renderVisitor(path.join(__dirname, project, 'src', 'generated'), {
+            sdkName: sdkName,
             crateFolder: path.join(__dirname, project),
             formatCode: true,
         }),
