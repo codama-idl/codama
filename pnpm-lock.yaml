@@ -121,8 +121,8 @@ importers:
         specifier: workspace:*
         version: link:../node-types
       chalk:
-        specifier: ^5.3.0
-        version: 5.3.0
+        specifier: ^5.4.0
+        version: 5.4.0
       commander:
         specifier: ^12.1.0
         version: 12.1.0
@@ -1664,8 +1664,8 @@ packages:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
 
-  chalk@5.3.0:
-    resolution: {integrity: sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==}
+  chalk@5.4.0:
+    resolution: {integrity: sha512-ZkD35Mx92acjB2yNJgziGqT9oKHEOxjTBTDRpOsRWtdecL/0jM3z5kM/CTzHWvHIen1GvkM85p6TuFfDGfc8/Q==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
   char-regex@1.0.2:
@@ -4208,13 +4208,13 @@ snapshots:
 
   '@solana/errors@2.0.0(typescript@5.7.2)':
     dependencies:
-      chalk: 5.3.0
+      chalk: 5.4.0
       commander: 12.1.0
       typescript: 5.7.2
 
   '@solana/errors@2.0.0-rc.4(typescript@5.7.2)':
     dependencies:
-      chalk: 5.3.0
+      chalk: 5.4.0
       commander: 12.1.0
       typescript: 5.7.2
 
@@ -4774,7 +4774,7 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  chalk@5.3.0: {}
+  chalk@5.4.0: {}
 
   char-regex@1.0.2: {}
 
