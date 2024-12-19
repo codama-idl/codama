@@ -17,12 +17,13 @@ import { ImportMap } from './ImportMap';
 export type GetRenderMapOptions = {
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
-    codamaSdkName?: string;
+    sdkName?: string;
 };
 
 // Account node for the parser
 type ParserAccountNode = {
     name: string;
+    size: number | null;
 };
 
 // Instruction Accounts node for the parser
@@ -60,6 +61,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
                         return {
                             name: acc.name,
+                            size: acc.size?.valueOf() ?? null,
                         };
                     });
                     const programInstructions = getAllInstructionsWithSubs(node, {
@@ -95,10 +97,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             }
                         }
 
+                        const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
+
                         return {
                             discriminator,
                             name: ix.name,
-                            hasArgs: ix.arguments.length > 0,
+                            hasArgs,
                             accounts: ix.accounts.map((acc, accIdx) => {
                                 return {
                                     name: acc.name,
@@ -109,14 +113,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     });
 
                     // TODO: assuming name of codama generated sdk to be {program_name}_program_sdk for now need to change it
-                    const codamaSdkName = options.codamaSdkName ?? `${toSnakeCase(programName)}_program_sdk`;
+                    const codamaSdkName = options.sdkName
+                        ? toSnakeCase(options.sdkName)
+                        : `${toSnakeCase(programName)}_program_sdk`;
 
                     const accountParserImports = new ImportMap();
 
                     accounts.forEach(acc => {
-                        accountParserImports.add(
-                            `${codamaSdkName}::accounts::{${toSnakeCase(acc.name)}::${fromCamelToPascalCase(acc.name)}}`,
-                        );
+                        accountParserImports.add(`${codamaSdkName}::accounts::${fromCamelToPascalCase(acc.name)}`);
                     });
 
                     const instructionParserImports = new ImportMap();
@@ -133,7 +137,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     instructions.forEach(ix => {
                         const ixPascalName = fromCamelToPascalCase(ix.name);
                         const ixAccounts = `${ixPascalName} as ${ixPascalName}IxAccounts`;
-
                         if (ix.hasArgs) {
                             // Adding alias for IxData
                             const ixData = `${ixPascalName}InstructionArgs as ${ixPascalName}IxData`;

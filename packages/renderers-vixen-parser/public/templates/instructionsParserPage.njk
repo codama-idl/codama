@@ -62,13 +62,17 @@ impl InstructionParser {
                     {% if instruction.discriminator != null %}
                         {{ instruction.discriminator }} => {
                             check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
-                            let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
                             let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
                                 {% for account in instruction.accounts %}
-                                    {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}],
+                                    {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}].0.into(),
                                 {% endfor %}
                             };
-                            Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
+                            {% if instruction.hasArgs %}
+                                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
+                            {% else %}
+                                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts))
+                            {% endif %}
                         },
                     {% endif %}
                 {% endfor %}

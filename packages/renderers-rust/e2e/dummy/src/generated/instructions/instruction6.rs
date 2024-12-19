@@ -9,6 +9,7 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct Instruction6 {
     pub my_account: solana_program::pubkey::Pubkey,
 }
@@ -28,7 +29,7 @@ impl Instruction6 {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = Instruction6InstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&Instruction6InstructionData::new()).unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::DUMMY_ID,
@@ -170,7 +171,7 @@ impl<'a, 'b> Instruction6Cpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = Instruction6InstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&Instruction6InstructionData::new()).unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::DUMMY_ID,

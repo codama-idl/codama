@@ -271,6 +271,9 @@ importers:
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
+      '@codama/nodes-from-anchor':
+        specifier: workspace:*
+        version: link:../nodes-from-anchor
       '@codama/renderers-core':
         specifier: workspace:*
         version: link:../renderers-core
