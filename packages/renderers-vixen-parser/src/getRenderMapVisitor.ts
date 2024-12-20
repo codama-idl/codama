@@ -1,4 +1,12 @@
-import { getAllAccounts, getAllInstructionsWithSubs, getAllPrograms, isNode, VALUE_NODES } from '@codama/nodes';
+import {
+    getAllAccounts,
+    getAllInstructionsWithSubs,
+    getAllPrograms,
+    isNode,
+    VALUE_NODES,
+    pascalCase,
+    snakeCase,
+} from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
@@ -114,13 +122,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     // TODO: assuming name of codama generated sdk to be {program_name}_program_sdk for now need to change it
                     const codamaSdkName = options.sdkName
-                        ? toSnakeCase(options.sdkName)
-                        : `${toSnakeCase(programName)}_program_sdk`;
+                        ? snakeCase(options.sdkName)
+                        : `${snakeCase(programName)}_program_sdk`;
 
                     const accountParserImports = new ImportMap();
 
                     accounts.forEach(acc => {
-                        accountParserImports.add(`${codamaSdkName}::accounts::${fromCamelToPascalCase(acc.name)}`);
+                        accountParserImports.add(`${codamaSdkName}::accounts::${pascalCase(acc.name)}`);
                     });
 
                     const instructionParserImports = new ImportMap();
@@ -135,7 +143,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     let ixImports = '';
 
                     instructions.forEach(ix => {
-                        const ixPascalName = fromCamelToPascalCase(ix.name);
+                        const ixPascalName = pascalCase(ix.name);
                         const ixAccounts = `${ixPascalName} as ${ixPascalName}IxAccounts`;
                         if (ix.hasArgs) {
                             // Adding alias for IxData
@@ -191,23 +199,3 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
-
-export const fromCamelToPascalCase = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-};
-
-export const toPascalCase = (str: string) => {
-    return str
-        .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-            return index === 0 ? word.toUpperCase() : word.toLowerCase();
-        })
-        .replace(/\s+/g, '');
-};
-
-export const toSnakeCase = (str: string) => {
-    return str
-        .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-            return index === 0 ? word.toLowerCase() : `_${word.toLowerCase()}`;
-        })
-        .replace(/\s+/g, '');
-};
