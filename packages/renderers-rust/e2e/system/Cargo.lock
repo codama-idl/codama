@@ -1029,8 +1029,7 @@ version = "0.0.0"
 dependencies = [
  "anchor-lang",
  "assert_matches",
- "borsh 1.5.3",
- "borsh-derive 1.5.3",
+ "borsh 0.10.3",
  "num-derive 0.3.3",
  "num-traits",
  "serde",

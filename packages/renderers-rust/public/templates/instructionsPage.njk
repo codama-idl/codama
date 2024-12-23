@@ -94,9 +94,9 @@ impl {{ instruction.name | pascalCase }} {
       {% endif %}
     {% endfor %}
     accounts.extend_from_slice(remaining_accounts);
-    let {{ 'mut ' if hasArgs }}data = borsh::to_vec(&{{ instruction.name | pascalCase }}InstructionData::new()).unwrap();
+    let {{ 'mut ' if hasArgs }}data = {{ instruction.name | pascalCase }}InstructionData::new().try_to_vec().unwrap();
     {% if hasArgs %}
-      let mut args = borsh::to_vec(&args).unwrap();
+      let mut args = args.try_to_vec().unwrap();
       data.append(&mut args);
     {% endif %}
 
