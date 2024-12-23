@@ -29,7 +29,9 @@ impl UpgradeNonceAccount {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = borsh::to_vec(&UpgradeNonceAccountInstructionData::new()).unwrap();
+        let data = UpgradeNonceAccountInstructionData::new()
+            .try_to_vec()
+            .unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::SYSTEM_ID,
@@ -173,7 +175,9 @@ impl<'a, 'b> UpgradeNonceAccountCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = borsh::to_vec(&UpgradeNonceAccountInstructionData::new()).unwrap();
+        let data = UpgradeNonceAccountInstructionData::new()
+            .try_to_vec()
+            .unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::SYSTEM_ID,

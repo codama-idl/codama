@@ -11,8 +11,7 @@ test-sbf = []
 
 [dependencies]
 anchor-lang = { version = "0.30.0", optional = true }
-borsh = "^1.5.3"
-borsh-derive = "^1.5.3"
+borsh = "^0.10"
 num-derive = "^0.3"
 num-traits = "^0.2"
 serde = { version = "^1.0", features = ["derive"], optional = true }

@@ -54,9 +54,9 @@ impl yellowstone_vixen_core::ProgramParser for InstructionParser {
 impl InstructionParser {
     pub(crate) fn parse_impl(ix:&yellowstone_vixen_core::instruction::InstructionUpdate) -> yellowstone_vixen_core::ParseResult<{{ programName  | pascalCase }}ProgramIx> {
         let accounts_len = ix.accounts.len();
+        {% if hasDiscriminator %}
         let ix_discriminator:[u8; {{ IX_DATA_OFFSET }}] = ix.data[0..{{ IX_DATA_OFFSET }}].try_into()?;
         let mut ix_data = &ix.data[{{ IX_DATA_OFFSET }}..];
-        {% if hasDiscriminator %}
             match ix_discriminator {
                 {% for instruction in instructions %}
                     {% if instruction.discriminator != null %}
@@ -80,6 +80,7 @@ impl InstructionParser {
             }
         {% else %}
             check_min_accounts_req(accounts_len, {{ instructions[0].accounts | length }})?;
+            let mut ix_data = &ix.data[..];
             let de_ix_data:{{ instructions[0].name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
             let ix_accounts = {{ instructions[0].name | pascalCase }}IxAccounts{
                 {% for account in instructions[0].accounts %}
