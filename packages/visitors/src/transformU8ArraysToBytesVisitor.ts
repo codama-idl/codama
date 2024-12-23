@@ -9,7 +9,7 @@ import {
 } from '@codama/nodes';
 import { extendVisitor, nonNullableIdentityVisitor, pipe, visit } from '@codama/visitors-core';
 
-export function transformU8ArraysToBytesVisitor(sizes: number[] | '*' = [32, 64]) {
+export function transformU8ArraysToBytesVisitor(sizes: number[] | '*' = '*') {
     const hasRequiredSize = (count: ArrayTypeNode['count']): boolean => {
         if (!isNode(count, 'fixedCountNode')) return false;
         return sizes === '*' || sizes.includes(count.value);
