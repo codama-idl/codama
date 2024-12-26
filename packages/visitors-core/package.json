@@ -51,7 +51,7 @@
     "dependencies": {
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
-        "json-stable-stringify": "^1.1.1"
+        "json-stable-stringify": "^1.2.1"
     },
     "devDependencies": {
         "@types/json-stable-stringify": "^1.1.0"
