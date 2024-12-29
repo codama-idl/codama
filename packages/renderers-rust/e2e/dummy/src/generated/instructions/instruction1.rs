@@ -32,7 +32,8 @@ impl Instruction1 {
     }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Instruction1InstructionData {}
 
 impl Instruction1InstructionData {
