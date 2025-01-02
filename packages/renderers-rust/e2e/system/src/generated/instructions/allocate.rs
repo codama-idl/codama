@@ -9,6 +9,7 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct Allocate {
     pub new_account: solana_program::pubkey::Pubkey,
 }

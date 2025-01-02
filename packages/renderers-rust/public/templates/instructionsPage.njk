@@ -6,6 +6,7 @@
 {{ imports }}
 
 /// Accounts.
+#[derive(Debug)]
 pub struct {{ instruction.name | pascalCase }} {
   {% for account in instruction.accounts %}
     {% if account.docs.length > 0 %}

@@ -10,6 +10,7 @@ use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct AllocateWithSeed {
     pub new_account: solana_program::pubkey::Pubkey,
 

@@ -9,6 +9,7 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct Instruction7 {
     pub my_account: Option<solana_program::pubkey::Pubkey>,
 }
