@@ -52,7 +52,7 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors": "workspace:*",
-        "@noble/hashes": "^1.6.1"
+        "@noble/hashes": "^1.7.0"
     },
     "license": "MIT",
     "repository": {
