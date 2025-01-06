@@ -3,9 +3,9 @@ import {
     getAllInstructionsWithSubs,
     getAllPrograms,
     isNode,
-    VALUE_NODES,
     pascalCase,
     snakeCase,
+    VALUE_NODES,
 } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
@@ -18,9 +18,9 @@ import {
     staticVisitor,
 } from '@codama/visitors-core';
 
-import { getImportFromFactory, LinkOverrides, render } from './utils';
-import { renderValueNode } from './renderValueNodeVisitor';
 import { ImportMap } from './ImportMap';
+import { renderValueNode } from './renderValueNodeVisitor';
+import { getImportFromFactory, LinkOverrides, render } from './utils';
 
 export type GetRenderMapOptions = {
     linkOverrides?: LinkOverrides;
@@ -36,16 +36,16 @@ type ParserAccountNode = {
 
 // Instruction Accounts node for the parser
 type ParserInstructionAccountNode = {
-    name: string;
     index: number;
+    name: string;
 };
 
 // Instruction node for the parser
 type ParserInstructionNode = {
-    discriminator: string | null;
-    name: string;
     accounts: ParserInstructionAccountNode[];
+    discriminator: string | null;
     hasArgs: boolean;
+    name: string;
 };
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
@@ -83,22 +83,19 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
                         // checs for discriminator
-                        let discriminator = null;
-                        let discriminatorIx = ix.arguments.find(arg => arg.name === 'discriminator');
+                        let discriminator: string[] | string | null = null;
+                        const discriminatorIx = ix.arguments.find(arg => arg.name === 'discriminator');
                         if (discriminatorIx) {
                             const hasDefaultValue =
                                 discriminatorIx.defaultValue && isNode(discriminatorIx.defaultValue, VALUE_NODES);
 
                             if (hasDefaultValue) {
-                                const { imports: _, render: value } = renderValueNode(
-                                    discriminatorIx.defaultValue,
-                                    getImportFrom,
-                                );
+                                const { render: value } = renderValueNode(discriminatorIx.defaultValue, getImportFrom);
 
                                 discriminator = value;
 
-                                if (Array.isArray(JSON.parse(value))) {
-                                    IX_DATA_OFFSET = Array.from(JSON.parse(value)).length;
+                                if (Array.isArray(JSON.parse(value) as string[])) {
+                                    IX_DATA_OFFSET = Array.from(JSON.parse(value) as string[]).length;
                                 } else {
                                     discriminator = `[${discriminator}]`;
                                 }
@@ -108,15 +105,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
 
                         return {
-                            discriminator,
-                            name: ix.name,
-                            hasArgs,
                             accounts: ix.accounts.map((acc, accIdx) => {
                                 return {
-                                    name: acc.name,
                                     index: accIdx,
+                                    name: acc.name,
                                 };
                             }),
+                            discriminator,
+                            hasArgs,
+                            name: ix.name,
                         };
                     });
 
@@ -159,18 +156,18 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     instructionParserImports.add(`${codamaSdkName}::instructions::{${ixImports}}`);
 
                     const ixCtx = {
-                        imports: instructionParserImports,
-                        programName,
+                        IX_DATA_OFFSET,
                         accounts,
                         hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
+                        imports: instructionParserImports,
                         instructions,
-                        IX_DATA_OFFSET,
+                        programName,
                     };
 
                     const accCtx = {
+                        accounts,
                         imports: accountParserImports,
                         programName,
-                        accounts,
                     };
 
                     const map = new RenderMap();

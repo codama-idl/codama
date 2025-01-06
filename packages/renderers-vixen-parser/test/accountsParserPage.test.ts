@@ -1,7 +1,8 @@
 import { accountNode, camelCase, rootNode } from '@codama/nodes';
-import { test } from 'vitest';
-import { getRenderMapVisitor } from '../src';
 import { visit } from 'codama';
+import { test } from 'vitest';
+
+import { getRenderMapVisitor } from '../src';
 import { codeContains } from './_setup';
 
 test('it renders accounts parsers', () => {
@@ -24,15 +25,15 @@ test('it renders accounts parsers', () => {
                 name: 'edition',
             }),
         ],
-        publicKey: 'TokenzQdZyKAYHHfoc7ndTnfcGr3qCUck3x4MvRkPaAj',
+        definedTypes: [],
+        docs: [],
+        errors: [],
+        instructions: [],
         kind: 'programNode',
         name: camelCase('test'),
-        docs: [],
-        instructions: [],
-        definedTypes: [],
-        version: '0.0.0',
         pdas: [],
-        errors: [],
+        publicKey: 'TokenzQdZyKAYHHfoc7ndTnfcGr3qCUck3x4MvRkPaAj',
+        version: '0.0.0',
     });
 
     // When we render it.
