@@ -35,7 +35,8 @@
         "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node"
+        "test": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
+        "test:e2e": "./e2e/test.sh"
     },
     "dependencies": {
         "codama": "workspace:*",

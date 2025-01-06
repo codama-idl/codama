@@ -1,4 +1,4 @@
-// #!/usr/bin/env -S node
+#!/usr/bin/env -S node
 
 const path = require('node:path');
 const process = require('node:process');
