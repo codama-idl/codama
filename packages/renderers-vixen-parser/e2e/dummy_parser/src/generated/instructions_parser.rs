@@ -6,14 +6,14 @@
 //!
 
 use borsh::BorshDeserialize;
-use codama_renderers_rust_e2e_dummyclear::instructions::{
+use codama_renderers_rust_e2e_dummy::instructions::{
     Instruction1 as Instruction1IxAccounts, Instruction2 as Instruction2IxAccounts,
     Instruction3 as Instruction3IxAccounts, Instruction4 as Instruction4IxAccounts,
     Instruction4InstructionArgs as Instruction4IxData, Instruction5 as Instruction5IxAccounts,
     Instruction5InstructionArgs as Instruction5IxData, Instruction6 as Instruction6IxAccounts,
     Instruction7 as Instruction7IxAccounts,
 };
-use codama_renderers_rust_e2e_dummyclear::ID;
+use codama_renderers_rust_e2e_dummy::ID;
 
 /// Dummy Instructions
 #[derive(Debug)]

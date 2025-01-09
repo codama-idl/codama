@@ -13,3 +13,4 @@ yellowstone-vixen = { git = "https://github.com/rpcpool/yellowstone-vixen", bran
 codama-renderers-vixen-parser-e2e-system = { path = "../system_parser" }
 codama-renderers-vixen-parser-e2e-memo = { path = "../memo_parser" }
 codama-renderers-vixen-parser-e2e-anchor = { path = "../anchor_parser" }
+codama-renderers-vixen-parser-e2e-meteora = { path = "../meteora_parser" }

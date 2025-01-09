@@ -103,15 +103,18 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         }
 
                         const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
+                        const hasOptionalAccounts = ix.accounts.some(acc => acc.isOptional);
 
                         return {
                             accounts: ix.accounts.map((acc, accIdx) => {
                                 return {
                                     index: accIdx,
                                     name: acc.name,
+                                    isOptional: acc.isOptional,
                                 };
                             }),
                             discriminator,
+                            hasOptionalAccounts,
                             hasArgs,
                             name: ix.name,
                         };

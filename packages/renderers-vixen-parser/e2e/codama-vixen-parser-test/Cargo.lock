@@ -494,6 +494,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-renderers-rust-e2e-meteora"
+version = "0.0.0"
+dependencies = [
+ "borsh 0.10.4",
+ "kaigan",
+ "num-derive 0.3.3",
+ "num-traits",
+ "solana-program",
+ "thiserror",
+]
+
+[[package]]
 name = "codama-renderers-rust-e2e-system"
 version = "0.0.0"
 dependencies = [
@@ -525,6 +537,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "codama-renderers-vixen-parser-e2e-meteora"
+version = "0.0.0"
+dependencies = [
+ "borsh 0.10.4",
+ "codama-renderers-rust-e2e-meteora",
+ "solana-program",
+ "yellowstone-vixen-core",
+]
+
+[[package]]
 name = "codama-renderers-vixen-parser-e2e-system"
 version = "0.0.0"
 dependencies = [
@@ -541,6 +563,7 @@ dependencies = [
  "clap",
  "codama-renderers-vixen-parser-e2e-anchor",
  "codama-renderers-vixen-parser-e2e-memo",
+ "codama-renderers-vixen-parser-e2e-meteora",
  "codama-renderers-vixen-parser-e2e-system",
  "toml 0.8.19",
  "tracing",
