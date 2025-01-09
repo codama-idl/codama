@@ -20,4 +20,10 @@ impl solana_program::program_error::PrintProgramError for {{ program.name | pasc
     }
 }
 
+impl<T> solana_program::decode_error::DecodeError<T> for {{ program.name | pascalCase }}Error {
+    fn type_of() -> &'static str {
+        "{{ program.name | pascalCase }}Error"
+    }
+}
+
 {% endblock %}
