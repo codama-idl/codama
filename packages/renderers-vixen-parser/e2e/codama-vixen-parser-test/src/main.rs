@@ -15,6 +15,10 @@ use codama_renderers_vixen_parser_e2e_anchor::{
     instructions_parser::InstructionParser as AnchorProgramIxParser,
 };
 use codama_renderers_vixen_parser_e2e_memo::instructions_parser::InstructionParser as MemoProgramIxParser;
+use codama_renderers_vixen_parser_e2e_meteora::{
+    accounts_parser::AccountParser as MeteoraProgramAccParser,
+    instructions_parser::InstructionParser as MeteoraProgramIxParser,
+};
 use codama_renderers_vixen_parser_e2e_system::{
     accounts_parser::AccountParser as SystemProgramAccParser,
     instructions_parser::InstructionParser as SystemProgramIxParser,
@@ -50,11 +54,13 @@ fn main() {
     let config = toml::from_str(&config).expect("Error parsing config");
 
     vixen::Runtime::builder()
-        .account(Pipeline::new(SystemProgramAccParser, [Handler]))
-        .instruction(Pipeline::new(SystemProgramIxParser, [Handler]))
-        .instruction(Pipeline::new(MemoProgramIxParser, [Handler]))
-        .account(Pipeline::new(AnchorProgramAccParser, [Handler]))
-        .instruction(Pipeline::new(AnchorProgramIxParser, [Handler]))
+        // .account(Pipeline::new(SystemProgramAccParser, [Handler]))
+        // .instruction(Pipeline::new(SystemProgramIxParser, [Handler]))
+        // .instruction(Pipeline::new(MemoProgramIxParser, [Handler]))
+        // .account(Pipeline::new(AnchorProgramAccParser, [Handler]))
+        // .instruction(Pipeline::new(AnchorProgramIxParser, [Handler]))
+        .account(Pipeline::new(MeteoraProgramAccParser, [Handler]))
+        .instruction(Pipeline::new(MeteoraProgramIxParser, [Handler]))
         .build(config)
         .run();
 }

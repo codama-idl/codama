@@ -1,0 +1,12 @@
+[yellowstone]
+# The endpoint of the dragon's mouth stream.
+# This is the URL where the stream can be accessed.
+endpoint = "https://index.rpcpool.com"
+
+# The x-token for the dragon's mouth stream.
+# Replace <X-TOKEN> with your actual token.
+x-token = "b6e163d7-388a-49fe-bec2-63a6ea1a8f6b"
+
+# The connection timeout for the dragon's mouth stream in seconds.
+# This defines how long to wait for a connection before timing out.
+timeout = 60
