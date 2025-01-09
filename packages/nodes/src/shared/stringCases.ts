@@ -14,7 +14,7 @@ export function capitalize(str: string): string {
 export function titleCase(str: string): TitleCaseString {
     return str
         .replace(/([A-Z])/g, ' $1')
-        .split(/[-_\s+.]/)
+        .split(/[^a-zA-Z0-9]+/)
         .filter(word => word.length > 0)
         .map(capitalize)
         .join(' ') as TitleCaseString;

@@ -127,7 +127,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 visitInstruction(node) {
                     // Imports.
                     const imports = new ImportMap();
-                    imports.add(['borsh::BorshDeserialize', 'borsh::BorshSerialize']);
 
                     // canMergeAccountsAndArgs
                     const accountsAndArgsConflicts = getConflictsForInstructionAccountsAndArgs(node);
@@ -201,9 +200,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     });
                     const typeManifest = visit(struct, structVisitor);
 
+                    const dataTraits = getTraitsFromNode(node);
+                    imports.mergeWith(dataTraits.imports);
+
                     return new RenderMap().add(
                         `instructions/${snakeCase(node.name)}.rs`,
                         render('instructionsPage.njk', {
+                            dataTraits: dataTraits.render,
                             hasArgs,
                             hasOptional,
                             imports: imports

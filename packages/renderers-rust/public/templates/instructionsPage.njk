@@ -108,8 +108,7 @@ impl {{ instruction.name | pascalCase }} {
   }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct {{ instruction.name | pascalCase }}InstructionData {
+{{ dataTraits }} pub struct {{ instruction.name | pascalCase }}InstructionData {
   {% for arg in instructionArgs %}
     {% if arg.default %}
       {{ arg.name | snakeCase }}: {{ arg.type }},
@@ -136,9 +135,7 @@ impl Default for {{ instruction.name | pascalCase }}InstructionData {
 }
 
 {% if hasArgs %}
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct {{ instruction.name | pascalCase }}InstructionArgs {
+{{ dataTraits }} pub struct {{ instruction.name | pascalCase }}InstructionArgs {
   {% for arg in instructionArgs %}
     {% if not arg.default %}
       pub {{ arg.name | snakeCase }}: {{ arg.type }},
@@ -148,8 +145,6 @@ pub struct {{ instruction.name | pascalCase }}InstructionArgs {
 {% endif %}
 
 {% for nestedStruct in typeManifest.nestedStructs %}
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 {{ nestedStruct }}
 {% endfor %}
 

@@ -1,4 +1,12 @@
-import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode, isScalarEnum } from '@codama/nodes';
+import {
+    AccountNode,
+    assertIsNode,
+    camelCase,
+    DefinedTypeNode,
+    InstructionNode,
+    isNode,
+    isScalarEnum,
+} from '@codama/nodes';
 
 import { ImportMap } from '../ImportMap';
 
@@ -48,17 +56,20 @@ export const DEFAULT_TRAIT_OPTIONS: Required<TraitOptions> = {
     useFullyQualifiedName: false,
 };
 
-export type GetTraitsFromNodeFunction = (node: AccountNode | DefinedTypeNode) => { imports: ImportMap; render: string };
+export type GetTraitsFromNodeFunction = (node: AccountNode | DefinedTypeNode | InstructionNode) => {
+    imports: ImportMap;
+    render: string;
+};
 
 export function getTraitsFromNodeFactory(options: TraitOptions = {}): GetTraitsFromNodeFunction {
     return node => getTraitsFromNode(node, options);
 }
 
 export function getTraitsFromNode(
-    node: AccountNode | DefinedTypeNode,
+    node: AccountNode | DefinedTypeNode | InstructionNode,
     userOptions: TraitOptions = {},
 ): { imports: ImportMap; render: string } {
-    assertIsNode(node, ['accountNode', 'definedTypeNode']);
+    assertIsNode(node, ['accountNode', 'definedTypeNode', 'instructionNode']);
     const options: Required<TraitOptions> = { ...DEFAULT_TRAIT_OPTIONS, ...userOptions };
 
     // Get the node type and return early if it's a type alias.
@@ -96,8 +107,10 @@ export function getTraitsFromNode(
     return { imports, render: traitLines.join('') };
 }
 
-function getNodeType(node: AccountNode | DefinedTypeNode): 'alias' | 'dataEnum' | 'scalarEnum' | 'struct' {
-    if (isNode(node, 'accountNode')) return 'struct';
+function getNodeType(
+    node: AccountNode | DefinedTypeNode | InstructionNode,
+): 'alias' | 'dataEnum' | 'scalarEnum' | 'struct' {
+    if (isNode(node, ['accountNode', 'instructionNode'])) return 'struct';
     if (isNode(node.type, 'structTypeNode')) return 'struct';
     if (isNode(node.type, 'enumTypeNode')) {
         return isScalarEnum(node.type) ? 'scalarEnum' : 'dataEnum';
