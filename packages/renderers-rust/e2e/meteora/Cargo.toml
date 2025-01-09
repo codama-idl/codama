@@ -1,0 +1,25 @@
+[package]
+name = "codama-renderers-rust-e2e-meteora"
+version = "0.0.0"
+edition = "2021"
+
+[features]
+anchor = ["dep:anchor-lang"]
+anchor-idl-build = ["anchor", "anchor-lang?/idl-build"]
+serde = ["dep:serde", "dep:serde_with"]
+test-sbf = []
+
+[dependencies]
+anchor-lang = { version = "0.30.0", optional = true }
+borsh = "^0.10"
+kaigan = "0.2.5"
+num-derive = "^0.3"
+num-traits = "^0.2"
+serde = { version = "^1.0", features = ["derive"], optional = true }
+serde_with = { version = "^3.0", optional = true }
+solana-program = "^2.1.6"
+thiserror = "^1.0"
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+solana-sdk = "^2.1.6"

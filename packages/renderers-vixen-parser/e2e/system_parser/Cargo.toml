@@ -1,0 +1,11 @@
+[package]
+name = "codama-renderers-vixen-parser-e2e-system"
+version = "0.0.0"
+edition = "2021"
+
+
+[dependencies]
+yellowstone-vixen-core = { git = "https://github.com/rpcpool/yellowstone-vixen", branch = "main" }
+codama-renderers-rust-e2e-system = { path = "../../../renderers-rust/e2e/system" }
+solana-program = "^2.1.6"
+borsh = "^0.10"
