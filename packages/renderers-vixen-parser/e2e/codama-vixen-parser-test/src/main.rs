@@ -54,11 +54,11 @@ fn main() {
     let config = toml::from_str(&config).expect("Error parsing config");
 
     vixen::Runtime::builder()
-        // .account(Pipeline::new(SystemProgramAccParser, [Handler]))
-        // .instruction(Pipeline::new(SystemProgramIxParser, [Handler]))
-        // .instruction(Pipeline::new(MemoProgramIxParser, [Handler]))
-        // .account(Pipeline::new(AnchorProgramAccParser, [Handler]))
-        // .instruction(Pipeline::new(AnchorProgramIxParser, [Handler]))
+        .account(Pipeline::new(SystemProgramAccParser, [Handler]))
+        .instruction(Pipeline::new(SystemProgramIxParser, [Handler]))
+        .instruction(Pipeline::new(MemoProgramIxParser, [Handler]))
+        .account(Pipeline::new(AnchorProgramAccParser, [Handler]))
+        .instruction(Pipeline::new(AnchorProgramIxParser, [Handler]))
         .account(Pipeline::new(MeteoraProgramAccParser, [Handler]))
         .instruction(Pipeline::new(MeteoraProgramIxParser, [Handler]))
         .build(config)
