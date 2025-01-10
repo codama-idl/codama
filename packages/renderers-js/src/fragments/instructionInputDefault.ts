@@ -66,7 +66,7 @@ export function getInstructionInputDefaultFragment(
                 const pdaSeeds = defaultValue.pda.seeds.flatMap((seed): Fragment[] => {
                     if (isNode(seed, 'constantPdaSeedNode') && isNode(seed.value, 'programIdValueNode')) {
                         return [
-                            fragment(`getAddressEncoder().encode(${pdaProgram})`)
+                            fragment(`getAddressEncoder().encode(${pdaProgram.render})`)
                                 .mergeImportsWith(pdaProgram)
                                 .addImports('solanaAddresses', 'getAddressEncoder'),
                         ];
@@ -75,10 +75,9 @@ export function getInstructionInputDefaultFragment(
                         const typeManifest = visit(seed.type, typeManifestVisitor);
                         const valueManifest = visit(seed.value, typeManifestVisitor);
                         return [
-                            fragment(`${typeManifest.encoder}.encode(${valueManifest.value})`).mergeImportsWith(
-                                typeManifest.encoder,
-                                valueManifest.value,
-                            ),
+                            fragment(
+                                `${typeManifest.encoder.render}.encode(${valueManifest.value.render})`,
+                            ).mergeImportsWith(typeManifest.encoder, valueManifest.value),
                         ];
                     }
                     if (isNode(seed, 'variablePdaSeedNode')) {
@@ -88,7 +87,7 @@ export function getInstructionInputDefaultFragment(
                         if (isNode(valueSeed, 'accountValueNode')) {
                             return [
                                 fragment(
-                                    `${typeManifest.encoder}.encode(expectAddress(accounts.${camelCase(valueSeed.name)}.value))`,
+                                    `${typeManifest.encoder.render}.encode(expectAddress(accounts.${camelCase(valueSeed.name)}.value))`,
                                 )
                                     .mergeImportsWith(typeManifest.encoder)
                                     .addImports('shared', 'expectAddress'),
@@ -97,7 +96,7 @@ export function getInstructionInputDefaultFragment(
                         if (isNode(valueSeed, 'argumentValueNode')) {
                             return [
                                 fragment(
-                                    `${typeManifest.encoder}.encode(expectSome(args.${camelCase(valueSeed.name)}))`,
+                                    `${typeManifest.encoder.render}.encode(expectSome(args.${camelCase(valueSeed.name)}))`,
                                 )
                                     .mergeImportsWith(typeManifest.encoder)
                                     .addImports('shared', 'expectSome'),
@@ -105,10 +104,9 @@ export function getInstructionInputDefaultFragment(
                         }
                         const valueManifest = visit(valueSeed, typeManifestVisitor);
                         return [
-                            fragment(`${typeManifest.encoder}.encode(${valueManifest.value})`).mergeImportsWith(
-                                typeManifest.encoder,
-                                valueManifest.value,
-                            ),
+                            fragment(
+                                `${typeManifest.encoder.render}.encode(${valueManifest.value.render})`,
+                            ).mergeImportsWith(typeManifest.encoder, valueManifest.value),
                         ];
                     }
                     return [];

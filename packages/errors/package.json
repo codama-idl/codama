@@ -1,6 +1,6 @@
 {
     "name": "@codama/errors",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Error management for Codama",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -54,8 +54,8 @@
     },
     "dependencies": {
         "@codama/node-types": "workspace:*",
-        "commander": "^12.1.0",
-        "chalk": "^5.3.0"
+        "commander": "^13.0.0",
+        "chalk": "^5.4.1"
     },
     "license": "MIT",
     "repository": {

@@ -397,18 +397,18 @@ export function getTypeManifestVisitor(input: {
                 visitHiddenPrefixType(node, { self }) {
                     const manifest = visit(node.type, self);
                     const prefixes = node.prefix.map(c => visit(c, self).value);
-                    const prefixEncoders = fragment(prefixes.map(c => `getConstantEncoder(${c})`).join(', '))
+                    const prefixEncoders = fragment(prefixes.map(c => `getConstantEncoder(${c.render})`).join(', '))
                         .addImports('solanaCodecsCore', 'getConstantEncoder')
                         .mergeImportsWith(...prefixes);
-                    const prefixDecoders = fragment(prefixes.map(c => `getConstantDecoder(${c})`).join(', '))
+                    const prefixDecoders = fragment(prefixes.map(c => `getConstantDecoder(${c.render})`).join(', '))
                         .addImports('solanaCodecsCore', 'getConstantDecoder')
                         .mergeImportsWith(...prefixes);
                     manifest.encoder
-                        .mapRender(r => `getHiddenPrefixEncoder(${r}, [${prefixEncoders}])`)
+                        .mapRender(r => `getHiddenPrefixEncoder(${r}, [${prefixEncoders.render}])`)
                         .mergeImportsWith(prefixEncoders)
                         .addImports('solanaCodecsDataStructures', 'getHiddenPrefixEncoder');
                     manifest.decoder
-                        .mapRender(r => `getHiddenPrefixDecoder(${r}, [${prefixDecoders}])`)
+                        .mapRender(r => `getHiddenPrefixDecoder(${r}, [${prefixDecoders.render}])`)
                         .mergeImportsWith(prefixDecoders)
                         .addImports('solanaCodecsDataStructures', 'getHiddenPrefixDecoder');
                     return manifest;
@@ -417,18 +417,18 @@ export function getTypeManifestVisitor(input: {
                 visitHiddenSuffixType(node, { self }) {
                     const manifest = visit(node.type, self);
                     const suffixes = node.suffix.map(c => visit(c, self).value);
-                    const suffixEncoders = fragment(suffixes.map(c => `getConstantEncoder(${c})`).join(', '))
+                    const suffixEncoders = fragment(suffixes.map(c => `getConstantEncoder(${c.render})`).join(', '))
                         .addImports('solanaCodecsCore', 'getConstantEncoder')
                         .mergeImportsWith(...suffixes);
-                    const suffixDecoders = fragment(suffixes.map(c => `getConstantDecoder(${c})`).join(', '))
+                    const suffixDecoders = fragment(suffixes.map(c => `getConstantDecoder(${c.render})`).join(', '))
                         .addImports('solanaCodecsCore', 'getConstantDecoder')
                         .mergeImportsWith(...suffixes);
                     manifest.encoder
-                        .mapRender(r => `getHiddenSuffixEncoder(${r}, [${suffixEncoders}])`)
+                        .mapRender(r => `getHiddenSuffixEncoder(${r}, [${suffixEncoders.render}])`)
                         .mergeImportsWith(suffixEncoders)
                         .addImports('solanaCodecsDataStructures', 'getHiddenSuffixEncoder');
                     manifest.decoder
-                        .mapRender(r => `getHiddenSuffixDecoder(${r}, [${suffixDecoders}])`)
+                        .mapRender(r => `getHiddenSuffixDecoder(${r}, [${suffixDecoders.render}])`)
                         .mergeImportsWith(suffixDecoders)
                         .addImports('solanaCodecsDataStructures', 'getHiddenSuffixDecoder');
                     return manifest;
@@ -665,11 +665,11 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(node.type, self);
                     const sentinel = visit(node.sentinel, self).value;
                     manifest.encoder
-                        .mapRender(r => `addEncoderSentinel(${r}, ${sentinel})`)
+                        .mapRender(r => `addEncoderSentinel(${r}, ${sentinel.render})`)
                         .mergeImportsWith(sentinel)
                         .addImports('solanaCodecsCore', 'addEncoderSentinel');
                     manifest.decoder
-                        .mapRender(r => `addDecoderSentinel(${r}, ${sentinel})`)
+                        .mapRender(r => `addDecoderSentinel(${r}, ${sentinel.render})`)
                         .mergeImportsWith(sentinel)
                         .addImports('solanaCodecsCore', 'addDecoderSentinel');
                     return manifest;
@@ -706,11 +706,11 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(node.type, self);
                     const prefix = visit(node.prefix, self);
                     manifest.encoder
-                        .mapRender(r => `addEncoderSizePrefix(${r}, ${prefix.encoder})`)
+                        .mapRender(r => `addEncoderSizePrefix(${r}, ${prefix.encoder.render})`)
                         .mergeImportsWith(prefix.encoder)
                         .addImports('solanaCodecsCore', 'addEncoderSizePrefix');
                     manifest.decoder
-                        .mapRender(r => `addDecoderSizePrefix(${r}, ${prefix.decoder})`)
+                        .mapRender(r => `addDecoderSizePrefix(${r}, ${prefix.decoder.render})`)
                         .mergeImportsWith(prefix.decoder)
                         .addImports('solanaCodecsCore', 'addDecoderSizePrefix');
                     return manifest;
@@ -758,7 +758,7 @@ export function getTypeManifestVisitor(input: {
                             case 'utf8':
                                 return ['getUtf8Encoder', 'getUtf8Decoder'];
                             default:
-                                throw new Error(`Unsupported string encoding: ${stringType.encoding}`);
+                                throw new Error(`Unsupported string encoding: ${stringType.encoding as string}`);
                         }
                     })();
                     return {

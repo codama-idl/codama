@@ -39,7 +39,7 @@ const unexpectedNodeKindError = new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KI
 
 unexpectedNodeKindError.context satisfies CodamaErrorContext[typeof CODAMA_ERROR__UNEXPECTED_NODE_KIND];
 // @ts-expect-error Non existent context property.
-unexpectedNodeKindError.context.feePayer;
+unexpectedNodeKindError.context.feePayer satisfies never;
 
 // @ts-expect-error Missing context.
 new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NODE_KIND);

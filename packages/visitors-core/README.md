@@ -185,8 +185,8 @@ const node = visit(numberTypeNode('u32'), nonNullableIdentityVisitor());
 
 The `mergeVisitor` returns a `Visitor<T>` by accepting two functions such that:
 
--   The first function is used on the leaves of the Codama IDL and returns a type `T`.
--   The second function is used to merge the values `T[]` of the children of a node and aggregate them into a type `T`.
+- The first function is used on the leaves of the Codama IDL and returns a type `T`.
+- The second function is used to merge the values `T[]` of the children of a node and aggregate them into a type `T`.
 
 For instance, here is how we can use the `mergeVisitor` to create a nested string representation of node kinds.
 
@@ -224,8 +224,8 @@ The `extendVisitor` function accepts a base visitor and a set of function wrappe
 
 Each function wrapper is given the `node` being visited and an object composed of two elements:
 
--   `next`: A function that can be called to delegate to the base visitor — e.g. `next(node)`.
--   `self`: The visitor itself, allowing for recursive calls.
+- `next`: A function that can be called to delegate to the base visitor — e.g. `next(node)`.
+- `self`: The visitor itself, allowing for recursive calls.
 
 To illustrate this, consider the following base visitor that counts the number of nodes.
 
@@ -356,9 +356,9 @@ const visitor = pipe(
 
 For instance, here's an example using the `pipe` function to transform an `identityVisitor` into a visitor that:
 
--   Transforms all number types into `u64` numbers.
--   Logs the amount of items in tuple types.
--   Wraps the visited node in a `DefinedTypeNode` labelled "gift".
+- Transforms all number types into `u64` numbers.
+- Logs the amount of items in tuple types.
+- Wraps the visited node in a `DefinedTypeNode` labelled "gift".
 
 ```ts
 const visitor = pipe(
@@ -553,18 +553,18 @@ When visiting a tree of nodes, it is often useful to be explicit about the paths
 
 To that end, the `NodeSelector` type represents a node selection that can take two forms:
 
--   A `NodeSelectorFunction` of type `(path: NodePath) => boolean`. In this case, the provided function is used to determine if the last node in the provided `NodePath` should be selected.
--   A `NodeSelectorPath` of type `string`. In this case, the provided string uses a simple syntax to select nodes.
+- A `NodeSelectorFunction` of type `(path: NodePath) => boolean`. In this case, the provided function is used to determine if the last node in the provided `NodePath` should be selected.
+- A `NodeSelectorPath` of type `string`. In this case, the provided string uses a simple syntax to select nodes.
 
 The `NodeSelectorPath` syntax is as follows:
 
--   Plain text is used to match the name of a node, if any. For instance, `token` will match any node named "token".
--   Square brackets `[]` are used to match the kind of a node. For instance, `[programNode]` will match any `ProgramNode`.
--   Plain text and square brackets can be combined to match both the name and the kind of a node. For instance, `[programNode]token` will match any `ProgramNode` named "token".
--   Plain texts and/or square brackets can be chained using dots `.` to match several nodes in the current `NodeStack`.
--   Dot-separated paths must follow the provided order but do not need to be contiguous or exhaustive. This means that `a.b.c` will match a `NodeStack` that looks like `x.a.y.b.z.c` but not `b.a.c`.
--   The last item of a dot-separated path must match the last node of the `NodeStack`. For instance, `a.b` will not match `a.b.x`.
--   The wildcard `*` can be used at the end of the path to match any node within the matching path. For instance, `a.b.*` will match `a.b.x`.
+- Plain text is used to match the name of a node, if any. For instance, `token` will match any node named "token".
+- Square brackets `[]` are used to match the kind of a node. For instance, `[programNode]` will match any `ProgramNode`.
+- Plain text and square brackets can be combined to match both the name and the kind of a node. For instance, `[programNode]token` will match any `ProgramNode` named "token".
+- Plain texts and/or square brackets can be chained using dots `.` to match several nodes in the current `NodeStack`.
+- Dot-separated paths must follow the provided order but do not need to be contiguous or exhaustive. This means that `a.b.c` will match a `NodeStack` that looks like `x.a.y.b.z.c` but not `b.a.c`.
+- The last item of a dot-separated path must match the last node of the `NodeStack`. For instance, `a.b` will not match `a.b.x`.
+- The wildcard `*` can be used at the end of the path to match any node within the matching path. For instance, `a.b.*` will match `a.b.x`.
 
 Here are some examples:
 
@@ -600,8 +600,8 @@ The `bottomUpTransformerVisitor` traverses the nodes and intercepts them on the 
 
 This visitor accepts an array of `transformers` where each transformer is an object with the following properties:
 
--   `select`: A `NodeSelector` or an array of `NodeSelectors` used to select the nodes we want to transform. When multiple selectors are provided, they must all match for the node to be selected.
--   `transform`: A function that accepts the selected node and its `NodeStack`; and returns a new node or `null` to delete the node.
+- `select`: A `NodeSelector` or an array of `NodeSelectors` used to select the nodes we want to transform. When multiple selectors are provided, they must all match for the node to be selected.
+- `transform`: A function that accepts the selected node and its `NodeStack`; and returns a new node or `null` to delete the node.
 
 Here are a few examples:
 
@@ -748,8 +748,8 @@ const accountPath: NodePath<AccountNode> = linkables.getPathOrThrow([...somePath
 
 Note that:
 
--   The path of the recorded node must be provided when recording a linkable node.
--   The path of the link node must be provided when getting a linkable node (or its path) from it.
+- The path of the recorded node must be provided when recording a linkable node.
+- The path of the link node must be provided when getting a linkable node (or its path) from it.
 
 This API may be used with the `recordLinkablesOnFirstVisitVisitor` to record the linkable nodes before the first node visit; as well as the `recordNodeStackVisitor` to keep track of the current node path when accessing the linkable nodes.
 

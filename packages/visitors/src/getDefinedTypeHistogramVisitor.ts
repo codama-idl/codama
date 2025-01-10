@@ -1,8 +1,20 @@
 import { CamelCaseString } from '@codama/nodes';
-import { extendVisitor, interceptVisitor, mergeVisitor, pipe, visit, Visitor } from '@codama/visitors-core';
+import {
+    extendVisitor,
+    findProgramNodeFromPath,
+    interceptVisitor,
+    mergeVisitor,
+    NodeStack,
+    pipe,
+    recordNodeStackVisitor,
+    visit,
+    Visitor,
+} from '@codama/visitors-core';
+
+type DefinedTypeHistogramKey = CamelCaseString | `${CamelCaseString}.${CamelCaseString}`;
 
 export type DefinedTypeHistogram = {
-    [key: CamelCaseString]: {
+    [key: DefinedTypeHistogramKey]: {
         directlyAsInstructionArgs: number;
         inAccounts: number;
         inDefinedTypes: number;
@@ -33,6 +45,7 @@ function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogr
 }
 
 export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> {
+    const stack = new NodeStack();
     let mode: 'account' | 'definedType' | 'instruction' | null = null;
     let stackLevel = 0;
 
@@ -67,8 +80,10 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                 },
 
                 visitDefinedTypeLink(node) {
+                    const program = findProgramNodeFromPath(stack.getPath());
+                    const key = program ? `${program.name}.${node.name}` : node.name;
                     return {
-                        [node.name]: {
+                        [key]: {
                             directlyAsInstructionArgs: Number(mode === 'instruction' && stackLevel <= 1),
                             inAccounts: Number(mode === 'account'),
                             inDefinedTypes: Number(mode === 'definedType'),
@@ -88,5 +103,6 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                     return mergeHistograms([...dataHistograms, ...extraHistograms, ...subHistograms]);
                 },
             }),
+        v => recordNodeStackVisitor(v, stack),
     );
 }

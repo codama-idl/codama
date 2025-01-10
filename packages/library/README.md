@@ -19,12 +19,12 @@ pnpm install codama
 
 This package includes the following packages. Note that some of them also re-export other packages.
 
--   [`@codama/errors`](../errors)
--   [`@codama/nodes`](../nodes)
-    -   [`@codama/node-types`](../node-types)
--   [`@codama/validators`](../validators)
--   [`@codama/visitors`](../visitors)
-    -   [`@codama/visitor-core`](../visitor-core)
+- [`@codama/errors`](../errors)
+- [`@codama/nodes`](../nodes)
+    - [`@codama/node-types`](../node-types)
+- [`@codama/validators`](../validators)
+- [`@codama/visitors`](../visitors)
+    - [`@codama/visitor-core`](../visitor-core)
 
 ## The Codama helper
 
@@ -70,9 +70,9 @@ codama.update(
 
 Other helper functions include:
 
--   `clone()`: Creates a new instance of the `Codama` interface with a deep copy of the wrapped `RootNode`.
--   `getJson()`: Returns the JSON representation of the Codama IDL.
--   `getRoot()`: Returns the wrapped `RootNode`.
+- `clone()`: Creates a new instance of the `Codama` interface with a deep copy of the wrapped `RootNode`.
+- `getJson()`: Returns the JSON representation of the Codama IDL.
+- `getRoot()`: Returns the wrapped `RootNode`.
 
 ```ts
 const clonedCodama = codama.clone();
