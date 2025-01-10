@@ -53,7 +53,6 @@ export function parseInstruction(
 ): ParsedInstruction | undefined {
     const parsedData = parseInstructionData(root, instruction.data);
     if (!parsedData) return undefined;
-    instruction.accounts;
     const instructionNode = getLastNodeFromPath(parsedData.path);
     const accounts: ParsedInstructionAccounts = instructionNode.accounts.flatMap((account, index) => {
         const accountMeta = instruction.accounts[index];

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eux
 
 function test_project() {
     ./e2e/generate.cjs $1

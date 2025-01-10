@@ -16,10 +16,7 @@ import {
     IdlV01DefinedFieldsTuple,
     IdlV01Field,
     IdlV01Type,
-    IdlV01TypeCOption,
     IdlV01TypeDefTy,
-    IdlV01TypeDefTyEnum,
-    IdlV01TypeOption,
 } from '../idl';
 import { arrayTypeNodeFromAnchorV01 } from './ArrayTypeNode';
 import { enumTypeNodeFromAnchorV01 } from './EnumTypeNode';
@@ -82,16 +79,16 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
 
     // Enum.
     if ('kind' in idlType && idlType.kind === 'enum' && 'variants' in idlType) {
-        return enumTypeNodeFromAnchorV01(idlType as IdlV01TypeDefTyEnum);
+        return enumTypeNodeFromAnchorV01(idlType);
     }
 
     // Option.
     if ('option' in idlType) {
-        return optionTypeNodeFromAnchorV01(idlType as IdlV01TypeOption);
+        return optionTypeNodeFromAnchorV01(idlType);
     }
 
     if ('coption' in idlType) {
-        return optionTypeNodeFromAnchorV01(idlType as IdlV01TypeCOption);
+        return optionTypeNodeFromAnchorV01(idlType);
     }
 
     // Struct and Tuple.

@@ -1,6 +1,7 @@
 import { deleteDirectory } from '@codama/renderers-core';
 import { LogLevel, throwValidatorItemsVisitor } from '@codama/validators';
 import { rootNodeVisitor, visit } from '@codama/visitors-core';
+import { Plugin } from 'prettier';
 import * as estreePlugin from 'prettier/plugins/estree';
 import * as typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';
@@ -20,7 +21,7 @@ export type RenderOptions = GetRenderMapOptions & {
 const DEFAULT_PRETTIER_OPTIONS: PrettierOptions = {
     arrowParens: 'always',
     parser: 'typescript',
-    plugins: [estreePlugin, typeScriptPlugin],
+    plugins: [estreePlugin as Plugin<unknown>, typeScriptPlugin],
     printWidth: 80,
     semi: true,
     singleQuote: true,

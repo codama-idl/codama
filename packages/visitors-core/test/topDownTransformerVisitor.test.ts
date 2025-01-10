@@ -43,7 +43,7 @@ test('it can transform nodes using node selectors', () => {
     const visitor = topDownTransformerVisitor([
         {
             select: '[numberTypeNode]',
-            transform: node => numberTypeNode('u64') as typeof node,
+            transform: _node => numberTypeNode('u64') as typeof _node,
         },
     ]);
 
@@ -117,7 +117,7 @@ test('it can transform nodes using multiple node selectors', () => {
     const visitor = topDownTransformerVisitor([
         {
             select: ['[numberTypeNode]', path => path.length > 2],
-            transform: node => numberTypeNode('u64') as typeof node,
+            transform: _node => numberTypeNode('u64') as typeof _node,
         },
     ]);
 

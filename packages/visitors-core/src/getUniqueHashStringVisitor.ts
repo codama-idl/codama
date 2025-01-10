@@ -8,7 +8,7 @@ import { Visitor } from './visitor';
 export function getUniqueHashStringVisitor(options: { removeDocs?: boolean } = {}): Visitor<string> {
     const removeDocs = options.removeDocs ?? false;
     if (!removeDocs) {
-        return staticVisitor(node => stringify(node));
+        return staticVisitor(node => stringify(node) as string);
     }
-    return mapVisitor(removeDocsVisitor(), node => stringify(node));
+    return mapVisitor(removeDocsVisitor(), node => stringify(node) as string);
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eux
 
 function start_validator() {
     if ! lsof -t -i:8899; then

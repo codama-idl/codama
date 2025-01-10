@@ -67,7 +67,7 @@ export function getValueNodeVisitor(
                     const value = visit(entry.value, this);
                     return [key, value];
                 }),
-            );
+            ) as unknown;
         },
         visitNoneValue() {
             return { __option: 'None' };

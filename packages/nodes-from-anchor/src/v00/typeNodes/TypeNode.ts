@@ -10,15 +10,7 @@ import {
     TypeNode,
 } from '@codama/nodes';
 
-import {
-    IdlV00Type,
-    IdlV00TypeDefTy,
-    IdlV00TypeDefTyEnum,
-    IdlV00TypeDefTyStruct,
-    IdlV00TypeMap,
-    IdlV00TypeSet,
-    IdlV00TypeTuple,
-} from '../idl';
+import { IdlV00Type, IdlV00TypeDefTy, IdlV00TypeMap, IdlV00TypeSet } from '../idl';
 import { arrayTypeNodeFromAnchorV00 } from './ArrayTypeNode';
 import { enumTypeNodeFromAnchorV00 } from './EnumTypeNode';
 import { mapTypeNodeFromAnchorV00 } from './MapTypeNode';
@@ -81,7 +73,7 @@ export const typeNodeFromAnchorV00 = (idlType: IdlV00Type | IdlV00TypeDefTy): Ty
 
     // Enum.
     if ('kind' in idlType && idlType.kind === 'enum' && 'variants' in idlType) {
-        return enumTypeNodeFromAnchorV00(idlType as IdlV00TypeDefTyEnum);
+        return enumTypeNodeFromAnchorV00(idlType);
     }
 
     // Map.
@@ -104,12 +96,12 @@ export const typeNodeFromAnchorV00 = (idlType: IdlV00Type | IdlV00TypeDefTy): Ty
 
     // Struct.
     if ('kind' in idlType && 'fields' in idlType && idlType.kind === 'struct') {
-        return structTypeNodeFromAnchorV00(idlType as IdlV00TypeDefTyStruct);
+        return structTypeNodeFromAnchorV00(idlType);
     }
 
     // Tuple.
     if ('tuple' in idlType && Array.isArray(idlType.tuple)) {
-        return tupleTypeNodeFromAnchorV00(idlType as IdlV00TypeTuple);
+        return tupleTypeNodeFromAnchorV00(idlType);
     }
 
     throw new CodamaError(CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, {

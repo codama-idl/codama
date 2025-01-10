@@ -1,4 +1,5 @@
 import { RenderMap } from '@codama/renderers-core';
+import { Plugin } from 'prettier';
 import * as estreePlugin from 'prettier/plugins/estree';
 import * as typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';
@@ -7,7 +8,7 @@ import { expect } from 'vitest';
 const PRETTIER_OPTIONS: Parameters<typeof format>[1] = {
     arrowParens: 'always',
     parser: 'typescript',
-    plugins: [estreePlugin, typeScriptPlugin],
+    plugins: [estreePlugin as Plugin<unknown>, typeScriptPlugin],
     printWidth: 80,
     semi: true,
     singleQuote: true,
@@ -75,7 +76,7 @@ export function codeStringAsRegex(code: string) {
 async function normalizeCode(code: string) {
     try {
         code = await format(code, PRETTIER_OPTIONS);
-    } catch (e) {
+    } catch {
         // Ignore errors.
     }
     return code.trim();

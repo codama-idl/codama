@@ -57,10 +57,10 @@ The Rust renderer provides sensible default traits when generating the various R
 
 Using the `traitOptions` attribute, you may configure the default traits that will be applied to every Rust type. These default traits can be configured using 4 different attributes:
 
--   `baseDefaults`: The default traits to implement for all types.
--   `dataEnumDefaults`: The default traits to implement for all data enum types, in addition to the `baseDefaults` traits. Data enums are enums with at least one non-unit variant — e.g. `pub enum Command { Write(String), Quit }`.
--   `scalarEnumDefaults`: The default traits to implement for all scalar enum types, in addition to the `baseDefaults` traits. Scalar enums are enums with unit variants only — e.g. `pub enum Feedback { Good, Bad }`.
--   `structDefaults`: The default traits to implement for all struct types, in addition to the `baseDefaults` traits.
+- `baseDefaults`: The default traits to implement for all types.
+- `dataEnumDefaults`: The default traits to implement for all data enum types, in addition to the `baseDefaults` traits. Data enums are enums with at least one non-unit variant — e.g. `pub enum Command { Write(String), Quit }`.
+- `scalarEnumDefaults`: The default traits to implement for all scalar enum types, in addition to the `baseDefaults` traits. Scalar enums are enums with unit variants only — e.g. `pub enum Feedback { Good, Bad }`.
+- `structDefaults`: The default traits to implement for all struct types, in addition to the `baseDefaults` traits.
 
 Note that you must provide the fully qualified name of the traits you provide (e.g. `serde::Serialize`). Here are the default values for these attributes:
 

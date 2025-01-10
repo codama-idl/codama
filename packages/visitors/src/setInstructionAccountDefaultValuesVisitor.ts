@@ -184,7 +184,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
                                     fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, true),
                                 ),
                             };
-                        } catch (error) {
+                        } catch {
                             return account;
                         }
                     });

@@ -13,7 +13,7 @@ export function getHumanReadableErrorMessage<TErrorCode extends CodamaErrorCode>
 ): string {
     const messageFormatString = CodamaErrorMessages[code];
     const message = messageFormatString.replace(/(?<!\\)\$(\w+)/g, (substring, variableName) =>
-        variableName in context ? `${context[variableName as keyof typeof context]}` : substring,
+        variableName in context ? `${context[variableName as keyof typeof context] as string}` : substring,
     );
     return message;
 }

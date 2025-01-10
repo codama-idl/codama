@@ -24,7 +24,13 @@
             "dependsOn": ["build"]
         },
         "test:types": {},
-        "lint": {},
-        "lint:fix": {}
+        "lint": {
+            "inputs": ["$TURBO_DEFAULT$", "../../eslint.config.*"],
+            "outputs": []
+        },
+        "lint:fix": {
+            "inputs": ["$TURBO_DEFAULT$", "../../eslint.config.*"],
+            "outputs": ["*"]
+        }
     }
 }
