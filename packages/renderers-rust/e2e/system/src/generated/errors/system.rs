@@ -44,3 +44,9 @@ impl solana_program::program_error::PrintProgramError for SystemError {
         solana_program::msg!(&self.to_string());
     }
 }
+
+impl<T> solana_program::decode_error::DecodeError<T> for SystemError {
+    fn type_of() -> &'static str {
+        "SystemError"
+    }
+}
