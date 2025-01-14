@@ -1,5 +1,11 @@
 # @codama/renderers-rust
 
+## 1.0.6
+
+### Patch Changes
+
+- [#380](https://github.com/codama-idl/codama/pull/380) [`eca0e76`](https://github.com/codama-idl/codama/commit/eca0e7670d65eaa772793095690d8e170c977a8f) Thanks [@buffalojoec](https://github.com/buffalojoec)! - add decode-error trait to errors
+
 ## 1.0.5
 
 ### Patch Changes
