@@ -270,6 +270,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
 
                     const map = new RenderMap();
+                    if (hasAnythingToExport) {
+                        map.add('shared.rs', render('sharedPage.njk', ctx));
+                    }
                     if (programsToExport.length > 0) {
                         map.add('programs.rs', render('programsMod.njk', ctx)).add(
                             'errors/mod.rs',
