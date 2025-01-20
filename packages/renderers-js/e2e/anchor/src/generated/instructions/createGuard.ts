@@ -303,7 +303,8 @@ export async function getCreateGuardInstructionAsync<
   }
   if (!accounts.mintTokenAccount.value) {
     accounts.mintTokenAccount.value = await getProgramDerivedAddress({
-      programAddress,
+      programAddress:
+        'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' as Address<'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'>,
       seeds: [
         getAddressEncoder().encode(
           expectAddress(accounts.guardAuthority.value)

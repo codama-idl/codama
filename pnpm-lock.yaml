@@ -173,6 +173,9 @@ importers:
       '@noble/hashes':
         specifier: ^1.7.0
         version: 1.7.0
+      '@solana/codecs':
+        specifier: 2.0.0
+        version: 2.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)
 
   packages/renderers:
     dependencies:

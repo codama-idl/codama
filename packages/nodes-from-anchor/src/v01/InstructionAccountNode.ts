@@ -1,6 +1,7 @@
 import {
     CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
     CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING,
     CodamaError,
@@ -26,6 +27,7 @@ import {
     resolveNestedTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
+import { getBase58Codec } from '@solana/codecs';
 
 import { hex } from '../utils';
 import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
@@ -123,7 +125,24 @@ export function instructionAccountNodeFromAnchorV01(
                 <[PdaSeedNode[], PdaSeedValueNode[]]>[[], []],
             );
 
-            defaultValue = pdaValueNode(pdaNode({ name, seeds }), lookups);
+            let programId: string | undefined;
+            if (idl.pda.program !== undefined) {
+                const kind = idl.pda.program.kind;
+                switch (kind) {
+                    case 'const': {
+                        programId = getBase58Codec().decode(new Uint8Array(idl.pda.program.value));
+                        break;
+                    }
+                    default: {
+                        throw new CodamaError(CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED, { kind });
+                    }
+                }
+            }
+
+            defaultValue = pdaValueNode(
+                pdaNode({ name, seeds, ...(programId !== undefined ? { programId } : {}) }),
+                lookups,
+            );
         }
     }
 
