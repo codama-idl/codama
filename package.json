@@ -20,7 +20,7 @@
         "@solana/eslint-config-solana": "^4.0.0",
         "@solana/prettier-config-solana": "0.0.5",
         "@types/node": "^22",
-        "@typescript-eslint/eslint-plugin": "^8.20.0",
+        "@typescript-eslint/eslint-plugin": "^8.21.0",
         "@typescript-eslint/parser": "^8.20.0",
         "agadoo": "^3.0.0",
         "eslint": "^9.18.0",
