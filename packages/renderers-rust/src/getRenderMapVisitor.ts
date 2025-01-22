@@ -270,7 +270,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
 
                     const map = new RenderMap();
-                    if (hasAnythingToExport) {
+                    if (accountsToExport.length > 0) {
                         map.add('shared.rs', render('sharedPage.njk', ctx));
                     }
                     if (programsToExport.length > 0) {
