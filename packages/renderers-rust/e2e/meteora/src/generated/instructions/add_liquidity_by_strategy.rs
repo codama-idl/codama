@@ -145,7 +145,8 @@ impl AddLiquidityByStrategy {
     }
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AddLiquidityByStrategyInstructionData {
     discriminator: [u8; 8],
 }

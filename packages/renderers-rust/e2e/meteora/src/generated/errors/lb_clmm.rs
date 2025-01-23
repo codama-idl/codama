@@ -215,3 +215,9 @@ impl solana_program::program_error::PrintProgramError for LbClmmError {
         solana_program::msg!(&self.to_string());
     }
 }
+
+impl<T> solana_program::decode_error::DecodeError<T> for LbClmmError {
+    fn type_of() -> &'static str {
+        "LbClmmError"
+    }
+}
