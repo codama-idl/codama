@@ -54,7 +54,7 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Nonce {
 pub fn fetch_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
     address: &Pubkey,
-) -> Result<crate::DecodedAccount<Nonce>, std::io::Error> {
+) -> Result<crate::shared::DecodedAccount<Nonce>, std::io::Error> {
     let accounts = fetch_all_nonce(rpc, vec![*address])?;
     Ok(accounts[0].clone())
 }
@@ -63,16 +63,19 @@ pub fn fetch_nonce(
 pub fn fetch_all_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
     addresses: Vec<Pubkey>,
-) -> Result<Vec<crate::DecodedAccount<Nonce>>, std::io::Error> {
-    let accounts = rpc.get_multiple_accounts(&addresses)?;
-    let mut decoded_accounts: Vec<crate::DecodedAccount<Nonce>> = Vec::new();
+) -> Result<Vec<crate::shared::DecodedAccount<Nonce>>, std::io::Error> {
+    let accounts = rpc
+        .get_multiple_accounts(&addresses)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+    let mut decoded_accounts: Vec<crate::shared::DecodedAccount<Nonce>> = Vec::new();
     for i in 0..addresses.len() {
         let address = addresses[i];
-        let account = accounts[i]
-            .as_ref()
-            .ok_or(format!("Account not found: {}", address))?;
+        let account = accounts[i].as_ref().ok_or(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("Account not found: {}", address),
+        ))?;
         let data = Nonce::from_bytes(&account.data)?;
-        decoded_accounts.push(crate::DecodedAccount {
+        decoded_accounts.push(crate::shared::DecodedAccount {
             address,
             account: account.clone(),
             data,
@@ -85,7 +88,7 @@ pub fn fetch_all_nonce(
 pub fn fetch_maybe_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
     address: &Pubkey,
-) -> Result<crate::MaybeAccount<Nonce>, std::io::Error> {
+) -> Result<crate::shared::MaybeAccount<Nonce>, std::io::Error> {
     let accounts = fetch_all_maybe_nonce(rpc, vec![*address])?;
     Ok(accounts[0].clone())
 }
@@ -94,20 +97,24 @@ pub fn fetch_maybe_nonce(
 pub fn fetch_all_maybe_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
     addresses: Vec<Pubkey>,
-) -> Result<Vec<crate::MaybeAccount<Nonce>>, std::io::Error> {
-    let accounts = rpc.get_multiple_accounts(&addresses)?;
-    let mut decoded_accounts: Vec<crate::MaybeAccount<Nonce>> = Vec::new();
+) -> Result<Vec<crate::shared::MaybeAccount<Nonce>>, std::io::Error> {
+    let accounts = rpc
+        .get_multiple_accounts(&addresses)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+    let mut decoded_accounts: Vec<crate::shared::MaybeAccount<Nonce>> = Vec::new();
     for i in 0..addresses.len() {
         let address = addresses[i];
         if let Some(account) = accounts[i].as_ref() {
             let data = Nonce::from_bytes(&account.data)?;
-            decoded_accounts.push(crate::MaybeAccount::Exists(crate::DecodedAccount {
-                address,
-                account: account.clone(),
-                data,
-            }));
+            decoded_accounts.push(crate::shared::MaybeAccount::Exists(
+                crate::shared::DecodedAccount {
+                    address,
+                    account: account.clone(),
+                    data,
+                },
+            ));
         } else {
-            decoded_accounts.push(crate::MaybeAccount::NotFound(address));
+            decoded_accounts.push(crate::shared::MaybeAccount::NotFound(address));
         }
     }
     Ok(decoded_accounts)
