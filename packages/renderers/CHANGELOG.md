@@ -1,5 +1,14 @@
 # @codama/renderers
 
+## 1.0.7
+
+### Patch Changes
+
+- Updated dependencies [[`459492c`](https://github.com/codama-idl/codama/commit/459492ca474996981ba2ac414b215a9d28270482)]:
+    - @codama/renderers-rust@1.0.7
+    - @codama/renderers-js@1.1.2
+    - @codama/renderers-js-umi@1.1.2
+
 ## 1.0.6
 
 ### Patch Changes
