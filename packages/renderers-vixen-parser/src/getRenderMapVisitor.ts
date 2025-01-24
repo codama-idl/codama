@@ -109,13 +109,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             accounts: ix.accounts.map((acc, accIdx) => {
                                 return {
                                     index: accIdx,
-                                    name: acc.name,
                                     isOptional: acc.isOptional,
+                                    name: acc.name,
                                 };
                             }),
                             discriminator,
-                            hasOptionalAccounts,
                             hasArgs,
+                            hasOptionalAccounts,
                             name: ix.name,
                         };
                     });
