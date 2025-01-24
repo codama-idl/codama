@@ -395,12 +395,11 @@ export function getTypeManifestVisitor(options: {
                         isNode(resolvedNestedType.count, 'fixedCountNode') &&
                         resolvedNestedType.count.value > 32
                     ) {
-                        derive =
-                            '#[cfg_attr(feature = "serde", serde(with = "serde_big_array::BigArray"))]\n';
+                        derive = '#[cfg_attr(feature = "serde", serde(with = "serde_big_array::BigArray"))]\n';
                     } else if (
                         isNode(resolvedNestedType, ['bytesTypeNode', 'stringTypeNode']) &&
-                            isNode(structFieldType.type, 'fixedSizeTypeNode') &&
-                            structFieldType.type.size > 32
+                        isNode(structFieldType.type, 'fixedSizeTypeNode') &&
+                        structFieldType.type.size > 32
                     ) {
                         derive =
                             '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::Bytes>"))]\n';
