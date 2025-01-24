@@ -1047,6 +1047,7 @@ dependencies = [
  "num-derive 0.3.3",
  "num-traits",
  "serde",
+ "serde-big-array",
  "serde_with 3.11.0",
  "solana-program",
  "solana-program-test",
@@ -3514,6 +3515,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8e3592472072e6e22e0a54d5904d9febf8508f65fb8552499a1abc7d1078c3a"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde-big-array"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11fc7cc2c76d73e0f27ee52abbd64eec84d46f370c88371120433196934e4b7f"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
