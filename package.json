@@ -1,9 +1,6 @@
 {
     "name": "codama-monorepo",
     "private": true,
-    "workspaces": [
-        "packages/*"
-    ],
     "scripts": {
         "build": "turbo run build --log-order grouped",
         "lint": "turbo run lint --log-order grouped",
