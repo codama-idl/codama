@@ -17,7 +17,7 @@ test('it renders size prefix codecs', async () => {
 
     // Then we expect the following types and codecs to be exported.
     await renderMapContains(renderMap, 'types/myType.ts', [
-        'export type MyType = LamportsUnsafeBeyond2Pow53Minus1',
+        'export type MyType = Lamports',
         'export type MyTypeArgs = MyType',
         'export function getMyTypeEncoder(): Encoder<MyTypeArgs> { return getLamportsEncoder(getU64Encoder()); }',
         'export function getMyTypeDecoder(): Decoder<MyType> { return getLamportsDecoder(getU64Decoder()); }',
@@ -25,12 +25,6 @@ test('it renders size prefix codecs', async () => {
 
     // And we expect the following type and codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': [
-            'LamportsUnsafeBeyond2Pow53Minus1',
-            'getLamportsEncoder',
-            'getLamportsDecoder',
-            'getU64Encoder',
-            'getU64Decoder',
-        ],
+        '@solana/web3.js': ['Lamports', 'getLamportsEncoder', 'getLamportsDecoder', 'getU64Encoder', 'getU64Decoder'],
     });
 });
