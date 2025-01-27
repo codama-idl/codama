@@ -29,7 +29,7 @@ import {
   type IInstruction,
   type IInstructionWithAccounts,
   type IInstructionWithData,
-  type LamportsUnsafeBeyond2Pow53Minus1,
+  type Lamports,
   type TransactionSigner,
   type WritableSignerAccount,
 } from '@solana/web3.js';
@@ -69,13 +69,13 @@ export type CreateAccountInstruction<
 
 export type CreateAccountInstructionData = {
   discriminator: number;
-  lamports: LamportsUnsafeBeyond2Pow53Minus1;
+  lamports: Lamports;
   space: bigint;
   programAddress: Address;
 };
 
 export type CreateAccountInstructionDataArgs = {
-  lamports: LamportsUnsafeBeyond2Pow53Minus1;
+  lamports: Lamports;
   space: number | bigint;
   programAddress: Address;
 };

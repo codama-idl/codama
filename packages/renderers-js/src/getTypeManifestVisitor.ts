@@ -719,11 +719,8 @@ export function getTypeManifestVisitor(input: {
                 visitSolAmountType({ number }, { self }) {
                     const numberManifest = visit(number, self);
 
-                    const lamportsType = 'LamportsUnsafeBeyond2Pow53Minus1';
-                    const lamportsImport = new ImportMap().add(
-                        'solanaRpcTypes',
-                        'type LamportsUnsafeBeyond2Pow53Minus1',
-                    );
+                    const lamportsType = 'Lamports';
+                    const lamportsImport = new ImportMap().add('solanaRpcTypes', 'type Lamports');
 
                     return {
                         ...numberManifest,
