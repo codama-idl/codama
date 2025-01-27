@@ -37,7 +37,7 @@
         "zx": "^8.3.0"
     },
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=20.0.0"
     },
     "packageManager": "pnpm@9.1.0",
     "prettier": "@solana/prettier-config-solana"
