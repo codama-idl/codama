@@ -99,7 +99,7 @@ export class LinkableDictionary {
                 kind: linkNode.kind,
                 linkNode,
                 name: linkNode.name,
-                path: linkablePath,
+                path: linkPath,
             });
         }
 
