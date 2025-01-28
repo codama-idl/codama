@@ -5,7 +5,7 @@ import { getBuildConfig } from './tsup.config.base';
 export default defineConfig([
     {
         ...getBuildConfig({ format: 'esm', platform: 'node' }),
-        entry: ['./src/cli.ts'],
+        entry: { cli: './src/cli/index.ts' },
         outExtension() {
             return { js: `.mjs` };
         },
