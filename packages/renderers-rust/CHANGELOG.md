@@ -1,5 +1,11 @@
 # @codama/renderers-rust
 
+## 1.0.8
+
+### Patch Changes
+
+- [#405](https://github.com/codama-idl/codama/pull/405) [`9f497fd`](https://github.com/codama-idl/codama/commit/9f497fd81250bbc8453390eb01a17509c6cfde09) Thanks [@wjthieme](https://github.com/wjthieme)! - bug: serde serialize/deserialize big arrays
+
 ## 1.0.7
 
 ### Patch Changes

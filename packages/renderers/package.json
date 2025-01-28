@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "Exports all Codama renderers",
     "exports": {
         "types": "./dist/types/index.d.ts",
