@@ -54,7 +54,7 @@
         "json-stable-stringify": "^1.2.1"
     },
     "devDependencies": {
-        "@types/json-stable-stringify": "^1.1.0"
+        "@types/json-stable-stringify": "^1.2.0"
     },
     "license": "MIT",
     "repository": {
