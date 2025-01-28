@@ -1,0 +1,11 @@
+[package]
+name = "codama-renderers-vixen-parser-e2e-anchor"
+version = "0.0.0"
+edition = "2021"
+
+
+[dependencies]
+yellowstone-vixen-core = { git = "https://github.com/rpcpool/yellowstone-vixen", branch = "main" }
+solana-program = "^2.1.6"
+codama-renderers-rust-e2e-anchor = { path = "../../../renderers-rust/e2e/anchor" }
+borsh = "^0.10"

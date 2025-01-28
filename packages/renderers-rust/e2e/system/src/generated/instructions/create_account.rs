@@ -10,6 +10,7 @@ use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct CreateAccount {
     pub payer: solana_program::pubkey::Pubkey,
 

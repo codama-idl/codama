@@ -50,7 +50,8 @@
         "nunjucks": "^3.2.4"
     },
     "devDependencies": {
-        "@types/nunjucks": "^3.2.6"
+        "@types/nunjucks": "^3.2.6",
+        "@codama/nodes-from-anchor": "workspace:*"
     },
     "license": "MIT",
     "repository": {

@@ -9,6 +9,7 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct Instruction4 {}
 
 impl Instruction4 {

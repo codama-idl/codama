@@ -9,6 +9,7 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct AdvanceNonceAccount {
     pub nonce_account: solana_program::pubkey::Pubkey,
 

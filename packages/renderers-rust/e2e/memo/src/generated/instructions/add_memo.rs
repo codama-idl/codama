@@ -10,6 +10,7 @@ use borsh::BorshSerialize;
 use kaigan::types::RemainderStr;
 
 /// Accounts.
+#[derive(Debug)]
 pub struct AddMemo {}
 
 impl AddMemo {
