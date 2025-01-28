@@ -1,5 +1,11 @@
 # @codama/renderers-js
 
+## 1.2.0
+
+### Minor Changes
+
+- [#415](https://github.com/codama-idl/codama/pull/415) [`3b6dd96`](https://github.com/codama-idl/codama/commit/3b6dd96430e5568b33e60eb40ebea71afbaa9677) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update the `Lamports` type to match its latest definition in version `2.0.0` and onwards.
+
 ## 1.1.2
 
 ### Patch Changes
