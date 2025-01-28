@@ -693,9 +693,8 @@ dependencies = [
  "num-traits",
  "serde",
  "serde-big-array",
- "serde_with 3.11.0",
- "solana-program",
- "solana-program-test",
+ "serde_with",
+ "solana-program 2.1.7",
  "solana-sdk",
  "thiserror",
 ]

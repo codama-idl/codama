@@ -51,6 +51,69 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for GuardV1 {
     }
 }
 
+#[cfg(feature = "fetch")]
+pub fn fetch_guard_v1(
+    rpc: &solana_client::rpc_client::RpcClient,
+    address: &Pubkey,
+) -> Result<super::DecodedAccount<GuardV1>, Error> {
+    let accounts = fetch_all_guard_v1(rpc, vec![address])?;
+    Ok(accounts[0].clone())
+}
+
+#[cfg(feature = "fetch")]
+pub fn fetch_all_guard_v1(
+    rpc: &solana_client::rpc_client::RpcClient,
+    addresses: Vec<Pubkey>,
+) -> Result<Vec<super::DecodedAccount<GuardV1>>, Error> {
+    let accounts = rpc.get_multiple_accounts(&addresses)?;
+    let mut decoded_accounts: Vec<super::DecodedAccount<GuardV1>> = Vec::new();
+    for i in 0..addresses.len() {
+        let address = addresses[i];
+        let account = accounts[i]
+            .as_ref()
+            .ok_or(format!("Account not found: {}", address))?;
+        let data = GuardV1::from_bytes(&account.data)?;
+        decoded_accounts.push(super::DecodedAccount {
+            address,
+            account: account.clone(),
+            data,
+        });
+    }
+    Ok(decoded_accounts)
+}
+
+#[cfg(feature = "fetch")]
+pub fn fetch_maybe_guard_v1(
+    rpc: &solana_client::rpc_client::RpcClient,
+    address: &Pubkey,
+) -> Result<super::MaybeAccount<GuardV1>, Error> {
+    let accounts = fetch_all_maybe_guard_v1(rpc, vec![address])?;
+    Ok(accounts[0].clone())
+}
+
+#[cfg(feature = "fetch")]
+pub fn fetch_all_maybe_guard_v1(
+    rpc: &solana_client::rpc_client::RpcClient,
+    addresses: Vec<Pubkey>,
+) -> Result<Vec<super::MaybeAccount<GuardV1>>, Error> {
+    let accounts = rpc.get_multiple_accounts(&addresses)?;
+    let mut decoded_accounts: Vec<super::MaybeAccount<GuardV1>> = Vec::new();
+    for i in 0..addresses.len() {
+        let address = addresses[i];
+        if let Some(account) = accounts[i].as_ref() {
+            let data = GuardV1::from_bytes(&account.data)?;
+            decoded_accounts.push(super::MaybeAccount::Exists(super::DecodedAccount {
+                address,
+                account: account.clone(),
+                data,
+            }));
+        } else {
+            decoded_accounts.push(super::MaybeAccount::NotFound(address));
+        }
+    }
+    Ok(decoded_accounts)
+}
+
 #[cfg(feature = "anchor")]
 impl anchor_lang::AccountDeserialize for GuardV1 {
     fn try_deserialize_unchecked(buf: &mut &[u8]) -> anchor_lang::Result<Self> {
