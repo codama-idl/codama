@@ -1,5 +1,14 @@
 # @codama/errors
 
+## 1.2.1
+
+### Patch Changes
+
+- [#390](https://github.com/codama-idl/codama/pull/390) [`92efaa9`](https://github.com/codama-idl/codama/commit/92efaa9261f38de10a1b691c5b25ea0ecf95360b) Thanks [@lithdew](https://github.com/lithdew)! - Support constant program ID's for PDA instruction accounts in Anchor.
+
+- Updated dependencies []:
+    - @codama/node-types@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes

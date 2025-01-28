@@ -29,7 +29,7 @@ import {
   type Encoder,
   type FetchAccountConfig,
   type FetchAccountsConfig,
-  type LamportsUnsafeBeyond2Pow53Minus1,
+  type Lamports,
   type MaybeAccount,
   type MaybeEncodedAccount,
 } from '@solana/web3.js';
@@ -49,7 +49,7 @@ export type Nonce = {
   state: NonceState;
   authority: Address;
   blockhash: Address;
-  lamportsPerSignature: LamportsUnsafeBeyond2Pow53Minus1;
+  lamportsPerSignature: Lamports;
 };
 
 export type NonceArgs = {
@@ -57,7 +57,7 @@ export type NonceArgs = {
   state: NonceStateArgs;
   authority: Address;
   blockhash: Address;
-  lamportsPerSignature: LamportsUnsafeBeyond2Pow53Minus1;
+  lamportsPerSignature: Lamports;
 };
 
 export function getNonceEncoder(): Encoder<NonceArgs> {

@@ -1,0 +1,27 @@
+{
+    "name": "@codama/renderers-js-e2e-monorepo",
+    "private": true,
+    "peedDependencies": {
+        "@solana/web3.js": "^2.0.0"
+    },
+    "devDependencies": {
+        "@ava/typescript": "^5.0.0",
+        "@solana/eslint-config-solana": "^3.0.0",
+        "@solana/web3.js": "^2.0.0",
+        "@typescript-eslint/eslint-plugin": "^7.3.1",
+        "@typescript-eslint/parser": "^7.3.1",
+        "ava": "^6.1.2",
+        "eslint": "^8.57.0",
+        "prettier": "^3.2.5",
+        "rimraf": "^6.0.1",
+        "tsup": "^8.0.2",
+        "typedoc": "^0.27.6",
+        "typedoc-plugin-missing-exports": "^3.1.0",
+        "typescript": "^5.7.3"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "packageManager": "pnpm@9.1.0",
+    "prettier": "@solana/prettier-config-solana"
+}

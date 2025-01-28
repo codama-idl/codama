@@ -1,5 +1,23 @@
 # @codama/renderers-rust
 
+## 1.0.8
+
+### Patch Changes
+
+- [#405](https://github.com/codama-idl/codama/pull/405) [`9f497fd`](https://github.com/codama-idl/codama/commit/9f497fd81250bbc8453390eb01a17509c6cfde09) Thanks [@wjthieme](https://github.com/wjthieme)! - bug: serde serialize/deserialize big arrays
+
+## 1.0.7
+
+### Patch Changes
+
+- [#299](https://github.com/codama-idl/codama/pull/299) [`459492c`](https://github.com/codama-idl/codama/commit/459492ca474996981ba2ac414b215a9d28270482) Thanks [@wjthieme](https://github.com/wjthieme)! - Add account fetching helper functions to rust client
+
+- Updated dependencies [[`92efaa9`](https://github.com/codama-idl/codama/commit/92efaa9261f38de10a1b691c5b25ea0ecf95360b)]:
+    - @codama/errors@1.2.1
+    - @codama/nodes@1.2.1
+    - @codama/renderers-core@1.0.3
+    - @codama/visitors-core@1.2.1
+
 ## 1.0.6
 
 ### Patch Changes

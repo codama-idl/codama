@@ -332,15 +332,16 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
     visit(node, visitor);
 
     // When we try to retrieve a missing account node.
-    const getMissingAccount = () => linkables.getOrThrow([node, accountLinkNode('missingAccount', 'myProgram')]);
+    const linkNode = accountLinkNode('missingAccount', 'myProgram');
+    const getMissingAccount = () => linkables.getOrThrow([node, linkNode]);
 
     // Then we expect an exception to be thrown.
     expect(getMissingAccount).toThrow(
         new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
             kind: 'accountLinkNode',
-            linkNode: accountLinkNode('missingAccount', 'myProgram'),
+            linkNode,
             name: 'missingAccount',
-            stack: [],
+            path: [node, linkNode],
         }),
     );
 });

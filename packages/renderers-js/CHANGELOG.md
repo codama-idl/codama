@@ -1,5 +1,22 @@
 # @codama/renderers-js
 
+## 1.2.0
+
+### Minor Changes
+
+- [#415](https://github.com/codama-idl/codama/pull/415) [`3b6dd96`](https://github.com/codama-idl/codama/commit/3b6dd96430e5568b33e60eb40ebea71afbaa9677) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update the `Lamports` type to match its latest definition in version `2.0.0` and onwards.
+
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`92efaa9`](https://github.com/codama-idl/codama/commit/92efaa9261f38de10a1b691c5b25ea0ecf95360b)]:
+    - @codama/nodes-from-anchor@1.1.1
+    - @codama/errors@1.2.1
+    - @codama/nodes@1.2.1
+    - @codama/renderers-core@1.0.3
+    - @codama/visitors-core@1.2.1
+
 ## 1.1.1
 
 ### Patch Changes

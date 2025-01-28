@@ -15,6 +15,9 @@
   {% if programsToExport.length > 0 %}
     pub mod programs;
   {% endif %}
+  {% if accountsToExport.length > 0 %}
+    pub mod shared;
+  {% endif %}
   {% if definedTypesToExport.length > 0 %}
     pub mod types;
   {% endif %}
