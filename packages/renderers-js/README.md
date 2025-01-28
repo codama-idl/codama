@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/renderers-js.svg?style=flat&label=%40codama%2Frenderers-js
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-js
 
-This package generates JavaScript clients from your Codama IDLs. The generated clients are compatible with the soon-to-be-released 2.0 line of [`@solana/web3.js`](https://github.com/solana-labs/solana-web3.js).
+This package generates JavaScript clients from your Codama IDLs. The generated clients are compatible with the soon-to-be-released 2.0 line of [`@solana/web3.js`](https://github.com/anza-xyz/solana-web3.js).
 
 ## Installation
 

@@ -1,6 +1,6 @@
 /**
  * Copied from @solana/functional.
- * @see https://github.com/solana-labs/solana-web3.js/blob/master/packages/functional/src/pipe.ts
+ * @see https://github.com/anza-xyz/solana-web3.js/blob/main/packages/functional/src/pipe.ts
  *
  * ---
  *
