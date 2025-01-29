@@ -39,7 +39,7 @@ export function createFromJson(json: string): Codama {
     return createFromRoot(JSON.parse(json) as RootNode);
 }
 
-function validateCodamaVersion(rootVersion: CodamaVersion): void {
+export function validateCodamaVersion(rootVersion: CodamaVersion): void {
     const codamaVersion = __VERSION__;
     if (rootVersion === codamaVersion) return;
     const [rootMajor, rootMinor] = rootVersion.split('.').map(Number);
