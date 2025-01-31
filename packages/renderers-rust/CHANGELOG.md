@@ -1,5 +1,13 @@
 # @codama/renderers-rust
 
+## 1.0.9
+
+### Patch Changes
+
+- [#401](https://github.com/codama-idl/codama/pull/401) [`18e75fe`](https://github.com/codama-idl/codama/commit/18e75fe8a6cf24110c90a073eb7685b23843c11b) Thanks [@wjthieme](https://github.com/wjthieme)! - Fix a bug where types from sharedPage where not qualified correctly in the account fetch functions
+
+- [#348](https://github.com/codama-idl/codama/pull/348) [`f70b407`](https://github.com/codama-idl/codama/commit/f70b407594e3af00bb09d27bfe947f6c0312677a) Thanks [@Nagaprasadvr](https://github.com/Nagaprasadvr)! - Add `Debug` trait to instruction structs
+
 ## 1.0.8
 
 ### Patch Changes
