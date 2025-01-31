@@ -1,5 +1,18 @@
 # codama
 
+## 1.2.2
+
+### Patch Changes
+
+- [#425](https://github.com/codama-idl/codama/pull/425) [`7bb6920`](https://github.com/codama-idl/codama/commit/7bb6920d58d268f604889d5181c2dac0300efe0f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add new Codama CLI
+
+- Updated dependencies [[`7bb6920`](https://github.com/codama-idl/codama/commit/7bb6920d58d268f604889d5181c2dac0300efe0f)]:
+    - @codama/cli@1.0.1
+    - @codama/errors@1.2.2
+    - @codama/nodes@1.2.2
+    - @codama/validators@1.2.2
+    - @codama/visitors@1.2.2
+
 ## 1.2.1
 
 ### Patch Changes

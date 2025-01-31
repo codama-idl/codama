@@ -1,5 +1,18 @@
 # @codama/renderers-js
 
+## 1.2.1
+
+### Patch Changes
+
+- [#425](https://github.com/codama-idl/codama/pull/425) [`7bb6920`](https://github.com/codama-idl/codama/commit/7bb6920d58d268f604889d5181c2dac0300efe0f) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Export `renderVisitor` function of all renderers packages as `default` export.
+
+- Updated dependencies []:
+    - @codama/errors@1.2.2
+    - @codama/nodes@1.2.2
+    - @codama/visitors-core@1.2.2
+    - @codama/nodes-from-anchor@1.1.2
+    - @codama/renderers-core@1.0.4
+
 ## 1.2.0
 
 ### Minor Changes
