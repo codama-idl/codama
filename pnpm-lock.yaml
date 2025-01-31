@@ -78,6 +78,46 @@ importers:
         specifier: ^8.3.1
         version: 8.3.1
 
+  packages/cli:
+    dependencies:
+      '@codama/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@codama/nodes-from-anchor':
+        specifier: workspace:*
+        version: link:../nodes-from-anchor
+      '@codama/renderers':
+        specifier: workspace:*
+        version: link:../renderers
+      '@codama/renderers-js':
+        specifier: workspace:*
+        version: link:../renderers-js
+      '@codama/renderers-js-umi':
+        specifier: workspace:*
+        version: link:../renderers-js-umi
+      '@codama/renderers-rust':
+        specifier: workspace:*
+        version: link:../renderers-rust
+      '@codama/visitors':
+        specifier: workspace:*
+        version: link:../visitors
+      '@codama/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+      chalk:
+        specifier: ^5.4.1
+        version: 5.4.1
+      commander:
+        specifier: ^13.1.0
+        version: 13.1.0
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
+    devDependencies:
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
+
   packages/dynamic-codecs:
     dependencies:
       '@codama/errors':
@@ -135,6 +175,9 @@ importers:
 
   packages/library:
     dependencies:
+      '@codama/cli':
+        specifier: workspace:*
+        version: link:../cli
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
@@ -1201,6 +1244,9 @@ packages:
 
   '@types/nunjucks@3.2.6':
     resolution: {integrity: sha512-pHiGtf83na1nCzliuAdq8GowYiXvH5l931xZ0YEHaLMNFgynpEqx+IPStlu7UaDkehfvl01e4x/9Tpwhy7Ue3w==}
+
+  '@types/prompts@2.4.9':
+    resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -2361,6 +2407,10 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
+  kleur@3.0.3:
+    resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
+    engines: {node: '>=6'}
+
   leven@3.1.0:
     resolution: {integrity: sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==}
     engines: {node: '>=6'}
@@ -2680,6 +2730,10 @@ packages:
     resolution: {integrity: sha512-xkeffkZoqQmRrcNewpOsUCKNOl+CkPqjt3Ld749uz1S7/O7GuPNPv2fZk3v/1U/FE8/B4Zz0llVL80MKON1tOQ==}
     engines: {node: ^16.10.0 || ^18.12.0 || >=20.0.0}
 
+  prompts@2.4.2:
+    resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
+    engines: {node: '>= 6'}
+
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -2792,6 +2846,9 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
+
+  sisteransi@1.0.5:
+    resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -4205,6 +4262,11 @@ snapshots:
       undici-types: 6.20.0
 
   '@types/nunjucks@3.2.6': {}
+
+  '@types/prompts@2.4.9':
+    dependencies:
+      '@types/node': 22.12.0
+      kleur: 3.0.3
 
   '@types/semver@7.5.8': {}
 
@@ -5668,6 +5730,8 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
+  kleur@3.0.3: {}
+
   leven@3.1.0: {}
 
   levn@0.4.1:
@@ -5912,6 +5976,11 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 18.3.1
 
+  prompts@2.4.2:
+    dependencies:
+      kleur: 3.0.3
+      sisteransi: 1.0.5
+
   punycode@2.3.1: {}
 
   pure-rand@6.1.0: {}
@@ -6022,6 +6091,8 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
+
+  sisteransi@1.0.5: {}
 
   slash@3.0.0: {}
 

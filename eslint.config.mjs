@@ -8,7 +8,7 @@ export default tseslint.config([
         extends: [solanaConfig],
     },
     {
-        files: ['packages/nodes/**', 'packages/node-types/**'],
+        files: ['packages/cli/**', 'packages/nodes/**', 'packages/node-types/**'],
         rules: {
             'sort-keys-fix/sort-keys-fix': 'off',
             'typescript-sort-keys/interface': 'off',

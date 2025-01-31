@@ -1,0 +1,66 @@
+{
+    "name": "@codama/cli",
+    "version": "1.0.0",
+    "description": "The package that provides a CLI for the Codama standard",
+    "exports": {
+        "types": "./dist/types/index.d.ts",
+        "node": {
+            "import": "./dist/index.node.mjs",
+            "require": "./dist/index.node.cjs"
+        }
+    },
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "types": "./dist/types/index.d.ts",
+    "type": "commonjs",
+    "files": [
+        "./dist/types",
+        "./dist/index.*"
+    ],
+    "sideEffects": false,
+    "keywords": [
+        "codama",
+        "standard",
+        "cli"
+    ],
+    "scripts": {
+        "build": "rimraf dist && pnpm build:src && pnpm build:types",
+        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
+        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
+        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
+        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
+        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node",
+        "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
+        "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
+        "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
+    },
+    "dependencies": {
+        "@codama/nodes": "workspace:*",
+        "@codama/nodes-from-anchor": "workspace:*",
+        "@codama/renderers": "workspace:*",
+        "@codama/renderers-js": "workspace:*",
+        "@codama/renderers-js-umi": "workspace:*",
+        "@codama/renderers-rust": "workspace:*",
+        "@codama/visitors": "workspace:*",
+        "@codama/visitors-core": "workspace:*",
+        "chalk": "^5.4.1",
+        "commander": "^13.1.0",
+        "prompts": "^2.4.2"
+    },
+    "devDependencies": {
+        "@types/prompts": "^2.4.9"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/codama-idl/codama"
+    },
+    "bugs": {
+        "url": "http://github.com/codama-idl/codama/issues"
+    },
+    "browserslist": [
+        "supports bigint and not dead",
+        "maintained node versions"
+    ]
+}
