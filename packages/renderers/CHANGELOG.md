@@ -1,5 +1,14 @@
 # @codama/renderers
 
+## 1.0.11
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/renderers-js@1.2.2
+    - @codama/renderers-js-umi@1.1.4
+    - @codama/renderers-rust@1.0.11
+
 ## 1.0.10
 
 ### Patch Changes
