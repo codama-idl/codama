@@ -23,7 +23,7 @@
     "react-native": "./dist/index.react-native.mjs",
     "types": "./dist/types/index.d.ts",
     "type": "commonjs",
-    "bin": "./bin/cli.mjs",
+    "bin": "./bin/cli.cjs",
     "files": [
         "./bin",
         "./dist/types",
