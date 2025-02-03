@@ -105,8 +105,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       chalk:
-        specifier: ^5.4.1
-        version: 5.4.1
+        specifier: ^4.1.2
+        version: 4.1.2
       commander:
         specifier: ^13.1.0
         version: 13.1.0
@@ -161,8 +161,8 @@ importers:
         specifier: workspace:*
         version: link:../node-types
       chalk:
-        specifier: ^5.4.1
-        version: 5.4.1
+        specifier: ^4.1.2
+        version: 4.1.2
       commander:
         specifier: ^13.1.0
         version: 13.1.0
