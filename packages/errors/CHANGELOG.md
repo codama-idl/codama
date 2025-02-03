@@ -1,5 +1,14 @@
 # @codama/errors
 
+## 1.2.3
+
+### Patch Changes
+
+- [#430](https://github.com/codama-idl/codama/pull/430) [`4ceeb5e`](https://github.com/codama-idl/codama/commit/4ceeb5e6c479690fe878d25af6a5d48953adfa6a) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Improve ESM and CJS support when importing modules in CLI
+
+- Updated dependencies []:
+    - @codama/node-types@1.2.3
+
 ## 1.2.2
 
 ### Patch Changes
