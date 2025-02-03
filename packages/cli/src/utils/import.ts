@@ -47,20 +47,11 @@ async function importLocalModule<T extends object>(identifier: string, modulePat
     const dotIndex = modulePath.lastIndexOf('.');
     const extension = dotIndex === -1 ? undefined : modulePath.slice(dotIndex);
     const modulePromise = extension === '.json' ? import(modulePath, { with: { type: 'json' } }) : import(modulePath);
-
-    try {
-        return (await modulePromise) as unknown as T;
-    } catch (error) {
-        throw new Error(`Failed to import ${identifier} at "${modulePath}" as a local module`, { cause: error });
-    }
+    return await handleImportPromise(modulePromise, identifier, modulePath);
 }
 
 async function importExternalModule<T extends object>(identifier: string, modulePath: string): Promise<T> {
-    try {
-        return (await import(modulePath)) as unknown as T;
-    } catch (error) {
-        throw new Error(`Failed to import ${identifier} at "${modulePath}" as a module`, { cause: error });
-    }
+    return await handleImportPromise(import(modulePath), identifier, modulePath);
 }
 
 async function importExternalUserModule<T extends object>(identifier: string, modulePath: string): Promise<T> {
@@ -68,4 +59,23 @@ async function importExternalUserModule<T extends object>(identifier: string, mo
     const userRequire = createRequire(userPackageJsonPath);
     const userModulePath = userRequire.resolve(modulePath);
     return await importExternalModule<T>(identifier, userModulePath);
+}
+
+async function handleImportPromise<T extends object>(
+    importPromise: Promise<unknown>,
+    identifier: string,
+    modulePath: string,
+): Promise<T> {
+    try {
+        return (await importPromise) as T;
+    } catch (error) {
+        let causeMessage =
+            !!error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+                ? (error as { message: string }).message
+                : undefined;
+        causeMessage = causeMessage ? ` (caused by: ${causeMessage})` : '';
+        throw new Error(`Failed to import ${identifier} at "${modulePath}" as a module${causeMessage}`, {
+            cause: error,
+        });
+    }
 }

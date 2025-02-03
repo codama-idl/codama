@@ -16,6 +16,10 @@ export function logError(...args: unknown[]): void {
     console.log(chalk.red('[Error]'), ...args);
 }
 
+export function logDebug(...args: unknown[]): void {
+    console.log(chalk.magenta('[Debug]'), ...args);
+}
+
 export function logBanner(): void {
     console.log(getBanner());
 }
