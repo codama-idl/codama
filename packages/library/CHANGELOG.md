@@ -1,5 +1,18 @@
 # codama
 
+## 1.2.4
+
+### Patch Changes
+
+- [`f0c2190`](https://github.com/codama-idl/codama/commit/f0c219076af58c098319f4ca9494a98e198d99a1) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix wrong bin CLI path in package.json
+
+- Updated dependencies [[`f0c2190`](https://github.com/codama-idl/codama/commit/f0c219076af58c098319f4ca9494a98e198d99a1)]:
+    - @codama/errors@1.2.4
+    - @codama/nodes@1.2.4
+    - @codama/validators@1.2.4
+    - @codama/visitors@1.2.4
+    - @codama/cli@1.0.3
+
 ## 1.2.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-js",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "description": "JavaScript renderer compatible with the Solana web3.js library",
     "exports": {
         "types": "./dist/types/index.d.ts",
