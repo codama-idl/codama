@@ -80,6 +80,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     // Shank native program uses 1 byte
                     // anchor uses 8 bytes
                     let IX_DATA_OFFSET = 1;
+                    let requiresPubkeyImport = false;
 
                     const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
                         // checs for discriminator
@@ -104,6 +105,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                         const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
                         const hasOptionalAccounts = ix.accounts.some(acc => acc.isOptional);
+
+                        if (discriminator && hasOptionalAccounts) {
+                            requiresPubkeyImport = true;
+                        }
 
                         return {
                             accounts: ix.accounts.map((acc, accIdx) => {
@@ -134,6 +139,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const instructionParserImports = new ImportMap();
 
                     instructionParserImports.add('borsh::{BorshDeserialize}');
+
+                    if (requiresPubkeyImport) {
+                        instructionParserImports.add('solana_program::pubkey::Pubkey');
+                    }
 
                     const programIdImport = `${codamaSdkName}::ID`;
 

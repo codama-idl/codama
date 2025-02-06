@@ -59,23 +59,25 @@ impl InstructionParser {
         let mut ix_data = &ix.data[{{ IX_DATA_OFFSET }}..];
             match ix_discriminator {
                 {% for instruction in instructions %}
-                    {% if instruction.hasOptionalAccounts == false %}
-                        {% if instruction.discriminator != null %}
-                            {{ instruction.discriminator }} => {
-                                check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
-                                let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
-                                    {% for account in instruction.accounts %}
+                    {% if instruction.discriminator != null %}
+                        {{ instruction.discriminator }} => {
+                            check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
+                            let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
+                                {% for account in instruction.accounts %}
+                                    {% if account.isOptional %}
+                                        {{ account.name | snakeCase }}: Some(Pubkey::new_from_array(ix.accounts[{{ account.index }}].0)).into(),
+                                    {% else %}
                                         {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}].0.into(),
-                                    {% endfor %}
-                                };
-                                {% if instruction.hasArgs %}
-                                    let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
-                                    Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
-                                {% else %}
-                                    Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts))
-                                {% endif %}
-                            },
-                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            };
+                            {% if instruction.hasArgs %}
+                                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
+                            {% else %}
+                                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts))
+                            {% endif %}
+                        },
                     {% endif %}
                 {% endfor %}
                 _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Instruction discriminator".to_owned())),
