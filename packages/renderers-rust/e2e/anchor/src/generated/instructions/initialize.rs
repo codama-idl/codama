@@ -56,7 +56,7 @@ impl Initialize {
             self.payer, true,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = InitializeInstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&InitializeInstructionData::new()).unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::WEN_TRANSFER_GUARD_ID,
@@ -300,7 +300,7 @@ impl<'a, 'b> InitializeCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = InitializeInstructionData::new().try_to_vec().unwrap();
+        let data = borsh::to_vec(&InitializeInstructionData::new()).unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::WEN_TRANSFER_GUARD_ID,
