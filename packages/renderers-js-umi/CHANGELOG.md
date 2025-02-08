@@ -1,5 +1,16 @@
 # @codama/renderers-js-umi
 
+## 1.1.6
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.2.5
+    - @codama/nodes@1.2.5
+    - @codama/validators@1.2.5
+    - @codama/visitors-core@1.2.5
+    - @codama/renderers-core@1.0.7
+
 ## 1.1.5
 
 ### Patch Changes
