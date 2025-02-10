@@ -1,5 +1,14 @@
 # @codama/nodes-from-anchor
 
+## 1.1.5
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.2.5
+    - @codama/nodes@1.2.5
+    - @codama/visitors@1.2.5
+
 ## 1.1.4
 
 ### Patch Changes

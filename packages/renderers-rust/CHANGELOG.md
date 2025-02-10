@@ -1,5 +1,17 @@
 # @codama/renderers-rust
 
+## 1.0.13
+
+### Patch Changes
+
+- [#440](https://github.com/codama-idl/codama/pull/440) [`4867be4`](https://github.com/codama-idl/codama/commit/4867be42104bb786ce8cb9de3a55ba27aa79e719) Thanks [@febo](https://github.com/febo)! - Use borsh::to_vec in rust renderer
+
+- Updated dependencies []:
+    - @codama/errors@1.2.5
+    - @codama/nodes@1.2.5
+    - @codama/visitors-core@1.2.5
+    - @codama/renderers-core@1.0.7
+
 ## 1.0.12
 
 ### Patch Changes
