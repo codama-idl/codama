@@ -92,7 +92,7 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
     }
 
     // Struct and Tuple.
-    if ('kind' in idlType && idlType.kind === 'struct' && 'fields' in idlType) {
+    if ('kind' in idlType && idlType.kind === 'struct') {
         const fields = idlType.fields ?? [];
         if (isStructFieldArray(fields)) {
             return structTypeNodeFromAnchorV01(idlType);
