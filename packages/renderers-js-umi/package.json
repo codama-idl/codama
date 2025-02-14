@@ -50,7 +50,7 @@
         "@codama/visitors-core": "workspace:*",
         "@solana/codecs-strings": "rc",
         "nunjucks": "^3.2.4",
-        "prettier": "^3.5.0"
+        "prettier": "^3.5.1"
     },
     "devDependencies": {
         "@types/nunjucks": "^3.2.6"
