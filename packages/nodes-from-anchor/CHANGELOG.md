@@ -1,5 +1,16 @@
 # @codama/nodes-from-anchor
 
+## 1.1.6
+
+### Patch Changes
+
+- [#452](https://github.com/codama-idl/codama/pull/452) [`59125a8`](https://github.com/codama-idl/codama/commit/59125a8ad2250b6c5acf5e445fd0316d74e46649) Thanks [@stegaBOB](https://github.com/stegaBOB)! - recognize unit structs types from anchor
+
+- Updated dependencies []:
+    - @codama/errors@1.2.6
+    - @codama/nodes@1.2.6
+    - @codama/visitors@1.2.6
+
 ## 1.1.5
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @codama/validators
 
+## 1.2.6
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.2.6
+    - @codama/nodes@1.2.6
+    - @codama/visitors-core@1.2.6
+
 ## 1.2.5
 
 ### Patch Changes
