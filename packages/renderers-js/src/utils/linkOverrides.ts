@@ -49,13 +49,20 @@ export function getImportFromFactory(
         resolvers: overrides.resolvers ?? {},
     };
 
+    // todo: figure out if this logic makes sense, and if so apply to all the other 'ProgramNode-able" nodes
+    const handleProgramLink = (node?: ProgramLinkNode): string | undefined => {
+        if (!node) return;
+        const programName = node.name;
+        return linkOverrides.programs[programName];
+    };
+
     return (node: OverridableNodes) => {
         const kind = node.kind;
         switch (kind) {
             case 'accountLinkNode':
                 return linkOverrides.accounts[node.name] ?? 'generatedAccounts';
             case 'definedTypeLinkNode':
-                return linkOverrides.definedTypes[node.name] ?? 'generatedTypes';
+                return handleProgramLink(node.program) ?? linkOverrides.definedTypes[node.name] ?? 'generatedTypes';
             case 'instructionLinkNode':
                 return linkOverrides.instructions[node.name] ?? 'generatedInstructions';
             case 'pdaLinkNode':
