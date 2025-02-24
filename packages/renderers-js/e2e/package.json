@@ -12,7 +12,7 @@
         "@typescript-eslint/parser": "^7.3.1",
         "ava": "^6.1.2",
         "eslint": "^8.57.0",
-        "prettier": "^3.5.1",
+        "prettier": "^3.5.2",
         "rimraf": "^6.0.1",
         "tsup": "^8.0.2",
         "typedoc": "^0.27.8",
