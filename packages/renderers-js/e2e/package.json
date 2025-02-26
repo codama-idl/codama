@@ -14,7 +14,7 @@
         "eslint": "^8.57.0",
         "prettier": "^3.5.2",
         "rimraf": "^6.0.1",
-        "tsup": "^8.0.2",
+        "tsup": "^8.4.0",
         "typedoc": "^0.27.9",
         "typedoc-plugin-missing-exports": "^3.1.0",
         "typescript": "^5.7.3"
