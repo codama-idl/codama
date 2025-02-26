@@ -62,7 +62,7 @@ export function getImportFromFactory(
             case 'accountLinkNode':
                 return linkOverrides.accounts[node.name] ?? 'generatedAccounts';
             case 'definedTypeLinkNode':
-                return handleProgramLink(node.program) ?? linkOverrides.definedTypes[node.name] ?? 'generatedTypes';
+                return linkOverrides.definedTypes[node.name] ?? handleProgramLink(node.program) ?? 'generatedTypes';
             case 'instructionLinkNode':
                 return linkOverrides.instructions[node.name] ?? 'generatedInstructions';
             case 'pdaLinkNode':
