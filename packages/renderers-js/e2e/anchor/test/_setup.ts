@@ -19,7 +19,7 @@ import {
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 type Client = {
   rpc: Rpc<SolanaRpcApi>;

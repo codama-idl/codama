@@ -11,7 +11,7 @@ import {
   type Address,
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 
 /** NotRentExempt: Lamport balance below rent-exempt threshold */

@@ -11,7 +11,7 @@ import {
   getU32Encoder,
   type Address,
   type ReadonlyUint8Array,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import {
   type ParsedAdvanceNonceAccountInstruction,
   type ParsedAllocateInstruction,

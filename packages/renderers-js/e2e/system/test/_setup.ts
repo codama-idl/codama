@@ -21,7 +21,7 @@ import {
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import {
   SYSTEM_PROGRAM_ADDRESS,
   getCreateAccountInstruction,

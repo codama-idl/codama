@@ -23,7 +23,7 @@ import {
   type IInstructionWithAccounts,
   type IInstructionWithData,
   type WritableAccount,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 

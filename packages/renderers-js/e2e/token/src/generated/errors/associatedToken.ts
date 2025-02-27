@@ -11,7 +11,7 @@ import {
   type Address,
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs';
 
 /** InvalidOwner: Associated token account owner does not match address derivation */

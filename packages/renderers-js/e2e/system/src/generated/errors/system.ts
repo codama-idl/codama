@@ -11,7 +11,7 @@ import {
   type Address,
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 
 /** AccountAlreadyInUse: an account with the same address already exists */

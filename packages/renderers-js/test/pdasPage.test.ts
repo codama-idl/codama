@@ -102,11 +102,11 @@ test('it does not import strict types for variable seeds', async () => {
 
     // Then the `Option` string type should not be imported.
     await renderMapDoesNotContainImports(renderMap, 'pdas/foo.ts', {
-        '@solana/web3.js': ['type Option'],
+        '@solana/kit': ['type Option'],
     });
 
     // But the `OptionOrNullable` loose type should be imported.
     await renderMapContainsImports(renderMap, 'pdas/foo.ts', {
-        '@solana/web3.js': ['type OptionOrNullable'],
+        '@solana/kit': ['type OptionOrNullable'],
     });
 });

@@ -13,7 +13,7 @@ import {
   type Codec,
   type Decoder,
   type Encoder,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export enum AuthorityType {
   MintTokens,

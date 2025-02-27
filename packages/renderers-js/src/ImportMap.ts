@@ -2,18 +2,18 @@ import { Fragment } from './fragments';
 import { TypeManifest } from './TypeManifest';
 
 const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
-    solanaAccounts: '@solana/web3.js',
-    solanaAddresses: '@solana/web3.js',
-    solanaCodecsCore: '@solana/web3.js',
-    solanaCodecsDataStructures: '@solana/web3.js',
-    solanaCodecsNumbers: '@solana/web3.js',
-    solanaCodecsStrings: '@solana/web3.js',
-    solanaErrors: '@solana/web3.js',
-    solanaInstructions: '@solana/web3.js',
-    solanaOptions: '@solana/web3.js',
-    solanaPrograms: '@solana/web3.js',
-    solanaRpcTypes: '@solana/web3.js',
-    solanaSigners: '@solana/web3.js',
+    solanaAccounts: '@solana/kit',
+    solanaAddresses: '@solana/kit',
+    solanaCodecsCore: '@solana/kit',
+    solanaCodecsDataStructures: '@solana/kit',
+    solanaCodecsNumbers: '@solana/kit',
+    solanaCodecsStrings: '@solana/kit',
+    solanaErrors: '@solana/kit',
+    solanaInstructions: '@solana/kit',
+    solanaOptions: '@solana/kit',
+    solanaPrograms: '@solana/kit',
+    solanaRpcTypes: '@solana/kit',
+    solanaSigners: '@solana/kit',
 };
 
 const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {

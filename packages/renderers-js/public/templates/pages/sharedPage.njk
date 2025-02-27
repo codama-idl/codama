@@ -101,6 +101,6 @@ export function getAccountMetaFactory(
 }
 
 export function isTransactionSigner<TAddress extends string = string>(value: Address<TAddress> | ProgramDerivedAddress<TAddress> | TransactionSigner<TAddress>): value is TransactionSigner<TAddress> {
-  return !!value && typeof value === 'object' && 'address' in value && web3JsIsTransactionSigner(value);
+  return !!value && typeof value === 'object' && 'address' in value && kitIsTransactionSigner(value);
 }
 {% endblock %}

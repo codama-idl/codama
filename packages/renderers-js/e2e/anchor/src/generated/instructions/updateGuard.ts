@@ -37,7 +37,7 @@ import {
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs';
 import {
   expectAddress,

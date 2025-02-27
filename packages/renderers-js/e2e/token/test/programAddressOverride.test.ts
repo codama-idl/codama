@@ -1,4 +1,4 @@
-import { address, generateKeyPairSigner } from '@solana/web3.js';
+import { address, generateKeyPairSigner } from '@solana/kit';
 import test from 'ava';
 import { getInitializeMintInstruction } from '../src/index.js';
 

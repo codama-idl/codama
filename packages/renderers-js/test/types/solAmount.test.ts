@@ -25,6 +25,6 @@ test('it renders size prefix codecs', async () => {
 
     // And we expect the following type and codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': ['Lamports', 'getLamportsEncoder', 'getLamportsDecoder', 'getU64Encoder', 'getU64Decoder'],
+        '@solana/kit': ['Lamports', 'getLamportsEncoder', 'getLamportsDecoder', 'getU64Encoder', 'getU64Decoder'],
     });
 });

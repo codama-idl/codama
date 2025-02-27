@@ -35,7 +35,7 @@ test('it renders the program address constant', async () => {
 
     // And we expect the following imports.
     await renderMapContainsImports(renderMap, 'programs/splToken.ts', {
-        '@solana/web3.js': ['Address'],
+        '@solana/kit': ['Address'],
     });
 });
 
@@ -101,7 +101,7 @@ test('it renders an function that identifies accounts in a program', async () =>
 
     // And we expect the following imports.
     await renderMapContainsImports(renderMap, 'programs/splToken.ts', {
-        '@solana/web3.js': ['containsBytes', 'ReadonlyUint8Array'],
+        '@solana/kit': ['containsBytes', 'ReadonlyUint8Array'],
     });
 });
 
@@ -173,7 +173,7 @@ test('it renders an function that identifies instructions in a program', async (
 
     // And we expect the following imports.
     await renderMapContainsImports(renderMap, 'programs/splToken.ts', {
-        '@solana/web3.js': ['containsBytes', 'ReadonlyUint8Array'],
+        '@solana/kit': ['containsBytes', 'ReadonlyUint8Array'],
     });
 });
 

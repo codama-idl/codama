@@ -6,7 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
-import { type Address } from '@solana/web3.js';
+import { type Address } from '@solana/kit';
 import { type ParsedAddMemoInstruction } from '../instructions';
 
 export const MEMO_PROGRAM_ADDRESS =

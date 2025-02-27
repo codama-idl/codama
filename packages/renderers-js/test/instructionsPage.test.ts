@@ -248,7 +248,7 @@ test('it renders instruction accounts with inlined PDAs as default value', async
             '}',
     ]);
     await renderMapContainsImports(renderMap, 'instructions/increment.ts', {
-        '@solana/web3.js': ['getProgramDerivedAddress'],
+        '@solana/kit': ['getProgramDerivedAddress'],
     });
 });
 
@@ -299,7 +299,7 @@ test('it renders instruction accounts with inlined PDAs from another program as 
             '}',
     ]);
     await renderMapContainsImports(renderMap, 'instructions/increment.ts', {
-        '@solana/web3.js': ['Address', 'getProgramDerivedAddress'],
+        '@solana/kit': ['Address', 'getProgramDerivedAddress'],
     });
 });
 

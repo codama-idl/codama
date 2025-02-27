@@ -24,6 +24,6 @@ test('it renders sentinel codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': ['addEncoderSentinel', 'addDecoderSentinel'],
+        '@solana/kit': ['addEncoderSentinel', 'addDecoderSentinel'],
     });
 });

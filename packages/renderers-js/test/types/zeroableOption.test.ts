@@ -31,7 +31,7 @@ test('it renders zeroable option codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': [
+        '@solana/kit': [
             'getOptionEncoder',
             'getOptionDecoder',
             'getAddressEncoder',
@@ -62,7 +62,7 @@ test('it renders zeroable option codecs with custom zero values', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': [
+        '@solana/kit': [
             'getOptionEncoder',
             'getOptionDecoder',
             'getU16Encoder',

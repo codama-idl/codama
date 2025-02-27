@@ -3,7 +3,7 @@ import {
   getBase58Encoder,
   getUtf8Decoder,
   pipe,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import test from 'ava';
 import { getAddMemoInstruction } from '../src/index.js';
 import {
