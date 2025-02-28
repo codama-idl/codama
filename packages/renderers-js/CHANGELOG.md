@@ -1,5 +1,18 @@
 # @codama/renderers-js
 
+## 1.2.6
+
+### Patch Changes
+
+- [#485](https://github.com/codama-idl/codama/pull/485) [`7e275ab`](https://github.com/codama-idl/codama/commit/7e275ab51c6d1b20b54ea9f4976b0692a308b2d2) Thanks [@steveluscher](https://github.com/steveluscher)! - The JS renderer depends on `@solana/web3.js` at version 2. That library has been renamed to `@solana/kit` starting from version 2.1. Codama has been updated to use `@solana/kit@^2.1.0` instead of `@solana/web3.js`
+
+- Updated dependencies [[`7e275ab`](https://github.com/codama-idl/codama/commit/7e275ab51c6d1b20b54ea9f4976b0692a308b2d2)]:
+    - @codama/errors@1.2.7
+    - @codama/nodes@1.2.7
+    - @codama/nodes-from-anchor@1.1.7
+    - @codama/renderers-core@1.0.9
+    - @codama/visitors-core@1.2.7
+
 ## 1.2.5
 
 ### Patch Changes
