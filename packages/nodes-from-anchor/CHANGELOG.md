@@ -1,5 +1,14 @@
 # @codama/nodes-from-anchor
 
+## 1.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`7e275ab`](https://github.com/codama-idl/codama/commit/7e275ab51c6d1b20b54ea9f4976b0692a308b2d2)]:
+    - @codama/errors@1.2.7
+    - @codama/nodes@1.2.7
+    - @codama/visitors@1.2.7
+
 ## 1.1.6
 
 ### Patch Changes
