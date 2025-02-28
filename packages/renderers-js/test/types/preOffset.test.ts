@@ -24,7 +24,7 @@ test('it renders relative pre-offset codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': ['offsetEncoder', 'offsetDecoder'],
+        '@solana/kit': ['offsetEncoder', 'offsetDecoder'],
     });
 });
 
@@ -47,7 +47,7 @@ test('it renders negative relative pre-offset codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': ['offsetEncoder', 'offsetDecoder'],
+        '@solana/kit': ['offsetEncoder', 'offsetDecoder'],
     });
 });
 
@@ -70,7 +70,7 @@ test('it renders absolute pre-offset codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': ['offsetEncoder', 'offsetDecoder'],
+        '@solana/kit': ['offsetEncoder', 'offsetDecoder'],
     });
 });
 
@@ -93,7 +93,7 @@ test('it renders negative absolute pre-offset codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': ['offsetEncoder', 'offsetDecoder'],
+        '@solana/kit': ['offsetEncoder', 'offsetDecoder'],
     });
 });
 
@@ -116,6 +116,6 @@ test('it renders padded pre-offset codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': ['padLeftEncoder', 'padLeftDecoder'],
+        '@solana/kit': ['padLeftEncoder', 'padLeftDecoder'],
     });
 });

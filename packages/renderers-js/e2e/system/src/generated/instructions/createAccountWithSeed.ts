@@ -34,7 +34,7 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 

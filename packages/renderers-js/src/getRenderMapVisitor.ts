@@ -405,7 +405,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                         'isTransactionSigner',
                                         'type TransactionSigner',
                                     ])
-                                    .addAlias('solanaSigners', 'isTransactionSigner', 'web3JsIsTransactionSigner')
+                                    .addAlias('solanaSigners', 'isTransactionSigner', 'kitIsTransactionSigner')
                                     .toString(dependencyMap, useGranularImports),
                             }),
                         );

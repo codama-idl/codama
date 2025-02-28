@@ -11,7 +11,7 @@ import {
   type Address,
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs';
 
 /** CpiRuleEnforcementFailed: Cpi Rule Enforcement Failed */

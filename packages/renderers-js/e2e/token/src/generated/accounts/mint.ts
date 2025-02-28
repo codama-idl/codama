@@ -39,7 +39,7 @@ import {
   type MaybeEncodedAccount,
   type Option,
   type OptionOrNullable,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export type Mint = {
   /**

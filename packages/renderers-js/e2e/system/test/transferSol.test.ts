@@ -9,7 +9,7 @@ import {
   SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE,
   SolanaError,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import test from 'ava';
 import {
   getTransferSolInstruction,

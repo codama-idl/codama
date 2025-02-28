@@ -11,7 +11,7 @@ import {
   getProgramDerivedAddress,
   type Address,
   type ProgramDerivedAddress,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export type AssociatedTokenSeeds = {
   /** The wallet address of the associated token account. */

@@ -25,7 +25,7 @@ test('it renders remainder option codecs', async () => {
 
     // And we expect the following codec imports.
     await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/web3.js': [
+        '@solana/kit': [
             'getOptionEncoder',
             'getOptionDecoder',
             'getAddressEncoder',

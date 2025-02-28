@@ -2,7 +2,7 @@ import {
   appendTransactionMessageInstruction,
   generateKeyPairSigner,
   pipe,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import test from 'ava';
 import { fetchNonce, getAdvanceNonceAccountInstruction } from '../src/index.js';
 import {

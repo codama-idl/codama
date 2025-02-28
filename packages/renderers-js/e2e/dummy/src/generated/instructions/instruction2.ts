@@ -12,7 +12,7 @@ import {
   type IAccountMeta,
   type IInstruction,
   type IInstructionWithAccounts,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
 export type Instruction2Instruction<

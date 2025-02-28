@@ -22,7 +22,7 @@ import {
   type IInstructionWithAccounts,
   type IInstructionWithData,
   type TransactionSigner,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import { MEMO_PROGRAM_ADDRESS } from '../programs';
 
 export type AddMemoInstruction<

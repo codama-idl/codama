@@ -32,7 +32,7 @@ import {
   type Lamports,
   type MaybeAccount,
   type MaybeEncodedAccount,
-} from '@solana/web3.js';
+} from '@solana/kit';
 import {
   getNonceStateDecoder,
   getNonceStateEncoder,

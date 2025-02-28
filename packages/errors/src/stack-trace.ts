@@ -1,6 +1,6 @@
 /**
  * Heavily inspired by @solana/errors.
- * @see https://github.com/anza-xyz/solana-web3.js/blob/main/packages/errors
+ * @see https://github.com/anza-xyz/kit/blob/main/packages/errors
  */
 
 export function safeCaptureStackTrace(...args: Parameters<typeof Error.captureStackTrace>): void {

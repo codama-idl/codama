@@ -24,7 +24,7 @@ import {
   type Encoder,
   type GetDiscriminatedUnionVariant,
   type GetDiscriminatedUnionVariantContent,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 /**
  * Controls which protocols can interact with the token by

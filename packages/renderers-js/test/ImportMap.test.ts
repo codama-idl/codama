@@ -45,7 +45,7 @@ test('it offers some default dependency mappings', () => {
 
     // Then we expect the following import statements.
     expect(importStatements).toBe(
-        "import { type Address, type Codec } from '@solana/web3.js';\n" +
+        "import { type Address, type Codec } from '@solana/kit';\n" +
             "import { type MyCustomType } from '../../hooked';\n" +
             "import { myHelper } from '../shared';\n" +
             "import { type MyType } from '../types';",

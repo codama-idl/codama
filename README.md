@@ -63,7 +63,7 @@ _Note that some features such as rendering CLIs are not yet available. However, 
 
 - **Rendering client code**. Want people to start interacting with your Solana program? You can use special visitors that go through your Codama IDL and generate client code that you can then publish for your end-users. Currently, we have the following renderers available:
 
-    - `@codama/renderers-js`: Renders a JavaScript client compatible with the soon-to-be-released 2.0 line of [`@solana/web3.js`](https://github.com/anza-xyz/solana-web3.js).
+    - `@codama/renderers-js`: Renders a JavaScript client compatible with [`@solana/kit`](https://github.com/anza-xyz/kit).
     - `@codama/renderers-js-umi`: Renders a JavaScript client compatible with Metaplex’s [Umi](https://github.com/metaplex-foundation/umi) framework.
     - `@codama/renderers-rust`: Renders a Rust client that removes the need for publishing the program crate and offers a better developer experience.
     - _And more to come._
