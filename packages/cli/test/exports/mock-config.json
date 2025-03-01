@@ -1,0 +1,5 @@
+{
+    "idl": "mock-idl.json",
+    "before": ["@codama/visitors#identityVisitor"],
+    "scripts": {}
+}
