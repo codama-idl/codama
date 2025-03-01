@@ -30,7 +30,8 @@
         "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:exports",
+        "test:exports": "node test/exports/module.mjs && node test/exports/commonjs.cjs",
         "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
         "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
@@ -44,8 +45,8 @@
         "@codama/renderers-rust": "workspace:*",
         "@codama/visitors": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "chalk": "^5.4.1",
         "commander": "^13.1.0",
+        "picocolors": "^1.1.1",
         "prompts": "^2.4.2"
     },
     "devDependencies": {
