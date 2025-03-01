@@ -61,6 +61,6 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         // And tsup doesn't offer a way to change this behavior. Since the CLI package
         // relies on using the "with" keyword to dynamically import JSON files,
         // we can't use Rollup for treeshaking.
-        treeshake: true,
+        treeshake: false,
     };
 }
