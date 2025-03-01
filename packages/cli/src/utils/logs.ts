@@ -1,23 +1,23 @@
-import chalk from 'chalk';
+import pico from 'picocolors';
 
 export function logSuccess(...args: unknown[]): void {
-    console.log(chalk.green('[Success]'), ...args);
+    console.log(pico.green('[Success]'), ...args);
 }
 
 export function logInfo(...args: unknown[]): void {
-    console.log(chalk.blueBright('[Info]'), ...args);
+    console.log(pico.blueBright('[Info]'), ...args);
 }
 
 export function logWarning(...args: unknown[]): void {
-    console.log(chalk.yellow('[Warning]'), ...args);
+    console.log(pico.yellow('[Warning]'), ...args);
 }
 
 export function logError(...args: unknown[]): void {
-    console.log(chalk.red('[Error]'), ...args);
+    console.log(pico.red('[Error]'), ...args);
 }
 
 export function logDebug(...args: unknown[]): void {
-    console.log(chalk.magenta('[Debug]'), ...args);
+    console.log(pico.magenta('[Debug]'), ...args);
 }
 
 export function logBanner(): void {
@@ -26,6 +26,6 @@ export function logBanner(): void {
 
 function getBanner(): string {
     const textBanner = 'Welcome to Codama!';
-    const gradientBanner = chalk.bold(chalk.hex('#e7ab61')(textBanner));
+    const gradientBanner = pico.bold(`\x1b[38;2;231;171;97m${textBanner}\x1b[0m`);
     return process.stdout.isTTY && process.stdout.getColorDepth() > 8 ? gradientBanner : textBanner;
 }
