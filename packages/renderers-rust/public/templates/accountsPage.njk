@@ -131,7 +131,7 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for {{ account.
 #[cfg(feature = "fetch")]
 pub fn fetch_{{ account.name | snakeCase }}(
   rpc: &solana_client::rpc_client::RpcClient,
-  address: &Pubkey,
+  address: &solana_program::pubkey::Pubkey,
 ) -> Result<crate::shared::DecodedAccount<{{ account.name | pascalCase }}>, std::io::Error> {
   let accounts = fetch_all_{{ account.name | snakeCase }}(rpc, &[*address])?;
   Ok(accounts[0].clone())
@@ -140,9 +140,9 @@ pub fn fetch_{{ account.name | snakeCase }}(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_{{ account.name | snakeCase }}(
   rpc: &solana_client::rpc_client::RpcClient,
-  addresses: &[Pubkey],
+  addresses: &[solana_program::pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::DecodedAccount<{{ account.name | pascalCase }}>>, std::io::Error> {
-    let accounts = rpc.get_multiple_accounts(&addresses)
+    let accounts = rpc.get_multiple_accounts(addresses)
       .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
     let mut decoded_accounts: Vec<crate::shared::DecodedAccount<{{ account.name | pascalCase }}>> = Vec::new();
     for i in 0..addresses.len() {
@@ -158,7 +158,7 @@ pub fn fetch_all_{{ account.name | snakeCase }}(
 #[cfg(feature = "fetch")]
 pub fn fetch_maybe_{{ account.name | snakeCase }}(
   rpc: &solana_client::rpc_client::RpcClient,
-  address: &Pubkey,
+  address: &solana_program::pubkey::Pubkey,
 ) -> Result<crate::shared::MaybeAccount<{{ account.name | pascalCase }}>, std::io::Error> {
     let accounts = fetch_all_maybe_{{ account.name | snakeCase }}(rpc, &[*address])?;
     Ok(accounts[0].clone())
@@ -167,9 +167,9 @@ pub fn fetch_maybe_{{ account.name | snakeCase }}(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_maybe_{{ account.name | snakeCase }}(
   rpc: &solana_client::rpc_client::RpcClient,
-  addresses: &[Pubkey],
+  addresses: &[solana_program::pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::MaybeAccount<{{ account.name | pascalCase }}>>, std::io::Error> {
-    let accounts = rpc.get_multiple_accounts(&addresses)
+    let accounts = rpc.get_multiple_accounts(addresses)
       .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
     let mut decoded_accounts: Vec<crate::shared::MaybeAccount<{{ account.name | pascalCase }}>> = Vec::new();
     for i in 0..addresses.len() {
