@@ -1,6 +1,6 @@
 {
     "name": "@codama/visitors-core",
-    "version": "1.2.8",
+    "version": "1.2.9",
     "description": "Core visitors for the Codama framework",
     "exports": {
         "types": "./dist/types/index.d.ts",
