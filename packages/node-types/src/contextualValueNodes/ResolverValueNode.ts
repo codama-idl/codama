@@ -9,7 +9,7 @@ export interface ResolverValueNode<
 
     // Data.
     readonly name: CamelCaseString;
-    readonly docs: Docs;
+    readonly docs?: Docs;
 
     // Children.
     readonly dependsOn?: TDependsOn;

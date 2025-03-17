@@ -7,5 +7,5 @@ export interface ErrorNode {
     readonly name: CamelCaseString;
     readonly code: number;
     readonly message: string;
-    readonly docs: Docs;
+    readonly docs?: Docs;
 }

@@ -22,8 +22,8 @@ export interface InstructionNode<
 
     // Data.
     readonly name: CamelCaseString;
-    readonly docs: Docs;
-    readonly optionalAccountStrategy: 'omitted' | 'programId';
+    readonly docs?: Docs;
+    readonly optionalAccountStrategy?: 'omitted' | 'programId';
 
     // Children.
     readonly accounts: TAccounts;

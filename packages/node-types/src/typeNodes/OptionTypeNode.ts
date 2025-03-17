@@ -9,7 +9,7 @@ export interface OptionTypeNode<
     readonly kind: 'optionTypeNode';
 
     // Data.
-    readonly fixed: boolean;
+    readonly fixed?: boolean;
 
     // Children.
     readonly item: TItem;

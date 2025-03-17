@@ -4,6 +4,7 @@ import {
     InstructionArgumentNode,
     InstructionNode,
     isNode,
+    parseDocs,
     pascalCase,
 } from '@codama/nodes';
 import {
@@ -76,7 +77,8 @@ function getAccountsFragment(
             !!resolvedAccount.defaultValue &&
             !isNode(resolvedAccount.defaultValue, ['identityValueNode', 'payerValueNode']) &&
             (useAsync || !isAsyncDefaultValue(resolvedAccount.defaultValue, asyncResolvers));
-        const docblock = account.docs.length > 0 ? jsDocblock(account.docs) : '';
+        const accountDocs = parseDocs(account.docs);
+        const docblock = accountDocs.length > 0 ? jsDocblock(accountDocs) : '';
         const optionalSign = hasDefaultValue || resolvedAccount.isOptional ? '?' : '';
         return getAccountTypeFragment(resolvedAccount).mapRender(
             r => `${docblock}${camelCase(account.name)}${optionalSign}: ${r};`,

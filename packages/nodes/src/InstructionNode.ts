@@ -76,7 +76,7 @@ export function instructionNode<
         // Data.
         name: camelCase(input.name),
         docs: parseDocs(input.docs),
-        optionalAccountStrategy: input.optionalAccountStrategy ?? 'programId',
+        optionalAccountStrategy: parseOptionalAccountStrategy(input.optionalAccountStrategy),
 
         // Children.
         accounts: (input.accounts ?? []) as TAccounts,
@@ -87,6 +87,12 @@ export function instructionNode<
         discriminators: input.discriminators,
         subInstructions: input.subInstructions,
     });
+}
+
+export function parseOptionalAccountStrategy(
+    optionalAccountStrategy: 'omitted' | 'programId' | undefined,
+): 'omitted' | 'programId' {
+    return optionalAccountStrategy ?? 'programId';
 }
 
 export function getAllInstructionArguments(node: InstructionNode): InstructionArgumentNode[] {

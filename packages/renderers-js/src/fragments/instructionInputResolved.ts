@@ -1,4 +1,4 @@
-import { camelCase, InstructionNode, isNode } from '@codama/nodes';
+import { camelCase, InstructionNode, isNode, parseOptionalAccountStrategy } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath, ResolvedInstructionInput } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
@@ -17,7 +17,7 @@ export function getInstructionInputResolvedFragment(
         const inputFragment = getInstructionInputDefaultFragment({
             ...scope,
             input,
-            optionalAccountStrategy: instructionNode.optionalAccountStrategy,
+            optionalAccountStrategy: parseOptionalAccountStrategy(instructionNode.optionalAccountStrategy),
         });
         if (!inputFragment.render) return [];
         const camelName = camelCase(input.name);

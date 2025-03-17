@@ -10,8 +10,8 @@ export interface InstructionAccountNode<
     readonly name: CamelCaseString;
     readonly isWritable: boolean;
     readonly isSigner: boolean | 'either';
-    readonly isOptional: boolean;
-    readonly docs: Docs;
+    readonly isOptional?: boolean;
+    readonly docs?: Docs;
 
     // Children.
     readonly defaultValue?: TDefaultValue;
