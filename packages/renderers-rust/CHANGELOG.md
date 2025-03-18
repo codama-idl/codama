@@ -1,5 +1,17 @@
 # @codama/renderers-rust
 
+## 1.0.17
+
+### Patch Changes
+
+- [#510](https://github.com/codama-idl/codama/pull/510) [`2b45bad`](https://github.com/codama-idl/codama/commit/2b45badbc800d862d478f19b8231daf2a88d6d56) Thanks [@buffalojoec](https://github.com/buffalojoec)! - Patch a few compile errors in the account `fetch` API.
+
+- Updated dependencies []:
+    - @codama/errors@1.2.9
+    - @codama/nodes@1.2.9
+    - @codama/visitors-core@1.2.9
+    - @codama/renderers-core@1.0.11
+
 ## 1.0.16
 
 ### Patch Changes
