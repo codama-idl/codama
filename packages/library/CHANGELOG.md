@@ -1,5 +1,16 @@
 # codama
 
+## 1.2.10
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/cli@1.0.9
+    - @codama/errors@1.2.10
+    - @codama/nodes@1.2.10
+    - @codama/validators@1.2.10
+    - @codama/visitors@1.2.10
+
 ## 1.2.9
 
 ### Patch Changes
