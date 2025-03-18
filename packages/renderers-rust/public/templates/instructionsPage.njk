@@ -31,6 +31,7 @@ impl {{ instruction.name | pascalCase }} {
   pub fn instruction(&self{{ ', args: ' + instruction.name | pascalCase + 'InstructionArgs' if hasArgs }}) -> solana_program::instruction::Instruction {
     self.instruction_with_remaining_accounts({{ 'args, ' if hasArgs }}&[])
   }
+  #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self{{ ', args: ' + instruction.name | pascalCase + 'InstructionArgs' if hasArgs }}, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
     let mut accounts = Vec::with_capacity({{ instruction.accounts.length + '+' if instruction.accounts.length > 0}} remaining_accounts.len());
