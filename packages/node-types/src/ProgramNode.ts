@@ -19,7 +19,7 @@ export interface ProgramNode<
     readonly publicKey: string;
     readonly version: ProgramVersion;
     readonly origin?: 'anchor' | 'shank';
-    readonly docs: Docs;
+    readonly docs?: Docs;
 
     // Children.
     readonly accounts: TAccounts;

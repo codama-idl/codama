@@ -8,6 +8,7 @@ import {
     isScalarEnum,
     isUnsignedInteger,
     NumberTypeNode,
+    parseDocs,
     pascalCase,
     REGISTERED_TYPE_NODE_KINDS,
     REGISTERED_VALUE_NODE_KINDS,
@@ -730,7 +731,8 @@ export function getTypeManifestVisitor(input: {
                 visitStructFieldType(structFieldType, { self }) {
                     const name = camelCase(structFieldType.name);
                     const fieldChild = visit(structFieldType.type, self);
-                    const docblock = structFieldType.docs.length > 0 ? `\n${jsDocblock(structFieldType.docs)}` : '';
+                    const structFieldDocs = parseDocs(structFieldType.docs);
+                    const docblock = structFieldDocs.length > 0 ? `\n${jsDocblock(structFieldDocs)}` : '';
                     const baseField = {
                         ...fieldChild,
                         looseType: `${docblock}${name}: ${fieldChild.looseType}; `,

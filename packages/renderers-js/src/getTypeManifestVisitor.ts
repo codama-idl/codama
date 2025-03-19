@@ -5,6 +5,7 @@ import {
     isNode,
     isNodeFilter,
     isScalarEnum,
+    parseDocs,
     REGISTERED_TYPE_NODE_KINDS,
     REGISTERED_VALUE_NODE_KINDS,
     resolveNestedTypeNode,
@@ -777,7 +778,8 @@ export function getTypeManifestVisitor(input: {
                 visitStructFieldType(structFieldType, { self }) {
                     const name = camelCase(structFieldType.name);
                     const childManifest = visit(structFieldType.type, self);
-                    const docblock = structFieldType.docs.length > 0 ? `\n${jsDocblock(structFieldType.docs)}` : '';
+                    const structFieldDocs = parseDocs(structFieldType.docs);
+                    const docblock = structFieldDocs.length > 0 ? `\n${jsDocblock(structFieldDocs)}` : '';
                     const originalLooseType = childManifest.looseType.render;
                     childManifest.strictType.mapRender(r => `${docblock}${name}: ${r}; `);
                     childManifest.looseType.mapRender(r => `${docblock}${name}: ${r}; `);

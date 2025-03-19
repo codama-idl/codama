@@ -7,6 +7,8 @@ import type { CamelCaseString, Docs } from './shared';
 
 type SubInstructionNode = InstructionNode;
 
+export type OptionalAccountStrategy = 'omitted' | 'programId';
+
 export interface InstructionNode<
     TAccounts extends InstructionAccountNode[] = InstructionAccountNode[],
     TArguments extends InstructionArgumentNode[] = InstructionArgumentNode[],
@@ -22,8 +24,8 @@ export interface InstructionNode<
 
     // Data.
     readonly name: CamelCaseString;
-    readonly docs: Docs;
-    readonly optionalAccountStrategy: 'omitted' | 'programId';
+    readonly docs?: Docs;
+    readonly optionalAccountStrategy?: OptionalAccountStrategy;
 
     // Children.
     readonly accounts: TAccounts;

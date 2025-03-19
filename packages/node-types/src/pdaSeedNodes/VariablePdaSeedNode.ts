@@ -6,7 +6,7 @@ export interface VariablePdaSeedNode<TType extends TypeNode = TypeNode> {
 
     // Data.
     readonly name: CamelCaseString;
-    readonly docs: Docs;
+    readonly docs?: Docs;
 
     // Children.
     readonly type: TType;

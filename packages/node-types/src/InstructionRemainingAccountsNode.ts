@@ -10,7 +10,7 @@ export interface InstructionRemainingAccountsNode<
     readonly isOptional?: boolean;
     readonly isSigner?: boolean | 'either';
     readonly isWritable?: boolean;
-    readonly docs: Docs;
+    readonly docs?: Docs;
 
     // Children.
     readonly value: TValue;

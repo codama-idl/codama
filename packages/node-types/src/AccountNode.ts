@@ -13,7 +13,7 @@ export interface AccountNode<
     // Data.
     readonly name: CamelCaseString;
     readonly size?: number | null;
-    readonly docs: Docs;
+    readonly docs?: Docs;
 
     // Children.
     readonly data: TData;

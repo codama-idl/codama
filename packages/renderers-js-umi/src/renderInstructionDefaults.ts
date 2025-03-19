@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { camelCase, InstructionInputValueNode, isNode, pascalCase } from '@codama/nodes';
+import { camelCase, InstructionInputValueNode, isNode, OptionalAccountStrategy, pascalCase } from '@codama/nodes';
 import { ResolvedInstructionInput, visit } from '@codama/visitors-core';
 
 import { ContextMap } from './ContextMap';
@@ -10,7 +10,7 @@ import { GetImportFromFunction } from './utils';
 export function renderInstructionDefaults(
     input: ResolvedInstructionInput,
     typeManifestVisitor: ReturnType<typeof getTypeManifestVisitor>,
-    optionalAccountStrategy: 'omitted' | 'programId',
+    optionalAccountStrategy: OptionalAccountStrategy,
     argObject: string,
     getImportFrom: GetImportFromFunction,
 ): {
@@ -272,7 +272,7 @@ export function renderInstructionDefaults(
 function renderNestedInstructionDefault(
     input: ResolvedInstructionInput,
     typeManifestVisitor: ReturnType<typeof getTypeManifestVisitor>,
-    optionalAccountStrategy: 'omitted' | 'programId',
+    optionalAccountStrategy: OptionalAccountStrategy,
     defaultValue: InstructionInputValueNode | undefined,
     argObject: string,
     getImportFrom: GetImportFromFunction,

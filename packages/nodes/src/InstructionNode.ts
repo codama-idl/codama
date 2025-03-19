@@ -5,6 +5,7 @@ import type {
     InstructionByteDeltaNode,
     InstructionNode,
     InstructionRemainingAccountsNode,
+    OptionalAccountStrategy,
     ProgramNode,
     RootNode,
 } from '@codama/node-types';
@@ -76,7 +77,7 @@ export function instructionNode<
         // Data.
         name: camelCase(input.name),
         docs: parseDocs(input.docs),
-        optionalAccountStrategy: input.optionalAccountStrategy ?? 'programId',
+        optionalAccountStrategy: parseOptionalAccountStrategy(input.optionalAccountStrategy),
 
         // Children.
         accounts: (input.accounts ?? []) as TAccounts,
@@ -87,6 +88,12 @@ export function instructionNode<
         discriminators: input.discriminators,
         subInstructions: input.subInstructions,
     });
+}
+
+export function parseOptionalAccountStrategy(
+    optionalAccountStrategy: OptionalAccountStrategy | undefined,
+): OptionalAccountStrategy {
+    return optionalAccountStrategy ?? 'programId';
 }
 
 export function getAllInstructionArguments(node: InstructionNode): InstructionArgumentNode[] {

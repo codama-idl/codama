@@ -13,6 +13,7 @@ import {
     isDataEnum,
     isNode,
     isNodeFilter,
+    parseOptionalAccountStrategy,
     pascalCase,
     ProgramNode,
     resolveNestedTypeNode,
@@ -340,7 +341,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                             const renderedInput = renderInstructionDefaults(
                                 input,
                                 typeManifestVisitor,
-                                node.optionalAccountStrategy,
+                                parseOptionalAccountStrategy(node.optionalAccountStrategy),
                                 argObject,
                                 getImportFrom,
                             );

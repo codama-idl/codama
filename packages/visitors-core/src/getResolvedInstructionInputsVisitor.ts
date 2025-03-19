@@ -102,7 +102,7 @@ export function getResolvedInstructionInputsVisitor(
                     isNode(argument.defaultValue, 'accountBumpValueNode') &&
                     argument.defaultValue.name === account.name,
             ),
-            resolvedIsOptional: account.isOptional,
+            resolvedIsOptional: !!account.isOptional,
             resolvedIsSigner: account.isSigner,
         };
 
@@ -113,7 +113,7 @@ export function getResolvedInstructionInputsVisitor(
                 const resolvedIsSigner = account.isSigner === true && defaultAccount.isSigner === true;
                 const resolvedIsOptionalSigner = !resolvedIsPublicKey && !resolvedIsSigner;
                 localResolved.resolvedIsSigner = resolvedIsOptionalSigner ? 'either' : resolvedIsSigner;
-                localResolved.resolvedIsOptional = defaultAccount.isOptional;
+                localResolved.resolvedIsOptional = !!defaultAccount.isOptional;
                 break;
             case 'publicKeyValueNode':
             case 'programLinkNode':

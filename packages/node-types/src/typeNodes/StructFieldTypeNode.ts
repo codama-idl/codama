@@ -11,7 +11,7 @@ export interface StructFieldTypeNode<
     // Data.
     readonly name: CamelCaseString;
     readonly defaultValueStrategy?: 'omitted' | 'optional';
-    readonly docs: Docs;
+    readonly docs?: Docs;
 
     // Children.
     readonly type: TType;
