@@ -5,6 +5,7 @@ import type {
     InstructionByteDeltaNode,
     InstructionNode,
     InstructionRemainingAccountsNode,
+    OptionalAccountStrategy,
     ProgramNode,
     RootNode,
 } from '@codama/node-types';
@@ -90,8 +91,8 @@ export function instructionNode<
 }
 
 export function parseOptionalAccountStrategy(
-    optionalAccountStrategy: 'omitted' | 'programId' | undefined,
-): 'omitted' | 'programId' {
+    optionalAccountStrategy: OptionalAccountStrategy | undefined,
+): OptionalAccountStrategy {
     return optionalAccountStrategy ?? 'programId';
 }
 

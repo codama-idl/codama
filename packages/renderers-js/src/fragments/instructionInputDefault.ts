@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { camelCase, InstructionInputValueNode, isNode } from '@codama/nodes';
+import { camelCase, InstructionInputValueNode, isNode, OptionalAccountStrategy } from '@codama/nodes';
 import { ResolvedInstructionInput, visit } from '@codama/visitors-core';
 
 import { GlobalFragmentScope } from '../getRenderMapVisitor';
@@ -9,7 +9,7 @@ import { Fragment, fragment, mergeFragments } from './common';
 export function getInstructionInputDefaultFragment(
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'> & {
         input: ResolvedInstructionInput;
-        optionalAccountStrategy: 'omitted' | 'programId';
+        optionalAccountStrategy: OptionalAccountStrategy;
         useAsync: boolean;
     },
 ): Fragment {
