@@ -206,6 +206,96 @@ impl InstructionParser {
         let ix_discriminator: [u8; 8] = ix.data[0..8].try_into()?;
         let mut ix_data = &ix.data[8..];
         match ix_discriminator {
+            [45, 154, 237, 210, 221, 15, 166, 92] => {
+                check_min_accounts_req(accounts_len, 14)?;
+                let ix_accounts = InitializeLbPairIxAccounts {
+                    lb_pair: ix.accounts[0].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[1]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[1].0.into())
+                    },
+                    token_mint_x: ix.accounts[2].0.into(),
+                    token_mint_y: ix.accounts[3].0.into(),
+                    reserve_x: ix.accounts[4].0.into(),
+                    reserve_y: ix.accounts[5].0.into(),
+                    oracle: ix.accounts[6].0.into(),
+                    preset_parameter: ix.accounts[7].0.into(),
+                    funder: ix.accounts[8].0.into(),
+                    token_program: ix.accounts[9].0.into(),
+                    system_program: ix.accounts[10].0.into(),
+                    rent: ix.accounts[11].0.into(),
+                    event_authority: ix.accounts[12].0.into(),
+                    program: ix.accounts[13].0.into(),
+                };
+                let de_ix_data: InitializeLbPairIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::InitializeLbPair(ix_accounts, de_ix_data))
+            }
+            [108, 102, 213, 85, 251, 3, 53, 21] => {
+                check_min_accounts_req(accounts_len, 14)?;
+                let ix_accounts = InitializePermissionLbPairIxAccounts {
+                    base: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    token_mint_x: ix.accounts[3].0.into(),
+                    token_mint_y: ix.accounts[4].0.into(),
+                    reserve_x: ix.accounts[5].0.into(),
+                    reserve_y: ix.accounts[6].0.into(),
+                    oracle: ix.accounts[7].0.into(),
+                    admin: ix.accounts[8].0.into(),
+                    token_program: ix.accounts[9].0.into(),
+                    system_program: ix.accounts[10].0.into(),
+                    rent: ix.accounts[11].0.into(),
+                    event_authority: ix.accounts[12].0.into(),
+                    program: ix.accounts[13].0.into(),
+                };
+                let de_ix_data: InitializePermissionLbPairIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::InitializePermissionLbPair(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [46, 39, 41, 135, 111, 183, 200, 64] => {
+                check_min_accounts_req(accounts_len, 14)?;
+                let ix_accounts = InitializeCustomizablePermissionlessLbPairIxAccounts {
+                    lb_pair: ix.accounts[0].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[1]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[1].0.into())
+                    },
+                    token_mint_x: ix.accounts[2].0.into(),
+                    token_mint_y: ix.accounts[3].0.into(),
+                    reserve_x: ix.accounts[4].0.into(),
+                    reserve_y: ix.accounts[5].0.into(),
+                    oracle: ix.accounts[6].0.into(),
+                    user_token_x: ix.accounts[7].0.into(),
+                    funder: ix.accounts[8].0.into(),
+                    token_program: ix.accounts[9].0.into(),
+                    system_program: ix.accounts[10].0.into(),
+                    rent: ix.accounts[11].0.into(),
+                    event_authority: ix.accounts[12].0.into(),
+                    program: ix.accounts[13].0.into(),
+                };
+                let de_ix_data: InitializeCustomizablePermissionlessLbPairIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::InitializeCustomizablePermissionlessLbPair(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
             [47, 157, 226, 180, 12, 240, 33, 71] => {
                 check_min_accounts_req(accounts_len, 5)?;
                 let ix_accounts = InitializeBinArrayBitmapExtensionIxAccounts {
@@ -230,6 +320,189 @@ impl InstructionParser {
                 let de_ix_data: InitializeBinArrayIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
                 Ok(LbClmmProgramIx::InitializeBinArray(ix_accounts, de_ix_data))
+            }
+            [181, 157, 89, 67, 143, 182, 52, 72] => {
+                check_min_accounts_req(accounts_len, 16)?;
+                let ix_accounts = AddLiquidityIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token_x: ix.accounts[3].0.into(),
+                    user_token_y: ix.accounts[4].0.into(),
+                    reserve_x: ix.accounts[5].0.into(),
+                    reserve_y: ix.accounts[6].0.into(),
+                    token_x_mint: ix.accounts[7].0.into(),
+                    token_y_mint: ix.accounts[8].0.into(),
+                    bin_array_lower: ix.accounts[9].0.into(),
+                    bin_array_upper: ix.accounts[10].0.into(),
+                    sender: ix.accounts[11].0.into(),
+                    token_x_program: ix.accounts[12].0.into(),
+                    token_y_program: ix.accounts[13].0.into(),
+                    event_authority: ix.accounts[14].0.into(),
+                    program: ix.accounts[15].0.into(),
+                };
+                let de_ix_data: AddLiquidityIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::AddLiquidity(ix_accounts, de_ix_data))
+            }
+            [28, 140, 238, 99, 231, 162, 21, 149] => {
+                check_min_accounts_req(accounts_len, 16)?;
+                let ix_accounts = AddLiquidityByWeightIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token_x: ix.accounts[3].0.into(),
+                    user_token_y: ix.accounts[4].0.into(),
+                    reserve_x: ix.accounts[5].0.into(),
+                    reserve_y: ix.accounts[6].0.into(),
+                    token_x_mint: ix.accounts[7].0.into(),
+                    token_y_mint: ix.accounts[8].0.into(),
+                    bin_array_lower: ix.accounts[9].0.into(),
+                    bin_array_upper: ix.accounts[10].0.into(),
+                    sender: ix.accounts[11].0.into(),
+                    token_x_program: ix.accounts[12].0.into(),
+                    token_y_program: ix.accounts[13].0.into(),
+                    event_authority: ix.accounts[14].0.into(),
+                    program: ix.accounts[15].0.into(),
+                };
+                let de_ix_data: AddLiquidityByWeightIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::AddLiquidityByWeight(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [7, 3, 150, 127, 148, 40, 61, 200] => {
+                check_min_accounts_req(accounts_len, 16)?;
+                let ix_accounts = AddLiquidityByStrategyIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token_x: ix.accounts[3].0.into(),
+                    user_token_y: ix.accounts[4].0.into(),
+                    reserve_x: ix.accounts[5].0.into(),
+                    reserve_y: ix.accounts[6].0.into(),
+                    token_x_mint: ix.accounts[7].0.into(),
+                    token_y_mint: ix.accounts[8].0.into(),
+                    bin_array_lower: ix.accounts[9].0.into(),
+                    bin_array_upper: ix.accounts[10].0.into(),
+                    sender: ix.accounts[11].0.into(),
+                    token_x_program: ix.accounts[12].0.into(),
+                    token_y_program: ix.accounts[13].0.into(),
+                    event_authority: ix.accounts[14].0.into(),
+                    program: ix.accounts[15].0.into(),
+                };
+                let de_ix_data: AddLiquidityByStrategyIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::AddLiquidityByStrategy(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [41, 5, 238, 175, 100, 225, 6, 205] => {
+                check_min_accounts_req(accounts_len, 12)?;
+                let ix_accounts = AddLiquidityByStrategyOneSideIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token: ix.accounts[3].0.into(),
+                    reserve: ix.accounts[4].0.into(),
+                    token_mint: ix.accounts[5].0.into(),
+                    bin_array_lower: ix.accounts[6].0.into(),
+                    bin_array_upper: ix.accounts[7].0.into(),
+                    sender: ix.accounts[8].0.into(),
+                    token_program: ix.accounts[9].0.into(),
+                    event_authority: ix.accounts[10].0.into(),
+                    program: ix.accounts[11].0.into(),
+                };
+                let de_ix_data: AddLiquidityByStrategyOneSideIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::AddLiquidityByStrategyOneSide(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [94, 155, 103, 151, 70, 95, 220, 165] => {
+                check_min_accounts_req(accounts_len, 12)?;
+                let ix_accounts = AddLiquidityOneSideIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token: ix.accounts[3].0.into(),
+                    reserve: ix.accounts[4].0.into(),
+                    token_mint: ix.accounts[5].0.into(),
+                    bin_array_lower: ix.accounts[6].0.into(),
+                    bin_array_upper: ix.accounts[7].0.into(),
+                    sender: ix.accounts[8].0.into(),
+                    token_program: ix.accounts[9].0.into(),
+                    event_authority: ix.accounts[10].0.into(),
+                    program: ix.accounts[11].0.into(),
+                };
+                let de_ix_data: AddLiquidityOneSideIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::AddLiquidityOneSide(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [80, 85, 209, 72, 24, 206, 177, 108] => {
+                check_min_accounts_req(accounts_len, 16)?;
+                let ix_accounts = RemoveLiquidityIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token_x: ix.accounts[3].0.into(),
+                    user_token_y: ix.accounts[4].0.into(),
+                    reserve_x: ix.accounts[5].0.into(),
+                    reserve_y: ix.accounts[6].0.into(),
+                    token_x_mint: ix.accounts[7].0.into(),
+                    token_y_mint: ix.accounts[8].0.into(),
+                    bin_array_lower: ix.accounts[9].0.into(),
+                    bin_array_upper: ix.accounts[10].0.into(),
+                    sender: ix.accounts[11].0.into(),
+                    token_x_program: ix.accounts[12].0.into(),
+                    token_y_program: ix.accounts[13].0.into(),
+                    event_authority: ix.accounts[14].0.into(),
+                    program: ix.accounts[15].0.into(),
+                };
+                let de_ix_data: RemoveLiquidityIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::RemoveLiquidity(ix_accounts, de_ix_data))
             }
             [219, 192, 234, 71, 190, 191, 102, 80] => {
                 check_min_accounts_req(accounts_len, 8)?;
@@ -300,6 +573,112 @@ impl InstructionParser {
                 let de_ix_data: UpdatePositionOperatorIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
                 Ok(LbClmmProgramIx::UpdatePositionOperator(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [248, 198, 158, 145, 225, 117, 135, 200] => {
+                check_min_accounts_req(accounts_len, 15)?;
+                let ix_accounts = SwapIxAccounts {
+                    lb_pair: ix.accounts[0].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[1]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[1].0.into())
+                    },
+                    reserve_x: ix.accounts[2].0.into(),
+                    reserve_y: ix.accounts[3].0.into(),
+                    user_token_in: ix.accounts[4].0.into(),
+                    user_token_out: ix.accounts[5].0.into(),
+                    token_x_mint: ix.accounts[6].0.into(),
+                    token_y_mint: ix.accounts[7].0.into(),
+                    oracle: ix.accounts[8].0.into(),
+                    host_fee_in: if ix.accounts[9]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[9].0.into())
+                    },
+                    user: ix.accounts[10].0.into(),
+                    token_x_program: ix.accounts[11].0.into(),
+                    token_y_program: ix.accounts[12].0.into(),
+                    event_authority: ix.accounts[13].0.into(),
+                    program: ix.accounts[14].0.into(),
+                };
+                let de_ix_data: SwapIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::Swap(ix_accounts, de_ix_data))
+            }
+            [250, 73, 101, 33, 38, 207, 75, 184] => {
+                check_min_accounts_req(accounts_len, 15)?;
+                let ix_accounts = SwapExactOutIxAccounts {
+                    lb_pair: ix.accounts[0].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[1]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[1].0.into())
+                    },
+                    reserve_x: ix.accounts[2].0.into(),
+                    reserve_y: ix.accounts[3].0.into(),
+                    user_token_in: ix.accounts[4].0.into(),
+                    user_token_out: ix.accounts[5].0.into(),
+                    token_x_mint: ix.accounts[6].0.into(),
+                    token_y_mint: ix.accounts[7].0.into(),
+                    oracle: ix.accounts[8].0.into(),
+                    host_fee_in: if ix.accounts[9]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[9].0.into())
+                    },
+                    user: ix.accounts[10].0.into(),
+                    token_x_program: ix.accounts[11].0.into(),
+                    token_y_program: ix.accounts[12].0.into(),
+                    event_authority: ix.accounts[13].0.into(),
+                    program: ix.accounts[14].0.into(),
+                };
+                let de_ix_data: SwapExactOutIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::SwapExactOut(ix_accounts, de_ix_data))
+            }
+            [56, 173, 230, 208, 173, 228, 156, 205] => {
+                check_min_accounts_req(accounts_len, 15)?;
+                let ix_accounts = SwapWithPriceImpactIxAccounts {
+                    lb_pair: ix.accounts[0].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[1]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[1].0.into())
+                    },
+                    reserve_x: ix.accounts[2].0.into(),
+                    reserve_y: ix.accounts[3].0.into(),
+                    user_token_in: ix.accounts[4].0.into(),
+                    user_token_out: ix.accounts[5].0.into(),
+                    token_x_mint: ix.accounts[6].0.into(),
+                    token_y_mint: ix.accounts[7].0.into(),
+                    oracle: ix.accounts[8].0.into(),
+                    host_fee_in: if ix.accounts[9]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[9].0.into())
+                    },
+                    user: ix.accounts[10].0.into(),
+                    token_x_program: ix.accounts[11].0.into(),
+                    token_y_program: ix.accounts[12].0.into(),
+                    event_authority: ix.accounts[13].0.into(),
+                    program: ix.accounts[14].0.into(),
+                };
+                let de_ix_data: SwapWithPriceImpactIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::SwapWithPriceImpact(
                     ix_accounts,
                     de_ix_data,
                 ))
@@ -492,6 +871,34 @@ impl InstructionParser {
                 };
                 Ok(LbClmmProgramIx::ClosePresetParameter(ix_accounts))
             }
+            [10, 51, 61, 35, 112, 105, 24, 85] => {
+                check_min_accounts_req(accounts_len, 16)?;
+                let ix_accounts = RemoveAllLiquidityIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token_x: ix.accounts[3].0.into(),
+                    user_token_y: ix.accounts[4].0.into(),
+                    reserve_x: ix.accounts[5].0.into(),
+                    reserve_y: ix.accounts[6].0.into(),
+                    token_x_mint: ix.accounts[7].0.into(),
+                    token_y_mint: ix.accounts[8].0.into(),
+                    bin_array_lower: ix.accounts[9].0.into(),
+                    bin_array_upper: ix.accounts[10].0.into(),
+                    sender: ix.accounts[11].0.into(),
+                    token_x_program: ix.accounts[12].0.into(),
+                    token_y_program: ix.accounts[13].0.into(),
+                    event_authority: ix.accounts[14].0.into(),
+                    program: ix.accounts[15].0.into(),
+                };
+                Ok(LbClmmProgramIx::RemoveAllLiquidity(ix_accounts))
+            }
             [61, 115, 52, 23, 46, 13, 31, 144] => {
                 check_min_accounts_req(accounts_len, 2)?;
                 let ix_accounts = TogglePairStatusIxAccounts {
@@ -563,6 +970,99 @@ impl InstructionParser {
                 let de_ix_data: SetActivationPointIxData =
                     BorshDeserialize::deserialize(&mut ix_data)?;
                 Ok(LbClmmProgramIx::SetActivationPoint(ix_accounts, de_ix_data))
+            }
+            [26, 82, 102, 152, 240, 74, 105, 26] => {
+                check_min_accounts_req(accounts_len, 16)?;
+                let ix_accounts = RemoveLiquidityByRangeIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token_x: ix.accounts[3].0.into(),
+                    user_token_y: ix.accounts[4].0.into(),
+                    reserve_x: ix.accounts[5].0.into(),
+                    reserve_y: ix.accounts[6].0.into(),
+                    token_x_mint: ix.accounts[7].0.into(),
+                    token_y_mint: ix.accounts[8].0.into(),
+                    bin_array_lower: ix.accounts[9].0.into(),
+                    bin_array_upper: ix.accounts[10].0.into(),
+                    sender: ix.accounts[11].0.into(),
+                    token_x_program: ix.accounts[12].0.into(),
+                    token_y_program: ix.accounts[13].0.into(),
+                    event_authority: ix.accounts[14].0.into(),
+                    program: ix.accounts[15].0.into(),
+                };
+                let de_ix_data: RemoveLiquidityByRangeIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::RemoveLiquidityByRange(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [161, 194, 103, 84, 171, 71, 250, 154] => {
+                check_min_accounts_req(accounts_len, 12)?;
+                let ix_accounts = AddLiquidityOneSidePreciseIxAccounts {
+                    position: ix.accounts[0].0.into(),
+                    lb_pair: ix.accounts[1].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    user_token: ix.accounts[3].0.into(),
+                    reserve: ix.accounts[4].0.into(),
+                    token_mint: ix.accounts[5].0.into(),
+                    bin_array_lower: ix.accounts[6].0.into(),
+                    bin_array_upper: ix.accounts[7].0.into(),
+                    sender: ix.accounts[8].0.into(),
+                    token_program: ix.accounts[9].0.into(),
+                    event_authority: ix.accounts[10].0.into(),
+                    program: ix.accounts[11].0.into(),
+                };
+                let de_ix_data: AddLiquidityOneSidePreciseIxData =
+                    BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::AddLiquidityOneSidePrecise(
+                    ix_accounts,
+                    de_ix_data,
+                ))
+            }
+            [146, 72, 174, 224, 40, 253, 84, 174] => {
+                check_min_accounts_req(accounts_len, 6)?;
+                let ix_accounts = GoToABinIxAccounts {
+                    lb_pair: ix.accounts[0].0.into(),
+                    bin_array_bitmap_extension: if ix.accounts[1]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[1].0.into())
+                    },
+                    from_bin_array: if ix.accounts[2]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[2].0.into())
+                    },
+                    to_bin_array: if ix.accounts[3]
+                        .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                    {
+                        None
+                    } else {
+                        Some(ix.accounts[3].0.into())
+                    },
+                    event_authority: ix.accounts[4].0.into(),
+                    program: ix.accounts[5].0.into(),
+                };
+                let de_ix_data: GoToABinIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                Ok(LbClmmProgramIx::GoToABin(ix_accounts, de_ix_data))
             }
             [165, 61, 201, 244, 130, 159, 22, 100] => {
                 check_min_accounts_req(accounts_len, 2)?;

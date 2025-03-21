@@ -117,6 +117,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             hasArgs,
                             hasOptionalAccounts,
                             name: ix.name,
+                            optionalAccountStrategy: ix.optionalAccountStrategy,
                         };
                     });
 
