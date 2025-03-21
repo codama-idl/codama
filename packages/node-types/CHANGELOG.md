@@ -1,5 +1,11 @@
 # @codama/node-types
 
+## 1.2.11
+
+### Patch Changes
+
+- [#512](https://github.com/codama-idl/codama/pull/512) [`5071455`](https://github.com/codama-idl/codama/commit/5071455b05359fc427c1d6295e7abb0e39503a15) Thanks [@stegaBOB](https://github.com/stegaBOB)! - Marked additional node type fields as optional
+
 ## 1.2.10
 
 ## 1.2.9
