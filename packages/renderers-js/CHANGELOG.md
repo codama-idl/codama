@@ -1,5 +1,18 @@
 # @codama/renderers-js
 
+## 1.2.10
+
+### Patch Changes
+
+- [#512](https://github.com/codama-idl/codama/pull/512) [`5071455`](https://github.com/codama-idl/codama/commit/5071455b05359fc427c1d6295e7abb0e39503a15) Thanks [@stegaBOB](https://github.com/stegaBOB)! - Marked additional node type fields as optional
+
+- Updated dependencies [[`5071455`](https://github.com/codama-idl/codama/commit/5071455b05359fc427c1d6295e7abb0e39503a15)]:
+    - @codama/visitors-core@1.2.11
+    - @codama/nodes@1.2.11
+    - @codama/renderers-core@1.0.13
+    - @codama/errors@1.2.11
+    - @codama/nodes-from-anchor@1.1.11
+
 ## 1.2.9
 
 ### Patch Changes
