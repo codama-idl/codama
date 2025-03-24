@@ -59,13 +59,26 @@ impl InstructionParser {
         let mut ix_data = &ix.data[{{ IX_DATA_OFFSET }}..];
             match ix_discriminator {
                 {% for instruction in instructions %}
-                    {% if instruction.hasOptionalAccounts == false %}
                         {% if instruction.discriminator != null %}
                             {{ instruction.discriminator }} => {
                                 check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
                                 let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
                                     {% for account in instruction.accounts %}
-                                        {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}].0.into(),
+                                        {% if account.isOptional %}
+                                            {% if instruction.optionalAccountStrategy == 'programId' %}
+                                                {{ account.name | snakeCase }}: if ix.accounts[{{ account.index }}]
+                                                    .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                                                {
+                                                    None
+                                                } else {
+                                                    Some(ix.accounts[{{ account.index }}].0.into())
+                                                },
+                                            {% else %}
+                                                {{ account.name | snakeCase }}: None
+                                            {% endif %}
+                                        {% else %}
+                                            {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}].0.into(),
+                                        {% endif %}
                                     {% endfor %}
                                 };
                                 {% if instruction.hasArgs %}
@@ -76,7 +89,6 @@ impl InstructionParser {
                                 {% endif %}
                             },
                         {% endif %}
-                    {% endif %}
                 {% endfor %}
                 _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Instruction discriminator".to_owned())),
             }
