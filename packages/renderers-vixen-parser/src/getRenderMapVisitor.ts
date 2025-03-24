@@ -1,5 +1,8 @@
 import {
+    AccountNode,
+    DefinedTypeNode,
     getAllAccounts,
+    getAllDefinedTypes,
     getAllInstructionsWithSubs,
     getAllPrograms,
     isNode,
@@ -16,11 +19,13 @@ import {
     recordLinkablesOnFirstVisitVisitor,
     recordNodeStackVisitor,
     staticVisitor,
+    visit,
 } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
+import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 
 export type GetRenderMapOptions = {
     linkOverrides?: LinkOverrides;
@@ -51,8 +56,12 @@ type ParserInstructionNode = {
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
-
     const renderParentInstructions = options.renderParentInstructions ?? false;
+    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+    const getTraitsFromNode = (_node: AccountNode | DefinedTypeNode) => {
+        return { imports: new ImportMap(), render: '' };
+    };
+    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
         staticVisitor(() => new RenderMap(), {
@@ -61,11 +70,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v =>
             extendVisitor(v, {
                 visitRoot(node) {
+                    console.log('visitRoot', node);
                     const programsToExport = getAllPrograms(node);
                     //TODO: handle multiple programs
                     const programName = programsToExport[0]?.name;
-                    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+
                     const programAccounts = getAllAccounts(node);
+                    const types = getAllDefinedTypes(node);
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
                         return {
                             name: acc.name,
@@ -185,6 +196,21 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     if (ixCtx.instructions.length > 0) {
                         map.add('instructions_parser.rs', render('instructionsParserPage.njk', ixCtx));
                     }
+
+                    programAccounts.forEach(acc => {
+                        let res = visit(acc, typeManifestVisitor);
+                        console.log('acc', res);
+                    });
+
+                    types.forEach(type => {
+                        let res = visit(type, typeManifestVisitor);
+                        console.log('type', res);
+                    });
+
+                    const protoAccounts = programAccounts.map(acc => visit(acc, typeManifestVisitor).type);
+                    const protoTypes = types.map(type => visit(type, typeManifestVisitor).type);
+
+                    map.add('proto_def.proto', render('proto.njk', { accounts: protoAccounts, types: protoTypes }));
 
                     map.add(
                         'mod.rs',
