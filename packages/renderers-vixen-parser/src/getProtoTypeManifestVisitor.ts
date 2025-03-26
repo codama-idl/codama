@@ -12,19 +12,23 @@ import {
     remainderCountNode,
     resolveNestedTypeNode,
     snakeCase,
+    titleCase,
 } from '@codama/nodes';
 import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
 import { GetImportFromFunction, GetTraitsFromNodeFunction } from './utils';
 
+const MATRIX_TYPE_REGEX = /repeated\s+repeated\s+([a-zA-Z_][\w]*)/g;
+
 export type TypeManifest = {
     imports: ImportMap;
     nestedStructs: string[];
     type: string;
+    additionalType?: string;
 };
 
-export function getTypeManifestVisitor(options: {
+export function getProtoTypeManifestVisitor(options: {
     getImportFrom: GetImportFromFunction;
     getTraitsFromNode: GetTraitsFromNodeFunction;
     nestedStruct?: boolean;
@@ -173,9 +177,8 @@ export function getTypeManifestVisitor(options: {
                     }
 
                     const variants = enumType.variants.map(variant => visit(variant, self));
-                    const variantNames = variants.map((variant, i) => `${variant.type} = ${i};`).join('\n');
+                    const variantNames = variants.map((variant, i) => `\t${variant.type} = ${i};`).join('\n');
 
-                    console.log('originalParentName', originalParentName);
                     return {
                         imports: new ImportMap(),
                         nestedStructs: [],
@@ -255,7 +258,7 @@ export function getTypeManifestVisitor(options: {
                     if (optionPrefix.format === 'u8' && optionPrefix.endian === 'le') {
                         return {
                             ...childManifest,
-                            type: `optional ${childManifest.type}>`,
+                            type: `optional ${childManifest.type}`,
                         };
                     }
 
@@ -321,7 +324,7 @@ export function getTypeManifestVisitor(options: {
 
                     return {
                         ...fieldManifest,
-                        type: `${fieldManifest.type} ${fieldName}`,
+                        type: `\t${fieldManifest.type} ${fieldName}`,
                     };
                 },
 
@@ -366,4 +369,23 @@ function mergeManifests(manifests: TypeManifest[]): Pick<TypeManifest, 'imports'
         imports: new ImportMap().mergeWith(...manifests.map(td => td.imports)),
         nestedStructs: manifests.flatMap(m => m.nestedStructs),
     };
+}
+
+export function fixMatrix(proto: string): string {
+    return proto.replace(MATRIX_TYPE_REGEX, (_, typeName) => {
+        return `repeated Repeated${titleCase(typeName)}Row`;
+    });
+}
+
+export function checkArrayTypeAndFix(proto: string, matrixTypes: Set<string>): string {
+    const tokens = proto.split(/\s+/).filter(Boolean); // simple tokenization
+
+    for (let i = 0; i < tokens.length - 2; i++) {
+        if (tokens[i] === 'repeated' && tokens[i + 1] === 'repeated') {
+            const type = tokens[i + 2];
+            matrixTypes.add(type);
+        }
+    }
+
+    return fixMatrix(proto);
 }

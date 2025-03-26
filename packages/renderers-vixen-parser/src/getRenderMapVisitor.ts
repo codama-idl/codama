@@ -8,6 +8,7 @@ import {
     isNode,
     pascalCase,
     snakeCase,
+    titleCase,
     VALUE_NODES,
 } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
@@ -25,12 +26,13 @@ import {
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
-import { getTypeManifestVisitor } from './getTypeManifestVisitor';
+import { checkArrayTypeAndFix, getProtoTypeManifestVisitor } from './getProtoTypeManifestVisitor';
 
 export type GetRenderMapOptions = {
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
     sdkName?: string;
+    generateProto?: boolean;
 };
 
 // Account node for the parser
@@ -61,7 +63,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const getTraitsFromNode = (_node: AccountNode | DefinedTypeNode) => {
         return { imports: new ImportMap(), render: '' };
     };
-    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
+    const typeManifestVisitor = getProtoTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
         staticVisitor(() => new RenderMap(), {
@@ -70,7 +72,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v =>
             extendVisitor(v, {
                 visitRoot(node) {
-                    console.log('visitRoot', node);
                     const programsToExport = getAllPrograms(node);
                     //TODO: handle multiple programs
                     const programName = programsToExport[0]?.name;
@@ -188,7 +189,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const map = new RenderMap();
 
                     // only two files are generated as part of account and instruction parser
-
                     if (accCtx.accounts.length > 0) {
                         map.add('accounts_parser.rs', render('accountsParserPage.njk', accCtx));
                     }
@@ -197,20 +197,68 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         map.add('instructions_parser.rs', render('instructionsParserPage.njk', ixCtx));
                     }
 
-                    programAccounts.forEach(acc => {
-                        let res = visit(acc, typeManifestVisitor);
-                        console.log('acc', res);
-                    });
+                    if (options.generateProto) {
+                        // proto Ixs , Accounts and Types
+                        const matrixTypes: Set<string> = new Set();
+                        const protoAccounts = programAccounts.map(acc => {
+                            const node = visit(acc, typeManifestVisitor);
+                            return checkArrayTypeAndFix(node.type, matrixTypes);
+                        });
+                        const protoTypes = types.map(type => {
+                            const node = visit(type, typeManifestVisitor);
+                            return checkArrayTypeAndFix(node.type, matrixTypes);
+                        });
 
-                    types.forEach(type => {
-                        let res = visit(type, typeManifestVisitor);
-                        console.log('type', res);
-                    });
+                        const protoIxs: {
+                            accounts: string;
+                            args: string;
+                        }[] = [];
 
-                    const protoAccounts = programAccounts.map(acc => visit(acc, typeManifestVisitor).type);
-                    const protoTypes = types.map(type => visit(type, typeManifestVisitor).type);
+                        for (const ix of programInstructions) {
+                            const ixName = ix.name;
+                            const ixAccounts = ix.accounts
+                                .map((acc, idx) => {
+                                    if (!acc.isOptional) {
+                                        return `\tstring ${snakeCase(acc.name)} = ${idx + 1};`;
+                                    } else {
+                                        return `\toptional string ${snakeCase(acc.name)} = ${idx + 1};`;
+                                    }
+                                })
+                                .join('\n');
+                            const ixArgs = ix.arguments
+                                .map((arg, idx) => {
+                                    const node = visit(arg.type, typeManifestVisitor);
+                                    const argType = checkArrayTypeAndFix(node.type, matrixTypes);
+                                    return `\t${argType} ${snakeCase(arg.name)} = ${idx + 1};`;
+                                })
+                                .join('\n');
 
-                    map.add('proto_def.proto', render('proto.njk', { accounts: protoAccounts, types: protoTypes }));
+                            protoIxs.push({
+                                accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
+                                args: `message ${pascalCase(ixName)}IxData {\n${ixArgs}\n}\n`,
+                            });
+                        }
+
+                        const additionalTypes = Array.from(matrixTypes).map(type => {
+                            return `message Repeated${titleCase(type)}Row {\n\trepeated ${type} rows = 1;\n}\n`;
+                        });
+
+                        for (const ix of programInstructions) {
+                            const ixName = ix.name;
+                            const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
+                            additionalTypes.push(ixStruct);
+                        }
+
+                        map.add(
+                            'proto_def.proto',
+                            render('proto.njk', {
+                                accounts: protoAccounts,
+                                types: protoTypes,
+                                instructions: protoIxs,
+                                additionalTypes,
+                            }),
+                        );
+                    }
 
                     map.add(
                         'mod.rs',

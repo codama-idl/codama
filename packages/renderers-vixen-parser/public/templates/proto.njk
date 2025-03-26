@@ -6,18 +6,21 @@
 syntax = "proto3";
 {{ imports }}
 
-{% for type in types %}
+{% for type in additionalTypes %}
 {{ type }}
 {% endfor %}
 
+{% for type in types %}
+{{ type }}
+{% endfor %}
 
 {% for account in accounts %}
 {{ account }}
 {% endfor %}
 
-
-
-
-
+{% for ix in instructions %}
+{{ ix.accounts }}
+{{ ix.args }}
+{% endfor %}
 
 {% endblock %}

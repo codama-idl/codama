@@ -1,4 +1,4 @@
-import { TypeManifest } from './getTypeManifestVisitor';
+import { TypeManifest } from './getProtoTypeManifestVisitor';
 
 const DEFAULT_MODULE_MAP: Record<string, string> = {
     generated: 'crate::generated',
