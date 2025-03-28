@@ -2,37 +2,39 @@ import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/
 import {
     arrayTypeNode,
     CountNode,
-    definedTypeNode,
     fixedCountNode,
     isNode,
     NumberTypeNode,
     numberTypeNode,
-    parseDocs,
     pascalCase,
     prefixedCountNode,
     REGISTERED_TYPE_NODE_KINDS,
     remainderCountNode,
     resolveNestedTypeNode,
     snakeCase,
+    titleCase,
 } from '@codama/nodes';
 import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
 import { ImportMap } from './ImportMap';
-import { GetImportFromFunction, GetTraitsFromNodeFunction, rustDocblock } from './utils';
+import { GetImportFromFunction, GetTraitsFromNodeFunction } from './utils';
+
+const MATRIX_TYPE_REGEX = /repeated\s+repeated\s+([a-zA-Z_][\w]*)/g;
 
 export type TypeManifest = {
+    definedTypes?: string;
     imports: ImportMap;
     nestedStructs: string[];
     type: string;
 };
 
-export function getTypeManifestVisitor(options: {
+export function getProtoTypeManifestVisitor(options: {
     getImportFrom: GetImportFromFunction;
     getTraitsFromNode: GetTraitsFromNodeFunction;
     nestedStruct?: boolean;
     parentName?: string | null;
 }) {
-    const { getImportFrom, getTraitsFromNode } = options;
+    const { getTraitsFromNode } = options;
     let parentName: string | null = options.parentName ?? null;
     let nestedStruct: boolean = options.nestedStruct ?? false;
     let inlineStruct: boolean = false;
@@ -52,65 +54,22 @@ export function getTypeManifestVisitor(options: {
                 visitAccount(account, { self }) {
                     parentName = pascalCase(account.name);
                     const manifest = visit(account.data, self);
-                    const traits = getTraitsFromNode(account);
-                    manifest.imports.mergeWith(traits.imports);
                     parentName = null;
                     return {
-                        ...manifest,
-                        type: traits.render + manifest.type,
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: manifest.type,
                     };
                 },
 
                 visitArrayType(arrayType, { self }) {
                     const childManifest = visit(arrayType.item, self);
 
-                    if (isNode(arrayType.count, 'fixedCountNode')) {
-                        return {
-                            ...childManifest,
-                            type: `[${childManifest.type}; ${arrayType.count.value}]`,
-                        };
-                    }
-
-                    if (isNode(arrayType.count, 'remainderCountNode')) {
-                        childManifest.imports.add('kaigan::types::RemainderVec');
-                        return {
-                            ...childManifest,
-                            type: `RemainderVec<${childManifest.type}>`,
-                        };
-                    }
-
-                    const prefix = resolveNestedTypeNode(arrayType.count.prefix);
-                    if (prefix.endian === 'le') {
-                        switch (prefix.format) {
-                            case 'u32':
-                                return {
-                                    ...childManifest,
-                                    type: `Vec<${childManifest.type}>`,
-                                };
-                            case 'u8':
-                            case 'u16':
-                            case 'u64': {
-                                const prefixFormat = prefix.format.toUpperCase();
-                                childManifest.imports.add(`kaigan::types::${prefixFormat}PrefixVec`);
-                                return {
-                                    ...childManifest,
-                                    type: `${prefixFormat}PrefixVec<${childManifest.type}>`,
-                                };
-                            }
-                            case 'shortU16': {
-                                childManifest.imports.add('solana_program::short_vec::ShortVec');
-                                return {
-                                    ...childManifest,
-                                    type: `ShortVec<${childManifest.type}>`,
-                                };
-                            }
-                            default:
-                                throw new Error(`Array prefix not supported: ${prefix.format}`);
-                        }
-                    }
-
-                    // TODO: Add to the Rust validator.
-                    throw new Error('Array size not supported by Borsh');
+                    return {
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: `repeated ${childManifest.type}`,
+                    };
                 },
 
                 visitBooleanType(booleanType) {
@@ -123,8 +82,7 @@ export function getTypeManifestVisitor(options: {
                         };
                     }
 
-                    // TODO: Add to the Rust validator.
-                    throw new Error('Bool size not supported by Borsh');
+                    throw new Error('Boolean size not supported');
                 },
 
                 visitBytesType(_bytesType, { self }) {
@@ -154,9 +112,9 @@ export function getTypeManifestVisitor(options: {
 
                 visitDefinedTypeLink(node) {
                     const pascalCaseDefinedType = pascalCase(node.name);
-                    const importFrom = getImportFrom(node);
+
                     return {
-                        imports: new ImportMap().add(`${importFrom}::${pascalCaseDefinedType}`),
+                        imports: new ImportMap(),
                         nestedStructs: [],
                         type: pascalCaseDefinedType,
                     };
@@ -167,7 +125,7 @@ export function getTypeManifestVisitor(options: {
                     return {
                         imports: new ImportMap(),
                         nestedStructs: [],
-                        type: `${name},`,
+                        type: `${name}`,
                     };
                 },
 
@@ -186,8 +144,9 @@ export function getTypeManifestVisitor(options: {
                     parentName = originalParentName;
 
                     return {
-                        ...typeManifest,
-                        type: `${name} ${typeManifest.type},`,
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: `${typeManifest.type} ${name}`,
                     };
                 },
 
@@ -203,18 +162,10 @@ export function getTypeManifestVisitor(options: {
                     const childManifest = visit(enumTupleVariantType.tuple, self);
                     parentName = originalParentName;
 
-                    let derive = '';
-                    if (childManifest.type === '(Pubkey)') {
-                        derive =
-                            '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]\n';
-                    } else if (childManifest.type === '(Vec<Pubkey>)') {
-                        derive =
-                            '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>"))]\n';
-                    }
-
                     return {
-                        ...childManifest,
-                        type: `${derive}${name}${childManifest.type},`,
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: `${childManifest.type} ${name}`,
                     };
                 },
 
@@ -225,13 +176,57 @@ export function getTypeManifestVisitor(options: {
                         throw new Error('Enum type must have a parent name.');
                     }
 
+                    const variantNames = enumType.variants.map(variant => variant.name);
                     const variants = enumType.variants.map(variant => visit(variant, self));
-                    const variantNames = variants.map(variant => variant.type).join('\n');
-                    const mergedManifest = mergeManifests(variants);
+                    const variantTypes = variants.map(v => v.type);
+
+                    const enumHasDefinedType = variantTypes.some(
+                        type => type.includes('message') || type.includes('repeated'),
+                    );
+
+                    // If the enum has no defined type, we can just use the variant names as the enum type.
+                    if (!enumHasDefinedType) {
+                        const variantNames = variants.map((variant, i) => `\t${variant.type} = ${i};`).join('\n');
+                        return {
+                            imports: new ImportMap(),
+                            nestedStructs: [],
+                            type: `enum ${pascalCase(originalParentName)} {\n${variantNames}\n}\n`,
+                        };
+                    }
+
+                    // If the enum has defined types, we need to create message type for each variant.
+                    const definedVariants = variantNames
+                        .map((variant, i) => {
+                            return `\t\t${pascalCase(variant)} ${snakeCase(variant)} = ${i + 1};`;
+                        })
+                        .join('\n');
+
+                    const nestedVarinatTypes: string[] = [];
+                    for (let i = 0; i < variantTypes.length; i++) {
+                        const variant = variantTypes[i];
+                        const variantTypeArray = variant.split(' ');
+                        const name = variantTypeArray[variantTypeArray.length - 1];
+                        const outerType = variantTypeArray[0];
+                        // handle nested Tuple types
+                        if (outerType === 'repeated') {
+                            const innerType = variant.split(' ').slice(1, -1).join(' ');
+                            nestedVarinatTypes.push(
+                                `message ${pascalCase(name)} {\n\t${innerType} ${snakeCase(name)} = ${i + 1};\n}\n`,
+                            );
+                            // handle nested Struct types
+                        } else if (outerType === 'message') {
+                            nestedVarinatTypes.push(variant);
+                        }
+                    }
+                    const additionalTypes: string[] = [];
+
+                    additionalTypes.push(...nestedVarinatTypes);
 
                     return {
-                        ...mergedManifest,
-                        type: `pub enum ${pascalCase(originalParentName)} {\n${variantNames}\n}`,
+                        definedTypes: additionalTypes.join('\n'),
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: `message ${pascalCase(originalParentName)} {\n\toneof variant{\n${definedVariants}\n\t}\n}\n`,
                     };
                 },
 
@@ -245,11 +240,11 @@ export function getTypeManifestVisitor(options: {
                 visitMapType(mapType, { self }) {
                     const key = visit(mapType.key, self);
                     const value = visit(mapType.value, self);
-                    const mergedManifest = mergeManifests([key, value]);
-                    mergedManifest.imports.add('std::collections::HashMap');
+
                     return {
-                        ...mergedManifest,
-                        type: `HashMap<${key.type}, ${value.type}>`,
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: `map<${key.type}, ${value.type}> = 1`,
                     };
                 },
 
@@ -259,18 +254,44 @@ export function getTypeManifestVisitor(options: {
                         throw new Error('Number endianness not supported by Borsh');
                     }
 
-                    if (numberType.format === 'shortU16') {
-                        return {
-                            imports: new ImportMap().add('solana_program::short_vec::ShortU16'),
-                            nestedStructs: [],
-                            type: 'ShortU16',
-                        };
+                    let type = '';
+                    switch (numberType.format) {
+                        case 'u8':
+                        case 'u16':
+                        case 'u32':
+                            type = 'uint32';
+                            break;
+                        case 'u64':
+                            type = 'uint64';
+                            break;
+                        case 'u128':
+                            type = 'bytes';
+                            break;
+                        case 'i8':
+                        case 'i16':
+                        case 'i32':
+                            type = 'int32';
+                            break;
+                        case 'i64':
+                            type = 'int64';
+                            break;
+                        case 'i128':
+                            type = 'bytes';
+                            break;
+                        case 'f32':
+                            type = 'float';
+                            break;
+                        case 'f64':
+                            type = 'double';
+                            break;
+                        default:
+                            throw new Error(`Number format not supported: ${numberType.format}`);
                     }
 
                     return {
                         imports: new ImportMap(),
                         nestedStructs: [],
-                        type: numberType.format,
+                        type: type,
                     };
                 },
 
@@ -281,7 +302,7 @@ export function getTypeManifestVisitor(options: {
                     if (optionPrefix.format === 'u8' && optionPrefix.endian === 'le') {
                         return {
                             ...childManifest,
-                            type: `Option<${childManifest.type}>`,
+                            type: `optional ${childManifest.type}`,
                         };
                     }
 
@@ -291,9 +312,9 @@ export function getTypeManifestVisitor(options: {
 
                 visitPublicKeyType() {
                     return {
-                        imports: new ImportMap().add('solana_program::pubkey::Pubkey'),
+                        imports: new ImportMap(),
                         nestedStructs: [],
-                        type: 'Pubkey',
+                        type: 'string',
                     };
                 },
 
@@ -303,10 +324,9 @@ export function getTypeManifestVisitor(options: {
 
                 visitSetType(setType, { self }) {
                     const childManifest = visit(setType.item, self);
-                    childManifest.imports.add('std::collections::HashSet');
                     return {
                         ...childManifest,
-                        type: `HashSet<${childManifest.type}>`,
+                        type: `repeated ${childManifest.type}>`,
                     };
                 },
 
@@ -318,47 +338,11 @@ export function getTypeManifestVisitor(options: {
                 },
 
                 visitStringType() {
-                    if (!parentSize) {
-                        return {
-                            imports: new ImportMap().add(`kaigan::types::RemainderStr`),
-                            nestedStructs: [],
-                            type: `RemainderStr`,
-                        };
-                    }
-
-                    if (typeof parentSize === 'number') {
-                        return {
-                            imports: new ImportMap(),
-                            nestedStructs: [],
-                            type: `[u8; ${parentSize}]`,
-                        };
-                    }
-
-                    if (isNode(parentSize, 'numberTypeNode') && parentSize.endian === 'le') {
-                        switch (parentSize.format) {
-                            case 'u32':
-                                return {
-                                    imports: new ImportMap(),
-                                    nestedStructs: [],
-                                    type: 'String',
-                                };
-                            case 'u8':
-                            case 'u16':
-                            case 'u64': {
-                                const prefix = parentSize.format.toUpperCase();
-                                return {
-                                    imports: new ImportMap().add(`kaigan::types::${prefix}PrefixString`),
-                                    nestedStructs: [],
-                                    type: `${prefix}PrefixString`,
-                                };
-                            }
-                            default:
-                                throw new Error(`'String size not supported: ${parentSize.format}`);
-                        }
-                    }
-
-                    // TODO: Add to the Rust validator.
-                    throw new Error('String size not supported by Borsh');
+                    return {
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: 'string',
+                    };
                 },
 
                 visitStructFieldType(structFieldType, { self }) {
@@ -381,33 +365,10 @@ export function getTypeManifestVisitor(options: {
                     nestedStruct = originalNestedStruct;
 
                     const fieldName = snakeCase(structFieldType.name);
-                    const docblock = rustDocblock(parseDocs(structFieldType.docs));
-                    const resolvedNestedType = resolveNestedTypeNode(structFieldType.type);
-
-                    let derive = '';
-                    if (fieldManifest.type === 'Pubkey') {
-                        derive =
-                            '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]\n';
-                    } else if (fieldManifest.type === 'Vec<Pubkey>') {
-                        derive =
-                            '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>"))]\n';
-                    } else if (
-                        (isNode(resolvedNestedType, 'arrayTypeNode') &&
-                            isNode(resolvedNestedType.count, 'fixedCountNode') &&
-                            resolvedNestedType.count.value > 32) ||
-                        (isNode(resolvedNestedType, ['bytesTypeNode', 'stringTypeNode']) &&
-                            isNode(structFieldType.type, 'fixedSizeTypeNode') &&
-                            structFieldType.type.size > 32)
-                    ) {
-                        derive =
-                            '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::Bytes>"))]\n';
-                    }
 
                     return {
                         ...fieldManifest,
-                        type: inlineStruct
-                            ? `${docblock}${derive}${fieldName}: ${fieldManifest.type},`
-                            : `${docblock}${derive}pub ${fieldName}: ${fieldManifest.type},`,
+                        type: `\t${fieldManifest.type} ${fieldName}`,
                     };
                 },
 
@@ -420,42 +381,28 @@ export function getTypeManifestVisitor(options: {
                     }
 
                     const fields = structType.fields.map(field => visit(field, self));
-                    const fieldTypes = fields.map(field => field.type).join('\n');
-                    const mergedManifest = mergeManifests(fields);
-
-                    if (nestedStruct) {
-                        const nestedTraits = getTraitsFromNode(
-                            definedTypeNode({ name: originalParentName, type: structType }),
-                        );
-                        mergedManifest.imports.mergeWith(nestedTraits.imports);
-                        return {
-                            ...mergedManifest,
-                            nestedStructs: [
-                                ...mergedManifest.nestedStructs,
-                                `${nestedTraits.render}pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
-                            ],
-                            type: pascalCase(originalParentName),
-                        };
-                    }
-
-                    if (inlineStruct) {
-                        return { ...mergedManifest, type: `{\n${fieldTypes}\n}` };
-                    }
+                    const fieldTypes = fields.map((field, idx) => `${field.type} = ${idx + 1};`).join('\n');
 
                     return {
-                        ...mergedManifest,
-                        type: `pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: `message ${pascalCase(originalParentName)} {\n${fieldTypes}\n}\n`,
                     };
                 },
 
                 visitTupleType(tupleType, { self }) {
                     const items = tupleType.items.map(item => visit(item, self));
-                    const mergedManifest = mergeManifests(items);
+                    const itempTypes = items.map(item => item.type);
+                    const isItemTypeSame = itempTypes.every((val, _i, arr) => val === arr[0]);
 
-                    return {
-                        ...mergedManifest,
-                        type: `(${items.map(item => item.type).join(', ')})`,
-                    };
+                    if (isItemTypeSame) {
+                        return {
+                            imports: new ImportMap(),
+                            nestedStructs: [],
+                            type: `repeated ${items[0].type}`,
+                        };
+                    }
+                    throw new Error('Tuple type with different types not supported');
                 },
 
                 visitZeroableOptionType(node) {
@@ -470,4 +417,23 @@ function mergeManifests(manifests: TypeManifest[]): Pick<TypeManifest, 'imports'
         imports: new ImportMap().mergeWith(...manifests.map(td => td.imports)),
         nestedStructs: manifests.flatMap(m => m.nestedStructs),
     };
+}
+
+export function fixMatrix(proto: string): string {
+    return proto.replace(MATRIX_TYPE_REGEX, (_, typeName: string) => {
+        return `repeated Repeated${titleCase(typeName)}Row`;
+    });
+}
+
+export function checkArrayTypeAndFix(proto: string, matrixTypes: Set<string>): string {
+    const tokens = proto.split(/\s+/).filter(Boolean); // simple tokenization
+
+    for (let i = 0; i < tokens.length - 2; i++) {
+        if (tokens[i] === 'repeated' && tokens[i + 1] === 'repeated') {
+            const type = tokens[i + 2];
+            matrixTypes.add(type);
+        }
+    }
+
+    return fixMatrix(proto);
 }

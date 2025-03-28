@@ -16,6 +16,7 @@ function transformHyphensToUnderscores(input) {
 async function main() {
     const project = process.argv.slice(2)[0] ?? undefined;
     const sdkName = process.argv.slice(3)[0] ? transformHyphensToUnderscores(process.argv.slice(3)[0]) : undefined;
+    const generateProto = process.argv.slice(4)[0] === 'true' ? true : false;
 
     if (project === undefined) {
         throw new Error('Project name is required.');
@@ -25,16 +26,17 @@ async function main() {
         throw new Error('SDK name is required.');
     }
 
-    await generateProject(project, sdkName);
+    await generateProject(project, sdkName, generateProto);
 }
 
-async function generateProject(project, sdkName) {
+async function generateProject(project, sdkName, generateProto) {
     const idl = readJson(path.join(__dirname, project, 'idl.json'));
     const node = rootNode(idl.program);
     visit(
         node,
         renderVisitor(path.join(__dirname, project, 'src', 'generated'), {
             sdkName: sdkName,
+            generateProto: generateProto,
             crateFolder: path.join(__dirname, project),
             formatCode: true,
         }),

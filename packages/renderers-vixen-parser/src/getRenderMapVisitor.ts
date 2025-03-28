@@ -1,10 +1,14 @@
 import {
+    AccountNode,
+    DefinedTypeNode,
     getAllAccounts,
+    getAllDefinedTypes,
     getAllInstructionsWithSubs,
     getAllPrograms,
     isNode,
     pascalCase,
     snakeCase,
+    titleCase,
     VALUE_NODES,
 } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
@@ -16,13 +20,16 @@ import {
     recordLinkablesOnFirstVisitVisitor,
     recordNodeStackVisitor,
     staticVisitor,
+    visit,
 } from '@codama/visitors-core';
 
+import { checkArrayTypeAndFix, getProtoTypeManifestVisitor } from './getProtoTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
 
 export type GetRenderMapOptions = {
+    generateProto?: boolean;
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
     sdkName?: string;
@@ -51,8 +58,12 @@ type ParserInstructionNode = {
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
-
     const renderParentInstructions = options.renderParentInstructions ?? false;
+    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+    const getTraitsFromNode = (_node: AccountNode | DefinedTypeNode) => {
+        return { imports: new ImportMap(), render: '' };
+    };
+    const typeManifestVisitor = getProtoTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
         staticVisitor(() => new RenderMap(), {
@@ -64,8 +75,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const programsToExport = getAllPrograms(node);
                     //TODO: handle multiple programs
                     const programName = programsToExport[0]?.name;
-                    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+
                     const programAccounts = getAllAccounts(node);
+                    const types = getAllDefinedTypes(node);
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
                         return {
                             name: acc.name,
@@ -177,13 +189,87 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const map = new RenderMap();
 
                     // only two files are generated as part of account and instruction parser
-
                     if (accCtx.accounts.length > 0) {
                         map.add('accounts_parser.rs', render('accountsParserPage.njk', accCtx));
                     }
 
                     if (ixCtx.instructions.length > 0) {
                         map.add('instructions_parser.rs', render('instructionsParserPage.njk', ixCtx));
+                    }
+
+                    if (options.generateProto) {
+                        const definedTypes: string[] = [];
+                        // proto Ixs , Accounts and Types
+                        const matrixTypes: Set<string> = new Set();
+                        const protoAccounts = programAccounts.map(acc => {
+                            const node = visit(acc, typeManifestVisitor);
+                            if (node.definedTypes) {
+                                definedTypes.push(node.definedTypes);
+                            }
+                            return checkArrayTypeAndFix(node.type, matrixTypes);
+                        });
+                        const protoTypes = types.map(type => {
+                            const node = visit(type, typeManifestVisitor);
+                            if (node.definedTypes) {
+                                definedTypes.push(node.definedTypes);
+                            }
+                            return checkArrayTypeAndFix(node.type, matrixTypes);
+                        });
+
+                        const protoIxs: {
+                            accounts: string;
+                            args: string;
+                        }[] = [];
+
+                        for (const ix of programInstructions) {
+                            const ixName = ix.name;
+                            const ixAccounts = ix.accounts
+                                .map((acc, idx) => {
+                                    if (!acc.isOptional) {
+                                        return `\tstring ${snakeCase(acc.name)} = ${idx + 1};`;
+                                    } else {
+                                        return `\toptional string ${snakeCase(acc.name)} = ${idx + 1};`;
+                                    }
+                                })
+                                .join('\n');
+                            const ixArgs = ix.arguments
+                                .map((arg, idx) => {
+                                    const node = visit(arg.type, typeManifestVisitor);
+                                    if (node.definedTypes) {
+                                        definedTypes.push(node.definedTypes);
+                                    }
+                                    const argType = checkArrayTypeAndFix(node.type, matrixTypes);
+                                    return `\t${argType} ${snakeCase(arg.name)} = ${idx + 1};`;
+                                })
+                                .join('\n');
+
+                            protoIxs.push({
+                                accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
+                                args: `message ${pascalCase(ixName)}IxData {\n${ixArgs}\n}\n`,
+                            });
+                        }
+
+                        const matrixProtoTypes = Array.from(matrixTypes).map(type => {
+                            return `message Repeated${titleCase(type)}Row {\n\trepeated ${type} rows = 1;\n}\n`;
+                        });
+
+                        definedTypes.push(...matrixProtoTypes);
+
+                        for (const ix of programInstructions) {
+                            const ixName = ix.name;
+                            const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
+                            definedTypes.push(ixStruct);
+                        }
+
+                        map.add(
+                            'proto_def.proto',
+                            render('proto.njk', {
+                                accounts: protoAccounts,
+                                definedTypes,
+                                instructions: protoIxs,
+                                types: protoTypes,
+                            }),
+                        );
                     }
 
                     map.add(
