@@ -198,14 +198,21 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
 
                     if (options.generateProto) {
+                        const additionalTypes: string[] = [];
                         // proto Ixs , Accounts and Types
                         const matrixTypes: Set<string> = new Set();
                         const protoAccounts = programAccounts.map(acc => {
                             const node = visit(acc, typeManifestVisitor);
+                            if (node.definedTypes) {
+                                additionalTypes.push(node.definedTypes);
+                            }
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
                         const protoTypes = types.map(type => {
                             const node = visit(type, typeManifestVisitor);
+                            if (node.definedTypes) {
+                                additionalTypes.push(node.definedTypes);
+                            }
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
 
@@ -228,6 +235,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             const ixArgs = ix.arguments
                                 .map((arg, idx) => {
                                     const node = visit(arg.type, typeManifestVisitor);
+                                    if (node.definedTypes) {
+                                        additionalTypes.push(node.definedTypes);
+                                    }
                                     const argType = checkArrayTypeAndFix(node.type, matrixTypes);
                                     return `\t${argType} ${snakeCase(arg.name)} = ${idx + 1};`;
                                 })
@@ -239,9 +249,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             });
                         }
 
-                        const additionalTypes = Array.from(matrixTypes).map(type => {
+                        const matrixProtoTypes = Array.from(matrixTypes).map(type => {
                             return `message Repeated${titleCase(type)}Row {\n\trepeated ${type} rows = 1;\n}\n`;
                         });
+
+                        additionalTypes.push(...matrixProtoTypes);
 
                         for (const ix of programInstructions) {
                             const ixName = ix.name;

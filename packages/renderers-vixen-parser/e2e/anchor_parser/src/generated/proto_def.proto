@@ -7,23 +7,71 @@
 syntax = "proto3";
 
 
-
-enum CpiRule {
-	message Tup{
-repeated string = 0
-} Allow = 0;
-	message Tup{
-repeated string = 0
-} Deny = 1;
+message Allow {
+	repeated string allow = 1;
 }
 
-enum MetadataAdditionalFieldRestriction {
-	message Tup{
-repeated string = 0
-} Includes = 0;
-	message Tup{
-repeated string = 0
-} Excludes = 1;
+message Deny {
+	repeated string deny = 2;
+}
+
+message Includes {
+	repeated string includes = 1;
+}
+
+message Excludes {
+	repeated string excludes = 2;
+}
+
+message Above {
+	uint64 above = 1;
+}
+
+message Below {
+	uint64 below = 2;
+}
+
+message Equal {
+	uint64 equal = 3;
+}
+
+message Rang {
+	uint64 rang = 4;
+}
+
+message CreateGuardIx {
+	CreateGuardIxAccounts accounts = 1;
+	CreateGuardIxData data = 2;
+}
+
+message ExecuteIx {
+	ExecuteIxAccounts accounts = 1;
+	ExecuteIxData data = 2;
+}
+
+message InitializeIx {
+	InitializeIxAccounts accounts = 1;
+	InitializeIxData data = 2;
+}
+
+message UpdateGuardIx {
+	UpdateGuardIxAccounts accounts = 1;
+	UpdateGuardIxData data = 2;
+}
+
+
+message CpiRule {
+	oneof variant{
+		Allow allow = 1;
+		Deny deny = 2;
+	}
+}
+
+message MetadataAdditionalFieldRestriction {
+	oneof variant{
+		Includes includes = 1;
+		Excludes excludes = 2;
+	}
 }
 
 message MetadataAdditionalFieldRule {
@@ -31,20 +79,13 @@ message MetadataAdditionalFieldRule {
 	optional MetadataAdditionalFieldRestriction value_restrictions = 2;
 }
 
-enum TransferAmountRule {
-	message Tup{
-uint64 = 0
-} Above = 0;
-	message Tup{
-uint64 = 0
-} Below = 1;
-	message Tup{
-uint64 = 0
-} Equal = 2;
-	message Tup{
-uint64 = 0
-uint64 = 1
-} Rang = 3;
+message TransferAmountRule {
+	oneof variant{
+		Above above = 1;
+		Below below = 2;
+		Equal equal = 3;
+		Rang rang = 4;
+	}
 }
 
 

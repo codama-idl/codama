@@ -7,6 +7,71 @@
 syntax = "proto3";
 
 
+message CreateAccountIx {
+	CreateAccountIxAccounts accounts = 1;
+	CreateAccountIxData data = 2;
+}
+
+message AssignIx {
+	AssignIxAccounts accounts = 1;
+	AssignIxData data = 2;
+}
+
+message TransferSolIx {
+	TransferSolIxAccounts accounts = 1;
+	TransferSolIxData data = 2;
+}
+
+message CreateAccountWithSeedIx {
+	CreateAccountWithSeedIxAccounts accounts = 1;
+	CreateAccountWithSeedIxData data = 2;
+}
+
+message AdvanceNonceAccountIx {
+	AdvanceNonceAccountIxAccounts accounts = 1;
+	AdvanceNonceAccountIxData data = 2;
+}
+
+message WithdrawNonceAccountIx {
+	WithdrawNonceAccountIxAccounts accounts = 1;
+	WithdrawNonceAccountIxData data = 2;
+}
+
+message InitializeNonceAccountIx {
+	InitializeNonceAccountIxAccounts accounts = 1;
+	InitializeNonceAccountIxData data = 2;
+}
+
+message AuthorizeNonceAccountIx {
+	AuthorizeNonceAccountIxAccounts accounts = 1;
+	AuthorizeNonceAccountIxData data = 2;
+}
+
+message AllocateIx {
+	AllocateIxAccounts accounts = 1;
+	AllocateIxData data = 2;
+}
+
+message AllocateWithSeedIx {
+	AllocateWithSeedIxAccounts accounts = 1;
+	AllocateWithSeedIxData data = 2;
+}
+
+message AssignWithSeedIx {
+	AssignWithSeedIxAccounts accounts = 1;
+	AssignWithSeedIxData data = 2;
+}
+
+message TransferSolWithSeedIx {
+	TransferSolWithSeedIxAccounts accounts = 1;
+	TransferSolWithSeedIxData data = 2;
+}
+
+message UpgradeNonceAccountIx {
+	UpgradeNonceAccountIxAccounts accounts = 1;
+	UpgradeNonceAccountIxData data = 2;
+}
+
 
 enum NonceVersion {
 	Legacy = 0;

@@ -7,6 +7,41 @@
 syntax = "proto3";
 
 
+message Instruction1Ix {
+	Instruction1IxAccounts accounts = 1;
+	Instruction1IxData data = 2;
+}
+
+message Instruction2Ix {
+	Instruction2IxAccounts accounts = 1;
+	Instruction2IxData data = 2;
+}
+
+message Instruction3Ix {
+	Instruction3IxAccounts accounts = 1;
+	Instruction3IxData data = 2;
+}
+
+message Instruction4Ix {
+	Instruction4IxAccounts accounts = 1;
+	Instruction4IxData data = 2;
+}
+
+message Instruction5Ix {
+	Instruction5IxAccounts accounts = 1;
+	Instruction5IxData data = 2;
+}
+
+message Instruction6Ix {
+	Instruction6IxAccounts accounts = 1;
+	Instruction6IxData data = 2;
+}
+
+message Instruction7Ix {
+	Instruction7IxAccounts accounts = 1;
+	Instruction7IxData data = 2;
+}
+
 
 
 

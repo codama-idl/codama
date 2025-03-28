@@ -25,7 +25,7 @@ export type TypeManifest = {
     imports: ImportMap;
     nestedStructs: string[];
     type: string;
-    additionalType?: string;
+    definedTypes?: string;
 };
 
 export function getProtoTypeManifestVisitor(options: {
@@ -176,13 +176,57 @@ export function getProtoTypeManifestVisitor(options: {
                         throw new Error('Enum type must have a parent name.');
                     }
 
+                    const variantNames = enumType.variants.map(variant => variant.name);
                     const variants = enumType.variants.map(variant => visit(variant, self));
-                    const variantNames = variants.map((variant, i) => `\t${variant.type} = ${i};`).join('\n');
+                    const variantTypes = variants.map(v => v.type);
+
+                    const enumHasDefinedType = variantTypes.some(
+                        type => type.includes('message') || type.includes('repeated'),
+                    );
+
+                    // If the enum has no defined type, we can just use the variant names as the enum type.
+                    if (!enumHasDefinedType) {
+                        const variantNames = variants.map((variant, i) => `\t${variant.type} = ${i};`).join('\n');
+                        return {
+                            imports: new ImportMap(),
+                            nestedStructs: [],
+                            type: `enum ${pascalCase(originalParentName)} {\n${variantNames}\n}\n`,
+                        };
+                    }
+
+                    // If the enum has defined types, we need to create message type for each variant.
+                    const definedVariants = variantNames
+                        .map((variant, i) => {
+                            return `\t\t${pascalCase(variant)} ${snakeCase(variant)} = ${i + 1};`;
+                        })
+                        .join('\n');
+
+                    const nestedVarinatTypes: string[] = [];
+                    for (let i = 0; i < variantTypes.length; i++) {
+                        const variant = variantTypes[i];
+                        const variantTypeArray = variant.split(' ');
+                        const name = variantTypeArray[variantTypeArray.length - 1];
+                        const outerType = variantTypeArray[0];
+                        // handle nested Tuple types
+                        if (outerType === 'repeated') {
+                            const innerType = variant.split(' ').slice(1, -1).join(' ');
+                            nestedVarinatTypes.push(
+                                `message ${pascalCase(name)} {\n\t${innerType} ${snakeCase(name)} = ${i + 1};\n}\n`,
+                            );
+                            // handle nested Struct types
+                        } else if (outerType === 'message') {
+                            nestedVarinatTypes.push(variant);
+                        }
+                    }
+                    const additionalTypes: string[] = [];
+
+                    additionalTypes.push(...nestedVarinatTypes);
 
                     return {
                         imports: new ImportMap(),
                         nestedStructs: [],
-                        type: `enum ${pascalCase(originalParentName)} {\n${variantNames}\n}\n`,
+                        type: `message ${pascalCase(originalParentName)} {\n\toneof variant{\n${definedVariants}\n\t}\n}\n`,
+                        definedTypes: additionalTypes.join('\n'),
                     };
                 },
 
@@ -348,13 +392,17 @@ export function getProtoTypeManifestVisitor(options: {
 
                 visitTupleType(tupleType, { self }) {
                     const items = tupleType.items.map(item => visit(item, self));
-                    const itemTypes = items.map((item, idx) => `${item.type} = ${idx}`).join('\n');
+                    const itempTypes = items.map(item => item.type);
+                    const isItemTypeSame = itempTypes.every((val, _i, arr) => val === arr[0]);
 
-                    return {
-                        imports: new ImportMap(),
-                        nestedStructs: [],
-                        type: `message ${pascalCase('tup')}{\n${itemTypes}\n}`,
-                    };
+                    if (isItemTypeSame) {
+                        return {
+                            imports: new ImportMap(),
+                            nestedStructs: [],
+                            type: `repeated ${items[0].type}`,
+                        };
+                    }
+                    throw new Error('Tuple type with different types not supported');
                 },
 
                 visitZeroableOptionType(node) {
