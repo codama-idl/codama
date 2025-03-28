@@ -23,16 +23,16 @@ import {
     visit,
 } from '@codama/visitors-core';
 
+import { checkArrayTypeAndFix, getProtoTypeManifestVisitor } from './getProtoTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
-import { checkArrayTypeAndFix, getProtoTypeManifestVisitor } from './getProtoTypeManifestVisitor';
 
 export type GetRenderMapOptions = {
+    generateProto?: boolean;
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
     sdkName?: string;
-    generateProto?: boolean;
 };
 
 // Account node for the parser
@@ -198,20 +198,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
 
                     if (options.generateProto) {
-                        const additionalTypes: string[] = [];
+                        const definedTypes: string[] = [];
                         // proto Ixs , Accounts and Types
                         const matrixTypes: Set<string> = new Set();
                         const protoAccounts = programAccounts.map(acc => {
                             const node = visit(acc, typeManifestVisitor);
                             if (node.definedTypes) {
-                                additionalTypes.push(node.definedTypes);
+                                definedTypes.push(node.definedTypes);
                             }
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
                         const protoTypes = types.map(type => {
                             const node = visit(type, typeManifestVisitor);
                             if (node.definedTypes) {
-                                additionalTypes.push(node.definedTypes);
+                                definedTypes.push(node.definedTypes);
                             }
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
@@ -236,7 +236,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 .map((arg, idx) => {
                                     const node = visit(arg.type, typeManifestVisitor);
                                     if (node.definedTypes) {
-                                        additionalTypes.push(node.definedTypes);
+                                        definedTypes.push(node.definedTypes);
                                     }
                                     const argType = checkArrayTypeAndFix(node.type, matrixTypes);
                                     return `\t${argType} ${snakeCase(arg.name)} = ${idx + 1};`;
@@ -253,21 +253,21 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             return `message Repeated${titleCase(type)}Row {\n\trepeated ${type} rows = 1;\n}\n`;
                         });
 
-                        additionalTypes.push(...matrixProtoTypes);
+                        definedTypes.push(...matrixProtoTypes);
 
                         for (const ix of programInstructions) {
                             const ixName = ix.name;
                             const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
-                            additionalTypes.push(ixStruct);
+                            definedTypes.push(ixStruct);
                         }
 
                         map.add(
                             'proto_def.proto',
                             render('proto.njk', {
                                 accounts: protoAccounts,
-                                types: protoTypes,
+                                definedTypes,
                                 instructions: protoIxs,
-                                additionalTypes,
+                                types: protoTypes,
                             }),
                         );
                     }

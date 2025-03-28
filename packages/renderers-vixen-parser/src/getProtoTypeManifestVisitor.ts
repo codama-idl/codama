@@ -22,10 +22,10 @@ import { GetImportFromFunction, GetTraitsFromNodeFunction } from './utils';
 const MATRIX_TYPE_REGEX = /repeated\s+repeated\s+([a-zA-Z_][\w]*)/g;
 
 export type TypeManifest = {
+    definedTypes?: string;
     imports: ImportMap;
     nestedStructs: string[];
     type: string;
-    definedTypes?: string;
 };
 
 export function getProtoTypeManifestVisitor(options: {
@@ -223,10 +223,10 @@ export function getProtoTypeManifestVisitor(options: {
                     additionalTypes.push(...nestedVarinatTypes);
 
                     return {
+                        definedTypes: additionalTypes.join('\n'),
                         imports: new ImportMap(),
                         nestedStructs: [],
                         type: `message ${pascalCase(originalParentName)} {\n\toneof variant{\n${definedVariants}\n\t}\n}\n`,
-                        definedTypes: additionalTypes.join('\n'),
                     };
                 },
 
@@ -420,7 +420,7 @@ function mergeManifests(manifests: TypeManifest[]): Pick<TypeManifest, 'imports'
 }
 
 export function fixMatrix(proto: string): string {
-    return proto.replace(MATRIX_TYPE_REGEX, (_, typeName) => {
+    return proto.replace(MATRIX_TYPE_REGEX, (_, typeName: string) => {
         return `repeated Repeated${titleCase(typeName)}Row`;
     });
 }
