@@ -17,30 +17,45 @@ pub enum {{ programName | pascalCase }}ProgramState {
 
 impl {{ programName | pascalCase }}ProgramState {
     pub fn try_unpack(data_bytes:&[u8]) -> yellowstone_vixen_core::ParseResult<Self>{
-        let data_len = data_bytes.len();    
-        {% for account in accounts %}
-            {% if account.size == null %}
-                const {{ account.name | upper }}_LEN:usize = std::mem::size_of::<{{ account.name | pascalCase }}>();
-            {% endif %}
-        {% endfor %}
-        match data_len {
-        {% for account in accounts %}
-            {% if account.size != null %}
-                {{ account.name | pascalCase }}::LEN => Ok(
+        {% if hasDiscriminator %}
+            let acc_discriminator:[u8; 8] = ix.data[0..8].try_into()?;
+            match acc_discriminator {
+            {% for account in accounts %}
+                {{ account.discriminator }} => Ok(
                     {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
                         {{ account.name | pascalCase }}::from_bytes(data_bytes)?
                     )
-                    ),
-            {% else %}
-                {{account.name | upper }}_LEN => Ok(
-                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                        {{ account.name | pascalCase }}::from_bytes(data_bytes)?
-                    )
-                    ),
-            {% endif %}
-        {% endfor %}
-        _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
-        }
+                ),
+            {% endfor %}
+            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account discriminator".to_owned())),
+            }
+
+        {% else %}
+            let data_len = data_bytes.len();    
+            {% for account in accounts %}
+                {% if account.size == null %}
+                    const {{ account.name | upper }}_LEN:usize = std::mem::size_of::<{{ account.name | pascalCase }}>();
+                {% endif %}
+            {% endfor %}
+            match data_len {
+            {% for account in accounts %}
+                {% if account.size != null %}
+                    {{ account.name | pascalCase }}::LEN => Ok(
+                        {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        )
+                        ),
+                {% else %}
+                    {{account.name | upper }}_LEN => Ok(
+                        {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        )
+                        ),
+                {% endif %}
+            {% endfor %}
+            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
+            }
+        {% endif %}
     }
 }
 

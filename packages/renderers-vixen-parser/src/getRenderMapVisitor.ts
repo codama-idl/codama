@@ -1,9 +1,9 @@
 import {
     getAllAccounts,
     getAllInstructionsWithSubs,
-    getAllPrograms,
     isNode,
     pascalCase,
+    ProgramNode,
     snakeCase,
     VALUE_NODES,
 } from '@codama/nodes';
@@ -18,6 +18,7 @@ import {
     staticVisitor,
 } from '@codama/visitors-core';
 
+import * as crypto from 'crypto';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
@@ -28,10 +29,13 @@ export type GetRenderMapOptions = {
     sdkName?: string;
 };
 
+type ProgramType = 'shank' | 'anchor';
+
 // Account node for the parser
 type ParserAccountNode = {
     name: string;
     size: number | null;
+    discriminator: string | null;
 };
 
 // Instruction Accounts node for the parser
@@ -48,6 +52,26 @@ type ParserInstructionNode = {
     name: string;
 };
 
+const getAnchorDiscriminatorFromStateName = (accName: string) => {
+    const namespace = 'account';
+    const preimage = `${namespace}:${accName}`;
+
+    const hash = crypto.createHash('sha256').update(preimage).digest();
+    const discriminator = hash.subarray(0, 8); // First 8 bytes
+
+    return Array.from(discriminator);
+};
+
+const getProgramType = (program: ProgramNode): ProgramType => {
+    if (program?.origin === 'shank') {
+        return 'shank';
+    } else if (program?.origin === 'anchor') {
+        return 'anchor';
+    } else {
+        throw new Error(`Unknown program type: ${program.origin}`);
+    }
+};
+
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
@@ -61,17 +85,28 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v =>
             extendVisitor(v, {
                 visitRoot(node) {
-                    const programsToExport = getAllPrograms(node);
                     //TODO: handle multiple programs
-                    const programName = programsToExport[0]?.name;
+                    let program = node.program;
+
+                    // default to anchor program
+                    let programType = getProgramType(program);
+
+                    const programName = program?.name;
                     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
                     const programAccounts = getAllAccounts(node);
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
+                        let discriminator: string | null = null;
+                        if (programType === 'anchor') {
+                            discriminator = `[${getAnchorDiscriminatorFromStateName(acc.name)}]`;
+                        }
                         return {
                             name: acc.name,
                             size: acc.size?.valueOf() ?? null,
+                            discriminator,
                         };
                     });
+
+                    console.log('accounts', accounts);
                     const programInstructions = getAllInstructionsWithSubs(node, {
                         leavesOnly: !renderParentInstructions,
                     });
@@ -84,13 +119,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
                         // checs for discriminator
                         let discriminator: string[] | string | null = null;
-                        const discriminatorIx = ix.arguments.find(arg => arg.name === 'discriminator');
-                        if (discriminatorIx) {
+                        const discriminatorNode = ix.arguments.find(arg => arg.name === 'discriminator');
+                        if (discriminatorNode) {
                             const hasDefaultValue =
-                                discriminatorIx.defaultValue && isNode(discriminatorIx.defaultValue, VALUE_NODES);
+                                discriminatorNode.defaultValue && isNode(discriminatorNode.defaultValue, VALUE_NODES);
 
                             if (hasDefaultValue) {
-                                const { render: value } = renderValueNode(discriminatorIx.defaultValue, getImportFrom);
+                                const { render: value } = renderValueNode(
+                                    discriminatorNode.defaultValue,
+                                    getImportFrom,
+                                );
 
                                 discriminator = value;
 
@@ -162,7 +200,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const ixCtx = {
                         IX_DATA_OFFSET,
                         accounts,
-                        hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
+                        hasDiscriminator: instructions.every(ix => ix.discriminator !== null),
                         imports: instructionParserImports,
                         instructions,
                         programName,
@@ -172,6 +210,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         accounts,
                         imports: accountParserImports,
                         programName,
+                        hasDiscriminator: accounts.every(acc => acc.discriminator !== null),
                     };
 
                     const map = new RenderMap();
