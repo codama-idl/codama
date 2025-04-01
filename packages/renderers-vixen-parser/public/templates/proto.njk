@@ -6,7 +6,7 @@
 syntax = "proto3";
 {{ imports }}
 
-{% for type in additionalTypes %}
+{% for type in definedTypes %}
 {{ type }}
 {% endfor %}
 
