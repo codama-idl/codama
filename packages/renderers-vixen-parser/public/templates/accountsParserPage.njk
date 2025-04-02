@@ -18,14 +18,16 @@ pub enum {{ programName | pascalCase }}ProgramState {
 impl {{ programName | pascalCase }}ProgramState {
     pub fn try_unpack(data_bytes:&[u8]) -> yellowstone_vixen_core::ParseResult<Self>{
         {% if hasDiscriminator %}
-            let acc_discriminator:[u8; 8] = ix.data[0..8].try_into()?;
+            let acc_discriminator:[u8; {{ accDiscLen }}] = data_bytes[0..{{ accDiscLen }}].try_into()?;
             match acc_discriminator {
             {% for account in accounts %}
-                {{ account.discriminator }} => Ok(
-                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                        {{ account.name | pascalCase }}::from_bytes(data_bytes)?
-                    )
-                ),
+                {% if account.discriminator != null %}
+                    {{ account.discriminator }} => Ok(
+                        {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        )
+                    ),
+                {% endif %}
             {% endfor %}
             _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account discriminator".to_owned())),
             }

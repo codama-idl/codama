@@ -111,6 +111,7 @@ test('it renders instructions parsers', () => {
         ],
         kind: 'programNode',
         name: camelCase('test'),
+        origin: 'shank',
         pdas: [],
         publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
         version: '0.0.0',

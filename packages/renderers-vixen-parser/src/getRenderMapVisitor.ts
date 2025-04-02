@@ -1,9 +1,12 @@
 import {
+    AccountNode,
     getAllAccounts,
     getAllInstructionsWithSubs,
+    InstructionNode,
     isNode,
     pascalCase,
     ProgramNode,
+    resolveNestedTypeNode,
     snakeCase,
     VALUE_NODES,
 } from '@codama/nodes';
@@ -17,8 +20,8 @@ import {
     recordNodeStackVisitor,
     staticVisitor,
 } from '@codama/visitors-core';
-
 import * as crypto from 'crypto';
+
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
@@ -29,13 +32,13 @@ export type GetRenderMapOptions = {
     sdkName?: string;
 };
 
-type ProgramType = 'shank' | 'anchor';
+type ProgramType = 'anchor' | 'shank';
 
 // Account node for the parser
 type ParserAccountNode = {
+    discriminator: string | null;
     name: string;
     size: number | null;
-    discriminator: string | null;
 };
 
 // Instruction Accounts node for the parser
@@ -52,14 +55,39 @@ type ParserInstructionNode = {
     name: string;
 };
 
-const getAnchorDiscriminatorFromStateName = (accName: string) => {
+const getAnchorDiscriminatorFromStateName = (accName: string): string => {
     const namespace = 'account';
     const preimage = `${namespace}:${accName}`;
 
     const hash = crypto.createHash('sha256').update(preimage).digest();
     const discriminator = hash.subarray(0, 8); // First 8 bytes
 
-    return Array.from(discriminator);
+    return JSON.stringify(Array.from(discriminator));
+};
+
+const getShankDiscriminatorFromAccountNode = (accNode: AccountNode): string | null => {
+    const accData = resolveNestedTypeNode(accNode.data);
+    const discField = accData.fields.find(f => f.name === 'discriminator');
+    if (!discField) return null;
+
+    const hasDefaultValue = discField.defaultValue && isNode(discField.defaultValue, VALUE_NODES);
+
+    if (!hasDefaultValue) return null;
+
+    const { render: value } = renderValueNode(discField.defaultValue, getImportFromFactory({}));
+    return value;
+};
+
+const getIxDiscriminatorFromInstructionNode = (ixNode: InstructionNode): string | null => {
+    const discField = ixNode.arguments.find(arg => arg.name === 'discriminator');
+    if (!discField) return null;
+
+    const hasDefaultValue = discField?.defaultValue && isNode(discField.defaultValue, VALUE_NODES);
+
+    if (!hasDefaultValue) return null;
+
+    const { render: value } = renderValueNode(discField.defaultValue, getImportFromFactory({}));
+    return value;
 };
 
 const getProgramType = (program: ProgramNode): ProgramType => {
@@ -86,63 +114,73 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
             extendVisitor(v, {
                 visitRoot(node) {
                     //TODO: handle multiple programs
-                    let program = node.program;
+                    const program = node.program;
 
                     // default to anchor program
-                    let programType = getProgramType(program);
+                    const programType = getProgramType(program);
 
                     const programName = program?.name;
-                    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+
                     const programAccounts = getAllAccounts(node);
+
+                    // assuming default value for Account discriminator - 1 Byte - shank
+                    let accDiscLen = 1;
+
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
                         let discriminator: string | null = null;
+                        // anchor
                         if (programType === 'anchor') {
-                            discriminator = `[${getAnchorDiscriminatorFromStateName(acc.name)}]`;
+                            discriminator = getAnchorDiscriminatorFromStateName(pascalCase(acc.name));
+                            // anchor uses 8 bytes account discriminator
+                            accDiscLen = 8;
+                        }
+                        // shank
+                        else {
+                            discriminator = getShankDiscriminatorFromAccountNode(acc);
+                            if (discriminator) {
+                                const isDiscArray = Array.isArray(JSON.parse(discriminator) as string[]);
+
+                                if (isDiscArray) {
+                                    // set account discriminator len to the length of the array
+                                    accDiscLen = Array.from(JSON.parse(discriminator) as string[]).length;
+                                }
+
+                                if (accDiscLen == 1) {
+                                    discriminator = `[${discriminator}]`;
+                                }
+                            }
                         }
                         return {
+                            discriminator,
                             name: acc.name,
                             size: acc.size?.valueOf() ?? null,
-                            discriminator,
                         };
                     });
 
-                    console.log('accounts', accounts);
                     const programInstructions = getAllInstructionsWithSubs(node, {
                         leavesOnly: !renderParentInstructions,
                     });
 
-                    // Default value for  Ix discriminator - 1 Byte
-                    // Shank native program uses 1 byte
-                    // anchor uses 8 bytes
-                    let IX_DATA_OFFSET = 1;
+                    // assuming default value for Instruction discriminator - 1 Byte - shank
+                    let ixDiscLen = 1;
 
                     const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
-                        // checs for discriminator
-                        let discriminator: string[] | string | null = null;
-                        const discriminatorNode = ix.arguments.find(arg => arg.name === 'discriminator');
-                        if (discriminatorNode) {
-                            const hasDefaultValue =
-                                discriminatorNode.defaultValue && isNode(discriminatorNode.defaultValue, VALUE_NODES);
+                        let discriminator = getIxDiscriminatorFromInstructionNode(ix);
 
-                            if (hasDefaultValue) {
-                                const { render: value } = renderValueNode(
-                                    discriminatorNode.defaultValue,
-                                    getImportFrom,
-                                );
+                        if (discriminator) {
+                            const isDiscArray = Array.isArray(JSON.parse(discriminator) as string[]);
+                            if (isDiscArray) {
+                                // set instruction discriminator len to the length of the array
+                                ixDiscLen = Array.from(JSON.parse(discriminator) as string[]).length;
+                            }
 
-                                discriminator = value;
-
-                                if (Array.isArray(JSON.parse(value) as string[])) {
-                                    IX_DATA_OFFSET = Array.from(JSON.parse(value) as string[]).length;
-                                } else {
-                                    discriminator = `[${discriminator}]`;
-                                }
+                            if (ixDiscLen == 1) {
+                                discriminator = `[${discriminator}]`;
                             }
                         }
 
                         const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
                         const hasOptionalAccounts = ix.accounts.some(acc => acc.isOptional);
-
                         return {
                             accounts: ix.accounts.map((acc, accIdx) => {
                                 return {
@@ -198,19 +236,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     instructionParserImports.add(`${codamaSdkName}::instructions::{${ixImports}}`);
 
                     const ixCtx = {
-                        IX_DATA_OFFSET,
                         accounts,
-                        hasDiscriminator: instructions.every(ix => ix.discriminator !== null),
+                        hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
                         imports: instructionParserImports,
                         instructions,
+                        ixDiscLen,
                         programName,
                     };
 
                     const accCtx = {
+                        accDiscLen,
                         accounts,
+                        hasDiscriminator: accounts.some(acc => acc.discriminator !== null),
                         imports: accountParserImports,
                         programName,
-                        hasDiscriminator: accounts.every(acc => acc.discriminator !== null),
                     };
 
                     const map = new RenderMap();
