@@ -18,7 +18,11 @@ pub enum {{ programName | pascalCase }}ProgramState {
 impl {{ programName | pascalCase }}ProgramState {
     pub fn try_unpack(data_bytes:&[u8]) -> yellowstone_vixen_core::ParseResult<Self>{
         {% if hasDiscriminator %}
-            let acc_discriminator:[u8; {{ accDiscLen }}] = data_bytes[0..{{ accDiscLen }}].try_into()?;
+            {% if accDiscLen == 1 %}
+                let acc_discriminator = data_bytes[0];
+            {% else %}
+                let acc_discriminator:[u8; {{ accDiscLen }}] = data_bytes[0..{{ accDiscLen }}].try_into()?;
+            {% endif %}
             match acc_discriminator {
             {% for account in accounts %}
                 {% if account.discriminator != null %}

@@ -26,6 +26,8 @@ import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
 
+const ANCHOR_DISCRIMINATOR_LEN = 8;
+
 export type GetRenderMapOptions = {
     linkOverrides?: LinkOverrides;
     renderParentInstructions?: boolean;
@@ -60,7 +62,7 @@ const getAnchorDiscriminatorFromStateName = (accName: string): string => {
     const preimage = `${namespace}:${accName}`;
 
     const hash = crypto.createHash('sha256').update(preimage).digest();
-    const discriminator = hash.subarray(0, 8); // First 8 bytes
+    const discriminator = hash.subarray(0, ANCHOR_DISCRIMINATOR_LEN); // First 8 bytes
 
     return JSON.stringify(Array.from(discriminator));
 };
@@ -132,7 +134,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         if (programType === 'anchor') {
                             discriminator = getAnchorDiscriminatorFromStateName(pascalCase(acc.name));
                             // anchor uses 8 bytes account discriminator
-                            accDiscLen = 8;
+                            accDiscLen = ANCHOR_DISCRIMINATOR_LEN;
                         }
                         // shank
                         else {
@@ -143,10 +145,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 if (isDiscArray) {
                                     // set account discriminator len to the length of the array
                                     accDiscLen = Array.from(JSON.parse(discriminator) as string[]).length;
-                                }
-
-                                if (accDiscLen == 1) {
-                                    discriminator = `[${discriminator}]`;
                                 }
                             }
                         }
@@ -165,17 +163,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     let ixDiscLen = 1;
 
                     const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
-                        let discriminator = getIxDiscriminatorFromInstructionNode(ix);
+                        const discriminator = getIxDiscriminatorFromInstructionNode(ix);
 
                         if (discriminator) {
                             const isDiscArray = Array.isArray(JSON.parse(discriminator) as string[]);
                             if (isDiscArray) {
                                 // set instruction discriminator len to the length of the array
                                 ixDiscLen = Array.from(JSON.parse(discriminator) as string[]).length;
-                            }
-
-                            if (ixDiscLen == 1) {
-                                discriminator = `[${discriminator}]`;
                             }
                         }
 

@@ -3,7 +3,70 @@
     "program": {
         "kind": "programNode",
         "pdas": [],
-        "accounts": [],
+        "accounts": [
+            {
+                "kind": "accountNode",
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "discriminator",
+                            "type": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                            "docs": [],
+                            "defaultValue": {
+                                "kind": "numberValueNode",
+                                "number": 0
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "dummyField",
+                            "type": { "kind": "numberTypeNode", "format": "u64", "endian": "le" },
+                            "docs": []
+                        }
+                    ]
+                },
+                "name": "dummyAccount1",
+                "idlName": "DummyAccount1",
+                "docs": [],
+                "size": 9
+            },
+            {
+                "kind": "accountNode",
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "discriminator",
+                            "type": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                            "docs": [],
+                            "defaultValue": {
+                                "kind": "numberValueNode",
+                                "number": 1
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "dummyField1",
+                            "type": { "kind": "numberTypeNode", "format": "u64", "endian": "le" },
+                            "docs": []
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "dummyField2",
+                            "type": { "kind": "numberTypeNode", "format": "u64", "endian": "le" },
+                            "docs": []
+                        }
+                    ]
+                },
+                "name": "dummyAccount2",
+                "idlName": "DummyAccount2",
+                "docs": [],
+                "size": 17
+            }
+        ],
         "instructions": [
             {
                 "kind": "instructionNode",
