@@ -201,6 +201,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         const definedTypes: string[] = [];
                         // proto Ixs , Accounts and Types
                         const matrixTypes: Set<string> = new Set();
+
                         const protoAccounts = programAccounts.map(acc => {
                             const node = visit(acc, typeManifestVisitor);
                             if (node.definedTypes) {
@@ -208,6 +209,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             }
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
+
                         const protoTypes = types.map(type => {
                             const node = visit(type, typeManifestVisitor);
                             if (node.definedTypes) {
@@ -232,7 +234,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                     }
                                 })
                                 .join('\n');
+
                             let idx = 0;
+
                             const ixArgs = ix.arguments
                                 .map(arg => {
                                     const node = visit(arg.type, typeManifestVisitor);
@@ -252,23 +256,25 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 })
                                 .filter(arg => arg !== '')
                                 .join('\n');
-                            let ixStruct;
+
                             if (ixArgs.length === 0) {
                                 protoIxs.push({
                                     accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
                                     args: '',
                                 });
 
-                                ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n}\n`;
+                                const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n}\n`;
+
+                                definedTypes.push(ixStruct);
                             } else {
                                 protoIxs.push({
                                     accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
                                     args: `message ${pascalCase(ixName)}IxData {\n${ixArgs}\n}\n`,
                                 });
 
-                                ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
+                                const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
+                                definedTypes.push(ixStruct);
                             }
-                            definedTypes.push(ixStruct);
                         }
 
                         const matrixProtoTypes = Array.from(matrixTypes).map(type => {

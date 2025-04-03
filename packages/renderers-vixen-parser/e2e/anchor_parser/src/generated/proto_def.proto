@@ -51,7 +51,6 @@ message ExecuteIx {
 
 message InitializeIx {
 	InitializeIxAccounts accounts = 1;
-	InitializeIxData data = 2;
 }
 
 message UpdateGuardIx {
@@ -90,12 +89,11 @@ message TransferAmountRule {
 
 
 message GuardV1 {
-	repeated uint32 discriminator = 1;
-	string mint = 2;
-	uint32 bump = 3;
-	optional CpiRule cpi_rule = 4;
-	optional TransferAmountRule transfer_amount_rule = 5;
-	repeated MetadataAdditionalFieldRule additional_fields_rule = 6;
+	string mint = 1;
+	uint32 bump = 2;
+	optional CpiRule cpi_rule = 3;
+	optional TransferAmountRule transfer_amount_rule = 4;
+	repeated MetadataAdditionalFieldRule additional_fields_rule = 5;
 }
 
 
@@ -111,13 +109,12 @@ message CreateGuardIxAccounts {
 }
 
 message CreateGuardIxData {
-	repeated uint32 discriminator = 1;
-	string name = 2;
-	string symbol = 3;
-	string uri = 4;
-	optional CpiRule cpi_rule = 5;
-	optional TransferAmountRule transfer_amount_rule = 6;
-	repeated MetadataAdditionalFieldRule additional_fields_rule = 7;
+	string name = 1;
+	string symbol = 2;
+	string uri = 3;
+	optional CpiRule cpi_rule = 4;
+	optional TransferAmountRule transfer_amount_rule = 5;
+	repeated MetadataAdditionalFieldRule additional_fields_rule = 6;
 }
 
 message ExecuteIxAccounts {
@@ -131,8 +128,7 @@ message ExecuteIxAccounts {
 }
 
 message ExecuteIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount = 2;
+	uint64 amount = 1;
 }
 
 message InitializeIxAccounts {
@@ -144,9 +140,6 @@ message InitializeIxAccounts {
 	string payer = 6;
 }
 
-message InitializeIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message UpdateGuardIxAccounts {
 	string guard = 1;
@@ -158,10 +151,9 @@ message UpdateGuardIxAccounts {
 }
 
 message UpdateGuardIxData {
-	repeated uint32 discriminator = 1;
-	optional CpiRule cpi_rule = 2;
-	optional TransferAmountRule transfer_amount_rule = 3;
-	repeated MetadataAdditionalFieldRule additional_fields_rule = 4;
+	optional CpiRule cpi_rule = 1;
+	optional TransferAmountRule transfer_amount_rule = 2;
+	repeated MetadataAdditionalFieldRule additional_fields_rule = 3;
 }
 
 

@@ -9,12 +9,10 @@ syntax = "proto3";
 
 message Instruction1Ix {
 	Instruction1IxAccounts accounts = 1;
-	Instruction1IxData data = 2;
 }
 
 message Instruction2Ix {
 	Instruction2IxAccounts accounts = 1;
-	Instruction2IxData data = 2;
 }
 
 message Instruction3Ix {
@@ -34,12 +32,10 @@ message Instruction5Ix {
 
 message Instruction6Ix {
 	Instruction6IxAccounts accounts = 1;
-	Instruction6IxData data = 2;
 }
 
 message Instruction7Ix {
 	Instruction7IxAccounts accounts = 1;
-	Instruction7IxData data = 2;
 }
 
 
@@ -49,17 +45,11 @@ message Instruction1IxAccounts {
 
 }
 
-message Instruction1IxData {
-
-}
 
 message Instruction2IxAccounts {
 
 }
 
-message Instruction2IxData {
-
-}
 
 message Instruction3IxAccounts {
 
@@ -89,16 +79,10 @@ message Instruction6IxAccounts {
 	string my_account = 1;
 }
 
-message Instruction6IxData {
-
-}
 
 message Instruction7IxAccounts {
 	optional string my_account = 1;
 }
 
-message Instruction7IxData {
-
-}
 
 
