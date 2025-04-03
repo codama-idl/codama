@@ -232,21 +232,43 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                     }
                                 })
                                 .join('\n');
+                            let idx = 0;
                             const ixArgs = ix.arguments
-                                .map((arg, idx) => {
+                                .map(arg => {
                                     const node = visit(arg.type, typeManifestVisitor);
+
+                                    if (arg.name === 'discriminator' && node.type === 'bytes') {
+                                        return '';
+                                    }
+
                                     if (node.definedTypes) {
                                         definedTypes.push(node.definedTypes);
                                     }
                                     const argType = checkArrayTypeAndFix(node.type, matrixTypes);
-                                    return `\t${argType} ${snakeCase(arg.name)} = ${idx + 1};`;
-                                })
-                                .join('\n');
 
-                            protoIxs.push({
-                                accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
-                                args: `message ${pascalCase(ixName)}IxData {\n${ixArgs}\n}\n`,
-                            });
+                                    idx++;
+
+                                    return `\t${argType} ${snakeCase(arg.name)} = ${idx};`;
+                                })
+                                .filter(arg => arg !== '')
+                                .join('\n');
+                            let ixStruct;
+                            if (ixArgs.length === 0) {
+                                protoIxs.push({
+                                    accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
+                                    args: '',
+                                });
+
+                                ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n}\n`;
+                            } else {
+                                protoIxs.push({
+                                    accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
+                                    args: `message ${pascalCase(ixName)}IxData {\n${ixArgs}\n}\n`,
+                                });
+
+                                ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
+                            }
+                            definedTypes.push(ixStruct);
                         }
 
                         const matrixProtoTypes = Array.from(matrixTypes).map(type => {
@@ -254,12 +276,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         });
 
                         definedTypes.push(...matrixProtoTypes);
-
-                        for (const ix of programInstructions) {
-                            const ixName = ix.name;
-                            const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
-                            definedTypes.push(ixStruct);
-                        }
 
                         map.add(
                             'proto_def.proto',

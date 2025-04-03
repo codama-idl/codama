@@ -65,6 +65,14 @@ export function getProtoTypeManifestVisitor(options: {
                 visitArrayType(arrayType, { self }) {
                     const childManifest = visit(arrayType.item, self);
 
+                    if (childManifest.type === 'uint32') {
+                        return {
+                            imports: new ImportMap(),
+                            nestedStructs: [],
+                            type: 'bytes',
+                        };
+                    }
+
                     return {
                         imports: new ImportMap(),
                         nestedStructs: [],
@@ -366,6 +374,14 @@ export function getProtoTypeManifestVisitor(options: {
 
                     const fieldName = snakeCase(structFieldType.name);
 
+                    if (fieldName === 'discriminator' && fieldManifest.type === 'bytes') {
+                        return {
+                            imports: new ImportMap(),
+                            nestedStructs: [],
+                            type: '',
+                        };
+                    }
+
                     return {
                         ...fieldManifest,
                         type: `\t${fieldManifest.type} ${fieldName}`,
@@ -380,7 +396,9 @@ export function getProtoTypeManifestVisitor(options: {
                         throw new Error('Struct type must have a parent name.');
                     }
 
-                    const fields = structType.fields.map(field => visit(field, self));
+                    const fields = structType.fields
+                        .map(field => visit(field, self))
+                        .filter(field => field.type !== '');
                     const fieldTypes = fields.map((field, idx) => `${field.type} = ${idx + 1};`).join('\n');
 
                     return {

@@ -7,10 +7,6 @@
 syntax = "proto3";
 
 
-message RepeatedUint64Row {
-	repeated uint64 rows = 1;
-}
-
 message InitializeLbPairIx {
 	InitializeLbPairIxAccounts accounts = 1;
 	InitializeLbPairIxData data = 2;
@@ -28,7 +24,6 @@ message InitializeCustomizablePermissionlessLbPairIx {
 
 message InitializeBinArrayBitmapExtensionIx {
 	InitializeBinArrayBitmapExtensionIxAccounts accounts = 1;
-	InitializeBinArrayBitmapExtensionIxData data = 2;
 }
 
 message InitializeBinArrayIx {
@@ -133,12 +128,10 @@ message ClaimRewardIx {
 
 message ClaimFeeIx {
 	ClaimFeeIxAccounts accounts = 1;
-	ClaimFeeIxData data = 2;
 }
 
 message ClosePositionIx {
 	ClosePositionIxAccounts accounts = 1;
-	ClosePositionIxData data = 2;
 }
 
 message UpdateFeeParametersIx {
@@ -158,32 +151,26 @@ message InitializePresetParameterIx {
 
 message ClosePresetParameterIx {
 	ClosePresetParameterIxAccounts accounts = 1;
-	ClosePresetParameterIxData data = 2;
 }
 
 message RemoveAllLiquidityIx {
 	RemoveAllLiquidityIxAccounts accounts = 1;
-	RemoveAllLiquidityIxData data = 2;
 }
 
 message TogglePairStatusIx {
 	TogglePairStatusIxAccounts accounts = 1;
-	TogglePairStatusIxData data = 2;
 }
 
 message MigratePositionIx {
 	MigratePositionIxAccounts accounts = 1;
-	MigratePositionIxData data = 2;
 }
 
 message MigrateBinArrayIx {
 	MigrateBinArrayIxAccounts accounts = 1;
-	MigrateBinArrayIxData data = 2;
 }
 
 message UpdateFeesAndRewardsIx {
 	UpdateFeesAndRewardsIxAccounts accounts = 1;
-	UpdateFeesAndRewardsIxData data = 2;
 }
 
 message WithdrawIneligibleRewardIx {
@@ -221,12 +208,16 @@ message SetPreActivationSwapAddressIx {
 	SetPreActivationSwapAddressIxData data = 2;
 }
 
+message RepeatedUint64Row {
+	repeated uint64 rows = 1;
+}
+
 
 message StrategyParameters {
 	int32 min_bin_id = 1;
 	int32 max_bin_id = 2;
 	StrategyType strategy_type = 3;
-	repeated uint32 parameteres = 4;
+	bytes parameteres = 4;
 }
 
 message BinLiquidityDistributionByWeight {
@@ -294,16 +285,16 @@ message StaticParameters {
 	int32 min_bin_id = 7;
 	int32 max_bin_id = 8;
 	uint32 protocol_share = 9;
-	repeated uint32 padding = 10;
+	bytes padding = 10;
 }
 
 message VariableParameters {
 	uint32 volatility_accumulator = 1;
 	uint32 volatility_reference = 2;
 	int32 index_reference = 3;
-	repeated uint32 padding = 4;
+	bytes padding = 4;
 	int64 last_update_timestamp = 5;
-	repeated uint32 padding1 = 6;
+	bytes padding1 = 6;
 }
 
 message FeeInfo {
@@ -358,111 +349,104 @@ enum PairStatus {
 
 
 message BinArrayBitmapExtension {
-	repeated uint32 discriminator = 1;
-	string lb_pair = 2;
-	repeated RepeatedUint64Row positive_bin_array_bitmap = 3;
-	repeated RepeatedUint64Row negative_bin_array_bitmap = 4;
+	string lb_pair = 1;
+	repeated RepeatedUint64Row positive_bin_array_bitmap = 2;
+	repeated RepeatedUint64Row negative_bin_array_bitmap = 3;
 }
 
 message BinArray {
-	repeated uint32 discriminator = 1;
-	int64 index = 2;
-	uint32 version = 3;
-	repeated uint32 padding = 4;
-	string lb_pair = 5;
-	repeated Bin bins = 6;
+	int64 index = 1;
+	uint32 version = 2;
+	bytes padding = 3;
+	string lb_pair = 4;
+	repeated Bin bins = 5;
 }
 
 message LbPair {
-	repeated uint32 discriminator = 1;
-	StaticParameters parameters = 2;
-	VariableParameters v_parameters = 3;
-	repeated uint32 bump_seed = 4;
-	repeated uint32 bin_step_seed = 5;
-	uint32 pair_type = 6;
-	int32 active_id = 7;
-	uint32 bin_step = 8;
-	uint32 status = 9;
-	uint32 require_base_factor_seed = 10;
-	repeated uint32 base_factor_seed = 11;
-	uint32 activation_type = 12;
-	uint32 padding0 = 13;
-	string token_x_mint = 14;
-	string token_y_mint = 15;
-	string reserve_x = 16;
-	string reserve_y = 17;
-	ProtocolFee protocol_fee = 18;
-	repeated uint32 padding1 = 19;
-	repeated RewardInfo reward_infos = 20;
-	string oracle = 21;
-	repeated uint64 bin_array_bitmap = 22;
-	int64 last_updated_at = 23;
-	repeated uint32 padding2 = 24;
-	string pre_activation_swap_address = 25;
-	string base_key = 26;
-	uint64 activation_point = 27;
-	uint64 pre_activation_duration = 28;
-	repeated uint32 padding3 = 29;
-	uint64 padding4 = 30;
-	string creator = 31;
-	repeated uint32 reserved = 32;
+	StaticParameters parameters = 1;
+	VariableParameters v_parameters = 2;
+	bytes bump_seed = 3;
+	bytes bin_step_seed = 4;
+	uint32 pair_type = 5;
+	int32 active_id = 6;
+	uint32 bin_step = 7;
+	uint32 status = 8;
+	uint32 require_base_factor_seed = 9;
+	bytes base_factor_seed = 10;
+	uint32 activation_type = 11;
+	uint32 padding0 = 12;
+	string token_x_mint = 13;
+	string token_y_mint = 14;
+	string reserve_x = 15;
+	string reserve_y = 16;
+	ProtocolFee protocol_fee = 17;
+	bytes padding1 = 18;
+	repeated RewardInfo reward_infos = 19;
+	string oracle = 20;
+	repeated uint64 bin_array_bitmap = 21;
+	int64 last_updated_at = 22;
+	bytes padding2 = 23;
+	string pre_activation_swap_address = 24;
+	string base_key = 25;
+	uint64 activation_point = 26;
+	uint64 pre_activation_duration = 27;
+	bytes padding3 = 28;
+	uint64 padding4 = 29;
+	string creator = 30;
+	bytes reserved = 31;
 }
 
 message Oracle {
-	repeated uint32 discriminator = 1;
-	uint64 idx = 2;
-	uint64 active_size = 3;
-	uint64 length = 4;
+	uint64 idx = 1;
+	uint64 active_size = 2;
+	uint64 length = 3;
 }
 
 message Position {
-	repeated uint32 discriminator = 1;
-	string lb_pair = 2;
-	string owner = 3;
-	repeated uint64 liquidity_shares = 4;
-	repeated UserRewardInfo reward_infos = 5;
-	repeated FeeInfo fee_infos = 6;
-	int32 lower_bin_id = 7;
-	int32 upper_bin_id = 8;
-	int64 last_updated_at = 9;
-	uint64 total_claimed_fee_x_amount = 10;
-	uint64 total_claimed_fee_y_amount = 11;
-	repeated uint64 total_claimed_rewards = 12;
-	repeated uint32 reserved = 13;
+	string lb_pair = 1;
+	string owner = 2;
+	repeated uint64 liquidity_shares = 3;
+	repeated UserRewardInfo reward_infos = 4;
+	repeated FeeInfo fee_infos = 5;
+	int32 lower_bin_id = 6;
+	int32 upper_bin_id = 7;
+	int64 last_updated_at = 8;
+	uint64 total_claimed_fee_x_amount = 9;
+	uint64 total_claimed_fee_y_amount = 10;
+	repeated uint64 total_claimed_rewards = 11;
+	bytes reserved = 12;
 }
 
 message PositionV2 {
-	repeated uint32 discriminator = 1;
-	string lb_pair = 2;
-	string owner = 3;
-	repeated bytes liquidity_shares = 4;
-	repeated UserRewardInfo reward_infos = 5;
-	repeated FeeInfo fee_infos = 6;
-	int32 lower_bin_id = 7;
-	int32 upper_bin_id = 8;
-	int64 last_updated_at = 9;
-	uint64 total_claimed_fee_x_amount = 10;
-	uint64 total_claimed_fee_y_amount = 11;
-	repeated uint64 total_claimed_rewards = 12;
-	string operator = 13;
-	uint64 lock_release_point = 14;
-	uint32 padding0 = 15;
-	string fee_owner = 16;
-	repeated uint32 reserved = 17;
+	string lb_pair = 1;
+	string owner = 2;
+	repeated bytes liquidity_shares = 3;
+	repeated UserRewardInfo reward_infos = 4;
+	repeated FeeInfo fee_infos = 5;
+	int32 lower_bin_id = 6;
+	int32 upper_bin_id = 7;
+	int64 last_updated_at = 8;
+	uint64 total_claimed_fee_x_amount = 9;
+	uint64 total_claimed_fee_y_amount = 10;
+	repeated uint64 total_claimed_rewards = 11;
+	string operator = 12;
+	uint64 lock_release_point = 13;
+	uint32 padding0 = 14;
+	string fee_owner = 15;
+	bytes reserved = 16;
 }
 
 message PresetParameter {
-	repeated uint32 discriminator = 1;
-	uint32 bin_step = 2;
-	uint32 base_factor = 3;
-	uint32 filter_period = 4;
-	uint32 decay_period = 5;
-	uint32 reduction_factor = 6;
-	uint32 variable_fee_control = 7;
-	uint32 max_volatility_accumulator = 8;
-	int32 min_bin_id = 9;
-	int32 max_bin_id = 10;
-	uint32 protocol_share = 11;
+	uint32 bin_step = 1;
+	uint32 base_factor = 2;
+	uint32 filter_period = 3;
+	uint32 decay_period = 4;
+	uint32 reduction_factor = 5;
+	uint32 variable_fee_control = 6;
+	uint32 max_volatility_accumulator = 7;
+	int32 min_bin_id = 8;
+	int32 max_bin_id = 9;
+	uint32 protocol_share = 10;
 }
 
 
@@ -484,9 +468,8 @@ message InitializeLbPairIxAccounts {
 }
 
 message InitializeLbPairIxData {
-	repeated uint32 discriminator = 1;
-	int32 active_id = 2;
-	uint32 bin_step = 3;
+	int32 active_id = 1;
+	uint32 bin_step = 2;
 }
 
 message InitializePermissionLbPairIxAccounts {
@@ -507,13 +490,12 @@ message InitializePermissionLbPairIxAccounts {
 }
 
 message InitializePermissionLbPairIxData {
-	repeated uint32 discriminator = 1;
-	int32 active_id = 2;
-	uint32 bin_step = 3;
-	uint32 base_factor = 4;
-	int32 min_bin_id = 5;
-	int32 max_bin_id = 6;
-	uint32 activation_type = 7;
+	int32 active_id = 1;
+	uint32 bin_step = 2;
+	uint32 base_factor = 3;
+	int32 min_bin_id = 4;
+	int32 max_bin_id = 5;
+	uint32 activation_type = 6;
 }
 
 message InitializeCustomizablePermissionlessLbPairIxAccounts {
@@ -534,14 +516,13 @@ message InitializeCustomizablePermissionlessLbPairIxAccounts {
 }
 
 message InitializeCustomizablePermissionlessLbPairIxData {
-	repeated uint32 discriminator = 1;
-	int32 active_id = 2;
-	uint32 bin_step = 3;
-	uint32 base_factor = 4;
-	uint32 activation_type = 5;
-	bool has_alpha_vault = 6;
-	optional uint64 activation_point = 7;
-	repeated uint32 padding = 8;
+	int32 active_id = 1;
+	uint32 bin_step = 2;
+	uint32 base_factor = 3;
+	uint32 activation_type = 4;
+	bool has_alpha_vault = 5;
+	optional uint64 activation_point = 6;
+	bytes padding = 7;
 }
 
 message InitializeBinArrayBitmapExtensionIxAccounts {
@@ -552,9 +533,6 @@ message InitializeBinArrayBitmapExtensionIxAccounts {
 	string rent = 5;
 }
 
-message InitializeBinArrayBitmapExtensionIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message InitializeBinArrayIxAccounts {
 	string lb_pair = 1;
@@ -564,8 +542,7 @@ message InitializeBinArrayIxAccounts {
 }
 
 message InitializeBinArrayIxData {
-	repeated uint32 discriminator = 1;
-	int64 index = 2;
+	int64 index = 1;
 }
 
 message AddLiquidityIxAccounts {
@@ -588,10 +565,9 @@ message AddLiquidityIxAccounts {
 }
 
 message AddLiquidityIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount_x = 2;
-	uint64 amount_y = 3;
-	repeated BinLiquidityDistribution bin_liquidity_dist = 4;
+	uint64 amount_x = 1;
+	uint64 amount_y = 2;
+	repeated BinLiquidityDistribution bin_liquidity_dist = 3;
 }
 
 message AddLiquidityByWeightIxAccounts {
@@ -614,12 +590,11 @@ message AddLiquidityByWeightIxAccounts {
 }
 
 message AddLiquidityByWeightIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount_x = 2;
-	uint64 amount_y = 3;
-	int32 active_id = 4;
-	int32 max_active_bin_slippage = 5;
-	repeated BinLiquidityDistributionByWeight bin_liquidity_dist = 6;
+	uint64 amount_x = 1;
+	uint64 amount_y = 2;
+	int32 active_id = 3;
+	int32 max_active_bin_slippage = 4;
+	repeated BinLiquidityDistributionByWeight bin_liquidity_dist = 5;
 }
 
 message AddLiquidityByStrategyIxAccounts {
@@ -642,12 +617,11 @@ message AddLiquidityByStrategyIxAccounts {
 }
 
 message AddLiquidityByStrategyIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount_x = 2;
-	uint64 amount_y = 3;
-	int32 active_id = 4;
-	int32 max_active_bin_slippage = 5;
-	StrategyParameters strategy_parameters = 6;
+	uint64 amount_x = 1;
+	uint64 amount_y = 2;
+	int32 active_id = 3;
+	int32 max_active_bin_slippage = 4;
+	StrategyParameters strategy_parameters = 5;
 }
 
 message AddLiquidityByStrategyOneSideIxAccounts {
@@ -666,11 +640,10 @@ message AddLiquidityByStrategyOneSideIxAccounts {
 }
 
 message AddLiquidityByStrategyOneSideIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount = 2;
-	int32 active_id = 3;
-	int32 max_active_bin_slippage = 4;
-	StrategyParameters strategy_parameters = 5;
+	uint64 amount = 1;
+	int32 active_id = 2;
+	int32 max_active_bin_slippage = 3;
+	StrategyParameters strategy_parameters = 4;
 }
 
 message AddLiquidityOneSideIxAccounts {
@@ -689,11 +662,10 @@ message AddLiquidityOneSideIxAccounts {
 }
 
 message AddLiquidityOneSideIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount = 2;
-	int32 active_id = 3;
-	int32 max_active_bin_slippage = 4;
-	repeated BinLiquidityDistributionByWeight bin_liquidity_dist = 5;
+	uint64 amount = 1;
+	int32 active_id = 2;
+	int32 max_active_bin_slippage = 3;
+	repeated BinLiquidityDistributionByWeight bin_liquidity_dist = 4;
 }
 
 message RemoveLiquidityIxAccounts {
@@ -716,8 +688,7 @@ message RemoveLiquidityIxAccounts {
 }
 
 message RemoveLiquidityIxData {
-	repeated uint32 discriminator = 1;
-	repeated BinLiquidityReduction bin_liquidity_removal = 2;
+	repeated BinLiquidityReduction bin_liquidity_removal = 1;
 }
 
 message InitializePositionIxAccounts {
@@ -732,9 +703,8 @@ message InitializePositionIxAccounts {
 }
 
 message InitializePositionIxData {
-	repeated uint32 discriminator = 1;
-	int32 lower_bin_id = 2;
-	int32 width = 3;
+	int32 lower_bin_id = 1;
+	int32 width = 2;
 }
 
 message InitializePositionPdaIxAccounts {
@@ -750,9 +720,8 @@ message InitializePositionPdaIxAccounts {
 }
 
 message InitializePositionPdaIxData {
-	repeated uint32 discriminator = 1;
-	int32 lower_bin_id = 2;
-	int32 width = 3;
+	int32 lower_bin_id = 1;
+	int32 width = 2;
 }
 
 message InitializePositionByOperatorIxAccounts {
@@ -770,11 +739,10 @@ message InitializePositionByOperatorIxAccounts {
 }
 
 message InitializePositionByOperatorIxData {
-	repeated uint32 discriminator = 1;
-	int32 lower_bin_id = 2;
-	int32 width = 3;
-	string fee_owner = 4;
-	uint64 lock_release_point = 5;
+	int32 lower_bin_id = 1;
+	int32 width = 2;
+	string fee_owner = 3;
+	uint64 lock_release_point = 4;
 }
 
 message UpdatePositionOperatorIxAccounts {
@@ -785,8 +753,7 @@ message UpdatePositionOperatorIxAccounts {
 }
 
 message UpdatePositionOperatorIxData {
-	repeated uint32 discriminator = 1;
-	string operator = 2;
+	string operator = 1;
 }
 
 message SwapIxAccounts {
@@ -808,9 +775,8 @@ message SwapIxAccounts {
 }
 
 message SwapIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount_in = 2;
-	uint64 min_amount_out = 3;
+	uint64 amount_in = 1;
+	uint64 min_amount_out = 2;
 }
 
 message SwapExactOutIxAccounts {
@@ -832,9 +798,8 @@ message SwapExactOutIxAccounts {
 }
 
 message SwapExactOutIxData {
-	repeated uint32 discriminator = 1;
-	uint64 max_in_amount = 2;
-	uint64 out_amount = 3;
+	uint64 max_in_amount = 1;
+	uint64 out_amount = 2;
 }
 
 message SwapWithPriceImpactIxAccounts {
@@ -856,10 +821,9 @@ message SwapWithPriceImpactIxAccounts {
 }
 
 message SwapWithPriceImpactIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount_in = 2;
-	optional int32 active_id = 3;
-	uint32 max_price_impact_bps = 4;
+	uint64 amount_in = 1;
+	optional int32 active_id = 2;
+	uint32 max_price_impact_bps = 3;
 }
 
 message WithdrawProtocolFeeIxAccounts {
@@ -875,9 +839,8 @@ message WithdrawProtocolFeeIxAccounts {
 }
 
 message WithdrawProtocolFeeIxData {
-	repeated uint32 discriminator = 1;
-	uint64 amount_x = 2;
-	uint64 amount_y = 3;
+	uint64 amount_x = 1;
+	uint64 amount_y = 2;
 }
 
 message InitializeRewardIxAccounts {
@@ -893,10 +856,9 @@ message InitializeRewardIxAccounts {
 }
 
 message InitializeRewardIxData {
-	repeated uint32 discriminator = 1;
-	uint64 reward_index = 2;
-	uint64 reward_duration = 3;
-	string funder = 4;
+	uint64 reward_index = 1;
+	uint64 reward_duration = 2;
+	string funder = 3;
 }
 
 message FundRewardIxAccounts {
@@ -912,10 +874,9 @@ message FundRewardIxAccounts {
 }
 
 message FundRewardIxData {
-	repeated uint32 discriminator = 1;
-	uint64 reward_index = 2;
-	uint64 amount = 3;
-	bool carry_forward = 4;
+	uint64 reward_index = 1;
+	uint64 amount = 2;
+	bool carry_forward = 3;
 }
 
 message UpdateRewardFunderIxAccounts {
@@ -926,9 +887,8 @@ message UpdateRewardFunderIxAccounts {
 }
 
 message UpdateRewardFunderIxData {
-	repeated uint32 discriminator = 1;
-	uint64 reward_index = 2;
-	string new_funder = 3;
+	uint64 reward_index = 1;
+	string new_funder = 2;
 }
 
 message UpdateRewardDurationIxAccounts {
@@ -940,9 +900,8 @@ message UpdateRewardDurationIxAccounts {
 }
 
 message UpdateRewardDurationIxData {
-	repeated uint32 discriminator = 1;
-	uint64 reward_index = 2;
-	uint64 new_duration = 3;
+	uint64 reward_index = 1;
+	uint64 new_duration = 2;
 }
 
 message ClaimRewardIxAccounts {
@@ -960,8 +919,7 @@ message ClaimRewardIxAccounts {
 }
 
 message ClaimRewardIxData {
-	repeated uint32 discriminator = 1;
-	uint64 reward_index = 2;
+	uint64 reward_index = 1;
 }
 
 message ClaimFeeIxAccounts {
@@ -981,9 +939,6 @@ message ClaimFeeIxAccounts {
 	string program = 14;
 }
 
-message ClaimFeeIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message ClosePositionIxAccounts {
 	string position = 1;
@@ -996,9 +951,6 @@ message ClosePositionIxAccounts {
 	string program = 8;
 }
 
-message ClosePositionIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message UpdateFeeParametersIxAccounts {
 	string lb_pair = 1;
@@ -1008,9 +960,8 @@ message UpdateFeeParametersIxAccounts {
 }
 
 message UpdateFeeParametersIxData {
-	repeated uint32 discriminator = 1;
-	uint32 protocol_share = 2;
-	uint32 base_factor = 3;
+	uint32 protocol_share = 1;
+	uint32 base_factor = 2;
 }
 
 message IncreaseOracleLengthIxAccounts {
@@ -1022,8 +973,7 @@ message IncreaseOracleLengthIxAccounts {
 }
 
 message IncreaseOracleLengthIxData {
-	repeated uint32 discriminator = 1;
-	uint64 length_to_add = 2;
+	uint64 length_to_add = 1;
 }
 
 message InitializePresetParameterIxAccounts {
@@ -1034,17 +984,16 @@ message InitializePresetParameterIxAccounts {
 }
 
 message InitializePresetParameterIxData {
-	repeated uint32 discriminator = 1;
-	uint32 bin_step = 2;
-	uint32 base_factor = 3;
-	uint32 filter_period = 4;
-	uint32 decay_period = 5;
-	uint32 reduction_factor = 6;
-	uint32 variable_fee_control = 7;
-	uint32 max_volatility_accumulator = 8;
-	int32 min_bin_id = 9;
-	int32 max_bin_id = 10;
-	uint32 protocol_share = 11;
+	uint32 bin_step = 1;
+	uint32 base_factor = 2;
+	uint32 filter_period = 3;
+	uint32 decay_period = 4;
+	uint32 reduction_factor = 5;
+	uint32 variable_fee_control = 6;
+	uint32 max_volatility_accumulator = 7;
+	int32 min_bin_id = 8;
+	int32 max_bin_id = 9;
+	uint32 protocol_share = 10;
 }
 
 message ClosePresetParameterIxAccounts {
@@ -1053,9 +1002,6 @@ message ClosePresetParameterIxAccounts {
 	string rent_receiver = 3;
 }
 
-message ClosePresetParameterIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message RemoveAllLiquidityIxAccounts {
 	string position = 1;
@@ -1076,18 +1022,12 @@ message RemoveAllLiquidityIxAccounts {
 	string program = 16;
 }
 
-message RemoveAllLiquidityIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message TogglePairStatusIxAccounts {
 	string lb_pair = 1;
 	string admin = 2;
 }
 
-message TogglePairStatusIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message MigratePositionIxAccounts {
 	string position_v2 = 1;
@@ -1102,17 +1042,11 @@ message MigratePositionIxAccounts {
 	string program = 10;
 }
 
-message MigratePositionIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message MigrateBinArrayIxAccounts {
 	string lb_pair = 1;
 }
 
-message MigrateBinArrayIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message UpdateFeesAndRewardsIxAccounts {
 	string position = 1;
@@ -1122,9 +1056,6 @@ message UpdateFeesAndRewardsIxAccounts {
 	string owner = 5;
 }
 
-message UpdateFeesAndRewardsIxData {
-	repeated uint32 discriminator = 1;
-}
 
 message WithdrawIneligibleRewardIxAccounts {
 	string lb_pair = 1;
@@ -1139,8 +1070,7 @@ message WithdrawIneligibleRewardIxAccounts {
 }
 
 message WithdrawIneligibleRewardIxData {
-	repeated uint32 discriminator = 1;
-	uint64 reward_index = 2;
+	uint64 reward_index = 1;
 }
 
 message SetActivationPointIxAccounts {
@@ -1149,8 +1079,7 @@ message SetActivationPointIxAccounts {
 }
 
 message SetActivationPointIxData {
-	repeated uint32 discriminator = 1;
-	uint64 activation_point = 2;
+	uint64 activation_point = 1;
 }
 
 message RemoveLiquidityByRangeIxAccounts {
@@ -1173,10 +1102,9 @@ message RemoveLiquidityByRangeIxAccounts {
 }
 
 message RemoveLiquidityByRangeIxData {
-	repeated uint32 discriminator = 1;
-	int32 from_bin_id = 2;
-	int32 to_bin_id = 3;
-	uint32 bps_to_remove = 4;
+	int32 from_bin_id = 1;
+	int32 to_bin_id = 2;
+	uint32 bps_to_remove = 3;
 }
 
 message AddLiquidityOneSidePreciseIxAccounts {
@@ -1195,9 +1123,8 @@ message AddLiquidityOneSidePreciseIxAccounts {
 }
 
 message AddLiquidityOneSidePreciseIxData {
-	repeated uint32 discriminator = 1;
-	repeated CompressedBinDepositAmount bins = 2;
-	uint64 decompress_multiplier = 3;
+	repeated CompressedBinDepositAmount bins = 1;
+	uint64 decompress_multiplier = 2;
 }
 
 message GoToABinIxAccounts {
@@ -1210,8 +1137,7 @@ message GoToABinIxAccounts {
 }
 
 message GoToABinIxData {
-	repeated uint32 discriminator = 1;
-	int32 bin_id = 2;
+	int32 bin_id = 1;
 }
 
 message SetPreActivationDurationIxAccounts {
@@ -1220,8 +1146,7 @@ message SetPreActivationDurationIxAccounts {
 }
 
 message SetPreActivationDurationIxData {
-	repeated uint32 discriminator = 1;
-	uint64 pre_activation_duration = 2;
+	uint64 pre_activation_duration = 1;
 }
 
 message SetPreActivationSwapAddressIxAccounts {
@@ -1230,8 +1155,7 @@ message SetPreActivationSwapAddressIxAccounts {
 }
 
 message SetPreActivationSwapAddressIxData {
-	repeated uint32 discriminator = 1;
-	string pre_activation_swap_address = 2;
+	string pre_activation_swap_address = 1;
 }
 
 
