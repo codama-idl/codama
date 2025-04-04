@@ -5,23 +5,28 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use codama_renderers_rust_e2e_anchor::accounts::GuardV1;
-use codama_renderers_rust_e2e_anchor::ID;
+use codama_renderers_rust_e2e_dummy::accounts::DummyAccount1;
+use codama_renderers_rust_e2e_dummy::accounts::DummyAccount2;
+use codama_renderers_rust_e2e_dummy::ID;
 
-/// WenTransferGuard Program State
+/// Dummy Program State
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
-pub enum WenTransferGuardProgramState {
-    GuardV1(GuardV1),
+pub enum DummyProgramState {
+    DummyAccount1(DummyAccount1),
+    DummyAccount2(DummyAccount2),
 }
 
-impl WenTransferGuardProgramState {
+impl DummyProgramState {
     pub fn try_unpack(data_bytes: &[u8]) -> yellowstone_vixen_core::ParseResult<Self> {
-        let acc_discriminator: [u8; 8] = data_bytes[0..8].try_into()?;
+        let acc_discriminator = data_bytes[0];
         match acc_discriminator {
-            [185, 149, 156, 78, 245, 108, 172, 68] => Ok(WenTransferGuardProgramState::GuardV1(
-                GuardV1::from_bytes(data_bytes)?,
-            )),
+            0 => Ok(DummyProgramState::DummyAccount1(DummyAccount1::from_bytes(
+                data_bytes,
+            )?)),
+            1 => Ok(DummyProgramState::DummyAccount2(DummyAccount2::from_bytes(
+                data_bytes,
+            )?)),
             _ => Err(yellowstone_vixen_core::ParseError::from(
                 "Invalid Account discriminator".to_owned(),
             )),
@@ -34,10 +39,10 @@ pub struct AccountParser;
 
 impl yellowstone_vixen_core::Parser for AccountParser {
     type Input = yellowstone_vixen_core::AccountUpdate;
-    type Output = WenTransferGuardProgramState;
+    type Output = DummyProgramState;
 
     fn id(&self) -> std::borrow::Cow<str> {
-        "wen_transfer_guard::AccountParser".into()
+        "dummy::AccountParser".into()
     }
 
     fn prefilter(&self) -> yellowstone_vixen_core::Prefilter {
@@ -55,7 +60,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
             .account
             .as_ref()
             .ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-        WenTransferGuardProgramState::try_unpack(&inner.data)
+        DummyProgramState::try_unpack(&inner.data)
     }
 }
 

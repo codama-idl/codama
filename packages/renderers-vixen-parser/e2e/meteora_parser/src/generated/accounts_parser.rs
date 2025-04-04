@@ -29,27 +29,31 @@ pub enum LbClmmProgramState {
 
 impl LbClmmProgramState {
     pub fn try_unpack(data_bytes: &[u8]) -> yellowstone_vixen_core::ParseResult<Self> {
-        let data_len = data_bytes.len();
-        match data_len {
-            BinArrayBitmapExtension::LEN => Ok(LbClmmProgramState::BinArrayBitmapExtension(
+        let acc_discriminator: [u8; 8] = data_bytes[0..8].try_into()?;
+        match acc_discriminator {
+            [80, 111, 124, 113, 55, 237, 18, 5] => Ok(LbClmmProgramState::BinArrayBitmapExtension(
                 BinArrayBitmapExtension::from_bytes(data_bytes)?,
             )),
-            BinArray::LEN => Ok(LbClmmProgramState::BinArray(BinArray::from_bytes(
-                data_bytes,
-            )?)),
-            LbPair::LEN => Ok(LbClmmProgramState::LbPair(LbPair::from_bytes(data_bytes)?)),
-            Oracle::LEN => Ok(LbClmmProgramState::Oracle(Oracle::from_bytes(data_bytes)?)),
-            Position::LEN => Ok(LbClmmProgramState::Position(Position::from_bytes(
-                data_bytes,
-            )?)),
-            PositionV2::LEN => Ok(LbClmmProgramState::PositionV2(PositionV2::from_bytes(
-                data_bytes,
-            )?)),
-            PresetParameter::LEN => Ok(LbClmmProgramState::PresetParameter(
+            [92, 142, 92, 220, 5, 148, 70, 181] => Ok(LbClmmProgramState::BinArray(
+                BinArray::from_bytes(data_bytes)?,
+            )),
+            [33, 11, 49, 98, 181, 101, 177, 13] => {
+                Ok(LbClmmProgramState::LbPair(LbPair::from_bytes(data_bytes)?))
+            }
+            [139, 194, 131, 179, 140, 179, 229, 244] => {
+                Ok(LbClmmProgramState::Oracle(Oracle::from_bytes(data_bytes)?))
+            }
+            [170, 188, 143, 228, 122, 64, 247, 208] => Ok(LbClmmProgramState::Position(
+                Position::from_bytes(data_bytes)?,
+            )),
+            [117, 176, 212, 199, 245, 180, 133, 182] => Ok(LbClmmProgramState::PositionV2(
+                PositionV2::from_bytes(data_bytes)?,
+            )),
+            [242, 62, 244, 34, 181, 112, 58, 170] => Ok(LbClmmProgramState::PresetParameter(
                 PresetParameter::from_bytes(data_bytes)?,
             )),
             _ => Err(yellowstone_vixen_core::ParseError::from(
-                "Invalid Account data length".to_owned(),
+                "Invalid Account discriminator".to_owned(),
             )),
         }
     }
