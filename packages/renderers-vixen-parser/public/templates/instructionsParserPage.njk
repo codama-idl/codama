@@ -117,6 +117,42 @@ pub fn check_min_accounts_req(actual: usize, expected: usize) -> yellowstone_vix
     }
 }
 
+
+
+// #[cfg(feature = "proto")]
+mod proto_parser {
+    use yellowstone_vixen_core::proto_helper_traits;
+    proto_helper_traits!();
+    use yellowstone_vixen_core::proto::ParseProto;
+    use super::{InstructionParser,{{ programName | pascalCase }}ProgramIx};
+    use crate::proto_def;
+
+    {% for instruction in instructions %}
+        use super::{{ instruction.name | pascalCase }}IxAccounts;
+        impl IntoProto<proto_def::{{ instruction.name | pascalCase }}IxAccounts> for {{ instruction.name | pascalCase }}IxAccounts  {
+            fn into_proto(self) -> proto_def::{{ instruction.name | pascalCase }}IxAccounts {
+                proto_def::{{ instruction.name | pascalCase }}IxAccounts {
+                    {% for account in instruction.accounts %}
+                        {{ account.name }}: self.{{ account.name }}.to_string(),
+                    {% endfor %}
+                }
+            }
+        }   
+        {% if instruction.hasArgs  %}
+            use super::{{ instruction.name | pascalCase }}IxData;
+            impl IntoProto<proto_def::{{ instruction.name | pascalCase }}IxData> for {{ instruction.name | pascalCase }}IxData  {
+                fn into_proto(self) -> proto_def::{{ instruction.name | pascalCase }}IxData {
+                    proto_def::{{ instruction.name | pascalCase }}IxData {
+                        {% for field in instruction.ixArgs %}
+                            {{ field }}: self.{{ field }}.into(),
+                        {% endfor %}
+                    }
+                }
+            }
+        {% endif %}
+    {% endfor %}
+}
+
+
+
 {% endblock %}
-
-

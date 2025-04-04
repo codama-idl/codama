@@ -6,7 +6,7 @@ const process = require('node:process');
 const { rootNodeFromAnchor } = require('@codama/nodes-from-anchor');
 const { readJson } = require('@codama/renderers-core');
 const { visit } = require('@codama/visitors-core');
-
+const fs = require('node:fs');
 const { renderVisitor } = require('../dist/index.node.cjs');
 
 function transformHyphensToUnderscores(input) {
@@ -23,6 +23,19 @@ async function main() {
     if (sdkName === undefined) {
         throw new Error('SDK name is required.');
     }
+
+    // create src/generated directory if it doesn't exist
+    const generatedDir = path.join(__dirname, project, 'parser', 'src', 'generated');
+    if (!fs.existsSync(generatedDir)) {
+        fs.mkdirSync(generatedDir, { recursive: true });
+    }
+
+    // create proto directory if it doesn't exist
+    const protoDir = path.join(__dirname, project, 'parser', 'proto');
+    if (!fs.existsSync(protoDir)) {
+        fs.mkdirSync(protoDir);
+    }
+
     await generateProject(project, sdkName, generateProto);
 }
 
@@ -30,12 +43,13 @@ async function generateProject(project, sdkName, generateProto) {
     const idl = readJson(path.join(__dirname, project, 'idl.json'));
     const node = rootNodeFromAnchor(idl);
 
-    visit(
+    const projectName = visit(
         node,
-        renderVisitor(path.join(__dirname, project, 'src', 'generated'), {
+        renderVisitor(path.join(__dirname, project, 'parser'), {
             sdkName: sdkName,
+            project: project,
             generateProto: generateProto,
-            crateFolder: path.join(__dirname, project),
+            crateFolder: path.join(__dirname, project, 'parser'),
             formatCode: true,
         }),
     );

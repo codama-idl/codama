@@ -4,7 +4,8 @@
 
 {% block main %}
 syntax = "proto3";
-{{ imports }}
+
+package proto_def;
 
 {% for type in definedTypes %}
 {{ type }}

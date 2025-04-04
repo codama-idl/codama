@@ -374,7 +374,7 @@ export function getProtoTypeManifestVisitor(options: {
 
                     const fieldName = snakeCase(structFieldType.name);
 
-                    if (fieldName === 'discriminator' && fieldManifest.type === 'bytes') {
+                    if (fieldName === 'discriminator') {
                         return {
                             imports: new ImportMap(),
                             nestedStructs: [],
