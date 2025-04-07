@@ -24,4 +24,20 @@ package proto_def;
 {{ ix.args }}
 {% endfor %}
 
+message {{ programName | pascalCase }}ProgramState {
+  oneof state_oneof {
+    {% for account in programStateOneOf %}
+        {{ account }}
+    {% endfor %}
+  }
+}
+
+message {{ programName | pascalCase }}Ixs {
+  oneof ix_oneof {
+    {% for ix in programIxsOneOf %}
+        {{ ix }}
+    {% endfor %}
+  }
+}
+
 {% endblock %}
