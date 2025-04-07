@@ -11,7 +11,7 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct Instruction6 {
-    pub my_account: solana_program::pubkey::Pubkey,
+    pub my_account: solana_pubkey::Pubkey,
 }
 
 impl Instruction6 {
@@ -63,7 +63,7 @@ impl Default for Instruction6InstructionData {
 ///   0. `[writable]` my_account
 #[derive(Clone, Debug, Default)]
 pub struct Instruction6Builder {
-    my_account: Option<solana_program::pubkey::Pubkey>,
+    my_account: Option<solana_pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -72,7 +72,7 @@ impl Instruction6Builder {
         Self::default()
     }
     #[inline(always)]
-    pub fn my_account(&mut self, my_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn my_account(&mut self, my_account: solana_pubkey::Pubkey) -> &mut Self {
         self.my_account = Some(my_account);
         self
     }

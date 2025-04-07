@@ -291,7 +291,7 @@ export function getTypeManifestVisitor(options: {
 
                 visitPublicKeyType() {
                     return {
-                        imports: new ImportMap().add('solana_program::pubkey::Pubkey'),
+                        imports: new ImportMap().add('solana_pubkey::Pubkey'),
                         nestedStructs: [],
                         type: 'Pubkey',
                     };

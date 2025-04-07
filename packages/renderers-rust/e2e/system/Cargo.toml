@@ -18,7 +18,8 @@ num-traits = "^0.2"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde_with = { version = "^3.0", optional = true }
 serde-big-array = { version = "^0.5", optional = true }
-solana-program = "^2.1.6"
+solana-program = "2.2.1"
+solana-pubkey = { version = "2.2.1", features = ["curve25519"] }
 solana-client = { version = "~1.18", optional = true }
 solana-sdk = { version = "~1.18", optional = true }
 thiserror = "^1.0"

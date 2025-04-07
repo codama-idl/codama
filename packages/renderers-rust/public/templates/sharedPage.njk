@@ -16,7 +16,7 @@ For now, we just define them here. This the following caveat:
     #[cfg(feature = "fetch")]
     #[derive(Debug, Clone)]
     pub struct DecodedAccount<T> {
-        pub address: solana_program::pubkey::Pubkey,
+        pub address: solana_pubkey::Pubkey,
         pub account: solana_sdk::account::Account,
         pub data: T,
     }
@@ -25,7 +25,7 @@ For now, we just define them here. This the following caveat:
     #[derive(Debug, Clone)]
     pub enum MaybeAccount<T> {
         Exists(DecodedAccount<T>),
-        NotFound(solana_program::pubkey::Pubkey),
+        NotFound(solana_pubkey::Pubkey),
     }
 
 {% endif %}

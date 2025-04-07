@@ -7,12 +7,12 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 /// Accounts.
 #[derive(Debug)]
 pub struct Assign {
-    pub account: solana_program::pubkey::Pubkey,
+    pub account: solana_pubkey::Pubkey,
 }
 
 impl Assign {
@@ -78,7 +78,7 @@ pub struct AssignInstructionArgs {
 ///   0. `[writable, signer]` account
 #[derive(Clone, Debug, Default)]
 pub struct AssignBuilder {
-    account: Option<solana_program::pubkey::Pubkey>,
+    account: Option<solana_pubkey::Pubkey>,
     program_address: Option<Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -88,7 +88,7 @@ impl AssignBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn account(&mut self, account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn account(&mut self, account: solana_pubkey::Pubkey) -> &mut Self {
         self.account = Some(account);
         self
     }

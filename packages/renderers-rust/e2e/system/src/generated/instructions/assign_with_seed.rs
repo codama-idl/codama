@@ -7,14 +7,14 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 /// Accounts.
 #[derive(Debug)]
 pub struct AssignWithSeed {
-    pub account: solana_program::pubkey::Pubkey,
+    pub account: solana_pubkey::Pubkey,
 
-    pub base_account: solana_program::pubkey::Pubkey,
+    pub base_account: solana_pubkey::Pubkey,
 }
 
 impl AssignWithSeed {
@@ -87,8 +87,8 @@ pub struct AssignWithSeedInstructionArgs {
 ///   1. `[signer]` base_account
 #[derive(Clone, Debug, Default)]
 pub struct AssignWithSeedBuilder {
-    account: Option<solana_program::pubkey::Pubkey>,
-    base_account: Option<solana_program::pubkey::Pubkey>,
+    account: Option<solana_pubkey::Pubkey>,
+    base_account: Option<solana_pubkey::Pubkey>,
     base: Option<Pubkey>,
     seed: Option<String>,
     program_address: Option<Pubkey>,
@@ -100,12 +100,12 @@ impl AssignWithSeedBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn account(&mut self, account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn account(&mut self, account: solana_pubkey::Pubkey) -> &mut Self {
         self.account = Some(account);
         self
     }
     #[inline(always)]
-    pub fn base_account(&mut self, base_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn base_account(&mut self, base_account: solana_pubkey::Pubkey) -> &mut Self {
         self.base_account = Some(base_account);
         self
     }

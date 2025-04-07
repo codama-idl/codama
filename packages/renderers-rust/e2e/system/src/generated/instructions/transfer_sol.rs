@@ -11,9 +11,9 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct TransferSol {
-    pub source: solana_program::pubkey::Pubkey,
+    pub source: solana_pubkey::Pubkey,
 
-    pub destination: solana_program::pubkey::Pubkey,
+    pub destination: solana_pubkey::Pubkey,
 }
 
 impl TransferSol {
@@ -84,8 +84,8 @@ pub struct TransferSolInstructionArgs {
 ///   1. `[writable]` destination
 #[derive(Clone, Debug, Default)]
 pub struct TransferSolBuilder {
-    source: Option<solana_program::pubkey::Pubkey>,
-    destination: Option<solana_program::pubkey::Pubkey>,
+    source: Option<solana_pubkey::Pubkey>,
+    destination: Option<solana_pubkey::Pubkey>,
     amount: Option<u64>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -95,12 +95,12 @@ impl TransferSolBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn source(&mut self, source: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn source(&mut self, source: solana_pubkey::Pubkey) -> &mut Self {
         self.source = Some(source);
         self
     }
     #[inline(always)]
-    pub fn destination(&mut self, destination: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn destination(&mut self, destination: solana_pubkey::Pubkey) -> &mut Self {
         self.destination = Some(destination);
         self
     }
