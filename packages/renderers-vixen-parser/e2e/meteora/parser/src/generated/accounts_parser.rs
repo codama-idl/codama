@@ -104,9 +104,9 @@ mod proto_parser {
     impl IntoProto<proto_def::BinArrayBitmapExtension> for BinArrayBitmapExtension {
         fn into_proto(self) -> proto_def::BinArrayBitmapExtension {
             proto_def::BinArrayBitmapExtension {
-                lb_pair: self.lb_pair.into(),
-                positive_bin_array_bitmap: self.positive_bin_array_bitmap.into(),
-                negative_bin_array_bitmap: self.negative_bin_array_bitmap.into(),
+                lb_pair: self.lb_pair.to_string(),
+                positive_bin_array_bitmap: self.positive_bin_array_bitmap.to_vec(),
+                negative_bin_array_bitmap: self.negative_bin_array_bitmap.to_vec(),
             }
         }
     }
@@ -117,8 +117,8 @@ mod proto_parser {
                 index: self.index.into(),
                 version: self.version.into(),
                 padding: self.padding.into(),
-                lb_pair: self.lb_pair.into(),
-                bins: self.bins.into(),
+                lb_pair: self.lb_pair.to_string(),
+                bins: self.bins.to_vec(),
             }
         }
     }
@@ -138,24 +138,24 @@ mod proto_parser {
                 base_factor_seed: self.base_factor_seed.into(),
                 activation_type: self.activation_type.into(),
                 padding0: self.padding0.into(),
-                token_x_mint: self.token_x_mint.into(),
-                token_y_mint: self.token_y_mint.into(),
-                reserve_x: self.reserve_x.into(),
-                reserve_y: self.reserve_y.into(),
+                token_x_mint: self.token_x_mint.to_string(),
+                token_y_mint: self.token_y_mint.to_string(),
+                reserve_x: self.reserve_x.to_string(),
+                reserve_y: self.reserve_y.to_string(),
                 protocol_fee: self.protocol_fee.into(),
                 padding1: self.padding1.into(),
-                reward_infos: self.reward_infos.into(),
-                oracle: self.oracle.into(),
-                bin_array_bitmap: self.bin_array_bitmap.into(),
+                reward_infos: self.reward_infos.to_vec(),
+                oracle: self.oracle.to_string(),
+                bin_array_bitmap: self.bin_array_bitmap.to_vec(),
                 last_updated_at: self.last_updated_at.into(),
                 padding2: self.padding2.into(),
-                pre_activation_swap_address: self.pre_activation_swap_address.into(),
-                base_key: self.base_key.into(),
+                pre_activation_swap_address: self.pre_activation_swap_address.to_string(),
+                base_key: self.base_key.to_string(),
                 activation_point: self.activation_point.into(),
                 pre_activation_duration: self.pre_activation_duration.into(),
                 padding3: self.padding3.into(),
                 padding4: self.padding4.into(),
-                creator: self.creator.into(),
+                creator: self.creator.to_string(),
                 reserved: self.reserved.into(),
             }
         }
@@ -174,17 +174,17 @@ mod proto_parser {
     impl IntoProto<proto_def::Position> for Position {
         fn into_proto(self) -> proto_def::Position {
             proto_def::Position {
-                lb_pair: self.lb_pair.into(),
-                owner: self.owner.into(),
-                liquidity_shares: self.liquidity_shares.into(),
-                reward_infos: self.reward_infos.into(),
-                fee_infos: self.fee_infos.into(),
+                lb_pair: self.lb_pair.to_string(),
+                owner: self.owner.to_string(),
+                liquidity_shares: self.liquidity_shares.to_vec(),
+                reward_infos: self.reward_infos.to_vec(),
+                fee_infos: self.fee_infos.to_vec(),
                 lower_bin_id: self.lower_bin_id.into(),
                 upper_bin_id: self.upper_bin_id.into(),
                 last_updated_at: self.last_updated_at.into(),
                 total_claimed_fee_x_amount: self.total_claimed_fee_x_amount.into(),
                 total_claimed_fee_y_amount: self.total_claimed_fee_y_amount.into(),
-                total_claimed_rewards: self.total_claimed_rewards.into(),
+                total_claimed_rewards: self.total_claimed_rewards.to_vec(),
                 reserved: self.reserved.into(),
             }
         }
@@ -193,21 +193,21 @@ mod proto_parser {
     impl IntoProto<proto_def::PositionV2> for PositionV2 {
         fn into_proto(self) -> proto_def::PositionV2 {
             proto_def::PositionV2 {
-                lb_pair: self.lb_pair.into(),
-                owner: self.owner.into(),
-                liquidity_shares: self.liquidity_shares.into(),
-                reward_infos: self.reward_infos.into(),
-                fee_infos: self.fee_infos.into(),
+                lb_pair: self.lb_pair.to_string(),
+                owner: self.owner.to_string(),
+                liquidity_shares: self.liquidity_shares.to_vec(),
+                reward_infos: self.reward_infos.to_vec(),
+                fee_infos: self.fee_infos.to_vec(),
                 lower_bin_id: self.lower_bin_id.into(),
                 upper_bin_id: self.upper_bin_id.into(),
                 last_updated_at: self.last_updated_at.into(),
                 total_claimed_fee_x_amount: self.total_claimed_fee_x_amount.into(),
                 total_claimed_fee_y_amount: self.total_claimed_fee_y_amount.into(),
-                total_claimed_rewards: self.total_claimed_rewards.into(),
-                operator: self.operator.into(),
+                total_claimed_rewards: self.total_claimed_rewards.to_vec(),
+                operator: self.operator.to_string(),
                 lock_release_point: self.lock_release_point.into(),
                 padding0: self.padding0.into(),
-                fee_owner: self.fee_owner.into(),
+                fee_owner: self.fee_owner.to_string(),
                 reserved: self.reserved.into(),
             }
         }
@@ -227,6 +227,48 @@ mod proto_parser {
                 max_bin_id: self.max_bin_id.into(),
                 protocol_share: self.protocol_share.into(),
             }
+        }
+    }
+
+    impl IntoProto<proto_def::LbClmmProgramState> for LbClmmProgramState {
+        fn into_proto(self) -> proto_def::LbClmmProgramState {
+            let state_oneof = match self {
+                LbClmmProgramState::BinArrayBitmapExtension(data) => {
+                    proto_def::lb_clmm_program_state::StateOneof::BinArrayBitmapExtension(
+                        data.into_proto(),
+                    )
+                }
+                LbClmmProgramState::BinArray(data) => {
+                    proto_def::lb_clmm_program_state::StateOneof::BinArray(data.into_proto())
+                }
+                LbClmmProgramState::LbPair(data) => {
+                    proto_def::lb_clmm_program_state::StateOneof::LbPair(data.into_proto())
+                }
+                LbClmmProgramState::Oracle(data) => {
+                    proto_def::lb_clmm_program_state::StateOneof::Oracle(data.into_proto())
+                }
+                LbClmmProgramState::Position(data) => {
+                    proto_def::lb_clmm_program_state::StateOneof::Position(data.into_proto())
+                }
+                LbClmmProgramState::PositionV2(data) => {
+                    proto_def::lb_clmm_program_state::StateOneof::PositionV2(data.into_proto())
+                }
+                LbClmmProgramState::PresetParameter(data) => {
+                    proto_def::lb_clmm_program_state::StateOneof::PresetParameter(data.into_proto())
+                }
+            };
+
+            proto_def::LbClmmProgramState {
+                state_oneof: Some(state_oneof),
+            }
+        }
+    }
+
+    impl ParseProto for AccountParser {
+        type Message = proto_def::LbClmmProgramState;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
         }
     }
 }

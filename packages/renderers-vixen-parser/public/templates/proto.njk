@@ -25,19 +25,19 @@ package proto_def;
 {% endfor %}
 
 message {{ programName | pascalCase }}ProgramState {
-  oneof state_oneof {
+    oneof state_oneof {
     {% for account in programStateOneOf %}
-        {{ account }}
+    {{ account }}
     {% endfor %}
-  }
+    }
 }
 
-message {{ programName | pascalCase }}Ixs {
-  oneof ix_oneof {
+message {{ programName | pascalCase }}ProgramIx {
+    oneof ix_oneof {
     {% for ix in programIxsOneOf %}
-        {{ ix }}
+    {{ ix }}
     {% endfor %}
-  }
+    }
 }
 
 {% endblock %}

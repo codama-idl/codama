@@ -78,10 +78,32 @@ mod proto_parser {
             proto_def::Nonce {
                 version: self.version.into(),
                 state: self.state.into(),
-                authority: self.authority.into(),
-                blockhash: self.blockhash.into(),
+                authority: self.authority.to_string(),
+                blockhash: self.blockhash.to_string(),
                 lamports_per_signature: self.lamports_per_signature.into(),
             }
+        }
+    }
+
+    impl IntoProto<proto_def::SystemProgramState> for SystemProgramState {
+        fn into_proto(self) -> proto_def::SystemProgramState {
+            let state_oneof = match self {
+                SystemProgramState::Nonce(data) => {
+                    proto_def::system_program_state::StateOneof::Nonce(data.into_proto())
+                }
+            };
+
+            proto_def::SystemProgramState {
+                state_oneof: Some(state_oneof),
+            }
+        }
+    }
+
+    impl ParseProto for AccountParser {
+        type Message = proto_def::SystemProgramState;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
         }
     }
 }

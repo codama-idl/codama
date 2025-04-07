@@ -371,10 +371,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
-name = "codama-renderers-rust-e2e-system"
+name = "codama-renderers-rust-e2e-meteora"
 version = "0.0.0"
 dependencies = [
  "borsh 0.10.4",
+ "kaigan",
  "num-derive 0.3.3",
  "num-traits",
  "solana-program",
@@ -382,11 +383,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "codama-renderers-vixen-parser-e2e-system"
+name = "codama-renderers-vixen-parser-e2e-meteora"
 version = "0.0.0"
 dependencies = [
  "borsh 0.10.4",
- "codama-renderers-rust-e2e-system",
+ "codama-renderers-rust-e2e-meteora",
  "prost",
  "prost-build",
  "solana-program",
@@ -869,6 +870,15 @@ checksum = "1cfaf33c695fc6e08064efbc1f72ec937429614f25eef83af942d0e227c3a28f"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "kaigan"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ba15de5aeb137f0f65aa3bf82187647f1285abfe5b20c80c2c37f7007ad519a"
+dependencies = [
+ "borsh 0.10.4",
 ]
 
 [[package]]

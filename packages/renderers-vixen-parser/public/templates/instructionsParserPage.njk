@@ -133,7 +133,11 @@ mod proto_parser {
             fn into_proto(self) -> proto_def::{{ instruction.name | pascalCase }}IxAccounts {
                 proto_def::{{ instruction.name | pascalCase }}IxAccounts {
                     {% for account in instruction.accounts %}
-                        {{ account.name }}: self.{{ account.name }}.to_string(),
+                        {% if account.isOptional %}
+                            {{ account.name }}: self.{{ account.name }}.map(|p| p.to_string()),
+                        {% else %}
+                            {{ account.name }}: self.{{ account.name }}.to_string(),
+                        {% endif %}
                     {% endfor %}
                 }
             }
@@ -144,13 +148,42 @@ mod proto_parser {
                 fn into_proto(self) -> proto_def::{{ instruction.name | pascalCase }}IxData {
                     proto_def::{{ instruction.name | pascalCase }}IxData {
                         {% for field in instruction.ixArgs %}
-                            {{ field }}: self.{{ field }}.into(),
+                            {{ field.name }}: self.{{ field.name }}{{ field.transform }},
                         {% endfor %}
                     }
                 }
             }
         {% endif %}
     {% endfor %}
+
+    impl IntoProto<proto_def::{{ programName | pascalCase }}ProgramIx> for {{ programName | pascalCase }}ProgramIx {
+        fn into_proto(self) -> proto_def::{{ programName | pascalCase }}ProgramIx {
+           match self {
+                {% for instruction in instructions %}
+                    {% if instruction.hasArgs %}
+                        {{ programName | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(acc, data) => proto_def::{{ programName | pascalCase  }}ProgramIx {
+                            ix_oneof: Some(proto_def::{{ programName | snakeCase }}_program_ix::IxOneof::{{ instruction.name | pascalCase }}(proto_def::{{ instruction.name | pascalCase }}Ix {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                    {% else %}
+                        {{ programName | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(acc) => proto_def::{{ programName | pascalCase  }}ProgramIx {
+                            ix_oneof: Some(proto_def::{{ programName | snakeCase }}_program_ix::IxOneof::{{ instruction.name | pascalCase }}(proto_def::{{ instruction.name | pascalCase }}Ix {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                    {% endif %}
+                {% endfor %}
+            }
+        }
+    }
+      
+    impl ParseProto for InstructionParser {
+        type Message = proto_def::{{ programName | pascalCase  }}ProgramIx;
+
+        fn output_into_message(value: Self::Output) -> Self::Message { value.into_proto() }
+    }
 }
 
 

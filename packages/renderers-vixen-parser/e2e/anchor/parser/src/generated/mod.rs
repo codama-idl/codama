@@ -8,3 +8,5 @@
 pub mod accounts_parser;
 
 pub mod instructions_parser;
+
+pub mod proto_helpers;

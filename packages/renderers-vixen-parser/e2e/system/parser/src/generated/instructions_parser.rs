@@ -277,7 +277,7 @@ mod proto_parser {
             proto_def::CreateAccountIxData {
                 lamports: self.lamports.into(),
                 space: self.space.into(),
-                program_address: self.program_address.into(),
+                program_address: self.program_address.to_string(),
             }
         }
     }
@@ -293,7 +293,7 @@ mod proto_parser {
     impl IntoProto<proto_def::AssignIxData> for AssignIxData {
         fn into_proto(self) -> proto_def::AssignIxData {
             proto_def::AssignIxData {
-                program_address: self.program_address.into(),
+                program_address: self.program_address.to_string(),
             }
         }
     }
@@ -328,11 +328,11 @@ mod proto_parser {
     impl IntoProto<proto_def::CreateAccountWithSeedIxData> for CreateAccountWithSeedIxData {
         fn into_proto(self) -> proto_def::CreateAccountWithSeedIxData {
             proto_def::CreateAccountWithSeedIxData {
-                base: self.base.into(),
+                base: self.base.to_string(),
                 seed: self.seed.into(),
                 amount: self.amount.into(),
                 space: self.space.into(),
-                program_address: self.program_address.into(),
+                program_address: self.program_address.to_string(),
             }
         }
     }
@@ -380,7 +380,7 @@ mod proto_parser {
     impl IntoProto<proto_def::InitializeNonceAccountIxData> for InitializeNonceAccountIxData {
         fn into_proto(self) -> proto_def::InitializeNonceAccountIxData {
             proto_def::InitializeNonceAccountIxData {
-                nonce_authority: self.nonce_authority.into(),
+                nonce_authority: self.nonce_authority.to_string(),
             }
         }
     }
@@ -397,7 +397,7 @@ mod proto_parser {
     impl IntoProto<proto_def::AuthorizeNonceAccountIxData> for AuthorizeNonceAccountIxData {
         fn into_proto(self) -> proto_def::AuthorizeNonceAccountIxData {
             proto_def::AuthorizeNonceAccountIxData {
-                new_nonce_authority: self.new_nonce_authority.into(),
+                new_nonce_authority: self.new_nonce_authority.to_string(),
             }
         }
     }
@@ -430,10 +430,10 @@ mod proto_parser {
     impl IntoProto<proto_def::AllocateWithSeedIxData> for AllocateWithSeedIxData {
         fn into_proto(self) -> proto_def::AllocateWithSeedIxData {
             proto_def::AllocateWithSeedIxData {
-                base: self.base.into(),
+                base: self.base.to_string(),
                 seed: self.seed.into(),
                 space: self.space.into(),
-                program_address: self.program_address.into(),
+                program_address: self.program_address.to_string(),
             }
         }
     }
@@ -450,9 +450,9 @@ mod proto_parser {
     impl IntoProto<proto_def::AssignWithSeedIxData> for AssignWithSeedIxData {
         fn into_proto(self) -> proto_def::AssignWithSeedIxData {
             proto_def::AssignWithSeedIxData {
-                base: self.base.into(),
+                base: self.base.to_string(),
                 seed: self.seed.into(),
-                program_address: self.program_address.into(),
+                program_address: self.program_address.to_string(),
             }
         }
     }
@@ -472,7 +472,7 @@ mod proto_parser {
             proto_def::TransferSolWithSeedIxData {
                 amount: self.amount.into(),
                 from_seed: self.from_seed.into(),
-                from_owner: self.from_owner.into(),
+                from_owner: self.from_owner.to_string(),
             }
         }
     }
@@ -482,6 +482,129 @@ mod proto_parser {
             proto_def::UpgradeNonceAccountIxAccounts {
                 nonce_account: self.nonce_account.to_string(),
             }
+        }
+    }
+
+    impl IntoProto<proto_def::SystemProgramIx> for SystemProgramIx {
+        fn into_proto(self) -> proto_def::SystemProgramIx {
+            match self {
+                SystemProgramIx::CreateAccount(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::CreateAccount(
+                        proto_def::CreateAccountIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::Assign(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::Assign(
+                        proto_def::AssignIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::TransferSol(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::TransferSol(
+                        proto_def::TransferSolIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::CreateAccountWithSeed(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(
+                        proto_def::system_program_ix::IxOneof::CreateAccountWithSeed(
+                            proto_def::CreateAccountWithSeedIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            },
+                        ),
+                    ),
+                },
+                SystemProgramIx::AdvanceNonceAccount(acc) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::AdvanceNonceAccount(
+                        proto_def::AdvanceNonceAccountIx {
+                            accounts: Some(acc.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::WithdrawNonceAccount(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::WithdrawNonceAccount(
+                        proto_def::WithdrawNonceAccountIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::InitializeNonceAccount(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(
+                        proto_def::system_program_ix::IxOneof::InitializeNonceAccount(
+                            proto_def::InitializeNonceAccountIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            },
+                        ),
+                    ),
+                },
+                SystemProgramIx::AuthorizeNonceAccount(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(
+                        proto_def::system_program_ix::IxOneof::AuthorizeNonceAccount(
+                            proto_def::AuthorizeNonceAccountIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            },
+                        ),
+                    ),
+                },
+                SystemProgramIx::Allocate(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::Allocate(
+                        proto_def::AllocateIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::AllocateWithSeed(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::AllocateWithSeed(
+                        proto_def::AllocateWithSeedIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::AssignWithSeed(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::AssignWithSeed(
+                        proto_def::AssignWithSeedIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::TransferSolWithSeed(acc, data) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::TransferSolWithSeed(
+                        proto_def::TransferSolWithSeedIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                SystemProgramIx::UpgradeNonceAccount(acc) => proto_def::SystemProgramIx {
+                    ix_oneof: Some(proto_def::system_program_ix::IxOneof::UpgradeNonceAccount(
+                        proto_def::UpgradeNonceAccountIx {
+                            accounts: Some(acc.into_proto()),
+                        },
+                    )),
+                },
+            }
+        }
+    }
+
+    impl ParseProto for InstructionParser {
+        type Message = proto_def::SystemProgramIx;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
         }
     }
 }

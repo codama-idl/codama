@@ -1123,7 +1123,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::InitializeLbPairIxAccounts {
             proto_def::InitializeLbPairIxAccounts {
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 token_mint_x: self.token_mint_x.to_string(),
                 token_mint_y: self.token_mint_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -1156,7 +1156,7 @@ mod proto_parser {
             proto_def::InitializePermissionLbPairIxAccounts {
                 base: self.base.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 token_mint_x: self.token_mint_x.to_string(),
                 token_mint_y: self.token_mint_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -1191,7 +1191,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::InitializeCustomizablePermissionlessLbPairIxAccounts {
             proto_def::InitializeCustomizablePermissionlessLbPairIxAccounts {
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 token_mint_x: self.token_mint_x.to_string(),
                 token_mint_y: self.token_mint_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -1218,7 +1218,7 @@ mod proto_parser {
                 base_factor: self.base_factor.into(),
                 activation_type: self.activation_type.into(),
                 has_alpha_vault: self.has_alpha_vault.into(),
-                activation_point: self.activation_point.into(),
+                activation_point: self.activation_point.map(|x| x.into()),
                 padding: self.padding.into(),
             }
         }
@@ -1262,7 +1262,7 @@ mod proto_parser {
             proto_def::AddLiquidityIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token_x: self.user_token_x.to_string(),
                 user_token_y: self.user_token_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -1285,7 +1285,7 @@ mod proto_parser {
             proto_def::AddLiquidityIxData {
                 amount_x: self.amount_x.into(),
                 amount_y: self.amount_y.into(),
-                bin_liquidity_dist: self.bin_liquidity_dist.into(),
+                bin_liquidity_dist: self.bin_liquidity_dist.to_vec(),
             }
         }
     }
@@ -1295,7 +1295,7 @@ mod proto_parser {
             proto_def::AddLiquidityByWeightIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token_x: self.user_token_x.to_string(),
                 user_token_y: self.user_token_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -1320,7 +1320,7 @@ mod proto_parser {
                 amount_y: self.amount_y.into(),
                 active_id: self.active_id.into(),
                 max_active_bin_slippage: self.max_active_bin_slippage.into(),
-                bin_liquidity_dist: self.bin_liquidity_dist.into(),
+                bin_liquidity_dist: self.bin_liquidity_dist.to_vec(),
             }
         }
     }
@@ -1330,7 +1330,7 @@ mod proto_parser {
             proto_def::AddLiquidityByStrategyIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token_x: self.user_token_x.to_string(),
                 user_token_y: self.user_token_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -1367,7 +1367,7 @@ mod proto_parser {
             proto_def::AddLiquidityByStrategyOneSideIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token: self.user_token.to_string(),
                 reserve: self.reserve.to_string(),
                 token_mint: self.token_mint.to_string(),
@@ -1399,7 +1399,7 @@ mod proto_parser {
             proto_def::AddLiquidityOneSideIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token: self.user_token.to_string(),
                 reserve: self.reserve.to_string(),
                 token_mint: self.token_mint.to_string(),
@@ -1419,7 +1419,7 @@ mod proto_parser {
                 amount: self.amount.into(),
                 active_id: self.active_id.into(),
                 max_active_bin_slippage: self.max_active_bin_slippage.into(),
-                bin_liquidity_dist: self.bin_liquidity_dist.into(),
+                bin_liquidity_dist: self.bin_liquidity_dist.to_vec(),
             }
         }
     }
@@ -1429,7 +1429,7 @@ mod proto_parser {
             proto_def::RemoveLiquidityIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token_x: self.user_token_x.to_string(),
                 user_token_y: self.user_token_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -1450,7 +1450,7 @@ mod proto_parser {
     impl IntoProto<proto_def::RemoveLiquidityIxData> for RemoveLiquidityIxData {
         fn into_proto(self) -> proto_def::RemoveLiquidityIxData {
             proto_def::RemoveLiquidityIxData {
-                bin_liquidity_removal: self.bin_liquidity_removal.into(),
+                bin_liquidity_removal: self.bin_liquidity_removal.to_vec(),
             }
         }
     }
@@ -1531,7 +1531,7 @@ mod proto_parser {
             proto_def::InitializePositionByOperatorIxData {
                 lower_bin_id: self.lower_bin_id.into(),
                 width: self.width.into(),
-                fee_owner: self.fee_owner.into(),
+                fee_owner: self.fee_owner.to_string(),
                 lock_release_point: self.lock_release_point.into(),
             }
         }
@@ -1551,7 +1551,7 @@ mod proto_parser {
     impl IntoProto<proto_def::UpdatePositionOperatorIxData> for UpdatePositionOperatorIxData {
         fn into_proto(self) -> proto_def::UpdatePositionOperatorIxData {
             proto_def::UpdatePositionOperatorIxData {
-                operator: self.operator.into(),
+                operator: self.operator.to_string(),
             }
         }
     }
@@ -1560,7 +1560,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::SwapIxAccounts {
             proto_def::SwapIxAccounts {
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 reserve_x: self.reserve_x.to_string(),
                 reserve_y: self.reserve_y.to_string(),
                 user_token_in: self.user_token_in.to_string(),
@@ -1568,7 +1568,7 @@ mod proto_parser {
                 token_x_mint: self.token_x_mint.to_string(),
                 token_y_mint: self.token_y_mint.to_string(),
                 oracle: self.oracle.to_string(),
-                host_fee_in: self.host_fee_in.to_string(),
+                host_fee_in: self.host_fee_in.map(|p| p.to_string()),
                 user: self.user.to_string(),
                 token_x_program: self.token_x_program.to_string(),
                 token_y_program: self.token_y_program.to_string(),
@@ -1591,7 +1591,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::SwapExactOutIxAccounts {
             proto_def::SwapExactOutIxAccounts {
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 reserve_x: self.reserve_x.to_string(),
                 reserve_y: self.reserve_y.to_string(),
                 user_token_in: self.user_token_in.to_string(),
@@ -1599,7 +1599,7 @@ mod proto_parser {
                 token_x_mint: self.token_x_mint.to_string(),
                 token_y_mint: self.token_y_mint.to_string(),
                 oracle: self.oracle.to_string(),
-                host_fee_in: self.host_fee_in.to_string(),
+                host_fee_in: self.host_fee_in.map(|p| p.to_string()),
                 user: self.user.to_string(),
                 token_x_program: self.token_x_program.to_string(),
                 token_y_program: self.token_y_program.to_string(),
@@ -1622,7 +1622,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::SwapWithPriceImpactIxAccounts {
             proto_def::SwapWithPriceImpactIxAccounts {
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 reserve_x: self.reserve_x.to_string(),
                 reserve_y: self.reserve_y.to_string(),
                 user_token_in: self.user_token_in.to_string(),
@@ -1630,7 +1630,7 @@ mod proto_parser {
                 token_x_mint: self.token_x_mint.to_string(),
                 token_y_mint: self.token_y_mint.to_string(),
                 oracle: self.oracle.to_string(),
-                host_fee_in: self.host_fee_in.to_string(),
+                host_fee_in: self.host_fee_in.map(|p| p.to_string()),
                 user: self.user.to_string(),
                 token_x_program: self.token_x_program.to_string(),
                 token_y_program: self.token_y_program.to_string(),
@@ -1644,7 +1644,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::SwapWithPriceImpactIxData {
             proto_def::SwapWithPriceImpactIxData {
                 amount_in: self.amount_in.into(),
-                active_id: self.active_id.into(),
+                active_id: self.active_id.map(|x| x.into()),
                 max_price_impact_bps: self.max_price_impact_bps.into(),
             }
         }
@@ -1696,7 +1696,7 @@ mod proto_parser {
             proto_def::InitializeRewardIxData {
                 reward_index: self.reward_index.into(),
                 reward_duration: self.reward_duration.into(),
-                funder: self.funder.into(),
+                funder: self.funder.to_string(),
             }
         }
     }
@@ -1742,7 +1742,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::UpdateRewardFunderIxData {
             proto_def::UpdateRewardFunderIxData {
                 reward_index: self.reward_index.into(),
-                new_funder: self.new_funder.into(),
+                new_funder: self.new_funder.to_string(),
             }
         }
     }
@@ -1915,7 +1915,7 @@ mod proto_parser {
             proto_def::RemoveAllLiquidityIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token_x: self.user_token_x.to_string(),
                 user_token_y: self.user_token_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -2027,7 +2027,7 @@ mod proto_parser {
             proto_def::RemoveLiquidityByRangeIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token_x: self.user_token_x.to_string(),
                 user_token_y: self.user_token_y.to_string(),
                 reserve_x: self.reserve_x.to_string(),
@@ -2062,7 +2062,7 @@ mod proto_parser {
             proto_def::AddLiquidityOneSidePreciseIxAccounts {
                 position: self.position.to_string(),
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
                 user_token: self.user_token.to_string(),
                 reserve: self.reserve.to_string(),
                 token_mint: self.token_mint.to_string(),
@@ -2079,7 +2079,7 @@ mod proto_parser {
     impl IntoProto<proto_def::AddLiquidityOneSidePreciseIxData> for AddLiquidityOneSidePreciseIxData {
         fn into_proto(self) -> proto_def::AddLiquidityOneSidePreciseIxData {
             proto_def::AddLiquidityOneSidePreciseIxData {
-                bins: self.bins.into(),
+                bins: self.bins.to_vec(),
                 decompress_multiplier: self.decompress_multiplier.into(),
             }
         }
@@ -2089,9 +2089,9 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::GoToABinIxAccounts {
             proto_def::GoToABinIxAccounts {
                 lb_pair: self.lb_pair.to_string(),
-                bin_array_bitmap_extension: self.bin_array_bitmap_extension.to_string(),
-                from_bin_array: self.from_bin_array.to_string(),
-                to_bin_array: self.to_bin_array.to_string(),
+                bin_array_bitmap_extension: self.bin_array_bitmap_extension.map(|p| p.to_string()),
+                from_bin_array: self.from_bin_array.map(|p| p.to_string()),
+                to_bin_array: self.to_bin_array.map(|p| p.to_string()),
                 event_authority: self.event_authority.to_string(),
                 program: self.program.to_string(),
             }
@@ -2139,8 +2139,266 @@ mod proto_parser {
     impl IntoProto<proto_def::SetPreActivationSwapAddressIxData> for SetPreActivationSwapAddressIxData {
         fn into_proto(self) -> proto_def::SetPreActivationSwapAddressIxData {
             proto_def::SetPreActivationSwapAddressIxData {
-                pre_activation_swap_address: self.pre_activation_swap_address.into(),
+                pre_activation_swap_address: self.pre_activation_swap_address.to_string(),
             }
+        }
+    }
+
+    impl IntoProto<proto_def::LbClmmProgramIx> for LbClmmProgramIx {
+        fn into_proto(self) -> proto_def::LbClmmProgramIx {
+            match self {
+                                                            LbClmmProgramIx::InitializeLbPair(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializeLbPair(proto_def::InitializeLbPairIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializePermissionLbPair(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializePermissionLbPair(proto_def::InitializePermissionLbPairIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializeCustomizablePermissionlessLbPair(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializeCustomizablePermissionlessLbPair(proto_def::InitializeCustomizablePermissionlessLbPairIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializeBinArrayBitmapExtension(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializeBinArrayBitmapExtension(proto_def::InitializeBinArrayBitmapExtensionIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializeBinArray(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializeBinArray(proto_def::InitializeBinArrayIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::AddLiquidity(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::AddLiquidity(proto_def::AddLiquidityIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::AddLiquidityByWeight(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::AddLiquidityByWeight(proto_def::AddLiquidityByWeightIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::AddLiquidityByStrategy(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::AddLiquidityByStrategy(proto_def::AddLiquidityByStrategyIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::AddLiquidityByStrategyOneSide(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::AddLiquidityByStrategyOneSide(proto_def::AddLiquidityByStrategyOneSideIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::AddLiquidityOneSide(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::AddLiquidityOneSide(proto_def::AddLiquidityOneSideIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::RemoveLiquidity(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::RemoveLiquidity(proto_def::RemoveLiquidityIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializePosition(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializePosition(proto_def::InitializePositionIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializePositionPda(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializePositionPda(proto_def::InitializePositionPdaIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializePositionByOperator(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializePositionByOperator(proto_def::InitializePositionByOperatorIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::UpdatePositionOperator(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::UpdatePositionOperator(proto_def::UpdatePositionOperatorIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::Swap(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::Swap(proto_def::SwapIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::SwapExactOut(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::SwapExactOut(proto_def::SwapExactOutIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::SwapWithPriceImpact(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::SwapWithPriceImpact(proto_def::SwapWithPriceImpactIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::WithdrawProtocolFee(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::WithdrawProtocolFee(proto_def::WithdrawProtocolFeeIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializeReward(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializeReward(proto_def::InitializeRewardIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::FundReward(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::FundReward(proto_def::FundRewardIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::UpdateRewardFunder(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::UpdateRewardFunder(proto_def::UpdateRewardFunderIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::UpdateRewardDuration(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::UpdateRewardDuration(proto_def::UpdateRewardDurationIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::ClaimReward(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::ClaimReward(proto_def::ClaimRewardIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::ClaimFee(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::ClaimFee(proto_def::ClaimFeeIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::ClosePosition(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::ClosePosition(proto_def::ClosePositionIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::UpdateFeeParameters(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::UpdateFeeParameters(proto_def::UpdateFeeParametersIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::IncreaseOracleLength(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::IncreaseOracleLength(proto_def::IncreaseOracleLengthIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::InitializePresetParameter(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::InitializePresetParameter(proto_def::InitializePresetParameterIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::ClosePresetParameter(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::ClosePresetParameter(proto_def::ClosePresetParameterIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::RemoveAllLiquidity(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::RemoveAllLiquidity(proto_def::RemoveAllLiquidityIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::TogglePairStatus(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::TogglePairStatus(proto_def::TogglePairStatusIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::MigratePosition(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::MigratePosition(proto_def::MigratePositionIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::MigrateBinArray(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::MigrateBinArray(proto_def::MigrateBinArrayIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::UpdateFeesAndRewards(acc) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::UpdateFeesAndRewards(proto_def::UpdateFeesAndRewardsIx {
+                                accounts: Some(acc.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::WithdrawIneligibleReward(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::WithdrawIneligibleReward(proto_def::WithdrawIneligibleRewardIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::SetActivationPoint(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::SetActivationPoint(proto_def::SetActivationPointIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::RemoveLiquidityByRange(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::RemoveLiquidityByRange(proto_def::RemoveLiquidityByRangeIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::AddLiquidityOneSidePrecise(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::AddLiquidityOneSidePrecise(proto_def::AddLiquidityOneSidePreciseIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::GoToABin(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::GoToABin(proto_def::GoToABinIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::SetPreActivationDuration(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::SetPreActivationDuration(proto_def::SetPreActivationDurationIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                                                LbClmmProgramIx::SetPreActivationSwapAddress(acc, data) => proto_def::LbClmmProgramIx {
+                            ix_oneof: Some(proto_def::lb_clmm_program_ix::IxOneof::SetPreActivationSwapAddress(proto_def::SetPreActivationSwapAddressIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            })),
+                        },
+                                                }
+        }
+    }
+
+    impl ParseProto for InstructionParser {
+        type Message = proto_def::LbClmmProgramIx;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
         }
     }
 }

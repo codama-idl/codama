@@ -48,8 +48,11 @@ async function generateProject(project, sdkName, generateProto) {
     visit(
         node,
         renderVisitor(path.join(__dirname, project, 'parser'), {
+            cargoAdditionalDependencies: [
+                `codama-renderers-rust-e2e-${project} = { path = "../../../../renderers-rust/e2e/${project}" }`,
+            ],
             sdkName: sdkName,
-            project: project,
+            project: `codama-renderers-vixen-parser-e2e-${project}`,
             generateProto: generateProto,
             crateFolder: path.join(__dirname, project, 'parser'),
             formatCode: true,

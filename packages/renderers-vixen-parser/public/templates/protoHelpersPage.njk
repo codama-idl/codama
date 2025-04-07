@@ -6,13 +6,18 @@
 
 // #[cfg(feature = "proto")]
 mod proto_types_parsers {
+    use yellowstone_vixen_core::proto_helper_traits;
+    proto_helper_traits!();
+    use {{ sdkName }} as sdk;
+    use crate::proto_def;
+
     {% for typeHelper in protoTypesHelpers %}
-        use super::{{ typeHelper.name | pascalCase }};
+        use sdk::types::{{ typeHelper.name | pascalCase }};
         impl IntoProto<proto_def::{{ typeHelper.name | pascalCase }}> for {{ typeHelper.name | pascalCase }} {
             fn into_proto(self) -> proto_def::{{ typeHelper.name | pascalCase }} {
                 proto_def::{{ typeHelper.name | pascalCase }} {
                     {% for field in typeHelper.fields %}
-                        {{ field }}: self.{{ field }}{{ field.transform }},
+                        {{ field.name }}: self.{{ field.name }}{{ field.transform }},
                     {% endfor %}
                 }
             }

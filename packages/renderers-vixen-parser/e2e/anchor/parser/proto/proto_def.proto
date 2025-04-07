@@ -158,3 +158,18 @@ message UpdateGuardIxData {
 }
 
 
+message WenTransferGuardProgramState {
+    oneof state_oneof {
+        	GuardV1 guard_v1 = 1;
+        }
+}
+
+message WenTransferGuardProgramIx {
+    oneof ix_oneof {
+        	CreateGuardIx create_guard = 1;
+        	ExecuteIx execute = 2;
+        	InitializeIx initialize = 3;
+        	UpdateGuardIx update_guard = 4;
+        }
+}
+

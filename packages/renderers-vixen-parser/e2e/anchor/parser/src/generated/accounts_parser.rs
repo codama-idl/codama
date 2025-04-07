@@ -79,12 +79,36 @@ mod proto_parser {
     impl IntoProto<proto_def::GuardV1> for GuardV1 {
         fn into_proto(self) -> proto_def::GuardV1 {
             proto_def::GuardV1 {
-                mint: self.mint.into(),
+                mint: self.mint.to_string(),
                 bump: self.bump.into(),
-                cpi_rule: self.cpi_rule.into(),
-                transfer_amount_rule: self.transfer_amount_rule.into(),
-                additional_fields_rule: self.additional_fields_rule.into(),
+                cpi_rule: self.cpi_rule.map(|x| x.into()),
+                transfer_amount_rule: self.transfer_amount_rule.map(|x| x.into()),
+                additional_fields_rule: self.additional_fields_rule.to_vec(),
             }
+        }
+    }
+
+    impl IntoProto<proto_def::WenTransferGuardProgramState> for WenTransferGuardProgramState {
+        fn into_proto(self) -> proto_def::WenTransferGuardProgramState {
+            let state_oneof = match self {
+                WenTransferGuardProgramState::GuardV1(data) => {
+                    proto_def::wen_transfer_guard_program_state::StateOneof::GuardV1(
+                        data.into_proto(),
+                    )
+                }
+            };
+
+            proto_def::WenTransferGuardProgramState {
+                state_oneof: Some(state_oneof),
+            }
+        }
+    }
+
+    impl ParseProto for AccountParser {
+        type Message = proto_def::WenTransferGuardProgramState;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
         }
     }
 }

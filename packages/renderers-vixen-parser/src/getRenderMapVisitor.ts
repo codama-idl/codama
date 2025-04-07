@@ -42,7 +42,10 @@ export type GetRenderMapOptions = {
 
 // Account node for the parser
 type ParserAccountNode = {
-    fields: string[];
+    fields: {
+        name: string;
+        transform: string;
+    }[];
     name: string;
     size: number | null;
 };
@@ -59,9 +62,37 @@ type ParserInstructionNode = {
     discriminator: string | null;
     hasArgs: boolean;
     hasOptionalAccounts: boolean;
-    ixArgs: string[];
+    ixArgs: {
+        name: string;
+        transform: string;
+    }[];
     name: string;
 };
+
+function getTransform(kind: string) {
+    switch (kind) {
+        case 'structTypeNode':
+            return '.into_iter().map(IntoProto::into_proto).collect()';
+
+        case 'arrayTypeNode':
+            return '.to_vec()';
+
+        case 'publicKeyTypeNode':
+            return `.to_string()`;
+
+        case 'enumTypeNode':
+            // todo: use from repr() impl
+            return '.to_string()';
+
+        case 'bytesTypeNode':
+            return '.to_vec()';
+        case 'optionTypeNode':
+            return '.map(|x| x.into())';
+
+        default:
+            return '.into()';
+    }
+}
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
@@ -94,8 +125,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         const accData = resolveNestedTypeNode(acc.data);
                         return {
                             fields: accData.fields
-                                .map(field => snakeCase(field.name))
-                                .filter(field => field !== 'discriminator'),
+                                .filter(field => field.name !== 'discriminator')
+                                .map(field => {
+                                    return {
+                                        name: snakeCase(field.name),
+                                        transform: getTransform(field.type.kind),
+                                    };
+                                }),
                             name: acc.name,
                             size: acc.size?.valueOf() ?? null,
                         };
@@ -135,8 +171,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
                         const hasOptionalAccounts = ix.accounts.some(acc => acc.isOptional);
                         const ixArgs = ix.arguments
-                            .map(arg => snakeCase(arg.name))
-                            .filter(arg => arg !== 'discriminator');
+                            .filter(arg => arg.name !== 'discriminator')
+                            .map(arg => {
+                                return {
+                                    name: snakeCase(arg.name),
+                                    transform: getTransform(arg.type.kind),
+                                };
+                            });
 
                         return {
                             accounts: ix.accounts.map((acc, accIdx) => {
@@ -238,6 +279,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const programStateOneOf: string[] = [];
 
+                    let hasProtoHelpers = false;
+
                     if (options.generateProto) {
                         const definedTypes: string[] = [];
                         // proto Ixs , Accounts and Types
@@ -264,40 +307,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                             if (type.type.kind === 'structTypeNode') {
                                 const fields = type.type.fields.map(field => {
-                                    console.log(`# ${field.name}`);
-                                    switch (field.type.kind) {
-                                        case 'structTypeNode':
-                                            return {
-                                                name: field.name,
-                                                transform: `\t.into_iter().map(IntoProto::into_proto).collect(),\n`,
-                                            };
-                                        case 'arrayTypeNode':
-                                            return {
-                                                name: field.name,
-                                                transform: `\t.to_vec(),\n`,
-                                            };
-                                        case 'publicKeyTypeNode':
-                                            return {
-                                                name: field.name,
-                                                transform: `\t.to_string(),\n`,
-                                            };
-                                        case 'enumTypeNode':
-                                            // todo: use from repr() impl
-                                            return {
-                                                name: field.name,
-                                                transform: `\t.to_string(),\n`,
-                                            };
-                                        case 'bytesTypeNode':
-                                            return {
-                                                name: field.name,
-                                                transform: `\t.to_vec(),\n`,
-                                            };
-                                        default:
-                                            return {
-                                                name: field.name,
-                                                transform: `\t.into(),\n`,
-                                            };
-                                    }
+                                    return {
+                                        name: snakeCase(field.name),
+                                        transform: getTransform(field.type.kind),
+                                    };
                                 });
 
                                 protoTypesHelpers.push({
@@ -392,12 +405,24 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 types: protoTypes,
                             }),
                         );
+
+                        if (protoTypesHelpers.length > 0) {
+                            hasProtoHelpers = true;
+                            map.add(
+                                'src/generated/proto_helpers.rs',
+                                render('protoHelpersPage.njk', {
+                                    protoTypesHelpers,
+                                    sdkName: codamaSdkName,
+                                }),
+                            );
+                        }
                     }
 
                     map.add(
                         `src/${folderName}/mod.rs`,
                         render('rootMod.njk', {
                             hasAccounts: accCtx.accounts.length > 0,
+                            hasProtoHelpers,
                         }),
                     );
 

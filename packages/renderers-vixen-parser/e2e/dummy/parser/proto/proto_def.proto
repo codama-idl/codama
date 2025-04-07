@@ -83,3 +83,20 @@ message Instruction7IxAccounts {
 
 
 
+message DummyProgramState {
+    oneof state_oneof {
+        }
+}
+
+message DummyProgramIx {
+    oneof ix_oneof {
+        	Instruction1Ix instruction1 = 1;
+        	Instruction2Ix instruction2 = 2;
+        	Instruction3Ix instruction3 = 3;
+        	Instruction4Ix instruction4 = 4;
+        	Instruction5Ix instruction5 = 5;
+        	Instruction6Ix instruction6 = 6;
+        	Instruction7Ix instruction7 = 7;
+        }
+}
+

@@ -163,8 +163,74 @@ mod proto_parser {
     impl IntoProto<proto_def::Instruction7IxAccounts> for Instruction7IxAccounts {
         fn into_proto(self) -> proto_def::Instruction7IxAccounts {
             proto_def::Instruction7IxAccounts {
-                my_account: self.my_account.to_string(),
+                my_account: self.my_account.map(|p| p.to_string()),
             }
+        }
+    }
+
+    impl IntoProto<proto_def::DummyProgramIx> for DummyProgramIx {
+        fn into_proto(self) -> proto_def::DummyProgramIx {
+            match self {
+                DummyProgramIx::Instruction1(acc) => proto_def::DummyProgramIx {
+                    ix_oneof: Some(proto_def::dummy_program_ix::IxOneof::Instruction1(
+                        proto_def::Instruction1Ix {
+                            accounts: Some(acc.into_proto()),
+                        },
+                    )),
+                },
+                DummyProgramIx::Instruction2(acc) => proto_def::DummyProgramIx {
+                    ix_oneof: Some(proto_def::dummy_program_ix::IxOneof::Instruction2(
+                        proto_def::Instruction2Ix {
+                            accounts: Some(acc.into_proto()),
+                        },
+                    )),
+                },
+                DummyProgramIx::Instruction3(acc) => proto_def::DummyProgramIx {
+                    ix_oneof: Some(proto_def::dummy_program_ix::IxOneof::Instruction3(
+                        proto_def::Instruction3Ix {
+                            accounts: Some(acc.into_proto()),
+                        },
+                    )),
+                },
+                DummyProgramIx::Instruction4(acc, data) => proto_def::DummyProgramIx {
+                    ix_oneof: Some(proto_def::dummy_program_ix::IxOneof::Instruction4(
+                        proto_def::Instruction4Ix {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                DummyProgramIx::Instruction5(acc, data) => proto_def::DummyProgramIx {
+                    ix_oneof: Some(proto_def::dummy_program_ix::IxOneof::Instruction5(
+                        proto_def::Instruction5Ix {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+                DummyProgramIx::Instruction6(acc) => proto_def::DummyProgramIx {
+                    ix_oneof: Some(proto_def::dummy_program_ix::IxOneof::Instruction6(
+                        proto_def::Instruction6Ix {
+                            accounts: Some(acc.into_proto()),
+                        },
+                    )),
+                },
+                DummyProgramIx::Instruction7(acc) => proto_def::DummyProgramIx {
+                    ix_oneof: Some(proto_def::dummy_program_ix::IxOneof::Instruction7(
+                        proto_def::Instruction7Ix {
+                            accounts: Some(acc.into_proto()),
+                        },
+                    )),
+                },
+            }
+        }
+    }
+
+    impl ParseProto for InstructionParser {
+        type Message = proto_def::DummyProgramIx;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
         }
     }
 }

@@ -8,7 +8,7 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use num_derive::FromPrimitive;
-
+#[repr(u8)]
 #[derive(
     BorshSerialize,
     BorshDeserialize,

@@ -25,3 +25,14 @@ message AddMemoIxData {
 }
 
 
+message MemoProgramState {
+    oneof state_oneof {
+        }
+}
+
+message MemoProgramIx {
+    oneof ix_oneof {
+        	AddMemoIx add_memo = 1;
+        }
+}
+

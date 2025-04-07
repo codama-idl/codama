@@ -221,3 +221,27 @@ message UpgradeNonceAccountIxAccounts {
 
 
 
+message SystemProgramState {
+    oneof state_oneof {
+        	Nonce nonce = 1;
+        }
+}
+
+message SystemProgramIx {
+    oneof ix_oneof {
+        	CreateAccountIx create_account = 1;
+        	AssignIx assign = 2;
+        	TransferSolIx transfer_sol = 3;
+        	CreateAccountWithSeedIx create_account_with_seed = 4;
+        	AdvanceNonceAccountIx advance_nonce_account = 5;
+        	WithdrawNonceAccountIx withdraw_nonce_account = 6;
+        	InitializeNonceAccountIx initialize_nonce_account = 7;
+        	AuthorizeNonceAccountIx authorize_nonce_account = 8;
+        	AllocateIx allocate = 9;
+        	AllocateWithSeedIx allocate_with_seed = 10;
+        	AssignWithSeedIx assign_with_seed = 11;
+        	TransferSolWithSeedIx transfer_sol_with_seed = 12;
+        	UpgradeNonceAccountIx upgrade_nonce_account = 13;
+        }
+}
+

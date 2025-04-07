@@ -178,9 +178,9 @@ mod proto_parser {
                 name: self.name.into(),
                 symbol: self.symbol.into(),
                 uri: self.uri.into(),
-                cpi_rule: self.cpi_rule.into(),
-                transfer_amount_rule: self.transfer_amount_rule.into(),
-                additional_fields_rule: self.additional_fields_rule.into(),
+                cpi_rule: self.cpi_rule.map(|x| x.into()),
+                transfer_amount_rule: self.transfer_amount_rule.map(|x| x.into()),
+                additional_fields_rule: self.additional_fields_rule.to_vec(),
             }
         }
     }
@@ -236,10 +236,70 @@ mod proto_parser {
     impl IntoProto<proto_def::UpdateGuardIxData> for UpdateGuardIxData {
         fn into_proto(self) -> proto_def::UpdateGuardIxData {
             proto_def::UpdateGuardIxData {
-                cpi_rule: self.cpi_rule.into(),
-                transfer_amount_rule: self.transfer_amount_rule.into(),
-                additional_fields_rule: self.additional_fields_rule.into(),
+                cpi_rule: self.cpi_rule.map(|x| x.into()),
+                transfer_amount_rule: self.transfer_amount_rule.map(|x| x.into()),
+                additional_fields_rule: self.additional_fields_rule.to_vec(),
             }
+        }
+    }
+
+    impl IntoProto<proto_def::WenTransferGuardProgramIx> for WenTransferGuardProgramIx {
+        fn into_proto(self) -> proto_def::WenTransferGuardProgramIx {
+            match self {
+                WenTransferGuardProgramIx::CreateGuard(acc, data) => {
+                    proto_def::WenTransferGuardProgramIx {
+                        ix_oneof: Some(
+                            proto_def::wen_transfer_guard_program_ix::IxOneof::CreateGuard(
+                                proto_def::CreateGuardIx {
+                                    accounts: Some(acc.into_proto()),
+                                    data: Some(data.into_proto()),
+                                },
+                            ),
+                        ),
+                    }
+                }
+                WenTransferGuardProgramIx::Execute(acc, data) => {
+                    proto_def::WenTransferGuardProgramIx {
+                        ix_oneof: Some(proto_def::wen_transfer_guard_program_ix::IxOneof::Execute(
+                            proto_def::ExecuteIx {
+                                accounts: Some(acc.into_proto()),
+                                data: Some(data.into_proto()),
+                            },
+                        )),
+                    }
+                }
+                WenTransferGuardProgramIx::Initialize(acc) => {
+                    proto_def::WenTransferGuardProgramIx {
+                        ix_oneof: Some(
+                            proto_def::wen_transfer_guard_program_ix::IxOneof::Initialize(
+                                proto_def::InitializeIx {
+                                    accounts: Some(acc.into_proto()),
+                                },
+                            ),
+                        ),
+                    }
+                }
+                WenTransferGuardProgramIx::UpdateGuard(acc, data) => {
+                    proto_def::WenTransferGuardProgramIx {
+                        ix_oneof: Some(
+                            proto_def::wen_transfer_guard_program_ix::IxOneof::UpdateGuard(
+                                proto_def::UpdateGuardIx {
+                                    accounts: Some(acc.into_proto()),
+                                    data: Some(data.into_proto()),
+                                },
+                            ),
+                        ),
+                    }
+                }
+            }
+        }
+    }
+
+    impl ParseProto for InstructionParser {
+        type Message = proto_def::WenTransferGuardProgramIx;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
         }
     }
 }

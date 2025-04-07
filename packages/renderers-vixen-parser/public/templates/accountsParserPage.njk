@@ -83,7 +83,7 @@ mod proto_parser {
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
     use yellowstone_vixen_core::proto::ParseProto;
-    use super::{AccountParser,{{ programName | pascalCase }}ProgramState};
+    use super::{ AccountParser, {{ programName | pascalCase }}ProgramState};
     use crate::proto_def;
 
     {% for account in accounts %}
@@ -92,12 +92,32 @@ mod proto_parser {
             fn into_proto(self) -> proto_def::{{ account.name | pascalCase }} {
                 proto_def::{{ account.name | pascalCase }} {
                     {% for field in account.fields %}
-                        {{ field }}: self.{{ field }}.into(),
+                        {{ field.name }}: self.{{ field.name }}{{ field.transform }},
                     {% endfor %}
                 }
             }
         }   
     {% endfor %}
+
+    impl IntoProto<proto_def::{{ programName | pascalCase }}ProgramState> for {{ programName | pascalCase }}ProgramState {
+        fn into_proto(self) -> proto_def::{{ programName | pascalCase }}ProgramState {
+            let state_oneof = match self {
+                {% for account in accounts %}
+                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(data) => proto_def::{{ programName | snakeCase }}_program_state::StateOneof::{{ account.name | pascalCase }}(data.into_proto()),
+                {% endfor %}
+            };
+
+            proto_def::{{ programName | pascalCase }}ProgramState {
+                state_oneof: Some(state_oneof),
+            }
+        }
+    }
+
+    impl ParseProto for AccountParser {
+        type Message = proto_def::{{ programName | pascalCase }}ProgramState;
+
+        fn output_into_message(value: Self::Output) -> Self::Message { value.into_proto() }
+    }
 }
 
 

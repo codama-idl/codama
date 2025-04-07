@@ -102,4 +102,27 @@ mod proto_parser {
             }
         }
     }
+
+    impl IntoProto<proto_def::MemoProgramIx> for MemoProgramIx {
+        fn into_proto(self) -> proto_def::MemoProgramIx {
+            match self {
+                MemoProgramIx::AddMemo(acc, data) => proto_def::MemoProgramIx {
+                    ix_oneof: Some(proto_def::memo_program_ix::IxOneof::AddMemo(
+                        proto_def::AddMemoIx {
+                            accounts: Some(acc.into_proto()),
+                            data: Some(data.into_proto()),
+                        },
+                    )),
+                },
+            }
+        }
+    }
+
+    impl ParseProto for InstructionParser {
+        type Message = proto_def::MemoProgramIx;
+
+        fn output_into_message(value: Self::Output) -> Self::Message {
+            value.into_proto()
+        }
+    }
 }

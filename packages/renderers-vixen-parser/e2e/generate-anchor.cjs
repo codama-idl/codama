@@ -17,6 +17,7 @@ async function main() {
     const project = process.argv.slice(2)[0] ?? undefined;
     const sdkName = process.argv.slice(3)[0] ? transformHyphensToUnderscores(process.argv.slice(3)[0]) : undefined;
     const generateProto = process.argv.slice(4)[0] === 'true' ? true : false;
+
     if (project === undefined) {
         throw new Error('Project name is required.');
     }
