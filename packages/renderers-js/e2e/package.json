@@ -17,7 +17,7 @@
         "tsup": "^8.4.0",
         "typedoc": "^0.28.2",
         "typedoc-plugin-missing-exports": "^4.0.0",
-        "typescript": "^5.8.2"
+        "typescript": "^5.8.3"
     },
     "engines": {
         "node": ">=20.0.0"
