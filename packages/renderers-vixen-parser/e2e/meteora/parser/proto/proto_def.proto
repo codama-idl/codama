@@ -1160,3 +1160,62 @@ message SetPreActivationSwapAddressIxData {
 }
 
 
+message LbClmmProgramState {
+  oneof state_oneof {
+            	BinArrayBitmapExtension bin_array_bitmap_extension = 1;
+            	BinArray bin_array = 2;
+            	LbPair lb_pair = 3;
+            	Oracle oracle = 4;
+            	Position position = 5;
+            	PositionV2 position_v2 = 6;
+            	PresetParameter preset_parameter = 7;
+      }
+}
+
+message LbClmmIxs {
+  oneof ix_oneof {
+            	InitializeLbPairIx initialize_lb_pair = 1;
+            	InitializePermissionLbPairIx initialize_permission_lb_pair = 2;
+            	InitializeCustomizablePermissionlessLbPairIx initialize_customizable_permissionless_lb_pair = 3;
+            	InitializeBinArrayBitmapExtensionIx initialize_bin_array_bitmap_extension = 4;
+            	InitializeBinArrayIx initialize_bin_array = 5;
+            	AddLiquidityIx add_liquidity = 6;
+            	AddLiquidityByWeightIx add_liquidity_by_weight = 7;
+            	AddLiquidityByStrategyIx add_liquidity_by_strategy = 8;
+            	AddLiquidityByStrategyOneSideIx add_liquidity_by_strategy_one_side = 9;
+            	AddLiquidityOneSideIx add_liquidity_one_side = 10;
+            	RemoveLiquidityIx remove_liquidity = 11;
+            	InitializePositionIx initialize_position = 12;
+            	InitializePositionPdaIx initialize_position_pda = 13;
+            	InitializePositionByOperatorIx initialize_position_by_operator = 14;
+            	UpdatePositionOperatorIx update_position_operator = 15;
+            	SwapIx swap = 16;
+            	SwapExactOutIx swap_exact_out = 17;
+            	SwapWithPriceImpactIx swap_with_price_impact = 18;
+            	WithdrawProtocolFeeIx withdraw_protocol_fee = 19;
+            	InitializeRewardIx initialize_reward = 20;
+            	FundRewardIx fund_reward = 21;
+            	UpdateRewardFunderIx update_reward_funder = 22;
+            	UpdateRewardDurationIx update_reward_duration = 23;
+            	ClaimRewardIx claim_reward = 24;
+            	ClaimFeeIx claim_fee = 25;
+            	ClosePositionIx close_position = 26;
+            	UpdateFeeParametersIx update_fee_parameters = 27;
+            	IncreaseOracleLengthIx increase_oracle_length = 28;
+            	InitializePresetParameterIx initialize_preset_parameter = 29;
+            	ClosePresetParameterIx close_preset_parameter = 30;
+            	RemoveAllLiquidityIx remove_all_liquidity = 31;
+            	TogglePairStatusIx toggle_pair_status = 32;
+            	MigratePositionIx migrate_position = 33;
+            	MigrateBinArrayIx migrate_bin_array = 34;
+            	UpdateFeesAndRewardsIx update_fees_and_rewards = 35;
+            	WithdrawIneligibleRewardIx withdraw_ineligible_reward = 36;
+            	SetActivationPointIx set_activation_point = 37;
+            	RemoveLiquidityByRangeIx remove_liquidity_by_range = 38;
+            	AddLiquidityOneSidePreciseIx add_liquidity_one_side_precise = 39;
+            	GoToABinIx go_to_a_bin = 40;
+            	SetPreActivationDurationIx set_pre_activation_duration = 41;
+            	SetPreActivationSwapAddressIx set_pre_activation_swap_address = 42;
+      }
+}
+

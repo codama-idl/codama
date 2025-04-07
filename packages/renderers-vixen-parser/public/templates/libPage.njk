@@ -1,10 +1,18 @@
 {% block main %}
 
+{% if overrided %}
+    {% for line in newContent %}
+        {{ line }}
+    {% endfor %}
+{% else %}
+
 mod generated;
 
 pub use generated::*;
 
 pub extern crate prost;
+
+{% endif %}
 
 // #[cfg(feature = "proto")]
 mod proto_def {

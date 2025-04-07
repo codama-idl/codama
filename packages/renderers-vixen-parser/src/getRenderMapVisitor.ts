@@ -30,18 +30,21 @@ import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
 
 export type GetRenderMapOptions = {
+    cargoAdditionalDependencies?: string[];
     generateProto?: boolean;
+    generatedFolderName?: string;
     linkOverrides?: LinkOverrides;
+    overridesLib?: string[];
+    project?: string;
     renderParentInstructions?: boolean;
     sdkName?: string;
-    project?: string;
 };
 
 // Account node for the parser
 type ParserAccountNode = {
+    fields: string[];
     name: string;
     size: number | null;
-    fields: string[];
 };
 
 // Instruction Accounts node for the parser
@@ -55,9 +58,9 @@ type ParserInstructionNode = {
     accounts: ParserInstructionAccountNode[];
     discriminator: string | null;
     hasArgs: boolean;
-    name: string;
     hasOptionalAccounts: boolean;
     ixArgs: string[];
+    name: string;
 };
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
@@ -84,15 +87,17 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const programAccounts = getAllAccounts(node);
                     const types = getAllDefinedTypes(node);
 
+                    const folderName = options.generatedFolderName ?? 'generated';
+
                     // States
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
                         const accData = resolveNestedTypeNode(acc.data);
                         return {
-                            name: acc.name,
-                            size: acc.size?.valueOf() ?? null,
                             fields: accData.fields
                                 .map(field => snakeCase(field.name))
                                 .filter(field => field !== 'discriminator'),
+                            name: acc.name,
+                            size: acc.size?.valueOf() ?? null,
                         };
                     });
 
@@ -214,25 +219,33 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     // only two files are generated as part of account and instruction parser
                     if (accCtx.accounts.length > 0) {
-                        map.add('src/generated/accounts_parser.rs', render('accountsParserPage.njk', accCtx));
+                        map.add(`src/${folderName}/accounts_parser.rs`, render('accountsParserPage.njk', accCtx));
                     }
 
                     if (ixCtx.instructions.length > 0) {
-                        map.add('src/generated/instructions_parser.rs', render('instructionsParserPage.njk', ixCtx));
+                        map.add(
+                            `src/${folderName}/instructions_parser.rs`,
+                            render('instructionsParserPage.njk', ixCtx),
+                        );
                     }
 
                     if (
-                        map.has('src/generated/accounts_parser.rs') ||
-                        map.has('src/generated/instructions_parser.rs')
+                        map.has(`src/${folderName}/accounts_parser.rs`) ||
+                        map.has(`src/${folderName}/instructions_parser.rs`)
                     ) {
+                        // todo
                     }
+
+                    const programStateOneOf: string[] = [];
 
                     if (options.generateProto) {
                         const definedTypes: string[] = [];
                         // proto Ixs , Accounts and Types
                         const matrixTypes: Set<string> = new Set();
 
-                        const protoAccounts = programAccounts.map(acc => {
+                        const protoAccounts = programAccounts.map((acc, i) => {
+                            programStateOneOf.push(`\t${pascalCase(acc.name)} ${snakeCase(acc.name)} = ${i + 1};`);
+
                             const node = visit(acc, typeManifestVisitor);
                             if (node.definedTypes) {
                                 definedTypes.push(node.definedTypes);
@@ -240,11 +253,59 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
 
+                        // TODO!: [WIP] We need to create IntoProto impl for all defined types also
+                        const protoTypesHelpers: { fields: { name: string; transform: string }[]; name: string }[] = [];
+
                         const protoTypes = types.map(type => {
                             const node = visit(type, typeManifestVisitor);
                             if (node.definedTypes) {
                                 definedTypes.push(node.definedTypes);
                             }
+
+                            if (type.type.kind === 'structTypeNode') {
+                                const fields = type.type.fields.map(field => {
+                                    console.log(`# ${field.name}`);
+                                    switch (field.type.kind) {
+                                        case 'structTypeNode':
+                                            return {
+                                                name: field.name,
+                                                transform: `\t.into_iter().map(IntoProto::into_proto).collect(),\n`,
+                                            };
+                                        case 'arrayTypeNode':
+                                            return {
+                                                name: field.name,
+                                                transform: `\t.to_vec(),\n`,
+                                            };
+                                        case 'publicKeyTypeNode':
+                                            return {
+                                                name: field.name,
+                                                transform: `\t.to_string(),\n`,
+                                            };
+                                        case 'enumTypeNode':
+                                            // todo: use from repr() impl
+                                            return {
+                                                name: field.name,
+                                                transform: `\t.to_string(),\n`,
+                                            };
+                                        case 'bytesTypeNode':
+                                            return {
+                                                name: field.name,
+                                                transform: `\t.to_vec(),\n`,
+                                            };
+                                        default:
+                                            return {
+                                                name: field.name,
+                                                transform: `\t.into(),\n`,
+                                            };
+                                    }
+                                });
+
+                                protoTypesHelpers.push({
+                                    fields,
+                                    name: type.name,
+                                });
+                            }
+
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
 
@@ -252,6 +313,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             accounts: string;
                             args: string;
                         }[] = [];
+
+                        const programIxsOneOf: string[] = [];
+                        let ixIdx = 0;
 
                         for (const ix of programInstructions) {
                             const ixName = ix.name;
@@ -264,6 +328,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                     }
                                 })
                                 .join('\n');
+
+                            programIxsOneOf.push(`\t${pascalCase(ixName)}Ix ${snakeCase(ixName)} = ${ixIdx + 1};`);
+                            ixIdx++;
 
                             let idx = 0;
 
@@ -319,23 +386,40 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 accounts: protoAccounts,
                                 definedTypes,
                                 instructions: protoIxs,
+                                programIxsOneOf,
+                                programName,
+                                programStateOneOf,
                                 types: protoTypes,
                             }),
                         );
                     }
 
                     map.add(
-                        'src/generated/mod.rs',
+                        `src/${folderName}/mod.rs`,
                         render('rootMod.njk', {
                             hasAccounts: accCtx.accounts.length > 0,
                         }),
                     );
 
-                    map.add('src/lib.rs', render('libPage.njk'));
+                    const overridesLib = options.overridesLib ?? [];
+                    map.add(
+                        'src/lib.rs',
+                        render('libPage.njk', {
+                            newContent: overridesLib,
+                            overrided: overridesLib.length > 0,
+                        }),
+                    );
 
                     map.add('build.rs', render('buildPage.njk'));
 
-                    map.add('Cargo.toml', render('CargoPage.njk', { projectName: projectName }));
+                    const additionalDependencies = options.cargoAdditionalDependencies ?? [];
+                    map.add(
+                        'Cargo.toml',
+                        render('CargoPage.njk', {
+                            additionalDependencies,
+                            projectName,
+                        }),
+                    );
 
                     return map;
                 },
