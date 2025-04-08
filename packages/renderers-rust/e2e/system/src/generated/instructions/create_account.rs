@@ -7,14 +7,14 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 /// Accounts.
 #[derive(Debug)]
 pub struct CreateAccount {
-    pub payer: solana_program::pubkey::Pubkey,
+    pub payer: solana_pubkey::Pubkey,
 
-    pub new_account: solana_program::pubkey::Pubkey,
+    pub new_account: solana_pubkey::Pubkey,
 }
 
 impl CreateAccount {
@@ -86,8 +86,8 @@ pub struct CreateAccountInstructionArgs {
 ///   1. `[writable, signer]` new_account
 #[derive(Clone, Debug, Default)]
 pub struct CreateAccountBuilder {
-    payer: Option<solana_program::pubkey::Pubkey>,
-    new_account: Option<solana_program::pubkey::Pubkey>,
+    payer: Option<solana_pubkey::Pubkey>,
+    new_account: Option<solana_pubkey::Pubkey>,
     lamports: Option<u64>,
     space: Option<u64>,
     program_address: Option<Pubkey>,
@@ -99,12 +99,12 @@ impl CreateAccountBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn payer(&mut self, payer: solana_pubkey::Pubkey) -> &mut Self {
         self.payer = Some(payer);
         self
     }
     #[inline(always)]
-    pub fn new_account(&mut self, new_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn new_account(&mut self, new_account: solana_pubkey::Pubkey) -> &mut Self {
         self.new_account = Some(new_account);
         self
     }

@@ -7,14 +7,14 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 /// Accounts.
 #[derive(Debug)]
 pub struct AuthorizeNonceAccount {
-    pub nonce_account: solana_program::pubkey::Pubkey,
+    pub nonce_account: solana_pubkey::Pubkey,
 
-    pub nonce_authority: solana_program::pubkey::Pubkey,
+    pub nonce_authority: solana_pubkey::Pubkey,
 }
 
 impl AuthorizeNonceAccount {
@@ -85,8 +85,8 @@ pub struct AuthorizeNonceAccountInstructionArgs {
 ///   1. `[signer]` nonce_authority
 #[derive(Clone, Debug, Default)]
 pub struct AuthorizeNonceAccountBuilder {
-    nonce_account: Option<solana_program::pubkey::Pubkey>,
-    nonce_authority: Option<solana_program::pubkey::Pubkey>,
+    nonce_account: Option<solana_pubkey::Pubkey>,
+    nonce_authority: Option<solana_pubkey::Pubkey>,
     new_nonce_authority: Option<Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -96,15 +96,12 @@ impl AuthorizeNonceAccountBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn nonce_account(&mut self, nonce_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn nonce_account(&mut self, nonce_account: solana_pubkey::Pubkey) -> &mut Self {
         self.nonce_account = Some(nonce_account);
         self
     }
     #[inline(always)]
-    pub fn nonce_authority(
-        &mut self,
-        nonce_authority: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn nonce_authority(&mut self, nonce_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.nonce_authority = Some(nonce_authority);
         self
     }

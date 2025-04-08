@@ -7,16 +7,16 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 /// Accounts.
 #[derive(Debug)]
 pub struct TransferSolWithSeed {
-    pub source: solana_program::pubkey::Pubkey,
+    pub source: solana_pubkey::Pubkey,
 
-    pub base_account: solana_program::pubkey::Pubkey,
+    pub base_account: solana_pubkey::Pubkey,
 
-    pub destination: solana_program::pubkey::Pubkey,
+    pub destination: solana_pubkey::Pubkey,
 }
 
 impl TransferSolWithSeed {
@@ -94,9 +94,9 @@ pub struct TransferSolWithSeedInstructionArgs {
 ///   2. `[writable]` destination
 #[derive(Clone, Debug, Default)]
 pub struct TransferSolWithSeedBuilder {
-    source: Option<solana_program::pubkey::Pubkey>,
-    base_account: Option<solana_program::pubkey::Pubkey>,
-    destination: Option<solana_program::pubkey::Pubkey>,
+    source: Option<solana_pubkey::Pubkey>,
+    base_account: Option<solana_pubkey::Pubkey>,
+    destination: Option<solana_pubkey::Pubkey>,
     amount: Option<u64>,
     from_seed: Option<String>,
     from_owner: Option<Pubkey>,
@@ -108,17 +108,17 @@ impl TransferSolWithSeedBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn source(&mut self, source: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn source(&mut self, source: solana_pubkey::Pubkey) -> &mut Self {
         self.source = Some(source);
         self
     }
     #[inline(always)]
-    pub fn base_account(&mut self, base_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn base_account(&mut self, base_account: solana_pubkey::Pubkey) -> &mut Self {
         self.base_account = Some(base_account);
         self
     }
     #[inline(always)]
-    pub fn destination(&mut self, destination: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn destination(&mut self, destination: solana_pubkey::Pubkey) -> &mut Self {
         self.destination = Some(destination);
         self
     }

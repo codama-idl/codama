@@ -20,9 +20,9 @@
 pub struct {{ instruction.name | pascalCase }}Builder {
   {% for account in instruction.accounts %}
     {% if account.isSigner === 'either' %}
-      {{ account.name | snakeCase }}: Option<(solana_program::pubkey::Pubkey, bool)>,
+      {{ account.name | snakeCase }}: Option<(solana_pubkey::Pubkey, bool)>,
     {% else %}
-      {{ account.name | snakeCase }}: Option<solana_program::pubkey::Pubkey>,
+      {{ account.name | snakeCase }}: Option<solana_pubkey::Pubkey>,
     {% endif %}
   {% endfor %}
   {% for arg in instructionArgs %}
@@ -45,7 +45,7 @@ impl {{ instruction.name | pascalCase }}Builder {
     {% endif %}
     {{- macros.docblock(account.docs) -}}
     #[inline(always)]
-    pub fn {{ account.name | snakeCase }}(&mut self, {{ account.name | snakeCase }}: {{ 'Option<solana_program::pubkey::Pubkey>' if account.isOptional else 'solana_program::pubkey::Pubkey' }}{{ ', as_signer: bool' if account.isSigner === 'either' }}) -> &mut Self {
+    pub fn {{ account.name | snakeCase }}(&mut self, {{ account.name | snakeCase }}: {{ 'Option<solana_pubkey::Pubkey>' if account.isOptional else 'solana_pubkey::Pubkey' }}{{ ', as_signer: bool' if account.isSigner === 'either' }}) -> &mut Self {
       {% if account.isOptional %}
         {% if account.isSigner === 'either' %}
           if let Some({{ account.name | snakeCase }}) = {{ account.name | snakeCase }} {
@@ -99,7 +99,7 @@ impl {{ instruction.name | pascalCase }}Builder {
           {% elif account.defaultValue.kind === 'programId' %}
             {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}, {# Program ID set on the instruction creation. #}
           {% elif account.defaultValue.kind === 'publicKeyValueNode' %}
-            {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}.unwrap_or(solana_program::pubkey!("{{ account.defaultValue.publicKey }}")),
+            {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}.unwrap_or(solana_pubkey::pubkey!("{{ account.defaultValue.publicKey }}")),
           {% else %}
             {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}.expect("{{ account.name | snakeCase }} is not set"),
           {% endif %}
