@@ -17,30 +17,51 @@ pub enum {{ programName | pascalCase }}ProgramState {
 
 impl {{ programName | pascalCase }}ProgramState {
     pub fn try_unpack(data_bytes:&[u8]) -> yellowstone_vixen_core::ParseResult<Self>{
-        let data_len = data_bytes.len();    
-        {% for account in accounts %}
-            {% if account.size == null %}
-                const {{ account.name | upper }}_LEN:usize = std::mem::size_of::<{{ account.name | pascalCase }}>();
-            {% endif %}
-        {% endfor %}
-        match data_len {
-        {% for account in accounts %}
-            {% if account.size != null %}
-                {{ account.name | pascalCase }}::LEN => Ok(
-                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                        {{ account.name | pascalCase }}::from_bytes(data_bytes)?
-                    )
-                    ),
+        {% if hasDiscriminator %}
+            {% if accDiscLen == 1 %}
+                let acc_discriminator = data_bytes[0];
             {% else %}
-                {{account.name | upper }}_LEN => Ok(
-                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                        {{ account.name | pascalCase }}::from_bytes(data_bytes)?
-                    )
-                    ),
+                let acc_discriminator:[u8; {{ accDiscLen }}] = data_bytes[0..{{ accDiscLen }}].try_into()?;
             {% endif %}
-        {% endfor %}
-        _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
-        }
+            match acc_discriminator {
+            {% for account in accounts %}
+                {% if account.discriminator != null %}
+                    {{ account.discriminator }} => Ok(
+                        {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        )
+                    ),
+                {% endif %}
+            {% endfor %}
+            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account discriminator".to_owned())),
+            }
+
+        {% else %}
+            let data_len = data_bytes.len();    
+            {% for account in accounts %}
+                {% if account.size == null %}
+                    const {{ account.name | upper }}_LEN:usize = std::mem::size_of::<{{ account.name | pascalCase }}>();
+                {% endif %}
+            {% endfor %}
+            match data_len {
+            {% for account in accounts %}
+                {% if account.size != null %}
+                    {{ account.name | pascalCase }}::LEN => Ok(
+                        {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        )
+                        ),
+                {% else %}
+                    {{account.name | upper }}_LEN => Ok(
+                        {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        )
+                        ),
+                {% endif %}
+            {% endfor %}
+            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
+            }
+        {% endif %}
     }
 }
 

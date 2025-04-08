@@ -10,11 +10,6 @@
 use std::path::PathBuf;
 
 use clap::Parser as _;
-use codama_renderers_vixen_parser_e2e_anchor::{
-    accounts_parser::AccountParser as AnchorProgramAccParser,
-    instructions_parser::InstructionParser as AnchorProgramIxParser,
-};
-use codama_renderers_vixen_parser_e2e_memo::instructions_parser::InstructionParser as MemoProgramIxParser;
 use codama_renderers_vixen_parser_e2e_meteora::{
     accounts_parser::AccountParser as MeteoraProgramAccParser,
     instructions_parser::InstructionParser as MeteoraProgramIxParser,
@@ -56,9 +51,6 @@ fn main() {
     vixen::Runtime::builder()
         .account(Pipeline::new(SystemProgramAccParser, [Handler]))
         .instruction(Pipeline::new(SystemProgramIxParser, [Handler]))
-        .instruction(Pipeline::new(MemoProgramIxParser, [Handler]))
-        .account(Pipeline::new(AnchorProgramAccParser, [Handler]))
-        .instruction(Pipeline::new(AnchorProgramIxParser, [Handler]))
         .account(Pipeline::new(MeteoraProgramAccParser, [Handler]))
         .instruction(Pipeline::new(MeteoraProgramIxParser, [Handler]))
         .build(config)

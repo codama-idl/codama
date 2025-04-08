@@ -17,14 +17,13 @@ pub enum WenTransferGuardProgramState {
 
 impl WenTransferGuardProgramState {
     pub fn try_unpack(data_bytes: &[u8]) -> yellowstone_vixen_core::ParseResult<Self> {
-        let data_len = data_bytes.len();
-        const GUARDV1_LEN: usize = std::mem::size_of::<GuardV1>();
-        match data_len {
-            GUARDV1_LEN => Ok(WenTransferGuardProgramState::GuardV1(GuardV1::from_bytes(
-                data_bytes,
-            )?)),
+        let acc_discriminator: [u8; 8] = data_bytes[0..8].try_into()?;
+        match acc_discriminator {
+            [185, 149, 156, 78, 245, 108, 172, 68] => Ok(WenTransferGuardProgramState::GuardV1(
+                GuardV1::from_bytes(data_bytes)?,
+            )),
             _ => Err(yellowstone_vixen_core::ParseError::from(
-                "Invalid Account data length".to_owned(),
+                "Invalid Account discriminator".to_owned(),
             )),
         }
     }

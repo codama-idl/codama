@@ -43,6 +43,7 @@ async function main() {
 
 async function generateProject(project, sdkName, generateProto) {
     const idl = readJson(path.join(__dirname, project, 'idl.json'));
+    // as we are using codama standard idl we are using rootNode(idl.program)
     const node = rootNode(idl.program);
 
     visit(
