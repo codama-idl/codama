@@ -28,6 +28,33 @@ export type TypeManifest = {
     type: string;
 };
 
+export function numberTypeToProtoHelper(numberType: NumberTypeNode): string {
+    switch (numberType.format) {
+        case 'u8':
+        case 'u16':
+        case 'u32':
+            return 'uint32';
+        case 'u64':
+            return 'uint64';
+        case 'u128':
+            return 'bytes';
+        case 'i8':
+        case 'i16':
+        case 'i32':
+            return 'int32';
+        case 'i64':
+            return 'int64';
+        case 'i128':
+            return 'bytes';
+        case 'f32':
+            return 'float';
+        case 'f64':
+            return 'double';
+        default:
+            throw new Error(`Number format not supported: ${numberType.format}`);
+    }
+}
+
 export function getProtoTypeManifestVisitor(options: {
     getImportFrom: GetImportFromFunction;
     getTraitsFromNode: GetTraitsFromNodeFunction;
@@ -262,39 +289,7 @@ export function getProtoTypeManifestVisitor(options: {
                         throw new Error('Number endianness not supported by Borsh');
                     }
 
-                    let type = '';
-                    switch (numberType.format) {
-                        case 'u8':
-                        case 'u16':
-                        case 'u32':
-                            type = 'uint32';
-                            break;
-                        case 'u64':
-                            type = 'uint64';
-                            break;
-                        case 'u128':
-                            type = 'bytes';
-                            break;
-                        case 'i8':
-                        case 'i16':
-                        case 'i32':
-                            type = 'int32';
-                            break;
-                        case 'i64':
-                            type = 'int64';
-                            break;
-                        case 'i128':
-                            type = 'bytes';
-                            break;
-                        case 'f32':
-                            type = 'float';
-                            break;
-                        case 'f64':
-                            type = 'double';
-                            break;
-                        default:
-                            throw new Error(`Number format not supported: ${numberType.format}`);
-                    }
+                    const type = numberTypeToProtoHelper(numberType);
 
                     return {
                         imports: new ImportMap(),
