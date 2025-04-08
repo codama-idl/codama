@@ -94,10 +94,8 @@ impl yellowstone_vixen_core::ProgramParser for AccountParser {
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
     use super::{AccountParser, LbClmmProgramState};
-    use crate::proto_def;
+    use crate::{proto_def, proto_helpers::proto_types_parsers::IntoProto};
     use yellowstone_vixen_core::proto::ParseProto;
 
     use super::BinArrayBitmapExtension;
@@ -105,8 +103,16 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::BinArrayBitmapExtension {
             proto_def::BinArrayBitmapExtension {
                 lb_pair: self.lb_pair.to_string(),
-                positive_bin_array_bitmap: self.positive_bin_array_bitmap.to_vec(),
-                negative_bin_array_bitmap: self.negative_bin_array_bitmap.to_vec(),
+                positive_bin_array_bitmap: self
+                    .positive_bin_array_bitmap
+                    .into_iter()
+                    .map(|x| proto_def::RepeatedUint64Row { rows: x.to_vec() })
+                    .collect(),
+                negative_bin_array_bitmap: self
+                    .negative_bin_array_bitmap
+                    .into_iter()
+                    .map(|x| proto_def::RepeatedUint64Row { rows: x.to_vec() })
+                    .collect(),
             }
         }
     }
@@ -114,11 +120,11 @@ mod proto_parser {
     impl IntoProto<proto_def::BinArray> for BinArray {
         fn into_proto(self) -> proto_def::BinArray {
             proto_def::BinArray {
-                index: self.index.into(),
+                index: self.index,
                 version: self.version.into(),
-                padding: self.padding.into(),
+                padding: self.padding.to_vec(),
                 lb_pair: self.lb_pair.to_string(),
-                bins: self.bins.to_vec(),
+                bins: self.bins.into_iter().map(|x| x.into_proto()).collect(),
             }
         }
     }
@@ -126,37 +132,41 @@ mod proto_parser {
     impl IntoProto<proto_def::LbPair> for LbPair {
         fn into_proto(self) -> proto_def::LbPair {
             proto_def::LbPair {
-                parameters: self.parameters.into(),
-                v_parameters: self.v_parameters.into(),
-                bump_seed: self.bump_seed.into(),
-                bin_step_seed: self.bin_step_seed.into(),
+                parameters: Some(self.parameters.into_proto()),
+                v_parameters: Some(self.v_parameters.into_proto()),
+                bump_seed: self.bump_seed.to_vec(),
+                bin_step_seed: self.bin_step_seed.to_vec(),
                 pair_type: self.pair_type.into(),
-                active_id: self.active_id.into(),
+                active_id: self.active_id,
                 bin_step: self.bin_step.into(),
                 status: self.status.into(),
                 require_base_factor_seed: self.require_base_factor_seed.into(),
-                base_factor_seed: self.base_factor_seed.into(),
+                base_factor_seed: self.base_factor_seed.to_vec(),
                 activation_type: self.activation_type.into(),
                 padding0: self.padding0.into(),
                 token_x_mint: self.token_x_mint.to_string(),
                 token_y_mint: self.token_y_mint.to_string(),
                 reserve_x: self.reserve_x.to_string(),
                 reserve_y: self.reserve_y.to_string(),
-                protocol_fee: self.protocol_fee.into(),
-                padding1: self.padding1.into(),
-                reward_infos: self.reward_infos.to_vec(),
+                protocol_fee: Some(self.protocol_fee.into_proto()),
+                padding1: self.padding1.to_vec(),
+                reward_infos: self
+                    .reward_infos
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
                 oracle: self.oracle.to_string(),
                 bin_array_bitmap: self.bin_array_bitmap.to_vec(),
-                last_updated_at: self.last_updated_at.into(),
-                padding2: self.padding2.into(),
+                last_updated_at: self.last_updated_at,
+                padding2: self.padding2.to_vec(),
                 pre_activation_swap_address: self.pre_activation_swap_address.to_string(),
                 base_key: self.base_key.to_string(),
-                activation_point: self.activation_point.into(),
-                pre_activation_duration: self.pre_activation_duration.into(),
-                padding3: self.padding3.into(),
-                padding4: self.padding4.into(),
+                activation_point: self.activation_point,
+                pre_activation_duration: self.pre_activation_duration,
+                padding3: self.padding3.to_vec(),
+                padding4: self.padding4,
                 creator: self.creator.to_string(),
-                reserved: self.reserved.into(),
+                reserved: self.reserved.to_vec(),
             }
         }
     }
@@ -164,9 +174,9 @@ mod proto_parser {
     impl IntoProto<proto_def::Oracle> for Oracle {
         fn into_proto(self) -> proto_def::Oracle {
             proto_def::Oracle {
-                idx: self.idx.into(),
-                active_size: self.active_size.into(),
-                length: self.length.into(),
+                idx: self.idx,
+                active_size: self.active_size,
+                length: self.length,
             }
         }
     }
@@ -177,15 +187,19 @@ mod proto_parser {
                 lb_pair: self.lb_pair.to_string(),
                 owner: self.owner.to_string(),
                 liquidity_shares: self.liquidity_shares.to_vec(),
-                reward_infos: self.reward_infos.to_vec(),
-                fee_infos: self.fee_infos.to_vec(),
-                lower_bin_id: self.lower_bin_id.into(),
-                upper_bin_id: self.upper_bin_id.into(),
-                last_updated_at: self.last_updated_at.into(),
-                total_claimed_fee_x_amount: self.total_claimed_fee_x_amount.into(),
-                total_claimed_fee_y_amount: self.total_claimed_fee_y_amount.into(),
+                reward_infos: self
+                    .reward_infos
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
+                fee_infos: self.fee_infos.into_iter().map(|x| x.into_proto()).collect(),
+                lower_bin_id: self.lower_bin_id,
+                upper_bin_id: self.upper_bin_id,
+                last_updated_at: self.last_updated_at,
+                total_claimed_fee_x_amount: self.total_claimed_fee_x_amount,
+                total_claimed_fee_y_amount: self.total_claimed_fee_y_amount,
                 total_claimed_rewards: self.total_claimed_rewards.to_vec(),
-                reserved: self.reserved.into(),
+                reserved: self.reserved.to_vec(),
             }
         }
     }
@@ -195,20 +209,28 @@ mod proto_parser {
             proto_def::PositionV2 {
                 lb_pair: self.lb_pair.to_string(),
                 owner: self.owner.to_string(),
-                liquidity_shares: self.liquidity_shares.to_vec(),
-                reward_infos: self.reward_infos.to_vec(),
-                fee_infos: self.fee_infos.to_vec(),
-                lower_bin_id: self.lower_bin_id.into(),
-                upper_bin_id: self.upper_bin_id.into(),
-                last_updated_at: self.last_updated_at.into(),
-                total_claimed_fee_x_amount: self.total_claimed_fee_x_amount.into(),
-                total_claimed_fee_y_amount: self.total_claimed_fee_y_amount.into(),
+                liquidity_shares: self
+                    .liquidity_shares
+                    .into_iter()
+                    .map(|x| x.to_le_bytes().to_vec())
+                    .collect(),
+                reward_infos: self
+                    .reward_infos
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
+                fee_infos: self.fee_infos.into_iter().map(|x| x.into_proto()).collect(),
+                lower_bin_id: self.lower_bin_id,
+                upper_bin_id: self.upper_bin_id,
+                last_updated_at: self.last_updated_at,
+                total_claimed_fee_x_amount: self.total_claimed_fee_x_amount,
+                total_claimed_fee_y_amount: self.total_claimed_fee_y_amount,
                 total_claimed_rewards: self.total_claimed_rewards.to_vec(),
                 operator: self.operator.to_string(),
-                lock_release_point: self.lock_release_point.into(),
+                lock_release_point: self.lock_release_point,
                 padding0: self.padding0.into(),
                 fee_owner: self.fee_owner.to_string(),
-                reserved: self.reserved.into(),
+                reserved: self.reserved.to_vec(),
             }
         }
     }
@@ -221,10 +243,10 @@ mod proto_parser {
                 filter_period: self.filter_period.into(),
                 decay_period: self.decay_period.into(),
                 reduction_factor: self.reduction_factor.into(),
-                variable_fee_control: self.variable_fee_control.into(),
-                max_volatility_accumulator: self.max_volatility_accumulator.into(),
-                min_bin_id: self.min_bin_id.into(),
-                max_bin_id: self.max_bin_id.into(),
+                variable_fee_control: self.variable_fee_control,
+                max_volatility_accumulator: self.max_volatility_accumulator,
+                min_bin_id: self.min_bin_id,
+                max_bin_id: self.max_bin_id,
                 protocol_share: self.protocol_share.into(),
             }
         }

@@ -69,10 +69,8 @@ impl yellowstone_vixen_core::ProgramParser for AccountParser {
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
     use super::{AccountParser, WenTransferGuardProgramState};
-    use crate::proto_def;
+    use crate::{proto_def, proto_helpers::proto_types_parsers::IntoProto};
     use yellowstone_vixen_core::proto::ParseProto;
 
     use super::GuardV1;
@@ -81,9 +79,13 @@ mod proto_parser {
             proto_def::GuardV1 {
                 mint: self.mint.to_string(),
                 bump: self.bump.into(),
-                cpi_rule: self.cpi_rule.map(|x| x.into()),
-                transfer_amount_rule: self.transfer_amount_rule.map(|x| x.into()),
-                additional_fields_rule: self.additional_fields_rule.to_vec(),
+                cpi_rule: self.cpi_rule.map(|x| x as i32),
+                transfer_amount_rule: self.transfer_amount_rule.map(|x| x as i32),
+                additional_fields_rule: self
+                    .additional_fields_rule
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
             }
         }
     }

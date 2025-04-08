@@ -256,10 +256,10 @@ pub fn check_min_accounts_req(
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
     use super::{InstructionParser, SystemProgramIx};
     use crate::proto_def;
+    use yellowstone_vixen_core::proto_helper_traits;
+    proto_helper_traits!();
     use yellowstone_vixen_core::proto::ParseProto;
 
     use super::CreateAccountIxAccounts;
@@ -275,8 +275,8 @@ mod proto_parser {
     impl IntoProto<proto_def::CreateAccountIxData> for CreateAccountIxData {
         fn into_proto(self) -> proto_def::CreateAccountIxData {
             proto_def::CreateAccountIxData {
-                lamports: self.lamports.into(),
-                space: self.space.into(),
+                lamports: self.lamports,
+                space: self.space,
                 program_address: self.program_address.to_string(),
             }
         }
@@ -310,7 +310,7 @@ mod proto_parser {
     impl IntoProto<proto_def::TransferSolIxData> for TransferSolIxData {
         fn into_proto(self) -> proto_def::TransferSolIxData {
             proto_def::TransferSolIxData {
-                amount: self.amount.into(),
+                amount: self.amount,
             }
         }
     }
@@ -329,9 +329,9 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::CreateAccountWithSeedIxData {
             proto_def::CreateAccountWithSeedIxData {
                 base: self.base.to_string(),
-                seed: self.seed.into(),
-                amount: self.amount.into(),
-                space: self.space.into(),
+                seed: self.seed,
+                amount: self.amount,
+                space: self.space,
                 program_address: self.program_address.to_string(),
             }
         }
@@ -362,7 +362,7 @@ mod proto_parser {
     impl IntoProto<proto_def::WithdrawNonceAccountIxData> for WithdrawNonceAccountIxData {
         fn into_proto(self) -> proto_def::WithdrawNonceAccountIxData {
             proto_def::WithdrawNonceAccountIxData {
-                withdraw_amount: self.withdraw_amount.into(),
+                withdraw_amount: self.withdraw_amount,
             }
         }
     }
@@ -412,9 +412,7 @@ mod proto_parser {
     use super::AllocateIxData;
     impl IntoProto<proto_def::AllocateIxData> for AllocateIxData {
         fn into_proto(self) -> proto_def::AllocateIxData {
-            proto_def::AllocateIxData {
-                space: self.space.into(),
-            }
+            proto_def::AllocateIxData { space: self.space }
         }
     }
     use super::AllocateWithSeedIxAccounts;
@@ -431,8 +429,8 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::AllocateWithSeedIxData {
             proto_def::AllocateWithSeedIxData {
                 base: self.base.to_string(),
-                seed: self.seed.into(),
-                space: self.space.into(),
+                seed: self.seed,
+                space: self.space,
                 program_address: self.program_address.to_string(),
             }
         }
@@ -451,7 +449,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::AssignWithSeedIxData {
             proto_def::AssignWithSeedIxData {
                 base: self.base.to_string(),
-                seed: self.seed.into(),
+                seed: self.seed,
                 program_address: self.program_address.to_string(),
             }
         }
@@ -470,8 +468,8 @@ mod proto_parser {
     impl IntoProto<proto_def::TransferSolWithSeedIxData> for TransferSolWithSeedIxData {
         fn into_proto(self) -> proto_def::TransferSolWithSeedIxData {
             proto_def::TransferSolWithSeedIxData {
-                amount: self.amount.into(),
-                from_seed: self.from_seed.into(),
+                amount: self.amount,
+                from_seed: self.from_seed,
                 from_owner: self.from_owner.to_string(),
             }
         }

@@ -6,7 +6,7 @@
 //!
 
 // #[cfg(feature = "proto")]
-mod proto_types_parsers {
+pub mod proto_types_parsers {
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
     use crate::proto_def;
@@ -16,10 +16,10 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::StrategyParameters> for StrategyParameters {
         fn into_proto(self) -> proto_def::StrategyParameters {
             proto_def::StrategyParameters {
-                min_bin_id: self.min_bin_id.into(),
-                max_bin_id: self.max_bin_id.into(),
-                strategy_type: self.strategy_type.into(),
-                parameteres: self.parameteres.into(),
+                min_bin_id: self.min_bin_id,
+                max_bin_id: self.max_bin_id,
+                strategy_type: self.strategy_type as i32,
+                parameteres: self.parameteres.to_vec(),
             }
         }
     }
@@ -27,7 +27,7 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::BinLiquidityDistributionByWeight> for BinLiquidityDistributionByWeight {
         fn into_proto(self) -> proto_def::BinLiquidityDistributionByWeight {
             proto_def::BinLiquidityDistributionByWeight {
-                bin_id: self.bin_id.into(),
+                bin_id: self.bin_id,
                 weight: self.weight.into(),
             }
         }
@@ -36,8 +36,8 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::CompressedBinDepositAmount> for CompressedBinDepositAmount {
         fn into_proto(self) -> proto_def::CompressedBinDepositAmount {
             proto_def::CompressedBinDepositAmount {
-                bin_id: self.bin_id.into(),
-                amount: self.amount.into(),
+                bin_id: self.bin_id,
+                amount: self.amount,
             }
         }
     }
@@ -45,7 +45,7 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::BinLiquidityDistribution> for BinLiquidityDistribution {
         fn into_proto(self) -> proto_def::BinLiquidityDistribution {
             proto_def::BinLiquidityDistribution {
-                bin_id: self.bin_id.into(),
+                bin_id: self.bin_id,
                 distribution_x: self.distribution_x.into(),
                 distribution_y: self.distribution_y.into(),
             }
@@ -55,7 +55,7 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::BinLiquidityReduction> for BinLiquidityReduction {
         fn into_proto(self) -> proto_def::BinLiquidityReduction {
             proto_def::BinLiquidityReduction {
-                bin_id: self.bin_id.into(),
+                bin_id: self.bin_id,
                 bps_to_remove: self.bps_to_remove.into(),
             }
         }
@@ -64,15 +64,25 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::Bin> for Bin {
         fn into_proto(self) -> proto_def::Bin {
             proto_def::Bin {
-                amount_x: self.amount_x.into(),
-                amount_y: self.amount_y.into(),
-                price: self.price.into(),
-                liquidity_supply: self.liquidity_supply.into(),
-                reward_per_token_stored: self.reward_per_token_stored.to_vec(),
-                fee_amount_x_per_token_stored: self.fee_amount_x_per_token_stored.into(),
-                fee_amount_y_per_token_stored: self.fee_amount_y_per_token_stored.into(),
-                amount_x_in: self.amount_x_in.into(),
-                amount_y_in: self.amount_y_in.into(),
+                amount_x: self.amount_x,
+                amount_y: self.amount_y,
+                price: self.price.to_le_bytes().to_vec(),
+                liquidity_supply: self.liquidity_supply.to_le_bytes().to_vec(),
+                reward_per_token_stored: self
+                    .reward_per_token_stored
+                    .into_iter()
+                    .map(|x| x.to_le_bytes().to_vec())
+                    .collect(),
+                fee_amount_x_per_token_stored: self
+                    .fee_amount_x_per_token_stored
+                    .to_le_bytes()
+                    .to_vec(),
+                fee_amount_y_per_token_stored: self
+                    .fee_amount_y_per_token_stored
+                    .to_le_bytes()
+                    .to_vec(),
+                amount_x_in: self.amount_x_in.to_le_bytes().to_vec(),
+                amount_y_in: self.amount_y_in.to_le_bytes().to_vec(),
             }
         }
     }
@@ -80,8 +90,8 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::ProtocolFee> for ProtocolFee {
         fn into_proto(self) -> proto_def::ProtocolFee {
             proto_def::ProtocolFee {
-                amount_x: self.amount_x.into(),
-                amount_y: self.amount_y.into(),
+                amount_x: self.amount_x,
+                amount_y: self.amount_y,
             }
         }
     }
@@ -92,13 +102,12 @@ mod proto_types_parsers {
                 mint: self.mint.to_string(),
                 vault: self.vault.to_string(),
                 funder: self.funder.to_string(),
-                reward_duration: self.reward_duration.into(),
-                reward_duration_end: self.reward_duration_end.into(),
-                reward_rate: self.reward_rate.into(),
-                last_update_time: self.last_update_time.into(),
+                reward_duration: self.reward_duration,
+                reward_duration_end: self.reward_duration_end,
+                reward_rate: self.reward_rate.to_le_bytes().to_vec(),
+                last_update_time: self.last_update_time,
                 cumulative_seconds_with_empty_liquidity_reward: self
-                    .cumulative_seconds_with_empty_liquidity_reward
-                    .into(),
+                    .cumulative_seconds_with_empty_liquidity_reward,
             }
         }
     }
@@ -106,9 +115,9 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::Observation> for Observation {
         fn into_proto(self) -> proto_def::Observation {
             proto_def::Observation {
-                cumulative_active_bin_id: self.cumulative_active_bin_id.into(),
-                created_at: self.created_at.into(),
-                last_updated_at: self.last_updated_at.into(),
+                cumulative_active_bin_id: self.cumulative_active_bin_id.to_le_bytes().to_vec(),
+                created_at: self.created_at,
+                last_updated_at: self.last_updated_at,
             }
         }
     }
@@ -120,12 +129,12 @@ mod proto_types_parsers {
                 filter_period: self.filter_period.into(),
                 decay_period: self.decay_period.into(),
                 reduction_factor: self.reduction_factor.into(),
-                variable_fee_control: self.variable_fee_control.into(),
-                max_volatility_accumulator: self.max_volatility_accumulator.into(),
-                min_bin_id: self.min_bin_id.into(),
-                max_bin_id: self.max_bin_id.into(),
+                variable_fee_control: self.variable_fee_control,
+                max_volatility_accumulator: self.max_volatility_accumulator,
+                min_bin_id: self.min_bin_id,
+                max_bin_id: self.max_bin_id,
                 protocol_share: self.protocol_share.into(),
-                padding: self.padding.into(),
+                padding: self.padding.to_vec(),
             }
         }
     }
@@ -133,12 +142,12 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::VariableParameters> for VariableParameters {
         fn into_proto(self) -> proto_def::VariableParameters {
             proto_def::VariableParameters {
-                volatility_accumulator: self.volatility_accumulator.into(),
-                volatility_reference: self.volatility_reference.into(),
-                index_reference: self.index_reference.into(),
-                padding: self.padding.into(),
-                last_update_timestamp: self.last_update_timestamp.into(),
-                padding1: self.padding1.into(),
+                volatility_accumulator: self.volatility_accumulator,
+                volatility_reference: self.volatility_reference,
+                index_reference: self.index_reference,
+                padding: self.padding.to_vec(),
+                last_update_timestamp: self.last_update_timestamp,
+                padding1: self.padding1.to_vec(),
             }
         }
     }
@@ -146,10 +155,10 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::FeeInfo> for FeeInfo {
         fn into_proto(self) -> proto_def::FeeInfo {
             proto_def::FeeInfo {
-                fee_x_per_token_complete: self.fee_x_per_token_complete.into(),
-                fee_y_per_token_complete: self.fee_y_per_token_complete.into(),
-                fee_x_pending: self.fee_x_pending.into(),
-                fee_y_pending: self.fee_y_pending.into(),
+                fee_x_per_token_complete: self.fee_x_per_token_complete.to_le_bytes().to_vec(),
+                fee_y_per_token_complete: self.fee_y_per_token_complete.to_le_bytes().to_vec(),
+                fee_x_pending: self.fee_x_pending,
+                fee_y_pending: self.fee_y_pending,
             }
         }
     }
@@ -157,7 +166,11 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::UserRewardInfo> for UserRewardInfo {
         fn into_proto(self) -> proto_def::UserRewardInfo {
             proto_def::UserRewardInfo {
-                reward_per_token_completes: self.reward_per_token_completes.to_vec(),
+                reward_per_token_completes: self
+                    .reward_per_token_completes
+                    .into_iter()
+                    .map(|x| x.to_le_bytes().to_vec())
+                    .collect(),
                 reward_pendings: self.reward_pendings.to_vec(),
             }
         }

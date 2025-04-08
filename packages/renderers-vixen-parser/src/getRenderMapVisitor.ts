@@ -342,42 +342,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     });
 
                     instructionParserImports.add(`${codamaSdkName}::instructions::{${ixImports}}`);
-
-                    const ixCtx = {
-                        IX_DATA_OFFSET,
-                        accounts,
-                        hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
-                        imports: instructionParserImports,
-                        instructions,
-                        programName,
-                    };
-
-                    const accCtx = {
-                        accounts,
-                        imports: accountParserImports,
-                        programName,
-                    };
-
                     const map = new RenderMap();
-
-                    // only two files are generated as part of account and instruction parser
-                    if (accCtx.accounts.length > 0) {
-                        map.add(`src/${folderName}/accounts_parser.rs`, render('accountsParserPage.njk', accCtx));
-                    }
-
-                    if (ixCtx.instructions.length > 0) {
-                        map.add(
-                            `src/${folderName}/instructions_parser.rs`,
-                            render('instructionsParserPage.njk', ixCtx),
-                        );
-                    }
-
-                    if (
-                        map.has(`src/${folderName}/accounts_parser.rs`) ||
-                        map.has(`src/${folderName}/instructions_parser.rs`)
-                    ) {
-                        // todo
-                    }
 
                     const programStateOneOf: string[] = [];
 
@@ -402,6 +367,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                         const protoTypes = types.map(type => {
                             const node = visit(type, typeManifestVisitor);
+
                             if (node.definedTypes) {
                                 definedTypes.push(node.definedTypes);
                             }
@@ -419,6 +385,49 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                     name: type.name,
                                 });
                             }
+
+                            // if (type.type.kind === 'enumTypeNode') {
+                            //     const definedVariants = type.type.variants.filter(variant => {
+                            //         return variant.kind !== 'enumEmptyVariantTypeNode';
+                            //     });
+
+                            //     console.log('definedVariants', definedVariants);
+
+                            //     definedVariants.forEach(variant => {
+                            //         switch (variant.kind) {
+                            //             case 'enumStructVariantTypeNode':
+                            //                 const structData = resolveNestedTypeNode(variant.struct);
+                            //                 protoTypesHelpers.push({
+                            //                     name: snakeCase(variant.name),
+                            //                     fields: structData.fields.map(field => {
+                            //                         return {
+                            //                             name: snakeCase(field.name),
+                            //                             transform: getTransform(field.type, field.name, types),
+                            //                         };
+                            //                     }),
+                            //                 });
+                            //                 break;
+                            //             case 'enumTupleVariantTypeNode':
+                            //                 const tupleData = resolveNestedTypeNode(variant.tuple);
+                            //                 console.log('tupleData', tupleData);
+                            //                 tupleData.items.forEach((item, idx) => {
+                            //                     console.log('item', item);
+
+                            //                     protoTypesHelpers.push({
+                            //                         name: snakeCase(variant.name),
+                            //                         fields: [
+                            //                             {
+                            //                                 name: snakeCase(`item${idx}`),
+                            //                                 transform: `self.${snakeCase(variant.name)}.into()`,
+                            //                             },
+                            //                         ],
+                            //                     });
+                            //                 });
+
+                            //                 break;
+                            //         }
+                            //     });
+                            // }
 
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
@@ -517,6 +526,42 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 }),
                             );
                         }
+                    }
+
+                    const ixCtx = {
+                        IX_DATA_OFFSET,
+                        accounts,
+                        hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
+                        hasProtoHelpers,
+                        imports: instructionParserImports,
+                        instructions,
+                        programName,
+                    };
+
+                    const accCtx = {
+                        accounts,
+                        hasProtoHelpers,
+                        imports: accountParserImports,
+                        programName,
+                    };
+
+                    // only two files are generated as part of account and instruction parser
+                    if (accCtx.accounts.length > 0) {
+                        map.add(`src/${folderName}/accounts_parser.rs`, render('accountsParserPage.njk', accCtx));
+                    }
+
+                    if (ixCtx.instructions.length > 0) {
+                        map.add(
+                            `src/${folderName}/instructions_parser.rs`,
+                            render('instructionsParserPage.njk', ixCtx),
+                        );
+                    }
+
+                    if (
+                        map.has(`src/${folderName}/accounts_parser.rs`) ||
+                        map.has(`src/${folderName}/instructions_parser.rs`)
+                    ) {
+                        // todo
                     }
 
                     map.add(

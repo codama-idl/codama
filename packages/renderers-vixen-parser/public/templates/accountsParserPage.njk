@@ -80,10 +80,16 @@ impl yellowstone_vixen_core::ProgramParser for AccountParser {
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use super::super::proto_helpers::proto_types_parsers::IntoProto;
-    use yellowstone_vixen_core::proto::ParseProto;
-    use super::{ AccountParser, {{ programName | pascalCase }}ProgramState};
+    {% if hasProtoHelpers %}
+    use crate::{proto_def, proto_helpers::proto_types_parsers::IntoProto};
+    {% else %}
     use crate::proto_def;
+    use yellowstone_vixen_core::proto_helper_traits;
+    proto_helper_traits!();
+    {% endif %}
+    use super::{ AccountParser, {{ programName | pascalCase }}ProgramState};
+    use yellowstone_vixen_core::proto::ParseProto;
+
 
     {% for account in accounts %}
         use super::{{ account.name | pascalCase }};

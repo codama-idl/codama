@@ -150,10 +150,8 @@ pub fn check_min_accounts_req(
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
     use super::{InstructionParser, WenTransferGuardProgramIx};
-    use crate::proto_def;
+    use crate::{proto_def, proto_helpers::proto_types_parsers::IntoProto};
     use yellowstone_vixen_core::proto::ParseProto;
 
     use super::CreateGuardIxAccounts;
@@ -175,12 +173,16 @@ mod proto_parser {
     impl IntoProto<proto_def::CreateGuardIxData> for CreateGuardIxData {
         fn into_proto(self) -> proto_def::CreateGuardIxData {
             proto_def::CreateGuardIxData {
-                name: self.name.into(),
-                symbol: self.symbol.into(),
-                uri: self.uri.into(),
-                cpi_rule: self.cpi_rule.map(|x| x.into()),
-                transfer_amount_rule: self.transfer_amount_rule.map(|x| x.into()),
-                additional_fields_rule: self.additional_fields_rule.to_vec(),
+                name: self.name,
+                symbol: self.symbol,
+                uri: self.uri,
+                cpi_rule: self.cpi_rule.map(|x| x as i32),
+                transfer_amount_rule: self.transfer_amount_rule.map(|x| x as i32),
+                additional_fields_rule: self
+                    .additional_fields_rule
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
             }
         }
     }
@@ -202,7 +204,7 @@ mod proto_parser {
     impl IntoProto<proto_def::ExecuteIxData> for ExecuteIxData {
         fn into_proto(self) -> proto_def::ExecuteIxData {
             proto_def::ExecuteIxData {
-                amount: self.amount.into(),
+                amount: self.amount,
             }
         }
     }
@@ -236,9 +238,13 @@ mod proto_parser {
     impl IntoProto<proto_def::UpdateGuardIxData> for UpdateGuardIxData {
         fn into_proto(self) -> proto_def::UpdateGuardIxData {
             proto_def::UpdateGuardIxData {
-                cpi_rule: self.cpi_rule.map(|x| x.into()),
-                transfer_amount_rule: self.transfer_amount_rule.map(|x| x.into()),
-                additional_fields_rule: self.additional_fields_rule.to_vec(),
+                cpi_rule: self.cpi_rule.map(|x| x as i32),
+                transfer_amount_rule: self.transfer_amount_rule.map(|x| x as i32),
+                additional_fields_rule: self
+                    .additional_fields_rule
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
             }
         }
     }

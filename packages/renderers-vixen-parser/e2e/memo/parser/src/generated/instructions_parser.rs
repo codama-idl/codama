@@ -82,8 +82,6 @@ pub fn check_min_accounts_req(
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
     use super::{InstructionParser, MemoProgramIx};
     use crate::proto_def;
     use yellowstone_vixen_core::proto::ParseProto;
@@ -97,9 +95,7 @@ mod proto_parser {
     use super::AddMemoIxData;
     impl IntoProto<proto_def::AddMemoIxData> for AddMemoIxData {
         fn into_proto(self) -> proto_def::AddMemoIxData {
-            proto_def::AddMemoIxData {
-                memo: self.memo.into(),
-            }
+            proto_def::AddMemoIxData { memo: self.memo }
         }
     }
 

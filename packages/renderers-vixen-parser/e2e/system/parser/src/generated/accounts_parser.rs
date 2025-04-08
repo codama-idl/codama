@@ -66,21 +66,21 @@ impl yellowstone_vixen_core::ProgramParser for AccountParser {
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
+    use crate::proto_def;
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
     use super::{AccountParser, SystemProgramState};
-    use crate::proto_def;
     use yellowstone_vixen_core::proto::ParseProto;
 
     use super::Nonce;
     impl IntoProto<proto_def::Nonce> for Nonce {
         fn into_proto(self) -> proto_def::Nonce {
             proto_def::Nonce {
-                version: self.version.into(),
-                state: self.state.into(),
+                version: self.version as i32,
+                state: self.state as i32,
                 authority: self.authority.to_string(),
                 blockhash: self.blockhash.to_string(),
-                lamports_per_signature: self.lamports_per_signature.into(),
+                lamports_per_signature: self.lamports_per_signature,
             }
         }
     }

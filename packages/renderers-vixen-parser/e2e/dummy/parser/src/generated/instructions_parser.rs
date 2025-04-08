@@ -99,8 +99,6 @@ pub fn check_min_accounts_req(
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
     use super::{DummyProgramIx, InstructionParser};
     use crate::proto_def;
     use yellowstone_vixen_core::proto::ParseProto;
@@ -133,7 +131,7 @@ mod proto_parser {
     impl IntoProto<proto_def::Instruction4IxData> for Instruction4IxData {
         fn into_proto(self) -> proto_def::Instruction4IxData {
             proto_def::Instruction4IxData {
-                my_argument: self.my_argument.into(),
+                my_argument: self.my_argument,
             }
         }
     }
@@ -147,7 +145,7 @@ mod proto_parser {
     impl IntoProto<proto_def::Instruction5IxData> for Instruction5IxData {
         fn into_proto(self) -> proto_def::Instruction5IxData {
             proto_def::Instruction5IxData {
-                my_argument: self.my_argument.into(),
+                my_argument: self.my_argument,
             }
         }
     }

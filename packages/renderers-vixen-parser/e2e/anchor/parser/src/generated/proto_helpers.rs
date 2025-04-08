@@ -6,7 +6,7 @@
 //!
 
 // #[cfg(feature = "proto")]
-mod proto_types_parsers {
+pub mod proto_types_parsers {
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
     use crate::proto_def;
@@ -16,8 +16,8 @@ mod proto_types_parsers {
     impl IntoProto<proto_def::MetadataAdditionalFieldRule> for MetadataAdditionalFieldRule {
         fn into_proto(self) -> proto_def::MetadataAdditionalFieldRule {
             proto_def::MetadataAdditionalFieldRule {
-                field: self.field.into(),
-                value_restrictions: self.value_restrictions.map(|x| x.into()),
+                field: self.field,
+                value_restrictions: self.value_restrictions.map(|x| x as i32),
             }
         }
     }

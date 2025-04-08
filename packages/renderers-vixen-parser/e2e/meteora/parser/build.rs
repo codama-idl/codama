@@ -6,6 +6,7 @@
 //!
 
 fn main() {
+    // #[cfg(feature = "proto")]
     prost_build::Config::new()
         .enable_type_names()
         .compile_protos(&["proto/proto_def.proto"], &["proto"])

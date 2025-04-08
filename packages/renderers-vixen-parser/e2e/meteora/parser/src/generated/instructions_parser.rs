@@ -1112,10 +1112,8 @@ pub fn check_min_accounts_req(
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
     use super::{InstructionParser, LbClmmProgramIx};
-    use crate::proto_def;
+    use crate::{proto_def, proto_helpers::proto_types_parsers::IntoProto};
     use yellowstone_vixen_core::proto::ParseProto;
 
     use super::InitializeLbPairIxAccounts;
@@ -1143,7 +1141,7 @@ mod proto_parser {
     impl IntoProto<proto_def::InitializeLbPairIxData> for InitializeLbPairIxData {
         fn into_proto(self) -> proto_def::InitializeLbPairIxData {
             proto_def::InitializeLbPairIxData {
-                active_id: self.active_id.into(),
+                active_id: self.active_id,
                 bin_step: self.bin_step.into(),
             }
         }
@@ -1175,11 +1173,11 @@ mod proto_parser {
     impl IntoProto<proto_def::InitializePermissionLbPairIxData> for InitializePermissionLbPairIxData {
         fn into_proto(self) -> proto_def::InitializePermissionLbPairIxData {
             proto_def::InitializePermissionLbPairIxData {
-                active_id: self.active_id.into(),
+                active_id: self.active_id,
                 bin_step: self.bin_step.into(),
                 base_factor: self.base_factor.into(),
-                min_bin_id: self.min_bin_id.into(),
-                max_bin_id: self.max_bin_id.into(),
+                min_bin_id: self.min_bin_id,
+                max_bin_id: self.max_bin_id,
                 activation_type: self.activation_type.into(),
             }
         }
@@ -1213,13 +1211,13 @@ mod proto_parser {
     {
         fn into_proto(self) -> proto_def::InitializeCustomizablePermissionlessLbPairIxData {
             proto_def::InitializeCustomizablePermissionlessLbPairIxData {
-                active_id: self.active_id.into(),
+                active_id: self.active_id,
                 bin_step: self.bin_step.into(),
                 base_factor: self.base_factor.into(),
                 activation_type: self.activation_type.into(),
-                has_alpha_vault: self.has_alpha_vault.into(),
-                activation_point: self.activation_point.map(|x| x.into()),
-                padding: self.padding.into(),
+                has_alpha_vault: self.has_alpha_vault,
+                activation_point: self.activation_point,
+                padding: self.padding.to_vec(),
             }
         }
     }
@@ -1251,9 +1249,7 @@ mod proto_parser {
     use super::InitializeBinArrayIxData;
     impl IntoProto<proto_def::InitializeBinArrayIxData> for InitializeBinArrayIxData {
         fn into_proto(self) -> proto_def::InitializeBinArrayIxData {
-            proto_def::InitializeBinArrayIxData {
-                index: self.index.into(),
-            }
+            proto_def::InitializeBinArrayIxData { index: self.index }
         }
     }
     use super::AddLiquidityIxAccounts;
@@ -1283,9 +1279,13 @@ mod proto_parser {
     impl IntoProto<proto_def::AddLiquidityIxData> for AddLiquidityIxData {
         fn into_proto(self) -> proto_def::AddLiquidityIxData {
             proto_def::AddLiquidityIxData {
-                amount_x: self.amount_x.into(),
-                amount_y: self.amount_y.into(),
-                bin_liquidity_dist: self.bin_liquidity_dist.to_vec(),
+                amount_x: self.amount_x,
+                amount_y: self.amount_y,
+                bin_liquidity_dist: self
+                    .bin_liquidity_dist
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
             }
         }
     }
@@ -1316,11 +1316,15 @@ mod proto_parser {
     impl IntoProto<proto_def::AddLiquidityByWeightIxData> for AddLiquidityByWeightIxData {
         fn into_proto(self) -> proto_def::AddLiquidityByWeightIxData {
             proto_def::AddLiquidityByWeightIxData {
-                amount_x: self.amount_x.into(),
-                amount_y: self.amount_y.into(),
-                active_id: self.active_id.into(),
-                max_active_bin_slippage: self.max_active_bin_slippage.into(),
-                bin_liquidity_dist: self.bin_liquidity_dist.to_vec(),
+                amount_x: self.amount_x,
+                amount_y: self.amount_y,
+                active_id: self.active_id,
+                max_active_bin_slippage: self.max_active_bin_slippage,
+                bin_liquidity_dist: self
+                    .bin_liquidity_dist
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
             }
         }
     }
@@ -1351,11 +1355,11 @@ mod proto_parser {
     impl IntoProto<proto_def::AddLiquidityByStrategyIxData> for AddLiquidityByStrategyIxData {
         fn into_proto(self) -> proto_def::AddLiquidityByStrategyIxData {
             proto_def::AddLiquidityByStrategyIxData {
-                amount_x: self.amount_x.into(),
-                amount_y: self.amount_y.into(),
-                active_id: self.active_id.into(),
-                max_active_bin_slippage: self.max_active_bin_slippage.into(),
-                strategy_parameters: self.strategy_parameters.into(),
+                amount_x: self.amount_x,
+                amount_y: self.amount_y,
+                active_id: self.active_id,
+                max_active_bin_slippage: self.max_active_bin_slippage,
+                strategy_parameters: Some(self.strategy_parameters.into_proto()),
             }
         }
     }
@@ -1386,10 +1390,10 @@ mod proto_parser {
     {
         fn into_proto(self) -> proto_def::AddLiquidityByStrategyOneSideIxData {
             proto_def::AddLiquidityByStrategyOneSideIxData {
-                amount: self.amount.into(),
-                active_id: self.active_id.into(),
-                max_active_bin_slippage: self.max_active_bin_slippage.into(),
-                strategy_parameters: self.strategy_parameters.into(),
+                amount: self.amount,
+                active_id: self.active_id,
+                max_active_bin_slippage: self.max_active_bin_slippage,
+                strategy_parameters: Some(self.strategy_parameters.into_proto()),
             }
         }
     }
@@ -1416,10 +1420,14 @@ mod proto_parser {
     impl IntoProto<proto_def::AddLiquidityOneSideIxData> for AddLiquidityOneSideIxData {
         fn into_proto(self) -> proto_def::AddLiquidityOneSideIxData {
             proto_def::AddLiquidityOneSideIxData {
-                amount: self.amount.into(),
-                active_id: self.active_id.into(),
-                max_active_bin_slippage: self.max_active_bin_slippage.into(),
-                bin_liquidity_dist: self.bin_liquidity_dist.to_vec(),
+                amount: self.amount,
+                active_id: self.active_id,
+                max_active_bin_slippage: self.max_active_bin_slippage,
+                bin_liquidity_dist: self
+                    .bin_liquidity_dist
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
             }
         }
     }
@@ -1450,7 +1458,11 @@ mod proto_parser {
     impl IntoProto<proto_def::RemoveLiquidityIxData> for RemoveLiquidityIxData {
         fn into_proto(self) -> proto_def::RemoveLiquidityIxData {
             proto_def::RemoveLiquidityIxData {
-                bin_liquidity_removal: self.bin_liquidity_removal.to_vec(),
+                bin_liquidity_removal: self
+                    .bin_liquidity_removal
+                    .into_iter()
+                    .map(|x| x.into_proto())
+                    .collect(),
             }
         }
     }
@@ -1473,8 +1485,8 @@ mod proto_parser {
     impl IntoProto<proto_def::InitializePositionIxData> for InitializePositionIxData {
         fn into_proto(self) -> proto_def::InitializePositionIxData {
             proto_def::InitializePositionIxData {
-                lower_bin_id: self.lower_bin_id.into(),
-                width: self.width.into(),
+                lower_bin_id: self.lower_bin_id,
+                width: self.width,
             }
         }
     }
@@ -1498,8 +1510,8 @@ mod proto_parser {
     impl IntoProto<proto_def::InitializePositionPdaIxData> for InitializePositionPdaIxData {
         fn into_proto(self) -> proto_def::InitializePositionPdaIxData {
             proto_def::InitializePositionPdaIxData {
-                lower_bin_id: self.lower_bin_id.into(),
-                width: self.width.into(),
+                lower_bin_id: self.lower_bin_id,
+                width: self.width,
             }
         }
     }
@@ -1529,10 +1541,10 @@ mod proto_parser {
     {
         fn into_proto(self) -> proto_def::InitializePositionByOperatorIxData {
             proto_def::InitializePositionByOperatorIxData {
-                lower_bin_id: self.lower_bin_id.into(),
-                width: self.width.into(),
+                lower_bin_id: self.lower_bin_id,
+                width: self.width,
                 fee_owner: self.fee_owner.to_string(),
-                lock_release_point: self.lock_release_point.into(),
+                lock_release_point: self.lock_release_point,
             }
         }
     }
@@ -1581,8 +1593,8 @@ mod proto_parser {
     impl IntoProto<proto_def::SwapIxData> for SwapIxData {
         fn into_proto(self) -> proto_def::SwapIxData {
             proto_def::SwapIxData {
-                amount_in: self.amount_in.into(),
-                min_amount_out: self.min_amount_out.into(),
+                amount_in: self.amount_in,
+                min_amount_out: self.min_amount_out,
             }
         }
     }
@@ -1612,8 +1624,8 @@ mod proto_parser {
     impl IntoProto<proto_def::SwapExactOutIxData> for SwapExactOutIxData {
         fn into_proto(self) -> proto_def::SwapExactOutIxData {
             proto_def::SwapExactOutIxData {
-                max_in_amount: self.max_in_amount.into(),
-                out_amount: self.out_amount.into(),
+                max_in_amount: self.max_in_amount,
+                out_amount: self.out_amount,
             }
         }
     }
@@ -1643,8 +1655,8 @@ mod proto_parser {
     impl IntoProto<proto_def::SwapWithPriceImpactIxData> for SwapWithPriceImpactIxData {
         fn into_proto(self) -> proto_def::SwapWithPriceImpactIxData {
             proto_def::SwapWithPriceImpactIxData {
-                amount_in: self.amount_in.into(),
-                active_id: self.active_id.map(|x| x.into()),
+                amount_in: self.amount_in,
+                active_id: self.active_id,
                 max_price_impact_bps: self.max_price_impact_bps.into(),
             }
         }
@@ -1669,8 +1681,8 @@ mod proto_parser {
     impl IntoProto<proto_def::WithdrawProtocolFeeIxData> for WithdrawProtocolFeeIxData {
         fn into_proto(self) -> proto_def::WithdrawProtocolFeeIxData {
             proto_def::WithdrawProtocolFeeIxData {
-                amount_x: self.amount_x.into(),
-                amount_y: self.amount_y.into(),
+                amount_x: self.amount_x,
+                amount_y: self.amount_y,
             }
         }
     }
@@ -1694,8 +1706,8 @@ mod proto_parser {
     impl IntoProto<proto_def::InitializeRewardIxData> for InitializeRewardIxData {
         fn into_proto(self) -> proto_def::InitializeRewardIxData {
             proto_def::InitializeRewardIxData {
-                reward_index: self.reward_index.into(),
-                reward_duration: self.reward_duration.into(),
+                reward_index: self.reward_index,
+                reward_duration: self.reward_duration,
                 funder: self.funder.to_string(),
             }
         }
@@ -1720,9 +1732,9 @@ mod proto_parser {
     impl IntoProto<proto_def::FundRewardIxData> for FundRewardIxData {
         fn into_proto(self) -> proto_def::FundRewardIxData {
             proto_def::FundRewardIxData {
-                reward_index: self.reward_index.into(),
-                amount: self.amount.into(),
-                carry_forward: self.carry_forward.into(),
+                reward_index: self.reward_index,
+                amount: self.amount,
+                carry_forward: self.carry_forward,
             }
         }
     }
@@ -1741,7 +1753,7 @@ mod proto_parser {
     impl IntoProto<proto_def::UpdateRewardFunderIxData> for UpdateRewardFunderIxData {
         fn into_proto(self) -> proto_def::UpdateRewardFunderIxData {
             proto_def::UpdateRewardFunderIxData {
-                reward_index: self.reward_index.into(),
+                reward_index: self.reward_index,
                 new_funder: self.new_funder.to_string(),
             }
         }
@@ -1762,8 +1774,8 @@ mod proto_parser {
     impl IntoProto<proto_def::UpdateRewardDurationIxData> for UpdateRewardDurationIxData {
         fn into_proto(self) -> proto_def::UpdateRewardDurationIxData {
             proto_def::UpdateRewardDurationIxData {
-                reward_index: self.reward_index.into(),
-                new_duration: self.new_duration.into(),
+                reward_index: self.reward_index,
+                new_duration: self.new_duration,
             }
         }
     }
@@ -1789,7 +1801,7 @@ mod proto_parser {
     impl IntoProto<proto_def::ClaimRewardIxData> for ClaimRewardIxData {
         fn into_proto(self) -> proto_def::ClaimRewardIxData {
             proto_def::ClaimRewardIxData {
-                reward_index: self.reward_index.into(),
+                reward_index: self.reward_index,
             }
         }
     }
@@ -1865,7 +1877,7 @@ mod proto_parser {
     impl IntoProto<proto_def::IncreaseOracleLengthIxData> for IncreaseOracleLengthIxData {
         fn into_proto(self) -> proto_def::IncreaseOracleLengthIxData {
             proto_def::IncreaseOracleLengthIxData {
-                length_to_add: self.length_to_add.into(),
+                length_to_add: self.length_to_add,
             }
         }
     }
@@ -1891,10 +1903,10 @@ mod proto_parser {
                 filter_period: self.filter_period.into(),
                 decay_period: self.decay_period.into(),
                 reduction_factor: self.reduction_factor.into(),
-                variable_fee_control: self.variable_fee_control.into(),
-                max_volatility_accumulator: self.max_volatility_accumulator.into(),
-                min_bin_id: self.min_bin_id.into(),
-                max_bin_id: self.max_bin_id.into(),
+                variable_fee_control: self.variable_fee_control,
+                max_volatility_accumulator: self.max_volatility_accumulator,
+                min_bin_id: self.min_bin_id,
+                max_bin_id: self.max_bin_id,
                 protocol_share: self.protocol_share.into(),
             }
         }
@@ -2000,7 +2012,7 @@ mod proto_parser {
     impl IntoProto<proto_def::WithdrawIneligibleRewardIxData> for WithdrawIneligibleRewardIxData {
         fn into_proto(self) -> proto_def::WithdrawIneligibleRewardIxData {
             proto_def::WithdrawIneligibleRewardIxData {
-                reward_index: self.reward_index.into(),
+                reward_index: self.reward_index,
             }
         }
     }
@@ -2017,7 +2029,7 @@ mod proto_parser {
     impl IntoProto<proto_def::SetActivationPointIxData> for SetActivationPointIxData {
         fn into_proto(self) -> proto_def::SetActivationPointIxData {
             proto_def::SetActivationPointIxData {
-                activation_point: self.activation_point.into(),
+                activation_point: self.activation_point,
             }
         }
     }
@@ -2048,8 +2060,8 @@ mod proto_parser {
     impl IntoProto<proto_def::RemoveLiquidityByRangeIxData> for RemoveLiquidityByRangeIxData {
         fn into_proto(self) -> proto_def::RemoveLiquidityByRangeIxData {
             proto_def::RemoveLiquidityByRangeIxData {
-                from_bin_id: self.from_bin_id.into(),
-                to_bin_id: self.to_bin_id.into(),
+                from_bin_id: self.from_bin_id,
+                to_bin_id: self.to_bin_id,
                 bps_to_remove: self.bps_to_remove.into(),
             }
         }
@@ -2079,8 +2091,8 @@ mod proto_parser {
     impl IntoProto<proto_def::AddLiquidityOneSidePreciseIxData> for AddLiquidityOneSidePreciseIxData {
         fn into_proto(self) -> proto_def::AddLiquidityOneSidePreciseIxData {
             proto_def::AddLiquidityOneSidePreciseIxData {
-                bins: self.bins.to_vec(),
-                decompress_multiplier: self.decompress_multiplier.into(),
+                bins: self.bins.into_iter().map(|x| x.into_proto()).collect(),
+                decompress_multiplier: self.decompress_multiplier,
             }
         }
     }
@@ -2101,7 +2113,7 @@ mod proto_parser {
     impl IntoProto<proto_def::GoToABinIxData> for GoToABinIxData {
         fn into_proto(self) -> proto_def::GoToABinIxData {
             proto_def::GoToABinIxData {
-                bin_id: self.bin_id.into(),
+                bin_id: self.bin_id,
             }
         }
     }
@@ -2120,7 +2132,7 @@ mod proto_parser {
     impl IntoProto<proto_def::SetPreActivationDurationIxData> for SetPreActivationDurationIxData {
         fn into_proto(self) -> proto_def::SetPreActivationDurationIxData {
             proto_def::SetPreActivationDurationIxData {
-                pre_activation_duration: self.pre_activation_duration.into(),
+                pre_activation_duration: self.pre_activation_duration,
             }
         }
     }
