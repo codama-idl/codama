@@ -5,7 +5,7 @@
 {% block main %}
 
 // #[cfg(feature = "proto")]
-mod proto_types_parsers {
+pub mod proto_types_parsers {
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
     use {{ sdkName }} as sdk;
@@ -17,7 +17,7 @@ mod proto_types_parsers {
             fn into_proto(self) -> proto_def::{{ typeHelper.name | pascalCase }} {
                 proto_def::{{ typeHelper.name | pascalCase }} {
                     {% for field in typeHelper.fields %}
-                        {{ field.name }}: self.{{ field.name }}{{ field.transform }},
+                        {{ field.name }}: {{ field.transform }},
                     {% endfor %}
                 }
             }

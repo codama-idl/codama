@@ -1,15 +1,18 @@
 import {
     AccountNode,
+    DefinedTypeLinkNode,
     DefinedTypeNode,
     getAllAccounts,
     getAllDefinedTypes,
     getAllInstructionsWithSubs,
     getAllPrograms,
     isNode,
+    NumberTypeNode,
     pascalCase,
     resolveNestedTypeNode,
     snakeCase,
     titleCase,
+    TypeNode,
     VALUE_NODES,
 } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
@@ -24,7 +27,11 @@ import {
     visit,
 } from '@codama/visitors-core';
 
-import { checkArrayTypeAndFix, getProtoTypeManifestVisitor } from './getProtoTypeManifestVisitor';
+import {
+    checkArrayTypeAndFix,
+    getProtoTypeManifestVisitor,
+    numberTypeToProtoHelper,
+} from './getProtoTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
 import { getImportFromFactory, LinkOverrides, render } from './utils';
@@ -69,28 +76,123 @@ type ParserInstructionNode = {
     name: string;
 };
 
-function getTransform(kind: string) {
-    switch (kind) {
-        case 'structTypeNode':
-            return '.into_iter().map(IntoProto::into_proto).collect()';
+function getInnerDefinedTypeTransform(
+    type: DefinedTypeLinkNode,
+    outerTypeName: string,
+    idlDefinedTypes: DefinedTypeNode[],
+): [string, 'enum' | 'struct'] {
+    const fieldTypeName = type.name;
+    const definedType = idlDefinedTypes.find(dt => dt.name === fieldTypeName);
+    if (!definedType) {
+        throw new Error(`Defined type ${fieldTypeName} not found`);
+    }
 
-        case 'arrayTypeNode':
-            return '.to_vec()';
+    if (definedType.type.kind === 'structTypeNode') {
+        return [`Some(self.${outerTypeName}.into_proto())`, 'struct'];
+    } else if (definedType.type.kind === 'enumTypeNode') {
+        return [`self.${outerTypeName} as i32`, 'enum'];
+    } else {
+        throw new Error(`Defined type ${fieldTypeName} is not a struct or enum`);
+    }
+}
 
-        case 'publicKeyTypeNode':
-            return `.to_string()`;
+function getNumberTypeTransform(type: NumberTypeNode) {
+    switch (type.format) {
+        case 'u128':
+        case 'i128': {
+            if (type.endian === 'le') {
+                return `.to_le_bytes().to_vec()`;
+            } else {
+                throw new Error('Number endianness not supported by Borsh');
+            }
+        }
 
-        case 'enumTypeNode':
-            // todo: use from repr() impl
-            return '.to_string()';
-
-        case 'bytesTypeNode':
-            return '.to_vec()';
-        case 'optionTypeNode':
-            return '.map(|x| x.into())';
+        case 'u8':
+        case 'u16':
+            return `.into()`;
 
         default:
-            return '.into()';
+            return ``;
+    }
+}
+
+function getArrayTypeTransform(item: TypeNode, outerTypeName: string, idlDefinedTypes: DefinedTypeNode[]) {
+    switch (item.kind) {
+        case 'definedTypeLinkNode': {
+            const [_transform, kind] = getInnerDefinedTypeTransform(item, outerTypeName, idlDefinedTypes);
+            if (kind === 'struct') {
+                return `self.${outerTypeName}.into_iter().map(|x| x.into_proto()).collect()`;
+            } else {
+                return `self.${outerTypeName}.into_iter().map(|x| x as i32).collect()`;
+            }
+        }
+
+        // Matrix case
+        case 'arrayTypeNode': {
+            const matrixItemKind = item.item.kind;
+            switch (matrixItemKind) {
+                case 'numberTypeNode': {
+                    const protoTypeName = numberTypeToProtoHelper(item.item);
+                    const helperTypeName = `Repeated${titleCase(protoTypeName)}Row`;
+
+                    return `self.${outerTypeName}.into_iter().map(|x| proto_def::${helperTypeName} { rows: x.to_vec() }).collect()`;
+                }
+                default: {
+                    throw new Error(`Unsupported matrix item kind: ${matrixItemKind}`);
+                }
+            }
+        }
+
+        case 'numberTypeNode': {
+            const innerTansform = getNumberTypeTransform(item);
+            if (innerTansform === '') {
+                return `self.${outerTypeName}.to_vec()`;
+            } else {
+                return `self.${outerTypeName}.into_iter().map(|x| x${innerTansform}).collect()`;
+            }
+        }
+
+        default:
+            return `self.${outerTypeName}.to_vec()`;
+    }
+}
+
+function getOptionTypeTransform(item: TypeNode, outerTypeName: string, idlDefinedTypes: DefinedTypeNode[]) {
+    const innerTransform = getTransform(item, outerTypeName, idlDefinedTypes);
+    const cleanedTransform = innerTransform.replace(`self.${outerTypeName}`, 'x');
+    if (cleanedTransform === 'x') {
+        return `self.${outerTypeName}`;
+    } else {
+        return `self.${outerTypeName}.map(|x| ${cleanedTransform})`;
+    }
+}
+
+function getTransform(type: TypeNode, name: string, idlDefinedTypes: DefinedTypeNode[]): string {
+    const typeName = snakeCase(name);
+
+    switch (type.kind) {
+        case 'definedTypeLinkNode': {
+            const [transform] = getInnerDefinedTypeTransform(type, typeName, idlDefinedTypes);
+            return transform;
+        }
+
+        case 'arrayTypeNode':
+            return getArrayTypeTransform(type.item, typeName, idlDefinedTypes);
+
+        case 'fixedSizeTypeNode':
+            return getArrayTypeTransform(type.type, typeName, idlDefinedTypes);
+
+        case 'publicKeyTypeNode':
+            return `self.${typeName}.to_string()`;
+
+        case 'optionTypeNode':
+            return getOptionTypeTransform(type.item, typeName, idlDefinedTypes);
+
+        case 'numberTypeNode':
+            return `self.${typeName}${getNumberTypeTransform(type)}`;
+
+        default:
+            return `self.${typeName}`;
     }
 }
 
@@ -129,7 +231,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 .map(field => {
                                     return {
                                         name: snakeCase(field.name),
-                                        transform: getTransform(field.type.kind),
+                                        transform: getTransform(field.type, field.name, types),
                                     };
                                 }),
                             name: acc.name,
@@ -175,7 +277,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             .map(arg => {
                                 return {
                                     name: snakeCase(arg.name),
-                                    transform: getTransform(arg.type.kind),
+                                    transform: getTransform(arg.type, arg.name, types),
                                 };
                             });
 
@@ -296,7 +398,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
 
-                        // TODO!: [WIP] We need to create IntoProto impl for all defined types also
                         const protoTypesHelpers: { fields: { name: string; transform: string }[]; name: string }[] = [];
 
                         const protoTypes = types.map(type => {
@@ -309,7 +410,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 const fields = type.type.fields.map(field => {
                                     return {
                                         name: snakeCase(field.name),
-                                        transform: getTransform(field.type.kind),
+                                        transform: getTransform(field.type, field.name, types),
                                     };
                                 });
 
@@ -409,7 +510,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         if (protoTypesHelpers.length > 0) {
                             hasProtoHelpers = true;
                             map.add(
-                                'src/generated/proto_helpers.rs',
+                                `src/${folderName}/proto_helpers.rs`,
                                 render('protoHelpersPage.njk', {
                                     protoTypesHelpers,
                                     sdkName: codamaSdkName,

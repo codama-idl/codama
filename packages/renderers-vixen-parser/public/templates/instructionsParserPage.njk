@@ -121,8 +121,7 @@ pub fn check_min_accounts_req(actual: usize, expected: usize) -> yellowstone_vix
 
 // #[cfg(feature = "proto")]
 mod proto_parser {
-    use yellowstone_vixen_core::proto_helper_traits;
-    proto_helper_traits!();
+    use super::super::proto_helpers::proto_types_parsers::IntoProto;
     use yellowstone_vixen_core::proto::ParseProto;
     use super::{InstructionParser,{{ programName | pascalCase }}ProgramIx};
     use crate::proto_def;
@@ -148,7 +147,7 @@ mod proto_parser {
                 fn into_proto(self) -> proto_def::{{ instruction.name | pascalCase }}IxData {
                     proto_def::{{ instruction.name | pascalCase }}IxData {
                         {% for field in instruction.ixArgs %}
-                            {{ field.name }}: self.{{ field.name }}{{ field.transform }},
+                            {{ field.name }}: {{ field.transform }},
                         {% endfor %}
                     }
                 }
