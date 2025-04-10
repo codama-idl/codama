@@ -1,0 +1,86 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as m %}
+
+{% block main %}
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, ClassVar
+
+from solana.publickey import Pubkey
+from solana.rpc.api import Client
+from solana.rpc.types import MemcmpOpts
+
+from ..programs import PROGRAM_ID
+
+{% for import in imports.accounts %}
+{{ import }}
+{% endfor %}
+
+{% for import in imports.types %}
+{{ import }}
+{% endfor %}
+
+@dataclass
+class {{ accountNode.name }}:
+    """{{ accountNode.description }}"""
+    {% for field in accountNode.fields %}
+    {{ field.name | snakeCase }}: {{ typeManifest.get(field.name).type }} = field(default={{ typeManifest.get(field.name).defaultValue or 'None' }})
+    {% endfor %}
+
+    discriminator: ClassVar[bytes] = bytes([{{ accountNode.discriminator.bytes.join(', ') }}])
+
+    @classmethod
+    def from_json(cls, obj: Dict[str, Any]) -> "{{ accountNode.name }}":
+        """Create a {{ accountNode.name }} object from JSON data"""
+        return cls(
+            {% for field in accountNode.fields %}
+            {{ field.name | snakeCase }}={{ typeManifest.get(field.name).fromJson + '(obj["' + field.name + '"])' if typeManifest.get(field.name).fromJson else 'obj["' + field.name + '"]' }},
+            {% endfor %}
+        )
+
+    def to_json(self) -> Dict[str, Any]:
+        """Convert the {{ accountNode.name }} object to JSON"""
+        return {
+            {% for field in accountNode.fields %}
+            "{{ field.name }}": {{ 'self.' + field.name | snakeCase + '.' + typeManifest.get(field.name).toJson if typeManifest.get(field.name).toJson else 'self.' + field.name | snakeCase }},
+            {% endfor %}
+        }
+
+    @classmethod
+    def fetch(cls, connection: Client, address: Pubkey) -> Optional["{{ accountNode.name }}"]:
+        """Fetch the {{ accountNode.name }} account from the blockchain"""
+        account_info = connection.get_account_info(address)
+        if not account_info.value:
+            return None
+        
+        return cls.decode(account_info.value.data)
+
+    @classmethod
+    def find_all(cls, connection: Client, filters=None) -> list["{{ accountNode.name }}"]:
+        """Find all {{ accountNode.name }} accounts on the blockchain"""
+        filters = filters or []
+        base_filters = [
+            MemcmpOpts(
+                offset=0,
+                bytes=cls.discriminator.hex(),
+            )
+        ]
+        
+        accounts = connection.get_program_accounts(
+            PROGRAM_ID, 
+            encoding="base64",
+            filters=base_filters + filters
+        )
+        
+        return [cls.decode(account.account.data) for account in accounts.value]
+
+    @classmethod
+    def decode(cls, data: bytes) -> "{{ accountNode.name }}":
+        """Decode account data into a {{ accountNode.name }} object"""
+        # Skip the discriminator
+        offset = len(cls.discriminator)
+        
+        # TODO: Implement account decoding logic
+        # This depends on how the account data is serialized (e.g., borsh, etc.)
+        # For now, we return a default instance
+        return cls()
+{% endblock %} 
