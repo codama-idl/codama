@@ -31,6 +31,7 @@ test('it renders accounts parsers', () => {
         instructions: [],
         kind: 'programNode',
         name: camelCase('test'),
+        origin: 'shank',
         pdas: [],
         publicKey: 'TokenzQdZyKAYHHfoc7ndTnfcGr3qCUck3x4MvRkPaAj',
         version: '0.0.0',
