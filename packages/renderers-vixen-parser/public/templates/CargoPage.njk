@@ -1,0 +1,27 @@
+{% block main %}
+
+
+[package]
+name = "{{ projectName }}"
+version = "0.0.0"
+edition = "2021"
+
+
+[dependencies]
+prost = "0.13.1"
+yellowstone-vixen-core = { git = "https://github.com/rpcpool/yellowstone-vixen", branch = "main",features = ["proto"] }
+tonic = { version = "0.12.1", features = ["gzip", "zstd"] }
+solana-program = "^2.1.6"
+borsh = "^0.10"
+{% for dependency in additionalDependencies %}
+{{ dependency }}
+{% endfor %}
+
+
+[build-dependencies]
+prost-build = "0.13.1"
+
+# [features]
+# proto = ["dep:tonic"]
+
+{% endblock %}
