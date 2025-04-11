@@ -1,0 +1,21 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+"""
+Instruction types for the {{ programNode.name }} program.
+"""
+
+{% for instructionGroup in programNode.instructions %}
+{% for instruction in instructionGroup.instructions %}
+from .{{ instruction.name | snakeCase }} import {{ instruction.name }}
+{% endfor %}
+{% endfor %}
+
+__all__ = [
+{% for instructionGroup in programNode.instructions %}
+{% for instruction in instructionGroup.instructions %}
+    "{{ instruction.name }}",
+{% endfor %}
+{% endfor %}
+]
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as m %}
+
+{% block main %}
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Union
+import base64
+
+from solana.publickey import Pubkey
+from solana.transaction import AccountMeta, TransactionInstruction
+
+from ..programs import PROGRAM_ID
+
+{% for import in imports.accounts %}
+{{ import }}
+{% endfor %}
+
+{% for import in imports.types %}
+{{ import }}
+{% endfor %}
+
+@dataclass
+class {{ instructionNode.name }}:
+    """{{ instructionNode.description }}"""
+    {% for arg in instructionNode.args %}
+    {{ arg.name | snakeCase }}: {{ typeManifest.get(arg.name).type }} = field(default={{ typeManifest.get(arg.name).defaultValue or 'None' }})
+    {% endfor %}
+
+    discriminator: bytes = bytes([{{ instructionNode.discriminator.bytes.join(', ') }}])
+
+    @classmethod
+    def from_json(cls, obj: Dict[str, Any]) -> "{{ instructionNode.name }}":
+        """Create a {{ instructionNode.name }} object from JSON data"""
+        return cls(
+            {% for arg in instructionNode.args %}
+            {{ arg.name | snakeCase }}={{ typeManifest.get(arg.name).fromJson + '(obj["' + arg.name + '"])' if typeManifest.get(arg.name).fromJson else 'obj["' + arg.name + '"]' }},
+            {% endfor %}
+        )
+
+    def to_json(self) -> Dict[str, Any]:
+        """Convert the {{ instructionNode.name }} object to JSON"""
+        return {
+            {% for arg in instructionNode.args %}
+            "{{ arg.name }}": {{ 'self.' + arg.name | snakeCase + '.' + typeManifest.get(arg.name).toJson if typeManifest.get(arg.name).toJson else 'self.' + arg.name | snakeCase }},
+            {% endfor %}
+        }
+
+    def get_instruction(self) -> TransactionInstruction:
+        """Get the transaction instruction for this instruction"""
+        # Encode the instruction data
+        data = self._encode()
+
+        # Define the accounts
+        keys = [
+            {% for account in instructionNode.accounts %}
+            AccountMeta(
+                pubkey={% if account.pda %}self._derive_{{ account.name | snakeCase }}_pda(){% else %}self.{{ account.name | snakeCase }}{% endif %},
+                is_signer={{ 'True' if account.signer else 'False' }},
+                is_writable={{ 'True' if account.writable else 'False' }}
+            ),
+            {% endfor %}
+        ]
+
+        return TransactionInstruction(
+            keys=keys,
+            program_id=PROGRAM_ID,
+            data=data
+        )
+
+    def _encode(self) -> bytes:
+        """Encode the instruction data"""
+        # Start with the discriminator
+        data = bytearray(self.discriminator)
+
+        # TODO: Add serialization logic for instruction arguments
+        # This depends on how arguments are serialized (e.g., borsh, etc.)
+        
+        return bytes(data)
+
+    {% for account in instructionNode.accounts %}
+    {% if account.pda %}
+    def _derive_{{ account.name | snakeCase }}_pda(self) -> Pubkey:
+        """Derive the {{ account.name }} PDA address"""
+        # TODO: Implement PDA derivation logic
+        return Pubkey.find_program_address(
+            [
+                {% for seed in account.seeds %}
+                {% if seed.type === 'Constant' %}
+                bytes("{{ seed.value }}", "utf-8"),
+                {% elif seed.type === 'Variable' %}
+                self.{{ seed.path | snakeCase }}.to_bytes(8, byteorder="little"),
+                {% endif %}
+                {% endfor %}
+            ],
+            PROGRAM_ID
+        )[0]
+    {% endif %}
+    {% endfor %}
+{% endblock %} 
