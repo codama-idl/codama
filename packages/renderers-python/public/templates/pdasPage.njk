@@ -1,0 +1,44 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as m %}
+
+{% block main %}
+from typing import List, Tuple
+from solana.publickey import Pubkey
+
+from ..programs import PROGRAM_ID
+
+class {{ pdaNode.name }}:
+    """{{ pdaNode.description }}"""
+
+    @staticmethod
+    def find_address(
+        {% for seed in pdaNode.seeds %}
+        {% if seed.type === 'Constant' %}
+        # {{ seed.name }} is a constant seed: {{ seed.value }}
+        {% else %}
+        {{ seed.name | snakeCase }}: {{ typeManifest.get(seed.name).type }},
+        {% endif %}
+        {% endfor %}
+    ) -> Tuple[Pubkey, int]:
+        """Find the {{ pdaNode.name }} PDA address and bump seed"""
+        return Pubkey.find_program_address(
+            [
+                {% for seed in pdaNode.seeds %}
+                {% if seed.type === 'Constant' %}
+                bytes("{{ seed.value }}", "utf-8"),
+                {% else %}
+                {% if typeManifest.get(seed.name).type === 'Pubkey' %}
+                {{ seed.name | snakeCase }}.to_bytes(),
+                {% elif typeManifest.get(seed.name).type === 'int' %}
+                {{ seed.name | snakeCase }}.to_bytes(8, byteorder="little"),
+                {% elif typeManifest.get(seed.name).type === 'bytes' %}
+                {{ seed.name | snakeCase }},
+                {% else %}
+                bytes(str({{ seed.name | snakeCase }}), "utf-8"),
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            ],
+            PROGRAM_ID
+        )
+{% endblock %}
