@@ -53,7 +53,7 @@
         "@codama/nodes": "workspace:*",
         "@codama/visitors": "workspace:*",
         "@solana/codecs": "2.1.0",
-        "@noble/hashes": "^1.7.1"
+        "@noble/hashes": "^1.7.2"
     },
     "license": "MIT",
     "repository": {
