@@ -1,0 +1,126 @@
+{
+  "version": "0.3.0",
+  "program": {
+    "name": "Dummy",
+    "address": "DummY1111111111111111111111111111111111111",
+    "accounts": [
+      {
+        "name": "Counter",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "count",
+            "type": {
+              "number": {
+                "size": 64
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "type": "Explicit",
+          "bytes": [1, 2, 3, 4, 5, 6, 7, 8]
+        }
+      }
+    ],
+    "instructions": [
+      {
+        "name": "Initialize",
+        "args": [],
+        "accounts": [
+          {
+            "name": "counter",
+            "writable": true,
+            "signer": false
+          },
+          {
+            "name": "authority",
+            "writable": true,
+            "signer": true
+          },
+          {
+            "name": "systemProgram",
+            "writable": false,
+            "signer": false
+          }
+        ],
+        "discriminator": {
+          "type": "Explicit",
+          "bytes": [0, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      {
+        "name": "Increment",
+        "args": [
+          {
+            "name": "amount",
+            "type": {
+              "number": {
+                "size": 64
+              }
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "name": "counter",
+            "writable": true,
+            "signer": false
+          },
+          {
+            "name": "authority",
+            "writable": false,
+            "signer": true
+          }
+        ],
+        "discriminator": {
+          "type": "Explicit",
+          "bytes": [1, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "name": "CounterConfig",
+        "type": {
+          "struct": {
+            "fields": [
+              {
+                "name": "maxCount",
+                "type": {
+                  "number": {
+                    "size": 64
+                  }
+                }
+              },
+              {
+                "name": "isActive",
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "errors": [
+      {
+        "name": "DummyErrors",
+        "errors": [
+          {
+            "name": "CountTooHigh",
+            "code": 6000,
+            "description": "The count is too high"
+          },
+          {
+            "name": "Unauthorized",
+            "code": 6001,
+            "description": "You are not authorized to perform this action"
+          }
+        ]
+      }
+    ]
+  }
+} 
