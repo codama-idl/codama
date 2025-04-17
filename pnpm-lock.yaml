@@ -75,8 +75,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1(@types/node@22.10.0)(happy-dom@17.4.4)
       zx:
-        specifier: ^8.5.2
-        version: 8.5.2
+        specifier: ^8.5.3
+        version: 8.5.3
 
   packages/cli:
     dependencies:
@@ -942,6 +942,12 @@ packages:
 
   '@eslint-community/eslint-utils@4.6.0':
     resolution: {integrity: sha512-WhCn7Z7TauhBtmzhvKpoQs0Wwb/kBcy4CwpuI0/eEIr2Lx2auxmulAzLr91wVZJaz47iUZdkXOK7WlAfxGKCnA==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
+
+  '@eslint-community/eslint-utils@4.6.1':
+    resolution: {integrity: sha512-KTsJMmobmbrFLe3LDh0PC2FXpcSYJt/MLjlkh/9LEnmKYLSYmT/0EW9JWANjeoemiuZrmogti0tW5Ch+qNUYDw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
@@ -3560,8 +3566,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zx@8.5.2:
-    resolution: {integrity: sha512-eIxjTkCtlzvDNRhw3RD1gGBPA4nxOTn6PafpKl+MW4eE2jR/u/R6mqq7oyUCXwarM5DSP96kWtq6XkrL2kSFrg==}
+  zx@8.5.3:
+    resolution: {integrity: sha512-TsGLAt8Ngr4wDXLZmN9BT+6FWVLFbqdQ0qpXkV3tIfH7F+MgN/WUeSY7W4nNqAntjWunmnRaznpyxtJRPhCbUQ==}
     engines: {node: '>= 12.17.0'}
     hasBin: true
 
@@ -4076,6 +4082,11 @@ snapshots:
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/eslint-utils@4.6.0(eslint@9.24.0)':
+    dependencies:
+      eslint: 9.24.0
+      eslint-visitor-keys: 3.4.3
+
+  '@eslint-community/eslint-utils@4.6.1(eslint@9.24.0)':
     dependencies:
       eslint: 9.24.0
       eslint-visitor-keys: 3.4.3
@@ -4886,7 +4897,7 @@ snapshots:
 
   '@typescript-eslint/utils@8.16.0(eslint@9.24.0)(typescript@5.8.3)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.6.0(eslint@9.24.0)
+      '@eslint-community/eslint-utils': 4.6.1(eslint@9.24.0)
       '@typescript-eslint/scope-manager': 8.16.0
       '@typescript-eslint/types': 8.16.0
       '@typescript-eslint/typescript-estree': 8.16.0(typescript@5.8.3)
@@ -6984,4 +6995,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zx@8.5.2: {}
+  zx@8.5.3: {}
