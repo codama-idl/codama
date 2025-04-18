@@ -5,6 +5,8 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-pub mod accounts_parser;
+pub(crate) mod r#dummy_account1;
+pub(crate) mod r#dummy_account2;
 
-pub mod instructions_parser;
+pub use self::r#dummy_account1::*;
+pub use self::r#dummy_account2::*;
