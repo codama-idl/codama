@@ -14,9 +14,9 @@ pub struct {{ instruction.name | pascalCase }} {
     {% endif %}
 
     {% if account.isSigner === 'either' %}
-      {% set type = '(solana_program::pubkey::Pubkey, bool)' %}
+      {% set type = '(solana_pubkey::Pubkey, bool)' %}
     {% else %}
-      {% set type = 'solana_program::pubkey::Pubkey' %}
+      {% set type = 'solana_pubkey::Pubkey' %}
     {% endif %}
 
     {% if account.isOptional %}

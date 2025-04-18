@@ -11,7 +11,7 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct Allocate {
-    pub new_account: solana_program::pubkey::Pubkey,
+    pub new_account: solana_pubkey::Pubkey,
 }
 
 impl Allocate {
@@ -77,7 +77,7 @@ pub struct AllocateInstructionArgs {
 ///   0. `[writable, signer]` new_account
 #[derive(Clone, Debug, Default)]
 pub struct AllocateBuilder {
-    new_account: Option<solana_program::pubkey::Pubkey>,
+    new_account: Option<solana_pubkey::Pubkey>,
     space: Option<u64>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -87,7 +87,7 @@ impl AllocateBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn new_account(&mut self, new_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn new_account(&mut self, new_account: solana_pubkey::Pubkey) -> &mut Self {
         self.new_account = Some(new_account);
         self
     }

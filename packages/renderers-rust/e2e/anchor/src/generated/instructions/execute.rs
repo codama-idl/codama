@@ -11,19 +11,19 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct Execute {
-    pub source_account: solana_program::pubkey::Pubkey,
+    pub source_account: solana_pubkey::Pubkey,
 
-    pub mint: solana_program::pubkey::Pubkey,
+    pub mint: solana_pubkey::Pubkey,
 
-    pub destination_account: solana_program::pubkey::Pubkey,
+    pub destination_account: solana_pubkey::Pubkey,
 
-    pub owner_delegate: solana_program::pubkey::Pubkey,
+    pub owner_delegate: solana_pubkey::Pubkey,
 
-    pub extra_metas_account: solana_program::pubkey::Pubkey,
+    pub extra_metas_account: solana_pubkey::Pubkey,
 
-    pub guard: solana_program::pubkey::Pubkey,
+    pub guard: solana_pubkey::Pubkey,
 
-    pub instruction_sysvar_account: solana_program::pubkey::Pubkey,
+    pub instruction_sysvar_account: solana_pubkey::Pubkey,
 }
 
 impl Execute {
@@ -119,13 +119,13 @@ pub struct ExecuteInstructionArgs {
 ///   6. `[optional]` instruction_sysvar_account (default to `Sysvar1nstructions1111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct ExecuteBuilder {
-    source_account: Option<solana_program::pubkey::Pubkey>,
-    mint: Option<solana_program::pubkey::Pubkey>,
-    destination_account: Option<solana_program::pubkey::Pubkey>,
-    owner_delegate: Option<solana_program::pubkey::Pubkey>,
-    extra_metas_account: Option<solana_program::pubkey::Pubkey>,
-    guard: Option<solana_program::pubkey::Pubkey>,
-    instruction_sysvar_account: Option<solana_program::pubkey::Pubkey>,
+    source_account: Option<solana_pubkey::Pubkey>,
+    mint: Option<solana_pubkey::Pubkey>,
+    destination_account: Option<solana_pubkey::Pubkey>,
+    owner_delegate: Option<solana_pubkey::Pubkey>,
+    extra_metas_account: Option<solana_pubkey::Pubkey>,
+    guard: Option<solana_pubkey::Pubkey>,
+    instruction_sysvar_account: Option<solana_pubkey::Pubkey>,
     amount: Option<u64>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -135,38 +135,32 @@ impl ExecuteBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn source_account(&mut self, source_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn source_account(&mut self, source_account: solana_pubkey::Pubkey) -> &mut Self {
         self.source_account = Some(source_account);
         self
     }
     #[inline(always)]
-    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn mint(&mut self, mint: solana_pubkey::Pubkey) -> &mut Self {
         self.mint = Some(mint);
         self
     }
     #[inline(always)]
-    pub fn destination_account(
-        &mut self,
-        destination_account: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn destination_account(&mut self, destination_account: solana_pubkey::Pubkey) -> &mut Self {
         self.destination_account = Some(destination_account);
         self
     }
     #[inline(always)]
-    pub fn owner_delegate(&mut self, owner_delegate: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn owner_delegate(&mut self, owner_delegate: solana_pubkey::Pubkey) -> &mut Self {
         self.owner_delegate = Some(owner_delegate);
         self
     }
     #[inline(always)]
-    pub fn extra_metas_account(
-        &mut self,
-        extra_metas_account: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn extra_metas_account(&mut self, extra_metas_account: solana_pubkey::Pubkey) -> &mut Self {
         self.extra_metas_account = Some(extra_metas_account);
         self
     }
     #[inline(always)]
-    pub fn guard(&mut self, guard: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn guard(&mut self, guard: solana_pubkey::Pubkey) -> &mut Self {
         self.guard = Some(guard);
         self
     }
@@ -174,7 +168,7 @@ impl ExecuteBuilder {
     #[inline(always)]
     pub fn instruction_sysvar_account(
         &mut self,
-        instruction_sysvar_account: solana_program::pubkey::Pubkey,
+        instruction_sysvar_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.instruction_sysvar_account = Some(instruction_sysvar_account);
         self
@@ -216,7 +210,7 @@ impl ExecuteBuilder {
                 .expect("extra_metas_account is not set"),
             guard: self.guard.expect("guard is not set"),
             instruction_sysvar_account: self.instruction_sysvar_account.unwrap_or(
-                solana_program::pubkey!("Sysvar1nstructions1111111111111111111111111"),
+                solana_pubkey::pubkey!("Sysvar1nstructions1111111111111111111111111"),
             ),
         };
         let args = ExecuteInstructionArgs {

@@ -7,16 +7,16 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 /// Accounts.
 #[derive(Debug)]
 pub struct InitializeNonceAccount {
-    pub nonce_account: solana_program::pubkey::Pubkey,
+    pub nonce_account: solana_pubkey::Pubkey,
 
-    pub recent_blockhashes_sysvar: solana_program::pubkey::Pubkey,
+    pub recent_blockhashes_sysvar: solana_pubkey::Pubkey,
 
-    pub rent_sysvar: solana_program::pubkey::Pubkey,
+    pub rent_sysvar: solana_pubkey::Pubkey,
 }
 
 impl InitializeNonceAccount {
@@ -92,9 +92,9 @@ pub struct InitializeNonceAccountInstructionArgs {
 ///   2. `[optional]` rent_sysvar (default to `SysvarRent111111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct InitializeNonceAccountBuilder {
-    nonce_account: Option<solana_program::pubkey::Pubkey>,
-    recent_blockhashes_sysvar: Option<solana_program::pubkey::Pubkey>,
-    rent_sysvar: Option<solana_program::pubkey::Pubkey>,
+    nonce_account: Option<solana_pubkey::Pubkey>,
+    recent_blockhashes_sysvar: Option<solana_pubkey::Pubkey>,
+    rent_sysvar: Option<solana_pubkey::Pubkey>,
     nonce_authority: Option<Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
@@ -104,7 +104,7 @@ impl InitializeNonceAccountBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn nonce_account(&mut self, nonce_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn nonce_account(&mut self, nonce_account: solana_pubkey::Pubkey) -> &mut Self {
         self.nonce_account = Some(nonce_account);
         self
     }
@@ -112,14 +112,14 @@ impl InitializeNonceAccountBuilder {
     #[inline(always)]
     pub fn recent_blockhashes_sysvar(
         &mut self,
-        recent_blockhashes_sysvar: solana_program::pubkey::Pubkey,
+        recent_blockhashes_sysvar: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.recent_blockhashes_sysvar = Some(recent_blockhashes_sysvar);
         self
     }
     /// `[optional account, default to 'SysvarRent111111111111111111111111111111111']`
     #[inline(always)]
-    pub fn rent_sysvar(&mut self, rent_sysvar: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn rent_sysvar(&mut self, rent_sysvar: solana_pubkey::Pubkey) -> &mut Self {
         self.rent_sysvar = Some(rent_sysvar);
         self
     }
@@ -151,9 +151,9 @@ impl InitializeNonceAccountBuilder {
         let accounts = InitializeNonceAccount {
             nonce_account: self.nonce_account.expect("nonce_account is not set"),
             recent_blockhashes_sysvar: self.recent_blockhashes_sysvar.unwrap_or(
-                solana_program::pubkey!("SysvarRecentB1ockHashes11111111111111111111"),
+                solana_pubkey::pubkey!("SysvarRecentB1ockHashes11111111111111111111"),
             ),
-            rent_sysvar: self.rent_sysvar.unwrap_or(solana_program::pubkey!(
+            rent_sysvar: self.rent_sysvar.unwrap_or(solana_pubkey::pubkey!(
                 "SysvarRent111111111111111111111111111111111"
             )),
         };
