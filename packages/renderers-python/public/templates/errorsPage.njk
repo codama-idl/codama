@@ -1,0 +1,36 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as m %}
+
+{% block main %}
+from enum import Enum
+from typing import Dict, ClassVar
+
+class {{ errorGroupNode.name }}Error(Enum):
+    """{{ errorGroupNode.description }}"""
+    {% for error in errorGroupNode.errors %}
+    {{ error.name }} = {{ error.code }}
+    """{{ error.description }}"""
+    {% endfor %}
+
+    @classmethod
+    def from_code(cls, code: int) -> "{{ errorGroupNode.name }}Error":
+        """Get the error enum from the error code"""
+        for error in cls:
+            if error.value == code:
+                return error
+        raise ValueError(f"Unknown error code: {code}")
+
+    @classmethod
+    def get_message(cls, code: int) -> str:
+        """Get the error message from the error code"""
+        try:
+            error = cls.from_code(code)
+            return error.__doc__.strip()
+        except ValueError:
+            return f"Unknown error code: {code}"
+
+    @classmethod
+    def get_messages(cls) -> Dict[int, str]:
+        """Get all error messages"""
+        return {error.value: error.__doc__.strip() for error in cls}
+{% endblock %} 
