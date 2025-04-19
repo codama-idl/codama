@@ -1,0 +1,14 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+
+use pinocchio::pubkey::Pubkey;
+use pinocchio_pubkey::pubkey;
+
+{% for program in programsToExport | sort(false, false, 'name') %}
+
+  /// `{{ program.name | snakeCase }}` program ID.
+  pub const {{ program.name | snakeCase | upper }}_ID: Pubkey = pubkey!("{{ program.publicKey }}");
+{% endfor %}
+
+{% endblock %}
