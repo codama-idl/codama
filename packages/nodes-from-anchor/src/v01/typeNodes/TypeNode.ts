@@ -81,6 +81,10 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
     if ('kind' in idlType && idlType.kind === 'enum' && 'variants' in idlType) {
         return enumTypeNodeFromAnchorV01(idlType);
     }
+    //alias
+    if ('kind' in idlType && idlType.kind === 'alias' && 'value' in idlType) {
+        return typeNodeFromAnchorV01(idlType.value);
+    }
 
     // Option.
     if ('option' in idlType) {

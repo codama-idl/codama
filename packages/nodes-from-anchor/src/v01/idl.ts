@@ -154,7 +154,7 @@ export type IdlV01TypeDefGenericConst = {
     type: string;
 };
 
-export type IdlV01TypeDefTy = IdlV01TypeDefTyEnum | IdlV01TypeDefTyStruct | IdlV01TypeDefTyType;
+export type IdlV01TypeDefTy = IdlV01TypeDefTyEnum |IdlV01TypeDefTyAlias| IdlV01TypeDefTyStruct | IdlV01TypeDefTyType;
 
 export type IdlV01TypeDefTyStruct = {
     fields?: IdlV01DefinedFields;
@@ -164,6 +164,10 @@ export type IdlV01TypeDefTyStruct = {
 export type IdlV01TypeDefTyEnum = {
     kind: 'enum';
     variants: IdlV01EnumVariant[];
+};
+export type IdlV01TypeDefTyAlias = {
+    kind: 'alias';
+    value: IdlV01Type;
 };
 
 export type IdlV01TypeDefTyType = {
