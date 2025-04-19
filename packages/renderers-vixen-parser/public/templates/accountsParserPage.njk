@@ -78,5 +78,53 @@ impl yellowstone_vixen_core::ProgramParser for AccountParser {
     }
 }
 
+// #[cfg(feature = "proto")]
+mod proto_parser {
+    {% if hasProtoHelpers %}
+    use crate::{proto_def, proto_helpers::proto_types_parsers::IntoProto};
+    {% else %}
+    use crate::proto_def;
+    use yellowstone_vixen_core::proto_helper_traits;
+    proto_helper_traits!();
+    {% endif %}
+    use super::{ AccountParser, {{ programName | pascalCase }}ProgramState};
+    use yellowstone_vixen_core::proto::ParseProto;
+
+
+    {% for account in accounts %}
+        use super::{{ account.name | pascalCase }};
+        impl IntoProto<proto_def::{{ account.name | pascalCase }}> for {{ account.name | pascalCase }} {
+            fn into_proto(self) -> proto_def::{{ account.name | pascalCase }} {
+                proto_def::{{ account.name | pascalCase }} {
+                    {% for field in account.fields %}
+                        {{ field.name }}: {{ field.transform }},
+                    {% endfor %}
+                }
+            }
+        }   
+    {% endfor %}
+
+    impl IntoProto<proto_def::{{ programName | pascalCase }}ProgramState> for {{ programName | pascalCase }}ProgramState {
+        fn into_proto(self) -> proto_def::{{ programName | pascalCase }}ProgramState {
+            let state_oneof = match self {
+                {% for account in accounts %}
+                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(data) => proto_def::{{ programName | snakeCase }}_program_state::StateOneof::{{ account.name | pascalCase }}(data.into_proto()),
+                {% endfor %}
+            };
+
+            proto_def::{{ programName | pascalCase }}ProgramState {
+                state_oneof: Some(state_oneof),
+            }
+        }
+    }
+
+    impl ParseProto for AccountParser {
+        type Message = proto_def::{{ programName | pascalCase }}ProgramState;
+
+        fn output_into_message(value: Self::Output) -> Self::Message { value.into_proto() }
+    }
+}
+
+
 
 {% endblock %}
