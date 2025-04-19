@@ -14,7 +14,7 @@ let {{ programErrorMessagesMap }}: Record<{{ programErrorUnion }}, string> | und
 if (process.env.NODE_ENV !== 'production') {
   {{ programErrorMessagesMap }} = {
     {% for error in errors | sort(false, false, 'name') %}
-      [{{ getProgramErrorConstant(error.name) }}]: `{{ error.message }}`,
+      [{{ getProgramErrorConstant(error.name) }}]: `{{ escapeProgramErrorMessage(error.message) }}`,
     {% endfor %}
   };
 }

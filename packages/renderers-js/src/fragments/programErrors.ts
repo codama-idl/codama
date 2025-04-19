@@ -12,6 +12,7 @@ export function getProgramErrorsFragment(
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     return fragmentFromTemplate('programErrors.njk', {
         errors: programNode.errors,
+        escapeProgramErrorMessage: (message: string) => message.replace(/`/g, '\\`'),
         getProgramErrorConstant: (name: string) =>
             nameApi.programErrorConstantPrefix(programNode.name) + nameApi.programErrorConstant(name),
         programAddressConstant,
