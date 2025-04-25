@@ -1,5 +1,18 @@
 # @codama/renderers-js
 
+## 1.2.11
+
+### Patch Changes
+
+- [#556](https://github.com/codama-idl/codama/pull/556) [`1ee6a9b`](https://github.com/codama-idl/codama/commit/1ee6a9b77f4f4f59fdbd4425b025c4b6f2143dcd) Thanks [@spabot](https://github.com/spabot)! - Escape program error messages (fix #544)
+
+- Updated dependencies []:
+    - @codama/errors@1.2.12
+    - @codama/nodes@1.2.12
+    - @codama/visitors-core@1.2.12
+    - @codama/nodes-from-anchor@1.1.12
+    - @codama/renderers-core@1.0.14
+
 ## 1.2.10
 
 ### Patch Changes
