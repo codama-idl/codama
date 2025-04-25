@@ -165,6 +165,7 @@ export type IdlV01TypeDefTyEnum = {
     kind: 'enum';
     variants: IdlV01EnumVariant[];
 };
+
 export type IdlV01TypeDefTyAlias = {
     kind: 'alias';
     value: IdlV01Type;
