@@ -1,5 +1,16 @@
 # @codama/nodes-from-anchor
 
+## 1.1.13
+
+### Patch Changes
+
+- [#555](https://github.com/codama-idl/codama/pull/555) [`b12908d`](https://github.com/codama-idl/codama/commit/b12908d60842773c4311ea1f6fe3ea165169712a) Thanks [@daog1](https://github.com/daog1)! - Add support for Anchor alias types
+
+- Updated dependencies []:
+    - @codama/errors@1.2.13
+    - @codama/nodes@1.2.13
+    - @codama/visitors@1.2.13
+
 ## 1.1.12
 
 ### Patch Changes

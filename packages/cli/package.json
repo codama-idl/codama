@@ -1,6 +1,6 @@
 {
     "name": "@codama/cli",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "description": "The package that provides a CLI for the Codama standard",
     "exports": {
         "types": "./dist/types/index.d.ts",

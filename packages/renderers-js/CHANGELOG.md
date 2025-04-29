@@ -1,5 +1,16 @@
 # @codama/renderers-js
 
+## 1.2.12
+
+### Patch Changes
+
+- Updated dependencies [[`b12908d`](https://github.com/codama-idl/codama/commit/b12908d60842773c4311ea1f6fe3ea165169712a)]:
+    - @codama/nodes-from-anchor@1.1.13
+    - @codama/errors@1.2.13
+    - @codama/nodes@1.2.13
+    - @codama/visitors-core@1.2.13
+    - @codama/renderers-core@1.0.15
+
 ## 1.2.11
 
 ### Patch Changes
