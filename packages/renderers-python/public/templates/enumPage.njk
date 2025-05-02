@@ -1,0 +1,28 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as m %}
+
+{% block main %}
+from enum import Enum
+from typing import Any, Dict, Union
+
+class {{ enumTypeNode.name }}(Enum):
+    """{{ enumTypeNode.description }}"""
+    {% for variant in enumTypeNode.variants %}
+    {{ variant.name }} = {{ loop.index0 }}
+    """{{ variant.description }}"""
+    {% endfor %}
+
+    @classmethod
+    def from_json(cls, obj: Union[str, int]) -> "{{ enumTypeNode.name }}":
+        """Create a {{ enumTypeNode.name }} object from JSON data"""
+        if isinstance(obj, str):
+            return cls[obj]
+        elif isinstance(obj, int):
+            return cls(obj)
+        else:
+            raise ValueError(f"Expected string or int, got {type(obj)}")
+
+    def to_json(self) -> Union[str, int]:
+        """Convert the {{ enumTypeNode.name }} object to JSON"""
+        return self.name
+{% endblock %}

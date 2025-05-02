@@ -1,0 +1,17 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+"""
+PDA utilities for the {{ programNode.name }} program.
+"""
+
+{% for pda in programNode.pdas %}
+from .{{ pda.name | snakeCase }} import {{ pda.name }}
+{% endfor %}
+
+__all__ = [
+{% for pda in programNode.pdas %}
+    "{{ pda.name }}",
+{% endfor %}
+]
+{% endblock %} 

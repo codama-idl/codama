@@ -1,0 +1,63 @@
+{
+  "name": "@codama/renderers-python",
+  "version": "0.0.1",
+  "description": "Python renderers for Codama IDLs",
+  "license": "Apache-2.0",
+  "author": "Codama team",
+  "repository": {
+    "url": "https://github.com/codama-idl/codama",
+    "type": "git",
+    "directory": "packages/renderers-python"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "public",
+    "src",
+    "!dist/**/*.tsbuildinfo",
+    "!**/*.test.js",
+    "!**/*.test.d.ts"
+  ],
+  "scripts": {
+    "build": "tsc --build ./tsconfig.json && pnpm build:esm",
+    "build:esm": "tsc --build ./tsconfig.esm.json",
+    "build:types": "tsc --build ./tsconfig.declarations.json",
+    "clean": "tsc --build ./tsconfig.json --clean && tsc --build ./tsconfig.declarations.json --clean && tsc --build ./tsconfig.esm.json --clean",
+    "dev": "pnpm dev:cjs",
+    "dev:cjs": "tsc --watch --preserveWatchOutput --project ./tsconfig.json",
+    "dev:types": "tsc --watch --preserveWatchOutput --project ./tsconfig.declarations.json",
+    "lint": "prettier -c src",
+    "lint:fix": "prettier -w src"
+  },
+  "peerDependencies": {
+    "@codama/errors": "workspace:*",
+    "@codama/nodes": "workspace:*",
+    "@codama/renderers-core": "workspace:*",
+    "@codama/visitors-core": "workspace:*"
+  },
+  "dependencies": {
+    "nunjucks": "^3.2.4",
+    "python-shell": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/nunjucks": "^3.2.5",
+    "@types/node": "^20.7.1",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  }
+} 

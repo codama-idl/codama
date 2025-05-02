@@ -1,0 +1,17 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+"""
+Type definitions for the {{ programNode.name }} program.
+"""
+
+{% for type in programNode.definedTypes %}
+from .{{ type.name | snakeCase }} import {{ type.name }}
+{% endfor %}
+
+__all__ = [
+{% for type in programNode.definedTypes %}
+    "{{ type.name }}",
+{% endfor %}
+]
+{% endblock %}

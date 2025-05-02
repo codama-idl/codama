@@ -1,0 +1,39 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as m %}
+
+{% block main %}
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
+
+{% for import in imports.accounts %}
+{{ import }}
+{% endfor %}
+
+{% for import in imports.types %}
+{{ import }}
+{% endfor %}
+
+@dataclass
+class {{ structTypeNode.name }}:
+    """{{ structTypeNode.description }}"""
+    {% for field in structTypeNode.fields %}
+    {{ field.name | snakeCase }}: {{ typeManifest.get(field.name).type }} = field(default={{ typeManifest.get(field.name).defaultValue or 'None' }})
+    {% endfor %}
+
+    @classmethod
+    def from_json(cls, obj: Dict[str, Any]) -> "{{ structTypeNode.name }}":
+        """Create a {{ structTypeNode.name }} object from JSON data"""
+        return cls(
+            {% for field in structTypeNode.fields %}
+            {{ field.name | snakeCase }}={{ typeManifest.get(field.name).fromJson + '(obj["' + field.name + '"])' if typeManifest.get(field.name).fromJson else 'obj["' + field.name + '"]' }},
+            {% endfor %}
+        )
+
+    def to_json(self) -> Dict[str, Any]:
+        """Convert the {{ structTypeNode.name }} object to JSON"""
+        return {
+            {% for field in structTypeNode.fields %}
+            "{{ field.name }}": {{ 'self.' + field.name | snakeCase + '.' + typeManifest.get(field.name).toJson if typeManifest.get(field.name).toJson else 'self.' + field.name | snakeCase }},
+            {% endfor %}
+        }
+{% endblock %} 
