@@ -1,5 +1,21 @@
 # @codama/visitors-core
 
+## 1.2.13
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.2.13
+    - @codama/nodes@1.2.13
+
+## 1.2.12
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.2.12
+    - @codama/nodes@1.2.12
+
 ## 1.2.11
 
 ### Patch Changes

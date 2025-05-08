@@ -76,6 +76,11 @@ export const typeNodeFromAnchorV00 = (idlType: IdlV00Type | IdlV00TypeDefTy): Ty
         return enumTypeNodeFromAnchorV00(idlType);
     }
 
+    // Alias.
+    if ('kind' in idlType && idlType.kind === 'alias' && 'value' in idlType) {
+        return typeNodeFromAnchorV00(idlType.value);
+    }
+
     // Map.
     if (
         ('hashMap' in idlType && isArrayOfSize(idlType.hashMap, 2)) ||
