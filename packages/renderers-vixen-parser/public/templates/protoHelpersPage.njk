@@ -23,6 +23,24 @@ pub mod proto_types_parsers {
             }
         }   
     {% endfor %}
+
+    {% for typeHelper in protoTypesHelpersEnums %}
+        use sdk::types::{{ typeHelper.name | pascalCase }};
+        use proto_def::{{ typeHelper.name | snakeCase }}::Variant;
+        impl IntoProto<proto_def::{{ typeHelper.name | pascalCase }}> for {{ typeHelper.name | pascalCase }} {
+            fn into_proto(self) -> proto_def::{{ typeHelper.name | pascalCase }} {
+                let variant = match self {
+                {% for variant in typeHelper.variants %}
+                    {{ typeHelper.name | pascalCase }}::{{ variant.name | pascalCase}} {{ variant.variant_fields }} => Variant::{{ variant.name | pascalCase}}(proto_def::{{ typeHelper.name | pascalCase }}{{ normalizeAcronyms(variant.name | pascalCase) }} { {{ variant.fields_transform }} }),
+                {% endfor %}
+                };
+
+                proto_def::{{ typeHelper.name | pascalCase }} {
+                   variant: Some(variant),
+                }    
+            }
+        }   
+    {% endfor %}
 }
 
 {% endblock %}

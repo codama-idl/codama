@@ -7,6 +7,7 @@
 
 /// {{ programName | pascalCase }} Instructions
 #[derive(Debug)]
+#[cfg_attr(feature = "tracing", derive(strum_macros::Display))]
 pub enum {{ programName  | pascalCase }}ProgramIx {
     {% for instruction in instructions %}
         {% if instruction.hasArgs %}
@@ -54,59 +55,68 @@ impl yellowstone_vixen_core::ProgramParser for InstructionParser {
 impl InstructionParser {
     pub(crate) fn parse_impl(ix:&yellowstone_vixen_core::instruction::InstructionUpdate) -> yellowstone_vixen_core::ParseResult<{{ programName  | pascalCase }}ProgramIx> {
         let accounts_len = ix.accounts.len();
-        {% if hasDiscriminator %}
-            {% if ixDiscLen == 1 %}
-                let ix_discriminator = ix.data[0];
-            {% else %}
-                let ix_discriminator:[u8; {{ ixDiscLen }}] = ix.data[0..{{ ixDiscLen }}].try_into()?;
-            {% endif %}
-            let mut ix_data = &ix.data[{{ ixDiscLen }}..];
-                match ix_discriminator {
-                    {% for instruction in instructions %}
-                        {% if instruction.discriminator != null %}
-                            {{ instruction.discriminator }} => {
-                                check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
-                                let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
-                                    {% for account in instruction.accounts %}
-                                        {% if account.isOptional %}
-                                            {% if instruction.optionalAccountStrategy == 'programId' %}
-                                                {{ account.name | snakeCase }}: if ix.accounts[{{ account.index }}]
-                                                    .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
-                                                {
-                                                    None
-                                                } else {
-                                                    Some(ix.accounts[{{ account.index }}].0.into())
-                                                },
-                                            {% else %}
-                                                {{ account.name | snakeCase }}: None
-                                            {% endif %}
+        
+        let ix_discriminator:[u8; {{ ixDiscLen }}] = ix.data[0..{{ ixDiscLen }}].try_into()?;
+        let mut ix_data = &ix.data[{{ ixDiscLen }}..];
+            let ix = match ix_discriminator {
+                {% for instruction in instructions %}
+                    {% if instruction.discriminator != null %}
+                        {{ instruction.discriminator }} => {
+                            check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
+                            let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
+                                {% for account in instruction.accounts %}
+                                    {% if account.isOptional %}
+                                        {% if instruction.optionalAccountStrategy == 'programId' %}
+                                            {{ account.name | snakeCase }}: if ix.accounts[{{ account.index }}]
+                                                .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
+                                            {
+                                                None
+                                            } else {
+                                                Some(ix.accounts[{{ account.index }}].0.into())
+                                            },
                                         {% else %}
-                                            {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}].0.into(),
+                                            {{ account.name | snakeCase }}: None
                                         {% endif %}
-                                    {% endfor %}
-                                };
-                                {% if instruction.hasArgs %}
-                                    let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
-                                    Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
-                                {% else %}
-                                    Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts))
-                                {% endif %}
-                            },
-                        {% endif %}
-                    {% endfor %}
-                    _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Instruction discriminator".to_owned())),
-                }
-        {% else %}
-            check_min_accounts_req(accounts_len, {{ instructions[0].accounts | length }})?;
-            let mut ix_data = &ix.data[..];
-            let de_ix_data:{{ instructions[0].name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
-            let ix_accounts = {{ instructions[0].name | pascalCase }}IxAccounts{
-                {% for account in instructions[0].accounts %}
-                    {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}],   
+                                    {% else %}
+                                        {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}].0.into(),
+                                    {% endif %}
+                                {% endfor %}
+                            };
+                            {% if instruction.hasArgs %}
+                                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
+                            {% else %}
+                                Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts))
+                            {% endif %}
+                        },
+                    {% endif %}
                 {% endfor %}
+                _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Instruction discriminator".to_owned())),
             };
-            Ok({{ programName  | pascalCase }}ProgramIx::{{ instructions[0].name | pascalCase }}(ix_accounts, de_ix_data))
-        {% endif %}
+
+            #[cfg(feature = "tracing")]
+            match &ix {
+                Ok(ix) => {
+                    tracing::info!(
+                        name: "correctly_parsed_instruction",
+                        name = "ix_update",
+                        program = ID.to_string(),
+                        ix = ix.to_string()
+                    );
+                },
+                Err(e) => {
+                    tracing::info!(
+                        name: "incorrectly_parsed_instruction",
+                        name = "ix_update",
+                        program = ID.to_string(),
+                        ix = "error",
+                        discriminator = ?ix_discriminator,
+                        error = ?e
+                    );
+                },
+            }
+
+            ix
     }
 
 }
@@ -164,20 +174,20 @@ mod proto_parser {
         {% endif %}
     {% endfor %}
 
-    impl IntoProto<proto_def::{{ programName | pascalCase }}ProgramIx> for {{ programName | pascalCase }}ProgramIx {
-        fn into_proto(self) -> proto_def::{{ programName | pascalCase }}ProgramIx {
+    impl IntoProto<proto_def::ProgramIxs> for {{ programName | pascalCase }}ProgramIx {
+        fn into_proto(self) -> proto_def::ProgramIxs {
            match self {
                 {% for instruction in instructions %}
                     {% if instruction.hasArgs %}
-                        {{ programName | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(acc, data) => proto_def::{{ programName | pascalCase  }}ProgramIx {
-                            ix_oneof: Some(proto_def::{{ programName | snakeCase }}_program_ix::IxOneof::{{ instruction.name | pascalCase }}(proto_def::{{ instruction.name | pascalCase }}Ix {
+                        {{ programName | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(acc, data) => proto_def::ProgramIxs {
+                            ix_oneof: Some(proto_def::program_ixs::IxOneof::{{ instruction.name | pascalCase }}(proto_def::{{ instruction.name | pascalCase }}Ix {
                                 accounts: Some(acc.into_proto()),
                                 data: Some(data.into_proto()),
                             })),
                         },
                     {% else %}
-                        {{ programName | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(acc) => proto_def::{{ programName | pascalCase  }}ProgramIx {
-                            ix_oneof: Some(proto_def::{{ programName | snakeCase }}_program_ix::IxOneof::{{ instruction.name | pascalCase }}(proto_def::{{ instruction.name | pascalCase }}Ix {
+                        {{ programName | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(acc) => proto_def::ProgramIxs {
+                            ix_oneof: Some(proto_def::program_ixs::IxOneof::{{ instruction.name | pascalCase }}(proto_def::{{ instruction.name | pascalCase }}Ix {
                                 accounts: Some(acc.into_proto()),
                             })),
                         },
@@ -188,7 +198,7 @@ mod proto_parser {
     }
       
     impl ParseProto for InstructionParser {
-        type Message = proto_def::{{ programName | pascalCase  }}ProgramIx;
+        type Message = proto_def::ProgramIxs;
 
         fn output_into_message(value: Self::Output) -> Self::Message { value.into_proto() }
     }

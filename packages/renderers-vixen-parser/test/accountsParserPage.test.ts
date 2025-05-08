@@ -38,11 +38,17 @@ test('it renders accounts parsers', () => {
     });
 
     // When we render it.
-    const renderMap = visit(node, getRenderMapVisitor());
+    const renderMap = visit(
+        node,
+        getRenderMapVisitor({
+            project: 'test',
+            sdkName: 'crate',
+        }),
+    );
 
     // Then we expect the following identifier and reference to the byte array
     // as a parameters to be rendered.
-    codeContains(renderMap.get('accounts_parser.rs'), [
+    codeContains(renderMap.get('src/generated/accounts_parser.rs'), [
         'pub enum TestProgramState',
         'Mint(Mint)',
         'Account(Account)',

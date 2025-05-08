@@ -5,7 +5,7 @@
 {% block main %}
 syntax = "proto3";
 
-package proto_def;
+package vixen.parser.{{ protoProjectName }};
 
 {% for type in definedTypes %}
 {{ type }}
@@ -24,7 +24,7 @@ package proto_def;
 {{ ix.args }}
 {% endfor %}
 
-message {{ programName | pascalCase }}ProgramState {
+message ProgramState {
     oneof state_oneof {
     {% for account in programStateOneOf %}
     {{ account }}
@@ -32,7 +32,7 @@ message {{ programName | pascalCase }}ProgramState {
     }
 }
 
-message {{ programName | pascalCase }}ProgramIx {
+message ProgramIxs {
     oneof ix_oneof {
     {% for ix in programIxsOneOf %}
     {{ ix }}

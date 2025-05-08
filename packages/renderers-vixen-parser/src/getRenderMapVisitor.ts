@@ -2,19 +2,20 @@ import {
     AccountNode,
     DefinedTypeLinkNode,
     DefinedTypeNode,
+    EnumTypeNode,
+    EnumVariantTypeNode,
     getAllAccounts,
     getAllDefinedTypes,
     getAllInstructionsWithSubs,
+    InstructionArgumentNode,
     InstructionNode,
-    isNode,
     NumberTypeNode,
     pascalCase,
-    ProgramNode,
     resolveNestedTypeNode,
     snakeCase,
+    StructFieldTypeNode,
     titleCase,
     TypeNode,
-    VALUE_NODES,
 } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
@@ -27,7 +28,6 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
-import * as crypto from 'crypto';
 
 import {
     checkArrayTypeAndFix,
@@ -35,10 +35,7 @@ import {
     numberTypeToProtoHelper,
 } from './getProtoTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
-import { renderValueNode } from './renderValueNodeVisitor';
-import { getImportFromFactory, LinkOverrides, render } from './utils';
-
-const ANCHOR_DISCRIMINATOR_LEN = 8;
+import { getBytesFromBytesValueNode, getImportFromFactory, LinkOverrides, render } from './utils';
 
 export type GetRenderMapOptions = {
     cargoAdditionalDependencies?: string[];
@@ -51,15 +48,13 @@ export type GetRenderMapOptions = {
     sdkName?: string;
 };
 
-type ProgramType = 'anchor' | 'shank';
-
 // Account node for the parser
 type ParserAccountNode = {
+    discriminator: string | null;
     fields: {
         name: string;
         transform: string;
     }[];
-    discriminator: string | null;
     name: string;
     size: number | null;
 };
@@ -87,7 +82,7 @@ function getInnerDefinedTypeTransform(
     type: DefinedTypeLinkNode,
     outerTypeName: string,
     idlDefinedTypes: DefinedTypeNode[],
-): [string, 'enum' | 'struct'] {
+): string {
     const fieldTypeName = type.name;
     const definedType = idlDefinedTypes.find(dt => dt.name === fieldTypeName);
     if (!definedType) {
@@ -95,13 +90,43 @@ function getInnerDefinedTypeTransform(
     }
 
     if (definedType.type.kind === 'structTypeNode') {
-        return [`Some(self.${outerTypeName}.into_proto())`, 'struct'];
+        return `self.${outerTypeName}.into_proto()`;
     } else if (definedType.type.kind === 'enumTypeNode') {
-        return [`self.${outerTypeName} as i32`, 'enum'];
+        return isEnumEmptyVariant(definedType.type)
+            ? `self.${outerTypeName} as i32`
+            : `Some(self.${outerTypeName}.into_proto())`;
     } else {
         throw new Error(`Defined type ${fieldTypeName} is not a struct or enum`);
     }
 }
+
+function getInnerDefinedTypeTransformForEnumVariant(
+    type: DefinedTypeLinkNode,
+    outerTypeName: string,
+    idlDefinedTypes: DefinedTypeNode[],
+): string {
+    const fieldTypeName = type.name;
+    const definedType = idlDefinedTypes.find(dt => dt.name === fieldTypeName);
+    if (!definedType) {
+        throw new Error(`Defined type ${fieldTypeName} not found`);
+    }
+
+    if (definedType.type.kind === 'structTypeNode') {
+        return `self.${outerTypeName}.into_proto()`;
+    } else if (definedType.type.kind === 'enumTypeNode') {
+        return isEnumEmptyVariant(definedType.type)
+            ? `self.${outerTypeName} as i32`
+            : `self.${outerTypeName}.into_proto()`;
+    } else {
+        throw new Error(`Defined type ${fieldTypeName} is not a struct or enum`);
+    }
+}
+
+export function isEnumEmptyVariant(type: EnumTypeNode) {
+    return type.variants.reduce((acc, variant) => acc && variant.kind === 'enumEmptyVariantTypeNode', true);
+}
+
+export function getEnumTypeTransform(_type: EnumTypeNode, _outerTypeName: string) {}
 
 function getNumberTypeTransform(type: NumberTypeNode) {
     switch (type.format) {
@@ -126,11 +151,17 @@ function getNumberTypeTransform(type: NumberTypeNode) {
 function getArrayTypeTransform(item: TypeNode, outerTypeName: string, idlDefinedTypes: DefinedTypeNode[]) {
     switch (item.kind) {
         case 'definedTypeLinkNode': {
-            const [_transform, kind] = getInnerDefinedTypeTransform(item, outerTypeName, idlDefinedTypes);
-            if (kind === 'struct') {
-                return `self.${outerTypeName}.into_iter().map(|x| x.into_proto()).collect()`;
-            } else {
+            const definedType = idlDefinedTypes.find(dt => dt.name === item.name);
+            if (!definedType) {
+                throw new Error(`Defined type ${item.name} not found`);
+            }
+            const isdefinedTypeLinkNodeEnum = definedType.type.kind === 'enumTypeNode';
+
+            // Empty VariantEnum type handling
+            if (isdefinedTypeLinkNodeEnum && isEnumEmptyVariant(definedType.type)) {
                 return `self.${outerTypeName}.into_iter().map(|x| x as i32).collect()`;
+            } else {
+                return `self.${outerTypeName}.into_iter().map(|x| x.into_proto()).collect()`;
             }
         }
 
@@ -164,8 +195,13 @@ function getArrayTypeTransform(item: TypeNode, outerTypeName: string, idlDefined
     }
 }
 
-function getOptionTypeTransform(item: TypeNode, outerTypeName: string, idlDefinedTypes: DefinedTypeNode[]) {
-    const innerTransform = getTransform(item, outerTypeName, idlDefinedTypes);
+function getOptionTypeTransform(
+    item: TypeNode,
+    outerTypeName: string,
+    idlDefinedTypes: DefinedTypeNode[],
+    options: { isEnumVariant: boolean },
+) {
+    const innerTransform = getTransform(item, outerTypeName, idlDefinedTypes, options);
     const cleanedTransform = innerTransform.replace(`self.${outerTypeName}`, 'x');
     if (cleanedTransform === 'x') {
         return `self.${outerTypeName}`;
@@ -174,13 +210,19 @@ function getOptionTypeTransform(item: TypeNode, outerTypeName: string, idlDefine
     }
 }
 
-function getTransform(type: TypeNode, name: string, idlDefinedTypes: DefinedTypeNode[]): string {
+function getTransform(
+    type: TypeNode,
+    name: string,
+    idlDefinedTypes: DefinedTypeNode[],
+    options = { isEnumVariant: false },
+): string {
     const typeName = snakeCase(name);
 
     switch (type.kind) {
         case 'definedTypeLinkNode': {
-            const [transform] = getInnerDefinedTypeTransform(type, typeName, idlDefinedTypes);
-            return transform;
+            return options.isEnumVariant
+                ? getInnerDefinedTypeTransformForEnumVariant(type, typeName, idlDefinedTypes)
+                : getInnerDefinedTypeTransform(type, typeName, idlDefinedTypes);
         }
 
         case 'arrayTypeNode':
@@ -193,7 +235,7 @@ function getTransform(type: TypeNode, name: string, idlDefinedTypes: DefinedType
             return `self.${typeName}.to_string()`;
 
         case 'optionTypeNode':
-            return getOptionTypeTransform(type.item, typeName, idlDefinedTypes);
+            return getOptionTypeTransform(type.item, typeName, idlDefinedTypes, options);
 
         case 'numberTypeNode':
             return `self.${typeName}${getNumberTypeTransform(type)}`;
@@ -203,49 +245,124 @@ function getTransform(type: TypeNode, name: string, idlDefinedTypes: DefinedType
     }
 }
 
-const getAnchorDiscriminatorFromStateName = (accName: string): string => {
-    const namespace = 'account';
-    const preimage = `${namespace}:${accName}`;
+function getEnumVariantTransform(variant: EnumVariantTypeNode, idlDefinedTypes: DefinedTypeNode[]): [string, string] {
+    switch (variant.kind) {
+        case 'enumEmptyVariantTypeNode': {
+            return ['', ''];
+        }
 
-    const hash = crypto.createHash('sha256').update(preimage).digest();
-    const discriminator = hash.subarray(0, ANCHOR_DISCRIMINATOR_LEN); // First 8 bytes
+        case 'enumStructVariantTypeNode': {
+            if (variant.struct.kind === 'structTypeNode') {
+                const variantFields = variant.struct.fields.reduce(
+                    (acc, field) => `${acc}${snakeCase(field.name)}, `,
+                    '',
+                );
+                const fieldsTransformMap = variant.struct.fields.map(field => [
+                    snakeCase(field.name),
+                    getTransform(field.type, field.name, idlDefinedTypes, { isEnumVariant: true }),
+                ]);
+                const fieldsTransformString = fieldsTransformMap.reduce((acc, [fieldName, transform]) => {
+                    const transformWithoutSelfPrefix = transform.replace(/^self\./, '');
+                    if (transformWithoutSelfPrefix === fieldName) {
+                        return `${acc}${transformWithoutSelfPrefix}, `;
+                    }
+                    return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
+                }, '');
 
-    return JSON.stringify(Array.from(discriminator));
-};
+                return [`{ ${variantFields} }`, fieldsTransformString];
+            } else {
+                throw new Error(`Unsupported enum variant type: ${variant.kind}`);
+            }
+        }
 
-const getShankDiscriminatorFromAccountNode = (accNode: AccountNode): string | null => {
-    const accData = resolveNestedTypeNode(accNode.data);
-    const discField = accData.fields.find(f => f.name === 'discriminator');
-    if (!discField) return null;
+        case 'enumTupleVariantTypeNode': {
+            if (variant.tuple.kind !== 'tupleTypeNode') {
+                throw new Error(`Unsupported enum variant type: ${variant.tuple.kind}`);
+            }
 
-    const hasDefaultValue = discField.defaultValue && isNode(discField.defaultValue, VALUE_NODES);
+            const variantFields = variant.tuple.items.reduce((acc, _field, i) => `${acc}field_${i}, `, '');
 
-    if (!hasDefaultValue) return null;
+            const fieldsTransformMap = variant.tuple.items.map((field, i) => [
+                `field_${i}`,
+                getTransform(field, `field_${i}`, idlDefinedTypes, { isEnumVariant: true }),
+            ]);
+            const fieldsTransformString = fieldsTransformMap.reduce((acc, [fieldName, transform]) => {
+                const transformWithoutSelfPrefix = transform.replace(/^self\./, '');
+                if (transformWithoutSelfPrefix === fieldName) {
+                    return `${acc}${transformWithoutSelfPrefix}, `;
+                }
+                return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
+            }, '');
 
-    const { render: value } = renderValueNode(discField.defaultValue, getImportFromFactory({}));
-    return value;
-};
+            return [`(${variantFields})`, fieldsTransformString];
+        }
 
-const getIxDiscriminatorFromInstructionNode = (ixNode: InstructionNode): string | null => {
-    const discField = ixNode.arguments.find(arg => arg.name === 'discriminator');
-    if (!discField) return null;
-
-    const hasDefaultValue = discField?.defaultValue && isNode(discField.defaultValue, VALUE_NODES);
-
-    if (!hasDefaultValue) return null;
-
-    const { render: value } = renderValueNode(discField.defaultValue, getImportFromFactory({}));
-    return value;
-};
-
-const getProgramType = (program: ProgramNode): ProgramType => {
-    if (program?.origin === 'shank') {
-        return 'shank';
-    } else if (program?.origin === 'anchor') {
-        return 'anchor';
-    } else {
-        throw new Error(`Unknown program type: ${program.origin}`);
+        default:
+            throw new Error(`Unsupported enum variant type`);
     }
+}
+
+const getFieldDiscriminator = (discriminatorValue: InstructionArgumentNode | StructFieldTypeNode): string[] => {
+    if (
+        discriminatorValue.name !== 'discriminator' ||
+        discriminatorValue.type.kind !== 'fixedSizeTypeNode' ||
+        discriminatorValue.type.type.kind !== 'bytesTypeNode' ||
+        !discriminatorValue.defaultValue ||
+        discriminatorValue.defaultValue.kind !== 'bytesValueNode' ||
+        discriminatorValue.defaultValue.encoding !== 'base16'
+    ) {
+        throw new Error(`"${discriminatorValue.name}" does not have a supported discriminator`);
+    }
+
+    const discriminator = Array.from(getBytesFromBytesValueNode(discriminatorValue.defaultValue)).map(v =>
+        v.toString(),
+    );
+
+    if (discriminator.length !== discriminatorValue.type.size) {
+        throw new Error('Invalid discriminator length');
+    }
+
+    return discriminator;
+};
+
+/** Currenty only supports one discriminator per account, being in the discriminator field and at the start of the data.
+ * If not present or `sizeDiscriminator` is set, defaults to account LEN strategy.
+ */
+const getAccountSizeOrFieldDiscriminator = (node: AccountNode): string[] | null => {
+    const discriminators = node.discriminators;
+    // If not discriminator set, default to account LEN strategy
+    if (!discriminators || discriminators.length === 0) {
+        return null;
+    }
+    if (discriminators.length != 1) {
+        throw new Error(`Account "${node.name}" does not have a supported discriminator`);
+    }
+    const discriminatorType = discriminators[0];
+    if (discriminatorType.kind === 'sizeDiscriminatorNode') {
+        return null;
+    }
+
+    const discriminatorValue = resolveNestedTypeNode(node.data).fields[0];
+
+    return getFieldDiscriminator(discriminatorValue);
+};
+
+/** Currenty only supports one discriminator per instruction, being in the discriminator field and at the start of the arguments */
+const getIxFieldDiscriminator = (node: InstructionNode) => {
+    const notSupportedDiscriminatorError = `Instruction "${node.name}" does not have a supported discriminator`;
+    const discriminators = node.discriminators;
+    if (!discriminators || discriminators.length != 1) {
+        throw new Error(notSupportedDiscriminatorError);
+    }
+
+    const discriminatorType = discriminators[0];
+    if (discriminatorType.kind !== 'fieldDiscriminatorNode' || discriminatorType.name !== 'discriminator') {
+        throw new Error(notSupportedDiscriminatorError);
+    }
+
+    const discriminatorValue = node.arguments[0];
+
+    return getFieldDiscriminator(discriminatorValue);
 };
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
@@ -268,9 +385,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     //TODO: handle multiple programs
                     const program = node.program;
 
-                    // default to anchor program
-                    const programType = getProgramType(program);
-
                     const programName = program?.name;
 
                     const programAccounts = getAllAccounts(node);
@@ -278,33 +392,29 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const folderName = options.generatedFolderName ?? 'generated';
 
-                    // States
-
-                    // assuming default value for Account discriminator - 1 Byte - shank
-                    let accDiscLen = 1;
+                    let accDiscLen: number | undefined;
+                    let hasAccountDiscriminator = false;
 
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
                         const accData = resolveNestedTypeNode(acc.data);
-                        let discriminator: string | null = null;
-                        // anchor
-                        if (programType === 'anchor') {
-                            discriminator = getAnchorDiscriminatorFromStateName(pascalCase(acc.name));
-                            // anchor uses 8 bytes account discriminator
-                            accDiscLen = ANCHOR_DISCRIMINATOR_LEN;
-                        }
-                        // shank
-                        else {
-                            discriminator = getShankDiscriminatorFromAccountNode(acc);
-                            if (discriminator) {
-                                const isDiscArray = Array.isArray(JSON.parse(discriminator) as string[]);
+                        const discriminator = getAccountSizeOrFieldDiscriminator(acc);
 
-                                if (isDiscArray) {
-                                    // set account discriminator len to the length of the array
-                                    accDiscLen = Array.from(JSON.parse(discriminator) as string[]).length;
-                                }
+                        if (discriminator === null) {
+                            if (hasAccountDiscriminator) {
+                                throw new Error(
+                                    'All discriminators should be null if there is already a null discriminator',
+                                );
                             }
+                        } else {
+                            hasAccountDiscriminator = true;
+                            if (accDiscLen && accDiscLen !== discriminator.length) {
+                                throw new Error('All accounts discriminators should have the same length');
+                            }
+                            accDiscLen = discriminator.length;
                         }
+
                         return {
+                            discriminator: discriminator ? `[${discriminator.join(', ')}]` : null,
                             fields: accData.fields
                                 .filter(field => field.name !== 'discriminator')
                                 .map(field => {
@@ -313,7 +423,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                         transform: getTransform(field.type, field.name, types),
                                     };
                                 }),
-                            discriminator,
                             name: acc.name,
                             size: acc.size?.valueOf() ?? null,
                         };
@@ -323,25 +432,17 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         leavesOnly: !renderParentInstructions,
                     });
 
-                    // Default value for  Ix discriminator - 1 Byte
-                    // Shank native program uses 1 byte
-                    // anchor uses 8 bytes
-                    let IX_DATA_OFFSET = 1;
-                    let ixDiscLen = 1;
-
                     // Instructions
+                    let ixDiscLen: number | undefined;
+
                     const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
-                        const discriminator = getIxDiscriminatorFromInstructionNode(ix);
-
-                        if (discriminator) {
-                            const isDiscArray = Array.isArray(JSON.parse(discriminator) as string[]);
-                            if (isDiscArray) {
-                                // set instruction discriminator len to the length of the array
-                                ixDiscLen = Array.from(JSON.parse(discriminator) as string[]).length;
-                            }
+                        const discriminator = getIxFieldDiscriminator(ix);
+                        if (ixDiscLen && ixDiscLen !== discriminator.length) {
+                            throw new Error('All ixs discriminators should have the same length');
                         }
+                        ixDiscLen = discriminator.length;
 
-                        const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
+                        const hasArgs = ix.arguments.length > 1;
                         const hasOptionalAccounts = ix.accounts.some(acc => acc.isOptional);
                         const ixArgs = ix.arguments
                             .filter(arg => arg.name !== 'discriminator')
@@ -360,7 +461,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                     name: snakeCase(acc.name),
                                 };
                             }),
-                            discriminator,
+                            discriminator: `[${discriminator.join(', ')}]`,
                             hasArgs,
                             hasOptionalAccounts,
                             ixArgs,
@@ -377,7 +478,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         throw new Error('programName is required');
                     }
 
-                    const projectName = options.project;
+                    const projectName = `yellowstone-vixen-${options.project}-parser`;
 
                     const codamaSdkName = snakeCase(options.sdkName);
 
@@ -419,6 +520,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     let hasProtoHelpers = false;
 
+                    const protoProjectName = snakeCase(options.project);
+
                     if (options.generateProto) {
                         const definedTypes: string[] = [];
                         // proto Ixs , Accounts and Types
@@ -435,6 +538,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         });
 
                         const protoTypesHelpers: { fields: { name: string; transform: string }[]; name: string }[] = [];
+                        const protoTypesHelpersEnums: {
+                            name: string;
+                            variants: { fields_transform: string; name: string; variant_fields: string }[];
+                        }[] = [];
 
                         const protoTypes = types.map(type => {
                             const node = visit(type, typeManifestVisitor);
@@ -455,50 +562,24 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                     fields,
                                     name: type.name,
                                 });
+                            } else if (type.type.kind === 'enumTypeNode' && !isEnumEmptyVariant(type.type)) {
+                                // Only need for additional `IntoProto` implementations for non-empty variants enums (otherwhise
+                                //  they are automatically treated as i32 by tonic genereted types)
+
+                                const variants = type.type.variants.map(variant => {
+                                    const [variant_fields, fields_transform] = getEnumVariantTransform(variant, types);
+                                    return {
+                                        fields_transform,
+                                        name: snakeCase(variant.name),
+                                        variant_fields,
+                                    };
+                                });
+
+                                protoTypesHelpersEnums.push({
+                                    name: type.name,
+                                    variants,
+                                });
                             }
-
-                            // if (type.type.kind === 'enumTypeNode') {
-                            //     const definedVariants = type.type.variants.filter(variant => {
-                            //         return variant.kind !== 'enumEmptyVariantTypeNode';
-                            //     });
-
-                            //     console.log('definedVariants', definedVariants);
-
-                            //     definedVariants.forEach(variant => {
-                            //         switch (variant.kind) {
-                            //             case 'enumStructVariantTypeNode':
-                            //                 const structData = resolveNestedTypeNode(variant.struct);
-                            //                 protoTypesHelpers.push({
-                            //                     name: snakeCase(variant.name),
-                            //                     fields: structData.fields.map(field => {
-                            //                         return {
-                            //                             name: snakeCase(field.name),
-                            //                             transform: getTransform(field.type, field.name, types),
-                            //                         };
-                            //                     }),
-                            //                 });
-                            //                 break;
-                            //             case 'enumTupleVariantTypeNode':
-                            //                 const tupleData = resolveNestedTypeNode(variant.tuple);
-                            //                 console.log('tupleData', tupleData);
-                            //                 tupleData.items.forEach((item, idx) => {
-                            //                     console.log('item', item);
-
-                            //                     protoTypesHelpers.push({
-                            //                         name: snakeCase(variant.name),
-                            //                         fields: [
-                            //                             {
-                            //                                 name: snakeCase(`item${idx}`),
-                            //                                 transform: `self.${snakeCase(variant.name)}.into()`,
-                            //                             },
-                            //                         ],
-                            //                     });
-                            //                 });
-
-                            //                 break;
-                            //         }
-                            //     });
-                            // }
 
                             return checkArrayTypeAndFix(node.type, matrixTypes);
                         });
@@ -575,7 +656,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         definedTypes.push(...matrixProtoTypes);
 
                         map.add(
-                            'proto/proto_def.proto',
+                            `proto/${protoProjectName}.proto`,
                             render('proto.njk', {
                                 accounts: protoAccounts,
                                 definedTypes,
@@ -583,16 +664,26 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 programIxsOneOf,
                                 programName,
                                 programStateOneOf,
+                                protoProjectName,
                                 types: protoTypes,
                             }),
                         );
 
-                        if (protoTypesHelpers.length > 0) {
+                        if (protoTypesHelpers.length > 0 || protoTypesHelpersEnums.length > 0) {
                             hasProtoHelpers = true;
+
+                            const normalizeAcronyms = (str: string) => {
+                                return str.replace(/([A-Z]{2,})(?=[A-Z][a-z0-9]|[^A-Za-z]|$)/g, function (match) {
+                                    return match.charAt(0) + match.slice(1).toLowerCase();
+                                });
+                            };
+
                             map.add(
                                 `src/${folderName}/proto_helpers.rs`,
                                 render('protoHelpersPage.njk', {
+                                    normalizeAcronyms,
                                     protoTypesHelpers,
+                                    protoTypesHelpersEnums,
                                     sdkName: codamaSdkName,
                                 }),
                             );
@@ -601,7 +692,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const ixCtx = {
                         accounts,
-                        hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
                         hasProtoHelpers,
                         imports: instructionParserImports,
                         instructions,
@@ -612,8 +702,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const accCtx = {
                         accDiscLen,
                         accounts,
+                        hasDiscriminator: hasAccountDiscriminator,
                         hasProtoHelpers,
-                        hasDiscriminator: accounts.some(acc => acc.discriminator !== null),
                         imports: accountParserImports,
                         programName,
                     };
@@ -651,10 +741,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         render('libPage.njk', {
                             newContent: overridesLib,
                             overrided: overridesLib.length > 0,
+                            programId: node.program.name,
+                            protoProjectName,
                         }),
                     );
 
-                    map.add('build.rs', render('buildPage.njk'));
+                    map.add('build.rs', render('buildPage.njk', { protoProjectName }));
 
                     const additionalDependencies = options.cargoAdditionalDependencies ?? [];
                     map.add(

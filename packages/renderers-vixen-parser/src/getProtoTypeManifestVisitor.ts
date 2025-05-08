@@ -181,7 +181,7 @@ export function getProtoTypeManifestVisitor(options: {
                     return {
                         imports: new ImportMap(),
                         nestedStructs: [],
-                        type: `${typeManifest.type} ${name}`,
+                        type: typeManifest.type,
                     };
                 },
 
@@ -200,7 +200,7 @@ export function getProtoTypeManifestVisitor(options: {
                     return {
                         imports: new ImportMap(),
                         nestedStructs: [],
-                        type: `${childManifest.type} ${name}`,
+                        type: `${childManifest.type}`,
                     };
                 },
 
@@ -215,13 +215,16 @@ export function getProtoTypeManifestVisitor(options: {
                     const variants = enumType.variants.map(variant => visit(variant, self));
                     const variantTypes = variants.map(v => v.type);
 
-                    const enumHasDefinedType = variantTypes.some(
-                        type => type.includes('message') || type.includes('repeated'),
-                    );
+                    const enumHasDefinedType = variantTypes.some(type => type.includes('message'));
 
                     // If the enum has no defined type, we can just use the variant names as the enum type.
                     if (!enumHasDefinedType) {
-                        const variantNames = variants.map((variant, i) => `\t${variant.type} = ${i};`).join('\n');
+                        const variantNames = variants
+                            .map(
+                                (variant, i) =>
+                                    `\t${pascalCase(originalParentName) + pascalCase(variant.type)} = ${i};`,
+                            )
+                            .join('\n');
                         return {
                             imports: new ImportMap(),
                             nestedStructs: [],
@@ -232,30 +235,36 @@ export function getProtoTypeManifestVisitor(options: {
                     // If the enum has defined types, we need to create message type for each variant.
                     const definedVariants = variantNames
                         .map((variant, i) => {
-                            return `\t\t${pascalCase(variant)} ${snakeCase(variant)} = ${i + 1};`;
+                            return `\t\t${pascalCase(originalParentName) + pascalCase(variant)} ${snakeCase(variant)} = ${i + 1};`;
                         })
                         .join('\n');
 
-                    const nestedVarinatTypes: string[] = [];
+                    const nestedVariantTypes: string[] = [];
                     for (let i = 0; i < variantTypes.length; i++) {
                         const variant = variantTypes[i];
                         const variantTypeArray = variant.split(' ');
                         const name = variantTypeArray[variantTypeArray.length - 1];
                         const outerType = variantTypeArray[0];
+                        const isVariantEmpty = enumType.variants[i].kind === 'enumEmptyVariantTypeNode';
+
                         // handle nested Tuple types
                         if (outerType === 'repeated') {
                             const innerType = variant.split(' ').slice(1, -1).join(' ');
-                            nestedVarinatTypes.push(
+                            nestedVariantTypes.push(
                                 `message ${pascalCase(name)} {\n\t${innerType} ${snakeCase(name)} = ${i + 1};\n}\n`,
                             );
                             // handle nested Struct types
                         } else if (outerType === 'message') {
-                            nestedVarinatTypes.push(variant);
+                            nestedVariantTypes.push(variant);
+                        } else if (isVariantEmpty) {
+                            // If variant was empty but enum contains a mix of empty and non-empty variants, we also add a
+                            //  marker empty msg for the empty variant.
+                            nestedVariantTypes.push(`message ${pascalCase(originalParentName) + variant} { }\n`);
                         }
                     }
                     const additionalTypes: string[] = [];
 
-                    additionalTypes.push(...nestedVarinatTypes);
+                    additionalTypes.push(...nestedVariantTypes);
 
                     return {
                         definedTypes: additionalTypes.join('\n'),
@@ -404,18 +413,21 @@ export function getProtoTypeManifestVisitor(options: {
                 },
 
                 visitTupleType(tupleType, { self }) {
-                    const items = tupleType.items.map(item => visit(item, self));
-                    const itempTypes = items.map(item => item.type);
-                    const isItemTypeSame = itempTypes.every((val, _i, arr) => val === arr[0]);
-
-                    if (isItemTypeSame) {
-                        return {
-                            imports: new ImportMap(),
-                            nestedStructs: [],
-                            type: `repeated ${items[0].type}`,
-                        };
+                    const originalParentName = parentName;
+                    if (!originalParentName) {
+                        throw new Error('Tuple type must have a parent name.');
                     }
-                    throw new Error('Tuple type with different types not supported');
+
+                    const fields = tupleType.items.reduce((acc, field, idx) => {
+                        const fieldManifest = visit(field, self);
+                        return `${acc}  ${fieldManifest.type} field_${idx} = ${idx + 1};\n`;
+                    }, '');
+
+                    return {
+                        imports: new ImportMap(),
+                        nestedStructs: [],
+                        type: `message ${pascalCase(originalParentName)} {\n${fields}}\n`,
+                    };
                 },
 
                 visitZeroableOptionType(node) {
