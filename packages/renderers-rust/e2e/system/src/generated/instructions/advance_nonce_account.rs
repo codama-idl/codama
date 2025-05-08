@@ -11,11 +11,11 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct AdvanceNonceAccount {
-    pub nonce_account: solana_program::pubkey::Pubkey,
+    pub nonce_account: solana_pubkey::Pubkey,
 
-    pub recent_blockhashes_sysvar: solana_program::pubkey::Pubkey,
+    pub recent_blockhashes_sysvar: solana_pubkey::Pubkey,
 
-    pub nonce_authority: solana_program::pubkey::Pubkey,
+    pub nonce_authority: solana_pubkey::Pubkey,
 }
 
 impl AdvanceNonceAccount {
@@ -79,9 +79,9 @@ impl Default for AdvanceNonceAccountInstructionData {
 ///   2. `[signer]` nonce_authority
 #[derive(Clone, Debug, Default)]
 pub struct AdvanceNonceAccountBuilder {
-    nonce_account: Option<solana_program::pubkey::Pubkey>,
-    recent_blockhashes_sysvar: Option<solana_program::pubkey::Pubkey>,
-    nonce_authority: Option<solana_program::pubkey::Pubkey>,
+    nonce_account: Option<solana_pubkey::Pubkey>,
+    recent_blockhashes_sysvar: Option<solana_pubkey::Pubkey>,
+    nonce_authority: Option<solana_pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -90,7 +90,7 @@ impl AdvanceNonceAccountBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn nonce_account(&mut self, nonce_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn nonce_account(&mut self, nonce_account: solana_pubkey::Pubkey) -> &mut Self {
         self.nonce_account = Some(nonce_account);
         self
     }
@@ -98,16 +98,13 @@ impl AdvanceNonceAccountBuilder {
     #[inline(always)]
     pub fn recent_blockhashes_sysvar(
         &mut self,
-        recent_blockhashes_sysvar: solana_program::pubkey::Pubkey,
+        recent_blockhashes_sysvar: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.recent_blockhashes_sysvar = Some(recent_blockhashes_sysvar);
         self
     }
     #[inline(always)]
-    pub fn nonce_authority(
-        &mut self,
-        nonce_authority: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn nonce_authority(&mut self, nonce_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.nonce_authority = Some(nonce_authority);
         self
     }
@@ -134,7 +131,7 @@ impl AdvanceNonceAccountBuilder {
         let accounts = AdvanceNonceAccount {
             nonce_account: self.nonce_account.expect("nonce_account is not set"),
             recent_blockhashes_sysvar: self.recent_blockhashes_sysvar.unwrap_or(
-                solana_program::pubkey!("SysvarRecentB1ockHashes11111111111111111111"),
+                solana_pubkey::pubkey!("SysvarRecentB1ockHashes11111111111111111111"),
             ),
             nonce_authority: self.nonce_authority.expect("nonce_authority is not set"),
         };

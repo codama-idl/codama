@@ -2,7 +2,7 @@
 
 {% block main %}
 
-use solana_program::{pubkey, pubkey::Pubkey};
+use solana_pubkey::{pubkey, Pubkey};
 
 {% for program in programsToExport | sort(false, false, 'name') %}
 

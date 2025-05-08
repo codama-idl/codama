@@ -9,7 +9,7 @@ use crate::generated::types::NonceState;
 use crate::generated::types::NonceVersion;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -53,7 +53,7 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Nonce {
 #[cfg(feature = "fetch")]
 pub fn fetch_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
-    address: &solana_program::pubkey::Pubkey,
+    address: &solana_pubkey::Pubkey,
 ) -> Result<crate::shared::DecodedAccount<Nonce>, std::io::Error> {
     let accounts = fetch_all_nonce(rpc, &[*address])?;
     Ok(accounts[0].clone())
@@ -62,7 +62,7 @@ pub fn fetch_nonce(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
-    addresses: &[solana_program::pubkey::Pubkey],
+    addresses: &[solana_pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::DecodedAccount<Nonce>>, std::io::Error> {
     let accounts = rpc
         .get_multiple_accounts(addresses)
@@ -87,7 +87,7 @@ pub fn fetch_all_nonce(
 #[cfg(feature = "fetch")]
 pub fn fetch_maybe_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
-    address: &solana_program::pubkey::Pubkey,
+    address: &solana_pubkey::Pubkey,
 ) -> Result<crate::shared::MaybeAccount<Nonce>, std::io::Error> {
     let accounts = fetch_all_maybe_nonce(rpc, &[*address])?;
     Ok(accounts[0].clone())
@@ -96,7 +96,7 @@ pub fn fetch_maybe_nonce(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_maybe_nonce(
     rpc: &solana_client::rpc_client::RpcClient,
-    addresses: &[solana_program::pubkey::Pubkey],
+    addresses: &[solana_pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::MaybeAccount<Nonce>>, std::io::Error> {
     let accounts = rpc
         .get_multiple_accounts(addresses)

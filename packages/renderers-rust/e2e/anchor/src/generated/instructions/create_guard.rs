@@ -14,21 +14,21 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct CreateGuard {
-    pub guard: solana_program::pubkey::Pubkey,
+    pub guard: solana_pubkey::Pubkey,
 
-    pub mint: solana_program::pubkey::Pubkey,
+    pub mint: solana_pubkey::Pubkey,
 
-    pub mint_token_account: solana_program::pubkey::Pubkey,
+    pub mint_token_account: solana_pubkey::Pubkey,
 
-    pub guard_authority: solana_program::pubkey::Pubkey,
+    pub guard_authority: solana_pubkey::Pubkey,
 
-    pub payer: solana_program::pubkey::Pubkey,
+    pub payer: solana_pubkey::Pubkey,
 
-    pub associated_token_program: solana_program::pubkey::Pubkey,
+    pub associated_token_program: solana_pubkey::Pubkey,
 
-    pub token_program: solana_program::pubkey::Pubkey,
+    pub token_program: solana_pubkey::Pubkey,
 
-    pub system_program: solana_program::pubkey::Pubkey,
+    pub system_program: solana_pubkey::Pubkey,
 }
 
 impl CreateGuard {
@@ -133,14 +133,14 @@ pub struct CreateGuardInstructionArgs {
 ///   7. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct CreateGuardBuilder {
-    guard: Option<solana_program::pubkey::Pubkey>,
-    mint: Option<solana_program::pubkey::Pubkey>,
-    mint_token_account: Option<solana_program::pubkey::Pubkey>,
-    guard_authority: Option<solana_program::pubkey::Pubkey>,
-    payer: Option<solana_program::pubkey::Pubkey>,
-    associated_token_program: Option<solana_program::pubkey::Pubkey>,
-    token_program: Option<solana_program::pubkey::Pubkey>,
-    system_program: Option<solana_program::pubkey::Pubkey>,
+    guard: Option<solana_pubkey::Pubkey>,
+    mint: Option<solana_pubkey::Pubkey>,
+    mint_token_account: Option<solana_pubkey::Pubkey>,
+    guard_authority: Option<solana_pubkey::Pubkey>,
+    payer: Option<solana_pubkey::Pubkey>,
+    associated_token_program: Option<solana_pubkey::Pubkey>,
+    token_program: Option<solana_pubkey::Pubkey>,
+    system_program: Option<solana_pubkey::Pubkey>,
     name: Option<String>,
     symbol: Option<String>,
     uri: Option<String>,
@@ -155,33 +155,27 @@ impl CreateGuardBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn guard(&mut self, guard: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn guard(&mut self, guard: solana_pubkey::Pubkey) -> &mut Self {
         self.guard = Some(guard);
         self
     }
     #[inline(always)]
-    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn mint(&mut self, mint: solana_pubkey::Pubkey) -> &mut Self {
         self.mint = Some(mint);
         self
     }
     #[inline(always)]
-    pub fn mint_token_account(
-        &mut self,
-        mint_token_account: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn mint_token_account(&mut self, mint_token_account: solana_pubkey::Pubkey) -> &mut Self {
         self.mint_token_account = Some(mint_token_account);
         self
     }
     #[inline(always)]
-    pub fn guard_authority(
-        &mut self,
-        guard_authority: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn guard_authority(&mut self, guard_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.guard_authority = Some(guard_authority);
         self
     }
     #[inline(always)]
-    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn payer(&mut self, payer: solana_pubkey::Pubkey) -> &mut Self {
         self.payer = Some(payer);
         self
     }
@@ -189,20 +183,20 @@ impl CreateGuardBuilder {
     #[inline(always)]
     pub fn associated_token_program(
         &mut self,
-        associated_token_program: solana_program::pubkey::Pubkey,
+        associated_token_program: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.associated_token_program = Some(associated_token_program);
         self
     }
     /// `[optional account, default to 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb']`
     #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_program(&mut self, token_program: solana_pubkey::Pubkey) -> &mut Self {
         self.token_program = Some(token_program);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
     #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn system_program(&mut self, system_program: solana_pubkey::Pubkey) -> &mut Self {
         self.system_program = Some(system_program);
         self
     }
@@ -270,14 +264,14 @@ impl CreateGuardBuilder {
             guard_authority: self.guard_authority.expect("guard_authority is not set"),
             payer: self.payer.expect("payer is not set"),
             associated_token_program: self.associated_token_program.unwrap_or(
-                solana_program::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"),
+                solana_pubkey::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"),
             ),
-            token_program: self.token_program.unwrap_or(solana_program::pubkey!(
+            token_program: self.token_program.unwrap_or(solana_pubkey::pubkey!(
                 "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
             )),
             system_program: self
                 .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+                .unwrap_or(solana_pubkey::pubkey!("11111111111111111111111111111111")),
         };
         let args = CreateGuardInstructionArgs {
             name: self.name.clone().expect("name is not set"),
