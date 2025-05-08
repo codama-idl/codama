@@ -10,9 +10,10 @@ const { renderVisitor: renderRustVisitor } = require('@codama/renderers-rust');
 function generateProject(project, node, generateProto) {
     const crateFolder = __dirname;
 
+    const definedTypes = node.program.definedTypes;
     // Push `fees` defined type (not included in idl)
     // // https://github.com/raydium-io/raydium-amm/blob/master/program/src/state.rs#L475-L496
-    node.program.definedTypes.push({
+    definedTypes.push({
         kind: 'definedTypeNode',
         name: 'fees',
         docs: [],
@@ -36,6 +37,7 @@ function generateProject(project, node, generateProto) {
         },
     });
 
+    const accounts = node.program.accounts;
     // Add `ammConfig` account (not included in idl)
     // https://github.com/raydium-io/raydium-amm/blob/master/program/src/state.rs#L860-L871
     const ammConfig = {
@@ -87,16 +89,18 @@ function generateProject(project, node, generateProto) {
         },
         discriminators: [],
     };
-    node.program.accounts.push(ammConfig);
+    accounts.push(ammConfig);
 
-    const ammConfigIndex = node.program.definedTypes.findIndex(definedType => definedType.name === 'ammConfig');
-    node.program.definedTypes[ammConfigIndex].type = { ...ammConfig.data };
-    const newNode = { ...node.program.definedTypes[ammConfigIndex], type: { ...ammConfig.data } };
-    node.program.definedTypes.splice(ammConfigIndex, 1, newNode);
+    const ammConfigIndex = definedTypes.findIndex(definedType => definedType.name === 'ammConfig');
+    definedTypes.splice(ammConfigIndex, 1);
+    const feesIndex = accounts.findIndex(account => account.name === 'fees');
+    accounts.splice(feesIndex, 1);
+
+    const updatedNode = { ...node, program: { ...node.program, definedTypes, accounts } };
 
     // #Renderers-rust
     visit(
-        node,
+        updatedNode,
         renderRustVisitor(path.join(crateFolder, 'src', 'generated_sdk'), {
             crateFolder,
             formatCode: true,
@@ -105,7 +109,7 @@ function generateProject(project, node, generateProto) {
 
     //  #Render Vixen Parser
     visit(
-        node,
+        updatedNode,
         renderVixenVisitor(crateFolder, {
             sdkName: 'crate',
             crateFolder,

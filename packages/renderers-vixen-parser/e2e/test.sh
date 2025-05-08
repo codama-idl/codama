@@ -10,4 +10,4 @@ function test_project() {
 
 test_project system true
 test_project orca-whirlpool true
-# test_project raydium-amm-v4 true
+test_project raydium-amm-v4 true

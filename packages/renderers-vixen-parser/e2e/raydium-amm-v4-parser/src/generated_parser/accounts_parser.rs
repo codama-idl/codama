@@ -7,7 +7,6 @@
 
 use crate::accounts::AmmConfig;
 use crate::accounts::AmmInfo;
-use crate::accounts::Fees;
 use crate::accounts::TargetOrders;
 use crate::ID;
 
@@ -17,7 +16,6 @@ use crate::ID;
 #[cfg_attr(feature = "tracing", derive(strum_macros::Display))]
 pub enum RaydiumAmmProgramState {
     TargetOrders(TargetOrders),
-    Fees(Fees),
     AmmInfo(AmmInfo),
     AmmConfig(AmmConfig),
 }
@@ -26,7 +24,6 @@ impl RaydiumAmmProgramState {
     pub fn try_unpack(data_bytes: &[u8]) -> yellowstone_vixen_core::ParseResult<Self> {
         let data_len = data_bytes.len();
         const TARGETORDERS_LEN: usize = std::mem::size_of::<TargetOrders>();
-        const FEES_LEN: usize = std::mem::size_of::<Fees>();
         const AMMINFO_LEN: usize = std::mem::size_of::<AmmInfo>();
         const AMMCONFIG_LEN: usize = std::mem::size_of::<AmmConfig>();
 
@@ -34,7 +31,6 @@ impl RaydiumAmmProgramState {
             TARGETORDERS_LEN => Ok(RaydiumAmmProgramState::TargetOrders(
                 TargetOrders::from_bytes(data_bytes)?,
             )),
-            FEES_LEN => Ok(RaydiumAmmProgramState::Fees(Fees::from_bytes(data_bytes)?)),
             AMMINFO_LEN => Ok(RaydiumAmmProgramState::AmmInfo(AmmInfo::from_bytes(
                 data_bytes,
             )?)),
@@ -155,21 +151,6 @@ mod proto_parser {
             }
         }
     }
-    use super::Fees;
-    impl IntoProto<proto_def::Fees> for Fees {
-        fn into_proto(self) -> proto_def::Fees {
-            proto_def::Fees {
-                min_separate_numerator: self.min_separate_numerator,
-                min_separate_denominator: self.min_separate_denominator,
-                trade_fee_numerator: self.trade_fee_numerator,
-                trade_fee_denominator: self.trade_fee_denominator,
-                pnl_numerator: self.pnl_numerator,
-                pnl_denominator: self.pnl_denominator,
-                swap_fee_numerator: self.swap_fee_numerator,
-                swap_fee_denominator: self.swap_fee_denominator,
-            }
-        }
-    }
     use super::AmmInfo;
     impl IntoProto<proto_def::AmmInfo> for AmmInfo {
         fn into_proto(self) -> proto_def::AmmInfo {
@@ -228,9 +209,6 @@ mod proto_parser {
             let state_oneof = match self {
                 RaydiumAmmProgramState::TargetOrders(data) => {
                     proto_def::program_state::StateOneof::TargetOrders(data.into_proto())
-                }
-                RaydiumAmmProgramState::Fees(data) => {
-                    proto_def::program_state::StateOneof::Fees(data.into_proto())
                 }
                 RaydiumAmmProgramState::AmmInfo(data) => {
                     proto_def::program_state::StateOneof::AmmInfo(data.into_proto())

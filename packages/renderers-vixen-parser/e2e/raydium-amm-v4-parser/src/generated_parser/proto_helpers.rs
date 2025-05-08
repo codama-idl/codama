@@ -65,18 +65,6 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::AmmConfig;
-    impl IntoProto<proto_def::AmmConfig> for AmmConfig {
-        fn into_proto(self) -> proto_def::AmmConfig {
-            proto_def::AmmConfig {
-                pnl_owner: self.pnl_owner.to_string(),
-                cancel_owner: self.cancel_owner.to_string(),
-                pending1: self.pending1.to_vec(),
-                pending2: self.pending2.to_vec(),
-                create_pool_fee: self.create_pool_fee,
-            }
-        }
-    }
     use sdk::types::LastOrderDistance;
     impl IntoProto<proto_def::LastOrderDistance> for LastOrderDistance {
         fn into_proto(self) -> proto_def::LastOrderDistance {

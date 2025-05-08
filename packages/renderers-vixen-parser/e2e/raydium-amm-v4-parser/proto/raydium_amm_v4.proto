@@ -123,14 +123,6 @@ message OutPutData {
 	uint64 swap_take_coin_fee = 14;
 }
 
-message AmmConfig {
-	string pnl_owner = 1;
-	string cancel_owner = 2;
-	repeated uint64 pending1 = 3;
-	repeated uint64 pending2 = 4;
-	uint64 create_pool_fee = 5;
-}
-
 message LastOrderDistance {
 	uint64 last_order_numerator = 1;
 	uint64 last_order_denominator = 2;
@@ -226,6 +218,15 @@ message AmmInfo {
 	uint64 client_order_id = 32;
 	repeated uint64 padding = 33;
 }
+
+message AmmConfig {
+	string pnl_owner = 1;
+	string cancel_owner = 2;
+	repeated uint64 pending1 = 3;
+	repeated uint64 pending2 = 4;
+	uint64 create_pool_fee = 5;
+}
+
 
 message InitializeIxAccounts {
 	string token_program = 1;
@@ -588,9 +589,8 @@ message UpdateConfigAccountIxData {
 message ProgramState {
     oneof state_oneof {
         	TargetOrders target_orders = 1;
-        	Fees fees = 2;
-        	AmmInfo amm_info = 3;
-        	AmmConfig amm_config = 4;
+        	AmmInfo amm_info = 2;
+        	AmmConfig amm_config = 3;
         }
 }
 

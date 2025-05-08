@@ -5,7 +5,6 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-pub(crate) mod r#amm_config;
 pub(crate) mod r#fees;
 pub(crate) mod r#last_order_distance;
 pub(crate) mod r#need_take;
@@ -16,7 +15,6 @@ pub(crate) mod r#target_order;
 pub(crate) mod r#withdraw_dest_token;
 pub(crate) mod r#withdraw_queue;
 
-pub use self::r#amm_config::*;
 pub use self::r#fees::*;
 pub use self::r#last_order_distance::*;
 pub use self::r#need_take::*;

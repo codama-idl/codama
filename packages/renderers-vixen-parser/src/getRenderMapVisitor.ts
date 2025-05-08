@@ -90,7 +90,7 @@ function getInnerDefinedTypeTransform(
     }
 
     if (definedType.type.kind === 'structTypeNode') {
-        return `self.${outerTypeName}.into_proto()`;
+        return `Some(self.${outerTypeName}.into_proto())`;
     } else if (definedType.type.kind === 'enumTypeNode') {
         return isEnumEmptyVariant(definedType.type)
             ? `self.${outerTypeName} as i32`
@@ -203,10 +203,14 @@ function getOptionTypeTransform(
 ) {
     const innerTransform = getTransform(item, outerTypeName, idlDefinedTypes, options);
     const cleanedTransform = innerTransform.replace(`self.${outerTypeName}`, 'x');
-    if (cleanedTransform === 'x') {
-        return `self.${outerTypeName}`;
-    } else {
-        return `self.${outerTypeName}.map(|x| ${cleanedTransform})`;
+
+    switch (cleanedTransform) {
+        case 'x':
+            return `self.${outerTypeName}`;
+        case 'Some(x.into_proto())':
+            return `self.${outerTypeName}.map(|x| x.into_proto())`;
+        default:
+            return `self.${outerTypeName}.map(|x| ${cleanedTransform})`;
     }
 }
 
