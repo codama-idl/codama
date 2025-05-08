@@ -56,11 +56,11 @@ pub mod proto_types_parsers {
                 punish_pc_amount: self.punish_pc_amount,
                 punish_coin_amount: self.punish_coin_amount,
                 orderbook_to_init_time: self.orderbook_to_init_time,
-                swap_coin_in_amount: self.swap_coin_in_amount.to_le_bytes().to_vec(),
-                swap_pc_out_amount: self.swap_pc_out_amount.to_le_bytes().to_vec(),
+                swap_coin_in_amount: self.swap_coin_in_amount.to_string(),
+                swap_pc_out_amount: self.swap_pc_out_amount.to_string(),
                 swap_take_pc_fee: self.swap_take_pc_fee,
-                swap_pc_in_amount: self.swap_pc_in_amount.to_le_bytes().to_vec(),
-                swap_coin_out_amount: self.swap_coin_out_amount.to_le_bytes().to_vec(),
+                swap_pc_in_amount: self.swap_pc_in_amount.to_string(),
+                swap_coin_out_amount: self.swap_coin_out_amount.to_string(),
                 swap_take_coin_fee: self.swap_take_coin_fee,
             }
         }

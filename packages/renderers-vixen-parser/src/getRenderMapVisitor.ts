@@ -132,11 +132,7 @@ function getNumberTypeTransform(type: NumberTypeNode) {
     switch (type.format) {
         case 'u128':
         case 'i128': {
-            if (type.endian === 'le') {
-                return `.to_le_bytes().to_vec()`;
-            } else {
-                throw new Error('Number endianness not supported by Borsh');
-            }
+            return `.to_string()`;
         }
 
         case 'u8':
@@ -148,6 +144,7 @@ function getNumberTypeTransform(type: NumberTypeNode) {
     }
 }
 
+// TODO!: Make this function use getTransform() for the inner items
 function getArrayTypeTransform(item: TypeNode, outerTypeName: string, idlDefinedTypes: DefinedTypeNode[]) {
     switch (item.kind) {
         case 'definedTypeLinkNode': {
@@ -190,7 +187,16 @@ function getArrayTypeTransform(item: TypeNode, outerTypeName: string, idlDefined
             }
         }
 
+        case 'publicKeyTypeNode': {
+            return `self.${outerTypeName}.into_iter().map(|x| x.to_string()).collect()`;
+        }
+
+        case 'bytesTypeNode': {
+            return `self.${outerTypeName}.into_iter().map(|x| x.into()).collect()`;
+        }
+
         default:
+            console.warn(`Warning!: Default case for array type: ${item.kind} for type ${outerTypeName}`);
             return `self.${outerTypeName}.to_vec()`;
     }
 }

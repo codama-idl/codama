@@ -16,7 +16,7 @@ pub mod proto_types_parsers {
     impl IntoProto<proto_def::PositionRewardInfo> for PositionRewardInfo {
         fn into_proto(self) -> proto_def::PositionRewardInfo {
             proto_def::PositionRewardInfo {
-                growth_inside_checkpoint: self.growth_inside_checkpoint.to_le_bytes().to_vec(),
+                growth_inside_checkpoint: self.growth_inside_checkpoint.to_string(),
                 amount_owed: self.amount_owed,
             }
         }
@@ -26,14 +26,14 @@ pub mod proto_types_parsers {
         fn into_proto(self) -> proto_def::Tick {
             proto_def::Tick {
                 initialized: self.initialized,
-                liquidity_net: self.liquidity_net.to_le_bytes().to_vec(),
-                liquidity_gross: self.liquidity_gross.to_le_bytes().to_vec(),
-                fee_growth_outside_a: self.fee_growth_outside_a.to_le_bytes().to_vec(),
-                fee_growth_outside_b: self.fee_growth_outside_b.to_le_bytes().to_vec(),
+                liquidity_net: self.liquidity_net.to_string(),
+                liquidity_gross: self.liquidity_gross.to_string(),
+                fee_growth_outside_a: self.fee_growth_outside_a.to_string(),
+                fee_growth_outside_b: self.fee_growth_outside_b.to_string(),
                 reward_growths_outside: self
                     .reward_growths_outside
                     .into_iter()
-                    .map(|x| x.to_le_bytes().to_vec())
+                    .map(|x| x.to_string())
                     .collect(),
             }
         }
@@ -45,8 +45,8 @@ pub mod proto_types_parsers {
                 mint: self.mint.to_string(),
                 vault: self.vault.to_string(),
                 authority: self.authority.to_string(),
-                emissions_per_second_x64: self.emissions_per_second_x64.to_le_bytes().to_vec(),
-                growth_global_x64: self.growth_global_x64.to_le_bytes().to_vec(),
+                emissions_per_second_x64: self.emissions_per_second_x64.to_string(),
+                growth_global_x64: self.growth_global_x64.to_string(),
             }
         }
     }

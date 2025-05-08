@@ -122,16 +122,16 @@ mod proto_parser {
                     .map(|x| x.into_proto())
                     .collect(),
                 padding1: self.padding1.to_vec(),
-                target_x: self.target_x.to_le_bytes().to_vec(),
-                target_y: self.target_y.to_le_bytes().to_vec(),
-                plan_x_buy: self.plan_x_buy.to_le_bytes().to_vec(),
-                plan_y_buy: self.plan_y_buy.to_le_bytes().to_vec(),
-                plan_x_sell: self.plan_x_sell.to_le_bytes().to_vec(),
-                plan_y_sell: self.plan_y_sell.to_le_bytes().to_vec(),
-                placed_x: self.placed_x.to_le_bytes().to_vec(),
-                placed_y: self.placed_y.to_le_bytes().to_vec(),
-                calc_pnl_x: self.calc_pnl_x.to_le_bytes().to_vec(),
-                calc_pnl_y: self.calc_pnl_y.to_le_bytes().to_vec(),
+                target_x: self.target_x.to_string(),
+                target_y: self.target_y.to_string(),
+                plan_x_buy: self.plan_x_buy.to_string(),
+                plan_y_buy: self.plan_y_buy.to_string(),
+                plan_x_sell: self.plan_x_sell.to_string(),
+                plan_y_sell: self.plan_y_sell.to_string(),
+                placed_x: self.placed_x.to_string(),
+                placed_y: self.placed_y.to_string(),
+                calc_pnl_x: self.calc_pnl_x.to_string(),
+                calc_pnl_y: self.calc_pnl_y.to_string(),
                 sell_orders: self
                     .sell_orders
                     .into_iter()
@@ -147,7 +147,7 @@ mod proto_parser {
                 valid_buy_order_num: self.valid_buy_order_num,
                 valid_sell_order_num: self.valid_sell_order_num,
                 padding3: self.padding3.to_vec(),
-                free_slot_bits: self.free_slot_bits.to_le_bytes().to_vec(),
+                free_slot_bits: self.free_slot_bits.to_string(),
             }
         }
     }

@@ -115,11 +115,11 @@ message OutPutData {
 	uint64 punish_pc_amount = 6;
 	uint64 punish_coin_amount = 7;
 	uint64 orderbook_to_init_time = 8;
-	bytes swap_coin_in_amount = 9;
-	bytes swap_pc_out_amount = 10;
+	string swap_coin_in_amount = 9;
+	string swap_pc_out_amount = 10;
 	uint64 swap_take_pc_fee = 11;
-	bytes swap_pc_in_amount = 12;
-	bytes swap_coin_out_amount = 13;
+	string swap_pc_in_amount = 12;
+	string swap_coin_out_amount = 13;
 	uint64 swap_take_coin_fee = 14;
 }
 
@@ -159,16 +159,16 @@ message TargetOrders {
 	repeated uint64 owner = 1;
 	repeated TargetOrder buy_orders = 2;
 	repeated uint64 padding1 = 3;
-	bytes target_x = 4;
-	bytes target_y = 5;
-	bytes plan_x_buy = 6;
-	bytes plan_y_buy = 7;
-	bytes plan_x_sell = 8;
-	bytes plan_y_sell = 9;
-	bytes placed_x = 10;
-	bytes placed_y = 11;
-	bytes calc_pnl_x = 12;
-	bytes calc_pnl_y = 13;
+	string target_x = 4;
+	string target_y = 5;
+	string plan_x_buy = 6;
+	string plan_y_buy = 7;
+	string plan_x_sell = 8;
+	string plan_y_sell = 9;
+	string placed_x = 10;
+	string placed_y = 11;
+	string calc_pnl_x = 12;
+	string calc_pnl_y = 13;
 	repeated TargetOrder sell_orders = 14;
 	repeated uint64 padding2 = 15;
 	repeated uint64 replace_buy_client_id = 16;
@@ -180,7 +180,7 @@ message TargetOrders {
 	uint64 valid_buy_order_num = 22;
 	uint64 valid_sell_order_num = 23;
 	repeated uint64 padding3 = 24;
-	bytes free_slot_bits = 25;
+	string free_slot_bits = 25;
 }
 
 message AmmInfo {

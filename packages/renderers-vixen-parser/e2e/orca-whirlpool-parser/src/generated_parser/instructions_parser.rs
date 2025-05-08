@@ -1106,7 +1106,7 @@ mod proto_parser {
             proto_def::InitializePoolIxData {
                 whirlpool_bump: self.whirlpool_bump.into(),
                 tick_spacing: self.tick_spacing.into(),
-                initial_sqrt_price: self.initial_sqrt_price.to_le_bytes().to_vec(),
+                initial_sqrt_price: self.initial_sqrt_price.to_string(),
             }
         }
     }
@@ -1188,7 +1188,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::SetRewardEmissionsIxData {
             proto_def::SetRewardEmissionsIxData {
                 reward_index: self.reward_index.into(),
-                emissions_per_second_x64: self.emissions_per_second_x64.to_le_bytes().to_vec(),
+                emissions_per_second_x64: self.emissions_per_second_x64.to_string(),
             }
         }
     }
@@ -1274,7 +1274,7 @@ mod proto_parser {
     impl IntoProto<proto_def::IncreaseLiquidityIxData> for IncreaseLiquidityIxData {
         fn into_proto(self) -> proto_def::IncreaseLiquidityIxData {
             proto_def::IncreaseLiquidityIxData {
-                liquidity_amount: self.liquidity_amount.to_le_bytes().to_vec(),
+                liquidity_amount: self.liquidity_amount.to_string(),
                 token_max_a: self.token_max_a,
                 token_max_b: self.token_max_b,
             }
@@ -1302,7 +1302,7 @@ mod proto_parser {
     impl IntoProto<proto_def::DecreaseLiquidityIxData> for DecreaseLiquidityIxData {
         fn into_proto(self) -> proto_def::DecreaseLiquidityIxData {
             proto_def::DecreaseLiquidityIxData {
-                liquidity_amount: self.liquidity_amount.to_le_bytes().to_vec(),
+                liquidity_amount: self.liquidity_amount.to_string(),
                 token_min_a: self.token_min_a,
                 token_min_b: self.token_min_b,
             }
@@ -1396,7 +1396,7 @@ mod proto_parser {
             proto_def::SwapIxData {
                 amount: self.amount,
                 other_amount_threshold: self.other_amount_threshold,
-                sqrt_price_limit: self.sqrt_price_limit.to_le_bytes().to_vec(),
+                sqrt_price_limit: self.sqrt_price_limit.to_string(),
                 amount_specified_is_input: self.amount_specified_is_input,
                 a_to_b: self.a_to_b,
             }
@@ -1603,8 +1603,8 @@ mod proto_parser {
                 amount_specified_is_input: self.amount_specified_is_input,
                 a_to_b_one: self.a_to_b_one,
                 a_to_b_two: self.a_to_b_two,
-                sqrt_price_limit_one: self.sqrt_price_limit_one.to_le_bytes().to_vec(),
-                sqrt_price_limit_two: self.sqrt_price_limit_two.to_le_bytes().to_vec(),
+                sqrt_price_limit_one: self.sqrt_price_limit_one.to_string(),
+                sqrt_price_limit_two: self.sqrt_price_limit_two.to_string(),
             }
         }
     }
@@ -1881,7 +1881,7 @@ mod proto_parser {
     impl IntoProto<proto_def::DecreaseLiquidityV2IxData> for DecreaseLiquidityV2IxData {
         fn into_proto(self) -> proto_def::DecreaseLiquidityV2IxData {
             proto_def::DecreaseLiquidityV2IxData {
-                liquidity_amount: self.liquidity_amount.to_le_bytes().to_vec(),
+                liquidity_amount: self.liquidity_amount.to_string(),
                 token_min_a: self.token_min_a,
                 token_min_b: self.token_min_b,
                 remaining_accounts_info: self.remaining_accounts_info.map(|x| x.into_proto()),
@@ -1914,7 +1914,7 @@ mod proto_parser {
     impl IntoProto<proto_def::IncreaseLiquidityV2IxData> for IncreaseLiquidityV2IxData {
         fn into_proto(self) -> proto_def::IncreaseLiquidityV2IxData {
             proto_def::IncreaseLiquidityV2IxData {
-                liquidity_amount: self.liquidity_amount.to_le_bytes().to_vec(),
+                liquidity_amount: self.liquidity_amount.to_string(),
                 token_max_a: self.token_max_a,
                 token_max_b: self.token_max_b,
                 remaining_accounts_info: self.remaining_accounts_info.map(|x| x.into_proto()),
@@ -1947,7 +1947,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::InitializePoolV2IxData {
             proto_def::InitializePoolV2IxData {
                 tick_spacing: self.tick_spacing.into(),
-                initial_sqrt_price: self.initial_sqrt_price.to_le_bytes().to_vec(),
+                initial_sqrt_price: self.initial_sqrt_price.to_string(),
             }
         }
     }
@@ -1990,7 +1990,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::SetRewardEmissionsV2IxData {
             proto_def::SetRewardEmissionsV2IxData {
                 reward_index: self.reward_index.into(),
-                emissions_per_second_x64: self.emissions_per_second_x64.to_le_bytes().to_vec(),
+                emissions_per_second_x64: self.emissions_per_second_x64.to_string(),
             }
         }
     }
@@ -2022,7 +2022,7 @@ mod proto_parser {
             proto_def::SwapV2IxData {
                 amount: self.amount,
                 other_amount_threshold: self.other_amount_threshold,
-                sqrt_price_limit: self.sqrt_price_limit.to_le_bytes().to_vec(),
+                sqrt_price_limit: self.sqrt_price_limit.to_string(),
                 amount_specified_is_input: self.amount_specified_is_input,
                 a_to_b: self.a_to_b,
                 remaining_accounts_info: self.remaining_accounts_info.map(|x| x.into_proto()),
@@ -2069,8 +2069,8 @@ mod proto_parser {
                 amount_specified_is_input: self.amount_specified_is_input,
                 a_to_b_one: self.a_to_b_one,
                 a_to_b_two: self.a_to_b_two,
-                sqrt_price_limit_one: self.sqrt_price_limit_one.to_le_bytes().to_vec(),
-                sqrt_price_limit_two: self.sqrt_price_limit_two.to_le_bytes().to_vec(),
+                sqrt_price_limit_one: self.sqrt_price_limit_one.to_string(),
+                sqrt_price_limit_two: self.sqrt_price_limit_two.to_string(),
                 remaining_accounts_info: self.remaining_accounts_info.map(|x| x.into_proto()),
             }
         }

@@ -37,7 +37,7 @@ export function numberTypeToProtoHelper(numberType: NumberTypeNode): string {
         case 'u64':
             return 'uint64';
         case 'u128':
-            return 'bytes';
+            return 'string';
         case 'i8':
         case 'i16':
         case 'i32':
@@ -45,7 +45,7 @@ export function numberTypeToProtoHelper(numberType: NumberTypeNode): string {
         case 'i64':
             return 'int64';
         case 'i128':
-            return 'bytes';
+            return 'string';
         case 'f32':
             return 'float';
         case 'f64':
@@ -91,14 +91,6 @@ export function getProtoTypeManifestVisitor(options: {
 
                 visitArrayType(arrayType, { self }) {
                     const childManifest = visit(arrayType.item, self);
-
-                    if (childManifest.type === 'uint32') {
-                        return {
-                            imports: new ImportMap(),
-                            nestedStructs: [],
-                            type: 'bytes',
-                        };
-                    }
 
                     return {
                         imports: new ImportMap(),

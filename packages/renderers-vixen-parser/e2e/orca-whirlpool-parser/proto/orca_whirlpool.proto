@@ -247,25 +247,25 @@ enum LockTypeLabel {
 }
 
 message PositionRewardInfo {
-	bytes growth_inside_checkpoint = 1;
+	string growth_inside_checkpoint = 1;
 	uint64 amount_owed = 2;
 }
 
 message Tick {
 	bool initialized = 1;
-	bytes liquidity_net = 2;
-	bytes liquidity_gross = 3;
-	bytes fee_growth_outside_a = 4;
-	bytes fee_growth_outside_b = 5;
-	repeated bytes reward_growths_outside = 6;
+	string liquidity_net = 2;
+	string liquidity_gross = 3;
+	string fee_growth_outside_a = 4;
+	string fee_growth_outside_b = 5;
+	repeated string reward_growths_outside = 6;
 }
 
 message WhirlpoolRewardInfo {
 	string mint = 1;
 	string vault = 2;
 	string authority = 3;
-	bytes emissions_per_second_x64 = 4;
-	bytes growth_global_x64 = 5;
+	string emissions_per_second_x64 = 4;
+	string growth_global_x64 = 5;
 }
 
 enum AccountsType {
@@ -320,19 +320,19 @@ message LockConfig {
 message Position {
 	string whirlpool = 1;
 	string position_mint = 2;
-	bytes liquidity = 3;
+	string liquidity = 3;
 	int32 tick_lower_index = 4;
 	int32 tick_upper_index = 5;
-	bytes fee_growth_checkpoint_a = 6;
+	string fee_growth_checkpoint_a = 6;
 	uint64 fee_owed_a = 7;
-	bytes fee_growth_checkpoint_b = 8;
+	string fee_growth_checkpoint_b = 8;
 	uint64 fee_owed_b = 9;
 	repeated PositionRewardInfo reward_infos = 10;
 }
 
 message PositionBundle {
 	string position_bundle_mint = 1;
-	bytes position_bitmap = 2;
+	repeated uint32 position_bitmap = 2;
 }
 
 message TickArray {
@@ -348,22 +348,22 @@ message TokenBadge {
 
 message Whirlpool {
 	string whirlpools_config = 1;
-	bytes whirlpool_bump = 2;
+	repeated uint32 whirlpool_bump = 2;
 	uint32 tick_spacing = 3;
-	bytes tick_spacing_seed = 4;
+	repeated uint32 tick_spacing_seed = 4;
 	uint32 fee_rate = 5;
 	uint32 protocol_fee_rate = 6;
-	bytes liquidity = 7;
-	bytes sqrt_price = 8;
+	string liquidity = 7;
+	string sqrt_price = 8;
 	int32 tick_current_index = 9;
 	uint64 protocol_fee_owed_a = 10;
 	uint64 protocol_fee_owed_b = 11;
 	string token_mint_a = 12;
 	string token_vault_a = 13;
-	bytes fee_growth_global_a = 14;
+	string fee_growth_global_a = 14;
 	string token_mint_b = 15;
 	string token_vault_b = 16;
-	bytes fee_growth_global_b = 17;
+	string fee_growth_global_b = 17;
 	uint64 reward_last_updated_timestamp = 18;
 	repeated WhirlpoolRewardInfo reward_infos = 19;
 }
@@ -399,7 +399,7 @@ message InitializePoolIxAccounts {
 message InitializePoolIxData {
 	uint32 whirlpool_bump = 1;
 	uint32 tick_spacing = 2;
-	bytes initial_sqrt_price = 3;
+	string initial_sqrt_price = 3;
 }
 
 message InitializeTickArrayIxAccounts {
@@ -449,7 +449,7 @@ message SetRewardEmissionsIxAccounts {
 
 message SetRewardEmissionsIxData {
 	uint32 reward_index = 1;
-	bytes emissions_per_second_x64 = 2;
+	string emissions_per_second_x64 = 2;
 }
 
 message OpenPositionIxAccounts {
@@ -509,7 +509,7 @@ message IncreaseLiquidityIxAccounts {
 }
 
 message IncreaseLiquidityIxData {
-	bytes liquidity_amount = 1;
+	string liquidity_amount = 1;
 	uint64 token_max_a = 2;
 	uint64 token_max_b = 3;
 }
@@ -529,7 +529,7 @@ message DecreaseLiquidityIxAccounts {
 }
 
 message DecreaseLiquidityIxData {
-	bytes liquidity_amount = 1;
+	string liquidity_amount = 1;
 	uint64 token_min_a = 2;
 	uint64 token_min_b = 3;
 }
@@ -598,7 +598,7 @@ message SwapIxAccounts {
 message SwapIxData {
 	uint64 amount = 1;
 	uint64 other_amount_threshold = 2;
-	bytes sqrt_price_limit = 3;
+	string sqrt_price_limit = 3;
 	bool amount_specified_is_input = 4;
 	bool a_to_b = 5;
 }
@@ -723,8 +723,8 @@ message TwoHopSwapIxData {
 	bool amount_specified_is_input = 3;
 	bool a_to_b_one = 4;
 	bool a_to_b_two = 5;
-	bytes sqrt_price_limit_one = 6;
-	bytes sqrt_price_limit_two = 7;
+	string sqrt_price_limit_one = 6;
+	string sqrt_price_limit_two = 7;
 }
 
 message InitializePositionBundleIxAccounts {
@@ -915,7 +915,7 @@ message DecreaseLiquidityV2IxAccounts {
 }
 
 message DecreaseLiquidityV2IxData {
-	bytes liquidity_amount = 1;
+	string liquidity_amount = 1;
 	uint64 token_min_a = 2;
 	uint64 token_min_b = 3;
 	optional RemainingAccountsInfo remaining_accounts_info = 4;
@@ -940,7 +940,7 @@ message IncreaseLiquidityV2IxAccounts {
 }
 
 message IncreaseLiquidityV2IxData {
-	bytes liquidity_amount = 1;
+	string liquidity_amount = 1;
 	uint64 token_max_a = 2;
 	uint64 token_max_b = 3;
 	optional RemainingAccountsInfo remaining_accounts_info = 4;
@@ -965,7 +965,7 @@ message InitializePoolV2IxAccounts {
 
 message InitializePoolV2IxData {
 	uint32 tick_spacing = 1;
-	bytes initial_sqrt_price = 2;
+	string initial_sqrt_price = 2;
 }
 
 message InitializeRewardV2IxAccounts {
@@ -992,7 +992,7 @@ message SetRewardEmissionsV2IxAccounts {
 
 message SetRewardEmissionsV2IxData {
 	uint32 reward_index = 1;
-	bytes emissions_per_second_x64 = 2;
+	string emissions_per_second_x64 = 2;
 }
 
 message SwapV2IxAccounts {
@@ -1016,7 +1016,7 @@ message SwapV2IxAccounts {
 message SwapV2IxData {
 	uint64 amount = 1;
 	uint64 other_amount_threshold = 2;
-	bytes sqrt_price_limit = 3;
+	string sqrt_price_limit = 3;
 	bool amount_specified_is_input = 4;
 	bool a_to_b = 5;
 	optional RemainingAccountsInfo remaining_accounts_info = 6;
@@ -1055,8 +1055,8 @@ message TwoHopSwapV2IxData {
 	bool amount_specified_is_input = 3;
 	bool a_to_b_one = 4;
 	bool a_to_b_two = 5;
-	bytes sqrt_price_limit_one = 6;
-	bytes sqrt_price_limit_two = 7;
+	string sqrt_price_limit_one = 6;
+	string sqrt_price_limit_two = 7;
 	optional RemainingAccountsInfo remaining_accounts_info = 8;
 }
 

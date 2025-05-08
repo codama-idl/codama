@@ -188,12 +188,12 @@ mod proto_parser {
             proto_def::Position {
                 whirlpool: self.whirlpool.to_string(),
                 position_mint: self.position_mint.to_string(),
-                liquidity: self.liquidity.to_le_bytes().to_vec(),
+                liquidity: self.liquidity.to_string(),
                 tick_lower_index: self.tick_lower_index,
                 tick_upper_index: self.tick_upper_index,
-                fee_growth_checkpoint_a: self.fee_growth_checkpoint_a.to_le_bytes().to_vec(),
+                fee_growth_checkpoint_a: self.fee_growth_checkpoint_a.to_string(),
                 fee_owed_a: self.fee_owed_a,
-                fee_growth_checkpoint_b: self.fee_growth_checkpoint_b.to_le_bytes().to_vec(),
+                fee_growth_checkpoint_b: self.fee_growth_checkpoint_b.to_string(),
                 fee_owed_b: self.fee_owed_b,
                 reward_infos: self
                     .reward_infos
@@ -208,7 +208,7 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::PositionBundle {
             proto_def::PositionBundle {
                 position_bundle_mint: self.position_bundle_mint.to_string(),
-                position_bitmap: self.position_bitmap.to_vec(),
+                position_bitmap: self.position_bitmap.into_iter().map(|x| x.into()).collect(),
             }
         }
     }
@@ -236,22 +236,26 @@ mod proto_parser {
         fn into_proto(self) -> proto_def::Whirlpool {
             proto_def::Whirlpool {
                 whirlpools_config: self.whirlpools_config.to_string(),
-                whirlpool_bump: self.whirlpool_bump.to_vec(),
+                whirlpool_bump: self.whirlpool_bump.into_iter().map(|x| x.into()).collect(),
                 tick_spacing: self.tick_spacing.into(),
-                tick_spacing_seed: self.tick_spacing_seed.to_vec(),
+                tick_spacing_seed: self
+                    .tick_spacing_seed
+                    .into_iter()
+                    .map(|x| x.into())
+                    .collect(),
                 fee_rate: self.fee_rate.into(),
                 protocol_fee_rate: self.protocol_fee_rate.into(),
-                liquidity: self.liquidity.to_le_bytes().to_vec(),
-                sqrt_price: self.sqrt_price.to_le_bytes().to_vec(),
+                liquidity: self.liquidity.to_string(),
+                sqrt_price: self.sqrt_price.to_string(),
                 tick_current_index: self.tick_current_index,
                 protocol_fee_owed_a: self.protocol_fee_owed_a,
                 protocol_fee_owed_b: self.protocol_fee_owed_b,
                 token_mint_a: self.token_mint_a.to_string(),
                 token_vault_a: self.token_vault_a.to_string(),
-                fee_growth_global_a: self.fee_growth_global_a.to_le_bytes().to_vec(),
+                fee_growth_global_a: self.fee_growth_global_a.to_string(),
                 token_mint_b: self.token_mint_b.to_string(),
                 token_vault_b: self.token_vault_b.to_string(),
-                fee_growth_global_b: self.fee_growth_global_b.to_le_bytes().to_vec(),
+                fee_growth_global_b: self.fee_growth_global_b.to_string(),
                 reward_last_updated_timestamp: self.reward_last_updated_timestamp,
                 reward_infos: self
                     .reward_infos
