@@ -31,17 +31,24 @@ test('it renders accounts parsers', () => {
         instructions: [],
         kind: 'programNode',
         name: camelCase('test'),
+        origin: 'shank',
         pdas: [],
         publicKey: 'TokenzQdZyKAYHHfoc7ndTnfcGr3qCUck3x4MvRkPaAj',
         version: '0.0.0',
     });
 
     // When we render it.
-    const renderMap = visit(node, getRenderMapVisitor());
+    const renderMap = visit(
+        node,
+        getRenderMapVisitor({
+            project: 'test',
+            sdkName: 'crate',
+        }),
+    );
 
     // Then we expect the following identifier and reference to the byte array
     // as a parameters to be rendered.
-    codeContains(renderMap.get('accounts_parser.rs'), [
+    codeContains(renderMap.get('src/generated/accounts_parser.rs'), [
         'pub enum TestProgramState',
         'Mint(Mint)',
         'Account(Account)',
