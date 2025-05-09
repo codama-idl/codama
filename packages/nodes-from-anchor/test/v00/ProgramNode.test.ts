@@ -1,8 +1,13 @@
 import {
     accountNode,
+    bytesTypeNode,
+    bytesValueNode,
     constantPdaSeedNodeFromProgramId,
     definedTypeNode,
     errorNode,
+    fieldDiscriminatorNode,
+    fixedSizeTypeNode,
+    instructionArgumentNode,
     instructionNode,
     pdaLinkNode,
     pdaNode,
@@ -36,7 +41,20 @@ test('it creates program nodes', () => {
                     name: 'myError',
                 }),
             ],
-            instructions: [instructionNode({ name: 'myInstruction' })],
+            instructions: [
+                instructionNode({
+                    arguments: [
+                        instructionArgumentNode({
+                            defaultValue: bytesValueNode('base16', (0).toString(16)),
+                            defaultValueStrategy: 'omitted',
+                            name: 'discriminator',
+                            type: fixedSizeTypeNode(bytesTypeNode(), 1),
+                        }),
+                    ],
+                    discriminators: [fieldDiscriminatorNode('discriminator')],
+                    name: 'myInstruction',
+                }),
+            ],
             name: 'myProgram',
             origin: 'shank',
             pdas: [pdaNode({ name: 'myAccount', seeds: [constantPdaSeedNodeFromProgramId()] })],

@@ -15,8 +15,10 @@ This package converts Anchor IDLs from various versions into Codama IDLs.
 pnpm install @codama/nodes-from-anchor
 ```
 
-> [!NOTE]
-> This package is **not** included in the main [`codama`](../library) package.
+> ⚠️ NOTES ⚠️
+>
+> - This package is **not** included in the main [`codama`](../library) package.
+> - A fair word of advice is that in case the `metadata.origin` key of the idl is not set, it is assumed to be `"anchor"`. So if you are trying to parse a Shank IDL, be sure that origin is set to `"shank"`.
 
 ## Functions
 
