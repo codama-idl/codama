@@ -11,7 +11,9 @@ export function programNodeFromAnchorV00(idl: IdlV00): ProgramNode {
     const origin = (idl?.metadata as { origin?: 'anchor' | 'shank' })?.origin ?? 'anchor';
     const pdas = (idl.accounts ?? []).filter(account => (account.seeds ?? []).length > 0).map(pdaNodeFromAnchorV00);
     const accounts = (idl.accounts ?? []).map(a => accountNodeFromAnchorV00(a, origin));
-    const instructions = (idl.instructions ?? []).map(i => instructionNodeFromAnchorV00(i, origin));
+    const instructions = (idl.instructions ?? []).map((instruction, index) =>
+        instructionNodeFromAnchorV00(instruction, index, origin),
+    );
     return programNode({
         accounts,
         definedTypes: (idl?.types ?? []).map(definedTypeNodeFromAnchorV00),
