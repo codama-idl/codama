@@ -40,11 +40,11 @@ impl {{ account.name | pascalCase }} {
       {% endfor %}
       ) = (
       {% for seed in constantSeeds %}
-        {{ seed.valueManifest.render }}.as_bytes(),
+        &{{ seed.valueManifest.render }},
       {% endfor %}
       );
     {% elif constantSeeds.length === 1 %}
-      pub const PREFIX: &'static [u8] = {{ constantSeeds[0].valueManifest.render }}.as_bytes();
+      pub const PREFIX: &'static [u8] = &{{ constantSeeds[0].valueManifest.render }};
     {% endif %}
   {% endif %}
 
@@ -65,7 +65,7 @@ impl {{ account.name | pascalCase }} {
             {% if seed.kind === 'constantPdaSeedNode' and seed.value.kind === 'programIdValueNode' %}
               crate::{{ program.name | snakeCase | upper }}_ID.as_ref(),
             {% elif seed.kind === 'constantPdaSeedNode' %}
-              {{ seed.valueManifest.render }}.as_bytes(),
+              &{{ seed.valueManifest.render }},
             {% elif seed.kind == 'variablePdaSeedNode' and seed.resolvedType.kind == 'publicKeyTypeNode' %}
               {{ seed.name | snakeCase }}.as_ref(),
             {% elif seed.kind == 'variablePdaSeedNode' and seed.resolvedType.kind == 'bytesTypeNode' %}
@@ -97,7 +97,7 @@ impl {{ account.name | pascalCase }} {
             {% if seed.kind === 'constantPdaSeedNode' and seed.value.kind === 'programIdValueNode' %}
               crate::{{ program.name | snakeCase | upper }}_ID.as_ref(),
             {% elif seed.kind === 'constantPdaSeedNode' %}
-              {{ seed.valueManifest.render }}.as_bytes(),
+              &{{ seed.valueManifest.render }},
             {% elif seed.kind == 'variablePdaSeedNode' and seed.resolvedType.kind == 'publicKeyTypeNode' %}
               {{ seed.name | snakeCase }}.as_ref(),
             {% elif seed.kind == 'variablePdaSeedNode' and seed.resolvedType.kind == 'bytesTypeNode' %}
