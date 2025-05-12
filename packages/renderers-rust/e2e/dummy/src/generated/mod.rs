@@ -5,10 +5,8 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-pub mod accounts;
 pub mod errors;
 pub mod instructions;
 pub mod programs;
-pub mod shared;
 
 pub(crate) use programs::*;

@@ -730,13 +730,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         );
                     }
 
-                    if (
-                        map.has(`src/${folderName}/accounts_parser.rs`) ||
-                        map.has(`src/${folderName}/instructions_parser.rs`)
-                    ) {
-                        // todo
-                    }
-
                     map.add(
                         `src/${folderName}/mod.rs`,
                         render('rootMod.njk', {
