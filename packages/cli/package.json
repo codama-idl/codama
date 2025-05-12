@@ -1,7 +1,7 @@
 {
     "name": "@codama/cli",
     "version": "1.0.12",
-    "description": "The package that provides a CLI for the Codama standard",
+    "description": "A CLI for setting up and managing Codama IDLs",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "node": {
@@ -13,8 +13,13 @@
     "module": "./dist/index.node.mjs",
     "types": "./dist/types/index.d.ts",
     "type": "commonjs",
+    "bin": {
+        "codama": "./bin/cli.cjs"
+    },
     "files": [
+        "./bin",
         "./dist/types",
+        "./dist/cli.*",
         "./dist/index.*"
     ],
     "sideEffects": false,
@@ -24,8 +29,9 @@
         "cli"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:types",
+        "build": "rimraf dist && pnpm build:src && pnpm build:cli && pnpm build:types",
         "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
+        "build:cli": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs cli",
         "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
         "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
