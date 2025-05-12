@@ -9,10 +9,9 @@
 pub mod proto_types_parsers {
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
-    use crate as sdk;
     use crate::proto_def;
 
-    use sdk::types::WithdrawDestToken;
+    use crate::types::WithdrawDestToken;
     impl IntoProto<proto_def::WithdrawDestToken> for WithdrawDestToken {
         fn into_proto(self) -> proto_def::WithdrawDestToken {
             proto_def::WithdrawDestToken {
@@ -24,7 +23,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::WithdrawQueue;
+    use crate::types::WithdrawQueue;
     impl IntoProto<proto_def::WithdrawQueue> for WithdrawQueue {
         fn into_proto(self) -> proto_def::WithdrawQueue {
             proto_def::WithdrawQueue {
@@ -35,7 +34,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::TargetOrder;
+    use crate::types::TargetOrder;
     impl IntoProto<proto_def::TargetOrder> for TargetOrder {
         fn into_proto(self) -> proto_def::TargetOrder {
             proto_def::TargetOrder {
@@ -44,7 +43,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::OutPutData;
+    use crate::types::OutPutData;
     impl IntoProto<proto_def::OutPutData> for OutPutData {
         fn into_proto(self) -> proto_def::OutPutData {
             proto_def::OutPutData {
@@ -65,7 +64,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::LastOrderDistance;
+    use crate::types::LastOrderDistance;
     impl IntoProto<proto_def::LastOrderDistance> for LastOrderDistance {
         fn into_proto(self) -> proto_def::LastOrderDistance {
             proto_def::LastOrderDistance {
@@ -74,7 +73,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::NeedTake;
+    use crate::types::NeedTake;
     impl IntoProto<proto_def::NeedTake> for NeedTake {
         fn into_proto(self) -> proto_def::NeedTake {
             proto_def::NeedTake {
@@ -83,7 +82,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::SwapInstructionBaseIn;
+    use crate::types::SwapInstructionBaseIn;
     impl IntoProto<proto_def::SwapInstructionBaseIn> for SwapInstructionBaseIn {
         fn into_proto(self) -> proto_def::SwapInstructionBaseIn {
             proto_def::SwapInstructionBaseIn {
@@ -92,7 +91,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::SwapInstructionBaseOut;
+    use crate::types::SwapInstructionBaseOut;
     impl IntoProto<proto_def::SwapInstructionBaseOut> for SwapInstructionBaseOut {
         fn into_proto(self) -> proto_def::SwapInstructionBaseOut {
             proto_def::SwapInstructionBaseOut {
@@ -101,7 +100,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::Fees;
+    use crate::types::Fees;
     impl IntoProto<proto_def::Fees> for Fees {
         fn into_proto(self) -> proto_def::Fees {
             proto_def::Fees {

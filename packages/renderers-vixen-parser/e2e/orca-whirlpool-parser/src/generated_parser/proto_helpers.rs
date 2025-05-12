@@ -9,10 +9,9 @@
 pub mod proto_types_parsers {
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
-    use crate as sdk;
     use crate::proto_def;
 
-    use sdk::types::PositionRewardInfo;
+    use crate::types::PositionRewardInfo;
     impl IntoProto<proto_def::PositionRewardInfo> for PositionRewardInfo {
         fn into_proto(self) -> proto_def::PositionRewardInfo {
             proto_def::PositionRewardInfo {
@@ -21,7 +20,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::Tick;
+    use crate::types::Tick;
     impl IntoProto<proto_def::Tick> for Tick {
         fn into_proto(self) -> proto_def::Tick {
             proto_def::Tick {
@@ -38,7 +37,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::WhirlpoolRewardInfo;
+    use crate::types::WhirlpoolRewardInfo;
     impl IntoProto<proto_def::WhirlpoolRewardInfo> for WhirlpoolRewardInfo {
         fn into_proto(self) -> proto_def::WhirlpoolRewardInfo {
             proto_def::WhirlpoolRewardInfo {
@@ -50,7 +49,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::RemainingAccountsInfo;
+    use crate::types::RemainingAccountsInfo;
     impl IntoProto<proto_def::RemainingAccountsInfo> for RemainingAccountsInfo {
         fn into_proto(self) -> proto_def::RemainingAccountsInfo {
             proto_def::RemainingAccountsInfo {
@@ -58,7 +57,7 @@ pub mod proto_types_parsers {
             }
         }
     }
-    use sdk::types::RemainingAccountsSlice;
+    use crate::types::RemainingAccountsSlice;
     impl IntoProto<proto_def::RemainingAccountsSlice> for RemainingAccountsSlice {
         fn into_proto(self) -> proto_def::RemainingAccountsSlice {
             proto_def::RemainingAccountsSlice {

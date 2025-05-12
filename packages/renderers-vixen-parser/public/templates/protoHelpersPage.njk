@@ -8,11 +8,10 @@
 pub mod proto_types_parsers {
     use yellowstone_vixen_core::proto_helper_traits;
     proto_helper_traits!();
-    use {{ sdkName }} as sdk;
     use crate::proto_def;
 
     {% for typeHelper in protoTypesHelpers %}
-        use sdk::types::{{ typeHelper.name | pascalCase }};
+        use crate::types::{{ typeHelper.name | pascalCase }};
         impl IntoProto<proto_def::{{ typeHelper.name | pascalCase }}> for {{ typeHelper.name | pascalCase }} {
             fn into_proto(self) -> proto_def::{{ typeHelper.name | pascalCase }} {
                 proto_def::{{ typeHelper.name | pascalCase }} {
@@ -25,7 +24,7 @@ pub mod proto_types_parsers {
     {% endfor %}
 
     {% for typeHelper in protoTypesHelpersEnums %}
-        use sdk::types::{{ typeHelper.name | pascalCase }};
+        use crate::types::{{ typeHelper.name | pascalCase }};
         use proto_def::{{ typeHelper.name | snakeCase }}::Variant;
         impl IntoProto<proto_def::{{ typeHelper.name | pascalCase }}> for {{ typeHelper.name | pascalCase }} {
             fn into_proto(self) -> proto_def::{{ typeHelper.name | pascalCase }} {

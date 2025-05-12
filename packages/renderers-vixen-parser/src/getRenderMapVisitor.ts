@@ -35,17 +35,11 @@ import {
     numberTypeToProtoHelper,
 } from './getProtoTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
-import { getBytesFromBytesValueNode, getImportFromFactory, LinkOverrides, render } from './utils';
+import { getBytesFromBytesValueNode, getImportFromFactory, render } from './utils';
 
 export type GetRenderMapOptions = {
-    cargoAdditionalDependencies?: string[];
     generateProto?: boolean;
-    generatedFolderName?: string;
-    linkOverrides?: LinkOverrides;
-    overridesLib?: string[];
-    project?: string;
-    renderParentInstructions?: boolean;
-    sdkName?: string;
+    projectName: string;
 };
 
 // Account node for the parser
@@ -375,11 +369,10 @@ const getIxFieldDiscriminator = (node: InstructionNode) => {
     return getFieldDiscriminator(discriminatorValue);
 };
 
-export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
+export function getRenderMapVisitor(options: GetRenderMapOptions) {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
-    const renderParentInstructions = options.renderParentInstructions ?? false;
-    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+    const getImportFrom = getImportFromFactory({});
     const getTraitsFromNode = (_node: AccountNode | DefinedTypeNode) => {
         return { imports: new ImportMap(), render: '' };
     };
@@ -399,8 +392,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const programAccounts = getAllAccounts(node);
                     const types = getAllDefinedTypes(node);
-
-                    const folderName = options.generatedFolderName ?? 'generated';
 
                     let accDiscLen: number | undefined;
                     let hasAccountDiscriminator = false;
@@ -439,7 +430,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     });
 
                     const programInstructions = getAllInstructionsWithSubs(node, {
-                        leavesOnly: !renderParentInstructions,
+                        leavesOnly: true,
                     });
 
                     // Instructions
@@ -480,29 +471,22 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         };
                     });
 
-                    if (!options.sdkName) {
-                        throw new Error('sdkName is required');
+                    if (!options.projectName) {
+                        throw new Error('projectName is required');
                     }
-
-                    if (!options.project) {
-                        throw new Error('programName is required');
-                    }
-
-                    const projectName = `yellowstone-vixen-${options.project}-parser`;
-
-                    const codamaSdkName = snakeCase(options.sdkName);
+                    const projectName = `yellowstone-vixen-${options.projectName}-parser`;
 
                     const accountParserImports = new ImportMap();
 
                     accounts.forEach(acc => {
-                        accountParserImports.add(`${codamaSdkName}::accounts::${pascalCase(acc.name)}`);
+                        accountParserImports.add(`crate::accounts::${pascalCase(acc.name)}`);
                     });
 
                     const instructionParserImports = new ImportMap();
 
                     instructionParserImports.add('borsh::{BorshDeserialize}');
 
-                    const programIdImport = `${codamaSdkName}::ID`;
+                    const programIdImport = `crate::ID`;
 
                     instructionParserImports.add(programIdImport);
 
@@ -523,16 +507,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         }
                     });
 
-                    instructionParserImports.add(`${codamaSdkName}::instructions::{${ixImports}}`);
+                    instructionParserImports.add(`crate::instructions::{${ixImports}}`);
                     const map = new RenderMap();
 
                     const programStateOneOf: string[] = [];
 
                     let hasProtoHelpers = false;
 
-                    const protoProjectName = snakeCase(options.project);
+                    const protoProjectName = snakeCase(options.projectName);
 
-                    if (options.generateProto) {
+                    if (options.generateProto !== false) {
                         const definedTypes: string[] = [];
                         // proto Ixs , Accounts and Types
                         const matrixTypes: Set<string> = new Set();
@@ -689,12 +673,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             };
 
                             map.add(
-                                `src/${folderName}/proto_helpers.rs`,
+                                `src/generated_parser/proto_helpers.rs`,
                                 render('protoHelpersPage.njk', {
                                     normalizeAcronyms,
                                     protoTypesHelpers,
                                     protoTypesHelpersEnums,
-                                    sdkName: codamaSdkName,
                                 }),
                             );
                         }
@@ -720,30 +703,27 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     // only two files are generated as part of account and instruction parser
                     if (accCtx.accounts.length > 0) {
-                        map.add(`src/${folderName}/accounts_parser.rs`, render('accountsParserPage.njk', accCtx));
+                        map.add(`src/generated_parser/accounts_parser.rs`, render('accountsParserPage.njk', accCtx));
                     }
 
                     if (ixCtx.instructions.length > 0) {
                         map.add(
-                            `src/${folderName}/instructions_parser.rs`,
+                            `src/generated_parser/instructions_parser.rs`,
                             render('instructionsParserPage.njk', ixCtx),
                         );
                     }
 
                     map.add(
-                        `src/${folderName}/mod.rs`,
+                        `src/generated_parser/mod.rs`,
                         render('rootMod.njk', {
                             hasAccounts: accCtx.accounts.length > 0,
                             hasProtoHelpers,
                         }),
                     );
 
-                    const overridesLib = options.overridesLib ?? [];
                     map.add(
                         'src/lib.rs',
                         render('libPage.njk', {
-                            newContent: overridesLib,
-                            overrided: overridesLib.length > 0,
                             programId: node.program.name,
                             protoProjectName,
                         }),
@@ -751,11 +731,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     map.add('build.rs', render('buildPage.njk', { protoProjectName }));
 
-                    const additionalDependencies = options.cargoAdditionalDependencies ?? [];
                     map.add(
                         'Cargo.toml',
                         render('CargoPage.njk', {
-                            additionalDependencies,
                             projectName,
                         }),
                     );

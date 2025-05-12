@@ -19,7 +19,6 @@ tracing = { version = "0.1.40", optional = true }
 strum = { version = "0.24", optional = true }
 strum_macros = { version = "0.24", optional = true }
 
-
 [features]
 anchor = []
 anchor-idl-build = []
@@ -27,7 +26,6 @@ serde = []
 test-sbf = []
 fetch = []
 tracing = ["dep:tracing", "dep:strum", "dep:strum_macros"]
-
 
 [build-dependencies]
 prost-build = "0.13.1"
