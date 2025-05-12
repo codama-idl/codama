@@ -53,7 +53,6 @@
         "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
     },
     "dependencies": {
-        "@codama/cli": "workspace:*",
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/validators": "workspace:*",
