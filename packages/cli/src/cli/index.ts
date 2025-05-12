@@ -1,4 +1,5 @@
-import { createProgram, logDebug, logError } from '@codama/cli';
+import { createProgram } from '../program';
+import { logDebug, logError } from '../utils';
 
 const program = createProgram();
 
