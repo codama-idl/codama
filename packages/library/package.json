@@ -1,6 +1,6 @@
 {
     "name": "codama",
-    "version": "1.2.13",
+    "version": "1.3.0",
     "description": "A Solana framework for building standardised programs",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -26,11 +26,8 @@
     "react-native": "./dist/index.react-native.mjs",
     "types": "./dist/types/index.d.ts",
     "type": "commonjs",
-    "bin": "./bin/cli.cjs",
     "files": [
-        "./bin",
         "./dist/types",
-        "./dist/cli.*",
         "./dist/index.*"
     ],
     "sideEffects": false,
@@ -42,9 +39,8 @@
         "code generation"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:cli && pnpm build:types",
+        "build": "rimraf dist && pnpm build:src && pnpm build:types",
         "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs library",
-        "build:cli": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs cli",
         "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
         "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
@@ -57,7 +53,6 @@
         "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
     },
     "dependencies": {
-        "@codama/cli": "workspace:*",
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/validators": "workspace:*",
