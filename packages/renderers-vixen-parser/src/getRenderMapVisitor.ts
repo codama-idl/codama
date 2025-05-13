@@ -1,11 +1,21 @@
 import {
+    AccountNode,
+    DefinedTypeLinkNode,
+    DefinedTypeNode,
+    EnumTypeNode,
+    EnumVariantTypeNode,
     getAllAccounts,
+    getAllDefinedTypes,
     getAllInstructionsWithSubs,
-    getAllPrograms,
-    isNode,
+    InstructionArgumentNode,
+    InstructionNode,
+    NumberTypeNode,
     pascalCase,
+    resolveNestedTypeNode,
     snakeCase,
-    VALUE_NODES,
+    StructFieldTypeNode,
+    titleCase,
+    TypeNode,
 } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
@@ -16,20 +26,29 @@ import {
     recordLinkablesOnFirstVisitVisitor,
     recordNodeStackVisitor,
     staticVisitor,
+    visit,
 } from '@codama/visitors-core';
 
+import {
+    checkArrayTypeAndFix,
+    getProtoTypeManifestVisitor,
+    numberTypeToProtoHelper,
+} from './getProtoTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
-import { renderValueNode } from './renderValueNodeVisitor';
-import { getImportFromFactory, LinkOverrides, render } from './utils';
+import { getBytesFromBytesValueNode, getImportFromFactory, render } from './utils';
 
 export type GetRenderMapOptions = {
-    linkOverrides?: LinkOverrides;
-    renderParentInstructions?: boolean;
-    sdkName?: string;
+    generateProto?: boolean;
+    projectName: string;
 };
 
 // Account node for the parser
 type ParserAccountNode = {
+    discriminator: string | null;
+    fields: {
+        name: string;
+        transform: string;
+    }[];
     name: string;
     size: number | null;
 };
@@ -45,14 +64,319 @@ type ParserInstructionNode = {
     accounts: ParserInstructionAccountNode[];
     discriminator: string | null;
     hasArgs: boolean;
+    hasOptionalAccounts: boolean;
+    ixArgs: {
+        name: string;
+        transform: string;
+    }[];
     name: string;
 };
 
-export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
+function getInnerDefinedTypeTransform(
+    type: DefinedTypeLinkNode,
+    outerTypeName: string,
+    idlDefinedTypes: DefinedTypeNode[],
+): string {
+    const fieldTypeName = type.name;
+    const definedType = idlDefinedTypes.find(dt => dt.name === fieldTypeName);
+    if (!definedType) {
+        throw new Error(`Defined type ${fieldTypeName} not found`);
+    }
+
+    if (definedType.type.kind === 'structTypeNode') {
+        return `Some(self.${outerTypeName}.into_proto())`;
+    } else if (definedType.type.kind === 'enumTypeNode') {
+        return isEnumEmptyVariant(definedType.type)
+            ? `self.${outerTypeName} as i32`
+            : `Some(self.${outerTypeName}.into_proto())`;
+    } else {
+        throw new Error(`Defined type ${fieldTypeName} is not a struct or enum`);
+    }
+}
+
+function getInnerDefinedTypeTransformForEnumVariant(
+    type: DefinedTypeLinkNode,
+    outerTypeName: string,
+    idlDefinedTypes: DefinedTypeNode[],
+): string {
+    const fieldTypeName = type.name;
+    const definedType = idlDefinedTypes.find(dt => dt.name === fieldTypeName);
+    if (!definedType) {
+        throw new Error(`Defined type ${fieldTypeName} not found`);
+    }
+
+    if (definedType.type.kind === 'structTypeNode') {
+        return `self.${outerTypeName}.into_proto()`;
+    } else if (definedType.type.kind === 'enumTypeNode') {
+        return isEnumEmptyVariant(definedType.type)
+            ? `self.${outerTypeName} as i32`
+            : `self.${outerTypeName}.into_proto()`;
+    } else {
+        throw new Error(`Defined type ${fieldTypeName} is not a struct or enum`);
+    }
+}
+
+export function isEnumEmptyVariant(type: EnumTypeNode) {
+    return type.variants.reduce((acc, variant) => acc && variant.kind === 'enumEmptyVariantTypeNode', true);
+}
+
+export function getEnumTypeTransform(_type: EnumTypeNode, _outerTypeName: string) {}
+
+function getNumberTypeTransform(type: NumberTypeNode) {
+    switch (type.format) {
+        case 'u128':
+        case 'i128': {
+            return `.to_string()`;
+        }
+
+        case 'u8':
+        case 'u16':
+            return `.into()`;
+
+        default:
+            return ``;
+    }
+}
+
+// TODO!: Make this function use getTransform() for the inner items
+function getArrayTypeTransform(item: TypeNode, outerTypeName: string, idlDefinedTypes: DefinedTypeNode[]) {
+    switch (item.kind) {
+        case 'definedTypeLinkNode': {
+            const definedType = idlDefinedTypes.find(dt => dt.name === item.name);
+            if (!definedType) {
+                throw new Error(`Defined type ${item.name} not found`);
+            }
+            const isdefinedTypeLinkNodeEnum = definedType.type.kind === 'enumTypeNode';
+
+            // Empty VariantEnum type handling
+            if (isdefinedTypeLinkNodeEnum && isEnumEmptyVariant(definedType.type)) {
+                return `self.${outerTypeName}.into_iter().map(|x| x as i32).collect()`;
+            } else {
+                return `self.${outerTypeName}.into_iter().map(|x| x.into_proto()).collect()`;
+            }
+        }
+
+        // Matrix case
+        case 'arrayTypeNode': {
+            const matrixItemKind = item.item.kind;
+            switch (matrixItemKind) {
+                case 'numberTypeNode': {
+                    const protoTypeName = numberTypeToProtoHelper(item.item);
+                    const helperTypeName = `Repeated${titleCase(protoTypeName)}Row`;
+
+                    return `self.${outerTypeName}.into_iter().map(|x| proto_def::${helperTypeName} { rows: x.to_vec() }).collect()`;
+                }
+                default: {
+                    throw new Error(`Unsupported matrix item kind: ${matrixItemKind}`);
+                }
+            }
+        }
+
+        case 'numberTypeNode': {
+            const innerTansform = getNumberTypeTransform(item);
+            if (innerTansform === '') {
+                return `self.${outerTypeName}.to_vec()`;
+            } else {
+                return `self.${outerTypeName}.into_iter().map(|x| x${innerTansform}).collect()`;
+            }
+        }
+
+        case 'publicKeyTypeNode': {
+            return `self.${outerTypeName}.into_iter().map(|x| x.to_string()).collect()`;
+        }
+
+        case 'bytesTypeNode': {
+            return `self.${outerTypeName}.into_iter().map(|x| x.into()).collect()`;
+        }
+
+        default:
+            console.warn(`Warning!: Default case for array type: ${item.kind} for type ${outerTypeName}`);
+            return `self.${outerTypeName}.to_vec()`;
+    }
+}
+
+function getOptionTypeTransform(
+    item: TypeNode,
+    outerTypeName: string,
+    idlDefinedTypes: DefinedTypeNode[],
+    options: { isEnumVariant: boolean },
+) {
+    const innerTransform = getTransform(item, outerTypeName, idlDefinedTypes, options);
+    const cleanedTransform = innerTransform.replace(`self.${outerTypeName}`, 'x');
+
+    switch (cleanedTransform) {
+        case 'x':
+            return `self.${outerTypeName}`;
+        case 'Some(x.into_proto())':
+            return `self.${outerTypeName}.map(|x| x.into_proto())`;
+        default:
+            return `self.${outerTypeName}.map(|x| ${cleanedTransform})`;
+    }
+}
+
+function getTransform(
+    type: TypeNode,
+    name: string,
+    idlDefinedTypes: DefinedTypeNode[],
+    options = { isEnumVariant: false },
+): string {
+    const typeName = snakeCase(name);
+
+    switch (type.kind) {
+        case 'definedTypeLinkNode': {
+            return options.isEnumVariant
+                ? getInnerDefinedTypeTransformForEnumVariant(type, typeName, idlDefinedTypes)
+                : getInnerDefinedTypeTransform(type, typeName, idlDefinedTypes);
+        }
+
+        case 'arrayTypeNode':
+            return getArrayTypeTransform(type.item, typeName, idlDefinedTypes);
+
+        case 'fixedSizeTypeNode':
+            return getArrayTypeTransform(type.type, typeName, idlDefinedTypes);
+
+        case 'publicKeyTypeNode':
+            return `self.${typeName}.to_string()`;
+
+        case 'optionTypeNode':
+            return getOptionTypeTransform(type.item, typeName, idlDefinedTypes, options);
+
+        case 'numberTypeNode':
+            return `self.${typeName}${getNumberTypeTransform(type)}`;
+
+        default:
+            return `self.${typeName}`;
+    }
+}
+
+function getEnumVariantTransform(variant: EnumVariantTypeNode, idlDefinedTypes: DefinedTypeNode[]): [string, string] {
+    switch (variant.kind) {
+        case 'enumEmptyVariantTypeNode': {
+            return ['', ''];
+        }
+
+        case 'enumStructVariantTypeNode': {
+            if (variant.struct.kind === 'structTypeNode') {
+                const variantFields = variant.struct.fields.reduce(
+                    (acc, field) => `${acc}${snakeCase(field.name)}, `,
+                    '',
+                );
+                const fieldsTransformMap = variant.struct.fields.map(field => [
+                    snakeCase(field.name),
+                    getTransform(field.type, field.name, idlDefinedTypes, { isEnumVariant: true }),
+                ]);
+                const fieldsTransformString = fieldsTransformMap.reduce((acc, [fieldName, transform]) => {
+                    const transformWithoutSelfPrefix = transform.replace(/^self\./, '');
+                    if (transformWithoutSelfPrefix === fieldName) {
+                        return `${acc}${transformWithoutSelfPrefix}, `;
+                    }
+                    return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
+                }, '');
+
+                return [`{ ${variantFields} }`, fieldsTransformString];
+            } else {
+                throw new Error(`Unsupported enum variant type: ${variant.kind}`);
+            }
+        }
+
+        case 'enumTupleVariantTypeNode': {
+            if (variant.tuple.kind !== 'tupleTypeNode') {
+                throw new Error(`Unsupported enum variant type: ${variant.tuple.kind}`);
+            }
+
+            const variantFields = variant.tuple.items.reduce((acc, _field, i) => `${acc}field_${i}, `, '');
+
+            const fieldsTransformMap = variant.tuple.items.map((field, i) => [
+                `field_${i}`,
+                getTransform(field, `field_${i}`, idlDefinedTypes, { isEnumVariant: true }),
+            ]);
+            const fieldsTransformString = fieldsTransformMap.reduce((acc, [fieldName, transform]) => {
+                const transformWithoutSelfPrefix = transform.replace(/^self\./, '');
+                if (transformWithoutSelfPrefix === fieldName) {
+                    return `${acc}${transformWithoutSelfPrefix}, `;
+                }
+                return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
+            }, '');
+
+            return [`(${variantFields})`, fieldsTransformString];
+        }
+
+        default:
+            throw new Error(`Unsupported enum variant type`);
+    }
+}
+
+const getFieldDiscriminator = (discriminatorValue: InstructionArgumentNode | StructFieldTypeNode): string[] => {
+    if (
+        discriminatorValue.name !== 'discriminator' ||
+        discriminatorValue.type.kind !== 'fixedSizeTypeNode' ||
+        discriminatorValue.type.type.kind !== 'bytesTypeNode' ||
+        !discriminatorValue.defaultValue ||
+        discriminatorValue.defaultValue.kind !== 'bytesValueNode' ||
+        discriminatorValue.defaultValue.encoding !== 'base16'
+    ) {
+        throw new Error(`"${discriminatorValue.name}" does not have a supported discriminator`);
+    }
+
+    const discriminator = Array.from(getBytesFromBytesValueNode(discriminatorValue.defaultValue)).map(v =>
+        v.toString(),
+    );
+
+    if (discriminator.length !== discriminatorValue.type.size) {
+        throw new Error('Invalid discriminator length');
+    }
+
+    return discriminator;
+};
+
+/** Currenty only supports one discriminator per account, being in the discriminator field and at the start of the data.
+ * If not present or `sizeDiscriminator` is set, defaults to account LEN strategy.
+ */
+const getAccountSizeOrFieldDiscriminator = (node: AccountNode): string[] | null => {
+    const discriminators = node.discriminators;
+    // If not discriminator set, default to account LEN strategy
+    if (!discriminators || discriminators.length === 0) {
+        return null;
+    }
+    if (discriminators.length != 1) {
+        throw new Error(`Account "${node.name}" does not have a supported discriminator`);
+    }
+    const discriminatorType = discriminators[0];
+    if (discriminatorType.kind === 'sizeDiscriminatorNode') {
+        return null;
+    }
+
+    const discriminatorValue = resolveNestedTypeNode(node.data).fields[0];
+
+    return getFieldDiscriminator(discriminatorValue);
+};
+
+/** Currenty only supports one discriminator per instruction, being in the discriminator field and at the start of the arguments */
+const getIxFieldDiscriminator = (node: InstructionNode) => {
+    const notSupportedDiscriminatorError = `Instruction "${node.name}" does not have a supported discriminator`;
+    const discriminators = node.discriminators;
+    if (!discriminators || discriminators.length != 1) {
+        throw new Error(notSupportedDiscriminatorError);
+    }
+
+    const discriminatorType = discriminators[0];
+    if (discriminatorType.kind !== 'fieldDiscriminatorNode' || discriminatorType.name !== 'discriminator') {
+        throw new Error(notSupportedDiscriminatorError);
+    }
+
+    const discriminatorValue = node.arguments[0];
+
+    return getFieldDiscriminator(discriminatorValue);
+};
+
+export function getRenderMapVisitor(options: GetRenderMapOptions) {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
-
-    const renderParentInstructions = options.renderParentInstructions ?? false;
+    const getImportFrom = getImportFromFactory({});
+    const getTraitsFromNode = (_node: AccountNode | DefinedTypeNode) => {
+        return { imports: new ImportMap(), render: '' };
+    };
+    const typeManifestVisitor = getProtoTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
         staticVisitor(() => new RenderMap(), {
@@ -61,82 +385,108 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v =>
             extendVisitor(v, {
                 visitRoot(node) {
-                    const programsToExport = getAllPrograms(node);
                     //TODO: handle multiple programs
-                    const programName = programsToExport[0]?.name;
-                    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+                    const program = node.program;
+
+                    const programName = program?.name;
+
                     const programAccounts = getAllAccounts(node);
+                    const types = getAllDefinedTypes(node);
+
+                    let accDiscLen: number | undefined;
+                    let hasAccountDiscriminator = false;
+
                     const accounts: ParserAccountNode[] = programAccounts.map(acc => {
+                        const accData = resolveNestedTypeNode(acc.data);
+                        const discriminator = getAccountSizeOrFieldDiscriminator(acc);
+
+                        if (discriminator === null) {
+                            if (hasAccountDiscriminator) {
+                                throw new Error(
+                                    'All discriminators should be null if there is already a null discriminator',
+                                );
+                            }
+                        } else {
+                            hasAccountDiscriminator = true;
+                            if (accDiscLen && accDiscLen !== discriminator.length) {
+                                throw new Error('All accounts discriminators should have the same length');
+                            }
+                            accDiscLen = discriminator.length;
+                        }
+
                         return {
+                            discriminator: discriminator ? `[${discriminator.join(', ')}]` : null,
+                            fields: accData.fields
+                                .filter(field => field.name !== 'discriminator')
+                                .map(field => {
+                                    return {
+                                        name: snakeCase(field.name),
+                                        transform: getTransform(field.type, field.name, types),
+                                    };
+                                }),
                             name: acc.name,
                             size: acc.size?.valueOf() ?? null,
                         };
                     });
+
                     const programInstructions = getAllInstructionsWithSubs(node, {
-                        leavesOnly: !renderParentInstructions,
+                        leavesOnly: true,
                     });
 
-                    // Default value for  Ix discriminator - 1 Byte
-                    // Shank native program uses 1 byte
-                    // anchor uses 8 bytes
-                    let IX_DATA_OFFSET = 1;
+                    // Instructions
+                    let ixDiscLen: number | undefined;
 
                     const instructions: ParserInstructionNode[] = programInstructions.map(ix => {
-                        // checs for discriminator
-                        let discriminator: string[] | string | null = null;
-                        const discriminatorIx = ix.arguments.find(arg => arg.name === 'discriminator');
-                        if (discriminatorIx) {
-                            const hasDefaultValue =
-                                discriminatorIx.defaultValue && isNode(discriminatorIx.defaultValue, VALUE_NODES);
-
-                            if (hasDefaultValue) {
-                                const { render: value } = renderValueNode(discriminatorIx.defaultValue, getImportFrom);
-
-                                discriminator = value;
-
-                                if (Array.isArray(JSON.parse(value) as string[])) {
-                                    IX_DATA_OFFSET = Array.from(JSON.parse(value) as string[]).length;
-                                } else {
-                                    discriminator = `[${discriminator}]`;
-                                }
-                            }
+                        const discriminator = getIxFieldDiscriminator(ix);
+                        if (ixDiscLen && ixDiscLen !== discriminator.length) {
+                            throw new Error('All ixs discriminators should have the same length');
                         }
+                        ixDiscLen = discriminator.length;
 
-                        const hasArgs = discriminator ? ix.arguments.length > 1 : ix.arguments.length > 0;
+                        const hasArgs = ix.arguments.length > 1;
                         const hasOptionalAccounts = ix.accounts.some(acc => acc.isOptional);
+                        const ixArgs = ix.arguments
+                            .filter(arg => arg.name !== 'discriminator')
+                            .map(arg => {
+                                return {
+                                    name: snakeCase(arg.name),
+                                    transform: getTransform(arg.type, arg.name, types),
+                                };
+                            });
 
                         return {
                             accounts: ix.accounts.map((acc, accIdx) => {
                                 return {
                                     index: accIdx,
                                     isOptional: acc.isOptional,
-                                    name: acc.name,
+                                    name: snakeCase(acc.name),
                                 };
                             }),
-                            discriminator,
+                            discriminator: `[${discriminator.join(', ')}]`,
                             hasArgs,
                             hasOptionalAccounts,
+                            ixArgs,
                             name: ix.name,
                             optionalAccountStrategy: ix.optionalAccountStrategy,
                         };
                     });
 
-                    // TODO: assuming name of codama generated sdk to be {program_name}_program_sdk for now need to change it
-                    const codamaSdkName = options.sdkName
-                        ? snakeCase(options.sdkName)
-                        : `${snakeCase(programName)}_program_sdk`;
+                    if (!options.projectName) {
+                        throw new Error('projectName is required');
+                    }
+                    const projectName = `yellowstone-vixen-${options.projectName}-parser`;
 
                     const accountParserImports = new ImportMap();
 
                     accounts.forEach(acc => {
-                        accountParserImports.add(`${codamaSdkName}::accounts::${pascalCase(acc.name)}`);
+                        accountParserImports.add(`crate::accounts::${pascalCase(acc.name)}`);
                     });
 
                     const instructionParserImports = new ImportMap();
 
                     instructionParserImports.add('borsh::{BorshDeserialize}');
 
-                    const programIdImport = `${codamaSdkName}::ID`;
+                    const programIdImport = `crate::ID`;
 
                     instructionParserImports.add(programIdImport);
 
@@ -157,39 +507,234 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         }
                     });
 
-                    instructionParserImports.add(`${codamaSdkName}::instructions::{${ixImports}}`);
+                    instructionParserImports.add(`crate::instructions::{${ixImports}}`);
+                    const map = new RenderMap();
+
+                    const programStateOneOf: string[] = [];
+
+                    let hasProtoHelpers = false;
+
+                    const protoProjectName = snakeCase(options.projectName);
+
+                    if (options.generateProto !== false) {
+                        const definedTypes: string[] = [];
+                        // proto Ixs , Accounts and Types
+                        const matrixTypes: Set<string> = new Set();
+
+                        const protoAccounts = programAccounts.map((acc, i) => {
+                            programStateOneOf.push(`\t${pascalCase(acc.name)} ${snakeCase(acc.name)} = ${i + 1};`);
+
+                            const node = visit(acc, typeManifestVisitor);
+                            if (node.definedTypes) {
+                                definedTypes.push(node.definedTypes);
+                            }
+                            return checkArrayTypeAndFix(node.type, matrixTypes);
+                        });
+
+                        const protoTypesHelpers: { fields: { name: string; transform: string }[]; name: string }[] = [];
+                        const protoTypesHelpersEnums: {
+                            name: string;
+                            variants: { fields_transform: string; name: string; variant_fields: string }[];
+                        }[] = [];
+
+                        const protoTypes = types.map(type => {
+                            const node = visit(type, typeManifestVisitor);
+
+                            if (node.definedTypes) {
+                                definedTypes.push(node.definedTypes);
+                            }
+
+                            if (type.type.kind === 'structTypeNode') {
+                                const fields = type.type.fields.map(field => {
+                                    return {
+                                        name: snakeCase(field.name),
+                                        transform: getTransform(field.type, field.name, types),
+                                    };
+                                });
+
+                                protoTypesHelpers.push({
+                                    fields,
+                                    name: type.name,
+                                });
+                            } else if (type.type.kind === 'enumTypeNode' && !isEnumEmptyVariant(type.type)) {
+                                // Only need for additional `IntoProto` implementations for non-empty variants enums (otherwhise
+                                //  they are automatically treated as i32 by tonic genereted types)
+
+                                const variants = type.type.variants.map(variant => {
+                                    const [variant_fields, fields_transform] = getEnumVariantTransform(variant, types);
+                                    return {
+                                        fields_transform,
+                                        name: snakeCase(variant.name),
+                                        variant_fields,
+                                    };
+                                });
+
+                                protoTypesHelpersEnums.push({
+                                    name: type.name,
+                                    variants,
+                                });
+                            }
+
+                            return checkArrayTypeAndFix(node.type, matrixTypes);
+                        });
+
+                        const protoIxs: {
+                            accounts: string;
+                            args: string;
+                        }[] = [];
+
+                        const programIxsOneOf: string[] = [];
+                        let ixIdx = 0;
+
+                        for (const ix of programInstructions) {
+                            const ixName = ix.name;
+                            const ixAccounts = ix.accounts
+                                .map((acc, idx) => {
+                                    if (!acc.isOptional) {
+                                        return `\tstring ${snakeCase(acc.name)} = ${idx + 1};`;
+                                    } else {
+                                        return `\toptional string ${snakeCase(acc.name)} = ${idx + 1};`;
+                                    }
+                                })
+                                .join('\n');
+
+                            programIxsOneOf.push(`\t${pascalCase(ixName)}Ix ${snakeCase(ixName)} = ${ixIdx + 1};`);
+                            ixIdx++;
+
+                            let idx = 0;
+
+                            const ixArgs = ix.arguments
+                                .map(arg => {
+                                    const node = visit(arg.type, typeManifestVisitor);
+
+                                    if (arg.name === 'discriminator') {
+                                        return '';
+                                    }
+
+                                    if (node.definedTypes) {
+                                        definedTypes.push(node.definedTypes);
+                                    }
+                                    const argType = checkArrayTypeAndFix(node.type, matrixTypes);
+
+                                    idx++;
+
+                                    return `\t${argType} ${snakeCase(arg.name)} = ${idx};`;
+                                })
+                                .filter(arg => arg !== '')
+                                .join('\n');
+
+                            if (ixArgs.length === 0) {
+                                protoIxs.push({
+                                    accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
+                                    args: '',
+                                });
+
+                                const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n}\n`;
+
+                                definedTypes.push(ixStruct);
+                            } else {
+                                protoIxs.push({
+                                    accounts: `message ${pascalCase(ixName)}IxAccounts {\n${ixAccounts}\n}\n`,
+                                    args: `message ${pascalCase(ixName)}IxData {\n${ixArgs}\n}\n`,
+                                });
+
+                                const ixStruct = `message ${pascalCase(ixName)}Ix {\n\t${pascalCase(ixName)}IxAccounts accounts = 1;\n\t${pascalCase(ixName)}IxData data = 2;\n}\n`;
+                                definedTypes.push(ixStruct);
+                            }
+                        }
+
+                        const matrixProtoTypes = Array.from(matrixTypes).map(type => {
+                            return `message Repeated${titleCase(type)}Row {\n\trepeated ${type} rows = 1;\n}\n`;
+                        });
+
+                        definedTypes.push(...matrixProtoTypes);
+
+                        map.add(
+                            `proto/${protoProjectName}.proto`,
+                            render('proto.njk', {
+                                accounts: protoAccounts,
+                                definedTypes,
+                                instructions: protoIxs,
+                                programIxsOneOf,
+                                programName,
+                                programStateOneOf,
+                                protoProjectName,
+                                types: protoTypes,
+                            }),
+                        );
+
+                        if (protoTypesHelpers.length > 0 || protoTypesHelpersEnums.length > 0) {
+                            hasProtoHelpers = true;
+
+                            const normalizeAcronyms = (str: string) => {
+                                return str.replace(/([A-Z]{2,})(?=[A-Z][a-z0-9]|[^A-Za-z]|$)/g, function (match) {
+                                    return match.charAt(0) + match.slice(1).toLowerCase();
+                                });
+                            };
+
+                            map.add(
+                                `src/generated_parser/proto_helpers.rs`,
+                                render('protoHelpersPage.njk', {
+                                    normalizeAcronyms,
+                                    protoTypesHelpers,
+                                    protoTypesHelpersEnums,
+                                }),
+                            );
+                        }
+                    }
 
                     const ixCtx = {
-                        IX_DATA_OFFSET,
                         accounts,
-                        hasDiscriminator: instructions.some(ix => ix.discriminator !== null),
+                        hasProtoHelpers,
                         imports: instructionParserImports,
                         instructions,
+                        ixDiscLen,
                         programName,
                     };
 
                     const accCtx = {
+                        accDiscLen,
                         accounts,
+                        hasDiscriminator: hasAccountDiscriminator,
+                        hasProtoHelpers,
                         imports: accountParserImports,
                         programName,
                     };
 
-                    const map = new RenderMap();
-
                     // only two files are generated as part of account and instruction parser
-
                     if (accCtx.accounts.length > 0) {
-                        map.add('accounts_parser.rs', render('accountsParserPage.njk', accCtx));
+                        map.add(`src/generated_parser/accounts_parser.rs`, render('accountsParserPage.njk', accCtx));
                     }
 
                     if (ixCtx.instructions.length > 0) {
-                        map.add('instructions_parser.rs', render('instructionsParserPage.njk', ixCtx));
+                        map.add(
+                            `src/generated_parser/instructions_parser.rs`,
+                            render('instructionsParserPage.njk', ixCtx),
+                        );
                     }
 
                     map.add(
-                        'mod.rs',
+                        `src/generated_parser/mod.rs`,
                         render('rootMod.njk', {
                             hasAccounts: accCtx.accounts.length > 0,
+                            hasProtoHelpers,
+                        }),
+                    );
+
+                    map.add(
+                        'src/lib.rs',
+                        render('libPage.njk', {
+                            programId: node.program.name,
+                            protoProjectName,
+                        }),
+                    );
+
+                    map.add('build.rs', render('buildPage.njk', { protoProjectName }));
+
+                    map.add(
+                        'Cargo.toml',
+                        render('CargoPage.njk', {
+                            projectName,
                         }),
                     );
 

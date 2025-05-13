@@ -1,0 +1,32 @@
+
+
+[package]
+name = "yellowstone-vixen-raydium-amm-v4-parser"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+prost = "0.13.1"
+tonic = { version = "0.12.1", features = ["gzip", "zstd"] }
+solana-program = "^2.1.6"
+borsh = "^0.10"
+yellowstone-vixen-core = { git = "https://github.com/rpcpool/yellowstone-vixen", branch = "main",features = ["proto"] }
+num-derive = "0.4"
+thiserror = "1.0.64"
+num-traits = "^0.2"
+tracing = { version = "0.1.40", optional = true }
+strum = { version = "0.24", optional = true }
+strum_macros = { version = "0.24", optional = true }
+
+[features]
+anchor = []
+anchor-idl-build = []
+serde = []
+test-sbf = []
+fetch = []
+tracing = ["dep:tracing", "dep:strum", "dep:strum_macros"]
+
+[build-dependencies]
+prost-build = "0.13.1"
+

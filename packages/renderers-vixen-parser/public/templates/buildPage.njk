@@ -1,0 +1,18 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+
+use std::{env, path::PathBuf};
+
+fn main() {
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+
+    // #[cfg(feature = "proto")]
+    prost_build::Config::new()
+        .enable_type_names()
+        .file_descriptor_set_path(out_dir.join("descriptor.bin"))
+        .compile_protos(&["proto/{{ protoProjectName }}.proto"], &["proto"])
+        .unwrap();
+}
+
+{% endblock %}
