@@ -1,0 +1,12 @@
+{% import "macros.njk" as macros %}
+
+{{ macros.docblock(docs) }}
+{% if manifest.isEnum %}
+export enum {{ strictName }} {{ manifest.strictType.render }};
+
+export type {{ looseName }} = {{ strictName }};
+{% else %}
+export type {{ strictName }} = {{ manifest.strictType.render }};
+
+export type {{ looseName }} = {{ manifest.looseType.render if manifest.strictType.render != manifest.looseType.render else strictName }};
+{% endif %}

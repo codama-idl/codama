@@ -1,30 +1,11 @@
 {
-    "name": "@codama/renderers",
-    "version": "1.0.22",
-    "description": "Exports all Codama renderers",
-    "exports": {
-        "types": "./dist/types/index.d.ts",
-        "node": {
-            "import": "./dist/index.node.mjs",
-            "require": "./dist/index.node.cjs"
-        }
-    },
+    "name": "@codama/renderers-py",
+    "version": "1.0.0",
+    "description": "Python renderer compatible with the Solana Kit library",
     "main": "./dist/index.node.cjs",
     "module": "./dist/index.node.mjs",
     "types": "./dist/types/index.d.ts",
     "type": "commonjs",
-    "files": [
-        "./dist/templates",
-        "./dist/types",
-        "./dist/index.*"
-    ],
-    "sideEffects": false,
-    "keywords": [
-        "solana",
-        "framework",
-        "standard",
-        "renderers"
-    ],
     "scripts": {
         "build": "rimraf dist && pnpm build:src && pnpm build:types",
         "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
@@ -32,16 +13,27 @@
         "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e && pnpm test:exports",
+        "test:e2e": "./e2e/test.sh",
+        "test:exports": "node ./test/exports/module.mjs && node ./test/exports/commonjs.cjs",
         "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
         "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
     },
+    "keywords": [],
+    "author": "",
     "dependencies": {
-        "@codama/renderers-js": "workspace:*",
-        "@codama/renderers-js-umi": "workspace:*",
-        "@codama/renderers-rust": "workspace:*",
-        "@codama/renderers-py": "workspace:*"
+        "@codama/errors": "workspace:*",
+        "@codama/nodes": "workspace:*",
+        "@codama/nodes-from-anchor": "workspace:*",
+        "@codama/renderers-core": "workspace:*",
+        "@codama/visitors-core": "workspace:*",
+        "@solana/codecs-strings": "rc",
+        "nunjucks": "^3.2.4",
+        "prettier": "^3.5.3"
+    },
+    "devDependencies": {
+        "@types/nunjucks": "^3.2.6"
     },
     "license": "MIT",
     "repository": {

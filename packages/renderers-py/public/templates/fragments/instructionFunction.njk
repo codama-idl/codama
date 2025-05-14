@@ -1,0 +1,62 @@
+{{ inputTypeFragment }}
+
+export {{ 'async' if useAsync }} function {{ functionName }}{{ typeParamsFragment }}({% if hasInput %}input: {{ inputTypeCallFragment }}, {% endif %}config?: { programAddress?: TProgramAddress } ): {{ getReturnType(instructionTypeFragment) }} {
+  // Program address.
+  const programAddress = config?.programAddress ?? {{ programAddressConstant }};
+
+  {% if hasAccounts %}
+    // Original accounts.
+    const originalAccounts = {
+      {% for account in instruction.accounts %}
+        {{ account.name | camelCase }}: { value: input.{{ account.name | camelCase }} ?? null, isWritable: {{ "true" if account.isWritable else "false" }} },
+      {% endfor %}
+    };
+    const accounts = originalAccounts as Record<keyof typeof originalAccounts, ResolvedAccount>;
+  {% endif %}
+
+  {% if hasAnyArgs %}
+    // Original args.
+    const args = { ...input, {{ renamedArgs }} };
+  {% endif %}
+
+  {% if hasResolver %}
+    // Resolver scope.
+    const resolverScope = { programAddress{{ ', accounts' if hasAccounts }}{{ ', args' if hasAnyArgs }} };
+  {% endif %}
+
+  {{ resolvedFragment }}
+
+  {% if hasAccounts %}
+    const getAccountMeta = getAccountMetaFactory(programAddress, '{{ 'omitted' if instruction.optionalAccountStrategy === 'omitted' else 'programId' }}');
+  {% endif %}
+  const instruction = {
+    {%- if hasAccounts -%}
+      accounts: [
+        {% for account in instruction.accounts %}
+          getAccountMeta(accounts.{{ account.name | camelCase }}),
+        {% endfor %}
+        {% if hasRemainingAccounts %}
+          ...remainingAccounts,
+        {% endif %}
+      ]
+      {%- if hasLegacyOptionalAccounts -%}
+        .filter(<T>(x: T | undefined): x is T => x !== undefined)
+      {% endif %}
+      ,
+    {%- elif hasRemainingAccounts -%}
+      accounts: remainingAccounts,
+    {% endif %}
+    programAddress,
+    {% if hasDataArgs %}
+      data: {{ encoderFunction }}.encode(args as {{ argsTypeFragment }}),
+    {% elif hasData %}
+      data: {{ encoderFunction }}.encode({}),
+    {% endif %}
+  } as {{ instructionTypeFragment }};
+
+  {% if hasByteDeltas %}
+    return Object.freeze({ ...instruction, byteDelta });
+  {% else %}
+    return instruction;
+  {% endif %}
+}

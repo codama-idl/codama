@@ -1,0 +1,6 @@
+{% import "macros.njk" as macros %}
+
+{{ macros.docblock(docs) }}
+export function {{ encoderFunction }}(): Encoder<{{ looseName }}> {
+  return {{ manifest.encoder.render }};
+}

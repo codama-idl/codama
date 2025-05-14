@@ -1,0 +1,16 @@
+{% import "macros.njk" as macros %}
+
+export type {{ instructionInputType }}
+{%- if instruction.accounts.length > 0 -%}
+<
+  {%- for account in instruction.accounts -%}
+    TAccount{{ account.name | pascalCase }} extends string = string,
+  {% endfor %}
+>
+{% endif %}
+= {{ customDataArgumentsFragment }} {
+  {{ accountsFragment -}}
+  {{ dataArgumentsFragment -}}
+  {{ extraArgumentsFragment -}}
+  {{ remainingAccountsFragment }}
+}

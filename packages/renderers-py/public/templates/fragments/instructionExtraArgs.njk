@@ -1,0 +1,4 @@
+{% import "macros.njk" as macros %}
+
+{{ macros.docblock(docs) }}
+export type {{ looseName }} = {{ manifest.looseType.render }};

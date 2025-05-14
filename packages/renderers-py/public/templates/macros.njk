@@ -1,0 +1,12 @@
+{# Write a docblock from an array of strings. #}
+{% macro docblock(docs) %}
+{%- if docs.length === 1 -%}
+/** {{ docs[0] }} */
+{%- elif docs.length > 1 -%}
+/**
+{% for doc in docs %}
+ * {{ doc }}
+{% endfor %}
+ */
+{% endif %}
+{% endmacro %}

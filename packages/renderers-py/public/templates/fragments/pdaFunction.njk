@@ -1,0 +1,32 @@
+{% import "macros.njk" as macros %}
+
+{% if hasVariableSeeds %}
+export type {{ pdaSeedsType }} = {
+  {% for seed in seeds %}
+    {% if seed.kind === 'variablePdaSeedNode' %}
+      {{ macros.docblock(seed.docs) }}
+      {{ seed.name | camelCase }}: {{ seed.typeManifest.looseType.render }};
+    {% endif %}
+  {% endfor %}
+}
+{% endif %}
+
+export async function {{ findPdaFunction }}(
+  {% if hasVariableSeeds %}
+    seeds: {{ pdaSeedsType }},
+  {% endif %}
+  config: { programAddress?: Address | undefined } = {},
+): Promise<ProgramDerivedAddress> {
+  const { programAddress = '{{ programAddress }}' as Address<'{{ programAddress }}'> } = config;
+  return await getProgramDerivedAddress({ programAddress, seeds: [
+    {% for seed in seeds %}
+      {% if seed.kind === 'constantPdaSeedNode' and seed.value.kind === 'programIdValueNode' %}
+        getAddressEncoder().encode(programAddress),
+      {% elif seed.kind === 'constantPdaSeedNode' %}
+        {{ seed.typeManifest.encoder.render }}.encode({{ seed.valueManifest.render }}),
+      {% else %}
+        {{ seed.typeManifest.encoder.render }}.encode(seeds.{{ seed.name | camelCase }}),
+      {% endif %}
+    {% endfor %}
+  ]});
+}

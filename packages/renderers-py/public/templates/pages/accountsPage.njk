@@ -1,0 +1,12 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+{{ accountDiscriminatorConstantsFragment }}
+{{ accountTypeFragment }}
+{{ accountFetchHelpersFragment }}
+{{ accountSizeHelpersFragment }}
+{{ accountPdaHelpersFragment }}
+{% endblock %}

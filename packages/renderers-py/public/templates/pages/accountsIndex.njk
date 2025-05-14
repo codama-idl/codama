@@ -1,0 +1,9 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+{% for account in accountsToExport | sort(false, false, 'name') %}
+from .{{ account.name | camelCase }} import {{account.name}}, {{account.name}}JSON
+{% else %}
+export default {};
+{% endfor %}
+{% endblock %}

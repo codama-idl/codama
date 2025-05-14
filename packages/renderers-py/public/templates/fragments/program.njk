@@ -1,0 +1,3 @@
+{% import "macros.njk" as macros %}
+
+export const {{ programAddressConstant }} = '{{ program.publicKey }}' as Address<'{{ program.publicKey }}'>;

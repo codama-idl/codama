@@ -1,0 +1,36 @@
+{% import "macros.njk" as macros %}
+
+{% for error in errors | sort(false, false, 'code') %}
+  {{ macros.docblock(error.docs) }}
+  export const {{ getProgramErrorConstant(error.name) }} = 0x{{ error.code.toString(16) }}, // {{ error.code }}
+{% endfor %}
+
+export type {{ programErrorUnion }} =
+  {% for error in errors | sort(false, false, 'name') %}
+    | typeof {{ getProgramErrorConstant(error.name) }}
+  {% endfor %};
+
+let {{ programErrorMessagesMap }}: Record<{{ programErrorUnion }}, string> | undefined;
+if (process.env.NODE_ENV !== 'production') {
+  {{ programErrorMessagesMap }} = {
+    {% for error in errors | sort(false, false, 'name') %}
+      [{{ getProgramErrorConstant(error.name) }}]: `{{ escapeProgramErrorMessage(error.message) }}`,
+    {% endfor %}
+  };
+}
+
+export function {{ programGetErrorMessageFunction }}(code: {{ programErrorUnion }}): string {
+  if (process.env.NODE_ENV !== 'production') {
+    return ({{ programErrorMessagesMap }} as Record<{{ programErrorUnion }}, string>)[code];
+  }
+
+  return 'Error message not available in production bundles.';
+}
+
+export function {{ programIsErrorFunction }}<TProgramErrorCode extends {{ programErrorUnion }}>(
+    error: unknown,
+    transactionMessage: { instructions: Record<number, { programAddress: Address }> },
+    code?: TProgramErrorCode,
+): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> & Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
+  return isProgramError<TProgramErrorCode>(error, transactionMessage, {{ programAddressConstant }}, code);
+}
