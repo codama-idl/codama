@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 //import { logWarn } from '@codama/errors';
-import { camelCase, getAllAccounts, getAllPdas, getAllPrograms, resolveNestedTypeNode } from '@codama/nodes';
+import { camelCase, getAllAccounts, getAllPdas,getAllInstructions, getAllPrograms, resolveNestedTypeNode } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
@@ -147,6 +147,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...globalScope,
                         typeManifest: visit(node, typeManifestVisitor),
                     };
+                    const imports = new ImportMap().add("solana.publickey","Pubkey");
 
                     let  nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     //console.log("fields",fields);
@@ -171,6 +172,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fieldsJSON_assignment: fieldsJSON,
                             fields_interface_params: fieldsPy,
                             fieldsLayout: layoutFragment,
+                       imports: imports.toString(dependencyMap, useGranularImports),
+
                             }));
 
                     }
@@ -231,7 +234,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     instructionParseFunctionFragment,
                 );*/
                     return new RenderMap().add(
-                        `instructions/${camelCase(node.name)}.ts`,
+                        `instructions/${camelCase(node.name)}.py`,
                         render('instructionsPage.njk', {}),
                     );
                 },
@@ -252,7 +255,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const renderMap = new RenderMap()
                         .mergeWith(...node.pdas.map(p => visit(p, self)))
                         .mergeWith(...node.accounts.map(a => visit(a, self)))
-                        .mergeWith(...node.definedTypes.map(t => visit(t, self)));
+                        .mergeWith(...node.definedTypes.map(t => visit(t, self)))
+                        .mergeWith(...node.instructions.map(t => visit(t, self)));
+
                         //.mergeWith(...customDataDefinedType.map(t => visit(t, self)));
 
                     console.log("definedTypes",node.definedTypes);
@@ -272,6 +277,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const programsWithErrorsToExport = programsToExport.filter(p => p.errors.length > 0);
                     const pdasToExport = getAllPdas(node);
                     const accountsToExport = getAllAccounts(node); //.filter(isNotInternal);
+
+                    const instructionsToExport = getAllInstructions(node);//filter(isNotInternal);
+
                     const hasAnythingToExport = programsToExport.length > 0 || accountsToExport.length > 0;
 
                     const ctx = {
@@ -292,6 +300,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     if (accountsToExport.length > 0) {
                         map.add('accounts/__init.py', render('accountsIndex.njk', ctx));
                     }
+                    if (instructionsToExport.length > 0) {
+                        map.add('instructions/__init.py', render('instructionsIndex.njk', ctx));
+                    }
+
 
                     return map
                         .add('__init__.py', render('rootIndex.njk', ctx))
