@@ -1,5 +1,19 @@
 # codama
 
+## 1.3.0
+
+### Minor Changes
+
+- [#596](https://github.com/codama-idl/codama/pull/596) [`23f3795`](https://github.com/codama-idl/codama/commit/23f3795b5eeb05a98199e0ec4ff12b33127ace93) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Decouples the `@codama/cli` package to the main `codama` library as this was causing renderer updates to unnecessarily bump core Codama libraries.
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.3.0
+    - @codama/nodes@1.3.0
+    - @codama/validators@1.3.0
+    - @codama/visitors@1.3.0
+
 ## 1.2.13
 
 ### Patch Changes
