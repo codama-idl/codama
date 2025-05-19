@@ -28,8 +28,10 @@ def {{instructionName | pascalCase}}(
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) ->Instruction:
     keys: list[AccountMeta] = [
-        AccountMeta(pubkey=accounts["counter"], is_signer=False, is_writable=True),
-        AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
+{% for acc in accounts %}
+    AccountMeta(pubkey=accounts["{{acc.name}}"], is_signer={{ 'True' if acc.isSigner else 'False' }}, is_writable={{ 'True' if acc.isWritable else 'False' }}),
+{% endfor %}
+    AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
