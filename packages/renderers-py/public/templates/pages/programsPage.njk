@@ -4,5 +4,6 @@
 {% block main %}
 {{ imports }}
 
-PROGRAM_ID = Pubkey.from_string("{{programNode.value}}")
+PROGRAM_ID = Pubkey.from_string("{{programNode.publicKey}}")
+
 {% endblock %}

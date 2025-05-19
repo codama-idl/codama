@@ -82,8 +82,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         typeManifest: visit(node, typeManifestVisitor),
                     };
 
-                    let fields = resolveNestedTypeNode(structuredClone(node.data)).fields;
-                    fields.shift();
+                    let fields = resolveNestedTypeNode(node.data).fields;
+                    //fields.shift();
                     const fieldsJSON= getFieldsJSON({
                         ...scope,
                         fields});
@@ -141,43 +141,42 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitDefinedType(node) {
-                    /*
+                    const typeManifest = visit(node, typeManifestVisitor);
+                    console.log('typeManifest:', typeManifest);
                     const scope = {
                         ...globalScope,
-                        codecDocs: [],
-                        decoderDocs: [],
-                        encoderDocs: [],
-                        manifest: visit(node, typeManifestVisitor),
-                        name: node.name,
-                        typeDocs: node.docs,
-                        typeNode: node.type,
+                        typeManifest: visit(node, typeManifestVisitor),
                     };
 
-                    const typeWithCodecFragment = getTypeWithCodecFragment(scope);
-                    const typeDiscriminatedUnionHelpersFragment = getTypeDiscriminatedUnionHelpersFragment(scope);
-                    const imports = new ImportMap()
-                        .mergeWith(typeWithCodecFragment, typeDiscriminatedUnionHelpersFragment)
-                        .remove('generatedTypes', [
-                            nameApi.dataType(node.name),
-                            nameApi.dataArgsType(node.name),
-                            nameApi.encoderFunction(node.name),
-                            nameApi.decoderFunction(node.name),
-                            nameApi.codecFunction(node.name),
-                        ]);
+                    let  nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
+                    //console.log("fields",fields);
+                    if (nodeType.kind == "structTypeNode"){
+                        let fields = nodeType.fields;
+                        const layoutFragment = getLayoutFields({
+                        ...scope,
+                        fields,
+                        prefix: node.name,
+                    });
 
-                    return new RenderMap().add(
-                        `types/${camelCase(node.name)}.ts`,
-                        render('definedTypesPage.njk', {
-                            imports: imports.toString({
-                                ...dependencyMap,
-                                generatedTypes: '.',
-                            }),
-                            typeDiscriminatedUnionHelpersFragment,
-                            typeWithCodecFragment,
-                        }),
-                    );*/
-                    return new RenderMap().add(`types/${camelCase(node.name)}.ts`, render('definedTypesPage.njk', {}));
-                },
+                     const fieldsJSON= getFieldsJSON({
+                        ...scope,
+                        fields});
+                    const fieldsPy= getFieldsPy({
+                        ...scope,
+                        fields});
+
+                    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
+                        typeName: node.name,
+                    fields: fields,
+                            fieldsJSON_assignment: fieldsJSON,
+                            fields_interface_params: fieldsPy,
+                            fieldsLayout: layoutFragment,
+                            }));
+
+                    }
+                    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {}));
+
+                                   },
 
                 visitInstruction(node) {
                     /* const instructionPath = stack.getPath('instructionNode');
@@ -248,19 +247,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                 visitProgram(node,{self}) {
                     const scope = { ...globalScope, programNode: node };
-                                       const imports = new ImportMap().add("solana.publickey","Pubkey");
-                    imports.add("solders.pubkey", "Pubkey");
+                    const imports = new ImportMap().add("solana.publickey","Pubkey");
+
                     const renderMap = new RenderMap()
                         .mergeWith(...node.pdas.map(p => visit(p, self)))
                         .mergeWith(...node.accounts.map(a => visit(a, self)))
                         .mergeWith(...node.definedTypes.map(t => visit(t, self)));
                         //.mergeWith(...customDataDefinedType.map(t => visit(t, self)));
 
-
+                    console.log("definedTypes",node.definedTypes);
                     renderMap.add(
                         `program_id.py`,
                         render('programsPage.njk', {
                             ...scope,
+                            imports: imports.toString(dependencyMap, useGranularImports),
                         }),
                     );
                     return renderMap;

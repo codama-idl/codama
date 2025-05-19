@@ -1,9 +1,45 @@
+
 {% extends "layout.njk" %}
 {% import "macros.njk" as macros %}
 
 {% block main %}
 {{ imports }}
 
-{{ typeWithCodecFragment }}
-{{ typeDiscriminatedUnionHelpersFragment }}
+
+class {{typeName | pascalCase}}JSON:
+{% for field in fieldsJSON_assignment.renders %}
+    {{field}}
+{% endfor %}
+
+@dataclass
+class {{ typeName | pascalCase}}:
+    layout: typing.ClassVar = borsh.CStruct(
+    {% for field in fieldsLayout.renders %}
+    {{field}},
+    {% endfor %}
+    )
+    #fields
+    {%for field in fields_interface_params.renders %}
+{{field}}
+    {% endfor %}
+
+    @classmethod
+    def from_decoded(cls, obj: Container) -> "Tile":
+        return cls(row=obj.row, column=obj.column)
+
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {"row": self.row, "column": self.column}
+
+    def to_json(self) -> TileJSON:
+        return {"row": self.row, "column": self.column}
+
+    @classmethod
+    def from_json(cls, obj: TileJSON) -> "Tile":
+        return cls(row=obj["row"], column=obj["column"])
+
+
+
+
+
+
 {% endblock %}

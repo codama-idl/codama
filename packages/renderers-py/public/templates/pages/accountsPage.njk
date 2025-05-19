@@ -4,6 +4,7 @@
 {% block main %}
 {{ imports }}
 
+
 class {{accountName | pascalCase}}JSON:
 {% for field in fieldsJSON_assignment.renders %}
     {{field}}
