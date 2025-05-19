@@ -25,17 +25,28 @@ class {{ typeName | pascalCase}}:
 
     @classmethod
     def from_decoded(cls, obj: Container) -> "Tile":
-        return cls(row=obj.row, column=obj.column)
+        return cls(
+        {% for field in fields %}
+           {{field.name}}=obj.{{field.name}},
+        {% endfor %}
+        )
 
     def to_encodable(self) -> dict[str, typing.Any]:
         return {"row": self.row, "column": self.column}
 
-    def to_json(self) -> TileJSON:
-        return {"row": self.row, "column": self.column}
+    def to_json(self) -> {{ typeName | pascalCase}}JSON:
+        return {
+        {% for field in fieldsToJSON.renders %}
+        {{field}},
+        {% endfor %}
+}
 
     @classmethod
-    def from_json(cls, obj: TileJSON) -> "Tile":
-        return cls(row=obj["row"], column=obj["column"])
+    def from_json(cls, obj: {{ typeName | pascalCase}}JSON) -> "{{ typeName | pascalCase}}":
+        return cls(
+        {% for field in fieldsFromJSON.renders %}
+        {{field}},
+        {% endfor %})
 
 
 

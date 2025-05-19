@@ -167,6 +167,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const fieldsPy= getFieldsPy({
                         ...scope,
                         fields});
+                    const fieldsToJSON = getFieldsToJSON({
+                        ...scope,
+                        fields
+                    });
+                    const fieldsFromJSON = getFieldsFromJSON({
+                        ...scope,
+                        fields
+                    });
+
+
                     //const discriminators = get
 
                     return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
@@ -175,6 +185,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fieldsJSON_assignment: fieldsJSON,
                             fields_interface_params: fieldsPy,
                             fieldsLayout: layoutFragment,
+                        fieldsToJSON:fieldsToJSON,
+                        fieldsFromJSON:fieldsFromJSON,
                        imports: imports.toString(dependencyMap, useGranularImports),
                         discriminator:"",
 
