@@ -42,7 +42,7 @@ pub struct TargetOrders {
 }
 
 impl TargetOrders {
-    pub const LEN: usize = 2216;
+    pub const LEN: usize = 2208;
 
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {

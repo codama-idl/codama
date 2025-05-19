@@ -109,67 +109,12 @@ function main() {
         throw new Error('Project name is required.');
     }
 
-    const idl = readJson(path.join(__dirname, 'idl.json'));
-    let node = rootNodeFromAnchor(idl);
-    node = setDefaultShankDiscriminators(node);
+    let idl = readJson(path.join(__dirname, 'idl.json'));
+    idl.metadata = { origin: 'shank', address: '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8' };
 
-    node.program.publicKey = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
+    const node = rootNodeFromAnchor(idl);
 
     generateProject(project, node);
 }
 
 main();
-
-function setDefaultShankDiscriminators(node) {
-    node.program.origin = 'shank';
-
-    node.program.instructions.map((instruction, i) => {
-        instruction.discriminators = [
-            {
-                kind: 'fieldDiscriminatorNode',
-                field: 'discriminator',
-                offset: 0,
-            },
-        ];
-
-        const discriminatorArgument = {
-            kind: 'instructionArgumentNode',
-            name: 'discriminator',
-            defaultValueStrategy: 'omitted',
-            docs: [],
-            type: {
-                kind: 'fixedSizeTypeNode',
-                size: 1,
-                type: { kind: 'bytesTypeNode' },
-            },
-            defaultValue: {
-                kind: 'bytesValueNode',
-                data: i.toString(16),
-                encoding: 'base16',
-            },
-        };
-
-        // // Remove discriminator argument if it exists
-        const index = instruction.arguments.findIndex(arg => arg.name === 'discriminator');
-        if (index !== -1) {
-            instruction.arguments.splice(index, 1);
-        }
-
-        instruction.arguments.unshift(discriminatorArgument);
-    });
-
-    // By default use account length as discriminator for accounts
-    const accounts = node.program.accounts.map(account => {
-        let updatedAccount = { ...account, discriminators: [] };
-
-        const index = account.data.fields.findIndex(field => field.name === 'discriminator');
-        if (index !== -1) {
-            updatedAccount.data.fields.splice(index, 1);
-        }
-        return updatedAccount;
-    });
-
-    node = { ...node, program: { ...node.program, accounts } };
-
-    return node;
-}

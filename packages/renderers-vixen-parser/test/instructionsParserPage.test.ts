@@ -143,14 +143,13 @@ test('it renders instructions parsers', () => {
     const renderMap = visit(
         node,
         getRenderMapVisitor({
-            project: 'test',
-            sdkName: 'crate',
+            projectName: 'test',
         }),
     );
 
     // // Then we expect the following pub struct.
     // codeContains(renderMap.get('instructions/mint_tokens.rs'), [`pub struct MintTokensInstructionData`, `pub fn new(`]);
-    codeContains(renderMap.get('src/generated/instructions_parser.rs'), [
+    codeContains(renderMap.get('src/generated_parser/instructions_parser.rs'), [
         'pub enum TestProgramIx',
         'CreateAccount(CreateAccountIxAccounts, CreateAccountIxData)',
         'Assign(AssignIxAccounts, AssignIxData)',
