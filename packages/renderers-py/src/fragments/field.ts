@@ -73,3 +73,33 @@ export function getFieldsFromJSON(scope: Pick<GlobalFragmentScope, 'typeManifest
      return new PyFragment(fragments);
 
 }
+export function getArgsToLayout(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+        fields: InstructionArgumentNode[] | StructFieldTypeNode[]
+ }): PyFragment| null {
+     const { fields}= scope;
+    const fragments: string[] = [];
+     fields.forEach((field,_index) => {
+         if (field.name == 'discriminator') {
+             return;
+         }
+               fragments.push(`${field.name}:args.${field.name}`);
+                   });
+     return new PyFragment(fragments);
+
+}
+export function getArgsToPy(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+        fields: InstructionArgumentNode[] | StructFieldTypeNode[]
+ }): PyFragment| null {
+     const { fields,typeManifestVisitor}= scope;
+    const fragments: string[] = [];
+     fields.forEach((field,_index) => {
+         if (field.name == 'discriminator') {
+             return;
+         }
+         const fieldtype = visit(field.type, typeManifestVisitor);
+
+         fragments.push(`${field.name}:${fieldtype.pyType}`);
+                   });
+     return new PyFragment(fragments);
+
+}

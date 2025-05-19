@@ -16,7 +16,7 @@ import {
 } from '@codama/visitors-core';
 import type { ConfigureOptions } from 'nunjucks';
 
-import { getDiscriminatorConstantsFragment, getFieldsJSON,getFieldsPy,getFieldsToJSON,getLayoutFields,getFieldsFromJSON } from './fragments';
+import { getDiscriminatorConstantsFragment, getFieldsJSON,getFieldsPy,getArgsToPy,getFieldsToJSON,getLayoutFields,getArgsToLayout,getFieldsFromJSON } from './fragments';
 import { getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import {
     getImportFromFactory,
@@ -148,6 +148,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         typeManifest: visit(node, typeManifestVisitor),
                     };
                     const imports = new ImportMap().add("solana.publickey","Pubkey");
+                    imports.add("solders.sysvar", "RENT");
+
 
                     let  nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     //console.log("fields",fields);
@@ -165,6 +167,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const fieldsPy= getFieldsPy({
                         ...scope,
                         fields});
+                    //const discriminators = get
 
                     return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
                         typeName: node.name,
@@ -173,6 +176,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fields_interface_params: fieldsPy,
                             fieldsLayout: layoutFragment,
                        imports: imports.toString(dependencyMap, useGranularImports),
+                        discriminator:"",
 
                             }));
 
@@ -182,60 +186,39 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                    },
 
                 visitInstruction(node) {
-                    /* const instructionPath = stack.getPath('instructionNode');
-                if (!findProgramNodeFromPath(instructionPath)) {
-                    throw new Error('Instruction must be visited inside a program.');
-                }
+                    const scope = {
+                        ...globalScope,
+                        typeManifest: visit(node, typeManifestVisitor),
+                    };
 
-                const instructionExtraName = nameApi.instructionExtraType(node.name);
-                const scope = {
-                    ...globalScope,
-                    dataArgsManifest: visit(node, typeManifestVisitor),
-                    extraArgsManifest: visit(
-                        definedTypeNode({
-                            name: instructionExtraName,
-                            type: structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []),
-                        }),
-                        typeManifestVisitor,
-                    ),
-                    instructionPath,
-                    renamedArgs: getRenamedArgsMap(node),
-                    resolvedInputs: visit(node, resolvedInstructionInputVisitor),
-                };
+                    let fields = node.arguments;
+                    const layoutFragment = getLayoutFields({
+                        ...scope,
+                        fields,
+                        prefix: node.name,
+                    });
+                    const argsToPy = getArgsToPy({
+                        ...scope,
+                        fields
+                    })
+                    let argsToLayout = getArgsToLayout({
+                        ...scope,
+                        fields
+                    })
+                    const imports = new ImportMap().add("solana.publickey","Pubkey");
+                    console.log(":node.accounts",node.accounts)
 
-                // Fragments.
-                const instructionDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
-                    ...scope,
-                    discriminatorNodes: node.discriminators ?? [],
-                    fields: node.arguments,
-                    prefix: node.name,
-                });
-                const instructionTypeFragment = getInstructionTypeFragment(scope);
-                const instructionDataFragment = getInstructionDataFragment(scope);
-                const instructionExtraArgsFragment = getInstructionExtraArgsFragment(scope);
-                const instructionFunctionAsyncFragment = getInstructionFunctionFragment({
-                    ...scope,
-                    useAsync: true,
-                });
-                const instructionFunctionSyncFragment = getInstructionFunctionFragment({
-                    ...scope,
-                    useAsync: false,
-                });
-                const instructionParseFunctionFragment = getInstructionParseFunctionFragment(scope);
-
-                // Imports and interfaces.
-                const imports = new ImportMap().mergeWith(
-                    instructionDiscriminatorConstantsFragment,
-                    instructionTypeFragment,
-                    instructionDataFragment,
-                    instructionExtraArgsFragment,
-                    instructionFunctionAsyncFragment,
-                    instructionFunctionSyncFragment,
-                    instructionParseFunctionFragment,
-                );*/
                     return new RenderMap().add(
                         `instructions/${camelCase(node.name)}.py`,
-                        render('instructionsPage.njk', {}),
+                        render('instructionsPage.njk', {
+                            instructionName: node.name,
+                            args:argsToPy,
+                            accounts:node.accounts,
+                            fieldsLayout: layoutFragment,
+                            argsToLayout: argsToLayout,
+                            imports: imports.toString(dependencyMap, useGranularImports),
+                        }),
+
                     );
                 },
 
@@ -260,7 +243,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                         //.mergeWith(...customDataDefinedType.map(t => visit(t, self)));
 
-                    console.log("definedTypes",node.definedTypes);
+                    //console.log("definedTypes",node.definedTypes);
                     renderMap.add(
                         `program_id.py`,
                         render('programsPage.njk', {

@@ -3,12 +3,43 @@
 
 {% block main %}
 {{ imports }}
+class {{instructionName | pascalCase}}Args:
+{% for field in args.renders %}
+    {{field}}
+{% endfor %}
 
-{{ instructionDiscriminatorConstantsFragment }}
-{{ instructionTypeFragment }}
-{{ instructionDataFragment }}
-{{ instructionExtraArgsFragment }}
-{{ instructionFunctionAsyncFragment }}
-{{ instructionFunctionSyncFragment }}
-{{ instructionParseFunctionFragment }}
+
+layout = borsh.CStruct(
+{% for field in fieldsLayout.renders %}
+    {{field}},
+{% endfor %}
+    )
+
+
+class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
+{% for acc in accounts %}
+    {{acc.name}}:Pubkey
+{% endfor %}
+
+def {{instructionName | pascalCase}}(
+    args: {{instructionName | pascalCase}}Args,
+    accounts: {{instructionName | pascalCase}}Accounts,
+    program_id: Pubkey = PROGRAM_ID,
+    remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
+) ->Instruction:
+    keys: list[AccountMeta] = [
+        AccountMeta(pubkey=accounts["counter"], is_signer=False, is_writable=True),
+        AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
+    ]
+    if remaining_accounts is not None:
+        keys += remaining_accounts
+    identifier = b"{{discriminator}}"
+    encoded_args = layout.build({
+{% for arg in argsToLayout.renders %}
+    {{arg}},
+{% endfor %}
+       })
+    data = identifier + encoded_args
+    return Instruction(program,data,keys)
+
 {% endblock %}
