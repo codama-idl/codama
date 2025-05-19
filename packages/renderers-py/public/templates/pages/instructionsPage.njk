@@ -3,6 +3,7 @@
 
 {% block main %}
 {{ imports }}
+
 class {{instructionName | pascalCase}}Args:
 {% for field in args.renders %}
     {{field}}

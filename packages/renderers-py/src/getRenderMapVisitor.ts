@@ -75,7 +75,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
 
                     const typeManifest = visit(node, typeManifestVisitor);
-                    console.log('typeManifest:', typeManifest);
+                    //console.log('typeManifest:', typeManifest);
                     const scope = {
                         ...globalScope,
                         accountPath,
@@ -206,6 +206,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields
                     })
                     const imports = new ImportMap().add("solana.publickey","Pubkey");
+                    imports.add("solders.instruction",["Instruction","AccountMeta"]);
+                    imports.add("anchorpy.borsh_extension", "BorshPubkey");
+                    imports.addAlias("","borsh_construct", "borsh");
+                    imports.add("","typing");
+                    imports.add("..program_id","PROGRAM_ID");
+
+
                     console.log(":node.accounts",node.accounts)
 
                     return new RenderMap().add(

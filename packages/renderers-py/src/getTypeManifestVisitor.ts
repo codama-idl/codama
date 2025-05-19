@@ -1,4 +1,6 @@
-import { REGISTERED_TYPE_NODE_KINDS, REGISTERED_VALUE_NODE_KINDS } from '@codama/nodes';
+import { REGISTERED_TYPE_NODE_KINDS, REGISTERED_VALUE_NODE_KINDS,
+        // CountNode,
+    isNode } from '@codama/nodes';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -12,7 +14,7 @@ import {
 import { fragment } from './fragments';
 import { ImportMap } from './ImportMap';
 import { mergeManifests, TypeManifest, typeManifest } from './TypeManifest';
-import { GetImportFromFunction } from './utils';
+import { GetImportFromFunction,renderString } from './utils';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 
@@ -62,17 +64,23 @@ export function getTypeManifestVisitor(input: {
 
                 visitArrayType(arrayType, { self }) {
                     const itemlayout = visit(arrayType.item, self);
-                    const cast_layout = `typing.cast(Construct, ${itemlayout.borshType.render})`;
+                    //const cast_layout = `typing.cast(Construct, ${itemlayout.borshType.render})`;
                     const inner = visit(arrayType.item,self);
-
+                    console.log("visitArrayType:",arrayType,self);
+                    let count = 0;
+                    if (isNode(arrayType.count, 'fixedCountNode')) {
+                        count = arrayType.count.value;
+                    }
+                    let toJSONItemStr = renderString(inner.toJSON.render,{name:"item"})
+                    let toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`
                     return {
-                        borshType: fragment(`borsh.Vec(${cast_layout})`),
+                        borshType: fragment(`${itemlayout.borshType}[${count}]`),
                         isEnum: false,
                         pyJSONType:fragment(`list[${inner.pyJSONType}]`),
-                        pyType: fragment('bool'),
+                        pyType: fragment(`list[${inner.pyType}]`),
                         strictType: fragment('boolean'),
                         value: fragment(''),
-                        toJSON:fragment("self.{{name}}"),
+                        toJSON:fragment(toJSONStr),
                         fromJSON:fragment('obj[\"{{name}}\"]')
                     };
                 },
@@ -164,7 +172,7 @@ export function getTypeManifestVisitor(input: {
                         //looseType: fragment(numberType.format),
                         strictType: fragment(numberType.format),
                         value: fragment(''),
-                        toJSON:fragment("self.{{name}}"),
+                        toJSON:fragment("{{name}}"),
                         fromJSON:fragment('obj[\"{{name}}\"]')
                     };
                 },
@@ -184,7 +192,7 @@ export function getTypeManifestVisitor(input: {
                         pyJSONType: fragment('str'),
                         strictType: fragment('BorshPubkey', imports),
                         value: fragment(''),
-                        toJSON:fragment("str(self.{{name}})"),
+                        toJSON:fragment("str({{name}})"),
                         fromJSON:fragment('Pubkey.from_string(obj[\"{{name}}\"])')
                     };
                 },

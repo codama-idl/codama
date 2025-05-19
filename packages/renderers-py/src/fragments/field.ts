@@ -47,7 +47,7 @@ export function getFieldsToJSON(scope: Pick<GlobalFragmentScope, 'typeManifestVi
          const fieldtype = visit(field.type, typeManifestVisitor);
          //fieldtype.toJSONCast.mapRender()
          //const result = //nunjucks.renderString(template, { name });
-         const toCast = renderString(fieldtype.toJSON.render, { name:field.name })
+         const toCast = renderString(fieldtype.toJSON.render, { name:"self."+field.name })
 
          fragments.push(`"${field.name}": ${toCast}`);
                    });
