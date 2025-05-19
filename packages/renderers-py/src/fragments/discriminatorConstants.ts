@@ -13,9 +13,10 @@ import { visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, mergeFragments } from './common';
+import { fragment } from './common';
 
 export function getDiscriminatorConstantsFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         discriminatorNodes: DiscriminatorNode[];
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
         prefix: string;
@@ -30,7 +31,7 @@ export function getDiscriminatorConstantsFragment(
 
 export function getDiscriminatorConstantFragment(
     discriminatorNode: DiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         discriminatorNodes: DiscriminatorNode[];
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
         prefix: string;
@@ -48,7 +49,7 @@ export function getDiscriminatorConstantFragment(
 
 export function getConstantDiscriminatorConstantFragment(
     discriminatorNode: ConstantDiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         discriminatorNodes: DiscriminatorNode[];
         prefix: string;
     },
@@ -59,14 +60,13 @@ export function getConstantDiscriminatorConstantFragment(
     const suffix = index <= 0 ? '' : `_${index + 1}`;
 
     const name = camelCase(`${prefix}_discriminator${suffix}`);
-    const encoder = visit(discriminatorNode.constant.type, typeManifestVisitor).encoder;
     const value = visit(discriminatorNode.constant.value, typeManifestVisitor).value;
-    return getConstantFragment({ ...scope, encoder, name, value });
+    return getConstantFragment({ ...scope, name, value });
 }
 
 export function getFieldDiscriminatorConstantFragment(
     discriminatorNode: FieldDiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
         prefix: string;
     },
@@ -79,27 +79,17 @@ export function getFieldDiscriminatorConstantFragment(
     }
 
     const name = camelCase(`${prefix}_${discriminatorNode.name}`);
-    const encoder = visit(field.type, typeManifestVisitor).encoder;
     const value = visit(field.defaultValue, typeManifestVisitor).value;
-    return getConstantFragment({ ...scope, encoder, name, value });
+    return getConstantFragment({ ...scope, name, value });
 }
 
 function getConstantFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
-        encoder: Fragment;
+    scope: GlobalFragmentScope & {
         name: string;
         value: Fragment;
     },
 ): Fragment {
-    const { encoder, name, nameApi, value } = scope;
-    const constantName = nameApi.constant(name);
-    const constantFunction = nameApi.constantFunction(name);
-
-    return mergeFragments(
-        [
-            value.mapRender(r => `export const ${constantName} = ${r};`),
-            encoder.mapRender(r => `export function ${constantFunction}() { return ${r}.encode(${constantName}); }`),
-        ],
-        r => r.join('\n\n'),
-    );
+    const { value } = scope;
+    console.log("discriminator:",value);
+    return mergeFragments([fragment(`discriminator: typing.ClassVar = ${value};`)], r => r.join('\n'));
 }

@@ -8,8 +8,6 @@ import {
     ResolverValueNode,
 } from '@codama/nodes';
 
-import { ParsedCustomDataOptions } from './customData';
-
 export type LinkOverrides = {
     accounts?: Record<string, string>;
     definedTypes?: Record<string, string>;
@@ -31,18 +29,12 @@ export type GetImportFromFunction = (node: OverridableNodes, fallback?: string) 
 
 export function getImportFromFactory(
     overrides: LinkOverrides,
-    customAccountData: ParsedCustomDataOptions,
-    customInstructionData: ParsedCustomDataOptions,
+    //customAccountData: ParsedCustomDataOptions,
+    //customInstructionData: ParsedCustomDataOptions,
 ): GetImportFromFunction {
-    const customDataOverrides = Object.fromEntries(
-        [...customAccountData.values(), ...customInstructionData.values()].map(({ importFrom, importAs }) => [
-            importAs,
-            importFrom,
-        ]),
-    );
     const linkOverrides = {
         accounts: overrides.accounts ?? {},
-        definedTypes: { ...customDataOverrides, ...overrides.definedTypes },
+        definedTypes: { ...overrides.definedTypes },
         instructions: overrides.instructions ?? {},
         pdas: overrides.pdas ?? {},
         programs: overrides.programs ?? {},

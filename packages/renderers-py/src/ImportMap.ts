@@ -88,7 +88,7 @@ export class ImportMap {
     }
 
     mergeWithManifest(manifest: TypeManifest): ImportMap {
-        return this.mergeWith(manifest.strictType, manifest.looseType, manifest.encoder, manifest.decoder);
+        return this.mergeWith(manifest.strictType, manifest.borshType, manifest.pyType);
     }
 
     addAlias(module: string, name: string, alias: string): ImportMap {
@@ -139,6 +139,17 @@ export class ImportMap {
                 return a.localeCompare(b);
             })
             .map(([module, imports]) => {
+                if (module.length == 0) {
+                    const joinedImports = [...imports].sort().filter(i=> {
+                        const name = i.split(' ');
+                        if (name.length > 1) {
+                            return !imports.has(name[1]);
+                        }
+                        return true;
+                    }).map(name => `import ${name};`);
+                    let out=joinedImports.join('\n');
+                    return out;
+                }else{
                 const joinedImports = [...imports]
                     .sort()
                     .filter(i => {
@@ -151,8 +162,10 @@ export class ImportMap {
                         return true;
                     })
                     .join(', ');
-                return `import { ${joinedImports} } from '${module}';`;
-            })
+                return `from ${module} import ${joinedImports};`
+
+                }
+                           })
             .join('\n');
     }
 }

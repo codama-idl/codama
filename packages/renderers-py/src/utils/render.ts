@@ -24,3 +24,14 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('jsDocblock', jsDocblock);
     return env.render(template, context);
 };
+
+export const renderString = (template: string, context?: object): string => {
+    const env = nunjucks.configure({ autoescape: true });
+    env.addFilter('pascalCase', pascalCase);
+    env.addFilter('camelCase', camelCase);
+    env.addFilter('snakeCase', snakeCase);
+    env.addFilter('kebabCase', kebabCase);
+    env.addFilter('titleCase', titleCase);
+    env.addFilter('jsDocblock', jsDocblock);
+    return env.renderString(template, context!);
+};

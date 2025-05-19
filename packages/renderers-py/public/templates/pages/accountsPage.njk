@@ -4,9 +4,91 @@
 {% block main %}
 {{ imports }}
 
-{{ accountDiscriminatorConstantsFragment }}
-{{ accountTypeFragment }}
-{{ accountFetchHelpersFragment }}
-{{ accountSizeHelpersFragment }}
-{{ accountPdaHelpersFragment }}
+class {{accountName | pascalCase}}JSON:
+{% for field in fieldsJSON_assignment.renders %}
+    {{field}}
+{% endfor %}
+
+@dataclass
+class {{ accountName | pascalCase}}:
+    {{discriminator_assignment}}
+
+    layout: typing.ClassVar = borsh.CStruct(
+    {% for field in fieldsLayout.renders %}
+    {{field}},
+    {% endfor %}
+    )
+    #fields
+    {%for field in fields_interface_params.renders %}
+{{field}}
+    {% endfor %}
+
+
+    @classmethod
+    async def fetch(
+        cls,
+        conn: AsyncClient,
+        address: Pubkey,
+        commitment: typing.Optional[Commitment] = None,
+        program_id: Pubkey = PROGRAM_ID,
+    ) -> typing.Optional["{{accountName | pascalCase}}"]:
+        resp = await conn.get_account_info(address, commitment=commitment)
+        info = resp.value
+        if info is None:
+            return None
+        if info.owner != program_id:
+            raise ValueError("Account does not belong to this program")
+        bytes_data = info.data
+        return cls.decode(bytes_data)
+
+    @classmethod
+    async def fetch_multiple(
+        cls,
+        conn: AsyncClient,
+        addresses: list[Pubkey],
+        commitment: typing.Optional[Commitment] = None,
+        program_id: Pubkey = PROGRAM_ID,
+    ) -> typing.List[typing.Optional["{{accountName | pascalCase}}"]]:
+        infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
+        res: typing.List[typing.Optional["{{accountName | pascalCase}}"]] = []
+        for info in infos:
+            if info is None:
+                res.append(None)
+                continue
+            if info.account.owner != program_id:
+                raise ValueError("Account does not belong to this program")
+            res.append(cls.decode(info.account.data))
+        return res
+
+    @classmethod
+    def decode(cls, data: bytes) -> "{{accountName | pascalCase}}":
+        if data[:ACCOUNT_DISCRIMINATOR_SIZE] != cls.discriminator:
+            raise AccountInvalidDiscriminator(
+                "The discriminator for this account is invalid"
+            )
+        dec = {{accountName | pascalCase}}.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
+        return cls(
+        {% for field in fields %}
+           {{field.name}}=dec.{{field.name}},
+        {% endfor %}
+        )
+
+    def to_json(self) -> {{accountName | pascalCase}}JSON:
+        return {
+        {% for field in fieldsToJSON.renders %}
+        {{field}},
+        {% endfor %}
+        }
+
+    @classmethod
+    def from_json(cls, obj: {{accountName | pascalCase}}JSON) -> "{{accountName | pascalCase}}":
+        return cls(
+        {% for field in fieldsFromJSON.renders %}
+        {{field}},
+        {% endfor %}
+        )
+
+
+
+
 {% endblock %}

@@ -1,25 +1,28 @@
 import { Fragment, fragment, mergeFragments } from './fragments';
-
 export type TypeManifest = {
-    decoder: Fragment;
-    encoder: Fragment;
+    borshType: Fragment;
     isEnum: boolean;
-    looseType: Fragment;
+    pyJSONType: Fragment;
+    pyType: Fragment;
     strictType: Fragment;
     value: Fragment;
-};
+    toJSON: Fragment,
+    fromJSON: Fragment,
 
+};
 export function typeManifest(): TypeManifest {
     return {
-        decoder: fragment(''),
-        encoder: fragment(''),
         isEnum: false,
-        looseType: fragment(''),
+        borshType: fragment(''),
+        pyJSONType: fragment(''),
+        pyType: fragment(''),
         strictType: fragment(''),
+        toJSON: fragment(''),
+        fromJSON: fragment(''),
         value: fragment(''),
+
     };
 }
-
 export function mergeManifests(
     manifests: TypeManifest[],
     options: {
@@ -28,15 +31,17 @@ export function mergeManifests(
         mergeValues?: (renders: string[]) => string;
     } = {},
 ): TypeManifest {
-    const { mergeTypes, mergeCodecs, mergeValues } = options;
+    const { mergeTypes, mergeValues } = options;
     const merge = (fragmentFn: (m: TypeManifest) => Fragment, mergeFn?: (r: string[]) => string) =>
         mergeFn ? mergeFragments(manifests.map(fragmentFn), mergeFn) : fragment('');
     return {
-        decoder: merge(m => m.decoder, mergeCodecs),
-        encoder: merge(m => m.encoder, mergeCodecs),
+        borshType: merge(m => m.borshType, mergeTypes),
         isEnum: false,
-        looseType: merge(m => m.looseType, mergeTypes),
+        pyJSONType: merge(m => m.pyJSONType, mergeTypes),
+        pyType: merge(m => m.pyType, mergeTypes),
         strictType: merge(m => m.strictType, mergeTypes),
         value: merge(m => m.value, mergeValues),
+        toJSON: merge(m => m.toJSON, mergeValues),
+        fromJSON: merge(m => m.fromJSON, mergeValues),
     };
 }

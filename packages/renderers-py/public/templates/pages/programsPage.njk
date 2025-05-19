@@ -4,7 +4,5 @@
 {% block main %}
 {{ imports }}
 
-{{ programFragment }}
-{{ programAccountsFragment }}
-{{ programInstructionsFragment }}
+PROGRAM_ID = Pubkey.from_string("{{programNode.value}}")
 {% endblock %}
