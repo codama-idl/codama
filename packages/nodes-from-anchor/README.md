@@ -16,7 +16,9 @@ pnpm install @codama/nodes-from-anchor
 ```
 
 > [!NOTE]
-> This package is **not** included in the main [`codama`](../library) package.
+>
+> - This package is **not** included in the main [`codama`](../library) package.
+> - If `metadata.origin` is not set on the IDL, it is assumed to be `"anchor"`. If you are trying to parse a Shank IDL, be sure that origin is set to `"shank"` so discriminators can be set correctly.
 
 ## Functions
 
