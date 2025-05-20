@@ -136,9 +136,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.mergeWith(fieldsFromJSON!);
 
                     //console.log("fieldsToJSON:", fieldsToJSON, accountDiscriminatorConstantsFragment);
-
+                    let filename = `${camelCase(node.name)}`
+                    if (filename == "global"){
+                        filename = "global_";
+                    }
                     return new RenderMap().add(
-                        `accounts/${camelCase(node.name)}.py`,
+                        `accounts/${filename}.py`,
                         render('accountsPage.njk', {
                             accountName: node.name,
                             discriminator_assignment: accountDiscriminatorConstantsFragment,
@@ -174,7 +177,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     let nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     //console.log("fields",fields);
-                    console.log("visitDefinedType:",node);
+                    //console.log("visitDefinedType:",node);
                     if (nodeType.kind == "structTypeNode") {
                         let fields = nodeType.fields;
                         const layoutFragment = getLayoutFields({

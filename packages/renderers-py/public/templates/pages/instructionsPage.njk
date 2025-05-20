@@ -20,7 +20,7 @@ layout = borsh.CStruct(
 
 class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
 {% for acc in accounts %}
-    {{acc.name}}:Pubkey
+    {{acc.name | notKeywordCase}}:Pubkey
 {% endfor %}
 
 def {{instructionName | pascalCase}}(
@@ -33,7 +33,7 @@ def {{instructionName | pascalCase}}(
 ) ->Instruction:
     keys: list[AccountMeta] = [
 {% for acc in accounts %}
-    AccountMeta(pubkey=accounts["{{acc.name}}"], is_signer={{ 'True' if acc.isSigner else 'False' }}, is_writable={{ 'True' if acc.isWritable else 'False' }}),
+    AccountMeta(pubkey=accounts["{{acc.name | notKeywordCase }}"], is_signer={{ 'True' if acc.isSigner else 'False' }}, is_writable={{ 'True' if acc.isWritable else 'False' }}),
 {% endfor %}
     AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
     ]

@@ -166,6 +166,8 @@ export function getTypeManifestVisitor(input: {
                     let pyJSONTypeStr =`types.${modname}.${pascalCase(typename)}JSON`;
                     let pyTypeStr =`types.${modname}.${pascalCase(typename)}`;
                     let borshTypeStr =`types.${modname}.${pascalCase(typename)}.layout`;
+                    let fromJSONStr = `types.${modname}.${pascalCase(typename)}.from_json({{name}})`
+                    //types.amm_curve.AmmCurve.from_json(obj["curve"]),
 
                     return {
                         borshType: fragment(borshTypeStr,imports),
@@ -176,7 +178,7 @@ export function getTypeManifestVisitor(input: {
                         strictType: fragment(""),
                         value: fragment(''),
                         toJSON:fragment("{{name}}.to_json()"),
-                        fromJSON:fragment('{{name}}')
+                        fromJSON:fragment(fromJSONStr)
 
                     }
                 },

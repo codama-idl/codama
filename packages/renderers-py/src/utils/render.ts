@@ -10,7 +10,12 @@ export function jsDocblock(docs: string[]): string {
     const lines = docs.map(doc => ` * ${doc}`);
     return `/**\n${lines.join('\n')}\n */\n`;
 }
-
+export function notPyKeyCase(name: string): string {
+    if (name == "global"){
+        return "global_"
+    }
+    return name;
+}
 export const render = (template: string, context?: object, options?: NunJucksOptions): string => {
     // @ts-expect-error import.meta will be used in the right environment.
     const dirname = __ESM__ ? pathDirname(fileURLToPath(import.meta.url)) : __dirname;
@@ -21,6 +26,7 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('snakeCase', snakeCase);
     env.addFilter('kebabCase', kebabCase);
     env.addFilter('titleCase', titleCase);
+    env.addFilter('notKeywordCase',notPyKeyCase);
     env.addFilter('jsDocblock', jsDocblock);
     return env.render(template, context);
 };

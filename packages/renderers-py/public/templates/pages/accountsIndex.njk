@@ -2,7 +2,8 @@
 
 {% block main %}
 {% for account in accountsToExport | sort(false, false, 'name') %}
-from .{{ account.name | camelCase }} import {{account.name}}, {{account.name}}JSON
+from . import {{ account.name | camelCase | notKeywordCase }}
+from .{{ account.name | camelCase | notKeywordCase }} import {{account.name | pascalCase }}, {{account.name | pascalCase }}JSON
 {% else %}
 export default {};
 {% endfor %}
