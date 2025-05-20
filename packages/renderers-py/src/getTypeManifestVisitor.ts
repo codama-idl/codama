@@ -10,6 +10,8 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
+import { pascalCase } from '@codama/nodes';
+
 
 import { fragment } from './fragments';
 import { ImportMap } from './ImportMap';
@@ -155,6 +157,28 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(definedType.type, self);
                     //parentName = null;
                     return manifest;
+                },
+                visitDefinedTypeLink(node) {
+                    //console.log("type link",node);
+                    const typename = node.name;
+                    const modname = node.name;
+                    const imports = new ImportMap().add('..', 'types');
+                    let pyJSONTypeStr =`types.${modname}.${pascalCase(typename)}JSON`;
+                    let pyTypeStr =`types.${modname}.${pascalCase(typename)}`;
+                    let borshTypeStr =`types.${modname}.${pascalCase(typename)}.layout`;
+
+                    return {
+                        borshType: fragment(borshTypeStr,imports),
+                        isEnum: false,
+                        pyJSONType:fragment(pyJSONTypeStr,imports),
+                        pyType: fragment(pyTypeStr,imports),
+                        //looseType: fragment(numberType.format),
+                        strictType: fragment(""),
+                        value: fragment(''),
+                        toJSON:fragment("{{name}}.to_json()"),
+                        fromJSON:fragment('{{name}}')
+
+                    }
                 },
                 visitMapEntryValue(node, { self }) {
                     return mergeManifests([visit(node.key, self), visit(node.value, self)], {

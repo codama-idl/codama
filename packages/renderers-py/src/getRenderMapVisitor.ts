@@ -1,7 +1,9 @@
 import { join } from 'node:path';
 
 //import { logWarn } from '@codama/errors';
-import { camelCase, getAllAccounts, getAllPdas, getAllInstructions, getAllPrograms, resolveNestedTypeNode } from '@codama/nodes';
+import { camelCase, getAllAccounts, getAllPdas, getAllInstructions,
+         getAllDefinedTypes,
+         getAllPrograms, resolveNestedTypeNode } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
@@ -127,6 +129,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add("","borsh_construct");
                     imports.add("..program_id", "PROGRAM_ID");
                     imports.add("anchorpy.error", "AccountInvalidDiscriminator");
+                    imports.mergeWith(fieldsJSON!);
+                    imports.mergeWith(fieldsPy!);
+                    imports.mergeWith(layoutFragment!);
+                    imports.mergeWith(fieldsToJSON!);
+                    imports.mergeWith(fieldsFromJSON!);
 
                     //console.log("fieldsToJSON:", fieldsToJSON, accountDiscriminatorConstantsFragment);
 
@@ -167,6 +174,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     let nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     //console.log("fields",fields);
+                    console.log("visitDefinedType:",node);
                     if (nodeType.kind == "structTypeNode") {
                         let fields = nodeType.fields;
                         const layoutFragment = getLayoutFields({
@@ -191,10 +199,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             ...scope,
                             fields
                         });
+                        console.log("visitDefinedType:",node);
+                        //if (node.name == "AmmCurve2"){
+                        //    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk',{
 
 
-                        //const discriminators = get
-
+                    
                         return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
                             typeName: node.name,
                             fields: fields,
@@ -207,10 +217,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             discriminator: "",
 
                         }));
+                    }else{
 
+                        return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedEnumTypesPage.njk', {}));
                     }
-                    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {}));
-
                 },
 
                 visitInstruction(node) {
@@ -254,6 +264,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                          fields,
                          prefix: node.name,
                      });
+
 
 
                     return new RenderMap().add(
@@ -311,6 +322,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const accountsToExport = getAllAccounts(node); //.filter(isNotInternal);
 
                     const instructionsToExport = getAllInstructions(node);//filter(isNotInternal);
+                    const definedTypesToExport = getAllDefinedTypes(node);
 
                     const hasAnythingToExport = programsToExport.length > 0 || accountsToExport.length > 0;
 
@@ -322,6 +334,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         pdasToExport,
                         programsToExport,
                         programsWithErrorsToExport,
+                        definedTypesToExport,
                         root: node,
                     };
 
@@ -330,11 +343,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         map.add('pdas/index.py', render('pdasIndex.njk', ctx));
                     }
                     if (accountsToExport.length > 0) {
-                        map.add('accounts/__init.py', render('accountsIndex.njk', ctx));
+                        map.add('accounts/__init__.py', render('accountsIndex.njk', ctx));
                     }
                     if (instructionsToExport.length > 0) {
-                        map.add('instructions/__init.py', render('instructionsIndex.njk', ctx));
+                        map.add('instructions/__init__.py', render('instructionsIndex.njk', ctx));
                     }
+                    if (definedTypesToExport.length > 0) {
+                        map.add('types/__init__.py', render('definedTypesIndex.njk', ctx));
+                    }
+
 
 
                     return map

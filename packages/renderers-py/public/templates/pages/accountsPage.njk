@@ -69,11 +69,15 @@ class {{ accountName | pascalCase}}:
             )
         dec = {{accountName | pascalCase}}.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
-        {% for field in fields %}
-        {% if field.name!="discriminator" %}
+{% for field in fields %}
+{% if field.name!="discriminator" %}
+{% if field.type.kind == "definedTypeLinkNode" %}
+           {{field.name}}=types.{{field.type.name}}.{{field.type.name | pascalCase}}.from_decoded(dec.{{field.name}}),
+{% else %}
            {{field.name}}=dec.{{field.name}},
-        {% endif %}
-        {% endfor %}
+{% endif %}
+{% endif %}
+{% endfor %}
         )
 
     def to_json(self) -> {{accountName | pascalCase}}JSON:

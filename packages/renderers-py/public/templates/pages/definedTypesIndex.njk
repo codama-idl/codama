@@ -2,8 +2,8 @@
 
 {% block main %}
 {% for definedType in definedTypesToExport | sort(false, false, 'name') %}
-export * from './{{ definedType.name | camelCase }}';
+from . import {{ definedType.name | camelCase }}
+from .{{ definedType.name | camelCase }} import {{ definedType.name | pascalCase }}JSON,{{ definedType.name | pascalCase }};
 {% else %}
-export default {};
 {% endfor %}
 {% endblock %}
