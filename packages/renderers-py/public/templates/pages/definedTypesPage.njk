@@ -5,12 +5,10 @@
 {% block main %}
 {{ imports }}
 
-{% if fieldsLayout.length > 0 %}
 class {{typeName | pascalCase}}JSON(typing.TypedDict):
 {% for field in fieldsJSON_assignment.renders %}
     {{field}}
 {% endfor %}
-{% endif %}
 
 @dataclass
 class {{ typeName | pascalCase}}:
