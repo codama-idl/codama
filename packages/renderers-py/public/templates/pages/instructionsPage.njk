@@ -40,7 +40,7 @@ def {{instructionName | pascalCase}}(
     if remaining_accounts is not None:
         keys += remaining_accounts
     identifier = {{discriminator}}
-{% if fieldsJSON_assignment.renders.length > 0 %}
+{% if argsToLayout.renders.length > 0 %}
     encoded_args = layout.build({
 {% for arg in argsToLayout.renders %}
     {{arg}},
