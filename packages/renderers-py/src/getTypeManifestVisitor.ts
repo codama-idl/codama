@@ -150,6 +150,51 @@ export function getTypeManifestVisitor(input: {
                 visitDateTimeType(dateTimeType, { self }) {
                     return visit(dateTimeType.number, self);
                 },
+                visitStringType(_node){
+                    return {
+                        borshType: fragment('borsh.String'),
+                        isEnum: false,
+                        pyJSONType: fragment("str"),
+                        pyType: fragment('borsh.String'),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        value: fragment(''),
+                        toJSON:fragment('{{name}}'),
+                        fromJSON:fragment('{{name}}')
+                    };
+                },
+                visitFixedSizeType(_node){
+                    return {
+                        borshType: fragment('borsh.visitFixedSizeType'),
+                        isEnum: false,
+                        pyJSONType: fragment("str"),
+                        pyType: fragment('borsh.String'),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        value: fragment(''),
+                        toJSON:fragment('{{name}}'),
+                        fromJSON:fragment('{{name}}')
+                    };
+                },
+                visitSizePrefixType(_node){
+                    return {
+                        borshType: fragment('borsh.String'),
+                        isEnum: false,
+                        pyJSONType: fragment("str"),
+                        pyType: fragment('str'),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        value: fragment(''),
+                        toJSON:fragment('{{name}}'),
+                        fromJSON:fragment('{{name}}')
+                    };
+                },
 
                 visitDefinedType(definedType, { self }) {
                     /*parentName = {
@@ -223,6 +268,7 @@ export function getTypeManifestVisitor(input: {
 
                 visitPublicKeyType() {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    imports.add("anchorpy.borsh_extension", "BorshPubkey");
                     return {
                         borshType: fragment('BorshPubkey', imports),
                         isEnum: false,

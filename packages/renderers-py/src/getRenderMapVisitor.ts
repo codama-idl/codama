@@ -258,6 +258,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add("","borsh_construct");
                     imports.add("dataclasses","dataclass");
                     imports.mergeWith(argsToLayout!);
+                    imports.mergeWith(layoutFragment!);
+
 
 
 

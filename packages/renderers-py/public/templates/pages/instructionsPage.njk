@@ -3,7 +3,7 @@
 
 {% block main %}
 {{ imports }}
-{% if fieldsJSON_assignment.renders.length > 0 %}
+{% if  args.renders.length > 0 %}
 class {{instructionName | pascalCase}}Args(typing.TypedDict):
 {% for field in args.renders %}
     {{field}}
@@ -24,7 +24,7 @@ class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
 {% endfor %}
 
 def {{instructionName | pascalCase}}(
-{% if fieldsJSON_assignment.renders.length > 0 %}
+{% if  args.renders.length > 0 %}
     args: {{instructionName | pascalCase}}Args,
 {% endif %}
     accounts: {{instructionName | pascalCase}}Accounts,
