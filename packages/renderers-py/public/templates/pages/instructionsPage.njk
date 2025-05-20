@@ -3,8 +3,8 @@
 
 {% block main %}
 {{ imports }}
-
-class {{instructionName | pascalCase}}Args:
+{% if fieldsJSON_assignment.renders.length > 0 %}
+class {{instructionName | pascalCase}}Args(typing.TypedDict):
 {% for field in args.renders %}
     {{field}}
 {% endfor %}
@@ -16,6 +16,7 @@ layout = borsh.CStruct(
 {% endfor %}
     )
 
+{% endif %}
 
 class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
 {% for acc in accounts %}
@@ -23,7 +24,9 @@ class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
 {% endfor %}
 
 def {{instructionName | pascalCase}}(
+{% if fieldsJSON_assignment.renders.length > 0 %}
     args: {{instructionName | pascalCase}}Args,
+{% endif %}
     accounts: {{instructionName | pascalCase}}Accounts,
     program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
@@ -36,13 +39,18 @@ def {{instructionName | pascalCase}}(
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
-    identifier = b"{{discriminator}}"
+    identifier = {{discriminator}}
+{% if fieldsJSON_assignment.renders.length > 0 %}
     encoded_args = layout.build({
 {% for arg in argsToLayout.renders %}
     {{arg}},
 {% endfor %}
        })
+{% else %}
+    encoded_args = b""
+{% endif %}
+
     data = identifier + encoded_args
-    return Instruction(program,data,keys)
+    return Instruction(program_id,data,keys)
 
 {% endblock %}

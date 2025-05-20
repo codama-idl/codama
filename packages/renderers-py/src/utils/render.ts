@@ -26,7 +26,7 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
 };
 
 export const renderString = (template: string, context?: object): string => {
-    const env = nunjucks.configure({ autoescape: true });
+    const env = nunjucks.configure({ autoescape: false });
     env.addFilter('pascalCase', pascalCase);
     env.addFilter('camelCase', camelCase);
     env.addFilter('snakeCase', snakeCase);

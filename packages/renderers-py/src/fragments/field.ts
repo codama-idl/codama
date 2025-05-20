@@ -64,12 +64,9 @@ export function getFieldsFromJSON(scope: Pick<GlobalFragmentScope, 'typeManifest
              return;
          }
          const fieldtype = visit(field.type, typeManifestVisitor);
-         //fieldtype.toJSONCast.mapRender()
-         //const result = //nunjucks.renderString(template, { name });
-         const fromCast = renderString(fieldtype.fromJSON.render, { name:field.name })
-
+         const fromCast = renderString(fieldtype.fromJSON.render, { name:"obj[\""+field.name+"\"]" })
          fragments.push(`${field.name}=${fromCast}`);
-                   });
+    });
      return new PyFragment(fragments);
 
 }
@@ -82,7 +79,7 @@ export function getArgsToLayout(scope: Pick<GlobalFragmentScope, 'typeManifestVi
          if (field.name == 'discriminator') {
              return;
          }
-               fragments.push(`${field.name}:args.${field.name}`);
+               fragments.push(`"${field.name}":args["${field.name}"]`);
                    });
      return new PyFragment(fragments);
 

@@ -13,7 +13,6 @@ import { visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { Fragment, mergeFragments } from './common';
-import { fragment } from './common';
 
 export function getDiscriminatorConstantsFragment(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
@@ -80,6 +79,7 @@ export function getFieldDiscriminatorConstantFragment(
 
     const name = camelCase(`${prefix}_${discriminatorNode.name}`);
     const value = visit(field.defaultValue, typeManifestVisitor).value;
+    //console.log("getFieldDiscriminatorConstantFragment:",field,value)
     return getConstantFragment({ ...scope, name, value });
 }
 
@@ -90,6 +90,6 @@ function getConstantFragment(
     },
 ): Fragment {
     const { value } = scope;
-    console.log("discriminator:",value);
-    return mergeFragments([fragment(`discriminator: typing.ClassVar = ${value};`)], r => r.join('\n'));
+    //console.log("discriminator:",value);
+    return new Fragment(`${value}`)
 }

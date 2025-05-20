@@ -18,6 +18,14 @@ import { GetImportFromFunction,renderString } from './utils';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 
+export function HexToPyB(hexStr:string) {
+    const buffer: Buffer = Buffer.from(hexStr, 'hex');
+    const xFormat: string = Array.from(buffer)
+        .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
+        .join('');
+    return xFormat;
+}
+
 export function getTypeManifestVisitor(input: {
     getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
@@ -38,7 +46,7 @@ export function getTypeManifestVisitor(input: {
                     strictType: fragment(''),
                     value: fragment(''),
                     toJSON: fragment(''),
-                    fromJSON:fragment('obj[\"{{name}}\"]'),
+                    fromJSON:fragment('{{name}}'),
                 }) as TypeManifest,
             {
                 keys: [
@@ -66,13 +74,15 @@ export function getTypeManifestVisitor(input: {
                     const itemlayout = visit(arrayType.item, self);
                     //const cast_layout = `typing.cast(Construct, ${itemlayout.borshType.render})`;
                     const inner = visit(arrayType.item,self);
-                    console.log("visitArrayType:",arrayType,self);
+                    //console.log("visitArrayType:",arrayType,self);
                     let count = 0;
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
                     }
                     let toJSONItemStr = renderString(inner.toJSON.render,{name:"item"})
                     let toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`
+                    let fromJSONItemStr = renderString(inner.fromJSON.render,{name:"item"})
+                    let fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`
                     return {
                         borshType: fragment(`${itemlayout.borshType}[${count}]`),
                         isEnum: false,
@@ -81,7 +91,7 @@ export function getTypeManifestVisitor(input: {
                         strictType: fragment('boolean'),
                         value: fragment(''),
                         toJSON:fragment(toJSONStr),
-                        fromJSON:fragment('obj[\"{{name}}\"]')
+                        fromJSON:fragment(fromJSONStr)
                     };
                 },
 
@@ -100,8 +110,8 @@ export function getTypeManifestVisitor(input: {
                         pyType: fragment('bool'),
                         strictType: fragment('boolean'),
                         value: fragment(''),
-                        toJSON:fragment(''),
-                        fromJSON:fragment('obj.[\"{{name}}\"]')
+                        toJSON:fragment('{{name}}'),
+                        fromJSON:fragment('{{name}}')
                     };
                 },
 
@@ -122,14 +132,16 @@ export function getTypeManifestVisitor(input: {
                             'type ReadonlyUint8Array',
                         ),
                         value: fragment(''),
-                        toJSON:fragment('self.{{name}}'),
-                        fromJSON:fragment('obj.[\"{{name}}\"]')
+                        toJSON:fragment('{{name}}'),
+                        fromJSON:fragment('{{name}}')
                     };
                 },
 
                 visitBytesValue(node) {
                     const manifest = typeManifest();
-                    manifest.value.setRender(`b"${node.data}"`);
+                    const pyBstr = HexToPyB(node.data);
+                    manifest.value.setRender(`b"${pyBstr}"`);
+                    //manifest.value.
                     return manifest;
                 },
 
@@ -163,7 +175,7 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
                 visitNumberType(numberType) {
-                    console.log('visitNumberType:', numberType);
+                    //console.log('visitNumberType:', numberType);
                     return {
                         borshType: fragment(NumberToBorshType(numberType.format)),
                         isEnum: false,
@@ -173,7 +185,7 @@ export function getTypeManifestVisitor(input: {
                         strictType: fragment(numberType.format),
                         value: fragment(''),
                         toJSON:fragment("{{name}}"),
-                        fromJSON:fragment('obj[\"{{name}}\"]')
+                        fromJSON:fragment('{{name}}')
                     };
                 },
 
@@ -184,7 +196,7 @@ export function getTypeManifestVisitor(input: {
                 },
 
                 visitPublicKeyType() {
-                    const imports = new ImportMap().add('solana.publickey', 'Pubkey');
+                    const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
                     return {
                         borshType: fragment('BorshPubkey', imports),
                         isEnum: false,
@@ -193,7 +205,7 @@ export function getTypeManifestVisitor(input: {
                         strictType: fragment('BorshPubkey', imports),
                         value: fragment(''),
                         toJSON:fragment("str({{name}})"),
-                        fromJSON:fragment('Pubkey.from_string(obj[\"{{name}}\"])')
+                        fromJSON:fragment('Pubkey.from_string({{name}})')
                     };
                 },
 

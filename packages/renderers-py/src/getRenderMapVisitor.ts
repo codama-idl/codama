@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 //import { logWarn } from '@codama/errors';
-import { camelCase, getAllAccounts, getAllPdas,getAllInstructions, getAllPrograms, resolveNestedTypeNode } from '@codama/nodes';
+import { camelCase, getAllAccounts, getAllPdas, getAllInstructions, getAllPrograms, resolveNestedTypeNode } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
@@ -16,7 +16,7 @@ import {
 } from '@codama/visitors-core';
 import type { ConfigureOptions } from 'nunjucks';
 
-import { getDiscriminatorConstantsFragment, getFieldsJSON,getFieldsPy,getArgsToPy,getFieldsToJSON,getLayoutFields,getArgsToLayout,getFieldsFromJSON } from './fragments';
+import { getDiscriminatorConstantsFragment, getFieldsJSON, getFieldsPy, getArgsToPy, getFieldsToJSON, getLayoutFields, getArgsToLayout, getFieldsFromJSON } from './fragments';
 import { getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import {
     getImportFromFactory,
@@ -46,7 +46,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
 
-   const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
+    const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
     const dependencyMap = options.dependencyMap ?? {};
     const useGranularImports = options.useGranularImports ?? false;
 
@@ -84,13 +84,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     let fields = resolveNestedTypeNode(node.data).fields;
                     //fields.shift();
-                    const fieldsJSON= getFieldsJSON({
+                    const fieldsJSON = getFieldsJSON({
                         ...scope,
-                        fields});
-                    const fieldsPy= getFieldsPy({
+                        fields
+                    });
+                    const fieldsPy = getFieldsPy({
                         ...scope,
-                        fields});
-                    console.log("discriminatorNodes: node.discriminators:",node.discriminators )
+                        fields
+                    });
+                    //console.log("discriminatorNodes: node.discriminators:", node.discriminators)
 
                     const accountDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
                         ...scope,
@@ -112,16 +114,21 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields
                     });
 
-                    const imports = new ImportMap().add("solana.publickey","Pubkey");
-                    imports.add("solana.rpc.api","Client");
-                    imports.add("solana.rpc.types","MemcmpOpts")
-                    imports.add("anchorpy.borsh_extension","BorshPubkey");
-                    imports.add("anchorpy.coder.accounts","ACCOUNT_DISCRIMINATOR_SIZE");
-                    imports.addAlias("","borsh_construct","borsh");
-                    imports.add("","typing");
-                    imports.add("..program_id","PROGRAM_ID");
+                    const imports = new ImportMap().add("solders.pubkey", "Pubkey");
+                    imports.add("solana.rpc.async_api", "AsyncClient");
+                    imports.add("solana.rpc.commitment", "Commitment");
+                    imports.add("dataclasses","dataclass");
+                    imports.add("solana.rpc.types", "MemcmpOpts")
+                    imports.add("anchorpy.borsh_extension", "BorshPubkey");
+                    imports.add("anchorpy.coder.accounts", "ACCOUNT_DISCRIMINATOR_SIZE");
+                    imports.addAlias("", "borsh_construct", "borsh");
+                    imports.add("", "typing");
+                    imports.add("anchorpy.utils.rpc", "get_multiple_accounts");
+                    imports.add("","borsh_construct");
+                    imports.add("..program_id", "PROGRAM_ID");
+                    imports.add("anchorpy.error", "AccountInvalidDiscriminator");
 
-                    console.log("fieldsToJSON:",fieldsToJSON,accountDiscriminatorConstantsFragment);
+                    //console.log("fieldsToJSON:", fieldsToJSON, accountDiscriminatorConstantsFragment);
 
                     return new RenderMap().add(
                         `accounts/${camelCase(node.name)}.py`,
@@ -133,7 +140,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fields_interface_params: fieldsPy,
                             fieldsLayout: layoutFragment,
                             fieldsToJSON: fieldsToJSON,
-                            fieldsFromJSON:fieldsFromJSON,
+                            fieldsFromJSON: fieldsFromJSON,
                             typeManifest: typeManifest,
                             imports: imports.toString(dependencyMap, useGranularImports),
                         }),
@@ -141,61 +148,70 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitDefinedType(node) {
-                    const typeManifest = visit(node, typeManifestVisitor);
-                    console.log('typeManifest:', typeManifest);
+                    //const typeManifest = visit(node, typeManifestVisitor);
+                    //console.log('typeManifest:', typeManifest);
                     const scope = {
                         ...globalScope,
                         typeManifest: visit(node, typeManifestVisitor),
                     };
-                    const imports = new ImportMap().add("solana.publickey","Pubkey");
+                    const imports = new ImportMap().add("solders.pubkey", "Pubkey");
                     imports.add("solders.sysvar", "RENT");
+                    imports.add("construct","Container");
+                    imports.addAlias("", "borsh_construct", "borsh");
+                    imports.add("","borsh_construct");
+                    imports.add("", "typing");
+                    imports.add("dataclasses","dataclass");
+                    imports.add("anchorpy.borsh_extension", "BorshPubkey");
 
 
-                    let  nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
+
+                    let nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     //console.log("fields",fields);
-                    if (nodeType.kind == "structTypeNode"){
+                    if (nodeType.kind == "structTypeNode") {
                         let fields = nodeType.fields;
                         const layoutFragment = getLayoutFields({
-                        ...scope,
-                        fields,
-                        prefix: node.name,
-                    });
+                            ...scope,
+                            fields,
+                            prefix: node.name,
+                        });
 
-                     const fieldsJSON= getFieldsJSON({
-                        ...scope,
-                        fields});
-                    const fieldsPy= getFieldsPy({
-                        ...scope,
-                        fields});
-                    const fieldsToJSON = getFieldsToJSON({
-                        ...scope,
-                        fields
-                    });
-                    const fieldsFromJSON = getFieldsFromJSON({
-                        ...scope,
-                        fields
-                    });
+                        const fieldsJSON = getFieldsJSON({
+                            ...scope,
+                            fields
+                        });
+                        const fieldsPy = getFieldsPy({
+                            ...scope,
+                            fields
+                        });
+                        const fieldsToJSON = getFieldsToJSON({
+                            ...scope,
+                            fields
+                        });
+                        const fieldsFromJSON = getFieldsFromJSON({
+                            ...scope,
+                            fields
+                        });
 
 
-                    //const discriminators = get
+                        //const discriminators = get
 
-                    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
-                        typeName: node.name,
-                    fields: fields,
+                        return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
+                            typeName: node.name,
+                            fields: fields,
                             fieldsJSON_assignment: fieldsJSON,
                             fields_interface_params: fieldsPy,
                             fieldsLayout: layoutFragment,
-                        fieldsToJSON:fieldsToJSON,
-                        fieldsFromJSON:fieldsFromJSON,
-                       imports: imports.toString(dependencyMap, useGranularImports),
-                        discriminator:"",
+                            fieldsToJSON: fieldsToJSON,
+                            fieldsFromJSON: fieldsFromJSON,
+                            imports: imports.toString(dependencyMap, useGranularImports),
+                            discriminator: "",
 
-                            }));
+                        }));
 
                     }
                     return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {}));
 
-                                   },
+                },
 
                 visitInstruction(node) {
                     const scope = {
@@ -217,24 +233,38 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...scope,
                         fields
                     })
-                    const imports = new ImportMap().add("solana.publickey","Pubkey");
-                    imports.add("solders.instruction",["Instruction","AccountMeta"]);
-                    imports.add("anchorpy.borsh_extension", "BorshPubkey");
-                    imports.addAlias("","borsh_construct", "borsh");
-                    imports.add("","typing");
-                    imports.add("..program_id","PROGRAM_ID");
+                    const imports = new ImportMap().add("solders.pubkey", "Pubkey");
+;
+                    imports.add("solders.instruction", ["Instruction", "AccountMeta"]);
+                    //imports.add("anchorpy.borsh_extension", "BorshPubkey");
+                    imports.add("", "typing");
+                    imports.add("..program_id", "PROGRAM_ID");
+                    imports.add("solders.sysvar", "RENT");
+                    imports.add("construct","Container");
+                    imports.addAlias("", "borsh_construct", "borsh");
+                    imports.add("","borsh_construct");
+                    imports.add("dataclasses","dataclass");
+                    imports.mergeWith(argsToLayout!);
 
 
-                    console.log(":node.accounts",node.accounts)
+
+                    const discriminatorConstantsFragment = getDiscriminatorConstantsFragment({
+                         ...scope,
+                         discriminatorNodes: node.discriminators ?? [],
+                         fields,
+                         prefix: node.name,
+                     });
+
 
                     return new RenderMap().add(
                         `instructions/${camelCase(node.name)}.py`,
                         render('instructionsPage.njk', {
                             instructionName: node.name,
-                            args:argsToPy,
-                            accounts:node.accounts,
+                            args: argsToPy,
+                            accounts: node.accounts,
                             fieldsLayout: layoutFragment,
                             argsToLayout: argsToLayout,
+                            discriminator:discriminatorConstantsFragment,
                             imports: imports.toString(dependencyMap, useGranularImports),
                         }),
 
@@ -250,9 +280,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     return new RenderMap().add(`pdas/${camelCase(node.name)}.ts`, render('pdasPage.njk', {}));
                 },
 
-                visitProgram(node,{self}) {
+                visitProgram(node, { self }) {
                     const scope = { ...globalScope, programNode: node };
-                    const imports = new ImportMap().add("solana.publickey","Pubkey");
+                    const imports = new ImportMap().add("solders.pubkey", "Pubkey");
 
                     const renderMap = new RenderMap()
                         .mergeWith(...node.pdas.map(p => visit(p, self)))
@@ -260,7 +290,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...node.definedTypes.map(t => visit(t, self)))
                         .mergeWith(...node.instructions.map(t => visit(t, self)));
 
-                        //.mergeWith(...customDataDefinedType.map(t => visit(t, self)));
+                    //.mergeWith(...customDataDefinedType.map(t => visit(t, self)));
 
                     //console.log("definedTypes",node.definedTypes);
                     renderMap.add(

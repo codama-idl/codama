@@ -1,4 +1,4 @@
-import { Fragment } from './fragments';
+import { Fragment,PyFragment } from './fragments';
 import { TypeManifest } from './TypeManifest';
 
 const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
@@ -72,7 +72,7 @@ export class ImportMap {
         return this;
     }
 
-    mergeWith(...others: (Fragment | ImportMap)[]): ImportMap {
+    mergeWith(...others: (Fragment|PyFragment | ImportMap)[]): ImportMap {
         others.forEach(rawOther => {
             const other = 'imports' in rawOther ? rawOther.imports : rawOther;
             other._imports.forEach((imports, module) => {
@@ -148,6 +148,7 @@ export class ImportMap {
                         return true;
                     }).map(name => `import ${name};`);
                     let out=joinedImports.join('\n');
+                    console.log("module.length = 0",out,imports);
                     return out;
                 }else{
                 const joinedImports = [...imports]

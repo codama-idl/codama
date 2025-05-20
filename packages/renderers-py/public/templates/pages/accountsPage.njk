@@ -5,14 +5,14 @@
 {{ imports }}
 
 
-class {{accountName | pascalCase}}JSON:
+class {{accountName | pascalCase}}JSON(typing.TypedDict):
 {% for field in fieldsJSON_assignment.renders %}
     {{field}}
 {% endfor %}
 
 @dataclass
 class {{ accountName | pascalCase}}:
-    {{discriminator_assignment}}
+    discriminator: typing.ClassVar = {{discriminator_assignment}};
 
     layout: typing.ClassVar = borsh.CStruct(
     {% for field in fieldsLayout.renders %}
@@ -70,7 +70,9 @@ class {{ accountName | pascalCase}}:
         dec = {{accountName | pascalCase}}.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
         {% for field in fields %}
+        {% if field.name!="discriminator" %}
            {{field.name}}=dec.{{field.name}},
+        {% endif %}
         {% endfor %}
         )
 
