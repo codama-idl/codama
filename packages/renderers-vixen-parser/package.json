@@ -49,8 +49,7 @@
     },
     "devDependencies": {
         "@types/nunjucks": "^3.2.6",
-        "@codama/nodes-from-anchor": "workspace:*",
-        "@codama/visitors": "workspace:*"
+        "@codama/nodes-from-anchor": "workspace:*"
     },
     "license": "MIT",
     "repository": {

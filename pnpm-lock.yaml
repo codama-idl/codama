@@ -358,9 +358,6 @@ importers:
       '@codama/nodes-from-anchor':
         specifier: workspace:*
         version: link:../nodes-from-anchor
-      '@codama/visitors':
-        specifier: workspace:*
-        version: link:../visitors
       '@types/nunjucks':
         specifier: ^3.2.6
         version: 3.2.6
