@@ -103,7 +103,27 @@ export function getTypeManifestVisitor(input: {
                         { mergeValues: renders => `[${renders.join(', ')}]` },
                     );
                 },
+                visitOptionType(optionType,{self}){
+                    const inner = visit(optionType.item, self);
 
+                    //(
+                //None if self.clawback_user is None else str(self.clawback_user)
+            //),
+                    //let toJSONItemStr = renderString(inner.toJSON.render,{name:"item"})
+                    let toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`
+
+                    let fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`
+                    return {
+                        borshType: fragment(`borsh.Option(${inner.borshType})`),
+                        isEnum: false,
+                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType}]`),
+                        pyType: fragment(`typing.Optional[${inner.pyJSONType}]`),
+                        strictType: fragment('boolean'),
+                        value: fragment(''),
+                        toJSON:fragment(toJSONStr),
+                        fromJSON:fragment(fromJSONStr)
+                    };
+                },
                 visitBooleanType(_booleanType) {
                     return {
                         borshType: fragment('borsh.U8'),

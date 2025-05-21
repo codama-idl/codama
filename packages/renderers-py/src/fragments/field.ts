@@ -17,8 +17,13 @@ export function getFieldsJSON(scope: Pick<GlobalFragmentScope, 'typeManifestVisi
         if (field.name == 'discriminator') {
             return;
         }
+         console.log("field.name",field.name,field.type);
         const fieldtype = visit(field.type, typeManifestVisitor);
+        if (fieldtype.pyJSONType.imports) {
         imports.mergeWith(fieldtype.pyJSONType.imports);
+        }else{
+            console.log("field.name",field.name,field.type);
+        }
         fragments.push(`${field.name}: ${fieldtype.pyJSONType}`);
     });
     return new PyFragment(fragments, imports);
