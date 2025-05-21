@@ -226,6 +226,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         //let variants = nodeType as enumTypeNode;
                         if (nodeType.kind == "enumTypeNode") {
                             let variants = nodeType.variants;
+                            imports.add("anchorpy.borsh_extension", "EnumForCodegen");
                             console.log("variant:",variants[1]);
                             return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedEnumTypesPage.njk', {
                                 typeName: node.name,

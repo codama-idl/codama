@@ -38,4 +38,27 @@ class {{variant.name | pascalCase}}:
 {% for variant in variants %}
 {{variant.name | pascalCase}}JSON,
 {% endfor %}]
+
+def from_decoded(obj: dict) -> {{typeName | pascalCase}}Kind:
+    if not isinstance(obj, dict):
+        raise ValueError("Invalid enum object")
+{% for variant in variants %}
+    if "{{variant.name | pascalCase}}" in obj:
+      return {{variant.name | pascalCase}}()
+{% endfor %}
+    raise ValueError("Invalid enum object")
+
+def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Kind:
+{% for variant in variants %}
+    if obj["kind"] == "{{variant.name | pascalCase}}":
+        return {{variant.name | pascalCase}}()
+{% endfor %}
+    kind = obj["kind"]
+    raise ValueError(f"Unrecognized enum kind: {kind}")
+
+layout = EnumForCodegen(
+{% for variant in variants %}
+"{{variant.name | pascalCase}}" / borsh.CStruct(),
+{% endfor %}
+)
 {% endblock %}
