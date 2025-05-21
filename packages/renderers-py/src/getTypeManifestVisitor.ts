@@ -185,12 +185,13 @@ export function getTypeManifestVisitor(input: {
                         fromJSON:fragment('{{name}}')
                     };
                 },
-                visitFixedSizeType(_node){
+                visitFixedSizeType(node){
+
                     return {
-                        borshType: fragment('borsh.visitFixedSizeType'),
+                        borshType: fragment(`borsh.U8[${node.size}]`),
                         isEnum: false,
-                        pyJSONType: fragment("str"),
-                        pyType: fragment('borsh.String'),
+                        pyJSONType: fragment("list[int]"),
+                        pyType: fragment('list[int]'),
                         strictType: fragment('ReadonlyUint8Array').addImports(
                             'solanaCodecsCore',
                             'type ReadonlyUint8Array',
