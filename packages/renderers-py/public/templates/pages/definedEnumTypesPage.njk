@@ -5,4 +5,37 @@
 {% block main %}
 {{ imports }}
 
+{% for variant in variants %}
+class {{variant.name | pascalCase}}JSON(typing.TypedDict):
+    kind: typing.Literal["{{variant.name | pascalCase}}"]
+
+
+@dataclass
+class {{variant.name | pascalCase}}:
+    discriminator: typing.ClassVar = {{ loop.index0 }}
+    @classmethod
+    def to_json(cls) -> {{variant.name | pascalCase}}JSON:
+        return {{variant.name | pascalCase}}JSON(
+            kind="{{variant.name | pascalCase}}",
+        )
+
+    @classmethod
+    def to_encodable(cls) -> dict:
+        return {
+            "{{variant.name | pascalCase}}": {},
+        }
+
+
+
+{% endfor %}
+
+
+{{typeName | pascalCase}}Kind = typing.Union[
+{% for variant in variants %}
+{{variant.name | pascalCase}},
+{% endfor %}]
+{{typeName | pascalCase}}JSON = typing.Union[
+{% for variant in variants %}
+{{variant.name | pascalCase}}JSON,
+{% endfor %}]
 {% endblock %}

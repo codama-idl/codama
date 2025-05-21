@@ -1,9 +1,11 @@
 import { join } from 'node:path';
 
 //import { logWarn } from '@codama/errors';
-import { camelCase, getAllAccounts, getAllPdas, getAllInstructions,
-         getAllDefinedTypes,
-         getAllPrograms, resolveNestedTypeNode } from '@codama/nodes';
+import {
+    camelCase, getAllAccounts, getAllPdas, getAllInstructions,
+    getAllDefinedTypes,
+    getAllPrograms, resolveNestedTypeNode
+} from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
@@ -119,14 +121,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const imports = new ImportMap().add("solders.pubkey", "Pubkey");
                     imports.add("solana.rpc.async_api", "AsyncClient");
                     imports.add("solana.rpc.commitment", "Commitment");
-                    imports.add("dataclasses","dataclass");
+                    imports.add("dataclasses", "dataclass");
                     imports.add("solana.rpc.types", "MemcmpOpts")
                     imports.add("anchorpy.borsh_extension", "BorshPubkey");
                     imports.add("anchorpy.coder.accounts", "ACCOUNT_DISCRIMINATOR_SIZE");
                     imports.addAlias("", "borsh_construct", "borsh");
                     imports.add("", "typing");
                     imports.add("anchorpy.utils.rpc", "get_multiple_accounts");
-                    imports.add("","borsh_construct");
+                    imports.add("", "borsh_construct");
                     imports.add("..program_id", "PROGRAM_ID");
                     imports.add("anchorpy.error", "AccountInvalidDiscriminator");
                     imports.mergeWith(fieldsJSON!);
@@ -137,7 +139,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     //console.log("fieldsToJSON:", fieldsToJSON, accountDiscriminatorConstantsFragment);
                     let filename = `${camelCase(node.name)}`
-                    if (filename == "global"){
+                    if (filename == "global") {
                         filename = "global_";
                     }
                     return new RenderMap().add(
@@ -166,18 +168,18 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
                     const imports = new ImportMap().add("solders.pubkey", "Pubkey");
                     imports.add("solders.sysvar", "RENT");
-                    imports.add("construct","Container");
+                    imports.add("construct", "Container");
                     imports.addAlias("", "borsh_construct", "borsh");
-                    imports.add("","borsh_construct");
+                    imports.add("", "borsh_construct");
                     imports.add("", "typing");
-                    imports.add("dataclasses","dataclass");
+                    imports.add("dataclasses", "dataclass");
                     imports.add("anchorpy.borsh_extension", "BorshPubkey");
 
 
 
                     let nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     //console.log("fields",fields);
-                    //console.log("visitDefinedType:",node);
+                    console.log("visitDefinedType:", node);
                     if (nodeType.kind == "structTypeNode") {
                         let fields = nodeType.fields;
                         const layoutFragment = getLayoutFields({
@@ -202,12 +204,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             ...scope,
                             fields
                         });
-                        console.log("visitDefinedType:",node);
+                        console.log("visitDefinedType:", node);
                         //if (node.name == "AmmCurve2"){
                         //    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk',{
 
 
-                    
+
                         return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
                             typeName: node.name,
                             fields: fields,
@@ -220,10 +222,24 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             discriminator: "",
 
                         }));
-                    }else{
+                    } else {
+                        //let variants = nodeType as enumTypeNode;
+                        if (nodeType.kind == "enumTypeNode") {
+                            let variants = nodeType.variants;
+                            console.log("variant:",variants[1]);
+                            return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedEnumTypesPage.njk', {
+                                typeName: node.name,
+                                variants: variants,
+                                imports: imports.toString(dependencyMap, useGranularImports),
 
-                        return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedEnumTypesPage.njk', {}));
+                            }));
+                        }
+                        return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedEnumTypesPage.njk', {
+                            typeName: node.name,
+                            imports: imports.toString(dependencyMap, useGranularImports),
+                        }));
                     }
+
                 },
 
                 visitInstruction(node) {
@@ -247,16 +263,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields
                     })
                     const imports = new ImportMap().add("solders.pubkey", "Pubkey");
-;
+                    ;
                     imports.add("solders.instruction", ["Instruction", "AccountMeta"]);
                     //imports.add("anchorpy.borsh_extension", "BorshPubkey");
                     imports.add("", "typing");
                     imports.add("..program_id", "PROGRAM_ID");
                     imports.add("solders.sysvar", "RENT");
-                    imports.add("construct","Container");
+                    imports.add("construct", "Container");
                     imports.addAlias("", "borsh_construct", "borsh");
-                    imports.add("","borsh_construct");
-                    imports.add("dataclasses","dataclass");
+                    imports.add("", "borsh_construct");
+                    imports.add("dataclasses", "dataclass");
                     imports.mergeWith(argsToLayout!);
                     imports.mergeWith(layoutFragment!);
 
@@ -264,11 +280,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
 
                     const discriminatorConstantsFragment = getDiscriminatorConstantsFragment({
-                         ...scope,
-                         discriminatorNodes: node.discriminators ?? [],
-                         fields,
-                         prefix: node.name,
-                     });
+                        ...scope,
+                        discriminatorNodes: node.discriminators ?? [],
+                        fields,
+                        prefix: node.name,
+                    });
 
 
 
@@ -280,7 +296,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             accounts: node.accounts,
                             fieldsLayout: layoutFragment,
                             argsToLayout: argsToLayout,
-                            discriminator:discriminatorConstantsFragment,
+                            discriminator: discriminatorConstantsFragment,
                             imports: imports.toString(dependencyMap, useGranularImports),
                         }),
 
@@ -306,9 +322,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...node.definedTypes.map(t => visit(t, self)))
                         .mergeWith(...node.instructions.map(t => visit(t, self)));
 
-                    //.mergeWith(...customDataDefinedType.map(t => visit(t, self)));
-
-                    //console.log("definedTypes",node.definedTypes);
                     renderMap.add(
                         `program_id.py`,
                         render('programsPage.njk', {
