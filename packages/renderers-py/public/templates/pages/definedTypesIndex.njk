@@ -3,7 +3,11 @@
 {% block main %}
 {% for definedType in definedTypesToExport | sort(false, false, 'name') %}
 from . import {{ definedType.name | camelCase }}
+{% if definedType.type.kind == "enumTypeNode" %}
+from .{{ definedType.name | camelCase }} import {{ definedType.name | pascalCase }}JSON,{{ definedType.name | pascalCase }}Kind;
+{% else %}
 from .{{ definedType.name | camelCase }} import {{ definedType.name | pascalCase }}JSON,{{ definedType.name | pascalCase }};
+{% endif %}
 {% else %}
 {% endfor %}
 {% endblock %}
