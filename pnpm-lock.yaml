@@ -249,9 +249,6 @@ importers:
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
-      '@codama/nodes-from-anchor':
-        specifier: workspace:*
-        version: link:../nodes-from-anchor
       '@codama/renderers-core':
         specifier: workspace:*
         version: link:../renderers-core
@@ -259,8 +256,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
-        specifier: rc
-        version: 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        specifier: ^2.1.0
+        version: 2.1.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -268,6 +265,9 @@ importers:
         specifier: ^3.5.3
         version: 3.5.3
     devDependencies:
+      '@codama/nodes-from-anchor':
+        specifier: workspace:*
+        version: link:../nodes-from-anchor
       '@types/nunjucks':
         specifier: ^3.2.6
         version: 3.2.6
