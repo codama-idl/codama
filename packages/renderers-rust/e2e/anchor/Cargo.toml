@@ -14,7 +14,7 @@ fetch = ["dep:solana-client", "dep:solana-sdk"]
 anchor-lang = { version = "0.30.0", optional = true }
 borsh = "^0.10"
 kaigan = "0.2.5"
-num-derive = "^0.3"
+num-derive = "^0.4"
 num-traits = "^0.2"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde_with = { version = "^3.0", optional = true }
@@ -27,8 +27,8 @@ solana-instruction = "~2.2"
 solana-program-entrypoint = "~2.2"
 solana-program-error = "~2.2"
 solana-msg = "~2.2"
-solana-client = { version = "~2.2", optional = true }
-solana-sdk = { version = "~2.2", optional = true }
+solana-client = { version = "~1.18", optional = true }
+solana-sdk = { version = "~1.18", optional = true }
 thiserror = "^1.0"
 
 [dev-dependencies]
