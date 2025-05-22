@@ -20,7 +20,7 @@ import {
 } from '@codama/visitors-core';
 import type { ConfigureOptions } from 'nunjucks';
 
-import { getDiscriminatorConstantsFragment, getFieldsJSON, getFieldsPy, getArgsToPy, getFieldsToJSON, getLayoutFields, getArgsToLayout, getFieldsFromJSON } from './fragments';
+import { getDiscriminatorConstantsFragment, getFieldsJSON, getFieldsPy, getArgsToPy, getFieldsDecode,getFieldsToJSON, getLayoutFields, getArgsToLayout, getFieldsFromJSON } from './fragments';
 import { getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import {
     getImportFromFactory,
@@ -113,6 +113,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...scope,
                         fields
                     });
+                    const fieldsDecode = getFieldsDecode({
+                        ...scope,
+                        fields
+                    });
+
                     const fieldsFromJSON = getFieldsFromJSON({
                         ...scope,
                         fields
@@ -151,6 +156,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fieldsJSON_assignment: fieldsJSON,
                             fields_interface_params: fieldsPy,
                             fieldsLayout: layoutFragment,
+                            fieldsDecode: fieldsDecode,
                             fieldsToJSON: fieldsToJSON,
                             fieldsFromJSON: fieldsFromJSON,
                             typeManifest: typeManifest,
@@ -179,7 +185,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     let nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     //console.log("fields",fields);
-                    console.log("visitDefinedType:", node);
+                    //console.log("visitDefinedType:", node);
                     if (nodeType.kind == "structTypeNode") {
                         let fields = nodeType.fields;
                         const layoutFragment = getLayoutFields({
@@ -204,7 +210,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             ...scope,
                             fields
                         });
-                        console.log("visitDefinedType:", node);
+                        //console.log("visitDefinedType:", node);
                         //if (node.name == "AmmCurve2"){
                         //    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk',{
 
@@ -276,6 +282,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add("dataclasses", "dataclass");
                     imports.mergeWith(argsToLayout!);
                     imports.mergeWith(layoutFragment!);
+                    imports.mergeWith(argsToPy!);
 
 
 

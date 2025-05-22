@@ -7,6 +7,7 @@ import {
     NodeStack,
     pipe,
     recordNodeStackVisitor,
+    getLastNodeFromPath,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
@@ -35,6 +36,7 @@ export function getTypeManifestVisitor(input: {
     stack?: NodeStack;
 }) {
     //const { customAccountData } = input;
+    const { linkables} = input;
     const stack = input.stack ?? new NodeStack();
     //let parentName: { loose: string; strict: string } | null = null;
 
@@ -114,14 +116,14 @@ export function getTypeManifestVisitor(input: {
 
                     let fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`
                     return {
-                        borshType: fragment(`borsh.Option(${inner.borshType})`),
+                        borshType: fragment(`borsh.Option(${inner.borshType})`,inner.borshType.imports),
                         isEnum: false,
-                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType}]`),
-                        pyType: fragment(`typing.Optional[${inner.pyJSONType}]`),
+                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType}]`,inner.pyJSONType.imports),
+                        pyType: fragment(`typing.Optional[${inner.pyJSONType}]`,inner.pyJSONType.imports),
                         strictType: fragment('boolean'),
                         value: fragment(''),
-                        toJSON:fragment(toJSONStr),
-                        fromJSON:fragment(fromJSONStr)
+                        toJSON:fragment(toJSONStr,inner.toJSON.imports),
+                        fromJSON:fragment(fromJSONStr,inner.fromJSON.imports)
                     };
                 },
                 visitBooleanType(_booleanType) {
@@ -225,19 +227,33 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
                 visitDefinedTypeLink(node) {
-                    //console.log("type link",node);
+                    const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
+                    const definedType = getLastNodeFromPath(definedTypePath);
                     const typename = node.name;
                     const modname = node.name;
+                    let pyTypeStr ="";
+                    let borshTypeStr ="";
+                    let fromJSONStr = "";
+                    let isEnum = false;
+
                     const imports = new ImportMap().add('..', 'types');
+                    if (definedType.type.kind == "enumTypeNode"){
+                        pyTypeStr =`types.${modname}.${pascalCase(typename)}Kind`;
+                        borshTypeStr =`types.${modname}.layout`;
+                        fromJSONStr = `types.${modname}.from_json({{name}})`
+                        isEnum = true;
+
+
+                    }else{
+                        pyTypeStr =`types.${modname}.${pascalCase(typename)}`;
+                        borshTypeStr =`types.${modname}.${pascalCase(typename)}.layout`;
+                        fromJSONStr = `types.${modname}.${pascalCase(typename)}.from_json({{name}})`
+                    }
                     let pyJSONTypeStr =`types.${modname}.${pascalCase(typename)}JSON`;
-                    let pyTypeStr =`types.${modname}.${pascalCase(typename)}`;
-                    let borshTypeStr =`types.${modname}.${pascalCase(typename)}.layout`;
-                    let fromJSONStr = `types.${modname}.${pascalCase(typename)}.from_json({{name}})`
-                    //types.amm_curve.AmmCurve.from_json(obj["curve"]),
 
                     return {
                         borshType: fragment(borshTypeStr,imports),
-                        isEnum: false,
+                        isEnum: isEnum,
                         pyJSONType:fragment(pyJSONTypeStr,imports),
                         pyType: fragment(pyTypeStr,imports),
                         //looseType: fragment(numberType.format),

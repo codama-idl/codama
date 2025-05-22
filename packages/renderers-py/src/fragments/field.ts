@@ -4,6 +4,8 @@ import { visit } from '@codama/visitors-core';
 import { PyFragment } from './common';
 import { renderString } from '../utils/render'
 import { ImportMap } from '../ImportMap';
+import { pascalCase } from '@codama/nodes';
+
 
 export function getFieldsJSON(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
     fields: InstructionArgumentNode[] | StructFieldTypeNode[]
@@ -62,20 +64,48 @@ export function getFieldsToJSON(scope: Pick<GlobalFragmentScope, 'typeManifestVi
     return new PyFragment(fragments, imports);
 
 }
+export function getFieldsDecode(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+    fields: InstructionArgumentNode[] | StructFieldTypeNode[]
+}): PyFragment | null {
+    const { fields, typeManifestVisitor } = scope;
+    const fragments: string[] = [];
+    const imports = new ImportMap();
+    fields.forEach((field, _index) => {
+        if (field.name == 'discriminator') {
+            return;
+        }
+        if (field.type.kind == "definedTypeLinkNode"){
+            const fieldtype = visit(field.type, typeManifestVisitor);
+            imports.mergeWith(fieldtype.toJSON.imports);
+            if (fieldtype.isEnum){
+                fragments.push(`${field.name}=types.${field.type.name}.from_decoded(dec.${field.name})`);
+            }else{
+                fragments.push(`${field.name}=types.${field.type.name}.${pascalCase(field.type.name)}.from_decoded(dec.${field.name})`);
+            }
+        }else{
+            fragments.push(`${field.name}=dec.${field.name}`);
+        }
+    });
+    return new PyFragment(fragments, imports);
+
+}
+
 export function getFieldsFromJSON(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
     fields: InstructionArgumentNode[] | StructFieldTypeNode[]
 }): PyFragment | null {
     const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
+     const imports = new ImportMap();
     fields.forEach((field, _index) => {
         if (field.name == 'discriminator') {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
+        imports.mergeWith(fieldtype.fromJSON);
         const fromCast = renderString(fieldtype.fromJSON.render, { name: "obj[\"" + field.name + "\"]" })
         fragments.push(`${field.name}=${fromCast}`);
     });
-    return new PyFragment(fragments);
+    return new PyFragment(fragments,imports);
 
 }
 export function getArgsToLayout(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
@@ -97,12 +127,13 @@ export function getArgsToPy(scope: Pick<GlobalFragmentScope, 'typeManifestVisito
 }): PyFragment | null {
     const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
-    fields.forEach((field, _index) => {
+        const imports = new ImportMap();
+        fields.forEach((field, _index) => {
         if (field.name == 'discriminator') {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
-
+        imports.mergeWith(fieldtype.pyType);
         fragments.push(`${field.name}:${fieldtype.pyType}`);
     });
     return new PyFragment(fragments);
