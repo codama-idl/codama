@@ -20,9 +20,9 @@
 pub struct {{ instruction.name | pascalCase }}Builder {
   {% for account in instruction.accounts %}
     {% if account.isSigner === 'either' %}
-      {{ account.name | snakeCase }}: Option<(solana_program::pubkey::Pubkey, bool)>,
+      {{ account.name | snakeCase }}: Option<(solana_pubkey::Pubkey, bool)>,
     {% else %}
-      {{ account.name | snakeCase }}: Option<solana_program::pubkey::Pubkey>,
+      {{ account.name | snakeCase }}: Option<solana_pubkey::Pubkey>,
     {% endif %}
   {% endfor %}
   {% for arg in instructionArgs %}
@@ -30,7 +30,7 @@ pub struct {{ instruction.name | pascalCase }}Builder {
       {{ arg.name | snakeCase }}: {{ arg.type if arg.innerOptionType else 'Option<' + arg.type + '>' }},
     {% endif %}
   {% endfor %}
-  __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+  __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl {{ instruction.name | pascalCase }}Builder {
@@ -45,7 +45,7 @@ impl {{ instruction.name | pascalCase }}Builder {
     {% endif %}
     {{- macros.docblock(account.docs) -}}
     #[inline(always)]
-    pub fn {{ account.name | snakeCase }}(&mut self, {{ account.name | snakeCase }}: {{ 'Option<solana_program::pubkey::Pubkey>' if account.isOptional else 'solana_program::pubkey::Pubkey' }}{{ ', as_signer: bool' if account.isSigner === 'either' }}) -> &mut Self {
+    pub fn {{ account.name | snakeCase }}(&mut self, {{ account.name | snakeCase }}: {{ 'Option<solana_pubkey::Pubkey>' if account.isOptional else 'solana_pubkey::Pubkey' }}{{ ', as_signer: bool' if account.isSigner === 'either' }}) -> &mut Self {
       {% if account.isOptional %}
         {% if account.isSigner === 'either' %}
           if let Some({{ account.name | snakeCase }}) = {{ account.name | snakeCase }} {
@@ -80,18 +80,18 @@ impl {{ instruction.name | pascalCase }}Builder {
   {% endfor %}
   /// Add an additional account to the instruction.
   #[inline(always)]
-  pub fn add_remaining_account(&mut self, account: solana_program::instruction::AccountMeta) -> &mut Self {
+  pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
     self.__remaining_accounts.push(account);
     self
   }
   /// Add additional accounts to the instruction.
   #[inline(always)]
-  pub fn add_remaining_accounts(&mut self, accounts: &[solana_program::instruction::AccountMeta]) -> &mut Self {
+  pub fn add_remaining_accounts(&mut self, accounts: &[solana_instruction::AccountMeta]) -> &mut Self {
     self.__remaining_accounts.extend_from_slice(accounts);
     self
   }
   #[allow(clippy::clone_on_copy)]
-  pub fn instruction(&self) -> solana_program::instruction::Instruction {
+  pub fn instruction(&self) -> solana_instruction::Instruction {
     let accounts = {{ instruction.name | pascalCase }} {
         {% for account in instruction.accounts %}
           {% if account.isOptional %}
@@ -99,7 +99,7 @@ impl {{ instruction.name | pascalCase }}Builder {
           {% elif account.defaultValue.kind === 'programId' %}
             {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}, {# Program ID set on the instruction creation. #}
           {% elif account.defaultValue.kind === 'publicKeyValueNode' %}
-            {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}.unwrap_or(solana_program::pubkey!("{{ account.defaultValue.publicKey }}")),
+            {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}.unwrap_or(solana_pubkey::Pubkey::from_str_const("{{ account.defaultValue.publicKey }}")),
           {% else %}
             {{ account.name | snakeCase }}: self.{{ account.name | snakeCase }}.expect("{{ account.name | snakeCase }} is not set"),
           {% endif %}
