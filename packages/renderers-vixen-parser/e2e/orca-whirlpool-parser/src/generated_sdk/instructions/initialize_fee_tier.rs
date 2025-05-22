@@ -11,22 +11,22 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct InitializeFeeTier {
-    pub config: solana_program::pubkey::Pubkey,
+    pub config: solana_pubkey::Pubkey,
 
-    pub fee_tier: solana_program::pubkey::Pubkey,
+    pub fee_tier: solana_pubkey::Pubkey,
 
-    pub funder: solana_program::pubkey::Pubkey,
+    pub funder: solana_pubkey::Pubkey,
 
-    pub fee_authority: solana_program::pubkey::Pubkey,
+    pub fee_authority: solana_pubkey::Pubkey,
 
-    pub system_program: solana_program::pubkey::Pubkey,
+    pub system_program: solana_pubkey::Pubkey,
 }
 
 impl InitializeFeeTier {
     pub fn instruction(
         &self,
         args: InitializeFeeTierInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
+    ) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -34,26 +34,20 @@ impl InitializeFeeTier {
     pub fn instruction_with_remaining_accounts(
         &self,
         args: InitializeFeeTierInstructionArgs,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.config,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.fee_tier,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.funder,
-            true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(self.fee_tier, false));
+        accounts.push(solana_instruction::AccountMeta::new(self.funder, true));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.fee_authority,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.system_program,
             false,
         ));
@@ -62,7 +56,7 @@ impl InitializeFeeTier {
         let mut args = borsh::to_vec(&args).unwrap();
         data.append(&mut args);
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::WHIRLPOOL_ID,
             accounts,
             data,
@@ -108,14 +102,14 @@ pub struct InitializeFeeTierInstructionArgs {
 ///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct InitializeFeeTierBuilder {
-    config: Option<solana_program::pubkey::Pubkey>,
-    fee_tier: Option<solana_program::pubkey::Pubkey>,
-    funder: Option<solana_program::pubkey::Pubkey>,
-    fee_authority: Option<solana_program::pubkey::Pubkey>,
-    system_program: Option<solana_program::pubkey::Pubkey>,
+    config: Option<solana_pubkey::Pubkey>,
+    fee_tier: Option<solana_pubkey::Pubkey>,
+    funder: Option<solana_pubkey::Pubkey>,
+    fee_authority: Option<solana_pubkey::Pubkey>,
+    system_program: Option<solana_pubkey::Pubkey>,
     tick_spacing: Option<u16>,
     default_fee_rate: Option<u16>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl InitializeFeeTierBuilder {
@@ -123,28 +117,28 @@ impl InitializeFeeTierBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn config(&mut self, config: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn config(&mut self, config: solana_pubkey::Pubkey) -> &mut Self {
         self.config = Some(config);
         self
     }
     #[inline(always)]
-    pub fn fee_tier(&mut self, fee_tier: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn fee_tier(&mut self, fee_tier: solana_pubkey::Pubkey) -> &mut Self {
         self.fee_tier = Some(fee_tier);
         self
     }
     #[inline(always)]
-    pub fn funder(&mut self, funder: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn funder(&mut self, funder: solana_pubkey::Pubkey) -> &mut Self {
         self.funder = Some(funder);
         self
     }
     #[inline(always)]
-    pub fn fee_authority(&mut self, fee_authority: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn fee_authority(&mut self, fee_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.fee_authority = Some(fee_authority);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
     #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn system_program(&mut self, system_program: solana_pubkey::Pubkey) -> &mut Self {
         self.system_program = Some(system_program);
         self
     }
@@ -160,10 +154,7 @@ impl InitializeFeeTierBuilder {
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -171,22 +162,23 @@ impl InitializeFeeTierBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = InitializeFeeTier {
-            config: self.config.expect("config is not set"),
-            fee_tier: self.fee_tier.expect("fee_tier is not set"),
-            funder: self.funder.expect("funder is not set"),
-            fee_authority: self.fee_authority.expect("fee_authority is not set"),
-            system_program: self
-                .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
-        };
+    pub fn instruction(&self) -> solana_instruction::Instruction {
+        let accounts =
+            InitializeFeeTier {
+                config: self.config.expect("config is not set"),
+                fee_tier: self.fee_tier.expect("fee_tier is not set"),
+                funder: self.funder.expect("funder is not set"),
+                fee_authority: self.fee_authority.expect("fee_authority is not set"),
+                system_program: self.system_program.unwrap_or(
+                    solana_pubkey::Pubkey::from_str_const("11111111111111111111111111111111"),
+                ),
+            };
         let args = InitializeFeeTierInstructionArgs {
             tick_spacing: self.tick_spacing.clone().expect("tick_spacing is not set"),
             default_fee_rate: self
@@ -201,38 +193,38 @@ impl InitializeFeeTierBuilder {
 
 /// `initialize_fee_tier` CPI accounts.
 pub struct InitializeFeeTierCpiAccounts<'a, 'b> {
-    pub config: &'b solana_program::account_info::AccountInfo<'a>,
+    pub config: &'b solana_account_info::AccountInfo<'a>,
 
-    pub fee_tier: &'b solana_program::account_info::AccountInfo<'a>,
+    pub fee_tier: &'b solana_account_info::AccountInfo<'a>,
 
-    pub funder: &'b solana_program::account_info::AccountInfo<'a>,
+    pub funder: &'b solana_account_info::AccountInfo<'a>,
 
-    pub fee_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub fee_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `initialize_fee_tier` CPI instruction.
 pub struct InitializeFeeTierCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub config: &'b solana_program::account_info::AccountInfo<'a>,
+    pub config: &'b solana_account_info::AccountInfo<'a>,
 
-    pub fee_tier: &'b solana_program::account_info::AccountInfo<'a>,
+    pub fee_tier: &'b solana_account_info::AccountInfo<'a>,
 
-    pub funder: &'b solana_program::account_info::AccountInfo<'a>,
+    pub funder: &'b solana_account_info::AccountInfo<'a>,
 
-    pub fee_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub fee_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: InitializeFeeTierInstructionArgs,
 }
 
 impl<'a, 'b> InitializeFeeTierCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: InitializeFeeTierCpiAccounts<'a, 'b>,
         args: InitializeFeeTierInstructionArgs,
     ) -> Self {
@@ -247,25 +239,21 @@ impl<'a, 'b> InitializeFeeTierCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -274,35 +262,28 @@ impl<'a, 'b> InitializeFeeTierCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.config.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.fee_tier.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.funder.key,
-            true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(*self.funder.key, true));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.fee_authority.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.system_program.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -312,7 +293,7 @@ impl<'a, 'b> InitializeFeeTierCpi<'a, 'b> {
         let mut args = borsh::to_vec(&self.__args).unwrap();
         data.append(&mut args);
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::WHIRLPOOL_ID,
             accounts,
             data,
@@ -329,9 +310,9 @@ impl<'a, 'b> InitializeFeeTierCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -351,7 +332,7 @@ pub struct InitializeFeeTierCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(InitializeFeeTierCpiBuilderInstruction {
             __program: program,
             config: None,
@@ -366,33 +347,24 @@ impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
         Self { instruction }
     }
     #[inline(always)]
-    pub fn config(
-        &mut self,
-        config: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn config(&mut self, config: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.config = Some(config);
         self
     }
     #[inline(always)]
-    pub fn fee_tier(
-        &mut self,
-        fee_tier: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn fee_tier(&mut self, fee_tier: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.fee_tier = Some(fee_tier);
         self
     }
     #[inline(always)]
-    pub fn funder(
-        &mut self,
-        funder: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn funder(&mut self, funder: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.funder = Some(funder);
         self
     }
     #[inline(always)]
     pub fn fee_authority(
         &mut self,
-        fee_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        fee_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.fee_authority = Some(fee_authority);
         self
@@ -400,7 +372,7 @@ impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn system_program(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        system_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
         self
@@ -419,7 +391,7 @@ impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -435,11 +407,7 @@ impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -447,7 +415,7 @@ impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -455,7 +423,7 @@ impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let args = InitializeFeeTierInstructionArgs {
             tick_spacing: self
                 .instruction
@@ -497,18 +465,14 @@ impl<'a, 'b> InitializeFeeTierCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct InitializeFeeTierCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    config: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    fee_tier: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    funder: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    fee_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    config: Option<&'b solana_account_info::AccountInfo<'a>>,
+    fee_tier: Option<&'b solana_account_info::AccountInfo<'a>>,
+    funder: Option<&'b solana_account_info::AccountInfo<'a>>,
+    fee_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_account_info::AccountInfo<'a>>,
     tick_spacing: Option<u16>,
     default_fee_rate: Option<u16>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

@@ -21,7 +21,7 @@ pub struct {{ instruction.name | pascalCase }}CpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> {{ instruction.name | pascalCase }}CpiBuilder<'a, 'b> {
-  pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+  pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
     let instruction = Box::new({{ instruction.name | pascalCase }}CpiBuilderInstruction {
       __program: program,
       {% for account in instruction.accounts %}
@@ -40,7 +40,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}CpiBuilder<'a, 'b> {
     {{'/// `[optional account]`\n' if account.isOptional }}
     {{- macros.docblock(account.docs) -}}
     #[inline(always)]
-    pub fn {{ account.name | snakeCase }}(&mut self, {{ account.name | snakeCase }}: {{ "Option<&'b solana_program::account_info::AccountInfo<'a>>" if account.isOptional else "&'b solana_program::account_info::AccountInfo<'a>" }}{{ ', as_signer: bool' if account.isSigner === 'either' }}) -> &mut Self {
+    pub fn {{ account.name | snakeCase }}(&mut self, {{ account.name | snakeCase }}: {{ "Option<&'b solana_account_info::AccountInfo<'a>>" if account.isOptional else "&'b solana_account_info::AccountInfo<'a>" }}{{ ', as_signer: bool' if account.isSigner === 'either' }}) -> &mut Self {
       {% if account.isOptional %}
         {% if account.isSigner === 'either' %}
           if let Some({{ account.name | snakeCase }}) = {{ account.name | snakeCase }} {
@@ -75,7 +75,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}CpiBuilder<'a, 'b> {
   {% endfor %}
   /// Add an additional account to the instruction.
   #[inline(always)]
-  pub fn add_remaining_account(&mut self, account: &'b solana_program::account_info::AccountInfo<'a>, is_writable: bool, is_signer: bool) -> &mut Self {
+  pub fn add_remaining_account(&mut self, account: &'b solana_account_info::AccountInfo<'a>, is_writable: bool, is_signer: bool) -> &mut Self {
     self.instruction.__remaining_accounts.push((account, is_writable, is_signer));
     self
   }
@@ -84,17 +84,17 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}CpiBuilder<'a, 'b> {
   /// Each account is represented by a tuple of the `AccountInfo`, a `bool` indicating whether the account is writable or not,
   /// and a `bool` indicating whether the account is a signer or not.
   #[inline(always)]
-  pub fn add_remaining_accounts(&mut self, accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]) -> &mut Self {
+  pub fn add_remaining_accounts(&mut self, accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)]) -> &mut Self {
     self.instruction.__remaining_accounts.extend_from_slice(accounts);
     self
   }
   #[inline(always)]
-  pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
     self.invoke_signed(&[])
   }
   #[allow(clippy::clone_on_copy)]
   #[allow(clippy::vec_init_then_push)]
-  pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program_entrypoint::ProgramResult {
     {% if hasArgs %}
       let args = {{ instruction.name | pascalCase }}InstructionArgs {
         {% for arg in instructionArgs %}
@@ -127,12 +127,12 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}CpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct {{ instruction.name | pascalCase }}CpiBuilderInstruction<'a, 'b> {
-  __program: &'b solana_program::account_info::AccountInfo<'a>,
+  __program: &'b solana_account_info::AccountInfo<'a>,
   {% for account in instruction.accounts %}
     {% if account.isSigner === 'either' %}
-      {{ account.name | snakeCase }}: Option<(&'b solana_program::account_info::AccountInfo<'a>, bool)>,
+      {{ account.name | snakeCase }}: Option<(&'b solana_account_info::AccountInfo<'a>, bool)>,
     {% else %}
-      {{ account.name | snakeCase }}: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+      {{ account.name | snakeCase }}: Option<&'b solana_account_info::AccountInfo<'a>>,
     {% endif %}
   {% endfor %}
   {% for arg in instructionArgs %}
@@ -141,5 +141,5 @@ struct {{ instruction.name | pascalCase }}CpiBuilderInstruction<'a, 'b> {
     {% endif %}
   {% endfor %}
   /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-  __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
+  __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

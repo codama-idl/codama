@@ -18,9 +18,17 @@ num-derive = "^0.3"
 num-traits = "^0.2"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde_with = { version = "^3.0", optional = true }
-solana-program = "^2.1.6"
-solana-client = { version = "~1.18", optional = true }
-solana-sdk = { version = "~1.18", optional = true }
+solana-account = "~2.2"
+solana-account-info = "~2.2"
+solana-cpi = "~2.2"
+solana-decode-error = "~2.2"
+solana-pubkey = { version = "~2.2", features = ["borsh"] }
+solana-instruction = "~2.2"
+solana-program-entrypoint = "~2.2"
+solana-program-error = "~2.2"
+solana-msg = "~2.2"
+solana-client = { version = "~2.2", optional = true }
+solana-sdk = { version = "~2.2", optional = true }
 thiserror = "^1.0"
 
 [dev-dependencies]
