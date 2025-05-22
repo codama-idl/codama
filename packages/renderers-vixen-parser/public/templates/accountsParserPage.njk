@@ -9,6 +9,7 @@
 /// {{ programName | pascalCase }} Program State
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
+#[cfg_attr(feature = "tracing", derive(strum_macros::Display))]
 pub enum {{ programName | pascalCase }}ProgramState {
     {% for account in accounts %}
         {{ account.name | pascalCase }}({{ account.name | pascalCase }}),
@@ -17,30 +18,86 @@ pub enum {{ programName | pascalCase }}ProgramState {
 
 impl {{ programName | pascalCase }}ProgramState {
     pub fn try_unpack(data_bytes:&[u8]) -> yellowstone_vixen_core::ParseResult<Self>{
-        let data_len = data_bytes.len();    
-        {% for account in accounts %}
-            {% if account.size == null %}
-                const {{ account.name | upper }}_LEN:usize = std::mem::size_of::<{{ account.name | pascalCase }}>();
-            {% endif %}
-        {% endfor %}
-        match data_len {
-        {% for account in accounts %}
-            {% if account.size != null %}
-                {{ account.name | pascalCase }}::LEN => Ok(
-                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                        {{ account.name | pascalCase }}::from_bytes(data_bytes)?
-                    )
+        {% if hasDiscriminator %}
+            let acc_discriminator:[u8; {{ accDiscLen }}] = data_bytes[0..{{ accDiscLen }}].try_into()?;
+            let acc = match acc_discriminator {
+            {% for account in accounts %}
+                {% if account.discriminator != null %}
+                    {{ account.discriminator }} => Ok(
+                        {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
+                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        )
                     ),
-            {% else %}
+                {% endif %}
+            {% endfor %}
+            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account discriminator".to_owned())),
+            };
+
+            #[cfg(feature = "tracing")]
+            match &acc {
+                Ok(acc) => {
+                    tracing::info!(
+                        name: "correctly_parsed_account",
+                        name = "account_update",
+                        program = ID.to_string(),
+                        account = acc.to_string()
+                    );
+                },
+                Err(e) => {
+                    tracing::info!(
+                        name: "incorrectly_parsed_account",
+                        name = "account_update",
+                        program = ID.to_string(),
+                        account = "error",
+                        discriminator = ?acc_discriminator,
+                        error = ?e
+                    );
+                },
+            }
+
+            acc
+
+        {% else %}
+            let data_len = data_bytes.len();    
+            {% for account in accounts %}
+                const {{ account.name | upper }}_LEN:usize = std::mem::size_of::<{{ account.name | pascalCase }}>();
+            {% endfor %}
+
+            let acc =match data_len {
+            {% for account in accounts %}
                 {{account.name | upper }}_LEN => Ok(
                     {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
                         {{ account.name | pascalCase }}::from_bytes(data_bytes)?
                     )
                     ),
-            {% endif %}
-        {% endfor %}
-        _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
-        }
+            {% endfor %}
+            _ => Err(yellowstone_vixen_core::ParseError::from("Invalid Account data length".to_owned())),
+            };
+
+            #[cfg(feature = "tracing")]
+            match &acc {
+                Ok(acc) => {
+                    tracing::info!(
+                        name: "correctly_parsed_account",
+                        name = "account_update",
+                        program = ID.to_string(),
+                        account = acc.to_string()
+                    );
+                },
+                Err(e) => {
+                    tracing::info!(
+                        name: "incorrectly_parsed_account",
+                        name = "account_update",
+                        program = ID.to_string(),
+                        account = "error",
+                        data_len = ?data_len,
+                        error = ?e
+                    );
+                },
+            }
+
+            acc
+        {% endif %}
     }
 }
 
@@ -77,6 +134,54 @@ impl yellowstone_vixen_core::ProgramParser for AccountParser {
         ID.to_bytes().into()
     }
 }
+
+// #[cfg(feature = "proto")]
+mod proto_parser {
+    {% if hasProtoHelpers %}
+    use crate::{proto_def, proto_helpers::proto_types_parsers::IntoProto};
+    {% else %}
+    use crate::proto_def;
+    use yellowstone_vixen_core::proto_helper_traits;
+    proto_helper_traits!();
+    {% endif %}
+    use super::{ AccountParser, {{ programName | pascalCase }}ProgramState};
+    use yellowstone_vixen_core::proto::ParseProto;
+
+
+    {% for account in accounts %}
+        use super::{{ account.name | pascalCase }};
+        impl IntoProto<proto_def::{{ account.name | pascalCase }}> for {{ account.name | pascalCase }} {
+            fn into_proto(self) -> proto_def::{{ account.name | pascalCase }} {
+                proto_def::{{ account.name | pascalCase }} {
+                    {% for field in account.fields %}
+                        {{ field.name }}: {{ field.transform }},
+                    {% endfor %}
+                }
+            }
+        }   
+    {% endfor %}
+
+    impl IntoProto<proto_def::ProgramState> for {{ programName | pascalCase }}ProgramState {
+        fn into_proto(self) -> proto_def::ProgramState {
+            let state_oneof = match self {
+                {% for account in accounts %}
+                    {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(data) => proto_def::program_state::StateOneof::{{ account.name | pascalCase }}(data.into_proto()),
+                {% endfor %}
+            };
+
+            proto_def::ProgramState {
+                state_oneof: Some(state_oneof),
+            }
+        }
+    }
+
+    impl ParseProto for AccountParser {
+        type Message = proto_def::ProgramState;
+
+        fn output_into_message(value: Self::Output) -> Self::Message { value.into_proto() }
+    }
+}
+
 
 
 {% endblock %}
