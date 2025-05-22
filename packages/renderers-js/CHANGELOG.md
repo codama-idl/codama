@@ -1,5 +1,11 @@
 # @codama/renderers-js
 
+## 1.2.14
+
+### Patch Changes
+
+- [#609](https://github.com/codama-idl/codama/pull/609) [`fcd0661`](https://github.com/codama-idl/codama/commit/fcd066153512fdf1cd14984514d8df56170a2e98) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Decouple nodes-from-anchor from the JS renderer
+
 ## 1.2.13
 
 ### Patch Changes
