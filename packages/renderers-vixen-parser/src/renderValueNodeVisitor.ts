@@ -114,7 +114,7 @@ export function renderValueNodeVisitor(
         },
         visitPublicKeyValue(node) {
             return {
-                imports: new ImportMap().add('solana_program::pubkey'),
+                imports: new ImportMap().add('solana_pubkey'),
                 render: `pubkey!("${node.publicKey}")`,
             };
         },
