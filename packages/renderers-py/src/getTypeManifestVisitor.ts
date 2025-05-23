@@ -1,6 +1,8 @@
-import { REGISTERED_TYPE_NODE_KINDS, REGISTERED_VALUE_NODE_KINDS,
-        // CountNode,
-    isNode } from '@codama/nodes';
+import {
+    REGISTERED_TYPE_NODE_KINDS, REGISTERED_VALUE_NODE_KINDS,
+    // CountNode,
+    isNode
+} from '@codama/nodes';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -17,11 +19,11 @@ import { pascalCase } from '@codama/nodes';
 import { fragment } from './fragments';
 import { ImportMap } from './ImportMap';
 import { mergeManifests, TypeManifest, typeManifest } from './TypeManifest';
-import { GetImportFromFunction,renderString } from './utils';
+import { GetImportFromFunction, renderString } from './utils';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 
-export function HexToPyB(hexStr:string) {
+export function HexToPyB(hexStr: string) {
     const buffer: Buffer = Buffer.from(hexStr, 'hex');
     const xFormat: string = Array.from(buffer)
         .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
@@ -29,14 +31,20 @@ export function HexToPyB(hexStr:string) {
     return xFormat;
 }
 
+export class GenType {
+    name: String
+    constructor(name: string) {
+        this.name = name;
+    }
+}
 export function getTypeManifestVisitor(input: {
     getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
-    parentName?: string | null;
+    genType: GenType;
     stack?: NodeStack;
 }) {
     //const { customAccountData } = input;
-    const { linkables} = input;
+    const { linkables, genType } = input;
     const stack = input.stack ?? new NodeStack();
     //let parentName: { loose: string; strict: string } | null = null;
 
@@ -50,7 +58,7 @@ export function getTypeManifestVisitor(input: {
                     strictType: fragment(''),
                     value: fragment(''),
                     toJSON: fragment(''),
-                    fromJSON:fragment('{{name}}'),
+                    fromJSON: fragment('{{name}}'),
                 }) as TypeManifest,
             {
                 keys: [
@@ -77,25 +85,25 @@ export function getTypeManifestVisitor(input: {
                 visitArrayType(arrayType, { self }) {
                     const itemlayout = visit(arrayType.item, self);
                     //const cast_layout = `typing.cast(Construct, ${itemlayout.borshType.render})`;
-                    const inner = visit(arrayType.item,self);
+                    const inner = visit(arrayType.item, self);
                     //console.log("visitArrayType:",arrayType,self);
                     let count = 0;
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
                     }
-                    let toJSONItemStr = renderString(inner.toJSON.render,{name:"item"})
+                    let toJSONItemStr = renderString(inner.toJSON.render, { name: "item" })
                     let toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`
-                    let fromJSONItemStr = renderString(inner.fromJSON.render,{name:"item"})
+                    let fromJSONItemStr = renderString(inner.fromJSON.render, { name: "item" })
                     let fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`
                     return {
                         borshType: fragment(`${itemlayout.borshType}[${count}]`),
                         isEnum: false,
-                        pyJSONType:fragment(`list[${inner.pyJSONType}]`),
+                        pyJSONType: fragment(`list[${inner.pyJSONType}]`),
                         pyType: fragment(`list[${inner.pyType}]`),
                         strictType: fragment('boolean'),
                         value: fragment(''),
-                        toJSON:fragment(toJSONStr),
-                        fromJSON:fragment(fromJSONStr)
+                        toJSON: fragment(toJSONStr),
+                        fromJSON: fragment(fromJSONStr)
                     };
                 },
 
@@ -105,25 +113,20 @@ export function getTypeManifestVisitor(input: {
                         { mergeValues: renders => `[${renders.join(', ')}]` },
                     );
                 },
-                visitOptionType(optionType,{self}){
+                visitOptionType(optionType, { self }) {
                     const inner = visit(optionType.item, self);
-
-                    //(
-                //None if self.clawback_user is None else str(self.clawback_user)
-            //),
-                    //let toJSONItemStr = renderString(inner.toJSON.render,{name:"item"})
                     let toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`
 
                     let fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`
                     return {
-                        borshType: fragment(`borsh.Option(${inner.borshType})`,inner.borshType.imports),
+                        borshType: fragment(`borsh.Option(${inner.borshType})`, inner.borshType.imports),
                         isEnum: false,
-                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType}]`,inner.pyJSONType.imports),
-                        pyType: fragment(`typing.Optional[${inner.pyJSONType}]`,inner.pyJSONType.imports),
+                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType}]`, inner.pyJSONType.imports),
+                        pyType: fragment(`typing.Optional[${inner.pyJSONType}]`, inner.pyJSONType.imports),
                         strictType: fragment('boolean'),
                         value: fragment(''),
-                        toJSON:fragment(toJSONStr,inner.toJSON.imports),
-                        fromJSON:fragment(fromJSONStr,inner.fromJSON.imports)
+                        toJSON: fragment(toJSONStr, inner.toJSON.imports),
+                        fromJSON: fragment(fromJSONStr, inner.fromJSON.imports)
                     };
                 },
                 visitBooleanType(_booleanType) {
@@ -134,8 +137,8 @@ export function getTypeManifestVisitor(input: {
                         pyType: fragment('bool'),
                         strictType: fragment('boolean'),
                         value: fragment(''),
-                        toJSON:fragment('{{name}}'),
-                        fromJSON:fragment('{{name}}')
+                        toJSON: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}')
                     };
                 },
 
@@ -156,8 +159,8 @@ export function getTypeManifestVisitor(input: {
                             'type ReadonlyUint8Array',
                         ),
                         value: fragment(''),
-                        toJSON:fragment('{{name}}'),
-                        fromJSON:fragment('{{name}}')
+                        toJSON: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}')
                     };
                 },
 
@@ -172,7 +175,7 @@ export function getTypeManifestVisitor(input: {
                 visitDateTimeType(dateTimeType, { self }) {
                     return visit(dateTimeType.number, self);
                 },
-                visitStringType(_node){
+                visitStringType(_node) {
                     return {
                         borshType: fragment('borsh.String'),
                         isEnum: false,
@@ -183,11 +186,11 @@ export function getTypeManifestVisitor(input: {
                             'type ReadonlyUint8Array',
                         ),
                         value: fragment(''),
-                        toJSON:fragment('{{name}}'),
-                        fromJSON:fragment('{{name}}')
+                        toJSON: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}')
                     };
                 },
-                visitFixedSizeType(node){
+                visitFixedSizeType(node) {
 
                     return {
                         borshType: fragment(`borsh.U8[${node.size}]`),
@@ -199,11 +202,11 @@ export function getTypeManifestVisitor(input: {
                             'type ReadonlyUint8Array',
                         ),
                         value: fragment(''),
-                        toJSON:fragment('{{name}}'),
-                        fromJSON:fragment('{{name}}')
+                        toJSON: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}')
                     };
                 },
-                visitSizePrefixType(_node){
+                visitSizePrefixType(_node) {
                     return {
                         borshType: fragment('borsh.String'),
                         isEnum: false,
@@ -214,8 +217,8 @@ export function getTypeManifestVisitor(input: {
                             'type ReadonlyUint8Array',
                         ),
                         value: fragment(''),
-                        toJSON:fragment('{{name}}'),
-                        fromJSON:fragment('{{name}}')
+                        toJSON: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}')
                     };
                 },
 
@@ -227,40 +230,56 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
                 visitDefinedTypeLink(node) {
+                    console.log("link parentName:", genType.name);
+                    if (genType.name == "account") {
+                        console.log("visitDefinedTypeLink account")
+                    } else {
+                        console.log("visitDefinedTypeLink field")
+                    }
                     const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
                     const definedType = getLastNodeFromPath(definedTypePath);
                     const typename = node.name;
                     const modname = node.name;
-                    let pyTypeStr ="";
-                    let borshTypeStr ="";
+                    let pyTypeStr = "";
+                    let borshTypeStr = "";
                     let fromJSONStr = "";
+                    let pyJSONTypeStr ="";
                     let isEnum = false;
-
-                    const imports = new ImportMap().add('..', 'types');
-                    if (definedType.type.kind == "enumTypeNode"){
-                        pyTypeStr =`types.${modname}.${pascalCase(typename)}Kind`;
-                        borshTypeStr =`types.${modname}.layout`;
-                        fromJSONStr = `types.${modname}.from_json({{name}})`
+                    const imports = new ImportMap();
+                    if (genType.name != "types") {
+                        imports.add('..', 'types');
+                    }
+                    if (definedType.type.kind == "enumTypeNode") {
+                        pyTypeStr = `${modname}.${pascalCase(typename)}Kind`;
+                        borshTypeStr = `${modname}.layout`;
+                        fromJSONStr = `${modname}.from_json({{name}})`
                         isEnum = true;
 
-
-                    }else{
-                        pyTypeStr =`types.${modname}.${pascalCase(typename)}`;
-                        borshTypeStr =`types.${modname}.${pascalCase(typename)}.layout`;
-                        fromJSONStr = `types.${modname}.${pascalCase(typename)}.from_json({{name}})`
+                    } else {
+                        pyTypeStr = `${modname}.${pascalCase(typename)}`;
+                        borshTypeStr = `${modname}.${pascalCase(typename)}.layout`;
+                        fromJSONStr = `${modname}.${pascalCase(typename)}.from_json({{name}})`
+                        pyJSONTypeStr = `${modname}.${pascalCase(typename)}JSON`;
                     }
-                    let pyJSONTypeStr =`types.${modname}.${pascalCase(typename)}JSON`;
+                    if (genType.name != "types") {
+                        pyTypeStr = "types." + pyTypeStr;
+                        borshTypeStr = "types." + borshTypeStr
+                        fromJSONStr = "types." + fromJSONStr
+                        pyJSONTypeStr = `types.${modname}.${pascalCase(typename)}JSON`;
+                    }else{
+                        imports.add(".",`${modname}`)
+                    }
 
                     return {
-                        borshType: fragment(borshTypeStr,imports),
+                        borshType: fragment(borshTypeStr, imports),
                         isEnum: isEnum,
-                        pyJSONType:fragment(pyJSONTypeStr,imports),
-                        pyType: fragment(pyTypeStr,imports),
+                        pyJSONType: fragment(pyJSONTypeStr, imports),
+                        pyType: fragment(pyTypeStr, imports),
                         //looseType: fragment(numberType.format),
                         strictType: fragment(""),
                         value: fragment(''),
-                        toJSON:fragment("{{name}}.to_json()"),
-                        fromJSON:fragment(fromJSONStr)
+                        toJSON: fragment("{{name}}.to_json()",imports),
+                        fromJSON: fragment(fromJSONStr,imports)
 
                     }
                 },
@@ -287,13 +306,13 @@ export function getTypeManifestVisitor(input: {
                     return {
                         borshType: fragment(NumberToBorshType(numberType.format)),
                         isEnum: false,
-                        pyJSONType:fragment('int'),
+                        pyJSONType: fragment('int'),
                         pyType: fragment('int'),
                         //looseType: fragment(numberType.format),
                         strictType: fragment(numberType.format),
                         value: fragment(''),
-                        toJSON:fragment("{{name}}"),
-                        fromJSON:fragment('{{name}}')
+                        toJSON: fragment("{{name}}"),
+                        fromJSON: fragment('{{name}}')
                     };
                 },
 
@@ -313,8 +332,8 @@ export function getTypeManifestVisitor(input: {
                         pyJSONType: fragment('str'),
                         strictType: fragment('BorshPubkey', imports),
                         value: fragment(''),
-                        toJSON:fragment("str({{name}})"),
-                        fromJSON:fragment('Pubkey.from_string({{name}})')
+                        toJSON: fragment("str({{name}})"),
+                        fromJSON: fragment('Pubkey.from_string({{name}})')
                     };
                 },
 

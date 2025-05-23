@@ -20,8 +20,8 @@ import {
 } from '@codama/visitors-core';
 import type { ConfigureOptions } from 'nunjucks';
 
-import { getDiscriminatorConstantsFragment, getFieldsJSON, getFieldsPy, getArgsToPy, getFieldsDecode,getFieldsToJSON, getLayoutFields, getArgsToLayout, getFieldsFromJSON } from './fragments';
-import { getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
+import { getDiscriminatorConstantsFragment, getFieldsJSON, getFieldsPy, getArgsToPy, getFieldsDecode, getFieldsToJSON, getLayoutFields, getArgsToLayout, getFieldsFromJSON } from './fragments';
+import { GenType, getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import {
     getImportFromFactory,
     //GetImportFromFunction,
@@ -55,10 +55,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const useGranularImports = options.useGranularImports ?? false;
 
 
-    const parentName: string | null = null;
+    let genType = new GenType("");
 
     //const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
-    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, linkables, parentName, stack });
+    const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, linkables, genType, stack });
     const globalScope: GlobalFragmentScope = {
         typeManifestVisitor: typeManifestVisitor,
     };
@@ -74,6 +74,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
             extendVisitor(v, {
                 visitAccount(node) {
                     const accountPath = stack.getPath('accountNode');
+                    genType.name = "accounts";
                     if (!findProgramNodeFromPath(accountPath)) {
                         throw new Error('Account must be visited inside a program.');
                     }
@@ -166,12 +167,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitDefinedType(node) {
-                    //const typeManifest = visit(node, typeManifestVisitor);
-                    //console.log('typeManifest:', typeManifest);
                     const scope = {
                         ...globalScope,
                         typeManifest: visit(node, typeManifestVisitor),
                     };
+                    genType.name = "types";
                     const imports = new ImportMap().add("solders.pubkey", "Pubkey");
                     imports.add("solders.sysvar", "RENT");
                     imports.add("construct", "Container");
@@ -181,11 +181,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add("dataclasses", "dataclass");
                     imports.add("anchorpy.borsh_extension", "BorshPubkey");
 
-
-
                     let nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
-                    //console.log("fields",fields);
-                    //console.log("visitDefinedType:", node);
                     if (nodeType.kind == "structTypeNode") {
                         let fields = nodeType.fields;
                         const layoutFragment = getLayoutFields({
@@ -210,10 +206,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             ...scope,
                             fields
                         });
-                        //console.log("visitDefinedType:", node);
-                        //if (node.name == "AmmCurve2"){
-                        //    return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk',{
-
+                        imports.mergeWith(layoutFragment);
+                        imports.mergeWith(fieldsJSON!);
+                        imports.mergeWith(fieldsPy!);
+                        imports.mergeWith(fieldsToJSON!);
 
 
                         return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedTypesPage.njk', {
@@ -233,7 +229,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         if (nodeType.kind == "enumTypeNode") {
                             let variants = nodeType.variants;
                             imports.add("anchorpy.borsh_extension", "EnumForCodegen");
-                            console.log("variant:",variants[1]);
+                            console.log("variant:", variants[1]);
                             return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedEnumTypesPage.njk', {
                                 typeName: node.name,
                                 variants: variants,
@@ -254,6 +250,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...globalScope,
                         typeManifest: visit(node, typeManifestVisitor),
                     };
+                    genType.name = "instructions";
 
                     let fields = node.arguments;
                     const layoutFragment = getLayoutFields({
@@ -283,9 +280,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.mergeWith(argsToLayout!);
                     imports.mergeWith(layoutFragment!);
                     imports.mergeWith(argsToPy!);
-
-
-
 
                     const discriminatorConstantsFragment = getDiscriminatorConstantsFragment({
                         ...scope,
