@@ -131,7 +131,7 @@ export function getTypeManifestVisitor(input: {
                 },
                 visitBooleanType(_booleanType) {
                     return {
-                        borshType: fragment('borsh.U8'),
+                        borshType: fragment('borsh.Bool'),
                         isEnum: false,
                         pyJSONType: fragment('bool'),
                         pyType: fragment('bool'),
@@ -342,6 +342,24 @@ export function getTypeManifestVisitor(input: {
                     manifest.value.setRender(`address("${node.publicKey}")`).addImports('solanaAddresses', 'address');
                     return manifest;
                 },
+                visitTupleType(tupleType, { self }) {
+                    const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    //borsh.CStruct("item_0" / borsh.Bool, "item_1" / borsh.U8),
+                    const items = tupleType.items.map(item => visit(item, self));
+                    let borshTypestr = items.map((it,index)=> `\"item_${index}\" / ${it.borshType}`).join(",")
+                    let pyJSONType = items.map(it=> `${it.pyJSONType}`).join(",");
+                    let pyType = items.map(it=> `${it.pyType}`).join(",");
+                    return {
+                        borshType: fragment(borshTypestr, imports),
+                        isEnum: false,
+                        pyType: fragment(pyType, imports),
+                        pyJSONType: fragment(pyJSONType),
+                        strictType: fragment('BorshPubkey', imports),
+                        value: fragment(''),
+                        toJSON: fragment("str({{name}})"),
+                        fromJSON: fragment('Pubkey.from_string({{name}})')
+                    };
+                }
             }),
         visitor => recordNodeStackVisitor(visitor, stack),
     );

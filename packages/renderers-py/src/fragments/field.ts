@@ -19,12 +19,12 @@ export function getFieldsJSON(scope: Pick<GlobalFragmentScope, 'typeManifestVisi
         if (field.name == 'discriminator') {
             return;
         }
-         console.log("field.name",field.name,field.type);
+        console.log("field.name", field.name, field.type);
         const fieldtype = visit(field.type, typeManifestVisitor);
         if (fieldtype.pyJSONType.imports) {
-        imports.mergeWith(fieldtype.pyJSONType.imports);
-        }else{
-            console.log("field.name",field.name,field.type);
+            imports.mergeWith(fieldtype.pyJSONType.imports);
+        } else {
+            console.log("field.name", field.name, field.type);
         }
         fragments.push(`${field.name}: ${fieldtype.pyJSONType}`);
     });
@@ -74,15 +74,15 @@ export function getFieldsDecode(scope: Pick<GlobalFragmentScope, 'typeManifestVi
         if (field.name == 'discriminator') {
             return;
         }
-        if (field.type.kind == "definedTypeLinkNode"){
+        if (field.type.kind == "definedTypeLinkNode") {
             const fieldtype = visit(field.type, typeManifestVisitor);
             imports.mergeWith(fieldtype.toJSON.imports);
-            if (fieldtype.isEnum){
+            if (fieldtype.isEnum) {
                 fragments.push(`${field.name}=types.${field.type.name}.from_decoded(dec.${field.name})`);
-            }else{
+            } else {
                 fragments.push(`${field.name}=types.${field.type.name}.${pascalCase(field.type.name)}.from_decoded(dec.${field.name})`);
             }
-        }else{
+        } else {
             fragments.push(`${field.name}=dec.${field.name}`);
         }
     });
@@ -95,7 +95,7 @@ export function getFieldsFromJSON(scope: Pick<GlobalFragmentScope, 'typeManifest
 }): PyFragment | null {
     const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
-     const imports = new ImportMap();
+    const imports = new ImportMap();
     fields.forEach((field, _index) => {
         if (field.name == 'discriminator') {
             return;
@@ -105,7 +105,7 @@ export function getFieldsFromJSON(scope: Pick<GlobalFragmentScope, 'typeManifest
         const fromCast = renderString(fieldtype.fromJSON.render, { name: "obj[\"" + field.name + "\"]" })
         fragments.push(`${field.name}=${fromCast}`);
     });
-    return new PyFragment(fragments,imports);
+    return new PyFragment(fragments, imports);
 
 }
 export function getArgsToLayout(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
@@ -127,8 +127,8 @@ export function getArgsToPy(scope: Pick<GlobalFragmentScope, 'typeManifestVisito
 }): PyFragment | null {
     const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
-        const imports = new ImportMap();
-        fields.forEach((field, _index) => {
+    const imports = new ImportMap();
+    fields.forEach((field, _index) => {
         if (field.name == 'discriminator') {
             return;
         }
@@ -139,3 +139,16 @@ export function getArgsToPy(scope: Pick<GlobalFragmentScope, 'typeManifestVisito
     return new PyFragment(fragments);
 
 }
+// export function getTupleItems(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+//     fields: TypeNode[]
+// }): PyFragment | null {
+//     //const { fields, typeManifestVisitor } = scope;
+//     const fragments: string[] = [];
+//     //const imports = new ImportMap();
+//     // fields.forEach((field, _index) => {
+//     //     const fieldtype = visit(field.type, typeManifestVisitor);
+//     // //     imports.mergeWith(fieldtype.pyType);
+//     //     fragments.push(`${fieldtype.pyType}`);
+//     // );
+//     return new PyFragment(fragments);
+// }

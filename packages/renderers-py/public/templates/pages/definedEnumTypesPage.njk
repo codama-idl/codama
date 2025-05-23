@@ -6,8 +6,30 @@
 {{ imports }}
 
 {% for variant in variants %}
+{%if variant.kind=="enumEmptyVariantTypeNode"%}
+{% elseif variant.kind=="enumTupleVariantTypeNode" %}
+{{variant.name | pascalCase}}JSONValue = tuple[{{enumHelper.getTuplePyJSON(variant).renders }}]
+{{variant.name | pascalCase}}Value = tuple[{{enumHelper.getTuplePy(variant).renders}}]
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+class {{variant.name | pascalCase}}JSONValue(typing.TypedDict):
+    #kind: typing.Literal["{{variant.name | pascalCase}}"]
+{% for field in enumHelper.getStructPyJSON(variant).renders %}
+    {{field}}
+{% endfor %}
+class {{variant.name | pascalCase}}Value(typing.TypedDict):
+{% for field in enumHelper.getStructPyJSON(variant).renders %}
+    {{field}}
+{% endfor %}
+
+
+
+{% endif %}
+
 class {{variant.name | pascalCase}}JSON(typing.TypedDict):
     kind: typing.Literal["{{variant.name | pascalCase}}"]
+{%if variant.kind!="enumEmptyVariantTypeNode"%}
+    value: {{variant.name | pascalCase}}JSONValue
+{% endif %}
 
 
 @dataclass
@@ -17,6 +39,9 @@ class {{variant.name | pascalCase}}:
     def to_json(cls) -> {{variant.name | pascalCase}}JSON:
         return {{variant.name | pascalCase}}JSON(
             kind="{{variant.name | pascalCase}}",
+{% if variant.kind=="enumTupleVariantTypeNode" %}
+            value = (self.value[])
+{% endif %}
         )
 
     @classmethod
@@ -44,21 +69,54 @@ def from_decoded(obj: dict) -> {{typeName | pascalCase}}Kind:
         raise ValueError("Invalid enum object")
 {% for variant in variants %}
     if "{{variant.name | pascalCase}}" in obj:
+{% if variant.kind=="enumEmptyVariantTypeNode" %}
       return {{variant.name | pascalCase}}()
+{% elseif variant.kind=="enumTupleVariantTypeNode" %}
+      return {{variant.name | pascalCase}}((
+      )) #todo Tuple
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+      val = obj["{{variant.name | pascalCase}}"]
+      return {{variant.name | pascalCase}}(
+            {{variant.name | pascalCase}}Value(
+                track_open_orders_fraction=val["track_open_orders_fraction"],
+            )
+        )
+
+{% endif %}
 {% endfor %}
     raise ValueError("Invalid enum object")
 
 def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Kind:
 {% for variant in variants %}
     if obj["kind"] == "{{variant.name | pascalCase}}":
+{% if variant.kind=="enumEmptyVariantTypeNode" %}
         return {{variant.name | pascalCase}}()
+{% elseif variant.kind=="enumTupleVariantTypeNode" %}
+        {{variant.name}}jsonvalue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
+        return {{variant.name | pascalCase}}() #todo Tuple
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+        val = obj["{{variant.name | pascalCase}}"]
+        return {{variant.name | pascalCase}}(
+            {{variant.name | pascalCase}}Value(
+                track_open_orders_fraction=val["track_open_orders_fraction"],
+            )
+        )
+
+{% endif %}
+
 {% endfor %}
     kind = obj["kind"]
     raise ValueError(f"Unrecognized enum kind: {kind}")
 
 layout = EnumForCodegen(
 {% for variant in variants %}
+{% if variant.kind=="enumTupleVariantTypeNode" %}
+"{{variant.name | pascalCase}}" / borsh.CStruct({{enumHelper.getTupleLayout(variant).renders}}),
+{% elseif variant.kind=="enumEmptyVariantTypeNode" %}
 "{{variant.name | pascalCase}}" / borsh.CStruct(),
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+"{{variant.name | pascalCase}}" / borsh.CStruct({{enumHelper.getStructLayout(variant).renders}}),
+{%endif %}
 {% endfor %}
 )
 {% endblock %}
