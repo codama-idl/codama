@@ -90,6 +90,6 @@ function getConstantFragment(
     },
 ): Fragment {
     const { value } = scope;
-    //console.log("discriminator:",value);
-    return new Fragment(`${value}`)
+    const valueStr: string = `${value.render}`;
+    return new Fragment(valueStr);
 }

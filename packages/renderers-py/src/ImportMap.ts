@@ -1,4 +1,4 @@
-import { Fragment,PyFragment } from './fragments';
+import { Fragment, PyFragment } from './fragments';
 import { TypeManifest } from './TypeManifest';
 
 const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
@@ -72,7 +72,7 @@ export class ImportMap {
         return this;
     }
 
-    mergeWith(...others: (Fragment|PyFragment | ImportMap)[]): ImportMap {
+    mergeWith(...others: (Fragment | ImportMap | PyFragment)[]): ImportMap {
         others.forEach(rawOther => {
             const other = 'imports' in rawOther ? rawOther.imports : rawOther;
             other._imports.forEach((imports, module) => {
@@ -140,33 +140,35 @@ export class ImportMap {
             })
             .map(([module, imports]) => {
                 if (module.length == 0) {
-                    const joinedImports = [...imports].sort().filter(i=> {
-                        const name = i.split(' ');
-                        if (name.length > 1) {
-                            return !imports.has(name[1]);
-                        }
-                        return true;
-                    }).map(name => `import ${name};`);
-                    let out=joinedImports.join('\n');
-                    console.log("module.length = 0",out,imports);
+                    const joinedImports = [...imports]
+                        .sort()
+                        .filter(i => {
+                            const name = i.split(' ');
+                            if (name.length > 1) {
+                                return !imports.has(name[1]);
+                            }
+                            return true;
+                        })
+                        .map(name => `import ${name};`);
+                    const out = joinedImports.join('\n');
+                    console.log('module.length = 0', out, imports);
                     return out;
-                }else{
-                const joinedImports = [...imports]
-                    .sort()
-                    .filter(i => {
-                        // import of a type can either be '<Type>' or 'type <Type>', so
-                        // we filter out 'type <Type>' variation if there is a '<Type>'
-                        const name = i.split(' ');
-                        if (name.length > 1) {
-                            return !imports.has(name[1]);
-                        }
-                        return true;
-                    })
-                    .join(', ');
-                return `from ${module} import ${joinedImports};`
-
+                } else {
+                    const joinedImports = [...imports]
+                        .sort()
+                        .filter(i => {
+                            // import of a type can either be '<Type>' or 'type <Type>', so
+                            // we filter out 'type <Type>' variation if there is a '<Type>'
+                            const name = i.split(' ');
+                            if (name.length > 1) {
+                                return !imports.has(name[1]);
+                            }
+                            return true;
+                        })
+                        .join(', ');
+                    return `from ${module} import ${joinedImports};`;
                 }
-                           })
+            })
             .join('\n');
     }
 }

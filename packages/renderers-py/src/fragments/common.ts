@@ -97,11 +97,10 @@ export class Fragment {
 
 export type FragmentFeature = 'instruction:resolverScopeVariable';
 
-
-export class PyFragment{
-    public renders: string [];
+export class PyFragment {
+    public renders: string[];
     public imports: ImportMap;
-    constructor(renders: string [], imports?: ImportMap) {
+    constructor(renders: string[], imports?: ImportMap) {
         this.renders = renders;
         this.imports = imports ? new ImportMap().mergeWith(imports) : new ImportMap();
     }

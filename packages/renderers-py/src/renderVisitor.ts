@@ -16,7 +16,7 @@ export type RenderOptions = GetRenderMapOptions & {
 };
 
 export function renderVisitor(path: string, options: RenderOptions = {}) {
-    return rootNodeVisitor(async root => {
+    return rootNodeVisitor(root => {
         // Delete existing generated folder.
         if (options.deleteFolderBeforeRendering ?? true) {
             deleteDirectory(path);
@@ -24,12 +24,6 @@ export function renderVisitor(path: string, options: RenderOptions = {}) {
 
         // Render the new files.
         const renderMap = visit(root, getRenderMapVisitor(options));
-
-        // Format the code.
-        /*if (options.formatCode ?? true) {
-            const prettierOptions = { ...DEFAULT_PRETTIER_OPTIONS, ...options.prettierOptions };
-            await renderMap.mapContentAsync(code => format(code, prettierOptions));
-            }*/
 
         renderMap.write(path);
     });

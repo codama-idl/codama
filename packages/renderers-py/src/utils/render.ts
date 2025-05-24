@@ -11,8 +11,8 @@ export function jsDocblock(docs: string[]): string {
     return `/**\n${lines.join('\n')}\n */\n`;
 }
 export function notPyKeyCase(name: string): string {
-    if (name == "global"){
-        return "global_"
+    if (name == 'global') {
+        return 'global_';
     }
     return name;
 }
@@ -26,7 +26,7 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('snakeCase', snakeCase);
     env.addFilter('kebabCase', kebabCase);
     env.addFilter('titleCase', titleCase);
-    env.addFilter('notKeywordCase',notPyKeyCase);
+    env.addFilter('notKeywordCase', notPyKeyCase);
     env.addFilter('jsDocblock', jsDocblock);
     return env.render(template, context);
 };

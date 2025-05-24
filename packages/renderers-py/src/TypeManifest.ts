@@ -1,26 +1,24 @@
 import { Fragment, fragment, mergeFragments } from './fragments';
 export type TypeManifest = {
     borshType: Fragment;
+    fromJSON: Fragment;
     isEnum: boolean;
     pyJSONType: Fragment;
     pyType: Fragment;
     strictType: Fragment;
+    toJSON: Fragment;
     value: Fragment;
-    toJSON: Fragment,
-    fromJSON: Fragment,
-
 };
 export function typeManifest(): TypeManifest {
     return {
-        isEnum: false,
         borshType: fragment(''),
+        fromJSON: fragment(''),
+        isEnum: false,
         pyJSONType: fragment(''),
         pyType: fragment(''),
         strictType: fragment(''),
         toJSON: fragment(''),
-        fromJSON: fragment(''),
         value: fragment(''),
-
     };
 }
 export function mergeManifests(
@@ -36,12 +34,12 @@ export function mergeManifests(
         mergeFn ? mergeFragments(manifests.map(fragmentFn), mergeFn) : fragment('');
     return {
         borshType: merge(m => m.borshType, mergeTypes),
+        fromJSON: merge(m => m.fromJSON, mergeValues),
         isEnum: false,
         pyJSONType: merge(m => m.pyJSONType, mergeTypes),
         pyType: merge(m => m.pyType, mergeTypes),
         strictType: merge(m => m.strictType, mergeTypes),
-        value: merge(m => m.value, mergeValues),
         toJSON: merge(m => m.toJSON, mergeValues),
-        fromJSON: merge(m => m.fromJSON, mergeValues),
+        value: merge(m => m.value, mergeValues),
     };
 }

@@ -2,7 +2,8 @@ import {
     // CountNode,
     isNode,
     pascalCase,
-    REGISTERED_TYPE_NODE_KINDS, REGISTERED_VALUE_NODE_KINDS
+    REGISTERED_TYPE_NODE_KINDS,
+    REGISTERED_VALUE_NODE_KINDS,
 } from '@codama/nodes';
 import {
     extendVisitor,
@@ -14,7 +15,6 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
-
 
 import { fragment } from './fragments';
 import { ImportMap } from './ImportMap';
@@ -32,15 +32,15 @@ export function HexToPyB(hexStr: string) {
 }
 
 export class GenType {
-    name: String
+    name: string;
     constructor(name: string) {
         this.name = name;
     }
 }
 export function getTypeManifestVisitor(input: {
+    genType: GenType;
     getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
-    genType: GenType;
     stack?: NodeStack;
 }) {
     //const { customAccountData } = input;
@@ -53,12 +53,12 @@ export function getTypeManifestVisitor(input: {
             () =>
                 ({
                     borshType: fragment(''),
+                    fromJSON: fragment('{{name}}'),
                     isEnum: false,
                     pyType: fragment(''),
                     strictType: fragment(''),
-                    value: fragment(''),
                     toJSON: fragment(''),
-                    fromJSON: fragment('{{name}}'),
+                    value: fragment(''),
                 }) as TypeManifest,
             {
                 keys: [
@@ -91,19 +91,19 @@ export function getTypeManifestVisitor(input: {
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
                     }
-                    let toJSONItemStr = renderString(inner.toJSON.render, { name: "item" })
-                    let toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`
-                    let fromJSONItemStr = renderString(inner.fromJSON.render, { name: "item" })
-                    let fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`
+                    const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                    const toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                    const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                    const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                     return {
-                        borshType: fragment(`${itemlayout.borshType}[${count}]`),
+                        borshType: fragment(`${itemlayout.borshType.render}[${count}]`),
+                        fromJSON: fragment(fromJSONStr),
                         isEnum: false,
-                        pyJSONType: fragment(`list[${inner.pyJSONType}]`),
-                        pyType: fragment(`list[${inner.pyType}]`),
+                        pyJSONType: fragment(`list[${inner.pyJSONType.render}]`),
+                        pyType: fragment(`list[${inner.pyType.render}]`),
                         strictType: fragment('boolean'),
-                        value: fragment(''),
                         toJSON: fragment(toJSONStr),
-                        fromJSON: fragment(fromJSONStr)
+                        value: fragment(''),
                     };
                 },
 
@@ -113,35 +113,18 @@ export function getTypeManifestVisitor(input: {
                         { mergeValues: renders => `[${renders.join(', ')}]` },
                     );
                 },
-                visitOptionType(optionType, { self }) {
-                    const inner = visit(optionType.item, self);
-                    let toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`
-
-                    let fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`
-                    return {
-                        borshType: fragment(`borsh.Option(${inner.borshType})`, inner.borshType.imports),
-                        isEnum: false,
-                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType}]`, inner.pyJSONType.imports),
-                        pyType: fragment(`typing.Optional[${inner.pyJSONType}]`, inner.pyJSONType.imports),
-                        strictType: fragment('boolean'),
-                        value: fragment(''),
-                        toJSON: fragment(toJSONStr, inner.toJSON.imports),
-                        fromJSON: fragment(fromJSONStr, inner.fromJSON.imports)
-                    };
-                },
                 visitBooleanType(_booleanType) {
                     return {
                         borshType: fragment('borsh.Bool'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('bool'),
                         pyType: fragment('bool'),
                         strictType: fragment('boolean'),
-                        value: fragment(''),
                         toJSON: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}')
+                        value: fragment(''),
                     };
                 },
-
                 visitBooleanValue(node) {
                     const manifest = typeManifest();
                     manifest.value.setRender(JSON.stringify(node.boolean));
@@ -151,16 +134,16 @@ export function getTypeManifestVisitor(input: {
                 visitBytesType() {
                     return {
                         borshType: fragment('borsh.Bytes'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
-                        pyJSONType: fragment("list[int]"),
+                        pyJSONType: fragment('list[int]'),
                         pyType: fragment('borsh.Bytes'),
                         strictType: fragment('ReadonlyUint8Array').addImports(
                             'solanaCodecsCore',
                             'type ReadonlyUint8Array',
                         ),
-                        value: fragment(''),
                         toJSON: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}')
+                        value: fragment(''),
                     };
                 },
 
@@ -175,52 +158,6 @@ export function getTypeManifestVisitor(input: {
                 visitDateTimeType(dateTimeType, { self }) {
                     return visit(dateTimeType.number, self);
                 },
-                visitStringType(_node) {
-                    return {
-                        borshType: fragment('borsh.String'),
-                        isEnum: false,
-                        pyJSONType: fragment("str"),
-                        pyType: fragment('borsh.String'),
-                        strictType: fragment('ReadonlyUint8Array').addImports(
-                            'solanaCodecsCore',
-                            'type ReadonlyUint8Array',
-                        ),
-                        value: fragment(''),
-                        toJSON: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}')
-                    };
-                },
-                visitFixedSizeType(node) {
-
-                    return {
-                        borshType: fragment(`borsh.U8[${node.size}]`),
-                        isEnum: false,
-                        pyJSONType: fragment("list[int]"),
-                        pyType: fragment('list[int]'),
-                        strictType: fragment('ReadonlyUint8Array').addImports(
-                            'solanaCodecsCore',
-                            'type ReadonlyUint8Array',
-                        ),
-                        value: fragment(''),
-                        toJSON: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}')
-                    };
-                },
-                visitSizePrefixType(_node) {
-                    return {
-                        borshType: fragment('borsh.String'),
-                        isEnum: false,
-                        pyJSONType: fragment("str"),
-                        pyType: fragment('str'),
-                        strictType: fragment('ReadonlyUint8Array').addImports(
-                            'solanaCodecsCore',
-                            'type ReadonlyUint8Array',
-                        ),
-                        value: fragment(''),
-                        toJSON: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}')
-                    };
-                },
 
                 visitDefinedType(definedType, { self }) {
                     /*parentName = {
@@ -230,58 +167,72 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
                 visitDefinedTypeLink(node) {
-                    console.log("link parentName:", genType.name);
-                    if (genType.name == "account") {
-                        console.log("visitDefinedTypeLink account")
+                    console.log('link parentName:', genType.name);
+                    if (genType.name == 'account') {
+                        console.log('visitDefinedTypeLink account');
                     } else {
-                        console.log("visitDefinedTypeLink field")
+                        console.log('visitDefinedTypeLink field');
                     }
                     const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
                     const definedType = getLastNodeFromPath(definedTypePath);
                     const typename = node.name;
                     const modname = node.name;
-                    let pyTypeStr = "";
-                    let borshTypeStr = "";
-                    let fromJSONStr = "";
-                    let pyJSONTypeStr ="";
+                    let pyTypeStr = '';
+                    let borshTypeStr = '';
+                    let fromJSONStr = '';
+                    let pyJSONTypeStr = '';
                     let isEnum = false;
                     const imports = new ImportMap();
-                    if (genType.name != "types") {
+                    if (genType.name != 'types') {
                         imports.add('..', 'types');
                     }
-                    if (definedType.type.kind == "enumTypeNode") {
+                    if (definedType.type.kind == 'enumTypeNode') {
                         pyTypeStr = `${modname}.${pascalCase(typename)}Kind`;
                         borshTypeStr = `${modname}.layout`;
-                        fromJSONStr = `${modname}.from_json({{name}})`
+                        fromJSONStr = `${modname}.from_json({{name}})`;
                         isEnum = true;
-
                     } else {
                         pyTypeStr = `${modname}.${pascalCase(typename)}`;
                         borshTypeStr = `${modname}.${pascalCase(typename)}.layout`;
-                        fromJSONStr = `${modname}.${pascalCase(typename)}.from_json({{name}})`
+                        fromJSONStr = `${modname}.${pascalCase(typename)}.from_json({{name}})`;
                         pyJSONTypeStr = `${modname}.${pascalCase(typename)}JSON`;
                     }
-                    if (genType.name != "types") {
-                        pyTypeStr = "types." + pyTypeStr;
-                        borshTypeStr = "types." + borshTypeStr
-                        fromJSONStr = "types." + fromJSONStr
+                    if (genType.name != 'types') {
+                        pyTypeStr = 'types.' + pyTypeStr;
+                        borshTypeStr = 'types.' + borshTypeStr;
+                        fromJSONStr = 'types.' + fromJSONStr;
                         pyJSONTypeStr = `types.${modname}.${pascalCase(typename)}JSON`;
-                    }else{
-                        imports.add(".",`${modname}`)
+                    } else {
+                        imports.add('.', `${modname}`);
                     }
 
                     return {
                         borshType: fragment(borshTypeStr, imports),
+                        fromJSON: fragment(fromJSONStr, imports),
                         isEnum: isEnum,
                         pyJSONType: fragment(pyJSONTypeStr, imports),
+
                         pyType: fragment(pyTypeStr, imports),
                         //looseType: fragment(numberType.format),
-                        strictType: fragment(""),
+                        strictType: fragment(''),
+                        toJSON: fragment('{{name}}.to_json()', imports),
                         value: fragment(''),
-                        toJSON: fragment("{{name}}.to_json()",imports),
-                        fromJSON: fragment(fromJSONStr,imports)
-
-                    }
+                    };
+                },
+                visitFixedSizeType(node) {
+                    return {
+                        borshType: fragment(`borsh.U8[${node.size}]`),
+                        fromJSON: fragment('{{name}}'),
+                        isEnum: false,
+                        pyJSONType: fragment('list[int]'),
+                        pyType: fragment('list[int]'),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        toJSON: fragment('{{name}}'),
+                        value: fragment(''),
+                    };
                 },
                 visitMapEntryValue(node, { self }) {
                     return mergeManifests([visit(node.key, self), visit(node.value, self)], {
@@ -295,7 +246,6 @@ export function getTypeManifestVisitor(input: {
                         mergeValues: renders => `new Map([${renders.join(', ')}])`,
                     });
                 },
-
                 visitNoneValue() {
                     const manifest = typeManifest();
                     manifest.value.setRender('none()').addImports('solanaOptions', 'none');
@@ -305,14 +255,15 @@ export function getTypeManifestVisitor(input: {
                     //console.log('visitNumberType:', numberType);
                     return {
                         borshType: fragment(NumberToBorshType(numberType.format)),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('int'),
+
                         pyType: fragment('int'),
                         //looseType: fragment(numberType.format),
                         strictType: fragment(numberType.format),
+                        toJSON: fragment('{{name}}'),
                         value: fragment(''),
-                        toJSON: fragment("{{name}}"),
-                        fromJSON: fragment('{{name}}')
                     };
                 },
 
@@ -322,18 +273,34 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
 
+                visitOptionType(optionType, { self }) {
+                    const inner = visit(optionType.item, self);
+                    const toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`;
+
+                    const fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`;
+                    return {
+                        borshType: fragment(`borsh.Option(${inner.borshType.render})`, inner.borshType.imports),
+                        fromJSON: fragment(fromJSONStr, inner.fromJSON.imports),
+                        isEnum: false,
+                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, inner.pyJSONType.imports),
+                        pyType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, inner.pyJSONType.imports),
+                        strictType: fragment('boolean'),
+                        toJSON: fragment(toJSONStr, inner.toJSON.imports),
+                        value: fragment(''),
+                    };
+                },
                 visitPublicKeyType() {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
-                    imports.add("anchorpy.borsh_extension", "BorshPubkey");
+                    imports.add('anchorpy.borsh_extension', 'BorshPubkey');
                     return {
                         borshType: fragment('BorshPubkey', imports),
+                        fromJSON: fragment('Pubkey.from_string({{name}})'),
                         isEnum: false,
-                        pyType: fragment('Pubkey', imports),
                         pyJSONType: fragment('str'),
+                        pyType: fragment('Pubkey', imports),
                         strictType: fragment('BorshPubkey', imports),
+                        toJSON: fragment('str({{name}})'),
                         value: fragment(''),
-                        toJSON: fragment("str({{name}})"),
-                        fromJSON: fragment('Pubkey.from_string({{name}})')
                     };
                 },
 
@@ -342,24 +309,56 @@ export function getTypeManifestVisitor(input: {
                     manifest.value.setRender(`address("${node.publicKey}")`).addImports('solanaAddresses', 'address');
                     return manifest;
                 },
+
+                visitSizePrefixType(_node) {
+                    return {
+                        borshType: fragment('borsh.String'),
+                        fromJSON: fragment('{{name}}'),
+                        isEnum: false,
+                        pyJSONType: fragment('str'),
+                        pyType: fragment('str'),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        toJSON: fragment('{{name}}'),
+                        value: fragment(''),
+                    };
+                },
+
+                visitStringType(_node) {
+                    return {
+                        borshType: fragment('borsh.String'),
+                        fromJSON: fragment('{{name}}'),
+                        isEnum: false,
+                        pyJSONType: fragment('str'),
+                        pyType: fragment('borsh.String'),
+                        strictType: fragment('ReadonlyUint8Array').addImports(
+                            'solanaCodecsCore',
+                            'type ReadonlyUint8Array',
+                        ),
+                        toJSON: fragment('{{name}}'),
+                        value: fragment(''),
+                    };
+                },
                 visitTupleType(tupleType, { self }) {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
                     //borsh.CStruct("item_0" / borsh.Bool, "item_1" / borsh.U8),
                     const items = tupleType.items.map(item => visit(item, self));
-                    let borshTypestr = items.map((it,index)=> `\"item_${index}\" / ${it.borshType}`).join(",")
-                    let pyJSONType = items.map(it=> `${it.pyJSONType}`).join(",");
-                    let pyType = items.map(it=> `${it.pyType}`).join(",");
+                    const borshTypestr = items.map((it, index) => `"item_${index}" / ${it.borshType.render}`).join(',');
+                    const pyJSONType = items.map(it => `${it.pyJSONType.render}`).join(',');
+                    const pyType = items.map(it => `${it.pyType.render}`).join(',');
                     return {
                         borshType: fragment(borshTypestr, imports),
+                        fromJSON: fragment('Pubkey.from_string({{name}})'),
                         isEnum: false,
-                        pyType: fragment(pyType, imports),
                         pyJSONType: fragment(pyJSONType),
+                        pyType: fragment(pyType, imports),
                         strictType: fragment('BorshPubkey', imports),
+                        toJSON: fragment('str({{name}})'),
                         value: fragment(''),
-                        toJSON: fragment("str({{name}})"),
-                        fromJSON: fragment('Pubkey.from_string({{name}})')
                     };
-                }
+                },
             }),
         visitor => recordNodeStackVisitor(visitor, stack),
     );
