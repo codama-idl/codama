@@ -67,6 +67,34 @@ export function getFieldsToJSON(
     });
     return new PyFragment(fragments, imports);
 }
+
+export function getFieldsToJSONEncodable(
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+        fields: InstructionArgumentNode[] | StructFieldTypeNode[];
+    },
+): PyFragment | null {
+    const { fields } = scope;
+    const fragments: string[] = [];
+    const imports = new ImportMap();
+    fields.forEach((field, _index) => {
+        if (field.name == 'discriminator') {
+            return;
+        }
+        if (field.type.kind == "definedTypeLinkNode"){
+            const toCast = renderString("{{name}}.to_encodable()", { name: 'self.' + field.name });
+            fragments.push(`"${field.name}": ${toCast}`);
+        }else{
+            fragments.push(`"${field.name}": self.${field.name}`);
+        }
+        //const fieldtype = visit(field.type, typeManifestVisitor);
+        //imports.mergeWith(fieldtype.toJSON.imports);
+        //const toCast = renderString(fieldtype.toJSON.render, { name: 'self.' + field.name });
+        //fieldtype.
+        //fragments.push(`"${field.name}": self.${toCast}`);
+    });
+    return new PyFragment(fragments, imports);
+}
+
 export function getFieldsDecode(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
@@ -115,6 +143,26 @@ export function getFieldsFromJSON(
     });
     return new PyFragment(fragments, imports);
 }
+export function getFieldsFromDecode(
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+        fields: InstructionArgumentNode[] | StructFieldTypeNode[];
+    },
+): PyFragment | null {
+    const { fields, typeManifestVisitor } = scope;
+    const fragments: string[] = [];
+    const imports = new ImportMap();
+    fields.forEach((field, _index) => {
+        if (field.name == 'discriminator') {
+            return;
+        }
+        const fieldtype = visit(field.type, typeManifestVisitor);
+        imports.mergeWith(fieldtype.fromJSON);
+        const fromCast = renderString(fieldtype.fromDecode.render, { name: 'obj["' + field.name + '"]' });
+        fragments.push(`${field.name}=${fromCast}`);
+    });
+    return new PyFragment(fragments, imports);
+}
+
 export function getArgsToLayout(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];

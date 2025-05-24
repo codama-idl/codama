@@ -31,10 +31,12 @@ import {
     getDiscriminatorConstantsFragment,
     getFieldsDecode,
     getFieldsFromJSON,
+    getFieldsFromDecode,
     getFieldsJSON,
     getFieldsPy,
     getFieldsToJSON,
     getLayoutFields,
+    getFieldsToJSONEncodable
 } from './fragments';
 import { GenType, getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
@@ -217,6 +219,18 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             ...scope,
                             fields,
                         });
+                        const fieldsFromDecode = getFieldsFromDecode(
+                            {
+                                ...scope,
+                                fields,
+                            }
+                        )
+                        const fieldsToEncodable = getFieldsToJSONEncodable(
+                           {
+                                ...scope,
+                                fields,
+                            }
+                        )
                         imports.mergeWith(layoutFragment);
                         imports.mergeWith(fieldsJSON!);
                         imports.mergeWith(fieldsPy!);
@@ -231,6 +245,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 fieldsJSON_assignment: fieldsJSON,
                                 fieldsLayout: layoutFragment,
                                 fieldsToJSON: fieldsToJSON,
+                                fieldsFromDecode:fieldsFromDecode,
+                                fieldsToEncodable:fieldsToEncodable,
                                 fields_interface_params: fieldsPy,
                                 imports: imports.toString(dependencyMap, useGranularImports),
                                 typeName: node.name,

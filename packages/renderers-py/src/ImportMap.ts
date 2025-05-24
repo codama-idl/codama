@@ -88,7 +88,7 @@ export class ImportMap {
     }
 
     mergeWithManifest(manifest: TypeManifest): ImportMap {
-        return this.mergeWith(manifest.strictType, manifest.borshType, manifest.pyType);
+        return this.mergeWith(manifest.fromJSON, manifest.borshType, manifest.pyType);
     }
 
     addAlias(module: string, name: string, alias: string): ImportMap {
@@ -151,7 +151,7 @@ export class ImportMap {
                         })
                         .map(name => `import ${name};`);
                     const out = joinedImports.join('\n');
-                    console.log('module.length = 0', out, imports);
+                    //console.log('module.length = 0', out, imports);
                     return out;
                 } else {
                     const joinedImports = [...imports]

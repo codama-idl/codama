@@ -4,6 +4,7 @@ import { visit } from '@codama/visitors-core';
 import { getFieldsPy, getLayoutFields, PyFragment } from './fragments';
 import { GlobalFragmentScope } from './getRenderMapVisitor';
 import { ImportMap } from './ImportMap';
+import {renderString } from './utils';
 
 export class EnumHelper {
     //name: String
@@ -29,6 +30,14 @@ export class EnumHelper {
         const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
         return new PyFragment([tupleType.borshType.render], tupleType.borshType.imports);
     }
+    getTupleToJSON(node: EnumVariantTypeNode): PyFragment {
+        const { typeManifestVisitor } = this.scope;
+        //node.kind ==
+        const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
+        return new PyFragment([tupleType.toJSON.render], tupleType.toJSON.imports);
+
+    }
+
     getStructPyJSON(node: EnumStructVariantTypeNode): PyFragment {
         if (node.struct.kind == 'structTypeNode') {
             //node.struct.fields.map()
@@ -40,6 +49,21 @@ export class EnumHelper {
         }
         return new PyFragment(['']);
     }
+    getStructToJSON(node: EnumStructVariantTypeNode): PyFragment {
+        if (node.struct.kind == 'structTypeNode') {
+            const fields = node.struct.fields;
+            let render = fields.map(it =>
+                `"${it.name}": self.value["${it.name}"]`
+            ).join(',');
+            console.log("getStructToJSON",render);
+            /*return getFieldsPy({
+                ...this.scope,
+                fields,
+            })!;*/
+            return new PyFragment([render]);
+        }
+        return new PyFragment(['']);
+    }
     getStructLayout(node: EnumStructVariantTypeNode): PyFragment {
         if (node.struct.kind == 'structTypeNode') {
             const fields = node.struct.fields;
@@ -48,6 +72,26 @@ export class EnumHelper {
                 fields,
                 prefix: '',
             });
+        }
+        return new PyFragment(['']);
+    }
+    getStructDecode(node: EnumStructVariantTypeNode): PyFragment {
+        const { typeManifestVisitor } = this.scope;
+         if (node.struct.kind == 'structTypeNode') {
+            const fields = node.struct.fields;
+            let render = fields.map(it =>{
+                let itemType = visit(it.type,typeManifestVisitor);
+                const fromCast = renderString(itemType.fromDecode.render,{name:`val["${it.name}"]`});
+                return `${it.name}= ${fromCast}`
+                }
+            ).join(',');
+             return new PyFragment([render]);
+
+            /*return getLayoutFields({
+                ...this.scope,
+                fields,
+                prefix: '',
+            });*/
         }
         return new PyFragment(['']);
     }

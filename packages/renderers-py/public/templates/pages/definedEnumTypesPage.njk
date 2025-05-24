@@ -35,17 +35,24 @@ class {{variant.name | pascalCase}}JSON(typing.TypedDict):
 @dataclass
 class {{variant.name | pascalCase}}:
     discriminator: typing.ClassVar = {{ loop.index0 }}
+{% if variant.kind!="enumEmptyVariantTypeNode" %}
+    value : {{variant.name | pascalCase}}Value
+{% endif%}
     @classmethod
-    def to_json(cls) -> {{variant.name | pascalCase}}JSON:
+    def to_json(self) -> {{variant.name | pascalCase}}JSON:
         return {{variant.name | pascalCase}}JSON(
             kind="{{variant.name | pascalCase}}",
 {% if variant.kind=="enumTupleVariantTypeNode" %}
-            value = (self.value[])
+            value = ({{enumHelper.getTupleToJSON(variant).renders}})
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+            value = {
+            {{enumHelper.getStructToJSON(variant).renders}}
+            }
 {% endif %}
         )
 
     @classmethod
-    def to_encodable(cls) -> dict:
+    def to_encodable(self) -> dict:
         return {
             "{{variant.name | pascalCase}}": {},
         }
@@ -78,7 +85,7 @@ def from_decoded(obj: dict) -> {{typeName | pascalCase}}Kind:
       val = obj["{{variant.name | pascalCase}}"]
       return {{variant.name | pascalCase}}(
             {{variant.name | pascalCase}}Value(
-                track_open_orders_fraction=val["track_open_orders_fraction"],
+                {{enumHelper.getStructDecode(variant).renders}}
             )
         )
 

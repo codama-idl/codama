@@ -27,20 +27,22 @@ class {{ typeName | pascalCase}}:
     @classmethod
     def from_decoded(cls, obj: Container) -> "{{ typeName | pascalCase}}":
         return cls(
-        {% for field in fields %}
-           {{field.name}}=obj.{{field.name}},
-        {% endfor %}
+       {{fieldsFromDecode.renders}}
         )
 
-    #def to_encodable(self) -> dict[str, typing.Any]:
-    #    return {"row": self.row, "column": self.column}
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {
+        {% for field in fieldsToEncodable.renders %}
+        {{field}},
+        {% endfor %}
+        }
 
     def to_json(self) -> {{ typeName | pascalCase}}JSON:
         return {
         {% for field in fieldsToJSON.renders %}
         {{field}},
         {% endfor %}
-}
+        }
 
     @classmethod
     def from_json(cls, obj: {{ typeName | pascalCase}}JSON) -> "{{ typeName | pascalCase}}":
