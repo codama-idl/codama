@@ -1,19 +1,19 @@
 import {
-    REGISTERED_TYPE_NODE_KINDS, REGISTERED_VALUE_NODE_KINDS,
     // CountNode,
-    isNode
+    isNode,
+    pascalCase,
+    REGISTERED_TYPE_NODE_KINDS, REGISTERED_VALUE_NODE_KINDS
 } from '@codama/nodes';
 import {
     extendVisitor,
+    getLastNodeFromPath,
     LinkableDictionary,
     NodeStack,
     pipe,
     recordNodeStackVisitor,
-    getLastNodeFromPath,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
-import { pascalCase } from '@codama/nodes';
 
 
 import { fragment } from './fragments';

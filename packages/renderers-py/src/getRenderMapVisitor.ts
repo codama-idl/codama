@@ -4,9 +4,7 @@ import { join } from 'node:path';
 import {
     camelCase, getAllAccounts, getAllPdas, getAllInstructions,
     getAllDefinedTypes,
-    getAllPrograms, resolveNestedTypeNode,EnumVariantTypeNode ,EnumTupleVariantTypeNode,
-    EnumStructVariantTypeNode
-} from '@codama/nodes';
+    getAllPrograms, resolveNestedTypeNode} from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
@@ -21,7 +19,9 @@ import {
 } from '@codama/visitors-core';
 import type { ConfigureOptions } from 'nunjucks';
 
-import { getDiscriminatorConstantsFragment, getFieldsJSON, getFieldsPy, getArgsToPy, getFieldsDecode, getFieldsToJSON, getLayoutFields, getArgsToLayout, getFieldsFromJSON,PyFragment } from './fragments';
+import { getDiscriminatorConstantsFragment,
+         getFieldsJSON, getFieldsPy, getArgsToPy, getFieldsDecode,
+         getFieldsToJSON, getLayoutFields, getArgsToLayout, getFieldsFromJSON} from './fragments';
 import { GenType, getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import {
     getImportFromFactory,
@@ -32,6 +32,7 @@ import {
 } from './utils';
 
 import { ImportMap } from './ImportMap';
+import { EnumHelper } from './enumHelper';
 
 
 export type GetRenderMapOptions = {
@@ -45,64 +46,6 @@ export type GetRenderMapOptions = {
 export type GlobalFragmentScope = {
     typeManifestVisitor: TypeManifestVisitor;
 };
-export class EnumHelper {
-    //name: String
-    variants: EnumVariantTypeNode[];
-    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'>;
-    constructor(variants :EnumVariantTypeNode[],scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'>) {
-        this.variants = variants;
-        this.scope = scope;
-    }
-    getTuplePyJSON(node: EnumVariantTypeNode) :PyFragment{
-        const { typeManifestVisitor } = this.scope;
-        //node.kind ==
-        let tupleType = visit((node as EnumTupleVariantTypeNode).tuple,typeManifestVisitor);
-        //console.log("tupleType",tupleType);
-        return new PyFragment([tupleType.pyJSONType.render]);
-    }
-    getTuplePy(node: EnumVariantTypeNode) :PyFragment{
-        const { typeManifestVisitor } = this.scope;
-        //node.kind ==
-        let tupleType = visit((node as EnumTupleVariantTypeNode).tuple,typeManifestVisitor);
-        //console.log("tupleType",tupleType);
-        return new PyFragment([tupleType.pyType.render]);
-    }
-    getTupleLayout(node: EnumVariantTypeNode) :PyFragment{
-        const { typeManifestVisitor } = this.scope;
-        //node.kind ==
-        let tupleType = visit((node as EnumTupleVariantTypeNode).tuple,typeManifestVisitor);
-        //console.log("tupleType",tupleType);
-        return new PyFragment([tupleType.borshType.render]);
-    }
-    getStructPyJSON(node: EnumStructVariantTypeNode) : PyFragment{
-        //const { typeManifestVisitor } = this.scope;
-        if (node.struct.kind == "structTypeNode"){
-            //node.struct.fields.map()
-            let fields = node.struct.fields;
-            return getFieldsPy({
-                ...this.scope,
-                fields,
-            })!
-        }
-        //let tupleType = visit((node).struct,typeManifestVisitor);
-        return new PyFragment([""]);
-    }
-    getStructLayout(node: EnumStructVariantTypeNode) : PyFragment{
-        if (node.struct.kind == "structTypeNode"){
-            //node.struct.fields.map()
-            let fields = node.struct.fields;
-            return getLayoutFields({
-                ...this.scope,
-                fields,
-                prefix:"",
-            })!
-        }
-        //let tupleType = visit((node).struct,typeManifestVisitor);
-        return new PyFragment([""]);
-
-    }
-}
-
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
@@ -288,11 +231,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             let variants = nodeType.variants;
                             imports.add("anchorpy.borsh_extension", "EnumForCodegen");
                             console.log("variant:", variants[1]);
+                            let helper =new EnumHelper(variants,scope);
+                            let herlperImports = helper.genAllImports();
+                            imports.mergeWith(herlperImports);
+
                             return new RenderMap().add(`types/${camelCase(node.name)}.py`, render('definedEnumTypesPage.njk', {
                                 typeName: node.name,
                                 variants: variants,
                                 imports: imports.toString(dependencyMap, useGranularImports),
-                                enumHelper:new EnumHelper(variants,scope)
+                                enumHelper:helper
 
                             }));
                         }
