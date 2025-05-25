@@ -11,7 +11,7 @@
 {{variant.name | pascalCase}}JSONValue = tuple[{{enumHelper.getTuplePyJSON(variant).renders }}]
 {{variant.name | pascalCase}}Value = tuple[{{enumHelper.getTuplePy(variant).renders}}]
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
-class {{variant.name | pascalCase}}JSONValue(typing.TypedDict):
+class {{variant.name | pascalCase }}JSONValue(typing.TypedDict):
     #kind: typing.Literal["{{variant.name | pascalCase}}"]
 {% for field in enumHelper.getStructPyJSON(variant).renders %}
     {{field}}
@@ -26,21 +26,21 @@ class {{variant.name | pascalCase}}Value(typing.TypedDict):
 {% endif %}
 
 class {{variant.name | pascalCase}}JSON(typing.TypedDict):
-    kind: typing.Literal["{{variant.name | pascalCase}}"]
+    kind: typing.Literal["{{variant.name | pascalCase }}"]
 {%if variant.kind!="enumEmptyVariantTypeNode"%}
     value: {{variant.name | pascalCase}}JSONValue
 {% endif %}
 
 
 @dataclass
-class {{variant.name | pascalCase}}:
+class {{variant.name | pascalCase | notKeywordCase }}:
     discriminator: typing.ClassVar = {{ loop.index0 }}
 {% if variant.kind!="enumEmptyVariantTypeNode" %}
     value : {{variant.name | pascalCase}}Value
 {% endif%}
     def to_json(self) -> {{variant.name | pascalCase}}JSON:
         return {{variant.name | pascalCase}}JSON(
-            kind="{{variant.name | pascalCase}}",
+            kind="{{variant.name | pascalCase }}",
 {% if variant.kind=="enumTupleVariantTypeNode" %}
             value = ({{enumHelper.getTupleToJSON(variant).renders}})
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
@@ -62,7 +62,7 @@ class {{variant.name | pascalCase}}:
 
 {{typeName | pascalCase}}Kind = typing.Union[
 {% for variant in variants %}
-{{variant.name | pascalCase}},
+{{variant.name | pascalCase|notKeywordCase}},
 {% endfor %}]
 {{typeName | pascalCase}}JSON = typing.Union[
 {% for variant in variants %}
@@ -75,15 +75,15 @@ def from_decoded(obj: dict) -> {{typeName | pascalCase}}Kind:
 {% for variant in variants %}
     if "{{variant.name | pascalCase}}" in obj:
 {% if variant.kind=="enumEmptyVariantTypeNode" %}
-      return {{variant.name | pascalCase}}()
+      return {{variant.name | pascalCase | notKeywordCase }}()
 {% elseif variant.kind=="enumTupleVariantTypeNode" %}
-      val = obj["{{variant.name | pascalCase}}"]
-      return {{variant.name | pascalCase}}((
+      val = obj["{{variant.name | pascalCase }}"]
+      return {{variant.name | pascalCase| notKeywordCase}}((
       {{enumHelper.getTupleDecode(variant).renders}}
       )) #todo Tuple
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
       val = obj["{{variant.name | pascalCase}}"]
-      return {{variant.name | pascalCase}}(
+      return {{variant.name | pascalCase | notKeywordCase }}(
             {{variant.name | pascalCase}}Value(
                 {{enumHelper.getStructDecode(variant).renders}}
             )
@@ -97,17 +97,16 @@ def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Ki
 {% for variant in variants %}
     if obj["kind"] == "{{variant.name | pascalCase}}":
 {% if variant.kind=="enumEmptyVariantTypeNode" %}
-        return {{variant.name | pascalCase}}()
+        return {{variant.name | pascalCase | notKeywordCase }}()
 {% elseif variant.kind=="enumTupleVariantTypeNode" %}
         {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
-        return {{variant.name | pascalCase}}(
+        return {{variant.name | pascalCase | notKeywordCase }}(
         ({{enumHelper.getTupleFromJSON(variant).renders}})
-        ) #todo Tuple
+        )
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
         {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
-        return {{variant.name | pascalCase}}(
+        return {{variant.name | pascalCase | notKeywordCase }}(
             {{variant.name | pascalCase}}Value(
-                #track_open_orders_fraction=val["track_open_orders_fraction"],
                 {{enumHelper.getStructFromJSON(variant).renders}}
             )
         )

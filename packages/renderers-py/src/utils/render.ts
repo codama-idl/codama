@@ -14,6 +14,9 @@ export function notPyKeyCase(name: string): string {
     if (name == 'global') {
         return 'global_';
     }
+    if (name == 'None') {
+        return 'None_'
+    }
     return name;
 }
 export const render = (template: string, context?: object, options?: NunJucksOptions): string => {
