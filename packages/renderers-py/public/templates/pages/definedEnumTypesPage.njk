@@ -77,7 +77,9 @@ def from_decoded(obj: dict) -> {{typeName | pascalCase}}Kind:
 {% if variant.kind=="enumEmptyVariantTypeNode" %}
       return {{variant.name | pascalCase}}()
 {% elseif variant.kind=="enumTupleVariantTypeNode" %}
+      val = obj["{{variant.name | pascalCase}}"]
       return {{variant.name | pascalCase}}((
+      {{enumHelper.getTupleDecode(variant).renders}}
       )) #todo Tuple
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
       val = obj["{{variant.name | pascalCase}}"]
@@ -97,8 +99,10 @@ def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Ki
 {% if variant.kind=="enumEmptyVariantTypeNode" %}
         return {{variant.name | pascalCase}}()
 {% elseif variant.kind=="enumTupleVariantTypeNode" %}
-        {{variant.name}}jsonvalue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
-        return {{variant.name | pascalCase}}() #todo Tuple
+        {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
+        return {{variant.name | pascalCase}}(
+        ({{enumHelper.getTupleFromJSON(variant).renders}})
+        ) #todo Tuple
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
         {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
         return {{variant.name | pascalCase}}(

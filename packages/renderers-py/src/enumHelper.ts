@@ -37,6 +37,23 @@ export class EnumHelper {
         return new PyFragment([tupleType.toJSON.render], tupleType.toJSON.imports);
 
     }
+    getTupleFromJSON(node: EnumVariantTypeNode): PyFragment {
+        const { typeManifestVisitor } = this.scope;
+        //node.kind ==
+        const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
+        const fromCast = renderString(tupleType.fromJSON.render, { name: `${node.name}JSONValue` });
+
+        return new PyFragment([fromCast], tupleType.fromJSON.imports);
+
+    }
+    getTupleDecode(node: EnumVariantTypeNode): PyFragment {
+        const { typeManifestVisitor } = this.scope;
+        const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
+        const fromCast = renderString(tupleType.fromDecode.render, { name: "val" });
+        return new PyFragment([fromCast], tupleType.fromDecode.imports);
+    }
+
+
 
     getStructPyJSON(node: EnumStructVariantTypeNode): PyFragment {
         if (node.struct.kind == 'structTypeNode') {

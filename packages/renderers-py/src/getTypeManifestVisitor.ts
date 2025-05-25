@@ -337,10 +337,12 @@ export function getTypeManifestVisitor(input: {
                     const pyJSONType = items.map(it => `${it.pyJSONType.render}`).join(',');
                     const pyType = items.map(it => `${it.pyType.render}`).join(',');
                     const toJSON = items.map((_it, index) => `self.value[${index}]`).join(',');
+                    const fromJSON = items.map((_it, index) => `{{name}}[${index}]`).join(',');
+                    const fromDecode = items.map((_it, index) => `{{name}}["item_${index}"]`).join(',');
                     return {
                         borshType: fragment(borshTypestr, imports),
-                        fromJSON: fragment(''),
-                        fromDecode: fragment(''),
+                        fromJSON: fragment(fromJSON),
+                        fromDecode: fragment(fromDecode),
                         isEnum: false,
                         pyJSONType: fragment(pyJSONType),
                         pyType: fragment(pyType, imports),
