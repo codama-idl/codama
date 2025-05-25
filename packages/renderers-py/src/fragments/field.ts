@@ -48,6 +48,22 @@ export function getFieldsPy(
     });
     return new PyFragment(fragments);
 }
+export function getFieldsPyJSON(
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+        fields: InstructionArgumentNode[] | StructFieldTypeNode[];
+    },
+): PyFragment | null {
+    const { fields, typeManifestVisitor } = scope;
+    const fragments: string[] = [];
+    fields.forEach((field, _index) => {
+        if (field.name == 'discriminator') {
+            return;
+        }
+        const fieldtype = visit(field.type, typeManifestVisitor);
+        fragments.push(`${field.name}: ${fieldtype.pyJSONType.render}`);
+    });
+    return new PyFragment(fragments);
+}
 export function getFieldsToJSON(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];

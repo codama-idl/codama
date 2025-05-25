@@ -17,7 +17,7 @@ class {{variant.name | pascalCase}}JSONValue(typing.TypedDict):
     {{field}}
 {% endfor %}
 class {{variant.name | pascalCase}}Value(typing.TypedDict):
-{% for field in enumHelper.getStructPyJSON(variant).renders %}
+{% for field in enumHelper.getStructPy(variant).renders %}
     {{field}}
 {% endfor %}
 
@@ -38,7 +38,6 @@ class {{variant.name | pascalCase}}:
 {% if variant.kind!="enumEmptyVariantTypeNode" %}
     value : {{variant.name | pascalCase}}Value
 {% endif%}
-    @classmethod
     def to_json(self) -> {{variant.name | pascalCase}}JSON:
         return {{variant.name | pascalCase}}JSON(
             kind="{{variant.name | pascalCase}}",
@@ -51,7 +50,6 @@ class {{variant.name | pascalCase}}:
 {% endif %}
         )
 
-    @classmethod
     def to_encodable(self) -> dict:
         return {
             "{{variant.name | pascalCase}}": {},
@@ -102,10 +100,11 @@ def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Ki
         {{variant.name}}jsonvalue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
         return {{variant.name | pascalCase}}() #todo Tuple
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
-        val = obj["{{variant.name | pascalCase}}"]
+        {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
         return {{variant.name | pascalCase}}(
             {{variant.name | pascalCase}}Value(
-                track_open_orders_fraction=val["track_open_orders_fraction"],
+                #track_open_orders_fraction=val["track_open_orders_fraction"],
+                {{enumHelper.getStructFromJSON(variant).renders}}
             )
         )
 

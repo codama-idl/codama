@@ -277,7 +277,7 @@ export function getTypeManifestVisitor(input: {
                         fromDecode:fragment(fromDecodeStr, inner.fromJSON.imports),
                         isEnum: false,
                         pyJSONType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, inner.pyJSONType.imports),
-                        pyType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, inner.pyJSONType.imports),
+                        pyType: fragment(`typing.Optional[${inner.pyType.render}]`, inner.pyType.imports),
                         toJSON: fragment(toJSONStr, inner.toJSON.imports),
                         value: fragment(''),
                     };
