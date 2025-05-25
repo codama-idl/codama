@@ -27,7 +27,9 @@ class {{ typeName | pascalCase}}:
     @classmethod
     def from_decoded(cls, obj: Container) -> "{{ typeName | pascalCase}}":
         return cls(
-       {{fieldsFromDecode.renders}}
+{% for field in fieldsFromDecode.renders %}
+        {{field}},
+{% endfor %}
         )
 
     def to_encodable(self) -> dict[str, typing.Any]:
