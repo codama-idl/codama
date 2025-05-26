@@ -35,7 +35,6 @@ export class EnumHelper {
         //node.kind ==
         const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
         return new PyFragment([tupleType.toJSON.render], tupleType.toJSON.imports);
-
     }
     getTupleFromJSON(node: EnumVariantTypeNode): PyFragment {
         const { typeManifestVisitor } = this.scope;
@@ -44,16 +43,13 @@ export class EnumHelper {
         const fromCast = renderString(tupleType.fromJSON.render, { name: `${node.name}JSONValue` });
 
         return new PyFragment([fromCast], tupleType.fromJSON.imports);
-
     }
     getTupleDecode(node: EnumVariantTypeNode): PyFragment {
         const { typeManifestVisitor } = this.scope;
         const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
-        const fromCast = renderString(tupleType.fromDecode.render, { name: "val" });
+        const fromCast = renderString(tupleType.fromDecode.render, { name: 'val' });
         return new PyFragment([fromCast], tupleType.fromDecode.imports);
     }
-
-
 
     getStructPyJSON(node: EnumStructVariantTypeNode): PyFragment {
         if (node.struct.kind == 'structTypeNode') {
@@ -81,12 +77,14 @@ export class EnumHelper {
         const { typeManifestVisitor } = this.scope;
         if (node.struct.kind == 'structTypeNode') {
             const fields = node.struct.fields;
-            let render = fields.map(it => {
-                let itemType = visit(it.type, typeManifestVisitor);
-                const fromCast = renderString(itemType.toJSON.render, { name: `self.value["${it.name}"]` });
-                return `"${it.name}":${fromCast}`
-            }).join(',');
-            console.log("getStructToJSON", render);
+            const render = fields
+                .map(it => {
+                    const itemType = visit(it.type, typeManifestVisitor);
+                    const fromCast = renderString(itemType.toJSON.render, { name: `self.value["${it.name}"]` });
+                    return `"${it.name}":${fromCast}`;
+                })
+                .join(',');
+            console.log('getStructToJSON', render);
             return new PyFragment([render]);
         }
         return new PyFragment(['']);
@@ -95,12 +93,16 @@ export class EnumHelper {
         const { typeManifestVisitor } = this.scope;
         if (node.struct.kind == 'structTypeNode') {
             const fields = node.struct.fields;
-            let render = fields.map(it => {
-                let itemType = visit(it.type, typeManifestVisitor);
-                const fromCast = renderString(itemType.fromJSON.render, { name: `${node.name}JSONValue["${it.name}"]` });
-                return `${it.name}=${fromCast}`
-            }).join(',');
-            console.log("getStructToJSON", render);
+            const render = fields
+                .map(it => {
+                    const itemType = visit(it.type, typeManifestVisitor);
+                    const fromCast = renderString(itemType.fromJSON.render, {
+                        name: `${node.name}JSONValue["${it.name}"]`,
+                    });
+                    return `${it.name}=${fromCast}`;
+                })
+                .join(',');
+            console.log('getStructToJSON', render);
             return new PyFragment([render]);
         }
         return new PyFragment(['']);
@@ -121,12 +123,13 @@ export class EnumHelper {
         const { typeManifestVisitor } = this.scope;
         if (node.struct.kind == 'structTypeNode') {
             const fields = node.struct.fields;
-            let render = fields.map(it => {
-                let itemType = visit(it.type, typeManifestVisitor);
-                const fromCast = renderString(itemType.fromDecode.render, { name: `val["${it.name}"]` });
-                return `${it.name}= ${fromCast}`
-            }
-            ).join(',');
+            const render = fields
+                .map(it => {
+                    const itemType = visit(it.type, typeManifestVisitor);
+                    const fromCast = renderString(itemType.fromDecode.render, { name: `val["${it.name}"]` });
+                    return `${it.name}= ${fromCast}`;
+                })
+                .join(',');
             return new PyFragment([render]);
 
             /*return getLayoutFields({

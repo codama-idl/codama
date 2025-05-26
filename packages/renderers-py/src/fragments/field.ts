@@ -96,10 +96,10 @@ export function getFieldsToJSONEncodable(
         if (field.name == 'discriminator') {
             return;
         }
-        if (field.type.kind == "definedTypeLinkNode"){
-            const toCast = renderString("{{name}}.to_encodable()", { name: 'self.' + field.name });
+        if (field.type.kind == 'definedTypeLinkNode') {
+            const toCast = renderString('{{name}}.to_encodable()', { name: 'self.' + field.name });
             fragments.push(`"${field.name}": ${toCast}`);
-        }else{
+        } else {
             fragments.push(`"${field.name}": self.${field.name}`);
         }
         //const fieldtype = visit(field.type, typeManifestVisitor);

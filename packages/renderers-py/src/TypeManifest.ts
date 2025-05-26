@@ -1,8 +1,8 @@
 import { Fragment, fragment, mergeFragments } from './fragments';
 export type TypeManifest = {
     borshType: Fragment;
-    fromJSON: Fragment;
     fromDecode: Fragment;
+    fromJSON: Fragment;
     isEnum: boolean;
     pyJSONType: Fragment;
     pyType: Fragment;
@@ -13,8 +13,8 @@ export type TypeManifest = {
 export function typeManifest(): TypeManifest {
     return {
         borshType: fragment(''),
+        fromDecode: fragment(''),
         fromJSON: fragment(''),
-        fromDecode:fragment(''),
         isEnum: false,
         pyJSONType: fragment(''),
         pyType: fragment(''),
@@ -35,8 +35,8 @@ export function mergeManifests(
         mergeFn ? mergeFragments(manifests.map(fragmentFn), mergeFn) : fragment('');
     return {
         borshType: merge(m => m.borshType, mergeTypes),
+        fromDecode: merge(m => m.fromDecode, mergeValues),
         fromJSON: merge(m => m.fromJSON, mergeValues),
-        fromDecode:merge(m => m.fromDecode, mergeValues),
         isEnum: false,
         pyJSONType: merge(m => m.pyJSONType, mergeTypes),
         pyType: merge(m => m.pyType, mergeTypes),

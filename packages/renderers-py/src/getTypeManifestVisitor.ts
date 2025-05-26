@@ -53,8 +53,8 @@ export function getTypeManifestVisitor(input: {
             () =>
                 ({
                     borshType: fragment(''),
-                    fromJSON: fragment('{{name}}'),
                     fromDecode: fragment(''),
+                    fromJSON: fragment('{{name}}'),
                     isEnum: false,
                     pyType: fragment(''),
                     toJSON: fragment(''),
@@ -97,8 +97,8 @@ export function getTypeManifestVisitor(input: {
                     const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                     return {
                         borshType: fragment(`${itemlayout.borshType.render}[${count}]`),
+                        fromDecode: fragment(fromJSONStr),
                         fromJSON: fragment(fromJSONStr),
-                        fromDecode:fragment(fromJSONStr),
                         isEnum: false,
                         pyJSONType: fragment(`list[${inner.pyJSONType.render}]`),
                         pyType: fragment(`list[${inner.pyType.render}]`),
@@ -116,8 +116,8 @@ export function getTypeManifestVisitor(input: {
                 visitBooleanType(_booleanType) {
                     return {
                         borshType: fragment('borsh.Bool'),
-                        fromJSON: fragment('{{name}}'),
                         fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('bool'),
                         pyType: fragment('bool'),
@@ -134,8 +134,8 @@ export function getTypeManifestVisitor(input: {
                 visitBytesType() {
                     return {
                         borshType: fragment('borsh.Bytes'),
-                        fromJSON: fragment('{{name}}'),
                         fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('list[int]'),
                         pyType: fragment('borsh.Bytes'),
@@ -185,7 +185,6 @@ export function getTypeManifestVisitor(input: {
                         fromDecodeStr = `${modname}.from_decoded({{name}})`;
                         pyJSONTypeStr = `${modname}.${pascalCase(typename)}JSON`;
 
-
                         isEnum = true;
                     } else {
                         pyTypeStr = `${modname}.${pascalCase(typename)}`;
@@ -206,8 +205,8 @@ export function getTypeManifestVisitor(input: {
 
                     return {
                         borshType: fragment(borshTypeStr, imports),
+                        fromDecode: fragment(fromDecodeStr, imports),
                         fromJSON: fragment(fromJSONStr, imports),
-                        fromDecode:fragment(fromDecodeStr, imports),
                         isEnum: isEnum,
                         pyJSONType: fragment(pyJSONTypeStr, imports),
                         pyType: fragment(pyTypeStr, imports),
@@ -218,8 +217,8 @@ export function getTypeManifestVisitor(input: {
                 visitFixedSizeType(node) {
                     return {
                         borshType: fragment(`borsh.U8[${node.size}]`),
-                        fromJSON: fragment('{{name}}'),
                         fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('list[int]'),
                         pyType: fragment('list[int]'),
@@ -248,8 +247,8 @@ export function getTypeManifestVisitor(input: {
                     //console.log('visitNumberType:', numberType);
                     return {
                         borshType: fragment(NumberToBorshType(numberType.format)),
-                        fromJSON: fragment('{{name}}'),
                         fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('int'),
 
@@ -273,8 +272,8 @@ export function getTypeManifestVisitor(input: {
                     const fromDecodeStr = `(None if {{name}} is None else ${inner.fromDecode.render})`;
                     return {
                         borshType: fragment(`borsh.Option(${inner.borshType.render})`, inner.borshType.imports),
+                        fromDecode: fragment(fromDecodeStr, inner.fromJSON.imports),
                         fromJSON: fragment(fromJSONStr, inner.fromJSON.imports),
-                        fromDecode:fragment(fromDecodeStr, inner.fromJSON.imports),
                         isEnum: false,
                         pyJSONType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, inner.pyJSONType.imports),
                         pyType: fragment(`typing.Optional[${inner.pyType.render}]`, inner.pyType.imports),
@@ -287,8 +286,8 @@ export function getTypeManifestVisitor(input: {
                     imports.add('anchorpy.borsh_extension', 'BorshPubkey');
                     return {
                         borshType: fragment('BorshPubkey', imports),
-                        fromJSON: fragment('Pubkey.from_string({{name}})'),
                         fromDecode: fragment('Pubkey.from_string({{name}})'),
+                        fromJSON: fragment('Pubkey.from_string({{name}})'),
                         isEnum: false,
                         pyJSONType: fragment('str'),
                         pyType: fragment('Pubkey', imports),
@@ -306,8 +305,8 @@ export function getTypeManifestVisitor(input: {
                 visitSizePrefixType(_node) {
                     return {
                         borshType: fragment('borsh.String'),
-                        fromJSON: fragment('{{name}}'),
                         fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('str'),
                         pyType: fragment('str'),
@@ -320,8 +319,8 @@ export function getTypeManifestVisitor(input: {
                 visitStringType(_node) {
                     return {
                         borshType: fragment('borsh.String'),
-                        fromJSON: fragment('{{name}}'),
                         fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
                         isEnum: false,
                         pyJSONType: fragment('str'),
                         pyType: fragment('borsh.String'),
@@ -341,8 +340,8 @@ export function getTypeManifestVisitor(input: {
                     const fromDecode = items.map((_it, index) => `{{name}}["item_${index}"]`).join(',');
                     return {
                         borshType: fragment(borshTypestr, imports),
-                        fromJSON: fragment(fromJSON),
                         fromDecode: fragment(fromDecode),
+                        fromJSON: fragment(fromJSON),
                         isEnum: false,
                         pyJSONType: fragment(pyJSONType),
                         pyType: fragment(pyType, imports),

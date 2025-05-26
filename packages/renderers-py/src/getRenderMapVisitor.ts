@@ -8,7 +8,10 @@ import {
     getAllInstructions,
     getAllPdas,
     getAllPrograms,
+    InstructionAccountNode,
+    InstructionArgumentNode,
     resolveNestedTypeNode,
+    StructFieldTypeNode,
 } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
@@ -30,13 +33,13 @@ import {
     getArgsToPy,
     getDiscriminatorConstantsFragment,
     getFieldsDecode,
-    getFieldsFromJSON,
     getFieldsFromDecode,
+    getFieldsFromJSON,
     getFieldsJSON,
     getFieldsPy,
     getFieldsToJSON,
+    getFieldsToJSONEncodable,
     getLayoutFields,
-    getFieldsToJSONEncodable
 } from './fragments';
 import { GenType, getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
@@ -59,6 +62,25 @@ export type GetRenderMapOptions = {
 export type GlobalFragmentScope = {
     typeManifestVisitor: TypeManifestVisitor;
 };
+export function getInstructionPdas(
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+        accounts: InstructionAccountNode[];
+        argv: InstructionArgumentNode[] | StructFieldTypeNode[];
+    },
+): InstructionAccountNode[] {
+    const { accounts } = scope;
+
+    const pdas = accounts
+        .map(acc => {
+            if (acc.defaultValue) {
+                //acc.defaultValue
+                return acc; //acc.defaultValue
+            }
+            return null;
+        })
+        .filter(it => it != null);
+    return pdas;
+}
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
@@ -110,6 +132,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...scope,
                         fields,
                     });
+                    //bin const pda = node.pda ? linkables.get([...stack.getPath(), node.pda]) : undefined;
+                    //const pdaSeeds = pda?.seeds ?? [];
+                    //console.log("pdaSeeds",pdaSeeds);
                     //console.log("discriminatorNodes: node.discriminators:", node.discriminators)
 
                     const accountDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
@@ -219,18 +244,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             ...scope,
                             fields,
                         });
-                        const fieldsFromDecode = getFieldsFromDecode(
-                            {
-                                ...scope,
-                                fields,
-                            }
-                        )
-                        const fieldsToEncodable = getFieldsToJSONEncodable(
-                           {
-                                ...scope,
-                                fields,
-                            }
-                        )
+                        const fieldsFromDecode = getFieldsFromDecode({
+                            ...scope,
+                            fields,
+                        });
+                        const fieldsToEncodable = getFieldsToJSONEncodable({
+                            ...scope,
+                            fields,
+                        });
                         imports.mergeWith(layoutFragment);
                         imports.mergeWith(fieldsJSON!);
                         imports.mergeWith(fieldsPy!);
@@ -241,12 +262,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             render('definedTypesPage.njk', {
                                 discriminator: '',
                                 fields: fields,
+                                fieldsFromDecode: fieldsFromDecode,
                                 fieldsFromJSON: fieldsFromJSON,
                                 fieldsJSON_assignment: fieldsJSON,
                                 fieldsLayout: layoutFragment,
+                                fieldsToEncodable: fieldsToEncodable,
                                 fieldsToJSON: fieldsToJSON,
-                                fieldsFromDecode:fieldsFromDecode,
-                                fieldsToEncodable:fieldsToEncodable,
                                 fields_interface_params: fieldsPy,
                                 imports: imports.toString(dependencyMap, useGranularImports),
                                 typeName: node.name,
@@ -323,7 +344,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields,
                         prefix: node.name,
                     });
-
+                    const pdas = getInstructionPdas({
+                        ...scope,
+                        accounts: node.accounts,
+                        argv: fields,
+                    });
+                    console.log('pdas', node.name, pdas);
                     return new RenderMap().add(
                         `instructions/${camelCase(node.name)}.py`,
                         render('instructionsPage.njk', {
@@ -334,6 +360,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fieldsLayout: layoutFragment,
                             imports: imports.toString(dependencyMap, useGranularImports),
                             instructionName: node.name,
+                            pdas: pdas,
                         }),
                     );
                 },

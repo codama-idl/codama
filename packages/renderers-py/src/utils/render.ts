@@ -15,7 +15,7 @@ export function notPyKeyCase(name: string): string {
         return 'global_';
     }
     if (name == 'None') {
-        return 'None_'
+        return 'None_';
     }
     return name;
 }
