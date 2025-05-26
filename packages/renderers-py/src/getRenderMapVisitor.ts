@@ -349,7 +349,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         accounts: node.accounts,
                         argv: fields,
                     });
-                    console.log('pdas', node.name, pdas);
+                    //console.log('pdas', node.name, pdas);
                     return new RenderMap().add(
                         `instructions/${camelCase(node.name)}.py`,
                         render('instructionsPage.njk', {

@@ -110,7 +110,8 @@ export function getTypeManifestVisitor(input: {
                 visitArrayValue(node, { self }) {
                     return mergeManifests(
                         node.items.map(v => visit(v, self)),
-                        { mergeValues: renders => `[${renders.join(', ')}]` },
+                        { mergeValues: renders => `[${renders.join(', ')}]`,
+                        mergeTypes: renders => `[${renders.join(', ')}]`},
                     );
                 },
                 visitBooleanType(_booleanType) {

@@ -31,6 +31,13 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('titleCase', titleCase);
     env.addFilter('notKeywordCase', notPyKeyCase);
     env.addFilter('jsDocblock', jsDocblock);
+    env.addFilter('dump', function (obj) {
+        return JSON.stringify(obj, null, 2);
+    });
+    env.addGlobal('filterByField', function (array: any, fieldName: string) {
+        if (!Array.isArray(array)) return [];
+        return array.filter(item => item && typeof item === 'object' && fieldName in item);
+    });
     return env.render(template, context);
 };
 
