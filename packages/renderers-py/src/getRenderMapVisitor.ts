@@ -374,7 +374,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     return new RenderMap().add(`pdas/${camelCase(node.name)}.ts`, render('pdasPage.njk', {}));
                 },
 
-
                 visitProgram(node, { self }) {
                     const scope = { ...globalScope, programNode: node };
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
@@ -386,21 +385,22 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...node.instructions.map(t => visit(t, self)));
 
                     if (node.errors.length > 0) {
+                        renderMap.add(
+                            'errors/__init__.py',
+                            render('errorsIndex.njk', {
+                                nodeName: node.name,
+                            }),
+                        );
 
-                        renderMap.add('errors/__init__.py', render('errorsIndex.njk', {
-                            nodeName:node.name
-                        }));
-
-                        const errimports = new ImportMap();//.add('solders.pubkey', 'Pubkey');
+                        const errimports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
                         // from anchorpy.error import ProgramError
-                        errimports.add("anchorpy.error", "ProgramError");
-                        errimports.add("","typing");
+                        errimports.add('anchorpy.error', 'ProgramError');
+                        errimports.add('', 'typing');
                         renderMap.add(
                             `errors/${camelCase(node.name)}.py`,
                             render('errorsPage.njk', {
-                                errors:node.errors,
-                                imports: errimports
-                                    .toString(dependencyMap, useGranularImports),
+                                errors: node.errors,
+                                imports: errimports.toString(dependencyMap, useGranularImports),
                             }),
                         );
                     }
