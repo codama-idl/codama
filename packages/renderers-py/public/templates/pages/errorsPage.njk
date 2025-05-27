@@ -4,5 +4,32 @@
 {% block main %}
 {{ imports }}
 
-{{ programErrorsFragment }}
+{% for error in errors %}
+class {{error.name | pascalCase}}(ProgramError):
+    def __init__(self) -> None:
+        super().__init__(
+            {{error.code}}, "{{error.msg}}"
+        )
+
+    code = {{error.code}}
+    name = "{{error.name|pascalCase }}"
+    msg = "{{error.msg}}"
+{% endfor %}
+
+CustomError = typing.Union[
+{% for error in errors %}
+    {{error.name | pascalCase}},
+{% endfor %} ]
+CUSTOM_ERROR_MAP: dict[int, CustomError] = {
+{% for error in errors %}
+    {{error.code}}: {{error.name | pascalCase}}(),
+{% endfor %}
+}
+
+def from_code(code: int) -> typing.Optional[CustomError]:
+    maybe_err = CUSTOM_ERROR_MAP.get(code)
+    if maybe_err is None:
+        return None
+    return maybe_err
+
 {% endblock %}
