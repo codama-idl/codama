@@ -84,6 +84,7 @@ export function getTypeManifestVisitor(input: {
 
                 visitArrayType(arrayType, { self }) {
                     const itemlayout = visit(arrayType.item, self);
+                    const imports = new ImportMap();
                     //const cast_layout = `typing.cast(Construct, ${itemlayout.borshType.render})`;
                     const inner = visit(arrayType.item, self);
                     //console.log("visitArrayType:",arrayType,self);
@@ -91,18 +92,19 @@ export function getTypeManifestVisitor(input: {
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
                     }
+                    imports.mergeWith(inner.borshType);
                     const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
                     const toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
                     const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
                     const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                     return {
-                        borshType: fragment(`${itemlayout.borshType.render}[${count}]`),
-                        fromDecode: fragment(fromJSONStr),
-                        fromJSON: fragment(fromJSONStr),
+                        borshType: fragment(`${itemlayout.borshType.render}[${count}]`, imports),
+                        fromDecode: fragment(fromJSONStr, imports),
+                        fromJSON: fragment(fromJSONStr, imports),
                         isEnum: false,
-                        pyJSONType: fragment(`list[${inner.pyJSONType.render}]`),
-                        pyType: fragment(`list[${inner.pyType.render}]`),
-                        toJSON: fragment(toJSONStr),
+                        pyJSONType: fragment(`list[${inner.pyJSONType.render}]`, imports),
+                        pyType: fragment(`list[${inner.pyType.render}]`, imports),
+                        toJSON: fragment(toJSONStr, imports),
                         value: fragment(''),
                     };
                 },
@@ -110,8 +112,10 @@ export function getTypeManifestVisitor(input: {
                 visitArrayValue(node, { self }) {
                     return mergeManifests(
                         node.items.map(v => visit(v, self)),
-                        { mergeValues: renders => `[${renders.join(', ')}]`,
-                        mergeTypes: renders => `[${renders.join(', ')}]`},
+                        {
+                            mergeTypes: renders => `[${renders.join(', ')}]`,
+                            mergeValues: renders => `[${renders.join(', ')}]`,
+                        },
                     );
                 },
                 visitBooleanType(_booleanType) {

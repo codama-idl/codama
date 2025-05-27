@@ -84,7 +84,7 @@ export class EnumHelper {
                     return `"${it.name}":${fromCast}`;
                 })
                 .join(',');
-            console.log('getStructToJSON', render);
+            //console.log('getStructToJSON', render);
             return new PyFragment([render]);
         }
         return new PyFragment(['']);
@@ -102,7 +102,7 @@ export class EnumHelper {
                     return `${it.name}=${fromCast}`;
                 })
                 .join(',');
-            console.log('getStructToJSON', render);
+            //console.log('getStructToJSON', render);
             return new PyFragment([render]);
         }
         return new PyFragment(['']);

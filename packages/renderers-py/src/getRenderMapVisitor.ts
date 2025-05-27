@@ -278,7 +278,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         if (nodeType.kind == 'enumTypeNode') {
                             const variants = nodeType.variants;
                             imports.add('anchorpy.borsh_extension', 'EnumForCodegen');
-                            console.log('variant:', variants[1]);
+                            //console.log('variant:', variants[1]);
                             const helper = new EnumHelper(variants, scope);
                             const herlperImports = helper.genAllImports();
                             imports.mergeWith(herlperImports);

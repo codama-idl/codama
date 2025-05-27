@@ -1,8 +1,10 @@
 import { dirname as pathDirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { camelCase, kebabCase, pascalCase, snakeCase, titleCase } from '@codama/nodes';
+import { camelCase, kebabCase, pascalCase, PdaSeedNode, snakeCase, titleCase } from '@codama/nodes';
 import nunjucks, { ConfigureOptions as NunJucksOptions } from 'nunjucks';
+
+import { getSeed, getSeedType } from '../seeds';
 
 export function jsDocblock(docs: string[]): string {
     if (docs.length <= 0) return '';
@@ -34,10 +36,17 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('dump', function (obj) {
         return JSON.stringify(obj, null, 2);
     });
-    env.addGlobal('filterByField', function (array: any, fieldName: string) {
+    env.addGlobal('filterByField', function (array: PdaSeedNode[], fieldName: string): PdaSeedNode[] {
         if (!Array.isArray(array)) return [];
         return array.filter(item => item && typeof item === 'object' && fieldName in item);
     });
+    env.addGlobal('getSeed', function (seed: PdaSeedNode): string {
+        return getSeed(seed);
+    });
+    env.addGlobal('getSeedType', function (seed: PdaSeedNode): string {
+        return getSeedType(seed);
+    });
+
     return env.render(template, context);
 };
 

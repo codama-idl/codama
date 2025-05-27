@@ -55,29 +55,13 @@ def {{instructionName | pascalCase}}(
 
 {% for pdaIt in pdas %}
 {%if pdaIt.defaultValue.kind == 'pdaValueNode' %}
-def find_{{ pdaIt.name |pascalCase }}({% for param in filterByField(pdaIt.defaultValue.pda.seeds,"name") %}{{ param.name }}: {{ param.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> Tuple[Pubkey, int]:
-    """
-    Find the address of the {{ pda.name }} PDA.
-
-    Args:
-    {% for param in pdaIt.defaultValue.pda.seeds %}
-        {{ param.name }} ({{ param.type|dump }}): The {{ param.name | replace('_', ' ') }} seed.
-    {% endfor %}
-
-    Returns:
-        Tuple[Pubkey, int]: The PDA address and bump seed.
-    PROGRAM_ID  {{pdaIt.defaultValue.pda.programId}}
-    """
+def find_{{ pdaIt.name |pascalCase }}({% for param in filterByField(pdaIt.defaultValue.pda.seeds,"name") %}{{ param.name }}: {{ getSeedType(param) }}{% if not loop.last %}, {% endif %}{% endfor %}) -> typing.Tuple[Pubkey, int]:
     seeds = [
-    {% for seed in pdaIt.defaultValue.pda.seeds %}
-    {% if seed.type.kind =="publicKeyTypeNode" %}
-        bytes({{seed.name }}) {% endif %}     {% if not loop.last %},{% endif %}
-
-    {% endfor %}
+{% for seed in pdaIt.defaultValue.pda.seeds %}
+       {{getSeed(seed)}},
+{% endfor %}
     ]
 
-    # Replace with the correct find_program_address call based on your library setup
-    # e.g., address, bump = find_program_address(seeds, PROGRAM_ID)
     address, bump = Pubkey.find_program_address(seeds,
     {% if pdaIt.defaultValue.pda.programId != null%}
         program_id=Pubkey.from_string('{{pdaIt.defaultValue.pda.programId}}')
