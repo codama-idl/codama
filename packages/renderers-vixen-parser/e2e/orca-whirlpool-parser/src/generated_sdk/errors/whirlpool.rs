@@ -192,13 +192,13 @@ pub enum WhirlpoolError {
     OperationNotAllowedOnLockedPosition = 0x17AB,
 }
 
-impl solana_program::program_error::PrintProgramError for WhirlpoolError {
+impl solana_program_error::PrintProgramError for WhirlpoolError {
     fn print<E>(&self) {
-        solana_program::msg!(&self.to_string());
+        solana_msg::msg!(&self.to_string());
     }
 }
 
-impl<T> solana_program::decode_error::DecodeError<T> for WhirlpoolError {
+impl<T> solana_decode_error::DecodeError<T> for WhirlpoolError {
     fn type_of() -> &'static str {
         "WhirlpoolError"
     }

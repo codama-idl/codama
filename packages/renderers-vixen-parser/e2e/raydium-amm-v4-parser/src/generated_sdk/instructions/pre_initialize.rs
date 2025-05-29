@@ -11,40 +11,40 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct PreInitialize {
-    pub token_program: solana_program::pubkey::Pubkey,
+    pub token_program: solana_pubkey::Pubkey,
 
-    pub system_program: solana_program::pubkey::Pubkey,
+    pub system_program: solana_pubkey::Pubkey,
 
-    pub rent: solana_program::pubkey::Pubkey,
+    pub rent: solana_pubkey::Pubkey,
 
-    pub amm_target_orders: solana_program::pubkey::Pubkey,
+    pub amm_target_orders: solana_pubkey::Pubkey,
 
-    pub pool_withdraw_queue: solana_program::pubkey::Pubkey,
+    pub pool_withdraw_queue: solana_pubkey::Pubkey,
 
-    pub amm_authority: solana_program::pubkey::Pubkey,
+    pub amm_authority: solana_pubkey::Pubkey,
 
-    pub lp_mint_address: solana_program::pubkey::Pubkey,
+    pub lp_mint_address: solana_pubkey::Pubkey,
 
-    pub coin_mint_address: solana_program::pubkey::Pubkey,
+    pub coin_mint_address: solana_pubkey::Pubkey,
 
-    pub pc_mint_address: solana_program::pubkey::Pubkey,
+    pub pc_mint_address: solana_pubkey::Pubkey,
 
-    pub pool_coin_token_account: solana_program::pubkey::Pubkey,
+    pub pool_coin_token_account: solana_pubkey::Pubkey,
 
-    pub pool_pc_token_account: solana_program::pubkey::Pubkey,
+    pub pool_pc_token_account: solana_pubkey::Pubkey,
 
-    pub pool_temp_lp_token_account: solana_program::pubkey::Pubkey,
+    pub pool_temp_lp_token_account: solana_pubkey::Pubkey,
 
-    pub serum_market: solana_program::pubkey::Pubkey,
+    pub serum_market: solana_pubkey::Pubkey,
 
-    pub user_wallet: solana_program::pubkey::Pubkey,
+    pub user_wallet: solana_pubkey::Pubkey,
 }
 
 impl PreInitialize {
     pub fn instruction(
         &self,
         args: PreInitializeInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
+    ) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -52,70 +52,67 @@ impl PreInitialize {
     pub fn instruction_with_remaining_accounts(
         &self,
         args: PreInitializeInstructionArgs,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(14 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.system_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.rent, false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.amm_target_orders,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.pool_withdraw_queue,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.amm_authority,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.lp_mint_address,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.coin_mint_address,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.pc_mint_address,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.pool_coin_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.pool_pc_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.pool_temp_lp_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.serum_market,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.user_wallet,
-            true,
-        ));
+        accounts.push(solana_instruction::AccountMeta::new(self.user_wallet, true));
         accounts.extend_from_slice(remaining_accounts);
         let mut data = borsh::to_vec(&PreInitializeInstructionData::new()).unwrap();
         let mut args = borsh::to_vec(&args).unwrap();
         data.append(&mut args);
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::RAYDIUM_AMM_ID,
             accounts,
             data,
@@ -169,22 +166,22 @@ pub struct PreInitializeInstructionArgs {
 ///   13. `[writable, signer]` user_wallet
 #[derive(Clone, Debug, Default)]
 pub struct PreInitializeBuilder {
-    token_program: Option<solana_program::pubkey::Pubkey>,
-    system_program: Option<solana_program::pubkey::Pubkey>,
-    rent: Option<solana_program::pubkey::Pubkey>,
-    amm_target_orders: Option<solana_program::pubkey::Pubkey>,
-    pool_withdraw_queue: Option<solana_program::pubkey::Pubkey>,
-    amm_authority: Option<solana_program::pubkey::Pubkey>,
-    lp_mint_address: Option<solana_program::pubkey::Pubkey>,
-    coin_mint_address: Option<solana_program::pubkey::Pubkey>,
-    pc_mint_address: Option<solana_program::pubkey::Pubkey>,
-    pool_coin_token_account: Option<solana_program::pubkey::Pubkey>,
-    pool_pc_token_account: Option<solana_program::pubkey::Pubkey>,
-    pool_temp_lp_token_account: Option<solana_program::pubkey::Pubkey>,
-    serum_market: Option<solana_program::pubkey::Pubkey>,
-    user_wallet: Option<solana_program::pubkey::Pubkey>,
+    token_program: Option<solana_pubkey::Pubkey>,
+    system_program: Option<solana_pubkey::Pubkey>,
+    rent: Option<solana_pubkey::Pubkey>,
+    amm_target_orders: Option<solana_pubkey::Pubkey>,
+    pool_withdraw_queue: Option<solana_pubkey::Pubkey>,
+    amm_authority: Option<solana_pubkey::Pubkey>,
+    lp_mint_address: Option<solana_pubkey::Pubkey>,
+    coin_mint_address: Option<solana_pubkey::Pubkey>,
+    pc_mint_address: Option<solana_pubkey::Pubkey>,
+    pool_coin_token_account: Option<solana_pubkey::Pubkey>,
+    pool_pc_token_account: Option<solana_pubkey::Pubkey>,
+    pool_temp_lp_token_account: Option<solana_pubkey::Pubkey>,
+    serum_market: Option<solana_pubkey::Pubkey>,
+    user_wallet: Option<solana_pubkey::Pubkey>,
     nonce: Option<u8>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl PreInitializeBuilder {
@@ -193,71 +190,56 @@ impl PreInitializeBuilder {
     }
     /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
     #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_program(&mut self, token_program: solana_pubkey::Pubkey) -> &mut Self {
         self.token_program = Some(token_program);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
     #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn system_program(&mut self, system_program: solana_pubkey::Pubkey) -> &mut Self {
         self.system_program = Some(system_program);
         self
     }
     /// `[optional account, default to 'SysvarRent111111111111111111111111111111111']`
     #[inline(always)]
-    pub fn rent(&mut self, rent: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn rent(&mut self, rent: solana_pubkey::Pubkey) -> &mut Self {
         self.rent = Some(rent);
         self
     }
     #[inline(always)]
-    pub fn amm_target_orders(
-        &mut self,
-        amm_target_orders: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn amm_target_orders(&mut self, amm_target_orders: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_target_orders = Some(amm_target_orders);
         self
     }
     #[inline(always)]
-    pub fn pool_withdraw_queue(
-        &mut self,
-        pool_withdraw_queue: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn pool_withdraw_queue(&mut self, pool_withdraw_queue: solana_pubkey::Pubkey) -> &mut Self {
         self.pool_withdraw_queue = Some(pool_withdraw_queue);
         self
     }
     #[inline(always)]
-    pub fn amm_authority(&mut self, amm_authority: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn amm_authority(&mut self, amm_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_authority = Some(amm_authority);
         self
     }
     #[inline(always)]
-    pub fn lp_mint_address(
-        &mut self,
-        lp_mint_address: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn lp_mint_address(&mut self, lp_mint_address: solana_pubkey::Pubkey) -> &mut Self {
         self.lp_mint_address = Some(lp_mint_address);
         self
     }
     #[inline(always)]
-    pub fn coin_mint_address(
-        &mut self,
-        coin_mint_address: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn coin_mint_address(&mut self, coin_mint_address: solana_pubkey::Pubkey) -> &mut Self {
         self.coin_mint_address = Some(coin_mint_address);
         self
     }
     #[inline(always)]
-    pub fn pc_mint_address(
-        &mut self,
-        pc_mint_address: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn pc_mint_address(&mut self, pc_mint_address: solana_pubkey::Pubkey) -> &mut Self {
         self.pc_mint_address = Some(pc_mint_address);
         self
     }
     #[inline(always)]
     pub fn pool_coin_token_account(
         &mut self,
-        pool_coin_token_account: solana_program::pubkey::Pubkey,
+        pool_coin_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.pool_coin_token_account = Some(pool_coin_token_account);
         self
@@ -265,7 +247,7 @@ impl PreInitializeBuilder {
     #[inline(always)]
     pub fn pool_pc_token_account(
         &mut self,
-        pool_pc_token_account: solana_program::pubkey::Pubkey,
+        pool_pc_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.pool_pc_token_account = Some(pool_pc_token_account);
         self
@@ -273,18 +255,18 @@ impl PreInitializeBuilder {
     #[inline(always)]
     pub fn pool_temp_lp_token_account(
         &mut self,
-        pool_temp_lp_token_account: solana_program::pubkey::Pubkey,
+        pool_temp_lp_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.pool_temp_lp_token_account = Some(pool_temp_lp_token_account);
         self
     }
     #[inline(always)]
-    pub fn serum_market(&mut self, serum_market: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_market(&mut self, serum_market: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_market = Some(serum_market);
         self
     }
     #[inline(always)]
-    pub fn user_wallet(&mut self, user_wallet: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn user_wallet(&mut self, user_wallet: solana_pubkey::Pubkey) -> &mut Self {
         self.user_wallet = Some(user_wallet);
         self
     }
@@ -295,10 +277,7 @@ impl PreInitializeBuilder {
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -306,47 +285,50 @@ impl PreInitializeBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = PreInitialize {
-            token_program: self.token_program.unwrap_or(solana_program::pubkey!(
-                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-            )),
-            system_program: self
-                .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
-            rent: self.rent.unwrap_or(solana_program::pubkey!(
-                "SysvarRent111111111111111111111111111111111"
-            )),
-            amm_target_orders: self
-                .amm_target_orders
-                .expect("amm_target_orders is not set"),
-            pool_withdraw_queue: self
-                .pool_withdraw_queue
-                .expect("pool_withdraw_queue is not set"),
-            amm_authority: self.amm_authority.expect("amm_authority is not set"),
-            lp_mint_address: self.lp_mint_address.expect("lp_mint_address is not set"),
-            coin_mint_address: self
-                .coin_mint_address
-                .expect("coin_mint_address is not set"),
-            pc_mint_address: self.pc_mint_address.expect("pc_mint_address is not set"),
-            pool_coin_token_account: self
-                .pool_coin_token_account
-                .expect("pool_coin_token_account is not set"),
-            pool_pc_token_account: self
-                .pool_pc_token_account
-                .expect("pool_pc_token_account is not set"),
-            pool_temp_lp_token_account: self
-                .pool_temp_lp_token_account
-                .expect("pool_temp_lp_token_account is not set"),
-            serum_market: self.serum_market.expect("serum_market is not set"),
-            user_wallet: self.user_wallet.expect("user_wallet is not set"),
-        };
+    pub fn instruction(&self) -> solana_instruction::Instruction {
+        let accounts =
+            PreInitialize {
+                token_program: self
+                    .token_program
+                    .unwrap_or(solana_pubkey::Pubkey::from_str_const(
+                        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                    )),
+                system_program: self.system_program.unwrap_or(
+                    solana_pubkey::Pubkey::from_str_const("11111111111111111111111111111111"),
+                ),
+                rent: self.rent.unwrap_or(solana_pubkey::Pubkey::from_str_const(
+                    "SysvarRent111111111111111111111111111111111",
+                )),
+                amm_target_orders: self
+                    .amm_target_orders
+                    .expect("amm_target_orders is not set"),
+                pool_withdraw_queue: self
+                    .pool_withdraw_queue
+                    .expect("pool_withdraw_queue is not set"),
+                amm_authority: self.amm_authority.expect("amm_authority is not set"),
+                lp_mint_address: self.lp_mint_address.expect("lp_mint_address is not set"),
+                coin_mint_address: self
+                    .coin_mint_address
+                    .expect("coin_mint_address is not set"),
+                pc_mint_address: self.pc_mint_address.expect("pc_mint_address is not set"),
+                pool_coin_token_account: self
+                    .pool_coin_token_account
+                    .expect("pool_coin_token_account is not set"),
+                pool_pc_token_account: self
+                    .pool_pc_token_account
+                    .expect("pool_pc_token_account is not set"),
+                pool_temp_lp_token_account: self
+                    .pool_temp_lp_token_account
+                    .expect("pool_temp_lp_token_account is not set"),
+                serum_market: self.serum_market.expect("serum_market is not set"),
+                user_wallet: self.user_wallet.expect("user_wallet is not set"),
+            };
         let args = PreInitializeInstructionArgs {
             nonce: self.nonce.clone().expect("nonce is not set"),
         };
@@ -357,74 +339,74 @@ impl PreInitializeBuilder {
 
 /// `pre_initialize` CPI accounts.
 pub struct PreInitializeCpiAccounts<'a, 'b> {
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub rent: &'b solana_program::account_info::AccountInfo<'a>,
+    pub rent: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_withdraw_queue: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_withdraw_queue: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub lp_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub lp_mint_address: &'b solana_account_info::AccountInfo<'a>,
 
-    pub coin_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub coin_mint_address: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pc_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pc_mint_address: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_coin_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_pc_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_pc_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_temp_lp_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_temp_lp_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub user_wallet: &'b solana_program::account_info::AccountInfo<'a>,
+    pub user_wallet: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `pre_initialize` CPI instruction.
 pub struct PreInitializeCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub rent: &'b solana_program::account_info::AccountInfo<'a>,
+    pub rent: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_withdraw_queue: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_withdraw_queue: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub lp_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub lp_mint_address: &'b solana_account_info::AccountInfo<'a>,
 
-    pub coin_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub coin_mint_address: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pc_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pc_mint_address: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_coin_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_pc_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_pc_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_temp_lp_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_temp_lp_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub user_wallet: &'b solana_program::account_info::AccountInfo<'a>,
+    pub user_wallet: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: PreInitializeInstructionArgs,
 }
 
 impl<'a, 'b> PreInitializeCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: PreInitializeCpiAccounts<'a, 'b>,
         args: PreInitializeInstructionArgs,
     ) -> Self {
@@ -448,25 +430,21 @@ impl<'a, 'b> PreInitializeCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -475,71 +453,67 @@ impl<'a, 'b> PreInitializeCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(14 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.system_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.rent.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.amm_target_orders.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_withdraw_queue.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.amm_authority.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.lp_mint_address.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.coin_mint_address.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.pc_mint_address.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_coin_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_pc_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_temp_lp_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.serum_market.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.user_wallet.key,
             true,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -549,7 +523,7 @@ impl<'a, 'b> PreInitializeCpi<'a, 'b> {
         let mut args = borsh::to_vec(&self.__args).unwrap();
         data.append(&mut args);
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::RAYDIUM_AMM_ID,
             accounts,
             data,
@@ -575,9 +549,9 @@ impl<'a, 'b> PreInitializeCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -606,7 +580,7 @@ pub struct PreInitializeCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(PreInitializeCpiBuilderInstruction {
             __program: program,
             token_program: None,
@@ -631,7 +605,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_program(
         &mut self,
-        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+        token_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_program = Some(token_program);
         self
@@ -639,20 +613,20 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn system_program(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        system_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
         self
     }
     #[inline(always)]
-    pub fn rent(&mut self, rent: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn rent(&mut self, rent: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.rent = Some(rent);
         self
     }
     #[inline(always)]
     pub fn amm_target_orders(
         &mut self,
-        amm_target_orders: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_target_orders = Some(amm_target_orders);
         self
@@ -660,7 +634,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn pool_withdraw_queue(
         &mut self,
-        pool_withdraw_queue: &'b solana_program::account_info::AccountInfo<'a>,
+        pool_withdraw_queue: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.pool_withdraw_queue = Some(pool_withdraw_queue);
         self
@@ -668,7 +642,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_authority(
         &mut self,
-        amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_authority = Some(amm_authority);
         self
@@ -676,7 +650,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn lp_mint_address(
         &mut self,
-        lp_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+        lp_mint_address: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.lp_mint_address = Some(lp_mint_address);
         self
@@ -684,7 +658,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn coin_mint_address(
         &mut self,
-        coin_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+        coin_mint_address: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.coin_mint_address = Some(coin_mint_address);
         self
@@ -692,7 +666,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn pc_mint_address(
         &mut self,
-        pc_mint_address: &'b solana_program::account_info::AccountInfo<'a>,
+        pc_mint_address: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.pc_mint_address = Some(pc_mint_address);
         self
@@ -700,7 +674,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn pool_coin_token_account(
         &mut self,
-        pool_coin_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.pool_coin_token_account = Some(pool_coin_token_account);
         self
@@ -708,7 +682,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn pool_pc_token_account(
         &mut self,
-        pool_pc_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        pool_pc_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.pool_pc_token_account = Some(pool_pc_token_account);
         self
@@ -716,7 +690,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn pool_temp_lp_token_account(
         &mut self,
-        pool_temp_lp_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        pool_temp_lp_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.pool_temp_lp_token_account = Some(pool_temp_lp_token_account);
         self
@@ -724,7 +698,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_market(
         &mut self,
-        serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_market: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_market = Some(serum_market);
         self
@@ -732,7 +706,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn user_wallet(
         &mut self,
-        user_wallet: &'b solana_program::account_info::AccountInfo<'a>,
+        user_wallet: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.user_wallet = Some(user_wallet);
         self
@@ -746,7 +720,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -762,11 +736,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -774,7 +744,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -782,7 +752,7 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let args = PreInitializeInstructionArgs {
             nonce: self.instruction.nonce.clone().expect("nonce is not set"),
         };
@@ -866,26 +836,22 @@ impl<'a, 'b> PreInitializeCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct PreInitializeCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    rent: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_target_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    pool_withdraw_queue: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    lp_mint_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    coin_mint_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    pc_mint_address: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    pool_coin_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    pool_pc_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    pool_temp_lp_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    user_wallet: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    token_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    rent: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
+    pool_withdraw_queue: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    lp_mint_address: Option<&'b solana_account_info::AccountInfo<'a>>,
+    coin_mint_address: Option<&'b solana_account_info::AccountInfo<'a>>,
+    pc_mint_address: Option<&'b solana_account_info::AccountInfo<'a>>,
+    pool_coin_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    pool_pc_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    pool_temp_lp_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_market: Option<&'b solana_account_info::AccountInfo<'a>>,
+    user_wallet: Option<&'b solana_account_info::AccountInfo<'a>>,
     nonce: Option<u8>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }
