@@ -291,7 +291,7 @@ export function getTypeManifestVisitor(input: {
                     imports.add('anchorpy.borsh_extension', 'BorshPubkey');
                     return {
                         borshType: fragment('BorshPubkey', imports),
-                        fromDecode: fragment('Pubkey.from_string({{name}})'),
+                        fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('Pubkey.from_string({{name}})'),
                         isEnum: false,
                         pyJSONType: fragment('str'),

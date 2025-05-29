@@ -6,6 +6,7 @@ import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
 import { renderString } from '../utils/render';
 import { PyFragment } from './common';
+import {notPyKeyCase} from '../utils'
 
 export function getFieldsJSON(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
@@ -27,7 +28,7 @@ export function getFieldsJSON(
         } else {
             //console.log('field.name', field.name, field.type);
         }
-        fragments.push(`${field.name}: ${fieldtype.pyJSONType.render}`);
+        fragments.push(`${notPyKeyCase(field.name)}: ${fieldtype.pyJSONType.render}`);
     });
     return new PyFragment(fragments, imports);
 }
@@ -44,7 +45,7 @@ export function getFieldsPy(
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
-        fragments.push(`${field.name}: ${fieldtype.pyType.render}`);
+        fragments.push(`${notPyKeyCase(field.name)}: ${fieldtype.pyType.render}`);
     });
     return new PyFragment(fragments);
 }
@@ -78,8 +79,8 @@ export function getFieldsToJSON(
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
         imports.mergeWith(fieldtype.toJSON.imports);
-        const toCast = renderString(fieldtype.toJSON.render, { name: 'self.' + field.name });
-        fragments.push(`"${field.name}": ${toCast}`);
+        const toCast = renderString(fieldtype.toJSON.render, { name: 'self.' + notPyKeyCase(field.name) });
+        fragments.push(`"${notPyKeyCase(field.name)}": ${toCast}`);
     });
     return new PyFragment(fragments, imports);
 }
@@ -100,7 +101,7 @@ export function getFieldsToJSONEncodable(
             const toCast = renderString('{{name}}.to_encodable()', { name: 'self.' + field.name });
             fragments.push(`"${field.name}": ${toCast}`);
         } else {
-            fragments.push(`"${field.name}": self.${field.name}`);
+            fragments.push(`"${field.name}": self.${notPyKeyCase(field.name)}`);
         }
         //const fieldtype = visit(field.type, typeManifestVisitor);
         //imports.mergeWith(fieldtype.toJSON.imports);
@@ -154,8 +155,8 @@ export function getFieldsFromJSON(
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
         imports.mergeWith(fieldtype.fromJSON);
-        const fromCast = renderString(fieldtype.fromJSON.render, { name: 'obj["' + field.name + '"]' });
-        fragments.push(`${field.name}=${fromCast}`);
+        const fromCast = renderString(fieldtype.fromJSON.render, { name: 'obj["' + notPyKeyCase(field.name) + '"]' });
+        fragments.push(`${notPyKeyCase(field.name)}=${fromCast}`);
     });
     return new PyFragment(fragments, imports);
 }
@@ -172,9 +173,9 @@ export function getFieldsFromDecode(
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
-        imports.mergeWith(fieldtype.fromJSON);
+        imports.mergeWith(fieldtype.fromDecode);
         const fromCast = renderString(fieldtype.fromDecode.render, { name: 'obj["' + field.name + '"]' });
-        fragments.push(`${field.name}=${fromCast}`);
+        fragments.push(`${notPyKeyCase(field.name)}=${fromCast}`);
     });
     return new PyFragment(fragments, imports);
 }
