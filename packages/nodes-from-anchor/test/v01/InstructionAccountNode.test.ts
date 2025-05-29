@@ -21,13 +21,18 @@ import { expect, test } from 'vitest';
 import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV01 } from '../../src';
 
 test('it creates instruction account nodes', () => {
-    const node = instructionAccountNodeFromAnchorV01([], [], {
-        docs: ['my docs'],
-        name: 'MyInstructionAccount',
-        optional: true,
-        signer: false,
-        writable: true,
-    });
+    const node = instructionAccountNodeFromAnchorV01(
+        [],
+        [],
+        {
+            docs: ['my docs'],
+            name: 'MyInstructionAccount',
+            optional: true,
+            signer: false,
+            writable: true,
+        },
+        [],
+    );
 
     expect(node).toEqual(
         instructionAccountNode({
