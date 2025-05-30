@@ -262,7 +262,7 @@ export function getTypeManifestVisitor(input: {
                     };
                 },
                 visitFixedSizeType(node) {
-                    console.log('visitFixedSizeType:', node);
+                    //console.log('visitFixedSizeType:', node);
                     return {
                         borshType: fragment(`borsh.U8[${node.size}]`),
                         fromDecode: fragment('{{name}}'),
@@ -344,15 +344,16 @@ export function getTypeManifestVisitor(input: {
                 },
                 visitPublicKeyType() {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
                     imports.add('anchorpy.borsh_extension', 'BorshPubkey');
                     return {
                         borshType: fragment('BorshPubkey', imports),
                         fromDecode: fragment('{{name}}'),
-                        fromJSON: fragment('Pubkey.from_string({{name}})'),
+                        fromJSON: fragment('SolPubkey.from_string({{name}})'),
                         isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('str'),
-                        pyType: fragment('Pubkey', imports),
+                        pyType: fragment('SolPubkey', imports),
                         toEncode: fragment('{{name}}'),
                         toJSON: fragment('str({{name}})'),
                         value: fragment(''),
@@ -398,13 +399,55 @@ export function getTypeManifestVisitor(input: {
                 visitTupleType(tupleType, { self }) {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
                     //borsh.CStruct("item_0" / borsh.Bool, "item_1" / borsh.U8),
-                    const items = tupleType.items.map(item => visit(item, self));
+                    const items = tupleType.items.map(item => {
+                        const itemType = visit(item, self);
+                        imports.mergeWith(itemType.fromDecode);
+                        return itemType;
+                    });
                     const borshTypestr = items.map((it, index) => `"item_${index}" / ${it.borshType.render}`).join(',');
                     const pyJSONType = items.map(it => `${it.pyJSONType.render}`).join(',');
                     const pyType = items.map(it => `${it.pyType.render}`).join(',');
-                    const toJSON = items.map((_it, index) => `self.value[${index}]`).join(',');
-                    const fromJSON = items.map((_it, index) => `{{name}}[${index}]`).join(',');
-                    const fromDecode = items.map((_it, index) => `{{name}}["item_${index}"]`).join(',');
+                    const toJSON = items
+                        .map((_it, index) => {
+                            const innerDecodeItemStr = renderString(items[index].toJSON.render, {
+                                name: `self.value[${index}]`,
+                            });
+                            return innerDecodeItemStr;
+                            //return `self.value[${index}]`;
+                        })
+                        .join(',');
+                    const fromJSON = items
+                        .map((_it, index) => {
+                            const innerStr = renderString(items[index].fromJSON.render, {
+                                name: `{{name}}[${index}]`,
+                            });
+                            return innerStr;
+                        })
+                        .join(',');
+                    const fromDecode = items
+                        .map((_it, index) => {
+                            const innerDecodeItemStr = renderString(items[index].fromDecode.render, {
+                                name: `{{name}}["item_${index}"]`,
+                            });
+                            return innerDecodeItemStr;
+                            //return `{{name}}["item_${index}"]`).join(',');
+                        })
+                        .join(',');
+                    const toEncode = items
+                        .map((_it, index) => {
+                            let innerStr = '';
+                            if (items[index].isEncodable) {
+                                innerStr = renderString(items[index].toEncode.render, {
+                                    name: `self.value[${index}].to_encodable()`,
+                                });
+                            } else {
+                                innerStr = renderString(items[index].toEncode.render, {
+                                    name: `self.value[${index}]`,
+                                });
+                            }
+                            return `"item_${index}":` + innerStr;
+                        })
+                        .join(',');
                     return {
                         borshType: fragment(borshTypestr, imports),
                         fromDecode: fragment(fromDecode),
@@ -413,7 +456,7 @@ export function getTypeManifestVisitor(input: {
                         isEnum: false,
                         pyJSONType: fragment(pyJSONType),
                         pyType: fragment(pyType, imports),
-                        toEncode: fragment('{{name}}'),
+                        toEncode: fragment(toEncode),
                         toJSON: fragment(toJSON),
                         value: fragment(''),
                     };

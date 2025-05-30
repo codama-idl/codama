@@ -36,6 +36,11 @@ export class EnumHelper {
         const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
         return new PyFragment([tupleType.toJSON.render], tupleType.toJSON.imports);
     }
+    getTupleToEncodable(node: EnumVariantTypeNode): PyFragment {
+        const { typeManifestVisitor } = this.scope;
+        const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
+        return new PyFragment([tupleType.toEncode.render]);
+    }
     getTupleFromJSON(node: EnumVariantTypeNode): PyFragment {
         const { typeManifestVisitor } = this.scope;
         //node.kind ==
@@ -82,6 +87,30 @@ export class EnumHelper {
                     const itemType = visit(it.type, typeManifestVisitor);
                     const fromCast = renderString(itemType.toJSON.render, { name: `self.value["${it.name}"]` });
                     return `"${it.name}":${fromCast}`;
+                })
+                .join(',');
+            //console.log('getStructToJSON', render);
+            return new PyFragment([render]);
+        }
+        return new PyFragment(['']);
+    }
+    getStructToEncodable(node: EnumStructVariantTypeNode): PyFragment {
+        const { typeManifestVisitor } = this.scope;
+        if (node.struct.kind == 'structTypeNode') {
+            const fields = node.struct.fields;
+            const render = fields
+                .map(it => {
+                    const itemType = visit(it.type, typeManifestVisitor);
+                    let innerStr = '';
+                    if (itemType.isEncodable) {
+                        innerStr = renderString(itemType.toEncode.render, {
+                            name: `self.value["${it.name}"].to_encodable()`,
+                        });
+                    } else {
+                        innerStr = renderString(itemType.toEncode.render, { name: `self.value["${it.name}"]` });
+                    }
+
+                    return `"${it.name}":${innerStr}`;
                 })
                 .join(',');
             //console.log('getStructToJSON', render);

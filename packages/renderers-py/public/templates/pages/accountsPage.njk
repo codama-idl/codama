@@ -29,9 +29,9 @@ class {{ accountName | pascalCase}}:
     async def fetch(
         cls,
         conn: AsyncClient,
-        address: Pubkey,
+        address: SolPubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: Pubkey = PROGRAM_ID,
+        program_id: SolPubkey = PROGRAM_ID,
     ) -> typing.Optional["{{accountName | pascalCase}}"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
@@ -46,9 +46,9 @@ class {{ accountName | pascalCase}}:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[Pubkey],
+        addresses: list[SolPubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: Pubkey = PROGRAM_ID,
+        program_id: SolPubkey = PROGRAM_ID,
     ) -> typing.List[typing.Optional["{{accountName | pascalCase}}"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["{{accountName | pascalCase}}"]] = []

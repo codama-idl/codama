@@ -207,6 +207,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
                     genType.name = 'types';
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
                     imports.add('solders.sysvar', 'RENT');
                     imports.add('construct', 'Container');
                     imports.addAlias('', 'borsh_construct', 'borsh');
@@ -321,6 +322,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields,
                     });
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
                     imports.add('solders.instruction', ['Instruction', 'AccountMeta']);
                     //imports.add("anchorpy.borsh_extension", "BorshPubkey");
                     imports.add('', 'typing');

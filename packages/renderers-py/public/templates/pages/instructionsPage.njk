@@ -20,7 +20,7 @@ layout = borsh.CStruct(
 
 class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
 {% for acc in accounts %}
-    {{acc.name | notKeywordCase}}:Pubkey
+    {{acc.name | notKeywordCase}}:SolPubkey
 {% endfor %}
 
 def {{instructionName | pascalCase}}(
@@ -28,7 +28,7 @@ def {{instructionName | pascalCase}}(
     args: {{instructionName | pascalCase}}Args,
 {% endif %}
     accounts: {{instructionName | pascalCase}}Accounts,
-    program_id: Pubkey = PROGRAM_ID,
+    program_id: SolPubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) ->Instruction:
     keys: list[AccountMeta] = [
