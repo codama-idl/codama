@@ -43,7 +43,7 @@ def {{instructionName | pascalCase}}(
 {% if argsToLayout.renders.length > 0 %}
     encoded_args = layout.build({
 {% for arg in argsToLayout.renders %}
-    {{arg}},
+        {{arg}},
 {% endfor %}
        })
 {% else %}

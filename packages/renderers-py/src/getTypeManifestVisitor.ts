@@ -91,22 +91,58 @@ export function getTypeManifestVisitor(input: {
                     let count = 0;
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
+                        imports.mergeWith(inner.borshType);
+                        const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                        const toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                        const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                        const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                        let toEncodeStr = '';
+                        if (inner.isEncodable) {
+                            toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
+                        } else {
+                            toEncodeStr = '{{name}}';
+                        }
+                        return {
+                            borshType: fragment(`${itemlayout.borshType.render}[${count}]`, imports),
+                            fromDecode: fragment(fromJSONStr, imports),
+                            fromJSON: fragment(fromJSONStr, imports),
+                            isEncodable: false,
+                            isEnum: false,
+                            pyJSONType: fragment(`list[${inner.pyJSONType.render}]`, imports),
+                            pyType: fragment(`list[${inner.pyType.render}]`, imports),
+                            toEncode: fragment(toEncodeStr, imports),
+                            toJSON: fragment(toJSONStr, imports),
+                            value: fragment(''),
+                        };
+                    } else {
+                        imports.mergeWith(inner.borshType);
+                        imports.add('construct', 'Construct');
+                        const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                        const toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                        const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                        const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                        let toEncodeStr = '';
+                        if (inner.isEncodable) {
+                            toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
+                        } else {
+                            toEncodeStr = '{{name}}';
+                        }
+                        return {
+                            borshType: fragment(
+                                `borsh.Vec(typing.cast(Construct, ${itemlayout.borshType.render}))`,
+                                imports,
+                            ),
+                            fromDecode: fragment(fromJSONStr, imports),
+                            fromJSON: fragment(fromJSONStr, imports),
+                            isEncodable: false,
+                            isEnum: false,
+                            pyJSONType: fragment(`list[${inner.pyJSONType.render}]`, imports),
+                            pyType: fragment(`list[${inner.pyType.render}]`, imports),
+                            toEncode: fragment(toEncodeStr, imports),
+                            toJSON: fragment(toJSONStr, imports),
+                            value: fragment(''),
+                        };
                     }
-                    imports.mergeWith(inner.borshType);
-                    const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
-                    const toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
-                    const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
-                    const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
-                    return {
-                        borshType: fragment(`${itemlayout.borshType.render}[${count}]`, imports),
-                        fromDecode: fragment(fromJSONStr, imports),
-                        fromJSON: fragment(fromJSONStr, imports),
-                        isEnum: false,
-                        pyJSONType: fragment(`list[${inner.pyJSONType.render}]`, imports),
-                        pyType: fragment(`list[${inner.pyType.render}]`, imports),
-                        toJSON: fragment(toJSONStr, imports),
-                        value: fragment(''),
-                    };
                 },
 
                 visitArrayValue(node, { self }) {
@@ -123,9 +159,11 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment('borsh.Bool'),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('bool'),
                         pyType: fragment('bool'),
+                        toEncode: fragment(`{{name}}`),
                         toJSON: fragment('{{name}}'),
                         value: fragment(''),
                     };
@@ -141,9 +179,11 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment('borsh.Bytes'),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('list[int]'),
                         pyType: fragment('borsh.Bytes'),
+                        toEncode: fragment(`{{name}}`),
                         toJSON: fragment('{{name}}'),
                         value: fragment(''),
                     };
@@ -212,9 +252,11 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment(borshTypeStr, imports),
                         fromDecode: fragment(fromDecodeStr, imports),
                         fromJSON: fragment(fromJSONStr, imports),
+                        isEncodable: true,
                         isEnum: isEnum,
                         pyJSONType: fragment(pyJSONTypeStr, imports),
                         pyType: fragment(pyTypeStr, imports),
+                        toEncode: fragment('{{name}}', imports),
                         toJSON: fragment('{{name}}.to_json()', imports),
                         value: fragment(''),
                     };
@@ -224,10 +266,12 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment(`borsh.U8[${node.size}]`),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('list[int]'),
                         pyType: fragment('list[int]'),
-                        toJSON: fragment('{{name}}'),
+                        toEncode: fragment('{{name}}'),
+                        toJSON: fragment('{{name}}.to_json()'),
                         value: fragment(''),
                     };
                 },
@@ -254,10 +298,11 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment(NumberToBorshType(numberType.format)),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('int'),
-
                         pyType: fragment('int'),
+                        toEncode: fragment('{{name}}'),
                         toJSON: fragment('{{name}}'),
                         value: fragment(''),
                     };
@@ -275,13 +320,23 @@ export function getTypeManifestVisitor(input: {
 
                     const fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`;
                     const fromDecodeStr = `(None if {{name}} is None else ${inner.fromDecode.render})`;
+
+                    let toEncodeStr = '';
+                    if (inner.isEncodable) {
+                        toEncodeStr = `(None if {{name}} is None else {{name}}.to_encodable())`;
+                    } else {
+                        toEncodeStr = '{{name}}';
+                    }
+
                     return {
                         borshType: fragment(`borsh.Option(${inner.borshType.render})`, inner.borshType.imports),
                         fromDecode: fragment(fromDecodeStr, inner.fromJSON.imports),
                         fromJSON: fragment(fromJSONStr, inner.fromJSON.imports),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, inner.pyJSONType.imports),
                         pyType: fragment(`typing.Optional[${inner.pyType.render}]`, inner.pyType.imports),
+                        toEncode: fragment(toEncodeStr),
                         toJSON: fragment(toJSONStr, inner.toJSON.imports),
                         value: fragment(''),
                     };
@@ -293,9 +348,11 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment('BorshPubkey', imports),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('Pubkey.from_string({{name}})'),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('str'),
                         pyType: fragment('Pubkey', imports),
+                        toEncode: fragment('{{name}}'),
                         toJSON: fragment('str({{name}})'),
                         value: fragment(''),
                     };
@@ -312,10 +369,11 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment('borsh.String'),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('str'),
                         pyType: fragment('str'),
-
+                        toEncode: fragment('{{name}}'),
                         toJSON: fragment('{{name}}'),
                         value: fragment(''),
                     };
@@ -326,10 +384,13 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment('borsh.String'),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('str'),
                         pyType: fragment('borsh.String'),
+                        toEncode: fragment('{{name}}'),
                         toJSON: fragment('{{name}}'),
+
                         value: fragment(''),
                     };
                 },
@@ -347,9 +408,11 @@ export function getTypeManifestVisitor(input: {
                         borshType: fragment(borshTypestr, imports),
                         fromDecode: fragment(fromDecode),
                         fromJSON: fragment(fromJSON),
+                        isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment(pyJSONType),
                         pyType: fragment(pyType, imports),
+                        toEncode: fragment('{{name}}'),
                         toJSON: fragment(toJSON),
                         value: fragment(''),
                     };

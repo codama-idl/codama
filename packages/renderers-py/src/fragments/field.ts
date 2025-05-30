@@ -4,9 +4,9 @@ import { visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
+import { notPyKeyCase } from '../utils';
 import { renderString } from '../utils/render';
 import { PyFragment } from './common';
-import {notPyKeyCase} from '../utils'
 
 export function getFieldsJSON(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
@@ -185,13 +185,23 @@ export function getArgsToLayout(
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const { fields } = scope;
+    const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
+    const imports = new ImportMap();
     fields.forEach((field, _index) => {
         if (field.name == 'discriminator') {
             return;
         }
-        fragments.push(`"${field.name}":args["${field.name}"]`);
+        const fieldtype = visit(field.type, typeManifestVisitor);
+        imports.mergeWith(fieldtype.fromDecode);
+        let toCast = '';
+        if (fieldtype.isEncodable) {
+            toCast = renderString('{{name}}.to_encodable()', { name: 'args["' + field.name + '"]' });
+        } else {
+            toCast = renderString(fieldtype.toEncode.render, { name: 'args["' + field.name + '"]' });
+        }
+
+        fragments.push(`"${field.name}":${toCast}`);
     });
     return new PyFragment(fragments);
 }
