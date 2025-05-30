@@ -132,10 +132,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...scope,
                         fields,
                     });
-                    //bin const pda = node.pda ? linkables.get([...stack.getPath(), node.pda]) : undefined;
-                    //const pdaSeeds = pda?.seeds ?? [];
-                    //console.log("pdaSeeds",pdaSeeds);
-                    //console.log("discriminatorNodes: node.discriminators:", node.discriminators)
 
                     const accountDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
                         ...scope,

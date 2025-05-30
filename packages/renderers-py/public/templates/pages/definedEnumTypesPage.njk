@@ -42,7 +42,7 @@ class {{variant.name | pascalCase | notKeywordCase }}:
         return {{variant.name | pascalCase}}JSON(
             kind="{{variant.name | pascalCase }}",
 {% if variant.kind=="enumTupleVariantTypeNode" %}
-            value = ({{enumHelper.getTupleToJSON(variant).renders}})
+            value = ({{enumHelper.getTupleToJSON(variant).renders}},)
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
             value = {
             {{enumHelper.getStructToJSON(variant).renders}}
@@ -101,7 +101,7 @@ def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Ki
 {% elseif variant.kind=="enumTupleVariantTypeNode" %}
         {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
         return {{variant.name | pascalCase | notKeywordCase }}(
-        ({{enumHelper.getTupleFromJSON(variant).renders}})
+        ({{enumHelper.getTupleFromJSON(variant).renders}},)
         )
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
         {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
@@ -120,7 +120,7 @@ def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Ki
 layout = EnumForCodegen(
 {% for variant in variants %}
 {% if variant.kind=="enumTupleVariantTypeNode" %}
-"{{variant.name | pascalCase}}" / borsh.CStruct({{enumHelper.getTupleLayout(variant).renders}}),
+"{{variant.name | pascalCase}}" / borsh.CStruct({{enumHelper.getTupleLayout(variant).renders}},),
 {% elseif variant.kind=="enumEmptyVariantTypeNode" %}
 "{{variant.name | pascalCase}}" / borsh.CStruct(),
 {% elseif variant.kind=="enumStructVariantTypeNode" %}

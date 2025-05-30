@@ -23,10 +23,10 @@ export function getFieldsJSON(
         }
         //console.log('field.name', field.name, field.type);
         const fieldtype = visit(field.type, typeManifestVisitor);
-        if (fieldtype.pyJSONType.imports) {
+        if (fieldtype.pyJSONType) {
             imports.mergeWith(fieldtype.pyJSONType.imports);
         } else {
-            //console.log('field.name', field.name, field.type);
+            console.log('field.name', field.name, field.type);
         }
         fragments.push(`${notPyKeyCase(field.name)}: ${fieldtype.pyJSONType.render}`);
     });

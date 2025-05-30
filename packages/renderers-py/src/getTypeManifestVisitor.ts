@@ -262,6 +262,7 @@ export function getTypeManifestVisitor(input: {
                     };
                 },
                 visitFixedSizeType(node) {
+                    console.log('visitFixedSizeType:', node);
                     return {
                         borshType: fragment(`borsh.U8[${node.size}]`),
                         fromDecode: fragment('{{name}}'),
@@ -271,7 +272,7 @@ export function getTypeManifestVisitor(input: {
                         pyJSONType: fragment('list[int]'),
                         pyType: fragment('list[int]'),
                         toEncode: fragment('{{name}}'),
-                        toJSON: fragment('{{name}}.to_json()'),
+                        toJSON: fragment('{{name}}'),
                         value: fragment(''),
                     };
                 },
