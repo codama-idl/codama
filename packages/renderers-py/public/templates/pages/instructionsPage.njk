@@ -35,7 +35,6 @@ def {{instructionName | pascalCase}}(
 {% for acc in accounts %}
     AccountMeta(pubkey=accounts["{{acc.name | notKeywordCase }}"], is_signer={{ 'True' if acc.isSigner else 'False' }}, is_writable={{ 'True' if acc.isWritable else 'False' }}),
 {% endfor %}
-    AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
