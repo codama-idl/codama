@@ -89,8 +89,8 @@ export function getTypeManifestVisitor(input: {
                     const inner = visit(arrayType.item, self);
                     //console.log("visitArrayType:",arrayType,self);
                     let count = 0;
-                    let toJSONStr = "";
-                    let fromJSONStr = "";
+                    let toJSONStr = '';
+                    let fromJSONStr = '';
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
                         imports.mergeWith(inner.borshType);
@@ -102,15 +102,15 @@ export function getTypeManifestVisitor(input: {
                             const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
                             fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                         } else {
-                            if (arrayType.item.kind == "publicKeyTypeNode"){
+                            if (arrayType.item.kind == 'publicKeyTypeNode') {
                                 const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
                                 fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                                 const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
                                 toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
-                            }else {
+                            } else {
                                 toEncodeStr = '{{name}}';
-                                toJSONStr = '{{name}}'
-                                fromJSONStr = '{{name}}'
+                                toJSONStr = '{{name}}';
+                                fromJSONStr = '{{name}}';
                             }
                         }
                         return {
@@ -137,18 +137,17 @@ export function getTypeManifestVisitor(input: {
                             fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                             toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
                         } else {
-                            if (arrayType.item.kind == "publicKeyTypeNode"){
+                            if (arrayType.item.kind == 'publicKeyTypeNode') {
                                 const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
                                 fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                                 const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
                                 toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
-                            }else{
+                            } else {
                                 toEncodeStr = '{{name}}';
                                 toEncodeStr = '{{name}}';
-                                toJSONStr = '{{name}}'
-                                fromJSONStr = '{{name}}'
+                                toJSONStr = '{{name}}';
+                                fromJSONStr = '{{name}}';
                             }
-
                         }
                         return {
                             borshType: fragment(

@@ -2,7 +2,6 @@ import { BytesValueNode, PdaSeedNode } from '@codama/nodes';
 
 import { HexToPyB } from './getTypeManifestVisitor';
 
-
 export function getSeed(seed: PdaSeedNode): string {
     if (seed.kind == 'constantPdaSeedNode') {
         if (seed.type.kind == 'bytesTypeNode') {
