@@ -21,7 +21,7 @@ export function getSeed(seed: PdaSeedNode): string {
 export function getSeedType(seed: PdaSeedNode): string {
     if (seed.kind == 'variablePdaSeedNode') {
         if (seed.type.kind == 'publicKeyTypeNode') {
-            return 'Pubkey';
+            return 'SolPubkey';
         }
         return '';
     }

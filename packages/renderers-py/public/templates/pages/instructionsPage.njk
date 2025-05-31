@@ -55,20 +55,20 @@ def {{instructionName | pascalCase}}(
 
 {% for pdaIt in pdas %}
 {%if pdaIt.defaultValue.kind == 'pdaValueNode' %}
-def find_{{ pdaIt.name |pascalCase }}({% for param in filterByField(pdaIt.defaultValue.pda.seeds,"name") %}{{ param.name }}: {{ getSeedType(param) }}{% if not loop.last %}, {% endif %}{% endfor %}) -> typing.Tuple[Pubkey, int]:
+def find_{{ pdaIt.name |pascalCase }}({% for param in filterByField(pdaIt.defaultValue.pda.seeds,"name") %}{{ param.name }}: {{ getSeedType(param) }}{% if not loop.last %}, {% endif %}{% endfor %}) -> typing.Tuple[SolPubkey, int]:
     seeds = [
 {% for seed in pdaIt.defaultValue.pda.seeds %}
        {{getSeed(seed)}},
 {% endfor %}
     ]
 
-    address, bump = Pubkey.find_program_address(seeds,
+    address, bump = SolPubkey.find_program_address(seeds,
     {% if pdaIt.defaultValue.pda.programId != null%}
-        program_id=Pubkey.from_string('{{pdaIt.defaultValue.pda.programId}}')
+        program_id=SolPubkey.from_string('{{pdaIt.defaultValue.pda.programId}}')
     {% else %}
     PROGRAM_ID
     {% endif %}
-        ) # Using solana.publickey
+        )
 
     return address, bump
 

@@ -89,18 +89,29 @@ export function getTypeManifestVisitor(input: {
                     const inner = visit(arrayType.item, self);
                     //console.log("visitArrayType:",arrayType,self);
                     let count = 0;
+                    let toJSONStr = "";
+                    let fromJSONStr = "";
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
                         imports.mergeWith(inner.borshType);
-                        const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
-                        const toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
-                        const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
-                        const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                         let toEncodeStr = '';
                         if (inner.isEncodable) {
                             toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
+                            const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                            toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                            const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                            fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                         } else {
-                            toEncodeStr = '{{name}}';
+                            if (arrayType.item.kind == "publicKeyTypeNode"){
+                                const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                                fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                                const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                                toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                            }else {
+                                toEncodeStr = '{{name}}';
+                                toJSONStr = '{{name}}'
+                                fromJSONStr = '{{name}}'
+                            }
                         }
                         return {
                             borshType: fragment(`${itemlayout.borshType.render}[${count}]`, imports),
@@ -117,15 +128,27 @@ export function getTypeManifestVisitor(input: {
                     } else {
                         imports.mergeWith(inner.borshType);
                         imports.add('construct', 'Construct');
-                        const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
-                        const toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
-                        const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
-                        const fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+
                         let toEncodeStr = '';
                         if (inner.isEncodable) {
+                            const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                            toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                            const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                            fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
                             toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
                         } else {
-                            toEncodeStr = '{{name}}';
+                            if (arrayType.item.kind == "publicKeyTypeNode"){
+                                const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                                fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                                const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                                toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                            }else{
+                                toEncodeStr = '{{name}}';
+                                toEncodeStr = '{{name}}';
+                                toJSONStr = '{{name}}'
+                                fromJSONStr = '{{name}}'
+                            }
+
                         }
                         return {
                             borshType: fragment(
