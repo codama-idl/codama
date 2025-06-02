@@ -1,0 +1,28 @@
+[package]
+name = "codama-renderers-rust-e2e-system"
+version = "0.0.0"
+edition = "2021"
+
+[features]
+anchor = ["dep:anchor-lang"]
+anchor-idl-build = ["anchor", "anchor-lang?/idl-build"]
+serde = ["dep:serde", "dep:serde_with", "dep:serde-big-array"]
+test-sbf = []
+fetch = ["dep:solana-client", "dep:solana-sdk"]
+
+[dependencies]
+anchor-lang = { version = "0.30.0", optional = true }
+borsh = "^0.10"
+num-derive = "^0.3"
+num-traits = "^0.2"
+serde = { version = "^1.0", features = ["derive"], optional = true }
+serde_with = { version = "^3.0", optional = true }
+serde-big-array = { version = "^0.5", optional = true }
+solana-program = "^2.1.6"
+solana-client = { version = "~1.18", optional = true }
+solana-sdk = { version = "~1.18", optional = true }
+thiserror = "^1.0"
+
+[dev-dependencies]
+assert_matches = "1.5.0"
+solana-sdk = "^2.1.6"
