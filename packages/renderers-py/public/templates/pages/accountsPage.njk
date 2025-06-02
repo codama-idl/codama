@@ -12,7 +12,10 @@ class {{accountName | pascalCase}}JSON(typing.TypedDict):
 
 @dataclass
 class {{ accountName | pascalCase}}:
-    discriminator: typing.ClassVar = {{discriminator_assignment}};
+{%if discriminator_assignment.len >0 %}
+    discriminator: typing.ClassVar = {{discriminator_assignment.renders}}
+    DISCRIMINATOR_SIZE: int = {{discriminator_assignment.len}}
+{% endif %}
 
     layout: typing.ClassVar = borsh.CStruct(
     {% for field in fieldsLayout.renders %}
@@ -63,11 +66,15 @@ class {{ accountName | pascalCase}}:
 
     @classmethod
     def decode(cls, data: bytes) -> "{{accountName | pascalCase}}":
-        if data[:ACCOUNT_DISCRIMINATOR_SIZE] != cls.discriminator:
+{%if discriminator_assignment.len >0 %}
+        if data[:cls.DISCRIMINATOR_SIZE] != cls.discriminator:
             raise AccountInvalidDiscriminator(
                 "The discriminator for this account is invalid"
             )
-        dec = {{accountName | pascalCase}}.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
+        dec = {{accountName | pascalCase}}.layout.parse(data[cls.DISCRIMINATOR_SIZE:])
+{% else %}
+        dec = {{accountName | pascalCase}}.layout.parse(data)
+{% endif %}
         return cls(
         {% for field in fieldsDecode.renders %}
         {{field}},

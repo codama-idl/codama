@@ -38,7 +38,9 @@ def {{instructionName | pascalCase}}(
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
-    identifier = {{discriminator}}
+{%if discriminator.len>0 %}
+    identifier = {{discriminator.renders}}
+{% endif %}
 {% if argsToLayout.renders.length > 0 %}
     encoded_args = layout.build({
 {% for arg in argsToLayout.renders %}
@@ -48,9 +50,13 @@ def {{instructionName | pascalCase}}(
 {% else %}
     encoded_args = b""
 {% endif %}
-
+{%if discriminator.len>0 %}
     data = identifier + encoded_args
     return Instruction(program_id,data,keys)
+{% else %}
+    return Instruction(program_id,encoded_args,keys)
+{% endif %}
+
 
 {% for pdaIt in pdas %}
 {%if pdaIt.defaultValue.kind == 'pdaValueNode' %}

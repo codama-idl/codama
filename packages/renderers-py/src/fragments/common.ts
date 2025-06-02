@@ -4,6 +4,7 @@ import { ConfigureOptions } from 'nunjucks';
 
 import { ImportMap } from '../ImportMap';
 import { render } from '../utils';
+//import {getFieldDiscriminatorConstantFragment} from "./discriminatorConstants";
 
 export function fragment(render: string, imports?: ImportMap): Fragment {
     return new Fragment(render, imports);
@@ -103,5 +104,13 @@ export class PyFragment {
     constructor(renders: string[], imports?: ImportMap) {
         this.renders = renders;
         this.imports = imports ? new ImportMap().mergeWith(imports) : new ImportMap();
+    }
+}
+export class DiscriminatorFragment {
+    public renders: string[];
+    public len: number;
+    constructor(renders: string[], len: number) {
+        this.renders = renders;
+        this.len = len;
     }
 }

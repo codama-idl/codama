@@ -60,6 +60,7 @@ export type GetRenderMapOptions = {
 };
 
 export type GlobalFragmentScope = {
+    genType: GenType;
     typeManifestVisitor: TypeManifestVisitor;
 };
 export function getInstructionPdas(
@@ -90,11 +91,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const dependencyMap = options.dependencyMap ?? {};
     const useGranularImports = options.useGranularImports ?? false;
 
-    const genType = new GenType('');
+    const genType = new GenType('', '');
 
     //const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
     const typeManifestVisitor = getTypeManifestVisitor({ genType, getImportFrom, linkables, stack });
     const globalScope: GlobalFragmentScope = {
+        genType: genType,
         typeManifestVisitor: typeManifestVisitor,
     };
     const render = (template: string, context?: object, renderOptions?: ConfigureOptions): string => {
@@ -164,7 +166,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add('dataclasses', 'dataclass');
                     imports.add('solana.rpc.types', 'MemcmpOpts');
                     imports.add('anchorpy.borsh_extension', 'BorshPubkey');
-                    imports.add('anchorpy.coder.accounts', 'ACCOUNT_DISCRIMINATOR_SIZE');
                     imports.addAlias('', 'borsh_construct', 'borsh');
                     imports.add('', 'typing');
                     imports.add('anchorpy.utils.rpc', 'get_multiple_accounts');
@@ -208,7 +209,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     genType.name = 'types';
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
                     imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
-                    imports.add('solders.sysvar', 'RENT');
                     imports.add('construct', 'Container');
                     imports.addAlias('', 'borsh_construct', 'borsh');
                     imports.add('', 'borsh_construct');
@@ -301,11 +301,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 },
 
                 visitInstruction(node) {
+                    genType.name = 'instructions';
                     const scope = {
                         ...globalScope,
+                        genType,
                         typeManifest: visit(node, typeManifestVisitor),
                     };
-                    genType.name = 'instructions';
 
                     const fields = node.arguments;
                     const layoutFragment = getLayoutFields({
@@ -327,7 +328,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     //imports.add("anchorpy.borsh_extension", "BorshPubkey");
                     imports.add('', 'typing');
                     imports.add('..program_id', 'PROGRAM_ID');
-                    imports.add('solders.sysvar', 'RENT');
                     imports.add('construct', 'Container');
                     imports.addAlias('', 'borsh_construct', 'borsh');
                     imports.add('', 'borsh_construct');
@@ -416,6 +416,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 visitRoot(node, { self }) {
                     //const isNotInternal = (n: { name: CamelCaseString }) => !internalNodes.includes(n.name);
                     const programsToExport = getAllPrograms(node);
+                    genType.origin = node.program.origin;
                     const programsWithErrorsToExport = programsToExport.filter(p => p.errors.length > 0);
                     const pdasToExport = getAllPdas(node);
                     const accountsToExport = getAllAccounts(node); //.filter(isNotInternal);

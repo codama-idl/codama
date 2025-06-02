@@ -33,8 +33,10 @@ export function HexToPyB(hexStr: string) {
 
 export class GenType {
     name: string;
-    constructor(name: string) {
+    origin?: string;
+    constructor(name: string, origin: string) {
         this.name = name;
+        this.origin = origin;
     }
 }
 export function getTypeManifestVisitor(input: {
