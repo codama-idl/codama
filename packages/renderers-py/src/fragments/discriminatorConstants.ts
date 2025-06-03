@@ -91,7 +91,7 @@ export function getFieldDiscriminatorConstantFragment(
         return new DiscriminatorFragment([value.render], getPyBytesLen(value.render));
     } else {
         if (field.defaultValue.kind == 'numberValueNode') {
-            const renderStr = `b"\\x${field.defaultValue.number.toString(16)}"`;
+            const renderStr = `b"\\x${field.defaultValue.number.toString(16).padStart(2, '0')}"`;
             return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
         }
         return new DiscriminatorFragment([''], 0);
