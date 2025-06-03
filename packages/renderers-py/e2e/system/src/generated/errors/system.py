@@ -5,8 +5,8 @@
     @see https://github.com/codama-idl/codama
 '''
 
-import typing;
-from anchorpy.error import ProgramError;
+import typing
+from anchorpy.error import ProgramError
 
 class AccountAlreadyInUse(ProgramError):
     def __init__(self) -> None:

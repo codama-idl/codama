@@ -82,8 +82,8 @@ test('it renders an account with a defined type link as discriminator', async ()
 
     // Then we expect the following import list with a reference to the disciminator type.
     await renderMapContains(renderMap, 'accounts/asset.py', [
-        'from ..program_id import PROGRAM_ID;',
-        `from .. import types;`,
+        'from ..program_id import PROGRAM_ID',
+        `from .. import types`,
         `key: types.key.KeyJSON`,
     ]);
 });
@@ -111,11 +111,14 @@ test('it renders constants for account field discriminators', async () => {
 
     // When we render it.
     const renderMap = visit(node, getRenderMapVisitor());
+    console.log(renderMap.get('accounts/myAccount.py'));
 
     // Then we expect the following constant and function to be rendered
     // And we expect the field default value to use that constant.
 
-    await renderMapContains(renderMap, 'accounts/myAccount.py', ['discriminator: typing.ClassVar = b"\\x2a"']);
+    await renderMapContains(renderMap, 'accounts/myAccount.py', [
+        'discriminator: typing.ClassVar = b"\\x2a\\x00\\x00\\x00\\x00\\x00\\x00\\x00"',
+    ]);
 });
 
 test('it renders constants for account constant discriminators', async () => {

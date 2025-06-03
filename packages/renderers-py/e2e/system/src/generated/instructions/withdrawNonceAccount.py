@@ -5,13 +5,11 @@
     @see https://github.com/codama-idl/codama
 '''
 
-import borsh_construct as borsh;
-import typing;
-from construct import Container;
-from dataclasses import dataclass;
-from solders.instruction import AccountMeta, Instruction;
-from solders.pubkey import Pubkey as SolPubkey;
-from ..program_id import PROGRAM_ID;
+import borsh_construct as borsh
+import typing
+from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey as SolPubkey
+from ..program_id import PROGRAM_ID
 class WithdrawNonceAccountArgs(typing.TypedDict):
     withdrawAmount:int
 
@@ -43,7 +41,7 @@ def WithdrawNonceAccount(
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
-    identifier = b"\x5"
+    identifier = b"\x05\x00\x00\x00"
     encoded_args = layout.build({
         "withdrawAmount":args["withdrawAmount"],
        })

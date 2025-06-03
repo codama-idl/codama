@@ -8,7 +8,7 @@ import {
     VALUE_NODES,
 } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
-import { getU8Codec, getU16Codec, getU32Codec } from '@solana/codecs-numbers';
+import { getU8Codec, getU16Codec, getU32Codec, getU64Codec } from '@solana/codecs-numbers';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { BytesToPyB } from '../getTypeManifestVisitor';
@@ -90,7 +90,11 @@ export function getFieldDiscriminatorConstantFragment(
     } else {
         if (field.defaultValue.kind == 'numberValueNode') {
             if (field.type.kind == 'numberTypeNode') {
-                if (field.type.format == 'u32') {
+                if (field.type.format == 'u64') {
+                    const valueBs = getU64Codec().encode(field.defaultValue.number);
+                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                } else if (field.type.format == 'u32') {
                     const valueBs = getU32Codec().encode(field.defaultValue.number);
                     const renderStr = `b"${BytesToPyB(valueBs)}"`;
                     return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));

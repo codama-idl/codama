@@ -5,14 +5,13 @@
     @see https://github.com/codama-idl/codama
 '''
 
-import borsh_construct as borsh;
-import typing;
-from construct import Construct, Container;
-from dataclasses import dataclass;
-from solders.instruction import AccountMeta, Instruction;
-from solders.pubkey import Pubkey as SolPubkey;
-from .. import types;
-from ..program_id import PROGRAM_ID;
+import borsh_construct as borsh
+import typing
+from construct import Construct
+from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey as SolPubkey
+from .. import types
+from ..program_id import PROGRAM_ID
 class CreateGuardArgs(typing.TypedDict):
     name:str
     symbol:str

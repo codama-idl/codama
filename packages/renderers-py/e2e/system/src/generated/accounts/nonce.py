@@ -5,18 +5,17 @@
     @see https://github.com/codama-idl/codama
 '''
 
-import borsh_construct as borsh;
-import typing;
-from anchorpy.borsh_extension import BorshPubkey;
-from anchorpy.error import AccountInvalidDiscriminator;
-from anchorpy.utils.rpc import get_multiple_accounts;
-from dataclasses import dataclass;
-from solana.rpc.async_api import AsyncClient;
-from solana.rpc.commitment import Commitment;
-from solana.rpc.types import MemcmpOpts;
-from solders.pubkey import Pubkey as SolPubkey;
-from .. import types;
-from ..program_id import PROGRAM_ID;
+import borsh_construct as borsh
+import typing
+from anchorpy.borsh_extension import BorshPubkey
+from anchorpy.error import AccountInvalidDiscriminator
+from anchorpy.utils.rpc import get_multiple_accounts
+from dataclasses import dataclass
+from solana.rpc.async_api import AsyncClient
+from solana.rpc.commitment import Commitment
+from solders.pubkey import Pubkey as SolPubkey
+from .. import types
+from ..program_id import PROGRAM_ID
 
 
 class NonceJSON(typing.TypedDict):
@@ -28,6 +27,13 @@ class NonceJSON(typing.TypedDict):
 
 @dataclass
 class Nonce:
+    #fields
+    version: types.nonceVersion.NonceVersionKind
+    state: types.nonceState.NonceStateKind
+    authority: SolPubkey
+    blockhash: SolPubkey
+    lamportsPerSignature: int
+
 
     layout: typing.ClassVar = borsh.CStruct(
         "version" /types.nonceVersion.layout,
@@ -36,13 +42,8 @@ class Nonce:
         "blockhash" /BorshPubkey,
         "lamportsPerSignature" /borsh.U64,
         )
-    #fields
-    version: types.nonceVersion.NonceVersionKind
-    state: types.nonceState.NonceStateKind
-    authority: SolPubkey
-    blockhash: SolPubkey
-    lamportsPerSignature: int
-    
+
+
 
     @classmethod
     async def fetch(

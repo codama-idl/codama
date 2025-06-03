@@ -5,14 +5,12 @@
     @see https://github.com/codama-idl/codama
 '''
 
-import borsh_construct as borsh;
-import typing;
-from anchorpy.borsh_extension import BorshPubkey;
-from construct import Container;
-from dataclasses import dataclass;
-from solders.instruction import AccountMeta, Instruction;
-from solders.pubkey import Pubkey as SolPubkey;
-from ..program_id import PROGRAM_ID;
+import borsh_construct as borsh
+import typing
+from anchorpy.borsh_extension import BorshPubkey
+from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey as SolPubkey
+from ..program_id import PROGRAM_ID
 class AllocateWithSeedArgs(typing.TypedDict):
     base:SolPubkey
     seed:str
@@ -44,7 +42,7 @@ def AllocateWithSeed(
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
-    identifier = b"\x9"
+    identifier = b"\x09\x00\x00\x00"
     encoded_args = layout.build({
         "base":args["base"],
         "seed":args["seed"],
