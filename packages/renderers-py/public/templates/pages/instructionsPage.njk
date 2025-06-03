@@ -19,9 +19,13 @@ layout = borsh.CStruct(
 {% endif %}
 
 class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
+{% if accounts.length > 0 %}
 {% for acc in accounts %}
     {{acc.name | notKeywordCase}}:SolPubkey
 {% endfor %}
+{% else %}
+    pass
+{% endif %}
 
 def {{instructionName | pascalCase}}(
 {% if  args.renders.length > 0 %}

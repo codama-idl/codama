@@ -8,8 +8,10 @@ import {
     VALUE_NODES,
 } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
+import { getU8Codec, getU16Codec, getU32Codec } from '@solana/codecs-numbers';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
+import { BytesToPyB } from '../getTypeManifestVisitor';
 import { DiscriminatorFragment } from './common';
 
 export function getDiscriminatorConstantsFragment(
@@ -82,23 +84,29 @@ export function getFieldDiscriminatorConstantFragment(
         return null;
     }
 
-    //const name = camelCase(`${prefix}_${discriminatorNode.name}`);
     if (genType.origin == 'anchor') {
         const value = visit(field.defaultValue, typeManifestVisitor).value;
-        //console.log(value.render);
-        //console.log("getFieldDiscriminatorConstantFragment:",field,value)
-        //return getConstantFragment({ ...scope, name, value });
         return new DiscriminatorFragment([value.render], getPyBytesLen(value.render));
     } else {
         if (field.defaultValue.kind == 'numberValueNode') {
-            const renderStr = `b"\\x${field.defaultValue.number.toString(16).padStart(2, '0')}"`;
-            return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+            if (field.type.kind == 'numberTypeNode') {
+                if (field.type.format == 'u32') {
+                    const valueBs = getU32Codec().encode(field.defaultValue.number);
+                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                } else if (field.type.format == 'u16') {
+                    const valueBs = getU16Codec().encode(field.defaultValue.number);
+                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                } else if (field.type.format == 'u8') {
+                    const valueBs = getU8Codec().encode(field.defaultValue.number);
+                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                }
+            }
+            return new DiscriminatorFragment([''], 0);
         }
         return new DiscriminatorFragment([''], 0);
-        //const value = visit(field.defaultValue, typeManifestVisitor).value;
-        //console.log(value.render);
-        //console.log("getFieldDiscriminatorConstantFragment:",field,value)
-        //return getConstantFragment({ ...scope, name, value });
     }
 }
 /*

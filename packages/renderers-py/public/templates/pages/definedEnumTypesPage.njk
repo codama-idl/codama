@@ -126,7 +126,12 @@ def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Ki
     kind = obj["kind"]
     raise ValueError(f"Unrecognized enum kind: {kind}")
 
+
+{% if size.format=="u8" %}
 layout = EnumForCodegen(
+{% elseif size.format=="u32" %}
+layout = EnumForCodegenU32(
+{% endif %}
 {% for variant in variants %}
 {% if variant.kind=="enumTupleVariantTypeNode" %}
 "{{variant.name | pascalCase}}" / borsh.CStruct({{enumHelper.getTupleLayout(variant).renders}},),

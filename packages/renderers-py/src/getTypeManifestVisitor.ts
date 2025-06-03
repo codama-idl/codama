@@ -15,6 +15,7 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
+import { ReadonlyUint8Array } from '@solana/codecs-core';
 
 import { fragment } from './fragments';
 import { ImportMap } from './ImportMap';
@@ -26,6 +27,12 @@ export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 export function HexToPyB(hexStr: string) {
     const buffer: Buffer = Buffer.from(hexStr, 'hex');
     const xFormat: string = Array.from(buffer)
+        .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
+        .join('');
+    return xFormat;
+}
+export function BytesToPyB(bs: ReadonlyUint8Array) {
+    const xFormat: string = Array.from(bs)
         .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
         .join('');
     return xFormat;
@@ -372,7 +379,7 @@ export function getTypeManifestVisitor(input: {
                     imports.add('anchorpy.borsh_extension', 'BorshPubkey');
                     return {
                         borshType: fragment('BorshPubkey', imports),
-                        fromDecode: fragment('{{name}}'),
+                        fromDecode: fragment('{{name}}', imports),
                         fromJSON: fragment('SolPubkey.from_string({{name}})'),
                         isEncodable: false,
                         isEnum: false,
@@ -421,7 +428,7 @@ export function getTypeManifestVisitor(input: {
                     };
                 },
                 visitTupleType(tupleType, { self }) {
-                    const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
                     //borsh.CStruct("item_0" / borsh.Bool, "item_1" / borsh.U8),
                     const items = tupleType.items.map(item => {
                         const itemType = visit(item, self);
@@ -474,14 +481,14 @@ export function getTypeManifestVisitor(input: {
                         .join(',');
                     return {
                         borshType: fragment(borshTypestr, imports),
-                        fromDecode: fragment(fromDecode),
-                        fromJSON: fragment(fromJSON),
+                        fromDecode: fragment(fromDecode, imports),
+                        fromJSON: fragment(fromJSON, imports),
                         isEncodable: false,
                         isEnum: false,
-                        pyJSONType: fragment(pyJSONType),
+                        pyJSONType: fragment(pyJSONType, imports),
                         pyType: fragment(pyType, imports),
-                        toEncode: fragment(toEncode),
-                        toJSON: fragment(toJSON),
+                        toEncode: fragment(toEncode, imports),
+                        toJSON: fragment(toJSON, imports),
                         value: fragment(''),
                     };
                 },

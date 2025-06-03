@@ -12,6 +12,11 @@ class {{accountName | pascalCase}}JSON(typing.TypedDict):
 
 @dataclass
 class {{ accountName | pascalCase}}:
+    #fields
+{%for field in fields_interface_params.renders %}
+    {{field}}
+{% endfor %}
+
 {%if discriminator_assignment.len >0 %}
     discriminator: typing.ClassVar = {{discriminator_assignment.renders}}
     DISCRIMINATOR_SIZE: int = {{discriminator_assignment.len}}
@@ -22,10 +27,7 @@ class {{ accountName | pascalCase}}:
     {{field}},
     {% endfor %}
     )
-    #fields
-    {%for field in fields_interface_params.renders %}
-{{field}}
-    {% endfor %}
+
 
 
     @classmethod

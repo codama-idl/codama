@@ -28,6 +28,8 @@
         "@codama/nodes-from-anchor": "workspace:*",
         "@codama/renderers-core": "workspace:*",
         "@codama/visitors-core": "workspace:*",
+        "@solana/codecs-core": "^2.1.1",
+        "@solana/codecs-numbers": "^2.1.1",
         "@solana/codecs-strings": "rc",
         "nunjucks": "^3.2.4",
         "prettier": "^3.5.3"

@@ -160,12 +160,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields,
                     });
 
-                    const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    const imports = new ImportMap();
+                    imports.add('solders.pubkey', 'Pubkey');
+                    imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
                     imports.add('solana.rpc.async_api', 'AsyncClient');
                     imports.add('solana.rpc.commitment', 'Commitment');
                     imports.add('dataclasses', 'dataclass');
-                    imports.add('solana.rpc.types', 'MemcmpOpts');
-                    imports.add('anchorpy.borsh_extension', 'BorshPubkey');
+                    //imports.add('solana.rpc.types', 'MemcmpOpts');
+                    //imports.add('anchorpy.borsh_extension', 'BorshPubkey');
                     imports.addAlias('', 'borsh_construct', 'borsh');
                     imports.add('', 'typing');
                     imports.add('anchorpy.utils.rpc', 'get_multiple_accounts');
@@ -207,17 +209,19 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         typeManifest: visit(node, typeManifestVisitor),
                     };
                     genType.name = 'types';
-                    const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
-                    imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
-                    imports.add('construct', 'Container');
+                    const imports = new ImportMap();
+                    //.add('solders.pubkey', 'Pubkey');
+                    //imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
+
                     imports.addAlias('', 'borsh_construct', 'borsh');
                     imports.add('', 'borsh_construct');
                     imports.add('', 'typing');
                     imports.add('dataclasses', 'dataclass');
-                    imports.add('anchorpy.borsh_extension', 'BorshPubkey');
+                    //imports.add('anchorpy.borsh_extension', 'BorshPubkey');
 
                     const nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     if (nodeType.kind == 'structTypeNode') {
+                        imports.add('construct', 'Container');
                         const fields = nodeType.fields;
                         const layoutFragment = getLayoutFields({
                             ...scope,
@@ -274,7 +278,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         //let variants = nodeType as enumTypeNode;
                         if (nodeType.kind == 'enumTypeNode') {
                             const variants = nodeType.variants;
-                            imports.add('anchorpy.borsh_extension', 'EnumForCodegen');
+
+                            if (nodeType.size.kind == 'numberTypeNode') {
+                                if (nodeType.size.format == 'u32') {
+                                    imports.add('..shared', 'EnumForCodegenU32');
+                                } else {
+                                    imports.add('anchorpy.borsh_extension', 'EnumForCodegen');
+                                }
+                            }
                             //console.log('variant:', variants[1]);
                             const helper = new EnumHelper(variants, scope);
                             const herlperImports = helper.genAllImports();
@@ -285,6 +296,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 render('definedEnumTypesPage.njk', {
                                     enumHelper: helper,
                                     imports: imports.toString(dependencyMap, useGranularImports),
+                                    size: nodeType.size,
                                     typeName: node.name,
                                     variants: variants,
                                 }),
@@ -322,16 +334,22 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...scope,
                         fields,
                     });
-                    const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    const imports = new ImportMap();
+                    imports.add('solders.pubkey', 'Pubkey');
                     imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
                     imports.add('solders.instruction', ['Instruction', 'AccountMeta']);
                     //imports.add("anchorpy.borsh_extension", "BorshPubkey");
                     imports.add('', 'typing');
                     imports.add('..program_id', 'PROGRAM_ID');
-                    imports.add('construct', 'Container');
-                    imports.addAlias('', 'borsh_construct', 'borsh');
-                    imports.add('', 'borsh_construct');
-                    imports.add('dataclasses', 'dataclass');
+                    if (argsToLayout) {
+                        if (argsToLayout.renders.length > 0) {
+                            imports.addAlias('', 'borsh_construct', 'borsh');
+                            imports.add('', 'borsh_construct');
+                        }
+                    }
+                    //imports.add('construct', 'Container');
+                    //imports.addAlias('', 'borsh_construct', 'borsh');
+                    //imports.add('', 'borsh_construct');
                     imports.mergeWith(argsToLayout!);
                     imports.mergeWith(layoutFragment);
                     imports.mergeWith(argsToPy!);
@@ -453,6 +471,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     if (definedTypesToExport.length > 0) {
                         map.add('types/__init__.py', render('definedTypesIndex.njk', ctx));
                     }
+
+                    map.add('shared/__init__.py', render('sharedIndex.njk', ctx));
+                    map.add('shared/extension.py', render('extension.njk', ctx));
 
                     return map
                         .add('__init__.py', render('rootIndex.njk', ctx))

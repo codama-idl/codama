@@ -149,7 +149,7 @@ export class ImportMap {
                             }
                             return true;
                         })
-                        .map(name => `import ${name};`);
+                        .map(name => `import ${name}`);
                     const out = joinedImports.join('\n');
                     //console.log('module.length = 0', out, imports);
                     return out;
@@ -166,7 +166,7 @@ export class ImportMap {
                             return true;
                         })
                         .join(', ');
-                    return `from ${module} import ${joinedImports};`;
+                    return `from ${module} import ${joinedImports}`;
                 }
             })
             .join('\n');
