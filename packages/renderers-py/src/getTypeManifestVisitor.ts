@@ -21,7 +21,7 @@ import { ReadonlyUint8Array } from '@solana/codecs-core';
 
 import { fragment } from './fragments';
 import { ImportMap } from './ImportMap';
-import { mergeManifests, TypeManifest, typeManifest } from './TypeManifest';
+import { TypeManifest, typeManifest } from './TypeManifest';
 import { GetImportFromFunction, renderString } from './utils';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
@@ -312,31 +312,29 @@ export function getTypeManifestVisitor(input: {
                     };
                 },
                 visitFixedSizeType(node) {
-                    //console.log('visitFixedSizeType:', node);
-                    return {
-                        borshType: fragment(`borsh.U8[${node.size}]`),
-                        fromDecode: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}'),
-                        isEncodable: false,
-                        isEnum: false,
-                        pyJSONType: fragment('list[int]'),
-                        pyType: fragment('list[int]'),
-                        toEncode: fragment('{{name}}'),
-                        toJSON: fragment('{{name}}'),
-                        value: fragment(''),
-                    };
+                    if (node.type.kind == 'bytesTypeNode') {
+                        return {
+                            borshType: fragment(`borsh.U8[${node.size}]`),
+                            fromDecode: fragment('{{name}}'),
+                            fromJSON: fragment('{{name}}'),
+                            isEncodable: false,
+                            isEnum: false,
+                            pyJSONType: fragment('list[int]'),
+                            pyType: fragment('list[int]'),
+                            toEncode: fragment('{{name}}'),
+                            toJSON: fragment('{{name}}'),
+                            value: fragment(''),
+                        };
+                    }
+                    // TODO: Add to the Rust validator.
+                    throw new Error('Fixed type not supported by Borsh');
                 },
-                visitMapEntryValue(node, { self }) {
-                    return mergeManifests([visit(node.key, self), visit(node.value, self)], {
-                        mergeValues: renders => `[${renders.join(', ')}]`,
-                    });
+                visitMapEntryValue(node) {
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
 
-                visitMapValue(node, { self }) {
-                    const entryFragments = node.entries.map(entry => visit(entry, self));
-                    return mergeManifests(entryFragments, {
-                        mergeValues: renders => `new Map([${renders.join(', ')}])`,
-                    });
+                visitMapValue(node) {
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
                 visitNumberType(numberType) {
                     if (numberType.endian !== 'le') {
@@ -423,6 +421,9 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
                 visitRemainderOptionType(node) {
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                },
+                visitSetType(node) {
                     throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
 
