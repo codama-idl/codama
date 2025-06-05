@@ -17,8 +17,24 @@ from construct import (
     Padding,
     Renamed,
     Switch,
+    GreedyBytes
 )
+from construct import Int64ul as U64
 from solders import pubkey
+
+U64Bytes = Prefixed(U64, GreedyBytes)
+
+class _String64(Adapter):
+    def __init__(self) -> None:
+        super().__init__(U64Bytes)  # type: ignore
+
+    def _decode(self, obj: bytes, context, path) -> str:
+        print(f"Decoding {path} as String",obj.hex())
+        return obj.decode("utf8")
+
+    def _encode(self, obj: str, context, path) -> bytes:
+        return bytes(obj, "utf8")
+String64=_String64()
 
 class EnumForCodegenU32(Adapter):
     _index_key = "index"

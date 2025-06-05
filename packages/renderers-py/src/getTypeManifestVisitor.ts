@@ -1,9 +1,11 @@
+import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/errors';
 import {
     // CountNode,
     isNode,
     pascalCase,
     REGISTERED_TYPE_NODE_KINDS,
     REGISTERED_VALUE_NODE_KINDS,
+    resolveNestedTypeNode,
 } from '@codama/nodes';
 import {
     extendVisitor,
@@ -87,16 +89,14 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                 },
 
-                visitAmountType(amountType, { self }) {
+                /*visitAmountType(amountType, { self }) {
                     return visit(amountType.number, self);
-                },
+                    },*/
 
                 visitArrayType(arrayType, { self }) {
                     const itemlayout = visit(arrayType.item, self);
                     const imports = new ImportMap();
-                    //const cast_layout = `typing.cast(Construct, ${itemlayout.borshType.render})`;
                     const inner = visit(arrayType.item, self);
-                    //console.log("visitArrayType:",arrayType,self);
                     let count = 0;
                     let toJSONStr = '';
                     let fromJSONStr = '';
@@ -134,30 +134,7 @@ export function getTypeManifestVisitor(input: {
                             toJSON: fragment(toJSONStr, imports),
                             value: fragment(''),
                         };
-                    } else {
-                        imports.mergeWith(inner.borshType);
-                        imports.add('construct', 'Construct');
-
-                        let toEncodeStr = '';
-                        if (inner.isEncodable) {
-                            const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
-                            toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
-                            const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
-                            fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
-                            toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
-                        } else {
-                            if (arrayType.item.kind == 'publicKeyTypeNode') {
-                                const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
-                                fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
-                                const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
-                                toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
-                            } else {
-                                toEncodeStr = '{{name}}';
-                                toEncodeStr = '{{name}}';
-                                toJSONStr = '{{name}}';
-                                fromJSONStr = '{{name}}';
-                            }
-                        }
+                    } else if (isNode(arrayType.count, 'remainderCountNode')) {
                         return {
                             borshType: fragment(
                                 `borsh.Vec(typing.cast(Construct, ${itemlayout.borshType.render}))`,
@@ -169,35 +146,85 @@ export function getTypeManifestVisitor(input: {
                             isEnum: false,
                             pyJSONType: fragment(`list[${inner.pyJSONType.render}]`, imports),
                             pyType: fragment(`list[${inner.pyType.render}]`, imports),
-                            toEncode: fragment(toEncodeStr, imports),
+                            toEncode: fragment('', imports),
                             toJSON: fragment(toJSONStr, imports),
                             value: fragment(''),
                         };
+                    } else {
+                        const prefix = resolveNestedTypeNode(arrayType.count.prefix);
+                        if (prefix.endian === 'le') {
+                            switch (prefix.format) {
+                                case 'u32':
+                                case 'u8':
+                                case 'u16':
+                                case 'u64':
+                                case 'shortU16': {
+                                    imports.mergeWith(inner.borshType);
+                                    imports.add('construct', 'Construct');
+                                    let toEncodeStr = '';
+                                    if (inner.isEncodable) {
+                                        const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                                        toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                                        const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                                        fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                                        toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
+                                    } else {
+                                        if (arrayType.item.kind == 'publicKeyTypeNode') {
+                                            const fromJSONItemStr = renderString(inner.fromJSON.render, {
+                                                name: 'item',
+                                            });
+                                            fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                                            const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
+                                            toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                                        } else {
+                                            toEncodeStr = '{{name}}';
+                                            toEncodeStr = '{{name}}';
+                                            toJSONStr = '{{name}}';
+                                            fromJSONStr = '{{name}}';
+                                        }
+                                    }
+                                    return {
+                                        borshType: fragment(
+                                            `borsh.Vec(typing.cast(Construct, ${itemlayout.borshType.render}))`,
+                                            imports,
+                                        ),
+                                        fromDecode: fragment(fromJSONStr, imports),
+                                        fromJSON: fragment(fromJSONStr, imports),
+                                        isEncodable: false,
+                                        isEnum: false,
+                                        pyJSONType: fragment(`list[${inner.pyJSONType.render}]`, imports),
+                                        pyType: fragment(`list[${inner.pyType.render}]`, imports),
+                                        toEncode: fragment(toEncodeStr, imports),
+                                        toJSON: fragment(toJSONStr, imports),
+                                        value: fragment(''),
+                                    };
+                                }
+                                default:
+                                    throw new Error(`Array prefix not supported: ${prefix.format}`);
+                            }
+                        }
+                        // TODO: Add to the Rust validator.
+                        throw new Error('Array size not supported by Borsh');
                     }
                 },
 
-                visitArrayValue(node, { self }) {
-                    return mergeManifests(
-                        node.items.map(v => visit(v, self)),
-                        {
-                            mergeTypes: renders => `[${renders.join(', ')}]`,
-                            mergeValues: renders => `[${renders.join(', ')}]`,
-                        },
-                    );
-                },
-                visitBooleanType(_booleanType) {
-                    return {
-                        borshType: fragment('borsh.Bool'),
-                        fromDecode: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}'),
-                        isEncodable: false,
-                        isEnum: false,
-                        pyJSONType: fragment('bool'),
-                        pyType: fragment('bool'),
-                        toEncode: fragment(`{{name}}`),
-                        toJSON: fragment('{{name}}'),
-                        value: fragment(''),
-                    };
+                visitBooleanType(booleanType) {
+                    const resolvedSize = resolveNestedTypeNode(booleanType.size);
+                    if (resolvedSize.format === 'u8' && resolvedSize.endian === 'le') {
+                        return {
+                            borshType: fragment('borsh.Bool'),
+                            fromDecode: fragment('{{name}}'),
+                            fromJSON: fragment('{{name}}'),
+                            isEncodable: false,
+                            isEnum: false,
+                            pyJSONType: fragment('bool'),
+                            pyType: fragment('bool'),
+                            toEncode: fragment(`{{name}}`),
+                            toJSON: fragment('{{name}}'),
+                            value: fragment(''),
+                        };
+                    }
+                    throw new Error('Bool size not supported by Borsh');
                 },
                 visitBooleanValue(node) {
                     const manifest = typeManifest();
@@ -224,19 +251,11 @@ export function getTypeManifestVisitor(input: {
                     const manifest = typeManifest();
                     const pyBstr = HexToPyB(node.data);
                     manifest.value.setRender(`b"${pyBstr}"`);
-                    //manifest.value.
                     return manifest;
                 },
 
-                visitDateTimeType(dateTimeType, { self }) {
-                    return visit(dateTimeType.number, self);
-                },
-
                 visitDefinedType(definedType, { self }) {
-                    /*parentName = {
-                        loose: nameApi.dataArgsType(definedType.name),*/
                     const manifest = visit(definedType.type, self);
-                    //parentName = null;
                     return manifest;
                 },
                 visitDefinedTypeLink(node) {
@@ -319,13 +338,11 @@ export function getTypeManifestVisitor(input: {
                         mergeValues: renders => `new Map([${renders.join(', ')}])`,
                     });
                 },
-                visitNoneValue() {
-                    const manifest = typeManifest();
-                    manifest.value.setRender('none()').addImports('solanaOptions', 'none');
-                    return manifest;
-                },
                 visitNumberType(numberType) {
-                    //console.log('visitNumberType:', numberType);
+                    if (numberType.endian !== 'le') {
+                        // TODO: Add to the Rust validator.
+                        throw new Error('Number endianness not supported by Borsh');
+                    }
                     return {
                         borshType: fragment(NumberToBorshType(numberType.format)),
                         fromDecode: fragment('{{name}}'),
@@ -348,30 +365,39 @@ export function getTypeManifestVisitor(input: {
 
                 visitOptionType(optionType, { self }) {
                     const inner = visit(optionType.item, self);
-                    const toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`;
+                    const optionPrefix = resolveNestedTypeNode(optionType.prefix);
+                    if (optionPrefix.format === 'u8' && optionPrefix.endian === 'le') {
+                        const toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`;
 
-                    const fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`;
-                    const fromDecodeStr = `(None if {{name}} is None else ${inner.fromDecode.render})`;
+                        const fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`;
+                        const fromDecodeStr = `(None if {{name}} is None else ${inner.fromDecode.render})`;
 
-                    let toEncodeStr = '';
-                    if (inner.isEncodable) {
-                        toEncodeStr = `(None if {{name}} is None else {{name}}.to_encodable())`;
-                    } else {
-                        toEncodeStr = '{{name}}';
+                        let toEncodeStr = '';
+                        if (inner.isEncodable) {
+                            toEncodeStr = `(None if {{name}} is None else {{name}}.to_encodable())`;
+                        } else {
+                            toEncodeStr = '{{name}}';
+                        }
+
+                        return {
+                            borshType: fragment(`borsh.Option(${inner.borshType.render})`, inner.borshType.imports),
+                            fromDecode: fragment(fromDecodeStr, inner.fromJSON.imports),
+                            fromJSON: fragment(fromJSONStr, inner.fromJSON.imports),
+                            isEncodable: false,
+                            isEnum: false,
+                            pyJSONType: fragment(
+                                `typing.Optional[${inner.pyJSONType.render}]`,
+                                inner.pyJSONType.imports,
+                            ),
+                            pyType: fragment(`typing.Optional[${inner.pyType.render}]`, inner.pyType.imports),
+                            toEncode: fragment(toEncodeStr),
+                            toJSON: fragment(toJSONStr, inner.toJSON.imports),
+                            value: fragment(''),
+                        };
                     }
 
-                    return {
-                        borshType: fragment(`borsh.Option(${inner.borshType.render})`, inner.borshType.imports),
-                        fromDecode: fragment(fromDecodeStr, inner.fromJSON.imports),
-                        fromJSON: fragment(fromJSONStr, inner.fromJSON.imports),
-                        isEncodable: false,
-                        isEnum: false,
-                        pyJSONType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, inner.pyJSONType.imports),
-                        pyType: fragment(`typing.Optional[${inner.pyType.render}]`, inner.pyType.imports),
-                        toEncode: fragment(toEncodeStr),
-                        toJSON: fragment(toJSONStr, inner.toJSON.imports),
-                        value: fragment(''),
-                    };
+                    // TODO: Add to the Rust validator.
+                    throw new Error('Option size not supported by Borsh');
                 },
                 visitPublicKeyType() {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
@@ -396,20 +422,49 @@ export function getTypeManifestVisitor(input: {
                     manifest.value.setRender(`address("${node.publicKey}")`).addImports('solanaAddresses', 'address');
                     return manifest;
                 },
+                visitRemainderOptionType(node) {
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                },
 
-                visitSizePrefixType(_node) {
-                    return {
-                        borshType: fragment('borsh.String'),
-                        fromDecode: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}'),
-                        isEncodable: false,
-                        isEnum: false,
-                        pyJSONType: fragment('str'),
-                        pyType: fragment('str'),
-                        toEncode: fragment('{{name}}'),
-                        toJSON: fragment('{{name}}'),
-                        value: fragment(''),
-                    };
+                visitSizePrefixType(sizePrefixType) {
+                    const parentSize = resolveNestedTypeNode(sizePrefixType.prefix);
+                    const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
+                    //console.log('visitSizePrefixType', parentSize);
+                    if (parentSize.kind == 'numberTypeNode') {
+                        if (parentSize.format == 'u64' && parentSize.endian == 'le') {
+                            imports.add('..shared', 'String64');
+                            return {
+                                borshType: fragment('String64', imports),
+                                fromDecode: fragment('{{name}}'),
+                                fromJSON: fragment('{{name}}'),
+                                isEncodable: false,
+                                isEnum: false,
+                                pyJSONType: fragment('str'),
+                                pyType: fragment('str'),
+                                toEncode: fragment('{{name}}'),
+                                toJSON: fragment('{{name}}'),
+                                value: fragment(''),
+                            };
+                        } else if (parentSize.format == 'u32' && parentSize.endian == 'le') {
+                            return {
+                                borshType: fragment('borsh.String'),
+                                fromDecode: fragment('{{name}}'),
+                                fromJSON: fragment('{{name}}'),
+                                isEncodable: false,
+                                isEnum: false,
+                                pyJSONType: fragment('str'),
+                                pyType: fragment('str'),
+                                toEncode: fragment('{{name}}'),
+                                toJSON: fragment('{{name}}'),
+                                value: fragment(''),
+                            };
+                        } else {
+                            throw new Error(`'String size not supported: ${parentSize.format}`);
+                        }
+                    }
+
+                    // TODO: Add to the Rust validator.
+                    throw new Error('String size not supported by Borsh');
                 },
 
                 visitStringType(_node) {
@@ -429,7 +484,6 @@ export function getTypeManifestVisitor(input: {
                 },
                 visitTupleType(tupleType, { self }) {
                     const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
-                    //borsh.CStruct("item_0" / borsh.Bool, "item_1" / borsh.U8),
                     const items = tupleType.items.map(item => {
                         const itemType = visit(item, self);
                         imports.mergeWith(itemType.fromDecode);
@@ -444,7 +498,6 @@ export function getTypeManifestVisitor(input: {
                                 name: `self.value[${index}]`,
                             });
                             return innerDecodeItemStr;
-                            //return `self.value[${index}]`;
                         })
                         .join(',');
                     const fromJSON = items
@@ -491,6 +544,9 @@ export function getTypeManifestVisitor(input: {
                         toJSON: fragment(toJSON, imports),
                         value: fragment(''),
                     };
+                },
+                visitZeroableOptionType(node) {
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
             }),
         visitor => recordNodeStackVisitor(visitor, stack),
