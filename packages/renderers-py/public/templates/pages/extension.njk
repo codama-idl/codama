@@ -29,7 +29,6 @@ class _String64(Adapter):
         super().__init__(U64Bytes)  # type: ignore
 
     def _decode(self, obj: bytes, context, path) -> str:
-        print(f"Decoding {path} as String",obj.hex())
         return obj.decode("utf8")
 
     def _encode(self, obj: str, context, path) -> bytes:
