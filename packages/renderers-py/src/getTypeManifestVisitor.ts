@@ -342,7 +342,6 @@ export function getTypeManifestVisitor(input: {
                     throw new Error('Fixed type not supported by Borsh');
                 },
                 visitHiddenPrefixType(node, { self }) {
-                    console.log('visitHiddenPrefixType', node);
                     const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
                     const inner = visit(node.type, self);
                     //let prefix = new Uint8Array();
