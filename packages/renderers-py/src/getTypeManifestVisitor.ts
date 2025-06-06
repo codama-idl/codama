@@ -17,12 +17,14 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
-import { ReadonlyUint8Array } from '@solana/codecs-core';
+import { mergeBytes, ReadonlyUint8Array } from '@solana/codecs-core';
+import { getConstantEncoder, getUtf8Encoder } from '@solana/kit';
 
 import { fragment } from './fragments';
 import { ImportMap } from './ImportMap';
 import { TypeManifest, typeManifest } from './TypeManifest';
 import { GetImportFromFunction, renderString } from './utils';
+import { getBytesFromBytesValueNode } from './utils/codecs';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 
@@ -88,10 +90,6 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(account.data, self);
                     return manifest;
                 },
-
-                /*visitAmountType(amountType, { self }) {
-                    return visit(amountType.number, self);
-                    },*/
 
                 visitArrayType(arrayType, { self }) {
                     const itemlayout = visit(arrayType.item, self);
@@ -203,7 +201,6 @@ export function getTypeManifestVisitor(input: {
                                     throw new Error(`Array prefix not supported: ${prefix.format}`);
                             }
                         }
-                        // TODO: Add to the Rust validator.
                         throw new Error('Array size not supported by Borsh');
                     }
                 },
@@ -312,9 +309,25 @@ export function getTypeManifestVisitor(input: {
                     };
                 },
                 visitFixedSizeType(node) {
+                    const imports = new ImportMap();
                     if (node.type.kind == 'bytesTypeNode') {
+                        imports.add('..shared', 'FixedSizeBytes');
                         return {
-                            borshType: fragment(`borsh.U8[${node.size}]`),
+                            borshType: fragment(`FixedSizeBytes(${node.size},GreedyBytes)`, imports), //`borsh.U8[${node.size}]`),
+                            fromDecode: fragment('{{name}}'),
+                            fromJSON: fragment('{{name}}'),
+                            isEncodable: false,
+                            isEnum: false,
+                            pyJSONType: fragment('list[int]'),
+                            pyType: fragment('list[int]'),
+                            toEncode: fragment('{{name}}'),
+                            toJSON: fragment('{{name}}'),
+                            value: fragment(''),
+                        };
+                    } else if (node.type.kind == 'stringTypeNode') {
+                        imports.add('..shared', 'FixedSizeString'); // PaddedString(20, "utf8")
+                        return {
+                            borshType: fragment(`FixedSizeString(${node.size},"utf8")`, imports),
                             fromDecode: fragment('{{name}}'),
                             fromJSON: fragment('{{name}}'),
                             isEncodable: false,
@@ -326,8 +339,87 @@ export function getTypeManifestVisitor(input: {
                             value: fragment(''),
                         };
                     }
-                    // TODO: Add to the Rust validator.
                     throw new Error('Fixed type not supported by Borsh');
+                },
+                visitHiddenPrefixType(node, { self }) {
+                    console.log('visitHiddenPrefixType', node);
+                    const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
+                    const inner = visit(node.type, self);
+                    //let prefix = new Uint8Array();
+                    let prefix = new Uint8Array([]);
+
+                    node.prefix.forEach(item => {
+                        //item.type.kind ==
+                        if (item.type.kind == 'stringTypeNode') {
+                            if (item.value.kind == 'stringValueNode') {
+                                const strBs = getConstantEncoder(getUtf8Encoder().encode(item.value.string)).encode();
+                                prefix = mergeBytes([prefix, strBs.valueOf()]);
+                                return;
+                            }
+                        } else if (item.type.kind == 'bytesTypeNode') {
+                            if (item.value.kind == 'bytesValueNode') {
+                                const bytes = getBytesFromBytesValueNode(item.value);
+                                const byteBs = getConstantEncoder(bytes).encode();
+                                prefix = mergeBytes([prefix, byteBs.valueOf()]);
+                                return;
+                            }
+                        }
+                        throw new Error(`Unsupported ConstantValue Type: ${item.type.kind}`);
+                    });
+
+                    //const manifest = typeManifest();
+                    const borshType = `HiddenPrefixAdapter(b"${BytesToPyB(prefix)}",${inner.borshType.render})`;
+                    return {
+                        borshType: fragment(borshType, imports),
+                        fromDecode: fragment('{{name}}', imports),
+                        fromJSON: fragment(`${inner.fromJSON.render}`),
+                        isEncodable: false,
+                        isEnum: false,
+                        pyJSONType: fragment(`${inner.pyJSONType.render}`),
+                        pyType: fragment(`${inner.pyType.render}`, imports),
+                        toEncode: fragment(`${inner.toEncode.render}`),
+                        toJSON: fragment(`${inner.toJSON.render}`),
+                        value: fragment(''),
+                    };
+                },
+
+                visitHiddenSuffixType(node, { self }) {
+                    const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
+                    const inner = visit(node.type, self);
+                    let suffix = new Uint8Array([]);
+
+                    node.suffix.forEach(item => {
+                        if (item.type.kind == 'stringTypeNode') {
+                            if (item.value.kind == 'stringValueNode') {
+                                const strBs = getConstantEncoder(getUtf8Encoder().encode(item.value.string)).encode();
+                                suffix = mergeBytes([suffix, strBs.valueOf()]);
+                                return;
+                            }
+                        } else if (item.type.kind == 'bytesTypeNode') {
+                            if (item.value.kind == 'bytesValueNode') {
+                                const bytes = getBytesFromBytesValueNode(item.value);
+                                const byteBs = getConstantEncoder(bytes).encode();
+                                suffix = mergeBytes([suffix, byteBs.valueOf()]);
+                                return;
+                            }
+                        }
+                        throw new Error(`Unsupported ConstantValue Type: ${item.type.kind}`);
+                    });
+                    return {
+                        borshType: fragment(
+                            `HiddenSuffixAdapter(b"${BytesToPyB(suffix)}",${inner.borshType.render})`,
+                            imports,
+                        ),
+                        fromDecode: fragment('{{name}}', imports),
+                        fromJSON: fragment(`${inner.fromJSON.render}`),
+                        isEncodable: false,
+                        isEnum: false,
+                        pyJSONType: fragment(`${inner.pyJSONType.render}`),
+                        pyType: fragment(`${inner.pyType.render}`, imports),
+                        toEncode: fragment(`${inner.toEncode.render}`),
+                        toJSON: fragment(`${inner.toJSON.render}`),
+                        value: fragment(''),
+                    };
                 },
                 visitMapEntryValue(node) {
                     throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
@@ -336,9 +428,9 @@ export function getTypeManifestVisitor(input: {
                 visitMapValue(node) {
                     throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
+
                 visitNumberType(numberType) {
                     if (numberType.endian !== 'le') {
-                        // TODO: Add to the Rust validator.
                         throw new Error('Number endianness not supported by Borsh');
                     }
                     return {
@@ -354,7 +446,6 @@ export function getTypeManifestVisitor(input: {
                         value: fragment(''),
                     };
                 },
-
                 visitNumberValue(node) {
                     const manifest = typeManifest();
                     manifest.value.setRender(JSON.stringify(node.number));
@@ -366,10 +457,8 @@ export function getTypeManifestVisitor(input: {
                     const optionPrefix = resolveNestedTypeNode(optionType.prefix);
                     if (optionPrefix.format === 'u8' && optionPrefix.endian === 'le') {
                         const toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`;
-
                         const fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`;
                         const fromDecodeStr = `(None if {{name}} is None else ${inner.fromDecode.render})`;
-
                         let toEncodeStr = '';
                         if (inner.isEncodable) {
                             toEncodeStr = `(None if {{name}} is None else {{name}}.to_encodable())`;
@@ -394,8 +483,13 @@ export function getTypeManifestVisitor(input: {
                         };
                     }
 
-                    // TODO: Add to the Rust validator.
                     throw new Error('Option size not supported by Borsh');
+                },
+                visitPostOffsetType(node) {
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                },
+                visitPreOffsetType(node) {
+                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                 },
                 visitPublicKeyType() {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
@@ -414,7 +508,6 @@ export function getTypeManifestVisitor(input: {
                         value: fragment(''),
                     };
                 },
-
                 visitPublicKeyValue(node) {
                     const manifest = typeManifest();
                     manifest.value.setRender(`address("${node.publicKey}")`).addImports('solanaAddresses', 'address');
@@ -429,8 +522,7 @@ export function getTypeManifestVisitor(input: {
 
                 visitSizePrefixType(sizePrefixType) {
                     const parentSize = resolveNestedTypeNode(sizePrefixType.prefix);
-                    const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
-                    //console.log('visitSizePrefixType', parentSize);
+                    const imports = new ImportMap();
                     if (parentSize.kind == 'numberTypeNode') {
                         if (parentSize.format == 'u64' && parentSize.endian == 'le') {
                             imports.add('..shared', 'String64');
@@ -459,12 +551,24 @@ export function getTypeManifestVisitor(input: {
                                 toJSON: fragment('{{name}}'),
                                 value: fragment(''),
                             };
+                        } else if (parentSize.format == 'u8' && parentSize.endian == 'le') {
+                            imports.add('..shared', 'String8');
+                            return {
+                                borshType: fragment('String8'),
+                                fromDecode: fragment('{{name}}'),
+                                fromJSON: fragment('{{name}}'),
+                                isEncodable: false,
+                                isEnum: false,
+                                pyJSONType: fragment('str'),
+                                pyType: fragment('str'),
+                                toEncode: fragment('{{name}}'),
+                                toJSON: fragment('{{name}}'),
+                                value: fragment(''),
+                            };
                         } else {
                             throw new Error(`'String size not supported: ${parentSize.format}`);
                         }
                     }
-
-                    // TODO: Add to the Rust validator.
                     throw new Error('String size not supported by Borsh');
                 },
 
@@ -484,7 +588,7 @@ export function getTypeManifestVisitor(input: {
                     };
                 },
                 visitTupleType(tupleType, { self }) {
-                    const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
+                    const imports = new ImportMap();
                     const items = tupleType.items.map(item => {
                         const itemType = visit(item, self);
                         imports.mergeWith(itemType.fromDecode);

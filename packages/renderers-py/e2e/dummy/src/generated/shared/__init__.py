@@ -5,4 +5,4 @@
     @see https://github.com/codama-idl/codama
 '''
 
-from .extension import EnumForCodegenU32
+from .extension import EnumForCodegenU32,String64

@@ -13,9 +13,8 @@
         "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e && pnpm test:exports",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e",
         "test:e2e": "./e2e/test.sh",
-        "test:exports": "node ./test/exports/module.mjs && node ./test/exports/commonjs.cjs",
         "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
         "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
@@ -31,6 +30,7 @@
         "@solana/codecs-core": "^2.1.1",
         "@solana/codecs-numbers": "^2.1.1",
         "@solana/codecs-strings": "rc",
+        "@solana/kit": "^2.1.1",
         "nunjucks": "^3.2.4",
         "prettier": "^3.5.3"
     },

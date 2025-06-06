@@ -37,7 +37,7 @@ test('it renders a prefix string on a defined type', async () => {
     // When we render it.
     const renderMap = visit(node, getRenderMapVisitor());
     console.log(renderMap.get('types/blob.py'));
-    await codeContains(renderMap.get('types/blob.py'), [`"contentType" /borsh.String,`, `contentType: str`]);
+    await codeContains(renderMap.get('types/blob.py'), [`"contentType" /String8,`, `contentType: str`]);
 });
 
 test('it renders a scalar enum', async () => {
@@ -58,11 +58,11 @@ test('it renders a scalar enum', async () => {
 
     // Then we expect the following use and identifier to be rendered.
     //codeContains(renderMap.get('types/tag.rs'), [`#[derive(`, `Copy`, `pub enum Tag`]);
-    console.log(renderMap.get('types/tag.py'));
+    //console.log(renderMap.get('types/tag.py'));
     await codeContains(renderMap.get('types/tag.py'), [`TagKind = typing.Union[\n    Uninitialized,\n    Account,\n]`]);
 });
 
-test('it renders a non-scalar enum without Copy derive', async () => {
+test('it renders a non-scalar enum without', async () => {
     // Given the following program with 1 defined type using a prefixed size string.
     const node = programNode({
         definedTypes: [
@@ -88,7 +88,7 @@ test('it renders a non-scalar enum without Copy derive', async () => {
 
     // When we render it.
     const renderMap = visit(node, getRenderMapVisitor());
-    console.log(renderMap.get('types/tagWithStruct.py'));
+    //console.log(renderMap.get('types/tagWithStruct.py'));
     await codeContains(renderMap.get('types/tagWithStruct.py'), [
         `class AccountValue(typing.TypedDict):\n    contentType: str`,
         `return AccountJSON(\n            kind="Account",\n            value = {\n            "contentType":self.value["contentType"]\n            }\n)`,

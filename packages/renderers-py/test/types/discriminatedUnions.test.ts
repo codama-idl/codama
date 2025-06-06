@@ -33,7 +33,7 @@ const eventTypeNode = definedTypeNode({
 });
 
 test('it exports discriminated union types', async () => {
-    console.log(eventTypeNode);
+    //console.log(eventTypeNode);
     const renderMap = visit(eventTypeNode, getRenderMapVisitor());
 
     // Then we expect the following types to be exported.

@@ -74,7 +74,6 @@ export function getInstructionPdas(
     const pdas = accounts
         .map(acc => {
             if (acc.defaultValue) {
-                //acc.defaultValue
                 return acc; //acc.defaultValue
             }
             return null;
@@ -117,7 +116,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
 
                     const typeManifest = visit(node, typeManifestVisitor);
-                    //console.log('typeManifest:', typeManifest);
                     const scope = {
                         ...globalScope,
                         accountPath,
@@ -125,7 +123,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
 
                     const fields = resolveNestedTypeNode(node.data).fields;
-                    //fields.shift();
                     const fieldsJSON = getFieldsJSON({
                         ...scope,
                         fields,
@@ -166,8 +163,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add('solana.rpc.async_api', 'AsyncClient');
                     imports.add('solana.rpc.commitment', 'Commitment');
                     imports.add('dataclasses', 'dataclass');
-                    //imports.add('solana.rpc.types', 'MemcmpOpts');
-                    //imports.add('anchorpy.borsh_extension', 'BorshPubkey');
                     imports.addAlias('', 'borsh_construct', 'borsh');
                     imports.add('', 'typing');
                     imports.add('anchorpy.utils.rpc', 'get_multiple_accounts');
@@ -210,14 +205,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
                     genType.name = 'types';
                     const imports = new ImportMap();
-                    //.add('solders.pubkey', 'Pubkey');
-                    //imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
 
                     imports.addAlias('', 'borsh_construct', 'borsh');
                     imports.add('', 'borsh_construct');
                     imports.add('', 'typing');
                     imports.add('dataclasses', 'dataclass');
-                    //imports.add('anchorpy.borsh_extension', 'BorshPubkey');
 
                     const nodeType = node.type; //resolveNestedTypeNode(node.data).fields;
                     if (nodeType.kind == 'structTypeNode') {
@@ -274,41 +266,32 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 typeName: node.name,
                             }),
                         );
-                    } else {
-                        //let variants = nodeType as enumTypeNode;
-                        if (nodeType.kind == 'enumTypeNode') {
-                            const variants = nodeType.variants;
+                    } else if (nodeType.kind == 'enumTypeNode') {
+                        const variants = nodeType.variants;
 
-                            if (nodeType.size.kind == 'numberTypeNode') {
-                                if (nodeType.size.format == 'u32') {
-                                    imports.add('..shared', 'EnumForCodegenU32');
-                                } else {
-                                    imports.add('anchorpy.borsh_extension', 'EnumForCodegen');
-                                }
+                        if (nodeType.size.kind == 'numberTypeNode') {
+                            if (nodeType.size.format == 'u32') {
+                                imports.add('..shared', 'EnumForCodegenU32');
+                            } else {
+                                imports.add('anchorpy.borsh_extension', 'EnumForCodegen');
                             }
-                            //console.log('variant:', variants[1]);
-                            const helper = new EnumHelper(variants, scope);
-                            const herlperImports = helper.genAllImports();
-                            imports.mergeWith(herlperImports);
-
-                            return new RenderMap().add(
-                                `types/${camelCase(node.name)}.py`,
-                                render('definedEnumTypesPage.njk', {
-                                    enumHelper: helper,
-                                    imports: imports.toString(dependencyMap, useGranularImports),
-                                    size: nodeType.size,
-                                    typeName: node.name,
-                                    variants: variants,
-                                }),
-                            );
                         }
+                        const helper = new EnumHelper(variants, scope);
+                        const herlperImports = helper.genAllImports();
+                        imports.mergeWith(herlperImports);
+
                         return new RenderMap().add(
                             `types/${camelCase(node.name)}.py`,
                             render('definedEnumTypesPage.njk', {
+                                enumHelper: helper,
                                 imports: imports.toString(dependencyMap, useGranularImports),
+                                size: nodeType.size,
                                 typeName: node.name,
+                                variants: variants,
                             }),
                         );
+                    } else {
+                        throw new Error(`DefinedType not supported by ${node.type.kind}`);
                     }
                 },
 
@@ -338,7 +321,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add('solders.pubkey', 'Pubkey');
                     imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
                     imports.add('solders.instruction', ['Instruction', 'AccountMeta']);
-                    //imports.add("anchorpy.borsh_extension", "BorshPubkey");
                     imports.add('', 'typing');
                     imports.add('..program_id', 'PROGRAM_ID');
                     if (argsToLayout) {
@@ -347,9 +329,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             imports.add('', 'borsh_construct');
                         }
                     }
-                    //imports.add('construct', 'Container');
-                    //imports.addAlias('', 'borsh_construct', 'borsh');
-                    //imports.add('', 'borsh_construct');
                     imports.mergeWith(argsToLayout!);
                     imports.mergeWith(layoutFragment);
                     imports.mergeWith(argsToPy!);
@@ -365,7 +344,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         accounts: node.accounts,
                         argv: fields,
                     });
-                    //console.log('pdas', node.name, pdas);
                     return new RenderMap().add(
                         `instructions/${camelCase(node.name)}.py`,
                         render('instructionsPage.njk', {
@@ -380,7 +358,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         }),
                     );
                 },
-
+                /*
                 visitPda(node) {
                     const pdaPath = stack.getPath('pdaNode');
                     if (!findProgramNodeFromPath(pdaPath)) {
@@ -388,7 +366,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
 
                     return new RenderMap().add(`pdas/${camelCase(node.name)}.ts`, render('pdasPage.njk', {}));
-                },
+                    },*/
 
                 visitProgram(node, { self }) {
                     const scope = { ...globalScope, programNode: node };
@@ -408,8 +386,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             }),
                         );
 
-                        const errimports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
-                        // from anchorpy.error import ProgramError
+                        const errimports = new ImportMap();
                         errimports.add('anchorpy.error', 'ProgramError');
                         errimports.add('', 'typing');
                         renderMap.add(

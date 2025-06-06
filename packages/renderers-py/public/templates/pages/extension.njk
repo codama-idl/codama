@@ -20,9 +20,11 @@ from construct import (
     GreedyBytes
 )
 from construct import Int64ul as U64
+from construct import Int8ul as U8
 from solders import pubkey
 
 U64Bytes = Prefixed(U64, GreedyBytes)
+U8Bytes = Prefixed(U8, GreedyBytes)
 
 class _String64(Adapter):
     def __init__(self) -> None:
@@ -33,7 +35,50 @@ class _String64(Adapter):
 
     def _encode(self, obj: str, context, path) -> bytes:
         return bytes(obj, "utf8")
+class _String8(Adapter):
+    def __init__(self) -> None:
+        super().__init__(U8Bytes)  # type: ignore
+
+    def _decode(self, obj: bytes, context, path) -> str:
+        return obj.decode("utf8")
+
+    def _encode(self, obj: str, context, path) -> bytes:
+        return bytes(obj, "utf8")
 String64=_String64()
+String8=_String8()
+
+class HiddenPrefixAdapter(Adapter):
+    prefix = None
+    def __init__(self,padding,subcon: Construct):
+        self.prefix = padding
+        prefix_struct = CStruct(
+            "prefix"/borsh.U8[len(padding)],
+            "data"/subcon,
+        )
+        super().__init__(prefix_struct)
+
+    def _decode(self, obj, context, path) -> Any:
+        return obj["data"]
+
+    def _encode(self, obj, context, path) -> dict:
+        return { "prefix": self.prefix, "data": obj}
+
+class HiddenSuffixAdapter(Adapter):
+    suffix = None
+    def __init__(self,padding,subcon: Construct):
+        self.suffix = padding
+        suffix_struct = CStruct(
+            "suffix"/borsh.U8[len(padding)],
+            "data"/subcon,
+        )
+        super().__init__(suffix_struct)
+
+    def _decode(self, obj, context, path) -> Any:
+        return obj["data"]
+
+    def _encode(self, obj, context, path) -> dict:
+        return { "data": obj, "suffix": self.suffix}
+
 
 class EnumForCodegenU32(Adapter):
     _index_key = "index"
