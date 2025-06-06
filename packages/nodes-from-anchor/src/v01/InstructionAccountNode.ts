@@ -30,7 +30,7 @@ import {
 import { getBase58Codec } from '@solana/codecs';
 
 import { hex } from '../utils';
-import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
+import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed, IdlV01SeedAccount } from './idl';
 
 export function instructionAccountNodesFromAnchorV01(
     allAccounts: AccountNode[],
@@ -40,7 +40,7 @@ export function instructionAccountNodesFromAnchorV01(
     return idl.flatMap(account =>
         'accounts' in account
             ? instructionAccountNodesFromAnchorV01(allAccounts, instructionArguments, account.accounts)
-            : [instructionAccountNodeFromAnchorV01(allAccounts, instructionArguments, account)],
+            : [instructionAccountNodeFromAnchorV01(allAccounts, instructionArguments, account, idl)],
     );
 }
 
@@ -48,6 +48,7 @@ export function instructionAccountNodeFromAnchorV01(
     allAccounts: AccountNode[],
     instructionArguments: InstructionArgumentNode[],
     idl: IdlV01InstructionAccount,
+    parentIdl: IdlV01InstructionAccountItem[],
 ): InstructionAccountNode {
     const isOptional = idl.optional ?? false;
     const docs = idl.docs ?? [];
@@ -131,6 +132,16 @@ export function instructionAccountNodeFromAnchorV01(
                 switch (kind) {
                     case 'const': {
                         programId = getBase58Codec().decode(new Uint8Array(idl.pda.program.value));
+                        break;
+                    }
+                    case 'account': {
+                        const accNode = parentIdl.find(acc => acc.name == (idl.pda?.program as IdlV01SeedAccount).path);
+                        if (accNode) {
+                            programId = (accNode as IdlV01InstructionAccount).address;
+                        } else {
+                            programId = '';
+                        }
+
                         break;
                     }
                     default: {
