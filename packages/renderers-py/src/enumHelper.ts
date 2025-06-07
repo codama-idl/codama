@@ -7,7 +7,6 @@ import { ImportMap } from './ImportMap';
 import { renderString } from './utils';
 
 export class EnumHelper {
-    //name: String
     variants: EnumVariantTypeNode[];
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'>;
     constructor(variants: EnumVariantTypeNode[], scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'>) {
@@ -26,13 +25,11 @@ export class EnumHelper {
     }
     getTupleLayout(node: EnumVariantTypeNode): PyFragment {
         const { typeManifestVisitor } = this.scope;
-        //node.kind ==
         const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
         return new PyFragment([tupleType.borshType.render], tupleType.borshType.imports);
     }
     getTupleToJSON(node: EnumVariantTypeNode): PyFragment {
         const { typeManifestVisitor } = this.scope;
-        //node.kind ==
         const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
         return new PyFragment([tupleType.toJSON.render], tupleType.toJSON.imports);
     }
@@ -43,10 +40,8 @@ export class EnumHelper {
     }
     getTupleFromJSON(node: EnumVariantTypeNode): PyFragment {
         const { typeManifestVisitor } = this.scope;
-        //node.kind ==
         const tupleType = visit((node as EnumTupleVariantTypeNode).tuple, typeManifestVisitor);
         const fromCast = renderString(tupleType.fromJSON.render, { name: `${node.name}JSONValue` });
-
         return new PyFragment([fromCast], tupleType.fromJSON.imports);
     }
     getTupleDecode(node: EnumVariantTypeNode): PyFragment {
@@ -58,7 +53,6 @@ export class EnumHelper {
 
     getStructPyJSON(node: EnumStructVariantTypeNode): PyFragment {
         if (node.struct.kind == 'structTypeNode') {
-            //node.struct.fields.map()
             const fields = node.struct.fields;
             return getFieldsPyJSON({
                 ...this.scope,
@@ -69,7 +63,6 @@ export class EnumHelper {
     }
     getStructPy(node: EnumStructVariantTypeNode): PyFragment {
         if (node.struct.kind == 'structTypeNode') {
-            //node.struct.fields.map()
             const fields = node.struct.fields;
             return getFieldsPy({
                 ...this.scope,
@@ -89,7 +82,6 @@ export class EnumHelper {
                     return `"${it.name}":${fromCast}`;
                 })
                 .join(',');
-            //console.log('getStructToJSON', render);
             return new PyFragment([render]);
         }
         return new PyFragment(['']);
@@ -113,7 +105,6 @@ export class EnumHelper {
                     return `"${it.name}":${innerStr}`;
                 })
                 .join(',');
-            //console.log('getStructToJSON', render);
             return new PyFragment([render]);
         }
         return new PyFragment(['']);
@@ -131,7 +122,6 @@ export class EnumHelper {
                     return `${it.name}=${fromCast}`;
                 })
                 .join(',');
-            //console.log('getStructToJSON', render);
             return new PyFragment([render]);
         }
         return new PyFragment(['']);
@@ -160,12 +150,6 @@ export class EnumHelper {
                 })
                 .join(',');
             return new PyFragment([render]);
-
-            /*return getLayoutFields({
-                ...this.scope,
-                fields,
-                prefix: '',
-            });*/
         }
         return new PyFragment(['']);
     }
