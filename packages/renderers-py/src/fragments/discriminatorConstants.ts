@@ -11,7 +11,7 @@ import { visit } from '@codama/visitors-core';
 import { getU8Codec, getU16Codec, getU32Codec, getU64Codec } from '@solana/codecs-numbers';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { BytesToPyB } from '../getTypeManifestVisitor';
+import { bytesToPyB } from '../getTypeManifestVisitor';
 import { DiscriminatorFragment } from './common';
 
 export function getDiscriminatorConstantsFragment(
@@ -92,19 +92,19 @@ export function getFieldDiscriminatorConstantFragment(
             if (field.type.kind == 'numberTypeNode') {
                 if (field.type.format == 'u64') {
                     const valueBs = getU64Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
                     return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
                 } else if (field.type.format == 'u32') {
                     const valueBs = getU32Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
                     return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
                 } else if (field.type.format == 'u16') {
                     const valueBs = getU16Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
                     return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
                 } else if (field.type.format == 'u8') {
                     const valueBs = getU8Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${BytesToPyB(valueBs)}"`;
+                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
                     return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
                 }
             }

@@ -1,11 +1,11 @@
 import { BytesValueNode, PdaSeedNode } from '@codama/nodes';
 
-import { HexToPyB } from './getTypeManifestVisitor';
+import { hexToPyB } from './getTypeManifestVisitor';
 
 export function getSeed(seed: PdaSeedNode): string {
     if (seed.kind == 'constantPdaSeedNode') {
         if (seed.type.kind == 'bytesTypeNode') {
-            const hexStr = HexToPyB((seed.value as BytesValueNode).data); //hexToString((seed.value as BytesValueNode).data);
+            const hexStr = hexToPyB((seed.value as BytesValueNode).data); //hexToString((seed.value as BytesValueNode).data);
             return `b"${hexStr}"`;
         }
         return '';

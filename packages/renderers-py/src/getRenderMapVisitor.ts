@@ -41,7 +41,7 @@ import {
     getFieldsToJSONEncodable,
     getLayoutFields,
 } from './fragments';
-import { GenType, getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
+import { GeneratedType, getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import {
     getImportFromFactory,
@@ -60,10 +60,10 @@ export type GetRenderMapOptions = {
 };
 
 export type GlobalFragmentScope = {
-    genType: GenType;
+    genType: GeneratedType;
     typeManifestVisitor: TypeManifestVisitor;
 };
-export function getInstructionPdas(
+export function getInstructionPDAs(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         accounts: InstructionAccountNode[];
         argv: InstructionArgumentNode[] | StructFieldTypeNode[];
@@ -90,7 +90,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const dependencyMap = options.dependencyMap ?? {};
     const useGranularImports = options.useGranularImports ?? false;
 
-    const genType = new GenType('', '');
+    const genType = new GeneratedType('', '');
 
     //const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
     const typeManifestVisitor = getTypeManifestVisitor({ genType, getImportFrom, linkables, stack });
@@ -123,11 +123,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
 
                     const fields = resolveNestedTypeNode(node.data).fields;
-                    const fieldsJSON = getFieldsJSON({
+                    const accountFieldsJSON = getFieldsJSON({
                         ...scope,
                         fields,
                     });
-                    const fieldsPy = getFieldsPy({
+                    const accountFieldsPy = getFieldsPy({
                         ...scope,
                         fields,
                     });
@@ -169,29 +169,29 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add('', 'borsh_construct');
                     imports.add('..program_id', 'PROGRAM_ID');
                     imports.add('anchorpy.error', 'AccountInvalidDiscriminator');
-                    imports.mergeWith(fieldsJSON!);
-                    imports.mergeWith(fieldsPy!);
+                    imports.mergeWith(accountFieldsJSON!);
+                    imports.mergeWith(accountFieldsPy!);
                     imports.mergeWith(layoutFragment);
                     imports.mergeWith(fieldsToJSON!);
                     imports.mergeWith(fieldsFromJSON!);
 
                     //console.log("fieldsToJSON:", fieldsToJSON, accountDiscriminatorConstantsFragment);
-                    let filename = `${camelCase(node.name)}`;
-                    if (filename == 'global') {
-                        filename = 'global_';
+                    let accountFilename = `${camelCase(node.name)}`;
+                    if (accountFilename == 'global') {
+                        accountFilename = 'global_';
                     }
                     return new RenderMap().add(
-                        `accounts/${filename}.py`,
+                        `accounts/${accountFilename}.py`,
                         render('accountsPage.njk', {
                             accountName: node.name,
                             discriminator_assignment: accountDiscriminatorConstantsFragment,
                             fields: fields,
                             fieldsDecode: fieldsDecode,
                             fieldsFromJSON: fieldsFromJSON,
-                            fieldsJSON_assignment: fieldsJSON,
+                            fieldsJSON_assignment: accountFieldsJSON,
                             fieldsLayout: layoutFragment,
                             fieldsToJSON: fieldsToJSON,
-                            fields_interface_params: fieldsPy,
+                            fields_interface_params: accountFieldsPy,
                             imports: imports.toString(dependencyMap, useGranularImports),
                             typeManifest: typeManifest,
                         }),
@@ -339,7 +339,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields,
                         prefix: node.name,
                     });
-                    const pdas = getInstructionPdas({
+                    const pdas = getInstructionPDAs({
                         ...scope,
                         accounts: node.accounts,
                         argv: fields,

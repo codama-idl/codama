@@ -28,21 +28,21 @@ import { getBytesFromBytesValueNode } from './utils/codecs';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 
-export function HexToPyB(hexStr: string) {
+export function hexToPyB(hexStr: string) {
     const buffer: Buffer = Buffer.from(hexStr, 'hex');
-    const xFormat: string = Array.from(buffer)
+    const hexFormat: string = Array.from(buffer)
         .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
         .join('');
-    return xFormat;
+    return hexFormat;
 }
-export function BytesToPyB(bs: ReadonlyUint8Array) {
-    const xFormat: string = Array.from(bs)
+export function bytesToPyB(bytesArray: ReadonlyUint8Array) {
+    const hexFormat: string = Array.from(bytesArray)
         .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
         .join('');
-    return xFormat;
+    return hexFormat;
 }
 
-export class GenType {
+export class GeneratedType {
     name: string;
     origin?: string;
     constructor(name: string, origin: string) {
@@ -51,7 +51,7 @@ export class GenType {
     }
 }
 export function getTypeManifestVisitor(input: {
-    genType: GenType;
+    genType: GeneratedType;
     getImportFrom: GetImportFromFunction;
     linkables: LinkableDictionary;
     stack?: NodeStack;
@@ -246,7 +246,7 @@ export function getTypeManifestVisitor(input: {
 
                 visitBytesValue(node) {
                     const manifest = typeManifest();
-                    const pyBstr = HexToPyB(node.data);
+                    const pyBstr = hexToPyB(node.data);
                     manifest.value.setRender(`b"${pyBstr}"`);
                     return manifest;
                 },
@@ -368,7 +368,7 @@ export function getTypeManifestVisitor(input: {
                     });
 
                     //const manifest = typeManifest();
-                    const borshType = `HiddenPrefixAdapter(b"${BytesToPyB(prefix)}",${inner.borshType.render})`;
+                    const borshType = `HiddenPrefixAdapter(b"${bytesToPyB(prefix)}",${inner.borshType.render})`;
                     return {
                         borshType: fragment(borshType, imports),
                         fromDecode: fragment('{{name}}', imports),
@@ -409,7 +409,7 @@ export function getTypeManifestVisitor(input: {
                     });
                     return {
                         borshType: fragment(
-                            `HiddenSuffixAdapter(b"${BytesToPyB(suffix)}",${inner.borshType.render})`,
+                            `HiddenSuffixAdapter(b"${bytesToPyB(suffix)}",${inner.borshType.render})`,
                             imports,
                         ),
                         fromDecode: fragment('{{name}}', imports),
