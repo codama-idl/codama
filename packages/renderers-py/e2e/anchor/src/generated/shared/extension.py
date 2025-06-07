@@ -11,7 +11,6 @@ from dataclasses import asdict
 from keyword import kwlist
 from typing import Any, Dict, Type, TypeVar, cast
 
-from borsh_construct import U32, CStruct
 import borsh_construct as borsh
 from construct import (
     Adapter,
@@ -25,12 +24,10 @@ from construct import (
     GreedyBytes，
     Prefixed
 )
-from construct import Int64ul as U64
-from construct import Int8ul as U8
 from solders import pubkey
 
-U64Bytes = Prefixed(U64, GreedyBytes)
-U8Bytes = Prefixed(U8, GreedyBytes)
+U64Bytes = Prefixed(borsh.U64, GreedyBytes)
+U8Bytes = Prefixed(borsh.U8, GreedyBytes)
 
 class _String64(Adapter):
     def __init__(self) -> None:
@@ -102,15 +99,15 @@ class EnumForCodegenU32(Adapter):
             variant_name_to_index[name] = idx
             index_to_variant_name[idx] = name
         enum_struct = CStruct(
-            self._index_key / U32,
+            self._index_key /borsh.U32,
             self._value_key
-            / Switch(lambda this: this.index, cast(dict[int, Construct], switch_cases)),
+            / Switch(lambda this: this.index, cast(dict[int, borsh.Construct], switch_cases)),
         )
         super().__init__(enum_struct)  # type: ignore
         self.variant_name_to_index = variant_name_to_index
         self.index_to_variant_name = index_to_variant_name
 
-    def _decode(self, obj: CStruct, context, path) -> dict[str, Any]:
+    def _decode(self, obj: borsh.Struct, context, path) -> dict[str, Any]:
         index = obj.index
         variant_name = self.index_to_variant_name[index]
         return {variant_name: obj.value}

@@ -203,4 +203,4 @@ The Program ID is generated based on the Program address provided in the IDL. If
 
 The generated code uses the AnchorPy code generation method and some underlying structures.
 
-Support for Codama was added, and some data structures not supported by AnchorPy were included, such as SizePrefixType, HiddenSuffixType, HiddenPrefixType, and EnumIndexU32Type.
+Support for Codama was added, and some data structures not supported by AnchorPy were included, such as FixedSizeType, SizePrefixType, HiddenSuffixType, HiddenPrefixType, and EnumIndexU32Type.

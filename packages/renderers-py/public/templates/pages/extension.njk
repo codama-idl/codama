@@ -3,30 +3,22 @@
 {% block main %}
 
 """Extensions to the Borsh spec for Solana-specific types."""
-from dataclasses import asdict
-from keyword import kwlist
-from typing import Any, Dict, Type, TypeVar, cast
+from typing import Any,cast
 
-from borsh_construct import U32, CStruct
 import borsh_construct as borsh
 from construct import (
     Adapter,
-    Bytes,
     Construct,
-    Container,
-    IfThenElse,
-    Padding,
+    GreedyBytes,
+    PaddedString,
+    Padded,
+    Prefixed,
     Renamed,
-    Switch,
-    GreedyBytes，
-    Prefixed
+    Switch
 )
-from construct import Int64ul as U64
-from construct import Int8ul as U8
-from solders import pubkey
 
-U64Bytes = Prefixed(U64, GreedyBytes)
-U8Bytes = Prefixed(U8, GreedyBytes)
+U64Bytes = Prefixed(borsh.U64, GreedyBytes)
+U8Bytes = Prefixed(borsh.U8, GreedyBytes)
 
 class _String64(Adapter):
     def __init__(self) -> None:
@@ -54,7 +46,7 @@ class HiddenPrefixAdapter(Adapter):
     prefix = None
     def __init__(self,padding,subcon: Construct):
         self.prefix = padding
-        prefix_struct = CStruct(
+        prefix_struct = borsh.CStruct(
             "prefix"/borsh.U8[len(padding)],
             "data"/subcon,
         )
@@ -70,7 +62,7 @@ class HiddenSuffixAdapter(Adapter):
     suffix = None
     def __init__(self,padding,subcon: Construct):
         self.suffix = padding
-        suffix_struct = CStruct(
+        suffix_struct = borsh.CStruct(
             "suffix"/borsh.U8[len(padding)],
             "data"/subcon,
         )
@@ -87,9 +79,9 @@ class EnumForCodegenU32(Adapter):
     _index_key = "index"
     _value_key = "value"
 
-    def __init__(self, *variants: "Renamed[CStruct, CStruct]") -> None:
+    def __init__(self, *variants: "Renamed[borsh.CStruct, borsh.CStruct]") -> None:
         """Init enum."""
-        switch_cases: dict[int, "Renamed[CStruct, CStruct]"] = {}
+        switch_cases: dict[int, "Renamed[borsh.CStruct, borsh.CStruct]"] = {}
         variant_name_to_index: dict[str, int] = {}
         index_to_variant_name: dict[int, str] = {}
         for idx, parser in enumerate(variants):
@@ -97,8 +89,8 @@ class EnumForCodegenU32(Adapter):
             name = cast(str, parser.name)
             variant_name_to_index[name] = idx
             index_to_variant_name[idx] = name
-        enum_struct = CStruct(
-            self._index_key / U32,
+        enum_struct = borsh.CStruct(
+            self._index_key /borsh.U32,
             self._value_key
             / Switch(lambda this: this.index, cast(dict[int, Construct], switch_cases)),
         )
@@ -106,7 +98,7 @@ class EnumForCodegenU32(Adapter):
         self.variant_name_to_index = variant_name_to_index
         self.index_to_variant_name = index_to_variant_name
 
-    def _decode(self, obj: CStruct, context, path) -> dict[str, Any]:
+    def _decode(self, obj: borsh.CStruct, context, path) -> dict[str, Any]:
         index = obj.index
         variant_name = self.index_to_variant_name[index]
         return {variant_name: obj.value}
@@ -115,4 +107,7 @@ class EnumForCodegenU32(Adapter):
         variant_name = list(obj.keys())[0]
         index = self.variant_name_to_index[variant_name]
         return {self._index_key: index, self._value_key: obj[variant_name]}
+
+FixedSizeString=PaddedString
+FixedSizeBytes=Padded
 {% endblock %}

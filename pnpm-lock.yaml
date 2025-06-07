@@ -341,6 +341,9 @@ importers:
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
+      vite:
+        specifier: ^6.3.5
+        version: 6.3.5(@types/node@22.15.17)
     devDependencies:
       '@types/nunjucks':
         specifier: ^3.2.6
