@@ -7,9 +7,9 @@
       {% endif %}
 
       {% if account.isSigner === 'either' %}
-        {% set type = '(&\'b solana_program::account_info::AccountInfo<\'a>, bool)' %}
+        {% set type = '(&\'b solana_account_info::AccountInfo<\'a>, bool)' %}
       {% else %}
-        {% set type = '&\'b solana_program::account_info::AccountInfo<\'a>' %}
+        {% set type = '&\'b solana_account_info::AccountInfo<\'a>' %}
       {% endif %}
 
       {% if account.isOptional %}
@@ -24,16 +24,16 @@
 /// `{{ instruction.name | snakeCase }}` CPI instruction.
 pub struct {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
   /// The program to invoke.
-  pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+  pub __program: &'b solana_account_info::AccountInfo<'a>,
   {% for account in instruction.accounts %}
     {% if account.docs.length > 0 %}
       {{ macros.docblock(account.docs) }}
     {% endif %}
 
     {% if account.isSigner === 'either' %}
-      {% set type = '(&\'b solana_program::account_info::AccountInfo<\'a>, bool)' %}
+      {% set type = '(&\'b solana_account_info::AccountInfo<\'a>, bool)' %}
     {% else %}
-      {% set type = '&\'b solana_program::account_info::AccountInfo<\'a>' %}
+      {% set type = '&\'b solana_account_info::AccountInfo<\'a>' %}
     {% endif %}
 
     {% if account.isOptional %}
@@ -50,7 +50,7 @@ pub struct {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
 
 impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
   pub fn new(
-    program: &'b solana_program::account_info::AccountInfo<'a>,
+    program: &'b solana_account_info::AccountInfo<'a>,
     {% if instruction.accounts.length > 0 %}
       accounts: {{ instruction.name | pascalCase }}CpiAccounts<'a, 'b>,
     {% endif %}
@@ -69,15 +69,15 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
     }
   }
   #[inline(always)]
-  pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
     self.invoke_signed_with_remaining_accounts(&[], &[])
   }
   #[inline(always)]
-  pub fn invoke_with_remaining_accounts(&self, remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke_with_remaining_accounts(&self, remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)]) -> solana_program_entrypoint::ProgramResult {
     self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
   }
   #[inline(always)]
-  pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program_entrypoint::ProgramResult {
     self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
   }
   #[allow(clippy::arithmetic_side_effects)]
@@ -86,32 +86,32 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
   pub fn invoke_signed_with_remaining_accounts(
     &self,
     signers_seeds: &[&[&[u8]]],
-    remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
-  ) -> solana_program::entrypoint::ProgramResult {
+    remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)]
+  ) -> solana_program_entrypoint::ProgramResult {
     let mut accounts = Vec::with_capacity({{ instruction.accounts.length + '+' if instruction.accounts.length > 0}} remaining_accounts.len());
     {% for account in instruction.accounts %}
       {% if account.isSigner === 'either' %}
         {% if account.isOptional and instruction.optionalAccountStrategy === 'programId' %}
           if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               signer,
             ));
           } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_instruction::AccountMeta::new_readonly(
               crate::{{ program.name | snakeCase | upper }}_ID,
               false,
             ));
           }
         {% elif account.isOptional %}
           if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               signer,
             ));
           }
         {% else %}
-          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+          accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
             *self.{{ account.name | snakeCase }}.0.key,
             self.{{ account.name | snakeCase }}.1,
           ));
@@ -119,25 +119,25 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       {% else %}
         {% if account.isOptional and instruction.optionalAccountStrategy === 'programId' %}
           if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               {{ 'true' if account.isSigner else 'false' }},
             ));
           } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_instruction::AccountMeta::new_readonly(
               crate::{{ program.name | snakeCase | upper }}_ID,
               false,
             ));
           }
         {% elif account.isOptional %}
           if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               {{ 'true' if account.isSigner else 'false' }},
             ));
           }
         {% else %}
-          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+          accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
             *self.{{ account.name | snakeCase }}.key,
             {{ 'true' if account.isSigner else 'false' }}
           ));
@@ -145,7 +145,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       {% endif %}
     {% endfor %}
     remaining_accounts.iter().for_each(|remaining_account| {
-      accounts.push(solana_program::instruction::AccountMeta {
+      accounts.push(solana_instruction::AccountMeta {
           pubkey: *remaining_account.0.key,
           is_signer: remaining_account.1,
           is_writable: remaining_account.2,
@@ -157,7 +157,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       data.append(&mut args);
     {% endif %}
 
-    let instruction = solana_program::instruction::Instruction {
+    let instruction = solana_instruction::Instruction {
       program_id: crate::{{ program.name | snakeCase | upper }}_ID,
       accounts,
       data,
@@ -176,9 +176,9 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
     remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
-      solana_program::program::invoke(&instruction, &account_infos)
+      solana_cpi::invoke(&instruction, &account_infos)
     } else {
-      solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+      solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
     }
   }
 }

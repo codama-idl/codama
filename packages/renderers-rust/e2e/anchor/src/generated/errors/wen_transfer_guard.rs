@@ -36,13 +36,13 @@ pub enum WenTransferGuardError {
     MintAssignedTransferHookProgramIsNotThisOne = 0x1777,
 }
 
-impl solana_program::program_error::PrintProgramError for WenTransferGuardError {
+impl solana_program_error::PrintProgramError for WenTransferGuardError {
     fn print<E>(&self) {
-        solana_program::msg!(&self.to_string());
+        solana_msg::msg!(&self.to_string());
     }
 }
 
-impl<T> solana_program::decode_error::DecodeError<T> for WenTransferGuardError {
+impl<T> solana_decode_error::DecodeError<T> for WenTransferGuardError {
     fn type_of() -> &'static str {
         "WenTransferGuardError"
     }

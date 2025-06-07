@@ -11,58 +11,55 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct DeleteTokenBadge {
-    pub whirlpools_config: solana_program::pubkey::Pubkey,
+    pub whirlpools_config: solana_pubkey::Pubkey,
 
-    pub whirlpools_config_extension: solana_program::pubkey::Pubkey,
+    pub whirlpools_config_extension: solana_pubkey::Pubkey,
 
-    pub token_badge_authority: solana_program::pubkey::Pubkey,
+    pub token_badge_authority: solana_pubkey::Pubkey,
 
-    pub token_mint: solana_program::pubkey::Pubkey,
+    pub token_mint: solana_pubkey::Pubkey,
 
-    pub token_badge: solana_program::pubkey::Pubkey,
+    pub token_badge: solana_pubkey::Pubkey,
 
-    pub receiver: solana_program::pubkey::Pubkey,
+    pub receiver: solana_pubkey::Pubkey,
 }
 
 impl DeleteTokenBadge {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(&[])
     }
     #[allow(clippy::arithmetic_side_effects)]
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.whirlpools_config,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.whirlpools_config_extension,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_badge_authority,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_mint,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.token_badge,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.receiver,
-            false,
-        ));
+        accounts.push(solana_instruction::AccountMeta::new(self.receiver, false));
         accounts.extend_from_slice(remaining_accounts);
         let data = borsh::to_vec(&DeleteTokenBadgeInstructionData::new()).unwrap();
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::WHIRLPOOL_ID,
             accounts,
             data,
@@ -102,13 +99,13 @@ impl Default for DeleteTokenBadgeInstructionData {
 ///   5. `[writable]` receiver
 #[derive(Clone, Debug, Default)]
 pub struct DeleteTokenBadgeBuilder {
-    whirlpools_config: Option<solana_program::pubkey::Pubkey>,
-    whirlpools_config_extension: Option<solana_program::pubkey::Pubkey>,
-    token_badge_authority: Option<solana_program::pubkey::Pubkey>,
-    token_mint: Option<solana_program::pubkey::Pubkey>,
-    token_badge: Option<solana_program::pubkey::Pubkey>,
-    receiver: Option<solana_program::pubkey::Pubkey>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    whirlpools_config: Option<solana_pubkey::Pubkey>,
+    whirlpools_config_extension: Option<solana_pubkey::Pubkey>,
+    token_badge_authority: Option<solana_pubkey::Pubkey>,
+    token_mint: Option<solana_pubkey::Pubkey>,
+    token_badge: Option<solana_pubkey::Pubkey>,
+    receiver: Option<solana_pubkey::Pubkey>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl DeleteTokenBadgeBuilder {
@@ -116,17 +113,14 @@ impl DeleteTokenBadgeBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn whirlpools_config(
-        &mut self,
-        whirlpools_config: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn whirlpools_config(&mut self, whirlpools_config: solana_pubkey::Pubkey) -> &mut Self {
         self.whirlpools_config = Some(whirlpools_config);
         self
     }
     #[inline(always)]
     pub fn whirlpools_config_extension(
         &mut self,
-        whirlpools_config_extension: solana_program::pubkey::Pubkey,
+        whirlpools_config_extension: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.whirlpools_config_extension = Some(whirlpools_config_extension);
         self
@@ -134,32 +128,29 @@ impl DeleteTokenBadgeBuilder {
     #[inline(always)]
     pub fn token_badge_authority(
         &mut self,
-        token_badge_authority: solana_program::pubkey::Pubkey,
+        token_badge_authority: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.token_badge_authority = Some(token_badge_authority);
         self
     }
     #[inline(always)]
-    pub fn token_mint(&mut self, token_mint: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_mint(&mut self, token_mint: solana_pubkey::Pubkey) -> &mut Self {
         self.token_mint = Some(token_mint);
         self
     }
     #[inline(always)]
-    pub fn token_badge(&mut self, token_badge: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_badge(&mut self, token_badge: solana_pubkey::Pubkey) -> &mut Self {
         self.token_badge = Some(token_badge);
         self
     }
     #[inline(always)]
-    pub fn receiver(&mut self, receiver: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn receiver(&mut self, receiver: solana_pubkey::Pubkey) -> &mut Self {
         self.receiver = Some(receiver);
         self
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -167,13 +158,13 @@ impl DeleteTokenBadgeBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = DeleteTokenBadge {
             whirlpools_config: self
                 .whirlpools_config
@@ -195,40 +186,40 @@ impl DeleteTokenBadgeBuilder {
 
 /// `delete_token_badge` CPI accounts.
 pub struct DeleteTokenBadgeCpiAccounts<'a, 'b> {
-    pub whirlpools_config: &'b solana_program::account_info::AccountInfo<'a>,
+    pub whirlpools_config: &'b solana_account_info::AccountInfo<'a>,
 
-    pub whirlpools_config_extension: &'b solana_program::account_info::AccountInfo<'a>,
+    pub whirlpools_config_extension: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_badge_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_badge_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_badge: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_badge: &'b solana_account_info::AccountInfo<'a>,
 
-    pub receiver: &'b solana_program::account_info::AccountInfo<'a>,
+    pub receiver: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `delete_token_badge` CPI instruction.
 pub struct DeleteTokenBadgeCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub whirlpools_config: &'b solana_program::account_info::AccountInfo<'a>,
+    pub whirlpools_config: &'b solana_account_info::AccountInfo<'a>,
 
-    pub whirlpools_config_extension: &'b solana_program::account_info::AccountInfo<'a>,
+    pub whirlpools_config_extension: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_badge_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_badge_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_badge: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_badge: &'b solana_account_info::AccountInfo<'a>,
 
-    pub receiver: &'b solana_program::account_info::AccountInfo<'a>,
+    pub receiver: &'b solana_account_info::AccountInfo<'a>,
 }
 
 impl<'a, 'b> DeleteTokenBadgeCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: DeleteTokenBadgeCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
@@ -242,25 +233,21 @@ impl<'a, 'b> DeleteTokenBadgeCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -269,39 +256,35 @@ impl<'a, 'b> DeleteTokenBadgeCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.whirlpools_config.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.whirlpools_config_extension.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_badge_authority.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_mint.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.token_badge.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.receiver.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -309,7 +292,7 @@ impl<'a, 'b> DeleteTokenBadgeCpi<'a, 'b> {
         });
         let data = borsh::to_vec(&DeleteTokenBadgeInstructionData::new()).unwrap();
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::WHIRLPOOL_ID,
             accounts,
             data,
@@ -327,9 +310,9 @@ impl<'a, 'b> DeleteTokenBadgeCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -350,7 +333,7 @@ pub struct DeleteTokenBadgeCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(DeleteTokenBadgeCpiBuilderInstruction {
             __program: program,
             whirlpools_config: None,
@@ -366,7 +349,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn whirlpools_config(
         &mut self,
-        whirlpools_config: &'b solana_program::account_info::AccountInfo<'a>,
+        whirlpools_config: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.whirlpools_config = Some(whirlpools_config);
         self
@@ -374,7 +357,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn whirlpools_config_extension(
         &mut self,
-        whirlpools_config_extension: &'b solana_program::account_info::AccountInfo<'a>,
+        whirlpools_config_extension: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.whirlpools_config_extension = Some(whirlpools_config_extension);
         self
@@ -382,7 +365,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_badge_authority(
         &mut self,
-        token_badge_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        token_badge_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_badge_authority = Some(token_badge_authority);
         self
@@ -390,7 +373,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_mint(
         &mut self,
-        token_mint: &'b solana_program::account_info::AccountInfo<'a>,
+        token_mint: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_mint = Some(token_mint);
         self
@@ -398,16 +381,13 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_badge(
         &mut self,
-        token_badge: &'b solana_program::account_info::AccountInfo<'a>,
+        token_badge: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_badge = Some(token_badge);
         self
     }
     #[inline(always)]
-    pub fn receiver(
-        &mut self,
-        receiver: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn receiver(&mut self, receiver: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.receiver = Some(receiver);
         self
     }
@@ -415,7 +395,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -431,11 +411,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -443,7 +419,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -451,7 +427,7 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let instruction = DeleteTokenBadgeCpi {
             __program: self.instruction.__program,
 
@@ -488,17 +464,13 @@ impl<'a, 'b> DeleteTokenBadgeCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct DeleteTokenBadgeCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    whirlpools_config: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    whirlpools_config_extension: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_badge_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_badge: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    receiver: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    whirlpools_config: Option<&'b solana_account_info::AccountInfo<'a>>,
+    whirlpools_config_extension: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_badge_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_mint: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_badge: Option<&'b solana_account_info::AccountInfo<'a>>,
+    receiver: Option<&'b solana_account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }
