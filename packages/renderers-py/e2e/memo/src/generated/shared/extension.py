@@ -12,6 +12,7 @@ from keyword import kwlist
 from typing import Any, Dict, Type, TypeVar, cast
 
 from borsh_construct import U32, CStruct
+import borsh_construct as borsh
 from construct import (
     Adapter,
     Bytes,
@@ -21,7 +22,8 @@ from construct import (
     Padding,
     Renamed,
     Switch,
-    GreedyBytes
+    GreedyBytes，
+    Prefixed
 )
 from construct import Int64ul as U64
 from construct import Int8ul as U8
@@ -48,6 +50,7 @@ class _String8(Adapter):
 
     def _encode(self, obj: str, context, path) -> bytes:
         return bytes(obj, "utf8")
+
 String64=_String64()
 String8=_String8()
 

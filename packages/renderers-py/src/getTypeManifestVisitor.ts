@@ -346,6 +346,7 @@ export function getTypeManifestVisitor(input: {
                     const inner = visit(node.type, self);
                     //let prefix = new Uint8Array();
                     let prefix = new Uint8Array([]);
+                    imports.add('..shared', 'HiddenPrefixAdapter');
 
                     node.prefix.forEach(item => {
                         //item.type.kind ==
@@ -386,6 +387,8 @@ export function getTypeManifestVisitor(input: {
                     const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
                     const inner = visit(node.type, self);
                     let suffix = new Uint8Array([]);
+
+                    imports.add('..shared', 'HiddenSuffixAdapter');
 
                     node.suffix.forEach(item => {
                         if (item.type.kind == 'stringTypeNode') {

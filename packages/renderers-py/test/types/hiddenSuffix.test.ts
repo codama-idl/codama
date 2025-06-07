@@ -33,6 +33,8 @@ test('it renders hidden suffix codecs', async () => {
     console.log(renderMap.get('types/myType.py'));
     await renderMapContains(renderMap, 'types/myType.py', [
         `"myType" /HiddenSuffixAdapter(b"\\x68\\x65\\x6c\\x6c\\x6f\\x20\\x77\\x6f\\x72\\x6c\\x64\\xff",borsh.U32)`,
+        `from ..shared import HiddenSuffixAdapter`,
+        `import borsh_construct as borsh`,
     ]);
     /*
     // Then we expect the following types and codecs to be exported.
