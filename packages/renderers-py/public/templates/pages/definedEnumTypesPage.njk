@@ -12,9 +12,17 @@
 {{variant.name | pascalCase}}Value = tuple[{{enumHelper.getTuplePy(variant).renders}}]
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
 class {{variant.name | pascalCase }}JSONValue(typing.TypedDict):
+{% if variant.struct.kind == "sizePrefixTypeNode" %}
 {% for field in enumHelper.getStructPyJSON(variant).renders %}
     {{field}}
 {% endfor %}
+{% else %}
+{% for field in enumHelper.getStructPyJSON(variant).renders %}
+    {{field}}
+{% endfor %}
+{% endif %}
+
+
 class {{variant.name | pascalCase}}Value(typing.TypedDict):
 {% for field in enumHelper.getStructPy(variant).renders %}
     {{field}}

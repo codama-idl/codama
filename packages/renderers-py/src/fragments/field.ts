@@ -54,15 +54,26 @@ export function getFieldsPyJSON(
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const { fields, typeManifestVisitor } = scope;
+    const {fields, typeManifestVisitor} = scope;
     const fragments: string[] = [];
-    fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
-            return;
+    try {
+
+        fields.forEach((field, _index) => {
+            if (field.name == 'discriminator') {
+                return;
+            }
+            const fieldtype = visit(field.type, typeManifestVisitor);
+            if (fieldtype.pyJSONType.render) {
+                fragments.push(`${field.name}: ${fieldtype.pyJSONType.render}`);
+            } else {
+                console.log('field.name', field.name, field.type);
+            }
+        });
+    } catch(err: unknown) {
+        if (err instanceof Error) {
+            console.error('field.name', err.stack, fields);
         }
-        const fieldtype = visit(field.type, typeManifestVisitor);
-        fragments.push(`${field.name}: ${fieldtype.pyJSONType.render}`);
-    });
+    }
     return new PyFragment(fragments);
 }
 export function getFieldsToJSON(

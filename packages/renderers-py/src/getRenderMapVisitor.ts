@@ -252,7 +252,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                         return new RenderMap().add(
                             `types/${camelCase(node.name)}.py`,
-                            render('definedTypesPage.njk', {
+                            render('definedStructTypesPage.njk', {
                                 discriminator: '',
                                 fields: fields,
                                 fieldsFromDecode: fieldsFromDecode,
@@ -291,7 +291,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             }),
                         );
                     } else {
-                        throw new Error(`DefinedType not supported by ${node.type.kind}`);
+                        //throw new Error(`DefinedType not supported by ${node.type.kind}`);
+                        return new RenderMap().add(
+                            `types/${camelCase(node.name)}.py`,
+                            render('definedTypesPage.njk', {}),
+                        );
                     }
                 },
 
@@ -450,7 +454,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
 
                     map.add('shared/__init__.py', render('sharedIndex.njk', ctx));
-                    map.add('shared/extension.py', render('extension.njk', ctx));
+                    map.add('shared/extension.py', render('extension.py', ctx));
 
                     return map
                         .add('__init__.py', render('rootIndex.njk', ctx))

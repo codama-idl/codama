@@ -12,9 +12,11 @@ from construct import (
     GreedyBytes,
     PaddedString,
     Padded,
+    Padding,
     Prefixed,
     Renamed,
-    Switch
+    Switch,
+    IfThenElse
 )
 
 U64Bytes = Prefixed(borsh.U64, GreedyBytes)
@@ -73,6 +75,54 @@ class HiddenSuffixAdapter(Adapter):
 
     def _encode(self, obj, context, path) -> dict:
         return { "data": obj, "suffix": self.suffix}
+
+class OptionU32(Adapter):
+    _discriminator_key = "discriminator"
+    _value_key = "value"
+
+    def __init__(self, subcon: Construct) -> None:
+        option_struct = borsh.CStruct(
+            self._discriminator_key / borsh.U32,
+            self._value_key
+            / IfThenElse(
+                lambda this: this[self._discriminator_key] == 0,
+                Padding(subcon.sizeof()),
+                subcon,
+            ),
+        )
+        super().__init__(option_struct)  # type: ignore
+
+    def _decode(self, obj, context, path) -> Any:
+        discriminator = obj[self._discriminator_key]
+        return None if discriminator == 0 else obj[self._value_key]
+
+    def _encode(self, obj, context, path) -> dict:
+        discriminator = 0 if obj is None else 1
+        return {self._discriminator_key: discriminator, self._value_key: obj}
+
+class RemainderOption(Adapter):
+    _discriminator_key = "discriminator"
+    _value_key = "value"
+
+    def __init__(self, subcon: Construct) -> None:
+        option_struct = borsh.CStruct(
+            self._discriminator_key / borsh.U32,
+            self._value_key
+            / IfThenElse(
+                lambda this: this[self._discriminator_key] == 0,
+                Padding(subcon.sizeof()),
+                subcon,
+            ),
+        )
+        super().__init__(option_struct)  # type: ignore
+
+    def _decode(self, obj, context, path) -> Any:
+        discriminator = obj[self._discriminator_key]
+        return None if discriminator == 0 else obj[self._value_key]
+
+    def _encode(self, obj, context, path) -> dict:
+        discriminator = 0 if obj is None else 1
+        return {self._discriminator_key: discriminator, self._value_key: obj}
 
 
 class EnumForCodegenU32(Adapter):

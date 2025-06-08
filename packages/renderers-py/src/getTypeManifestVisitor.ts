@@ -90,6 +90,9 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(account.data, self);
                     return manifest;
                 },
+                visitAmountType(amountType, { self }) {
+                    return visit(amountType.number, self);
+                },
 
                 visitArrayType(arrayType, { self }) {
                     const itemlayout = visit(arrayType.item, self);
@@ -363,6 +366,18 @@ export function getTypeManifestVisitor(input: {
                                 prefix = mergeBytes([prefix, byteBs.valueOf()]);
                                 return;
                             }
+                        } else if (item.type.kind == 'preOffsetTypeNode') {
+                            //todo preOffsetTypeNode
+                            /*if (item.value.kind == 'preOffset') {
+                                const num = getNumberFromNumberValueNode(item.value);
+                                const numBs = getConstantEncoder(num).encode();
+                                suffix = mergeBytes([suffix, numBs.valueOf()]);
+                                return;
+                                }*/
+                            return;
+                        } else if (item.type.kind == 'numberTypeNode') {
+                            //todo numberTypeNode
+                            return;
                         }
                         throw new Error(`Unsupported ConstantValue Type: ${item.type.kind}`);
                     });
@@ -404,6 +419,18 @@ export function getTypeManifestVisitor(input: {
                                 suffix = mergeBytes([suffix, byteBs.valueOf()]);
                                 return;
                             }
+                        } else if (item.type.kind == 'preOffsetTypeNode') {
+                            //todo preOffsetTypeNode
+                            /*if (item.value.kind == 'preOffset') {
+                                const num = getNumberFromNumberValueNode(item.value);
+                                const numBs = getConstantEncoder(num).encode();
+                                suffix = mergeBytes([suffix, numBs.valueOf()]);
+                                return;
+                                }*/
+                            return;
+                        } else if (item.type.kind == 'numberTypeNode') {
+                            //todo numberTypeNode
+                            return;
                         }
                         throw new Error(`Unsupported ConstantValue Type: ${item.type.kind}`);
                     });
@@ -420,6 +447,32 @@ export function getTypeManifestVisitor(input: {
                         pyType: fragment(`${inner.pyType.render}`, imports),
                         toEncode: fragment(`${inner.toEncode.render}`),
                         toJSON: fragment(`${inner.toJSON.render}`),
+                        value: fragment(''),
+                    };
+                },
+                visitMapType(node,{self}) {
+                    //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    const imports = new ImportMap();
+                    console.log('visitMapType', node);
+                    let borshType= '';
+                    const innerKey = visit(node.key, self);
+                    console.log("key",innerKey)
+
+                    if (node.count.kind == 'prefixedCountNode'){
+                        if (node.count.prefix.kind == 'numberTypeNode' && node.count.prefix.format == 'u32' && node.count.prefix.endian == "le"){
+                            borshType = "borsh.HashMap()"
+                        }
+                    }
+                    return {
+                        borshType: fragment(borshType,imports),
+                        fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
+                        isEnum: false,
+                        pyJSONType: fragment('int'),
+                        pyType: fragment('int'),
+                        toEncode: fragment('{{name}}'),
+                        toJSON: fragment('{{name}}'),
                         value: fragment(''),
                     };
                 },
@@ -483,15 +536,69 @@ export function getTypeManifestVisitor(input: {
                             toJSON: fragment(toJSONStr, inner.toJSON.imports),
                             value: fragment(''),
                         };
+                    } else if (optionPrefix.format === 'u32' && optionPrefix.endian === 'le') {
+                        const imports = new ImportMap();
+                        imports.add('..shared', 'OptionU32');
+                        const toJSONStr = `(None if {{name}} is None else ${inner.toJSON.render})`;
+                        const fromJSONStr = `(None if {{name}} is None else ${inner.fromJSON.render})`;
+                        const fromDecodeStr = `(None if {{name}} is None else ${inner.fromDecode.render})`;
+                        let toEncodeStr = '';
+                        if (inner.isEncodable) {
+                            toEncodeStr = `(None if {{name}} is None else {{name}}.to_encodable())`;
+                        } else {
+                            toEncodeStr = '{{name}}';
+                        }
+                        imports.mergeWith(inner.borshType.imports);
+
+                        return {
+                            borshType: fragment(`OptionU32(${inner.borshType.render})`, imports),
+                            fromDecode: fragment(fromDecodeStr, imports),
+                            fromJSON: fragment(fromJSONStr, imports),
+                            isEncodable: false,
+                            isEnum: false,
+                            pyJSONType: fragment(`typing.Optional[${inner.pyJSONType.render}]`, imports),
+                            pyType: fragment(`typing.Optional[${inner.pyType.render}]`, imports),
+                            toEncode: fragment(toEncodeStr),
+                            toJSON: fragment(toJSONStr, imports),
+                            value: fragment(''),
+                        };
                     }
 
-                    throw new Error('Option size not supported by Borsh');
+                    throw new Error(`Option size ${optionPrefix.format} not supported by Borsh`);
                 },
                 visitPostOffsetType(node) {
-                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    console.log('visitPostOffsetType', node);
+                    const imports = new ImportMap();
+                    return {
+                        borshType: fragment('BorshPubkey', imports),
+                        fromDecode: fragment('{{name}}', imports),
+                        fromJSON: fragment('SolPubkey.from_string({{name}})'),
+                        isEncodable: false,
+                        isEnum: false,
+                        pyJSONType: fragment('str'),
+                        pyType: fragment('SolPubkey', imports),
+                        toEncode: fragment('{{name}}'),
+                        toJSON: fragment('str({{name}})'),
+                        value: fragment(''),
+                    };
                 },
                 visitPreOffsetType(node) {
-                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    console.log('visitPreOffsetType', node);
+                    const imports = new ImportMap();
+                    return {
+                        borshType: fragment('BorshPubkey', imports),
+                        fromDecode: fragment('{{name}}', imports),
+                        fromJSON: fragment('SolPubkey.from_string({{name}})'),
+                        isEncodable: false,
+                        isEnum: false,
+                        pyJSONType: fragment('str'),
+                        pyType: fragment('SolPubkey', imports),
+                        toEncode: fragment('{{name}}'),
+                        toJSON: fragment('str({{name}})'),
+                        value: fragment(''),
+                    };
                 },
                 visitPublicKeyType() {
                     const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
@@ -515,8 +622,29 @@ export function getTypeManifestVisitor(input: {
                     manifest.value.setRender(`address("${node.publicKey}")`).addImports('solanaAddresses', 'address');
                     return manifest;
                 },
-                visitRemainderOptionType(node) {
-                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                visitRemainderOptionType(node, { self }) {
+                    //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    console.log('visitRemainderOptionType', node);
+                    const inner = visit(node.item, self);
+                    const imports = new ImportMap();
+                    //.add('solders.pubkey', 'Pubkey');
+                    //imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
+                    imports.add('..shared', 'RemainderOption');
+                    const borshType = `RemainderOption(${inner.borshType.render})`;
+                    imports.mergeWith(inner.borshType);
+
+                    return {
+                        borshType: fragment(borshType, imports),
+                        fromDecode: fragment('{{name}}', imports),
+                        fromJSON: fragment('SolPubkey.from_string({{name}})'),
+                        isEncodable: false,
+                        isEnum: false,
+                        pyJSONType: fragment('str'),
+                        pyType: fragment('SolPubkey', imports),
+                        toEncode: fragment('{{name}}'),
+                        toJSON: fragment('str({{name}})'),
+                        value: fragment(''),
+                    };
                 },
                 visitSetType(node) {
                     throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
@@ -542,7 +670,20 @@ export function getTypeManifestVisitor(input: {
                             };
                         } else if (parentSize.format == 'u32' && parentSize.endian == 'le') {
                             return {
-                                borshType: fragment('borsh.String'),
+                                borshType: fragment('String32'),
+                                fromDecode: fragment('{{name}}'),
+                                fromJSON: fragment('{{name}}'),
+                                isEncodable: false,
+                                isEnum: false,
+                                pyJSONType: fragment('str'),
+                                pyType: fragment('str'),
+                                toEncode: fragment('{{name}}'),
+                                toJSON: fragment('{{name}}'),
+                                value: fragment(''),
+                            };
+                        } else if (parentSize.format == 'u16' && parentSize.endian == 'le') {
+                            return {
+                                borshType: fragment('String16'),
                                 fromDecode: fragment('{{name}}'),
                                 fromJSON: fragment('{{name}}'),
                                 isEncodable: false,
@@ -652,8 +793,21 @@ export function getTypeManifestVisitor(input: {
                         value: fragment(''),
                     };
                 },
-                visitZeroableOptionType(node) {
-                    throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                visitZeroableOptionType(_node) {
+                    //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    return {
+                        borshType: fragment('borsh.String'),
+                        fromDecode: fragment('{{name}}'),
+                        fromJSON: fragment('{{name}}'),
+                        isEncodable: false,
+                        isEnum: false,
+                        pyJSONType: fragment('str'),
+                        pyType: fragment('borsh.String'),
+                        toEncode: fragment('{{name}}'),
+                        toJSON: fragment('{{name}}'),
+
+                        value: fragment(''),
+                    };
                 },
             }),
         visitor => recordNodeStackVisitor(visitor, stack),
