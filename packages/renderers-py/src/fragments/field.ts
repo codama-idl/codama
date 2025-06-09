@@ -54,10 +54,9 @@ export function getFieldsPyJSON(
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const {fields, typeManifestVisitor} = scope;
+    const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
     try {
-
         fields.forEach((field, _index) => {
             if (field.name == 'discriminator') {
                 return;
@@ -69,7 +68,7 @@ export function getFieldsPyJSON(
                 console.log('field.name', field.name, field.type);
             }
         });
-    } catch(err: unknown) {
+    } catch (err: unknown) {
         if (err instanceof Error) {
             console.error('field.name', err.stack, fields);
         }
