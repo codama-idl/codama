@@ -173,8 +173,6 @@ class SolMapU32(Adapter):
     """Borsh implementation for Rust HashMap."""
 
     def __init__(self, key_subcon: Construct, value_subcon: Construct) -> None:
-
-        #super().__init__(PrefixedArray(borsh.U32, borsh.TupleStruct(key_subcon, value_subcon)))
         super().__init__(
             PrefixedArray(borsh.U32, borsh.TupleStruct(key_subcon, value_subcon)),
         )  # type: ignore
@@ -232,3 +230,18 @@ class PostOffset(Pointer):
             stream_seek(stream, offset, 2 if offset < 0 else 0, path)
         #stream_seek(stream, fallback, 0, path)
         return buildret
+
+
+class ZeroableOption(Adapter):
+    def __init__(self, subcon: Construct,value: Any) -> None:
+        self.value = value
+        super().__init__()
+    def _decode(self, obj:Any, context, path) -> Any:
+        if obj == self.value:
+            return None
+        return obj
+
+    def _encode(self, obj, context, path) ->  Any:
+        if obj == self.value:
+            return obj
+        return obj

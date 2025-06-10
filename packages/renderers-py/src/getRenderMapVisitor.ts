@@ -292,9 +292,17 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         );
                     } else {
                         //throw new Error(`DefinedType not supported by ${node.type.kind}`);
+                        const inner = visit(nodeType,typeManifestVisitor);
+                        imports.mergeWith(inner.borshType);
+                        console.log("DefinedType ",inner);
                         return new RenderMap().add(
                             `types/${camelCase(node.name)}.py`,
-                            render('definedTypesPage.njk', {}),
+                            render('definedTypesPage.njk', {
+                                typeName: node.name,
+                                borshType: inner.borshType,
+                                pyType: inner.pyType,
+                                imports
+                            }),
                         );
                     }
                 },
