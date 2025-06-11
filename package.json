@@ -24,7 +24,7 @@
         "eslint-plugin-simple-import-sort": "^12.1.1",
         "eslint-plugin-sort-keys-fix": "^1.1.2",
         "eslint-plugin-typescript-sort-keys": "^3.3.0",
-        "happy-dom": "^17.6.3",
+        "happy-dom": "^18.0.1",
         "prettier": "^3.5.3",
         "rimraf": "6.0.1",
         "turbo": "^2.5.4",
