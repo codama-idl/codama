@@ -36,6 +36,9 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('dump', function (obj) {
         return JSON.stringify(obj, null, 2);
     });
+    env.addGlobal('dump', function (obj: any) {
+        return JSON.stringify(obj, null, 2);
+    });
     env.addGlobal('filterByField', function (array: PdaSeedNode[], fieldName: string): PdaSeedNode[] {
         if (!Array.isArray(array)) return [];
         return array.filter(item => item && typeof item === 'object' && fieldName in item);

@@ -133,6 +133,40 @@ class RemainderOption(Adapter):
         return {self._discriminator_key: discriminator, self._value_key: obj}
 
 
+class EnumForCodegenU16(Adapter):
+    _index_key = "index"
+    _value_key = "value"
+
+    def __init__(self, *variants: "Renamed[borsh.CStruct, borsh.CStruct]") -> None:
+        """Init enum."""
+        switch_cases: dict[int, "Renamed[borsh.CStruct, borsh.CStruct]"] = {}
+        variant_name_to_index: dict[str, int] = {}
+        index_to_variant_name: dict[int, str] = {}
+        for idx, parser in enumerate(variants):
+            switch_cases[idx] = parser
+            name = cast(str, parser.name)
+            variant_name_to_index[name] = idx
+            index_to_variant_name[idx] = name
+        enum_struct = borsh.CStruct(
+            self._index_key /borsh.U16,
+            self._value_key
+            / Switch(lambda this: this.index, cast(dict[int, Construct], switch_cases)),
+        )
+        super().__init__(enum_struct)  # type: ignore
+        self.variant_name_to_index = variant_name_to_index
+        self.index_to_variant_name = index_to_variant_name
+
+    def _decode(self, obj: borsh.CStruct, context, path) -> dict[str, Any]:
+        index = obj.index
+        variant_name = self.index_to_variant_name[index]
+        return {variant_name: obj.value}
+
+    def _encode(self, obj: dict[str, Any], context, path) -> dict[str, Any]:
+        variant_name = list(obj.keys())[0]
+        index = self.variant_name_to_index[variant_name]
+        return {self._index_key: index, self._value_key: obj[variant_name]}
+
+
 class EnumForCodegenU32(Adapter):
     _index_key = "index"
     _value_key = "value"

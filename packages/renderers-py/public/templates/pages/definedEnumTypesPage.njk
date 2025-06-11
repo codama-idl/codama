@@ -12,21 +12,22 @@
 {{variant.name | pascalCase}}Value = tuple[{{enumHelper.getTuplePy(variant).renders}}]
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
 class {{variant.name | pascalCase }}JSONValue(typing.TypedDict):
-{% if variant.struct.kind == "sizePrefixTypeNode" %}
+{%if enumHelper.getStructPyJSON(variant).renders.length>0 %}
 {% for field in enumHelper.getStructPyJSON(variant).renders %}
     {{field}}
 {% endfor %}
 {% else %}
-{% for field in enumHelper.getStructPyJSON(variant).renders %}
-    {{field}}
-{% endfor %}
+    pass
 {% endif %}
 
-
 class {{variant.name | pascalCase}}Value(typing.TypedDict):
+{%if enumHelper.getStructPy(variant).renders.length>0 %}
 {% for field in enumHelper.getStructPy(variant).renders %}
     {{field}}
 {% endfor %}
+{% else %}
+    pass
+{% endif %}
 
 
 
@@ -52,7 +53,9 @@ class {{variant.name | pascalCase | notKeywordCase }}:
             value = ({{enumHelper.getTupleToJSON(variant).renders}},)
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
             value = {
+{%if enumHelper.getStructToJSON(variant).renders.length>0 %}
             {{enumHelper.getStructToJSON(variant).renders}}
+{% endif %}
             }
 {% endif %}
         )
@@ -137,6 +140,8 @@ def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Ki
 
 {% if size.format=="u8" %}
 layout = EnumForCodegen(
+{% elseif size.format=="u16" %}
+layout = EnumForCodegenU16(
 {% elseif size.format=="u32" %}
 layout = EnumForCodegenU32(
 {% endif %}

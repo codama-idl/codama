@@ -272,6 +272,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         if (nodeType.size.kind == 'numberTypeNode') {
                             if (nodeType.size.format == 'u32') {
                                 imports.add('..shared', 'EnumForCodegenU32');
+                            } else if (nodeType.size.format == 'u16') {
+                                imports.add('..shared', 'EnumForCodegenU16');
                             } else {
                                 imports.add('anchorpy.borsh_extension', 'EnumForCodegen');
                             }
@@ -292,16 +294,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         );
                     } else {
                         //throw new Error(`DefinedType not supported by ${node.type.kind}`);
-                        const inner = visit(nodeType,typeManifestVisitor);
+                        const inner = visit(nodeType, typeManifestVisitor);
                         imports.mergeWith(inner.borshType);
-                        console.log("DefinedType ",inner);
+                        console.log('DefinedType ', inner);
                         return new RenderMap().add(
                             `types/${camelCase(node.name)}.py`,
                             render('definedTypesPage.njk', {
                                 typeName: node.name,
                                 borshType: inner.borshType,
                                 pyType: inner.pyType,
-                                imports
+                                imports,
                             }),
                         );
                     }

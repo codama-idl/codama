@@ -99,6 +99,7 @@ export function getTypeManifestVisitor(input: {
                 visitArrayType(arrayType, { self }) {
                     const itemlayout = visit(arrayType.item, self);
                     const imports = new ImportMap();
+                    imports.mergeWith(itemlayout.borshType);
                     const inner = visit(arrayType.item, self);
                     let count = 0;
                     let toJSONStr = '';
@@ -138,6 +139,7 @@ export function getTypeManifestVisitor(input: {
                             value: fragment(''),
                         };
                     } else if (isNode(arrayType.count, 'remainderCountNode')) {
+                        imports.add('construct', 'Construct');
                         return {
                             borshType: fragment(
                                 `borsh.Vec(typing.cast(Construct, ${itemlayout.borshType.render}))`,
@@ -270,12 +272,14 @@ export function getTypeManifestVisitor(input: {
                     let fromJSONStr = '';
                     let pyJSONTypeStr = '';
                     let fromDecodeStr = '';
+                    let toJSONStr = '';
                     let isEnum = false;
                     let isEncodable = true;
                     const imports = new ImportMap();
                     if (genType.name != 'types') {
                         imports.add('..', 'types');
                     }
+                    toJSONStr = '{{name}}.to_json()';
                     if (definedType.type.kind == 'enumTypeNode') {
                         pyTypeStr = `${modname}.${pascalCase(typename)}Kind`;
                         borshTypeStr = `${modname}.layout`;
@@ -296,9 +300,10 @@ export function getTypeManifestVisitor(input: {
                         console.log('visitDefinedTypeLink else', typename, inner);
                         pyTypeStr = `${modname}.pyType`;
                         borshTypeStr = `${modname}.${pascalCase(typename)}`;
-                        fromJSONStr = `${modname}.${pascalCase(typename)}.from_json({{name}})`;
-                        fromDecodeStr = `${modname}.${pascalCase(typename)}.from_decoded({{name}})`;
-                        pyJSONTypeStr = `${modname}.${pascalCase(typename)}JSON`;
+                        fromJSONStr = `{{name}}`;
+                        fromDecodeStr = `{{name}}`;
+                        pyJSONTypeStr = `${modname}.pyType`;
+                        toJSONStr = '{{name}}';
                         isEncodable = false;
                     }
                     if (genType.name != 'types') {
@@ -320,7 +325,7 @@ export function getTypeManifestVisitor(input: {
                         pyJSONType: fragment(pyJSONTypeStr, imports),
                         pyType: fragment(pyTypeStr, imports),
                         toEncode: fragment('{{name}}', imports),
-                        toJSON: fragment('{{name}}.to_json()', imports),
+                        toJSON: fragment(toJSONStr, imports),
                         value: fragment(''),
                     };
                 },
@@ -362,6 +367,7 @@ export function getTypeManifestVisitor(input: {
                     const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
                     const inner = visit(node.type, self);
                     //let prefix = new Uint8Array();
+                    imports.mergeWith(inner.borshType);
                     const prefix: Fragment[] = [];
                     imports.add('..shared', 'HiddenPrefixAdapter');
 
@@ -369,12 +375,14 @@ export function getTypeManifestVisitor(input: {
                         //item.type.kind ==
                         if (item.type.kind == 'stringTypeNode') {
                             if (item.value.kind == 'stringValueNode') {
+                                imports.add('construct', 'Const');
                                 //const strBs = getConstantEncoder(getUtf8Encoder().encode(item.value.string)).encode();
                                 //prefix = mergeBytes([prefix, strBs.valueOf()]);
                                 return;
                             }
                         } else if (item.type.kind == 'bytesTypeNode') {
                             if (item.value.kind == 'bytesValueNode') {
+                                imports.add('construct', 'Const');
                                 //const bytes = getBytesFromBytesValueNode(item.value);
                                 //const byteBs = getConstantEncoder(bytes).encode();
                                 //prefix = mergeBytes([prefix, byteBs.valueOf()]);
@@ -383,14 +391,17 @@ export function getTypeManifestVisitor(input: {
                         } else if (item.type.kind == 'preOffsetTypeNode') {
                             //todo preOffsetTypeNode
                             const itemType = visit(item.type, self);
+                            imports.mergeWith(itemType.borshType);
                             const itemTypeRender = renderString(itemType.borshType.render, { subcon: inner.borshType });
                             if (item.value.kind == 'numberValueNode') {
+                                imports.add('construct', 'Const');
                                 const constRender = `Const(${item.value.number},${itemTypeRender})`;
                                 prefix.push(fragment(constRender, imports));
                             }
                             return;
                         } else if (item.type.kind == 'numberTypeNode') {
                             //todo numberTypeNode
+                            imports.add('construct', 'Const');
                             const itemType = visit(item.type, self);
                             //itemType.borshType
                             //visit(item.value,self)
@@ -613,8 +624,9 @@ export function getTypeManifestVisitor(input: {
                 },
                 visitPreOffsetType(node) {
                     //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
-                    console.log('visitPreOffsetType', node);
+                    //console.log('visitPreOffsetType', node);
                     const imports = new ImportMap();
+                    imports.add('..shared', 'PreOffset');
                     const borshType = `PreOffset({{subcon}},${node.offset})`;
                     return {
                         borshType: fragment(borshType, imports),
@@ -728,7 +740,7 @@ export function getTypeManifestVisitor(input: {
                                     isEncodable: false,
                                     isEnum: false,
                                     pyJSONType: fragment('str'),
-                                    pyType: fragment('borsh.String'),
+                                    pyType: fragment('str'),
                                     toEncode: fragment('{{name}}'),
                                     toJSON: fragment('{{name}}'),
                                     value: fragment(''),
@@ -832,16 +844,22 @@ export function getTypeManifestVisitor(input: {
                     imports.add('..shared', 'ZeroableOption');
                     const borshType = `ZeroableOption(${inner.borshType.render})`;
                     imports.mergeWith(inner.borshType);
+                    const fromDecode = `${inner.fromDecode.render}`;
+                    const fromJSON = `${inner.fromJSON.render}`;
+                    const pyJSONType = `${inner.pyJSONType.render}`;
+                    const pyType = `${inner.pyType.render}`;
+                    const toEncode = `${inner.toEncode.render}`;
+                    const toJSON = `${inner.toJSON.render}`;
                     return {
                         borshType: fragment(borshType, imports),
-                        fromDecode: fragment('{{name}}'),
-                        fromJSON: fragment('{{name}}'),
+                        fromDecode: fragment(fromDecode, imports),
+                        fromJSON: fragment(fromJSON, imports),
                         isEncodable: false,
                         isEnum: false,
-                        pyJSONType: fragment('str'),
-                        pyType: fragment('borsh.String'),
-                        toEncode: fragment('{{name}}'),
-                        toJSON: fragment('{{name}}'),
+                        pyJSONType: fragment(pyJSONType),
+                        pyType: fragment(pyType),
+                        toEncode: fragment(toEncode),
+                        toJSON: fragment(toJSON),
 
                         value: fragment(''),
                     };
