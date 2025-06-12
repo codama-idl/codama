@@ -300,10 +300,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         return new RenderMap().add(
                             `types/${camelCase(node.name)}.py`,
                             render('definedTypesPage.njk', {
-                                typeName: node.name,
                                 borshType: inner.borshType,
-                                pyType: inner.pyType,
                                 imports,
+                                pyType: inner.pyType,
+                                typeName: node.name,
                             }),
                         );
                     }
@@ -383,8 +383,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     },*/
 
                 visitProgram(node, { self }) {
-                    const scope = { ...globalScope, programNode: node };
-                    const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                    //const scope = { ...globalScope, programNode: node };
+                    //const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
 
                     const renderMap = new RenderMap()
                         .mergeWith(...node.pdas.map(p => visit(p, self)))
@@ -411,14 +411,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             }),
                         );
                     }
-
+                    /*
                     renderMap.add(
                         `program_id.py`,
                         render('programsPage.njk', {
                             ...scope,
                             imports: imports.toString(dependencyMap, useGranularImports),
                         }),
-                    );
+                        );*/
                     return renderMap;
                 },
 
@@ -465,6 +465,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     map.add('shared/__init__.py', render('sharedIndex.njk', ctx));
                     map.add('shared/extension.py', render('extension.py', ctx));
+                    {
+                        const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
+                        map.add(
+                            `program_id.py`,
+                            render('programsPage.njk', {
+                                imports: imports.toString(dependencyMap, useGranularImports),
+                                programs: programsToExport,
+                            }),
+                        );
+                    }
 
                     return map
                         .add('__init__.py', render('rootIndex.njk', ctx))

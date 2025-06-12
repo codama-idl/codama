@@ -5,7 +5,7 @@
 from . import {{ definedType.name | camelCase }}
 {% if definedType.type.kind == "enumTypeNode" %}
 from .{{ definedType.name | camelCase }} import {{ definedType.name | pascalCase }}JSON,{{ definedType.name | pascalCase }}Kind;
-{% else %}
+{% elseif definedType.type.kind == "structTypeNode"  %}
 from .{{ definedType.name | camelCase }} import {{ definedType.name | pascalCase }}JSON,{{ definedType.name | pascalCase }};
 {% endif %}
 {% else %}

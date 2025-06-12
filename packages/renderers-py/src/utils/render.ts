@@ -31,11 +31,15 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('snakeCase', snakeCase);
     env.addFilter('kebabCase', kebabCase);
     env.addFilter('titleCase', titleCase);
+    env.addFilter('toUpperCase', function (str: string): string {
+        return str.toUpperCase();
+    });
     env.addFilter('notKeywordCase', notPyKeyCase);
     env.addFilter('jsDocblock', jsDocblock);
     env.addFilter('dump', function (obj) {
         return JSON.stringify(obj, null, 2);
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Temporary for legacy compatibility
     env.addGlobal('dump', function (obj: any) {
         return JSON.stringify(obj, null, 2);
     });

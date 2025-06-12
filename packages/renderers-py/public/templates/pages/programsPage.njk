@@ -4,6 +4,8 @@
 {% block main %}
 {{ imports }}
 
-PROGRAM_ID = Pubkey.from_string("{{programNode.publicKey}}")
+{% for program in programs | sort(false, false, 'name') %}
+{{program.name|snakeCase|toUpperCase}}_PROGRAM_ADDRESS =Pubkey.from_string("{{program.publicKey}}")
+{% endfor %}
 
 {% endblock %}

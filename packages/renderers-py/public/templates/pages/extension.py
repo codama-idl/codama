@@ -17,6 +17,7 @@ from construct import (
     Switch,
     IfThenElse,
     PrefixedArray,
+    Optional,
     Struct,
     Pointer,
     evaluate,
@@ -52,12 +53,13 @@ class _String8(Adapter):
 String64=_String64()
 String8=_String8()
 
+
 class HiddenPrefixAdapter(Adapter):
-    prefix = None
-    def __init__(self,padding,subcon: Construct):
-        self.prefix = padding
+    #prefix = None
+    def __init__(self,padding: borsh.TupleStruct,subcon: Construct):
+        #self.prefix = padding
         prefix_struct = borsh.CStruct(
-            "prefix"/borsh.U8[len(padding)],
+            "prefix"/padding,
             "data"/subcon,
         )
         super().__init__(prefix_struct)
@@ -65,8 +67,8 @@ class HiddenPrefixAdapter(Adapter):
     def _decode(self, obj, context, path) -> Any:
         return obj["data"]
 
-    def _encode(self, obj, context, path) -> dict:
-        return { "prefix": self.prefix, "data": obj}
+    def _encode(self, obj, context, path) -> Any:
+        return {"data": obj}
 
 class HiddenSuffixAdapter(Adapter):
     suffix = None
@@ -108,30 +110,8 @@ class OptionU32(Adapter):
         discriminator = 0 if obj is None else 1
         return {self._discriminator_key: discriminator, self._value_key: obj}
 
-class RemainderOption(Adapter):
-    _discriminator_key = "discriminator"
-    _value_key = "value"
 
-    def __init__(self, subcon: Construct) -> None:
-        option_struct = borsh.CStruct(
-            self._discriminator_key / borsh.U32,
-            self._value_key
-            / IfThenElse(
-                lambda this: this[self._discriminator_key] == 0,
-                Padding(subcon.sizeof()),
-                subcon,
-            ),
-        )
-        super().__init__(option_struct)  # type: ignore
-
-    def _decode(self, obj, context, path) -> Any:
-        discriminator = obj[self._discriminator_key]
-        return None if discriminator == 0 else obj[self._value_key]
-
-    def _encode(self, obj, context, path) -> dict:
-        discriminator = 0 if obj is None else 1
-        return {self._discriminator_key: discriminator, self._value_key: obj}
-
+RemainderOption=Optional
 
 class EnumForCodegenU16(Adapter):
     _index_key = "index"
@@ -269,7 +249,7 @@ class PostOffset(Pointer):
 class ZeroableOption(Adapter):
     def __init__(self, subcon: Construct,value: Any) -> None:
         self.value = value
-        super().__init__()
+        super().__init__(subcon)
     def _decode(self, obj:Any, context, path) -> Any:
         if obj == self.value:
             return None
@@ -279,3 +259,5 @@ class ZeroableOption(Adapter):
         if obj == self.value:
             return obj
         return obj
+
+SizePrefix=Prefixed

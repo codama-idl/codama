@@ -193,6 +193,38 @@ export class EnumHelper {
         }
         return new PyFragment(['']);
     }
+    getStructLayoutType(node: EnumStructVariantTypeNode): PyFragment {
+        let fields;
+        let isPrefixType = false;
+        let fieldRenders;
+        const imports = new ImportMap();
+        if (node.struct.kind == 'sizePrefixTypeNode') {
+            isPrefixType = true;
+            if (node.struct.type.kind == 'structTypeNode') {
+                fields = node.struct.type.fields;
+            }
+        } else if (node.struct.kind == 'structTypeNode') {
+            //const fields = node.struct.fields;
+            fields = node.struct.fields;
+            isPrefixType = false;
+        }
+        if (fields) {
+            fieldRenders = getLayoutFields({
+                ...this.scope,
+                fields,
+                prefix: '',
+            });
+            if (isPrefixType) {
+                imports.add('..shared', 'SizePrefix');
+                const renderStr = `SizePrefix(borsh.U16,borsh.CStruct(${fieldRenders.renders.join(',')}))`;
+                return new PyFragment([renderStr], imports);
+            } else {
+                const renderStr = `borsh.CStruct(${fieldRenders.renders.join(',')})`;
+                return new PyFragment([renderStr]);
+            }
+        }
+        return new PyFragment(['']);
+    }
     getStructDecode(node: EnumStructVariantTypeNode): PyFragment {
         const { typeManifestVisitor } = this.scope;
         let fields;
@@ -231,6 +263,8 @@ export class EnumHelper {
                 let itemtype = this.getStructPyJSON(item);
                 imports.mergeWith(itemtype);
                 itemtype = this.getStructLayout(item);
+                imports.mergeWith(itemtype);
+                itemtype = this.getStructLayoutType(item);
                 imports.mergeWith(itemtype);
             }
         });

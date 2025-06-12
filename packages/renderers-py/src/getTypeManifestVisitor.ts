@@ -416,7 +416,7 @@ export function getTypeManifestVisitor(input: {
                     });
 
                     //const manifest = typeManifest();
-                    const borshType = `HiddenPrefixAdapter(borsh.TupleStruct(${prefix.join(',')}))`;
+                    const borshType = `HiddenPrefixAdapter(borsh.TupleStruct(${prefix.join(',')}),${inner.borshType.render})`;
                     return {
                         borshType: fragment(borshType, imports),
                         fromDecode: fragment('{{name}}', imports),
@@ -877,7 +877,7 @@ export function getTypeManifestVisitor(input: {
                     const inner = visit(node.item, self);
                     const imports = new ImportMap();
                     imports.add('..shared', 'ZeroableOption');
-                    const borshType = `ZeroableOption(${inner.borshType.render})`;
+                    const borshType = `ZeroableOption(${inner.borshType.render},None)`;
                     imports.mergeWith(inner.borshType);
                     const fromDecode = `${inner.fromDecode.render}`;
                     const fromJSON = `${inner.fromJSON.render}`;

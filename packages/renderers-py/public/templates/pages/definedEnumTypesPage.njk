@@ -151,8 +151,8 @@ layout = EnumForCodegenU32(
 {% elseif variant.kind=="enumEmptyVariantTypeNode" %}
 "{{variant.name | pascalCase}}" / borsh.CStruct(),
 {% elseif variant.kind=="enumStructVariantTypeNode" %}
-"{{variant.name | pascalCase}}" / borsh.CStruct({{enumHelper.getStructLayout(variant).renders}}),
-{%endif %}
+"{{variant.name | pascalCase}}" / {{enumHelper.getStructLayoutType(variant).renders}},
+{% endif %}
 {% endfor %}
 )
 {% endblock %}
