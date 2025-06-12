@@ -299,7 +299,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         //throw new Error(`DefinedType not supported by ${node.type.kind}`);
                         const inner = visit(nodeType, typeManifestVisitor);
                         imports.mergeWith(inner.borshType);
-                        console.log('DefinedType ', inner);
+                        //console.log('DefinedType ', inner);
                         return new RenderMap().add(
                             `types/${camelCase(node.name)}.py`,
                             render('definedTypesPage.njk', {

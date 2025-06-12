@@ -262,7 +262,7 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(definedType.type, self);
                     return manifest;
                 },
-                visitDefinedTypeLink(node, { self }) {
+                visitDefinedTypeLink(node) {
                     const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
                     const definedType = getLastNodeFromPath(definedTypePath);
                     const typename = node.name;
@@ -296,8 +296,8 @@ export function getTypeManifestVisitor(input: {
                         pyJSONTypeStr = `${modname}.${pascalCase(typename)}JSON`;
                     } else {
                         //definedType
-                        const inner = visit(definedType, self);
-                        console.log('visitDefinedTypeLink else', typename, inner);
+                        //const inner = visit(definedType, self);
+                        //console.log('visitDefinedTypeLink else', typename, inner);
                         pyTypeStr = `${modname}.pyType`;
                         borshTypeStr = `${modname}.${pascalCase(typename)}`;
                         fromJSONStr = `{{name}}`;
