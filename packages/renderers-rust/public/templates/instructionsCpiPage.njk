@@ -93,25 +93,25 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       {% if account.isSigner === 'either' %}
         {% if account.isOptional and instruction.optionalAccountStrategy === 'programId' %}
           if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               signer,
             ));
           } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_instruction::AccountMeta::new_readonly(
               crate::{{ program.name | snakeCase | upper }}_ID,
               false,
             ));
           }
         {% elif account.isOptional %}
           if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               signer,
             ));
           }
         {% else %}
-          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+          accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
             *self.{{ account.name | snakeCase }}.0.key,
             self.{{ account.name | snakeCase }}.1,
           ));
@@ -119,25 +119,25 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       {% else %}
         {% if account.isOptional and instruction.optionalAccountStrategy === 'programId' %}
           if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               {{ 'true' if account.isSigner else 'false' }},
             ));
           } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            accounts.push(solana_instruction::AccountMeta::new_readonly(
               crate::{{ program.name | snakeCase | upper }}_ID,
               false,
             ));
           }
         {% elif account.isOptional %}
           if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
-            accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+            accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
               *{{ account.name | snakeCase }}.key,
               {{ 'true' if account.isSigner else 'false' }},
             ));
           }
         {% else %}
-          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+          accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
             *self.{{ account.name | snakeCase }}.key,
             {{ 'true' if account.isSigner else 'false' }}
           ));
@@ -145,7 +145,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       {% endif %}
     {% endfor %}
     remaining_accounts.iter().for_each(|remaining_account| {
-      accounts.push(solana_program::instruction::AccountMeta {
+      accounts.push(solana_instruction::AccountMeta {
           pubkey: *remaining_account.0.key,
           is_signer: remaining_account.1,
           is_writable: remaining_account.2,
@@ -157,7 +157,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
       data.append(&mut args);
     {% endif %}
 
-    let instruction = solana_program::instruction::Instruction {
+    let instruction = solana_instruction::Instruction {
       program_id: crate::{{ program.name | snakeCase | upper }}_ID,
       accounts,
       data,

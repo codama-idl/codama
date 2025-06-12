@@ -1009,6 +1009,7 @@ dependencies = [
  "serde-big-array",
  "serde_with 3.12.0",
  "solana-client",
+ "solana-instruction",
  "solana-program 2.2.1",
  "solana-pubkey",
  "solana-sdk 1.18.26",
