@@ -36,7 +36,7 @@ class {{ accountName | pascalCase}}:
         conn: AsyncClient,
         address: SolPubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: SolPubkey = PROGRAM_ID,
+        program_id: SolPubkey = {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS,
     ) -> typing.Optional["{{accountName | pascalCase}}"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
@@ -53,7 +53,7 @@ class {{ accountName | pascalCase}}:
         conn: AsyncClient,
         addresses: list[SolPubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: SolPubkey = PROGRAM_ID,
+        program_id: SolPubkey = {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS,
     ) -> typing.List[typing.Optional["{{accountName | pascalCase}}"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["{{accountName | pascalCase}}"]] = []

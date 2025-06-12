@@ -32,7 +32,7 @@ def {{instructionName | pascalCase}}(
     args: {{instructionName | pascalCase}}Args,
 {% endif %}
     accounts: {{instructionName | pascalCase}}Accounts,
-    program_id: SolPubkey = PROGRAM_ID,
+    program_id: SolPubkey =  {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) ->Instruction:
     keys: list[AccountMeta] = [
@@ -75,7 +75,7 @@ def find_{{ pdaIt.name |pascalCase }}({% for param in filterByField(pdaIt.defaul
     {% if pdaIt.defaultValue.pda.programId != null%}
         program_id=SolPubkey.from_string('{{pdaIt.defaultValue.pda.programId}}')
     {% else %}
-    PROGRAM_ID
+     {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS
     {% endif %}
         )
 

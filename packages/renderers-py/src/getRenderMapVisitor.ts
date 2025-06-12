@@ -13,6 +13,7 @@ import {
     resolveNestedTypeNode,
     StructFieldTypeNode,
 } from '@codama/nodes';
+import { snakeCase } from '@codama/nodes';
 import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
@@ -111,7 +112,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 visitAccount(node) {
                     const accountPath = stack.getPath('accountNode');
                     genType.name = 'accounts';
-                    if (!findProgramNodeFromPath(accountPath)) {
+                    const program = findProgramNodeFromPath(accountPath);
+                    if (!program) {
                         throw new Error('Account must be visited inside a program.');
                     }
 
@@ -167,7 +169,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add('', 'typing');
                     imports.add('anchorpy.utils.rpc', 'get_multiple_accounts');
                     imports.add('', 'borsh_construct');
-                    imports.add('..program_id', 'PROGRAM_ID');
+                    imports.add('..program_id', snakeCase(program?.name).toUpperCase() + '_PROGRAM_ADDRESS');
                     imports.add('anchorpy.error', 'AccountInvalidDiscriminator');
                     imports.mergeWith(accountFieldsJSON!);
                     imports.mergeWith(accountFieldsPy!);
@@ -193,6 +195,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fieldsToJSON: fieldsToJSON,
                             fields_interface_params: accountFieldsPy,
                             imports: imports.toString(dependencyMap, useGranularImports),
+                            program: program,
                             typeManifest: typeManifest,
                         }),
                     );
@@ -311,6 +314,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                 visitInstruction(node) {
                     genType.name = 'instructions';
+                    const instructionPath = stack.getPath('instructionNode');
+                    const program = findProgramNodeFromPath(instructionPath);
+                    if (!program) {
+                        throw new Error('Account must be visited inside a program.');
+                    }
                     const scope = {
                         ...globalScope,
                         genType,
@@ -336,7 +344,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.addAlias('solders.pubkey', 'Pubkey', 'SolPubkey');
                     imports.add('solders.instruction', ['Instruction', 'AccountMeta']);
                     imports.add('', 'typing');
-                    imports.add('..program_id', 'PROGRAM_ID');
+                    //imports.add('..program_id', 'PROGRAM_ID');
+                    imports.add('..program_id', snakeCase(program?.name).toUpperCase() + '_PROGRAM_ADDRESS');
                     if (argsToLayout) {
                         if (argsToLayout.renders.length > 0) {
                             imports.addAlias('', 'borsh_construct', 'borsh');
@@ -369,6 +378,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             imports: imports.toString(dependencyMap, useGranularImports),
                             instructionName: node.name,
                             pdas: pdas,
+                            program: program,
                         }),
                     );
                 },
