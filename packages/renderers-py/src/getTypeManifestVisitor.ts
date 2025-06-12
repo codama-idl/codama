@@ -527,14 +527,49 @@ export function getTypeManifestVisitor(input: {
                     if (numberType.endian !== 'le') {
                         throw new Error('Number endianness not supported by Borsh');
                     }
+                    const imports = new ImportMap();
+
+                    let borshTypeStr = '';
+                    let pyJSONTypeStr = '';
+                    let pyTypeStr = '';
+                    switch (numberType.format) {
+                        case 'u8':
+                        case 'u16':
+                        case 'u32':
+                        case 'u64':
+                        case 'u128':
+                        case 'i8':
+                        case 'i16':
+                        case 'i32':
+                        case 'i64':
+                        case 'i128':
+                            borshTypeStr = NumberToBorshType(numberType.format);
+                            pyJSONTypeStr = 'int';
+                            pyTypeStr = 'int';
+                            break;
+                        case 'f32':
+                            imports.add('construct', 'Float32l');
+                            borshTypeStr = 'Float32l';
+                            pyJSONTypeStr = 'float';
+                            pyTypeStr = 'float';
+                            break;
+                        case 'f64':
+                            imports.add('construct', 'Float64l');
+                            borshTypeStr = 'Float64l';
+                            pyJSONTypeStr = 'float';
+                            pyTypeStr = 'float';
+                            break;
+                    }
+                    //if ( == 'u8') {
+                    //}
                     return {
-                        borshType: fragment(NumberToBorshType(numberType.format)),
+                        borshType: fragment(borshTypeStr, imports),
                         fromDecode: fragment('{{name}}'),
                         fromJSON: fragment('{{name}}'),
                         isEncodable: false,
                         isEnum: false,
-                        pyJSONType: fragment('int'),
-                        pyType: fragment('int'),
+                        pyJSONType: fragment(pyJSONTypeStr),
+                        pyType: fragment(pyTypeStr),
                         toEncode: fragment('{{name}}'),
                         toJSON: fragment('{{name}}'),
                         value: fragment(''),
