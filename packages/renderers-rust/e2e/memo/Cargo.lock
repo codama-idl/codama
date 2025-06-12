@@ -694,6 +694,7 @@ dependencies = [
  "serde",
  "serde-big-array",
  "serde_with",
+ "solana-instruction",
  "solana-program 2.2.1",
  "solana-pubkey",
  "solana-sdk",

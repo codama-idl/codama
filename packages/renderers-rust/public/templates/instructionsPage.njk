@@ -28,38 +28,38 @@ pub struct {{ instruction.name | pascalCase }} {
 }
 
 impl {{ instruction.name | pascalCase }} {
-  pub fn instruction(&self{{ ', args: ' + instruction.name | pascalCase + 'InstructionArgs' if hasArgs }}) -> solana_program::instruction::Instruction {
+  pub fn instruction(&self{{ ', args: ' + instruction.name | pascalCase + 'InstructionArgs' if hasArgs }}) -> solana_instruction::Instruction {
     self.instruction_with_remaining_accounts({{ 'args, ' if hasArgs }}&[])
   }
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
-  pub fn instruction_with_remaining_accounts(&self{{ ', args: ' + instruction.name | pascalCase + 'InstructionArgs' if hasArgs }}, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
+  pub fn instruction_with_remaining_accounts(&self{{ ', args: ' + instruction.name | pascalCase + 'InstructionArgs' if hasArgs }}, remaining_accounts: &[solana_instruction::AccountMeta]) -> solana_instruction::Instruction {
     let mut accounts = Vec::with_capacity({{ instruction.accounts.length + '+' if instruction.accounts.length > 0}} remaining_accounts.len());
     {% for account in instruction.accounts %}
       {% if account.isSigner === 'either' %}
         {% if account.isOptional %}
           {% if instruction.optionalAccountStrategy === 'programId' %}
             if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
-              accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
                 {{ account.name | snakeCase }},
                 signer,
               ));
             } else {
-              accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+              accounts.push(solana_instruction::AccountMeta::new_readonly(
                 crate::{{ program.name | snakeCase | upper }}_ID,
                 false,
               ));
             }
           {% else %}
             if let Some(({{ account.name | snakeCase }}, signer)) = self.{{ account.name | snakeCase }} {
-              accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
                 {{ account.name | snakeCase }},
                 signer,
               ));
             }
           {% endif %}
         {% else %}
-          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+          accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
             self.{{ account.name | snakeCase }}.0,
             self.{{ account.name | snakeCase }}.1,
           ));
@@ -68,26 +68,26 @@ impl {{ instruction.name | pascalCase }} {
         {% if account.isOptional %}
           {% if instruction.optionalAccountStrategy === 'programId' %}
             if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
-              accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
                 {{ account.name | snakeCase }},
                 {{ 'true' if account.isSigner else 'false' }},
               ));
             } else {
-              accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+              accounts.push(solana_instruction::AccountMeta::new_readonly(
                 crate::{{ program.name | snakeCase | upper }}_ID,
                 false,
               ));
             }
           {% elif account.isOptional %}
             if let Some({{ account.name | snakeCase }}) = self.{{ account.name | snakeCase }} {
-              accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+              accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
                 {{ account.name | snakeCase }},
                 {{ 'true' if account.isSigner else 'false' }},
               ));
             }
           {% endif %}
         {% else %}
-          accounts.push(solana_program::instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
+          accounts.push(solana_instruction::AccountMeta::{{ 'new' if account.isWritable else 'new_readonly' }}(
             self.{{ account.name | snakeCase }},
             {{ 'true' if account.isSigner else 'false' }}
           ));
@@ -101,7 +101,7 @@ impl {{ instruction.name | pascalCase }} {
       data.append(&mut args);
     {% endif %}
 
-    solana_program::instruction::Instruction {
+    solana_instruction::Instruction {
       program_id: crate::{{ program.name | snakeCase | upper }}_ID,
       accounts,
       data,
