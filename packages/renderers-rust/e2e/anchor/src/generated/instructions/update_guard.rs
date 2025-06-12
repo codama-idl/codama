@@ -224,42 +224,42 @@ impl UpdateGuardBuilder {
 
 /// `update_guard` CPI accounts.
 pub struct UpdateGuardCpiAccounts<'a, 'b> {
-    pub guard: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `update_guard` CPI instruction.
 pub struct UpdateGuardCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: UpdateGuardInstructionArgs,
 }
 
 impl<'a, 'b> UpdateGuardCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: UpdateGuardCpiAccounts<'a, 'b>,
         args: UpdateGuardInstructionArgs,
     ) -> Self {
@@ -281,11 +281,7 @@ impl<'a, 'b> UpdateGuardCpi<'a, 'b> {
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
@@ -302,11 +298,7 @@ impl<'a, 'b> UpdateGuardCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new(*self.guard.key, false));
@@ -382,7 +374,7 @@ pub struct UpdateGuardCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(UpdateGuardCpiBuilderInstruction {
             __program: program,
             guard: None,
@@ -399,19 +391,19 @@ impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
         Self { instruction }
     }
     #[inline(always)]
-    pub fn guard(&mut self, guard: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn guard(&mut self, guard: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.guard = Some(guard);
         self
     }
     #[inline(always)]
-    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn mint(&mut self, mint: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.mint = Some(mint);
         self
     }
     #[inline(always)]
     pub fn token_account(
         &mut self,
-        token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_account = Some(token_account);
         self
@@ -419,7 +411,7 @@ impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn guard_authority(
         &mut self,
-        guard_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        guard_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.guard_authority = Some(guard_authority);
         self
@@ -427,7 +419,7 @@ impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_program(
         &mut self,
-        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+        token_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_program = Some(token_program);
         self
@@ -435,7 +427,7 @@ impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn system_program(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        system_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
         self
@@ -464,7 +456,7 @@ impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -480,11 +472,7 @@ impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -547,20 +535,16 @@ impl<'a, 'b> UpdateGuardCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct UpdateGuardCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    guard: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    guard_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    guard: Option<&'b solana_account_info::AccountInfo<'a>>,
+    mint: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    guard_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_account_info::AccountInfo<'a>>,
     cpi_rule: Option<CpiRule>,
     transfer_amount_rule: Option<TransferAmountRule>,
     additional_fields_rule: Option<Vec<MetadataAdditionalFieldRule>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

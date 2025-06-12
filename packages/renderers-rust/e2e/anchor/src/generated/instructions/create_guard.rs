@@ -279,50 +279,50 @@ impl CreateGuardBuilder {
 
 /// `create_guard` CPI accounts.
 pub struct CreateGuardCpiAccounts<'a, 'b> {
-    pub guard: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
 
-    pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub associated_token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `create_guard` CPI instruction.
 pub struct CreateGuardCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
 
-    pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub associated_token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: CreateGuardInstructionArgs,
 }
 
 impl<'a, 'b> CreateGuardCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: CreateGuardCpiAccounts<'a, 'b>,
         args: CreateGuardInstructionArgs,
     ) -> Self {
@@ -346,11 +346,7 @@ impl<'a, 'b> CreateGuardCpi<'a, 'b> {
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
@@ -367,11 +363,7 @@ impl<'a, 'b> CreateGuardCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(8 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new(*self.guard.key, false));
@@ -453,7 +445,7 @@ pub struct CreateGuardCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(CreateGuardCpiBuilderInstruction {
             __program: program,
             guard: None,
@@ -475,19 +467,19 @@ impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
         Self { instruction }
     }
     #[inline(always)]
-    pub fn guard(&mut self, guard: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn guard(&mut self, guard: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.guard = Some(guard);
         self
     }
     #[inline(always)]
-    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn mint(&mut self, mint: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.mint = Some(mint);
         self
     }
     #[inline(always)]
     pub fn mint_token_account(
         &mut self,
-        mint_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        mint_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.mint_token_account = Some(mint_token_account);
         self
@@ -495,20 +487,20 @@ impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn guard_authority(
         &mut self,
-        guard_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        guard_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.guard_authority = Some(guard_authority);
         self
     }
     #[inline(always)]
-    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn payer(&mut self, payer: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.payer = Some(payer);
         self
     }
     #[inline(always)]
     pub fn associated_token_program(
         &mut self,
-        associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
+        associated_token_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.associated_token_program = Some(associated_token_program);
         self
@@ -516,7 +508,7 @@ impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_program(
         &mut self,
-        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+        token_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_program = Some(token_program);
         self
@@ -524,7 +516,7 @@ impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn system_program(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        system_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
         self
@@ -568,7 +560,7 @@ impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -584,11 +576,7 @@ impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -661,15 +649,15 @@ impl<'a, 'b> CreateGuardCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct CreateGuardCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    guard: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    mint_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    guard_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    associated_token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    guard: Option<&'b solana_account_info::AccountInfo<'a>>,
+    mint: Option<&'b solana_account_info::AccountInfo<'a>>,
+    mint_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    guard_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    payer: Option<&'b solana_account_info::AccountInfo<'a>>,
+    associated_token_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_account_info::AccountInfo<'a>>,
     name: Option<String>,
     symbol: Option<String>,
     uri: Option<String>,
@@ -677,9 +665,5 @@ struct CreateGuardCpiBuilderInstruction<'a, 'b> {
     transfer_amount_rule: Option<TransferAmountRule>,
     additional_fields_rule: Option<Vec<MetadataAdditionalFieldRule>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

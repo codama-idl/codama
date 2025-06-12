@@ -18,11 +18,13 @@ num-derive = "^0.3"
 num-traits = "^0.2"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde_with = { version = "^3.0", optional = true }
+solana-account-info = "2.2.1"
 solana-program = "2.2.1"
 solana-instruction = "2.2.1"
 solana-pubkey = { version = "2.2.1", features = ["curve25519"] }
 solana-client = { version = "~1.18", optional = true }
 solana-sdk = { version = "~1.18", optional = true }
+solana-account = { version = "2.2.1", optional = true }
 thiserror = "^1.0"
 
 [dev-dependencies]

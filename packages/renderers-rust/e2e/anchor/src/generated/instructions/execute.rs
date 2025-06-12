@@ -217,46 +217,46 @@ impl ExecuteBuilder {
 
 /// `execute` CPI accounts.
 pub struct ExecuteCpiAccounts<'a, 'b> {
-    pub source_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub source_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub destination_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub destination_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub owner_delegate: &'b solana_program::account_info::AccountInfo<'a>,
+    pub owner_delegate: &'b solana_account_info::AccountInfo<'a>,
 
-    pub extra_metas_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub extra_metas_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard: &'b solana_account_info::AccountInfo<'a>,
 
-    pub instruction_sysvar_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub instruction_sysvar_account: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `execute` CPI instruction.
 pub struct ExecuteCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub source_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub source_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    pub mint: &'b solana_account_info::AccountInfo<'a>,
 
-    pub destination_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub destination_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub owner_delegate: &'b solana_program::account_info::AccountInfo<'a>,
+    pub owner_delegate: &'b solana_account_info::AccountInfo<'a>,
 
-    pub extra_metas_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub extra_metas_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub guard: &'b solana_program::account_info::AccountInfo<'a>,
+    pub guard: &'b solana_account_info::AccountInfo<'a>,
 
-    pub instruction_sysvar_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub instruction_sysvar_account: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: ExecuteInstructionArgs,
 }
 
 impl<'a, 'b> ExecuteCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: ExecuteCpiAccounts<'a, 'b>,
         args: ExecuteInstructionArgs,
     ) -> Self {
@@ -279,11 +279,7 @@ impl<'a, 'b> ExecuteCpi<'a, 'b> {
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
@@ -300,11 +296,7 @@ impl<'a, 'b> ExecuteCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new_readonly(
@@ -389,7 +381,7 @@ pub struct ExecuteCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> ExecuteCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(ExecuteCpiBuilderInstruction {
             __program: program,
             source_account: None,
@@ -407,20 +399,20 @@ impl<'a, 'b> ExecuteCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn source_account(
         &mut self,
-        source_account: &'b solana_program::account_info::AccountInfo<'a>,
+        source_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.source_account = Some(source_account);
         self
     }
     #[inline(always)]
-    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn mint(&mut self, mint: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.mint = Some(mint);
         self
     }
     #[inline(always)]
     pub fn destination_account(
         &mut self,
-        destination_account: &'b solana_program::account_info::AccountInfo<'a>,
+        destination_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.destination_account = Some(destination_account);
         self
@@ -428,7 +420,7 @@ impl<'a, 'b> ExecuteCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn owner_delegate(
         &mut self,
-        owner_delegate: &'b solana_program::account_info::AccountInfo<'a>,
+        owner_delegate: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.owner_delegate = Some(owner_delegate);
         self
@@ -436,20 +428,20 @@ impl<'a, 'b> ExecuteCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn extra_metas_account(
         &mut self,
-        extra_metas_account: &'b solana_program::account_info::AccountInfo<'a>,
+        extra_metas_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.extra_metas_account = Some(extra_metas_account);
         self
     }
     #[inline(always)]
-    pub fn guard(&mut self, guard: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn guard(&mut self, guard: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.guard = Some(guard);
         self
     }
     #[inline(always)]
     pub fn instruction_sysvar_account(
         &mut self,
-        instruction_sysvar_account: &'b solana_program::account_info::AccountInfo<'a>,
+        instruction_sysvar_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.instruction_sysvar_account = Some(instruction_sysvar_account);
         self
@@ -463,7 +455,7 @@ impl<'a, 'b> ExecuteCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -479,11 +471,7 @@ impl<'a, 'b> ExecuteCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -545,19 +533,15 @@ impl<'a, 'b> ExecuteCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct ExecuteCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    source_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    destination_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    owner_delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    extra_metas_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    guard: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    instruction_sysvar_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    source_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    mint: Option<&'b solana_account_info::AccountInfo<'a>>,
+    destination_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    owner_delegate: Option<&'b solana_account_info::AccountInfo<'a>>,
+    extra_metas_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    guard: Option<&'b solana_account_info::AccountInfo<'a>>,
+    instruction_sysvar_account: Option<&'b solana_account_info::AccountInfo<'a>>,
     amount: Option<u64>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

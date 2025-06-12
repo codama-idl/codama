@@ -7,9 +7,9 @@
       {% endif %}
 
       {% if account.isSigner === 'either' %}
-        {% set type = '(&\'b solana_program::account_info::AccountInfo<\'a>, bool)' %}
+        {% set type = '(&\'b solana_account_info::AccountInfo<\'a>, bool)' %}
       {% else %}
-        {% set type = '&\'b solana_program::account_info::AccountInfo<\'a>' %}
+        {% set type = '&\'b solana_account_info::AccountInfo<\'a>' %}
       {% endif %}
 
       {% if account.isOptional %}
@@ -24,16 +24,16 @@
 /// `{{ instruction.name | snakeCase }}` CPI instruction.
 pub struct {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
   /// The program to invoke.
-  pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+  pub __program: &'b solana_account_info::AccountInfo<'a>,
   {% for account in instruction.accounts %}
     {% if account.docs.length > 0 %}
       {{ macros.docblock(account.docs) }}
     {% endif %}
 
     {% if account.isSigner === 'either' %}
-      {% set type = '(&\'b solana_program::account_info::AccountInfo<\'a>, bool)' %}
+      {% set type = '(&\'b solana_account_info::AccountInfo<\'a>, bool)' %}
     {% else %}
-      {% set type = '&\'b solana_program::account_info::AccountInfo<\'a>' %}
+      {% set type = '&\'b solana_account_info::AccountInfo<\'a>' %}
     {% endif %}
 
     {% if account.isOptional %}
@@ -50,7 +50,7 @@ pub struct {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
 
 impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
   pub fn new(
-    program: &'b solana_program::account_info::AccountInfo<'a>,
+    program: &'b solana_account_info::AccountInfo<'a>,
     {% if instruction.accounts.length > 0 %}
       accounts: {{ instruction.name | pascalCase }}CpiAccounts<'a, 'b>,
     {% endif %}
@@ -73,7 +73,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
     self.invoke_signed_with_remaining_accounts(&[], &[])
   }
   #[inline(always)]
-  pub fn invoke_with_remaining_accounts(&self, remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke_with_remaining_accounts(&self, remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)]) -> solana_program::entrypoint::ProgramResult {
     self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
   }
   #[inline(always)]
@@ -86,7 +86,7 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}Cpi<'a, 'b> {
   pub fn invoke_signed_with_remaining_accounts(
     &self,
     signers_seeds: &[&[&[u8]]],
-    remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
+    remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
     let mut accounts = Vec::with_capacity({{ instruction.accounts.length + '+' if instruction.accounts.length > 0}} remaining_accounts.len());
     {% for account in instruction.accounts %}

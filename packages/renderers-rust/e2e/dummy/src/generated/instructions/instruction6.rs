@@ -100,20 +100,20 @@ impl Instruction6Builder {
 
 /// `instruction6` CPI accounts.
 pub struct Instruction6CpiAccounts<'a, 'b> {
-    pub my_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub my_account: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `instruction6` CPI instruction.
 pub struct Instruction6Cpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub my_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub my_account: &'b solana_account_info::AccountInfo<'a>,
 }
 
 impl<'a, 'b> Instruction6Cpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: Instruction6CpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
@@ -128,11 +128,7 @@ impl<'a, 'b> Instruction6Cpi<'a, 'b> {
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
@@ -149,11 +145,7 @@ impl<'a, 'b> Instruction6Cpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(1 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new(
@@ -200,7 +192,7 @@ pub struct Instruction6CpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> Instruction6CpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(Instruction6CpiBuilderInstruction {
             __program: program,
             my_account: None,
@@ -211,7 +203,7 @@ impl<'a, 'b> Instruction6CpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn my_account(
         &mut self,
-        my_account: &'b solana_program::account_info::AccountInfo<'a>,
+        my_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.my_account = Some(my_account);
         self
@@ -220,7 +212,7 @@ impl<'a, 'b> Instruction6CpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -236,11 +228,7 @@ impl<'a, 'b> Instruction6CpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -271,12 +259,8 @@ impl<'a, 'b> Instruction6CpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct Instruction6CpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    my_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    my_account: Option<&'b solana_account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }
