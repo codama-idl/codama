@@ -1008,6 +1008,7 @@ dependencies = [
  "num-traits",
  "serde",
  "serde_with 3.12.0",
+ "solana-account-info",
  "solana-client",
  "solana-instruction",
  "solana-program 2.2.1",

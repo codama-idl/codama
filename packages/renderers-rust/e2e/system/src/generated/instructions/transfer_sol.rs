@@ -134,26 +134,26 @@ impl TransferSolBuilder {
 
 /// `transfer_sol` CPI accounts.
 pub struct TransferSolCpiAccounts<'a, 'b> {
-    pub source: &'b solana_program::account_info::AccountInfo<'a>,
+    pub source: &'b solana_account_info::AccountInfo<'a>,
 
-    pub destination: &'b solana_program::account_info::AccountInfo<'a>,
+    pub destination: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `transfer_sol` CPI instruction.
 pub struct TransferSolCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub source: &'b solana_program::account_info::AccountInfo<'a>,
+    pub source: &'b solana_account_info::AccountInfo<'a>,
 
-    pub destination: &'b solana_program::account_info::AccountInfo<'a>,
+    pub destination: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: TransferSolInstructionArgs,
 }
 
 impl<'a, 'b> TransferSolCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: TransferSolCpiAccounts<'a, 'b>,
         args: TransferSolInstructionArgs,
     ) -> Self {
@@ -171,11 +171,7 @@ impl<'a, 'b> TransferSolCpi<'a, 'b> {
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
@@ -192,11 +188,7 @@ impl<'a, 'b> TransferSolCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new(*self.source.key, true));
@@ -248,7 +240,7 @@ pub struct TransferSolCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> TransferSolCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(TransferSolCpiBuilderInstruction {
             __program: program,
             source: None,
@@ -259,17 +251,14 @@ impl<'a, 'b> TransferSolCpiBuilder<'a, 'b> {
         Self { instruction }
     }
     #[inline(always)]
-    pub fn source(
-        &mut self,
-        source: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn source(&mut self, source: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.source = Some(source);
         self
     }
     #[inline(always)]
     pub fn destination(
         &mut self,
-        destination: &'b solana_program::account_info::AccountInfo<'a>,
+        destination: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.destination = Some(destination);
         self
@@ -283,7 +272,7 @@ impl<'a, 'b> TransferSolCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -299,11 +288,7 @@ impl<'a, 'b> TransferSolCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -343,14 +328,10 @@ impl<'a, 'b> TransferSolCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct TransferSolCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    source: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    destination: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    source: Option<&'b solana_account_info::AccountInfo<'a>>,
+    destination: Option<&'b solana_account_info::AccountInfo<'a>>,
     amount: Option<u64>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }
