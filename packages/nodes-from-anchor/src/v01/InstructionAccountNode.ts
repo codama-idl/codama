@@ -30,7 +30,7 @@ import {
 import { getBase58Codec } from '@solana/codecs';
 
 import { hex } from '../utils';
-import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed, IdlV01SeedAccount } from './idl';
+import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
 
 export function instructionAccountNodesFromAnchorV01(
     allAccounts: AccountNode[],
@@ -135,13 +135,12 @@ export function instructionAccountNodeFromAnchorV01(
                         break;
                     }
                     case 'account': {
-                        const accNode = parentIdl.find(acc => acc.name == (idl.pda?.program as IdlV01SeedAccount).path);
-                        if (accNode) {
-                            programId = (accNode as IdlV01InstructionAccount).address;
-                        } else {
-                            programId = '';
+                        const programPath = idl.pda.program.path;
+                        const programNode = parentIdl.find(acc => acc.name == programPath);
+                        if (!(programNode && 'address' in programNode)) {
+                            throw new CodamaError(CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED, { kind });
                         }
-
+                        programId = programNode.address;
                         break;
                     }
                     default: {
