@@ -7,6 +7,8 @@ import {
     REGISTERED_TYPE_NODE_KINDS,
     REGISTERED_VALUE_NODE_KINDS,
     resolveNestedTypeNode,
+    TypeNode,
+    ConstantValueNode,
 } from '@codama/nodes';
 import {
     extendVisitor,
@@ -18,8 +20,7 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
-import { mergeBytes, ReadonlyUint8Array } from '@solana/codecs-core';
-import { getConstantEncoder, getUtf8Encoder } from '@solana/kit';
+import { ReadonlyUint8Array } from '@solana/codecs-core';
 
 import { Fragment, fragment } from './fragments';
 import { ImportMap } from './ImportMap';
@@ -376,16 +377,16 @@ export function getTypeManifestVisitor(input: {
                         if (item.type.kind == 'stringTypeNode') {
                             if (item.value.kind == 'stringValueNode') {
                                 imports.add('construct', 'Const');
-                                //const strBs = getConstantEncoder(getUtf8Encoder().encode(item.value.string)).encode();
-                                //prefix = mergeBytes([prefix, strBs.valueOf()]);
+                                const constRender = `Const("${item.value.string}".encode())`;
+                                prefix.push(fragment(constRender, imports));
                                 return;
                             }
                         } else if (item.type.kind == 'bytesTypeNode') {
                             if (item.value.kind == 'bytesValueNode') {
                                 imports.add('construct', 'Const');
-                                //const bytes = getBytesFromBytesValueNode(item.value);
-                                //const byteBs = getConstantEncoder(bytes).encode();
-                                //prefix = mergeBytes([prefix, byteBs.valueOf()]);
+                                const bytes = getBytesFromBytesValueNode(item.value);
+                                const constRender = `Const(b"${bytesToPyB(bytes)}"`;
+                                prefix.push(fragment(constRender, imports));
                                 return;
                             }
                         } else if (item.type.kind == 'preOffsetTypeNode') {
@@ -403,8 +404,6 @@ export function getTypeManifestVisitor(input: {
                             //todo numberTypeNode
                             imports.add('construct', 'Const');
                             const itemType = visit(item.type, self);
-                            //itemType.borshType
-                            //visit(item.value,self)
                             if (item.value.kind == 'numberValueNode') {
                                 const numberRender = `Const(${item.value.number},${itemType.borshType.render})`;
                                 prefix.push(fragment(numberRender, imports));
@@ -434,44 +433,56 @@ export function getTypeManifestVisitor(input: {
                 visitHiddenSuffixType(node, { self }) {
                     const imports = new ImportMap(); //.add('solders.pubkey', 'Pubkey');
                     const inner = visit(node.type, self);
-                    let suffix = new Uint8Array([]);
+                    const suffix: Fragment[] = [];
 
                     imports.add('..shared', 'HiddenSuffixAdapter');
 
                     node.suffix.forEach(item => {
                         if (item.type.kind == 'stringTypeNode') {
                             if (item.value.kind == 'stringValueNode') {
-                                const strBs = getConstantEncoder(getUtf8Encoder().encode(item.value.string)).encode();
-                                suffix = mergeBytes([suffix, strBs.valueOf()]);
+                                //const strBs = getConstantEncoder(getUtf8Encoder().encode(item.value.string)).encode();
+                                //suffix = mergeBytes([suffix, strBs.valueOf()]);
+                                imports.add('construct', 'Const');
+                                const constRender = `Const("${item.value.string}".encode())`;
+                                suffix.push(fragment(constRender, imports));
+
                                 return;
                             }
                         } else if (item.type.kind == 'bytesTypeNode') {
                             if (item.value.kind == 'bytesValueNode') {
+                                imports.add('construct', 'Const');
                                 const bytes = getBytesFromBytesValueNode(item.value);
-                                const byteBs = getConstantEncoder(bytes).encode();
-                                suffix = mergeBytes([suffix, byteBs.valueOf()]);
+                                const constRender = `Const(b"${bytesToPyB(bytes)}"`;
+                                suffix.push(fragment(constRender, imports));
+
                                 return;
                             }
                         } else if (item.type.kind == 'preOffsetTypeNode') {
-                            //todo preOffsetTypeNode
-                            /*if (item.value.kind == 'preOffset') {
-                                const num = getNumberFromNumberValueNode(item.value);
-                                const numBs = getConstantEncoder(num).encode();
-                                suffix = mergeBytes([suffix, numBs.valueOf()]);
-                                return;
-                                }*/
+                            const itemType = visit(item.type, self);
+                            imports.mergeWith(itemType.borshType);
+                            const itemTypeRender = renderString(itemType.borshType.render, { subcon: inner.borshType });
+                            if (item.value.kind == 'numberValueNode') {
+                                imports.add('construct', 'Const');
+                                const constRender = `Const(${item.value.number},${itemTypeRender})`;
+                                suffix.push(fragment(constRender, imports));
+                            }
+
                             return;
                         } else if (item.type.kind == 'numberTypeNode') {
-                            //todo numberTypeNode
+                            imports.add('construct', 'Const');
+                            const itemType = visit(item.type, self);
+                            if (item.value.kind == 'numberValueNode') {
+                                const numberRender = `Const(${item.value.number},${itemType.borshType.render})`;
+                                suffix.push(fragment(numberRender, imports));
+                            }
                             return;
                         }
                         throw new Error(`Unsupported ConstantValue Type: ${item.type.kind}`);
                     });
+                    const borshType = `HiddenSuffixAdapter(borsh.TupleStruct(${suffix.join(',')}),${inner.borshType.render})`;
+
                     return {
-                        borshType: fragment(
-                            `HiddenSuffixAdapter(b"${bytesToPyB(suffix)}",${inner.borshType.render})`,
-                            imports,
-                        ),
+                        borshType: fragment(borshType, imports),
                         fromDecode: fragment('{{name}}', imports),
                         fromJSON: fragment(`${inner.fromJSON.render}`),
                         isEncodable: false,
@@ -640,39 +651,44 @@ export function getTypeManifestVisitor(input: {
 
                     throw new Error(`Option size ${optionPrefix.format} not supported by Borsh`);
                 },
-                visitPostOffsetType(node) {
-                    //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
-                    console.log('visitPostOffsetType', node);
+                visitPostOffsetType(node, { self }) {
+                    if (node.strategy != 'relative') {
+                        throw new Error(`PostOffset type ${node.strategy} not supported by Borsh`);
+                    }
                     const imports = new ImportMap();
+                    imports.add('..shared', 'PostOffset');
+                    const inner = visit(node.type, self);
+                    const borshType = `PostOffset(${inner.borshType.render}, ${node.offset})`;
                     return {
-                        borshType: fragment('BorshPubkey', imports),
-                        fromDecode: fragment('{{name}}', imports),
-                        fromJSON: fragment('SolPubkey.from_string({{name}})'),
+                        borshType: fragment(borshType, imports),
+                        fromDecode: fragment(inner.fromDecode.render, imports),
+                        fromJSON: fragment(inner.fromJSON.render),
                         isEncodable: false,
                         isEnum: false,
-                        pyJSONType: fragment('str'),
-                        pyType: fragment('SolPubkey', imports),
-                        toEncode: fragment('{{name}}'),
-                        toJSON: fragment('str({{name}})'),
+                        pyJSONType: fragment(inner.pyJSONType.render),
+                        pyType: fragment(inner.pyType.render, imports),
+                        toEncode: fragment(inner.toEncode.render),
+                        toJSON: fragment(inner.toJSON.render),
                         value: fragment(''),
                     };
                 },
-                visitPreOffsetType(node) {
+                visitPreOffsetType(node, { self }) {
                     //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
                     //console.log('visitPreOffsetType', node);
+                    const inner = visit(node.type, self);
                     const imports = new ImportMap();
                     imports.add('..shared', 'PreOffset');
-                    const borshType = `PreOffset({{subcon}},${node.offset})`;
+                    const borshType = `PreOffset(${inner.borshType.render},${node.offset})`;
                     return {
                         borshType: fragment(borshType, imports),
-                        fromDecode: fragment('{{name}}', imports),
-                        fromJSON: fragment('SolPubkey.from_string({{name}})'),
+                        fromDecode: fragment(inner.fromDecode.render, imports),
+                        fromJSON: fragment(inner.fromJSON.render),
                         isEncodable: false,
                         isEnum: false,
-                        pyJSONType: fragment('str'),
-                        pyType: fragment('SolPubkey', imports),
-                        toEncode: fragment('{{name}}'),
-                        toJSON: fragment('str({{name}})'),
+                        pyJSONType: fragment(inner.pyJSONType.render),
+                        pyType: fragment(inner.pyType.render, imports),
+                        toEncode: fragment(inner.toEncode.render),
+                        toJSON: fragment(inner.toJSON.render),
                         value: fragment(''),
                     };
                 },
@@ -734,6 +750,9 @@ export function getTypeManifestVisitor(input: {
                     return manifest;
                     //throw new Error('String size not supported by Borsh');
                 },
+                visitSolAmountType(amountType, { self }) {
+                    return visit(amountType.number, self);
+                },
 
                 visitStringType() {
                     if (!parentSize) {
@@ -759,7 +778,7 @@ export function getTypeManifestVisitor(input: {
                             isEncodable: false,
                             isEnum: false,
                             pyJSONType: fragment('str'),
-                            pyType: fragment('borsh.String'),
+                            pyType: fragment('str'),
                             toEncode: fragment('{{name}}'),
                             toJSON: fragment('{{name}}'),
                             value: fragment(''),
@@ -795,7 +814,7 @@ export function getTypeManifestVisitor(input: {
                                     isEncodable: false,
                                     isEnum: false,
                                     pyJSONType: fragment('str'),
-                                    pyType: fragment('borsh.String'),
+                                    pyType: fragment('str'),
                                     toEncode: fragment('{{name}}'),
                                     toJSON: fragment('{{name}}'),
                                     value: fragment(''),
@@ -872,12 +891,19 @@ export function getTypeManifestVisitor(input: {
                 },
                 visitZeroableOptionType(node, { self }) {
                     //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
-                    //console.log('visitZeroableOptionType', node);
+                    console.log('visitZeroableOptionType', node);
                     //f
                     const inner = visit(node.item, self);
                     const imports = new ImportMap();
                     imports.add('..shared', 'ZeroableOption');
-                    const borshType = `ZeroableOption(${inner.borshType.render},None)`;
+                    let zeroValue = 'None';
+                    if (node.zeroValue) {
+                        //node.zeroValue.
+                        //imports.add('..shared', 'ZeroableOption');
+                        zeroValue = toZeroValue(node.item, node.zeroValue);
+                    }
+
+                    const borshType = `ZeroableOption(${inner.borshType.render},${zeroValue})`;
                     imports.mergeWith(inner.borshType);
                     const fromDecode = `${inner.fromDecode.render}`;
                     const fromJSON = `${inner.fromJSON.render}`;
@@ -906,4 +932,17 @@ export function getTypeManifestVisitor(input: {
 
 function NumberToBorshType(format: string) {
     return 'borsh.' + format.toUpperCase();
+}
+function toZeroValue(item: TypeNode, zeroValue: ConstantValueNode) {
+    console.log(item, zeroValue);
+    //const value = visit(zeroValue, self);
+    if (zeroValue.type.kind == 'bytesTypeNode') {
+        if (zeroValue.value.kind == 'bytesValueNode') {
+            const bytes = getBytesFromBytesValueNode(zeroValue.value);
+            console.log(bytes);
+        }
+    }
+
+    //console.log(value);
+    return `ZeroableOption()`;
 }

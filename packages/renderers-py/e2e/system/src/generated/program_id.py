@@ -7,5 +7,5 @@
 
 from solders.pubkey import Pubkey
 
-PROGRAM_ID = Pubkey.from_string("11111111111111111111111111111111")
+SYSTEM_PROGRAM_ADDRESS =Pubkey.from_string("11111111111111111111111111111111")
 

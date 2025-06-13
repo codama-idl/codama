@@ -10,7 +10,7 @@ import typing
 from anchorpy.borsh_extension import BorshPubkey
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey as SolPubkey
-from ..program_id import PROGRAM_ID
+from ..program_id import SYSTEM_PROGRAM_ADDRESS
 class AuthorizeNonceAccountArgs(typing.TypedDict):
     newNonceAuthority:SolPubkey
 
@@ -27,7 +27,7 @@ class AuthorizeNonceAccountAccounts(typing.TypedDict):
 def AuthorizeNonceAccount(
     args: AuthorizeNonceAccountArgs,
     accounts: AuthorizeNonceAccountAccounts,
-    program_id: SolPubkey = PROGRAM_ID,
+    program_id: SolPubkey =  SYSTEM_PROGRAM_ADDRESS,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) ->Instruction:
     keys: list[AccountMeta] = [

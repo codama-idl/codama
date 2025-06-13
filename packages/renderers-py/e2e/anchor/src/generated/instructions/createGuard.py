@@ -11,7 +11,7 @@ from construct import Construct
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey as SolPubkey
 from .. import types
-from ..program_id import PROGRAM_ID
+from ..program_id import WEN_TRANSFER_GUARD_PROGRAM_ADDRESS
 class CreateGuardArgs(typing.TypedDict):
     name:str
     symbol:str
@@ -44,7 +44,7 @@ class CreateGuardAccounts(typing.TypedDict):
 def CreateGuard(
     args: CreateGuardArgs,
     accounts: CreateGuardAccounts,
-    program_id: SolPubkey = PROGRAM_ID,
+    program_id: SolPubkey =  WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) ->Instruction:
     keys: list[AccountMeta] = [
@@ -80,7 +80,7 @@ def find_Guard(mint: SolPubkey) -> typing.Tuple[SolPubkey, int]:
     ]
 
     address, bump = SolPubkey.find_program_address(seeds,
-        PROGRAM_ID
+         WEN_TRANSFER_GUARD_PROGRAM_ADDRESS
             )
 
     return address, bump

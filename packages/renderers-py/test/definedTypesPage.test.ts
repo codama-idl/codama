@@ -36,8 +36,8 @@ test('it renders a prefix string on a defined type', async () => {
 
     // When we render it.
     const renderMap = visit(node, getRenderMapVisitor());
-    console.log(renderMap.get('types/blob.py'));
-    await codeContains(renderMap.get('types/blob.py'), [`"contentType" /String8,`, `contentType: str`]);
+    //console.log(renderMap.get('types/blob.py'));
+    await codeContains(renderMap.get('types/blob.py'), [`"contentType" /StringU8,`, `contentType: str`]);
 });
 
 test('it renders a scalar enum', async () => {
@@ -91,7 +91,14 @@ test('it renders a non-scalar enum without', async () => {
     //console.log(renderMap.get('types/tagWithStruct.py'));
     await codeContains(renderMap.get('types/tagWithStruct.py'), [
         `class AccountValue(typing.TypedDict):\n    contentType: str`,
-        `return AccountJSON(\n            kind="Account",\n            value = {\n            "contentType":self.value["contentType"]\n            }\n)`,
+        `class AccountValue(typing.TypedDict):
+            contentType: str`,
+        `return AccountJSON(
+            kind=\"Account\",
+            value = {
+            \"contentType\":self.value[\"contentType\"]
+            }
+        )`,
     ]);
 
     // Then we expect the following use and identifier to be rendered.

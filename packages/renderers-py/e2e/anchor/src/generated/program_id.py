@@ -7,5 +7,5 @@
 
 from solders.pubkey import Pubkey
 
-PROGRAM_ID = Pubkey.from_string("LockdqYQ9X2kwtWB99ioSbxubAmEi8o9jqYwbXgrrRw")
+WEN_TRANSFER_GUARD_PROGRAM_ADDRESS =Pubkey.from_string("LockdqYQ9X2kwtWB99ioSbxubAmEi8o9jqYwbXgrrRw")
 

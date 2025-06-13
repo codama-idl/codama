@@ -30,10 +30,9 @@ test('it renders hidden prefix codecs', async () => {
 
     // When we render it.
     const renderMap = visit(node, getRenderMapVisitor());
-    console.log(renderMap.get('types/myType.py'));
+    //console.log(renderMap.get('types/myType.py'));
     await renderMapContains(renderMap, 'types/myType.py', [
-        `"myType" /HiddenPrefixAdapter(b"\\x68\\x65\\x6c\\x6c\\x6f\\x20\\x77\\x6f\\x72\\x6c\\x64\\xff",borsh.U32)`,
+        '\"myType\" /HiddenPrefixAdapter(borsh.TupleStruct(Const(\"hello world\".encode()),Const(b\"\\xff\"),borsh.U32),',
         `from ..shared import HiddenPrefixAdapter`,
-        `import borsh_construct as borsh`,
     ]);
 });
