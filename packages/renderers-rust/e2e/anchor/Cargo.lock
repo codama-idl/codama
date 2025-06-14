@@ -1012,6 +1012,8 @@ dependencies = [
  "solana-client",
  "solana-instruction",
  "solana-program 2.2.1",
+ "solana-program-entrypoint",
+ "solana-program-error",
  "solana-pubkey",
  "solana-sdk 1.18.26",
  "solana-sdk 2.2.2",
