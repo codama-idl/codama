@@ -32,7 +32,7 @@ test('it renders hidden suffix codecs', async () => {
     const renderMap = visit(node, getRenderMapVisitor());
     //console.log(renderMap.get('types/myType.py'));
     await renderMapContains(renderMap, 'types/myType.py', [
-        `\"myType\" /HiddenSuffixAdapter(borsh.TupleStruct(Const(\"hello world\".encode()),Const(b\"\\xff\"),borsh.U32),`,
+        `"myType" /HiddenSuffixAdapter(borsh.TupleStruct(Const("hello world".encode()),Const(b"\\xff"),borsh.U32),`,
         `from ..shared import HiddenSuffixAdapter`,
         `import borsh_construct as borsh`,
     ]);

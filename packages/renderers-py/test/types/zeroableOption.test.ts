@@ -9,7 +9,7 @@ import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../../src';
-import { renderMapContains, renderMapContainsImports } from '../_setup';
+import { renderMapContains } from '../_setup';
 
 test('it renders zeroable option codecs', async () => {
     // Given the following node.
@@ -20,10 +20,11 @@ test('it renders zeroable option codecs', async () => {
 
     // When we render it.
     const renderMap = visit(node, getRenderMapVisitor());
+    console.log(renderMap.get('types/myType.py'));
 
     // Then we expect the following types and codecs to be exported.
     await renderMapContains(renderMap, 'types/myType.py', [
-        'MyType=ZeroableOption(BorshPubkey,None)',
+        'MyType=ZeroableOption(BorshPubkey,None,"publicKey")',
         'pyType = SolPubkey',
     ]);
 
@@ -47,22 +48,15 @@ test('it renders zeroable option codecs with custom zero values', async () => {
     console.log(renderMap.get('types/myType.py'));
 
     // Then we expect the following types and codecs to be exported.
-    await renderMapContains(renderMap, 'types/myType.ts', [
-        'export type MyType = Option<number>',
-        'export type MyTypeArgs = OptionOrNullable<number>',
-        'getOptionEncoder( getU16Encoder(), { prefix: null, noneValue: new Uint8Array([255, 255]) } )',
-        'getOptionDecoder( getU16Decoder(), { prefix: null, noneValue: new Uint8Array([255, 255]) } )',
+    await renderMapContains(renderMap, 'types/myType.py', [
+        'MyType=ZeroableOption(borsh.U16,Const(b"\\xff\\xff)","u16")',
+        'pyType = int',
     ]);
 
     // And we expect the following codec imports.
-    await renderMapContainsImports(renderMap, 'types/myType.ts', {
-        '@solana/kit': [
-            'getOptionEncoder',
-            'getOptionDecoder',
-            'getU16Encoder',
-            'getU16Decoder',
-            'Option',
-            'OptionOrNullable',
-        ],
-    });
+    await renderMapContains(renderMap, 'types/myType.py', [
+        'from construct import Const',
+        'from ..shared import ZeroableOption',
+        'import borsh_construct as borsh',
+    ]);
 });

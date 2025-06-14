@@ -7,8 +7,6 @@ import {
     REGISTERED_TYPE_NODE_KINDS,
     REGISTERED_VALUE_NODE_KINDS,
     resolveNestedTypeNode,
-    TypeNode,
-    ConstantValueNode,
 } from '@codama/nodes';
 import {
     extendVisitor,
@@ -258,6 +256,14 @@ export function getTypeManifestVisitor(input: {
                     manifest.value.setRender(`b"${pyBstr}"`);
                     return manifest;
                 },
+                /*visitConstantValue(node) {
+                    //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
+                    console.log('visitConstantValue', node);
+                    const manifest = typeManifest();
+                    const pyBstr = hexToPyB(node.data);
+                    manifest.value.setRender(`b"${pyBstr}"`);
+                    return manifest;
+                    },*/
 
                 visitDefinedType(definedType, { self }) {
                     const manifest = visit(definedType.type, self);
@@ -554,6 +560,8 @@ export function getTypeManifestVisitor(input: {
                         case 'i32':
                         case 'i64':
                         case 'i128':
+                            imports.addAlias('', 'borsh_construct', 'borsh');
+                            imports.add('', 'borsh_construct');
                             borshTypeStr = NumberToBorshType(numberType.format);
                             pyJSONTypeStr = 'int';
                             pyTypeStr = 'int';
@@ -896,14 +904,31 @@ export function getTypeManifestVisitor(input: {
                     const inner = visit(node.item, self);
                     const imports = new ImportMap();
                     imports.add('..shared', 'ZeroableOption');
-                    let zeroValue = 'None';
+                    let zeroValueStr = 'None';
                     if (node.zeroValue) {
                         //node.zeroValue.
                         //imports.add('..shared', 'ZeroableOption');
-                        zeroValue = toZeroValue(node.item, node.zeroValue);
+                        //let zeroValueType = visit(node.zeroValue, self); //toZeroValue(node.item, node.zeroValue);
+                        //console.log('zeroValueType', zeroValueType);
+                        if (node.zeroValue.kind == 'constantValueNode') {
+                            imports.add('construct', 'Const');
+                            //zeroValueStr = node.zeroValue.value;
+                            if (node.zeroValue.type.kind == 'bytesTypeNode') {
+                                //imports.add('..shared', 'None');
+                                if (node.zeroValue.value.kind == 'bytesValueNode') {
+                                    const bytes = getBytesFromBytesValueNode(node.zeroValue.value);
+                                    zeroValueStr = `Const(b"${bytesToPyB(bytes)})"`;
+                                }
+                            }
+                        }
                     }
-
-                    const borshType = `ZeroableOption(${inner.borshType.render},${zeroValue})`;
+                    let itemTypeStr = '';
+                    if (node.item.kind == 'numberTypeNode') {
+                        itemTypeStr = node.item.format;
+                    } else if (node.item.kind == 'publicKeyTypeNode') {
+                        itemTypeStr = 'publicKey';
+                    }
+                    const borshType = `ZeroableOption(${inner.borshType.render},${zeroValueStr},"${itemTypeStr}")`;
                     imports.mergeWith(inner.borshType);
                     const fromDecode = `${inner.fromDecode.render}`;
                     const fromJSON = `${inner.fromJSON.render}`;
@@ -932,17 +957,4 @@ export function getTypeManifestVisitor(input: {
 
 function NumberToBorshType(format: string) {
     return 'borsh.' + format.toUpperCase();
-}
-function toZeroValue(item: TypeNode, zeroValue: ConstantValueNode) {
-    console.log(item, zeroValue);
-    //const value = visit(zeroValue, self);
-    if (zeroValue.type.kind == 'bytesTypeNode') {
-        if (zeroValue.value.kind == 'bytesValueNode') {
-            const bytes = getBytesFromBytesValueNode(zeroValue.value);
-            console.log(bytes);
-        }
-    }
-
-    //console.log(value);
-    return `ZeroableOption()`;
 }
