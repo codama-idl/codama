@@ -39,7 +39,7 @@ pub enum SystemError {
     NonceUnexpectedBlockhashValue = 0x8,
 }
 
-impl solana_program::program_error::PrintProgramError for SystemError {
+impl solana_program_error::PrintProgramError for SystemError {
     fn print<E>(&self) {
         solana_program::msg!(&self.to_string());
     }
