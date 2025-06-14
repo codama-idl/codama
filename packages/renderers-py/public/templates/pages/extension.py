@@ -201,17 +201,30 @@ class SolMapU32(Adapter):
         print("encode",obj)
         return obj.items()
 
-class PreOffset(Adapter):
+class PreOffset(Pointer):
     def __init__(self, subcon: Construct,offset: int) -> None:
-        super().__init__(Pointer(offset,subcon))
-
-    def _decode(self, obj:Any, context, path) -> Any:
-        #print("decode",obj)
+        super().__init__(offset,subcon)
+    def _parse(self, stream, context, path):
+        offset = evaluate(self.offset, context)
+        stream = evaluate(self.stream, context) or stream
+        fallback = stream_tell(stream, path)
+        #print("_parse",offset,fallback)
+        stream_seek(stream, fallback+offset, 0, path)
+        obj = self.subcon._parsereport(stream, context, path)
+        #stream_seek(stream, self.subcon.length+ offset, 0, path)
         return obj
 
-    def _encode(self, obj, context, path) ->  Any:  #Tuple[Any,List[Tuple[Any, Any]]]:
-    #    print("encode",obj)
-        return obj
+    def _build(self, obj, stream, context, path):
+        offset = evaluate(self.offset, context)
+        stream = evaluate(self.stream, context) or stream
+        fallback = stream_tell(stream, path)
+        #print("_build",offset,fallback)
+        if offset>0:
+            stream_seek(stream, fallback+offset, 2 if offset < 0 else 0, path)
+        else:
+            stream_seek(stream, offset, 2 if offset < 0 else 0, path)
+        buildret = self.subcon._build(obj, stream, context, path)
+
 def generate_zero_bytes(offsite_count):
     return b'\x00' * offsite_count
 class PostOffset(Pointer):

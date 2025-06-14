@@ -138,10 +138,10 @@ export function getTypeManifestVisitor(input: {
                             value: fragment(''),
                         };
                     } else if (isNode(arrayType.count, 'remainderCountNode')) {
-                        imports.add('construct', 'Construct');
+                        imports.add('construct', ['Construct', 'GreedyRange']);
                         return {
                             borshType: fragment(
-                                `borsh.Vec(typing.cast(Construct, ${itemlayout.borshType.render}))`,
+                                `GreedyRange(typing.cast(Construct, ${itemlayout.borshType.render}))`,
                                 imports,
                             ),
                             fromDecode: fragment(fromJSONStr, imports),
@@ -899,8 +899,7 @@ export function getTypeManifestVisitor(input: {
                 },
                 visitZeroableOptionType(node, { self }) {
                     //throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: node.kind, node });
-                    console.log('visitZeroableOptionType', node);
-                    //f
+                    //console.log('visitZeroableOptionType', node);
                     const inner = visit(node.item, self);
                     const imports = new ImportMap();
                     imports.add('..shared', 'ZeroableOption');
