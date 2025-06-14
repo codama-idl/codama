@@ -2,12 +2,14 @@
 from os import environ
 from typing import Any,cast
 import io
-
+from solders.pubkey import Pubkey
 import borsh_construct as borsh
 from typing import Any, Dict, Type, TypeVar, cast,List,Tuple
 from construct import (
     Adapter,
     Construct,
+    Const,
+    Default,
     GreedyBytes,
     PaddedString,
     Padded,
@@ -246,18 +248,29 @@ class PostOffset(Pointer):
         return buildret
 
 
-class ZeroableOption(Adapter):
-    def __init__(self, subcon: Construct,value: Any) -> None:
-        self.value = value
-        super().__init__(subcon)
-    def _decode(self, obj:Any, context, path) -> Any:
+def ZeroToType(this:Any,valueType: str,value:Const):
+    if valueType == "u8" or valueType == "u16" or valueType == "u32" or valueType == "u64":
+        if value != None:
+            this.value = int.from_bytes(value.build(None))
+        else:
+            this.value = 0
+    elif valueType == "publicKey":
+        if value != None:
+            this.value = Pubkey.from_bytes(value.build(None))
+        else:
+            this.value =Pubkey.from_string("11111111111111111111111111111111")
+class ZeroableOption(Default):
+    #value:Const
+    def __init__(self, subcon: Construct,value: Any,valueType: str) -> None:
+        ZeroToType(self,valueType,value)
+        if self.value!=None:
+            super().__init__(subcon,self.value)
+        else:
+            super().__init__(subcon,None)
+    def _parse(self, stream, context, path):
+        obj= self.subcon._parsereport(stream, context, path)
         if obj == self.value:
             return None
-        return obj
-
-    def _encode(self, obj, context, path) ->  Any:
-        if obj == self.value:
-            return obj
         return obj
 
 SizePrefix=Prefixed
