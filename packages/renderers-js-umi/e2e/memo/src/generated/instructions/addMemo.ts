@@ -7,19 +7,19 @@
  */
 
 import {
-  Context,
-  TransactionBuilder,
   transactionBuilder,
+  type Context,
+  type TransactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
-  Serializer,
   string,
   struct,
+  type Serializer,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  ResolvedAccount,
-  ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
+  type ResolvedAccount,
+  type ResolvedAccountsWithIndices,
 } from '../shared';
 
 // Data.
