@@ -82,7 +82,12 @@ class {{ accountName | pascalCase}}:
         {{field}},
         {% endfor %}
         )
-
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {
+        {% for field in fieldsToEncodable.renders %}
+        {{field}},
+        {% endfor %}
+        }
     def to_json(self) -> {{accountName | pascalCase}}JSON:
         return {
         {% for field in fieldsToJSON.renders %}

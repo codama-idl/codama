@@ -103,10 +103,11 @@ export function getTypeManifestVisitor(input: {
                     let count = 0;
                     let toJSONStr = '';
                     let fromJSONStr = '';
+                    let fromDecodeStr = '';
+                    let toEncodeStr = '';
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         count = arrayType.count.value;
                         imports.mergeWith(inner.borshType);
-                        let toEncodeStr = '';
                         if (inner.isEncodable) {
                             toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
                             const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
@@ -117,8 +118,11 @@ export function getTypeManifestVisitor(input: {
                             if (arrayType.item.kind == 'publicKeyTypeNode') {
                                 const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
                                 fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                                //const fromDecodeItemStr = renderString(inner.fromDecode.render, { name: 'item' });
+                                fromDecodeStr = `{{name}}`; //`list(map(lambda item:${fromDecodeItemStr},{{name}}))`;
                                 const toJSONItemStr = renderString(inner.toJSON.render, { name: 'item' });
                                 toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
+                                toEncodeStr = '{{name}}';
                             } else {
                                 toEncodeStr = '{{name}}';
                                 toJSONStr = '{{name}}';
@@ -127,7 +131,7 @@ export function getTypeManifestVisitor(input: {
                         }
                         return {
                             borshType: fragment(`${itemlayout.borshType.render}[${count}]`, imports),
-                            fromDecode: fragment(fromJSONStr, imports),
+                            fromDecode: fragment(fromDecodeStr, imports),
                             fromJSON: fragment(fromJSONStr, imports),
                             isEncodable: false,
                             isEnum: false,
@@ -139,18 +143,25 @@ export function getTypeManifestVisitor(input: {
                         };
                     } else if (isNode(arrayType.count, 'remainderCountNode')) {
                         imports.add('construct', ['Construct', 'GreedyRange']);
+                        if (inner.isEncodable) {
+                            const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
+                            fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                            const fromDecodeItemStr = renderString(inner.fromDecode.render, { name: 'item' });
+                            fromDecodeStr = `list(map(lambda item:${fromDecodeItemStr},{{name}}))`;
+                            toEncodeStr = `list(map(lambda item:item.to_encodable(),{{name}}))`;
+                        }
                         return {
                             borshType: fragment(
                                 `GreedyRange(typing.cast(Construct, ${itemlayout.borshType.render}))`,
                                 imports,
                             ),
-                            fromDecode: fragment(fromJSONStr, imports),
+                            fromDecode: fragment(fromDecodeStr, imports),
                             fromJSON: fragment(fromJSONStr, imports),
                             isEncodable: false,
                             isEnum: false,
                             pyJSONType: fragment(`list[${inner.pyJSONType.render}]`, imports),
                             pyType: fragment(`list[${inner.pyType.render}]`, imports),
-                            toEncode: fragment('', imports),
+                            toEncode: fragment(toEncodeStr, imports),
                             toJSON: fragment(toJSONStr, imports),
                             value: fragment(''),
                         };
@@ -317,7 +328,7 @@ export function getTypeManifestVisitor(input: {
                         pyTypeStr = 'types.' + pyTypeStr;
                         borshTypeStr = 'types.' + borshTypeStr;
                         fromJSONStr = 'types.' + fromJSONStr;
-                        fromDecodeStr = 'types.' + fromJSONStr;
+                        fromDecodeStr = 'types.' + fromDecodeStr;
                         pyJSONTypeStr = `types.${modname}.${pascalCase(typename)}JSON`;
                     } else {
                         imports.add('.', `${modname}`);
@@ -424,7 +435,7 @@ export function getTypeManifestVisitor(input: {
                     const borshType = `HiddenPrefixAdapter(borsh.TupleStruct(${prefix.join(',')}),${inner.borshType.render})`;
                     return {
                         borshType: fragment(borshType, imports),
-                        fromDecode: fragment('{{name}}', imports),
+                        fromDecode: fragment(inner.fromDecode.render, imports),
                         fromJSON: fragment(`${inner.fromJSON.render}`),
                         isEncodable: false,
                         isEnum: false,
@@ -733,16 +744,18 @@ export function getTypeManifestVisitor(input: {
                     imports.add('..shared', 'RemainderOption');
                     const borshType = `RemainderOption(${inner.borshType.render})`;
                     imports.mergeWith(inner.borshType);
+                    const fromDecodeStr = `(None if {{name}} is None else ${inner.fromDecode.render})`;
+                    //const fromJSONStr =
 
                     return {
                         borshType: fragment(borshType, imports),
-                        fromDecode: fragment('{{name}}', imports),
-                        fromJSON: fragment('SolPubkey.from_string({{name}})'),
+                        fromDecode: fragment(fromDecodeStr, imports),
+                        fromJSON: fragment(inner.fromJSON.render),
                         isEncodable: false,
                         isEnum: false,
                         pyJSONType: fragment('str'),
-                        pyType: fragment('SolPubkey', imports),
-                        toEncode: fragment('{{name}}'),
+                        pyType: fragment(inner.pyType.render, imports),
+                        toEncode: fragment(inner.toEncode.render),
                         toJSON: fragment('str({{name}})'),
                         value: fragment(''),
                     };

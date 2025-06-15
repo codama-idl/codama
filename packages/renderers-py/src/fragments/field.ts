@@ -100,7 +100,7 @@ export function getFieldsToJSONEncodable(
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const { fields } = scope;
+    const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
@@ -111,13 +111,13 @@ export function getFieldsToJSONEncodable(
             const toCast = renderString('{{name}}.to_encodable()', { name: 'self.' + field.name });
             fragments.push(`"${field.name}": ${toCast}`);
         } else {
-            fragments.push(`"${field.name}": self.${notPyKeyCase(field.name)}`);
+            const fieldtype = visit(field.type, typeManifestVisitor);
+            //console.log(fieldtype);
+            const JSONEncodeableStr = renderString(fieldtype.toEncode.render, {
+                name: `self.${notPyKeyCase(field.name)}`,
+            });
+            fragments.push(`"${field.name}": ${JSONEncodeableStr}`);
         }
-        //const fieldtype = visit(field.type, typeManifestVisitor);
-        //imports.mergeWith(fieldtype.toJSON.imports);
-        //const toCast = renderString(fieldtype.toJSON.render, { name: 'self.' + field.name });
-        //fieldtype.
-        //fragments.push(`"${field.name}": self.${toCast}`);
     });
     return new PyFragment(fragments, imports);
 }
@@ -145,7 +145,17 @@ export function getFieldsDecode(
                 );
             }
         } else {
-            fragments.push(`${field.name}=dec.${field.name}`);
+            const fieldtype = visit(field.type, typeManifestVisitor);
+            /*if (fieldtype.isEncodable){
+                fragments.push(''
+                );
+            }else{
+                fragments.push(`${field.name}=dec.${field.name}`);
+            }*/
+
+            const fromCast = renderString(fieldtype.fromDecode.render, { name: `dec.${notPyKeyCase(field.name)}` });
+            fragments.push(`${notPyKeyCase(field.name)}=${fromCast}`);
+            //fieldtype.fromDecode
         }
     });
     return new PyFragment(fragments, imports);

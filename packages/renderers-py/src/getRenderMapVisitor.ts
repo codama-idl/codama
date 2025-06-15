@@ -158,6 +158,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...scope,
                         fields,
                     });
+                    const fieldsToEncodable = getFieldsToJSONEncodable({
+                        ...scope,
+                        fields,
+                    });
 
                     const imports = new ImportMap();
                     imports.add('solders.pubkey', 'Pubkey');
@@ -192,6 +196,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             fieldsFromJSON: fieldsFromJSON,
                             fieldsJSON_assignment: accountFieldsJSON,
                             fieldsLayout: layoutFragment,
+                            fieldsToEncodable: fieldsToEncodable,
                             fieldsToJSON: fieldsToJSON,
                             fields_interface_params: accountFieldsPy,
                             imports: imports.toString(dependencyMap, useGranularImports),
