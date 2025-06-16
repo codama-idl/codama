@@ -89,12 +89,12 @@ impl<'a, 'b> {{ instruction.name | pascalCase }}CpiBuilder<'a, 'b> {
     self
   }
   #[inline(always)]
-  pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
     self.invoke_signed(&[])
   }
   #[allow(clippy::clone_on_copy)]
   #[allow(clippy::vec_init_then_push)]
-  pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
+  pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program_entrypoint::ProgramResult {
     {% if hasArgs %}
       let args = {{ instruction.name | pascalCase }}InstructionArgs {
         {% for arg in instructionArgs %}

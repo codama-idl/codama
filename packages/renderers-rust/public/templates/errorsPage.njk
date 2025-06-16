@@ -14,7 +14,7 @@ pub enum {{ program.name | pascalCase }}Error {
 {% endfor %}
 }
 
-impl solana_program::program_error::PrintProgramError for {{ program.name | pascalCase }}Error {
+impl solana_program_error::PrintProgramError for {{ program.name | pascalCase }}Error {
     fn print<E>(&self) {
         solana_program::msg!(&self.to_string());
     }
