@@ -52,8 +52,8 @@ class _String8(Adapter):
         #return bytes(obj.encode("utf8"))
         return bytes([ord(obj)]) #bytes(bytes([ord(obj)]), "utf8")
 
-String64=_String64()
-String8=_String8()
+StringU64=_String64()
+StringU8=_String8()
 
 
 class HiddenPrefixAdapter(Adapter):

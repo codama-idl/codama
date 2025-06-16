@@ -35,7 +35,7 @@ class MetadataAdditionalFieldRule:
     def to_encodable(self) -> dict[str, typing.Any]:
         return {
                 "field": self.field,
-                "valueRestrictions": self.valueRestrictions,
+                "valueRestrictions": (None if self.valueRestrictions is None else self.valueRestrictions.to_encodable()),
                 }
 
     def to_json(self) -> MetadataAdditionalFieldRuleJSON:

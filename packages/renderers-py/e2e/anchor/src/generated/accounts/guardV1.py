@@ -94,11 +94,18 @@ class GuardV1:
         return cls(
                 mint=dec.mint,
                 bump=dec.bump,
-                cpiRule=dec.cpiRule,
-                transferAmountRule=dec.transferAmountRule,
-                additionalFieldsRule=dec.additionalFieldsRule,
+                cpiRule=(None if dec.cpiRule is None else types.cpiRule.from_decoded(dec.cpiRule)),
+                transferAmountRule=(None if dec.transferAmountRule is None else types.transferAmountRule.from_decoded(dec.transferAmountRule)),
+                additionalFieldsRule=list(map(lambda item:types.metadataAdditionalFieldRule.MetadataAdditionalFieldRule.from_json(item),dec.additionalFieldsRule)),
                 )
-
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {
+                "mint": self.mint,
+                "bump": self.bump,
+                "cpiRule": (None if self.cpiRule is None else self.cpiRule.to_encodable()),
+                "transferAmountRule": (None if self.transferAmountRule is None else self.transferAmountRule.to_encodable()),
+                "additionalFieldsRule": list(map(lambda item:item.to_encodable(),self.additionalFieldsRule)),
+                }
     def to_json(self) -> GuardV1JSON:
         return {
                 "mint": str(self.mint),

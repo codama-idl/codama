@@ -35,6 +35,7 @@ class Nonce:
     lamportsPerSignature: int
 
 
+
     layout: typing.ClassVar = borsh.CStruct(
         "version" /types.nonceVersion.layout,
         "state" /types.nonceState.layout,
@@ -91,7 +92,14 @@ class Nonce:
                 blockhash=dec.blockhash,
                 lamportsPerSignature=dec.lamportsPerSignature,
                 )
-
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {
+                "version": self.version.to_encodable(),
+                "state": self.state.to_encodable(),
+                "authority": self.authority,
+                "blockhash": self.blockhash,
+                "lamportsPerSignature": self.lamportsPerSignature,
+                }
     def to_json(self) -> NonceJSON:
         return {
                 "version": self.version.to_json(),

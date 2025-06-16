@@ -94,9 +94,9 @@ test('it renders a non-scalar enum without', async () => {
         `class AccountValue(typing.TypedDict):
             contentType: str`,
         `return AccountJSON(
-            kind=\"Account\",
+            kind="Account",
             value = {
-            \"contentType\":self.value[\"contentType\"]
+            "contentType":self.value["contentType"]
             }
         )`,
     ]);

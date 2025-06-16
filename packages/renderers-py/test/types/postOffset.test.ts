@@ -1,6 +1,6 @@
 import { definedTypeNode, numberTypeNode, postOffsetTypeNode } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
-import { expect,test } from 'vitest';
+import { expect, test } from 'vitest';
 
 import { getRenderMapVisitor } from '../../src';
 import { renderMapContains } from '../_setup';

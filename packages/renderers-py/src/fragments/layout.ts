@@ -15,7 +15,7 @@ export function getLayoutFields(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);

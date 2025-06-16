@@ -117,7 +117,8 @@ test('it renders constants for account field discriminators', async () => {
     // And we expect the field default value to use that constant.
 
     await renderMapContains(renderMap, 'accounts/myAccount.py', [
-        'discriminator: typing.ClassVar = b"\\x2a\\x00\\x00\\x00\\x00\\x00\\x00\\x00"',
+        'myDiscriminator: typing.ClassVar = b"\\x2a\\x00\\x00\\x00\\x00\\x00\\x00\\x00"',
+        'if data[:cls.DISCRIMINATOR_SIZE] != cls.myDiscriminator:',
     ]);
 });
 
@@ -125,7 +126,10 @@ test('it renders constants for account constant discriminators', async () => {
     const node = programNode({
         accounts: [
             accountNode({
-                discriminators: [constantDiscriminatorNode(constantValueNodeFromBytes('base16', '66d205dc9a366217'))],
+                discriminators: [
+                    constantDiscriminatorNode(constantValueNodeFromBytes('base16', '1111')),
+                    constantDiscriminatorNode(constantValueNodeFromBytes('base16', '2222'), 2),
+                ],
                 name: 'myAccount',
             }),
         ],
@@ -139,8 +143,9 @@ test('it renders constants for account constant discriminators', async () => {
     // Then we expect the following constants and functions to be rendered.
     await renderMapContains(renderMap, 'accounts/myAccount.py', [
         'layout: typing.ClassVar = borsh.CStruct(',
-        'discriminator: typing.ClassVar',
-        '\\x66\\xd2\\x05\\xdc\\x9a\\x36\\x62\\x17',
+        'discriminator_0: typing.ClassVar = b"\\x11\\x11"',
+        'discriminator_2: typing.ClassVar = b"\\x22\\x22"',
+        'if data[:cls.DISCRIMINATOR_SIZE] != cls.discriminator_0+cls.discriminator_2:',
     ]);
 });
 

@@ -43,6 +43,8 @@ def AllocateWithSeed(
     if remaining_accounts is not None:
         keys += remaining_accounts
     identifier = b"\x09\x00\x00\x00"
+
+
     encoded_args = layout.build({
         "base":args["base"],
         "seed":args["seed"],

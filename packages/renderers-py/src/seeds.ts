@@ -16,9 +16,15 @@ export function getSeed(seed: PdaSeedNode): string {
         if (seed.type.kind == 'publicKeyTypeNode') {
             return `bytes(${seed.name})`;
         }
-        if(seed.type.kind == 'numberTypeNode') {
-            if (seed.type.format == "u16" || seed.type.format == "u8"||seed.type.format == "u32" || seed.type.format == "u64"){
-                const length = parseUNumber(seed.type.format)/8;
+        if (seed.type.kind == 'numberTypeNode') {
+            if (
+                seed.type.format == 'u16' ||
+                seed.type.format == 'u8' ||
+                seed.type.format == 'u32' ||
+                seed.type.format == 'u64' ||
+                seed.type.format == 'u128'
+            ) {
+                const length = parseUNumber(seed.type.format) / 8;
                 return `${seed.name}.to_bytes(${length}, byteorder='little')`;
             }
         }
@@ -31,7 +37,7 @@ export function getSeedType(seed: PdaSeedNode): string {
         if (seed.type.kind == 'publicKeyTypeNode') {
             return 'SolPubkey';
         }
-        if(seed.type.kind == 'numberTypeNode') {
+        if (seed.type.kind == 'numberTypeNode') {
             return 'int';
         }
         return '';

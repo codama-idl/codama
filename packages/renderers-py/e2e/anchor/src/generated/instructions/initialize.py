@@ -34,6 +34,8 @@ def Initialize(
     if remaining_accounts is not None:
         keys += remaining_accounts
     identifier = b"\x2b\x22\x0d\x31\xa7\x58\xeb\xeb"
+
+
     encoded_args = b""
     data = identifier + encoded_args
     return Instruction(program_id,data,keys)

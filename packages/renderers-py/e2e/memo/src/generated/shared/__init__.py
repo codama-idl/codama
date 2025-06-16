@@ -5,4 +5,4 @@
     @see https://github.com/codama-idl/codama
 '''
 
-from .extension import EnumForCodegenU16,EnumForCodegenU32,String64,OptionU32,RemainderOption,HiddenPrefixAdapter,FixedSizeString,FixedSizeBytes,PreOffset,ZeroableOption,SizePrefix
+from .extension import EnumForCodegenU16,EnumForCodegenU32,StringU8,StringU64,OptionU32,RemainderOption,HiddenPrefixAdapter,FixedSizeString,FixedSizeBytes,PreOffset,ZeroableOption,SizePrefix

@@ -18,7 +18,7 @@ export function getFieldsJSON(
     const imports = new ImportMap();
 
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         //console.log('field.name', field.name, field.type);
@@ -41,7 +41,7 @@ export function getFieldsPy(
     const { fields, typeManifestVisitor } = scope;
     const fragments: string[] = [];
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
@@ -58,7 +58,7 @@ export function getFieldsPyJSON(
     const fragments: string[] = [];
     try {
         fields.forEach((field, _index) => {
-            if (field.name == 'discriminator') {
+            if (field.name.toLowerCase().includes('discriminator')) {
                 return;
             }
             const fieldtype = visit(field.type, typeManifestVisitor);
@@ -84,7 +84,7 @@ export function getFieldsToJSON(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
@@ -104,7 +104,7 @@ export function getFieldsToJSONEncodable(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         if (field.type.kind == 'definedTypeLinkNode') {
@@ -131,7 +131,7 @@ export function getFieldsDecode(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         if (field.type.kind == 'definedTypeLinkNode') {
@@ -170,7 +170,7 @@ export function getFieldsFromJSON(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
@@ -189,7 +189,7 @@ export function getFieldsFromDecode(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
@@ -209,7 +209,7 @@ export function getArgsToLayout(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
@@ -234,7 +234,7 @@ export function getArgsToPy(
     const fragments: string[] = [];
     const imports = new ImportMap();
     fields.forEach((field, _index) => {
-        if (field.name == 'discriminator') {
+        if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
         const fieldtype = visit(field.type, typeManifestVisitor);

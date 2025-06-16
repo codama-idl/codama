@@ -50,6 +50,8 @@ def UpdateGuard(
     if remaining_accounts is not None:
         keys += remaining_accounts
     identifier = b"\x33\x26\xaf\xb4\x19\xf9\x27\x18"
+
+
     encoded_args = layout.build({
         "cpiRule":(None if args["cpiRule"] is None else args["cpiRule"].to_encodable()),
         "transferAmountRule":(None if args["transferAmountRule"] is None else args["transferAmountRule"].to_encodable()),

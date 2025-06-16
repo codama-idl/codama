@@ -37,6 +37,8 @@ def AuthorizeNonceAccount(
     if remaining_accounts is not None:
         keys += remaining_accounts
     identifier = b"\x07\x00\x00\x00"
+
+
     encoded_args = layout.build({
         "newNonceAuthority":args["newNonceAuthority"],
        })

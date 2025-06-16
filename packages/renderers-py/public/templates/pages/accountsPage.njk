@@ -6,9 +6,13 @@
 
 
 class {{accountName | pascalCase}}JSON(typing.TypedDict):
+{% if  fieldsJSON_assignment.renders.length > 0 %}
 {% for field in fieldsJSON_assignment.renders %}
     {{field}}
 {% endfor %}
+{% else %}
+    pass
+{% endif %}
 
 @dataclass
 class {{ accountName | pascalCase}}:
@@ -20,9 +24,9 @@ class {{ accountName | pascalCase}}:
 {% set dsize=0 %}
 {% for discriminator in discriminators %}
     {{discriminator.render}}
-    {% set dsize = dsize + discriminator.len %}
+{% set dsize = dsize + discriminator.len %}
 {% endfor %}
-{% if dsize > 0 -%}
+{% if dsize > 0 %}
     DISCRIMINATOR_SIZE: int = {{ dsize }}
 {%- endif %}
 
@@ -74,7 +78,7 @@ class {{ accountName | pascalCase}}:
     @classmethod
     def decode(cls, data: bytes) -> "{{accountName | pascalCase}}":
 {%if discriminators.length >0 %}
-        if data[:cls.DISCRIMINATOR_SIZE] != cls.discriminator:
+        if data[:cls.DISCRIMINATOR_SIZE] != {% for discriminator in discriminators %}cls.{{discriminators[loop.index0].name}}{% if not loop.last %}+{% endif %}{% endfor %}:
             raise AccountInvalidDiscriminator(
                 "The discriminator for this account is invalid"
             )
