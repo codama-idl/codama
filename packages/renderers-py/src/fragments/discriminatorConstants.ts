@@ -20,14 +20,14 @@ export function getDiscriminatorConstantsFragment(
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
         prefix: string;
     },
-): DiscriminatorFragment {
+): DiscriminatorFragment[] {
     const fragments = scope.discriminatorNodes
         .map(node => getDiscriminatorConstantFragment(node, scope))
         .filter(Boolean) as DiscriminatorFragment[];
     if (fragments.length > 0) {
-        return fragments[0];
+        return fragments;
     }
-    return new DiscriminatorFragment([`b""`], 0);
+    return [];
 
     //return mergeFragments(fragments, r => r.join('\n\n'));
     //return fragments;
@@ -61,15 +61,14 @@ export function getConstantDiscriminatorConstantFragment(
     },
 ): DiscriminatorFragment | null {
     const { discriminatorNodes, typeManifestVisitor } = scope;
-    //const name = camelCase(`${prefix}_discriminator${suffix}`);
     if (discriminatorNodes.length > 0) {
         const value = visit(discriminatorNode.constant.value, typeManifestVisitor).value;
-        return new DiscriminatorFragment([value.render], getPyBytesLen(value.render));
+        return new DiscriminatorFragment('discriminator', value.render, getPyBytesLen(value.render));
     } else {
-        return new DiscriminatorFragment([`b""`], 0);
+        return new DiscriminatorFragment('discriminator', `b""`, 0);
     }
 }
-
+//    discriminator: typing.ClassVar = {{discriminator_assignment.renders}}
 export function getFieldDiscriminatorConstantFragment(
     discriminatorNode: FieldDiscriminatorNode,
     scope: Pick<GlobalFragmentScope, 'genType' | 'typeManifestVisitor'> & {
@@ -86,42 +85,28 @@ export function getFieldDiscriminatorConstantFragment(
 
     if (genType.origin == 'anchor') {
         const value = visit(field.defaultValue, typeManifestVisitor).value;
-        return new DiscriminatorFragment([value.render], getPyBytesLen(value.render));
+        return new DiscriminatorFragment('discriminator', value.render, getPyBytesLen(value.render));
     } else {
         if (field.defaultValue.kind == 'numberValueNode') {
+            let renderStr = '';
             if (field.type.kind == 'numberTypeNode') {
                 if (field.type.format == 'u64') {
                     const valueBs = getU64Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
-                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                    renderStr = `b"${bytesToPyB(valueBs)}"`;
                 } else if (field.type.format == 'u32') {
                     const valueBs = getU32Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
-                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                    renderStr = `b"${bytesToPyB(valueBs)}"`;
                 } else if (field.type.format == 'u16') {
                     const valueBs = getU16Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
-                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                    renderStr = `b"${bytesToPyB(valueBs)}"`;
                 } else if (field.type.format == 'u8') {
                     const valueBs = getU8Codec().encode(field.defaultValue.number);
-                    const renderStr = `b"${bytesToPyB(valueBs)}"`;
-                    return new DiscriminatorFragment([renderStr], getPyBytesLen(renderStr));
+                    renderStr = `b"${bytesToPyB(valueBs)}"`;
                 }
+                return new DiscriminatorFragment(field.name, renderStr, getPyBytesLen(renderStr));
             }
-            return new DiscriminatorFragment([''], 0);
+            return new DiscriminatorFragment(field.name, `b""`, 0);
         }
-        return new DiscriminatorFragment([''], 0);
+        return new DiscriminatorFragment(field.name, `b""`, 0);
     }
 }
-/*
-function getConstantFragment(
-    scope: GlobalFragmentScope & {
-        name: string;
-        value: Fragment;
-    },
-): DiscriminatorFragment {
-    const { value } = scope;
-    const valueStr: string = `${value.render}`;
-
-    return new DiscriminatorFragment(valueStr,);
-}*/

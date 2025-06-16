@@ -107,10 +107,14 @@ export class PyFragment {
     }
 }
 export class DiscriminatorFragment {
-    public renders: string[];
+    public render: string;
     public len: number;
-    constructor(renders: string[], len: number) {
-        this.renders = renders;
+    public discriminator: string;
+    public name: string;
+    constructor(name: string, discriminator: string, len: number) {
         this.len = len;
+        this.name = name;
+        this.discriminator = discriminator;
+        this.render = `${name}: typing.ClassVar = ${discriminator}`;
     }
 }

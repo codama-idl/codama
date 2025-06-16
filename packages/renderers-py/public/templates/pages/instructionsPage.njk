@@ -42,9 +42,19 @@ def {{instructionName | pascalCase}}(
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
-{%if discriminator.len>0 %}
-    identifier = {{discriminator.renders}}
+{%if discriminators.length>1 %}
+{% for item in discriminators %}
+{% if loop.first %}
+    identifier = {{item.discriminator}}
+{% else %}
+    identifier = identifier+{{item.discriminator}}
 {% endif %}
+{% endfor %}
+{% elseif discriminators.length==1 %}
+    identifier = {{discriminators[0].discriminator}}
+{% endif %}
+
+
 {% if argsToLayout.renders.length > 0 %}
     encoded_args = layout.build({
 {% for arg in argsToLayout.renders %}
@@ -54,7 +64,7 @@ def {{instructionName | pascalCase}}(
 {% else %}
     encoded_args = b""
 {% endif %}
-{%if discriminator.len>0 %}
+{%if discriminators.length>0 %}
     data = identifier + encoded_args
     return Instruction(program_id,data,keys)
 {% else %}

@@ -114,6 +114,8 @@ export function getTypeManifestVisitor(input: {
                             toJSONStr = `list(map(lambda item:${toJSONItemStr},{{name}}))`;
                             const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
                             fromJSONStr = `list(map(lambda item:${fromJSONItemStr},{{name}}))`;
+                            const fromDecodeItemStr = renderString(inner.fromDecode.render, { name: 'item' });
+                            fromDecodeStr = `list(map(lambda item:${fromDecodeItemStr},{{name}}))`;
                         } else {
                             if (arrayType.item.kind == 'publicKeyTypeNode') {
                                 const fromJSONItemStr = renderString(inner.fromJSON.render, { name: 'item' });
@@ -173,6 +175,7 @@ export function getTypeManifestVisitor(input: {
                                 case 'u8':
                                 case 'u16':
                                 case 'u64':
+                                case 'u128':
                                 case 'shortU16': {
                                     imports.mergeWith(inner.borshType);
                                     imports.add('construct', 'Construct');
@@ -355,13 +358,13 @@ export function getTypeManifestVisitor(input: {
                         return {
                             borshType: fragment(`FixedSizeBytes(${node.size},GreedyBytes)`, imports), //`borsh.U8[${node.size}]`),
                             fromDecode: fragment('{{name}}'),
-                            fromJSON: fragment('{{name}}'),
+                            fromJSON: fragment('bytes({{name}})'),
                             isEncodable: false,
                             isEnum: false,
                             pyJSONType: fragment('list[int]'),
                             pyType: fragment('bytes'),
                             toEncode: fragment('{{name}}'),
-                            toJSON: fragment('{{name}}'),
+                            toJSON: fragment('list({{name}})'),
                             value: fragment(''),
                         };
                     } else if (node.type.kind == 'stringTypeNode') {

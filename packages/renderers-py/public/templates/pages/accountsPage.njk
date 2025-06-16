@@ -17,10 +17,15 @@ class {{ accountName | pascalCase}}:
     {{field}}
 {% endfor %}
 
-{%if discriminator_assignment.len >0 %}
-    discriminator: typing.ClassVar = {{discriminator_assignment.renders}}
-    DISCRIMINATOR_SIZE: int = {{discriminator_assignment.len}}
-{% endif %}
+{% set dsize=0 %}
+{% for discriminator in discriminators %}
+    {{discriminator.render}}
+    {% set dsize = dsize + discriminator.len %}
+{% endfor %}
+{% if dsize > 0 -%}
+    DISCRIMINATOR_SIZE: int = {{ dsize }}
+{%- endif %}
+
 
     layout: typing.ClassVar = borsh.CStruct(
     {% for field in fieldsLayout.renders %}
@@ -68,7 +73,7 @@ class {{ accountName | pascalCase}}:
 
     @classmethod
     def decode(cls, data: bytes) -> "{{accountName | pascalCase}}":
-{%if discriminator_assignment.len >0 %}
+{%if discriminators.length >0 %}
         if data[:cls.DISCRIMINATOR_SIZE] != cls.discriminator:
             raise AccountInvalidDiscriminator(
                 "The discriminator for this account is invalid"

@@ -134,7 +134,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         fields,
                     });
 
-                    const accountDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
+                    const discriminators = getDiscriminatorConstantsFragment({
                         ...scope,
                         discriminatorNodes: node.discriminators ?? [],
                         fields,
@@ -190,7 +190,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         `accounts/${accountFilename}.py`,
                         render('accountsPage.njk', {
                             accountName: node.name,
-                            discriminator_assignment: accountDiscriminatorConstantsFragment,
+                            discriminators: discriminators,
                             fields: fields,
                             fieldsDecode: fieldsDecode,
                             fieldsFromJSON: fieldsFromJSON,
@@ -378,7 +378,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             accounts: node.accounts,
                             args: argsToPy,
                             argsToLayout: argsToLayout,
-                            discriminator: discriminatorConstantsFragment,
+                            discriminators: discriminatorConstantsFragment,
                             fieldsLayout: layoutFragment,
                             imports: imports.toString(dependencyMap, useGranularImports),
                             instructionName: node.name,
