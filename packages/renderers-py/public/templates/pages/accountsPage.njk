@@ -1,0 +1,118 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+
+class {{accountName | pascalCase}}JSON(typing.TypedDict):
+{% if  fieldsJSON_assignment.renders.length > 0 %}
+{% for field in fieldsJSON_assignment.renders %}
+    {{field}}
+{% endfor %}
+{% else %}
+    pass
+{% endif %}
+
+@dataclass
+class {{ accountName | pascalCase}}:
+    #fields
+{%for field in fields_interface_params.renders %}
+    {{field}}
+{% endfor %}
+
+{% set dsize=0 %}
+{% for discriminator in discriminators %}
+    {{discriminator.render}}
+{% set dsize = dsize + discriminator.len %}
+{% endfor %}
+{% if dsize > 0 %}
+    DISCRIMINATOR_SIZE: int = {{ dsize }}
+{%- endif %}
+
+
+    layout: typing.ClassVar = borsh.CStruct(
+    {% for field in fieldsLayout.renders %}
+    {{field}},
+    {% endfor %}
+    )
+
+
+
+    @classmethod
+    async def fetch(
+        cls,
+        conn: AsyncClient,
+        address: SolPubkey,
+        commitment: typing.Optional[Commitment] = None,
+        program_id: SolPubkey = {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS,
+    ) -> typing.Optional["{{accountName | pascalCase}}"]:
+        resp = await conn.get_account_info(address, commitment=commitment)
+        info = resp.value
+        if info is None:
+            return None
+        if info.owner != program_id:
+            raise ValueError("Account does not belong to this program")
+        bytes_data = info.data
+        return cls.decode(bytes_data)
+
+    @classmethod
+    async def fetch_multiple(
+        cls,
+        conn: AsyncClient,
+        addresses: list[SolPubkey],
+        commitment: typing.Optional[Commitment] = None,
+        program_id: SolPubkey = {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS,
+    ) -> typing.List[typing.Optional["{{accountName | pascalCase}}"]]:
+        infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
+        res: typing.List[typing.Optional["{{accountName | pascalCase}}"]] = []
+        for info in infos:
+            if info is None:
+                res.append(None)
+                continue
+            if info.account.owner != program_id:
+                raise ValueError("Account does not belong to this program")
+            res.append(cls.decode(info.account.data))
+        return res
+
+    @classmethod
+    def decode(cls, data: bytes) -> "{{accountName | pascalCase}}":
+{%if discriminators.length >0 %}
+        if data[:cls.DISCRIMINATOR_SIZE] != {% for discriminator in discriminators %}cls.{{discriminators[loop.index0].name}}{% if not loop.last %}+{% endif %}{% endfor %}:
+            raise AccountInvalidDiscriminator(
+                "The discriminator for this account is invalid"
+            )
+        dec = {{accountName | pascalCase}}.layout.parse(data[cls.DISCRIMINATOR_SIZE:])
+{% else %}
+        dec = {{accountName | pascalCase}}.layout.parse(data)
+{% endif %}
+        return cls(
+        {% for field in fieldsDecode.renders %}
+        {{field}},
+        {% endfor %}
+        )
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {
+        {% for field in fieldsToEncodable.renders %}
+        {{field}},
+        {% endfor %}
+        }
+    def to_json(self) -> {{accountName | pascalCase}}JSON:
+        return {
+        {% for field in fieldsToJSON.renders %}
+        {{field}},
+        {% endfor %}
+        }
+
+    @classmethod
+    def from_json(cls, obj: {{accountName | pascalCase}}JSON) -> "{{accountName | pascalCase}}":
+        return cls(
+        {% for field in fieldsFromJSON.renders %}
+        {{field}},
+        {% endfor %}
+        )
+
+
+
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+{% for program in programs | sort(false, false, 'name') %}
+{{program.name|snakeCase|toUpperCase}}_PROGRAM_ADDRESS =Pubkey.from_string("{{program.publicKey}}")
+{% endfor %}
+
+{% endblock %}

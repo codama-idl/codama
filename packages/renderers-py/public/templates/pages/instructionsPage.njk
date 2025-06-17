@@ -1,0 +1,101 @@
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+{% if  args.renders.length > 0 %}
+class {{instructionName | pascalCase}}Args(typing.TypedDict):
+{% for field in args.renders %}
+    {{field}}
+{% endfor %}
+
+
+layout = borsh.CStruct(
+{% for field in fieldsLayout.renders %}
+    {{field}},
+{% endfor %}
+    )
+
+{% endif %}
+
+class {{instructionName | pascalCase}}Accounts(typing.TypedDict):
+{% if accounts.length > 0 %}
+{% for acc in accounts %}
+    {{acc.name | notKeywordCase}}:SolPubkey
+{% endfor %}
+{% else %}
+    pass
+{% endif %}
+
+def {{instructionName | pascalCase}}(
+{% if  args.renders.length > 0 %}
+    args: {{instructionName | pascalCase}}Args,
+{% endif %}
+    accounts: {{instructionName | pascalCase}}Accounts,
+    program_id: SolPubkey =  {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS,
+    remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
+) ->Instruction:
+    keys: list[AccountMeta] = [
+{% for acc in accounts %}
+    AccountMeta(pubkey=accounts["{{acc.name | notKeywordCase }}"], is_signer={{ 'True' if acc.isSigner else 'False' }}, is_writable={{ 'True' if acc.isWritable else 'False' }}),
+{% endfor %}
+    ]
+    if remaining_accounts is not None:
+        keys += remaining_accounts
+{%if discriminators.length>1 %}
+{% for item in discriminators %}
+{% if loop.first %}
+    identifier = {{item.discriminator}}
+{% else %}
+    identifier = identifier+{{item.discriminator}}
+{% endif %}
+{% endfor %}
+{% elseif discriminators.length==1 %}
+    identifier = {{discriminators[0].discriminator}}
+{% endif %}
+
+
+{% if argsToLayout.renders.length > 0 %}
+    encoded_args = layout.build({
+{% for arg in argsToLayout.renders %}
+        {{arg}},
+{% endfor %}
+       })
+{% else %}
+    encoded_args = b""
+{% endif %}
+{%if discriminators.length>0 %}
+    data = identifier + encoded_args
+    return Instruction(program_id,data,keys)
+{% else %}
+    return Instruction(program_id,encoded_args,keys)
+{% endif %}
+
+
+{% for pdaIt in pdas %}
+{%if pdaIt.defaultValue.kind == 'pdaValueNode' %}
+def find_{{ pdaIt.name |pascalCase }}({% for param in filterByField(pdaIt.defaultValue.pda.seeds,"name") %}{{ param.name }}: {{ getSeedType(param) }}{% if not loop.last %}, {% endif %}{% endfor %}) -> typing.Tuple[SolPubkey, int]:
+    seeds = [
+{% for seed in pdaIt.defaultValue.pda.seeds %}
+       {{getSeed(seed)}},
+{% endfor %}
+    ]
+
+    address, bump = SolPubkey.find_program_address(seeds,
+    {% if pdaIt.defaultValue.pda.programId != null%}
+        program_id=SolPubkey.from_string('{{pdaIt.defaultValue.pda.programId}}')
+    {% else %}
+     {{program.name | snakeCase | toUpperCase}}_PROGRAM_ADDRESS
+    {% endif %}
+        )
+
+    return address, bump
+
+{% endif %}
+{% if not loop.last %}
+
+{% endif %}
+
+{% endfor %}
+
+{% endblock %}

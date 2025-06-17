@@ -12,7 +12,7 @@
     "main": "./dist/index.node.cjs",
     "module": "./dist/index.node.mjs",
     "types": "./dist/types/index.d.ts",
-    "type": "commonjs",
+    "type": "module",
     "files": [
         "./dist/templates",
         "./dist/types",

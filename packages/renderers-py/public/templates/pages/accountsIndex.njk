@@ -1,0 +1,10 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+{% for account in accountsToExport | sort(false, false, 'name') %}
+from . import {{ account.name | camelCase | notKeywordCase }}
+from .{{ account.name | camelCase | notKeywordCase }} import {{account.name | pascalCase }}, {{account.name | pascalCase }}JSON
+{% else %}
+export default {};
+{% endfor %}
+{% endblock %}

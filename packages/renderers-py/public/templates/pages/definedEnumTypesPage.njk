@@ -1,0 +1,158 @@
+
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+{% for variant in variants %}
+{%if variant.kind=="enumEmptyVariantTypeNode"%}
+{% elseif variant.kind=="enumTupleVariantTypeNode" %}
+{{variant.name | pascalCase}}JSONValue = tuple[{{enumHelper.getTuplePyJSON(variant).renders }}]
+{{variant.name | pascalCase}}Value = tuple[{{enumHelper.getTuplePy(variant).renders}}]
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+class {{variant.name | pascalCase }}JSONValue(typing.TypedDict):
+{%if enumHelper.getStructPyJSON(variant).renders.length>0 %}
+{% for field in enumHelper.getStructPyJSON(variant).renders %}
+    {{field}}
+{% endfor %}
+{% else %}
+    pass
+{% endif %}
+
+class {{variant.name | pascalCase}}Value(typing.TypedDict):
+{%if enumHelper.getStructPy(variant).renders.length>0 %}
+{% for field in enumHelper.getStructPy(variant).renders %}
+    {{field}}
+{% endfor %}
+{% else %}
+    pass
+{% endif %}
+
+
+
+{% endif %}
+
+class {{variant.name | pascalCase}}JSON(typing.TypedDict):
+    kind: typing.Literal["{{variant.name | pascalCase }}"]
+{%if variant.kind!="enumEmptyVariantTypeNode"%}
+    value: {{variant.name | pascalCase}}JSONValue
+{% endif %}
+
+
+@dataclass
+class {{variant.name | pascalCase | notKeywordCase }}:
+    discriminator: typing.ClassVar = {{ loop.index0 }}
+{% if variant.kind!="enumEmptyVariantTypeNode" %}
+    value : {{variant.name | pascalCase}}Value
+{% endif%}
+    def to_json(self) -> {{variant.name | pascalCase}}JSON:
+        return {{variant.name | pascalCase}}JSON(
+            kind="{{variant.name | pascalCase }}",
+{% if variant.kind=="enumTupleVariantTypeNode" %}
+            value = ({{enumHelper.getTupleToJSON(variant).renders}},)
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+            value = {
+{%if enumHelper.getStructToJSON(variant).renders.length>0 %}
+            {{enumHelper.getStructToJSON(variant).renders}}
+{% endif %}
+            }
+{% endif %}
+        )
+
+    def to_encodable(self) -> dict[str, typing.Any]:
+{%if variant.kind=="enumEmptyVariantTypeNode"%}
+        return {
+            "{{variant.name | pascalCase}}": {},
+        }
+{% elseif variant.kind=="enumTupleVariantTypeNode" %}
+        return {
+            "{{variant.name | pascalCase}}": { {{enumHelper.getTupleToEncodable(variant).renders}} }
+        }
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+        return {
+            "{{variant.name | pascalCase}}":{ {{enumHelper.getStructToEncodable(variant).renders}} }
+            }
+{% endif %}
+
+
+
+{% endfor %}
+
+
+{{typeName | pascalCase}}Kind = typing.Union[
+{% for variant in variants %}
+    {{variant.name | pascalCase|notKeywordCase}},
+{% endfor %}]
+{{typeName | pascalCase}}JSON = typing.Union[
+{% for variant in variants %}
+    {{variant.name | pascalCase}}JSON,
+{% endfor %}]
+
+def from_decoded(obj: dict) -> {{typeName | pascalCase}}Kind:
+    if not isinstance(obj, dict):
+        raise ValueError("Invalid enum object")
+{% for variant in variants %}
+    if "{{variant.name | pascalCase}}" in obj:
+{% if variant.kind=="enumEmptyVariantTypeNode" %}
+      return {{variant.name | pascalCase | notKeywordCase }}()
+{% elseif variant.kind=="enumTupleVariantTypeNode" %}
+      val = obj["{{variant.name | pascalCase }}"]
+      return {{variant.name | pascalCase| notKeywordCase}}((
+      {{enumHelper.getTupleDecode(variant).renders}},
+      ))
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+      val = obj["{{variant.name | pascalCase}}"]
+      return {{variant.name | pascalCase | notKeywordCase }}(
+            {{variant.name | pascalCase}}Value(
+                {{enumHelper.getStructDecode(variant).renders}}
+            )
+        )
+
+{% endif %}
+{% endfor %}
+    raise ValueError("Invalid enum object")
+
+def from_json(obj: {{typeName | pascalCase}}JSON) -> {{typeName | pascalCase}}Kind:
+{% for variant in variants %}
+    if obj["kind"] == "{{variant.name | pascalCase}}":
+{% if variant.kind=="enumEmptyVariantTypeNode" %}
+        return {{variant.name | pascalCase | notKeywordCase }}()
+{% elseif variant.kind=="enumTupleVariantTypeNode" %}
+        {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
+        return {{variant.name | pascalCase | notKeywordCase }}(
+        ({{enumHelper.getTupleFromJSON(variant).renders}},)
+        )
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+        {{variant.name}}JSONValue = typing.cast({{variant.name | pascalCase}}JSONValue, obj["value"])
+        return {{variant.name | pascalCase | notKeywordCase }}(
+            {{variant.name | pascalCase}}Value(
+                {{enumHelper.getStructFromJSON(variant).renders}}
+            )
+        )
+
+{% endif %}
+
+{% endfor %}
+    kind = obj["kind"]
+    raise ValueError(f"Unrecognized enum kind: {kind}")
+
+
+{% if size.format=="u8" %}
+layout = EnumForCodegen(
+{% elseif size.format=="u16" %}
+layout = EnumForCodegenU16(
+{% elseif size.format=="u32" %}
+layout = EnumForCodegenU32(
+{% endif %}
+{% for variant in variants %}
+{% if variant.kind=="enumTupleVariantTypeNode" %}
+"{{variant.name | pascalCase}}" / borsh.CStruct({{enumHelper.getTupleLayout(variant).renders}},),
+{% elseif variant.kind=="enumEmptyVariantTypeNode" %}
+"{{variant.name | pascalCase}}" / borsh.CStruct(),
+{% elseif variant.kind=="enumStructVariantTypeNode" %}
+"{{variant.name | pascalCase}}" / {{enumHelper.getStructLayoutType(variant).renders}},
+{% endif %}
+{% endfor %}
+)
+{% endblock %}

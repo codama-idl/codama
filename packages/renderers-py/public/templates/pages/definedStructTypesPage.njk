@@ -1,0 +1,61 @@
+
+{% extends "layout.njk" %}
+{% import "macros.njk" as macros %}
+
+{% block main %}
+{{ imports }}
+
+class {{typeName | pascalCase}}JSON(typing.TypedDict):
+{% for field in fieldsJSON_assignment.renders %}
+    {{field}}
+{% endfor %}
+
+@dataclass
+class {{ typeName | pascalCase}}:
+{% if fieldsLayout.renders.length > 0 %}
+    layout: typing.ClassVar = borsh.CStruct(
+    {% for field in fieldsLayout.renders %}
+    {{field}},
+    {% endfor %}
+    )
+{% endif %}
+    #fields
+    {%for field in fields_interface_params.renders %}
+{{field}}
+    {% endfor %}
+
+    @classmethod
+    def from_decoded(cls, obj: Container) -> "{{ typeName | pascalCase}}":
+        return cls(
+{% for field in fieldsFromDecode.renders %}
+        {{field}},
+{% endfor %}
+        )
+
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {
+        {% for field in fieldsToEncodable.renders %}
+        {{field}},
+        {% endfor %}
+        }
+
+    def to_json(self) -> {{ typeName | pascalCase}}JSON:
+        return {
+        {% for field in fieldsToJSON.renders %}
+        {{field}},
+        {% endfor %}
+        }
+
+    @classmethod
+    def from_json(cls, obj: {{ typeName | pascalCase}}JSON) -> "{{ typeName | pascalCase}}":
+        return cls(
+        {% for field in fieldsFromJSON.renders %}
+        {{field}},
+        {% endfor %})
+
+
+
+
+
+
+{% endblock %}

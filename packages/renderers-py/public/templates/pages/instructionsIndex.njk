@@ -1,0 +1,9 @@
+{% extends "layout.njk" %}
+
+{% block main %}
+{% for instruction in instructionsToExport | sort(false, false, 'name') %}
+import'./{{ instruction.name | camelCase }}';
+{% else %}
+
+{% endfor %}
+{% endblock %}
