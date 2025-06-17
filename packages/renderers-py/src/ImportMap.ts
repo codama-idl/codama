@@ -72,8 +72,9 @@ export class ImportMap {
         return this;
     }
 
-    mergeWith(...others: (Fragment | ImportMap | PyFragment)[]): ImportMap {
+    mergeWith(...others: (Fragment | ImportMap | PyFragment | null)[]): ImportMap {
         others.forEach(rawOther => {
+            if (!rawOther) return;
             const other = 'imports' in rawOther ? rawOther.imports : rawOther;
             other._imports.forEach((imports, module) => {
                 this.add(module, imports);

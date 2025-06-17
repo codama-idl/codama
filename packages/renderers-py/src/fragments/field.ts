@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/errors';
 import { InstructionArgumentNode, StructFieldTypeNode } from '@codama/nodes';
 import { pascalCase } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
@@ -7,7 +8,6 @@ import { ImportMap } from '../ImportMap';
 import { notPyKeyCase } from '../utils';
 import { renderString } from '../utils/render';
 import { PyFragment } from './common';
-
 export function getFieldsJSON(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
@@ -26,7 +26,7 @@ export function getFieldsJSON(
         if (fieldtype.pyJSONType) {
             imports.mergeWith(fieldtype.pyJSONType.imports);
         } else {
-            console.log('field.name', field.name, field.type);
+            throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: field.kind, node: field });
         }
         fragments.push(`${notPyKeyCase(field.name)}: ${fieldtype.pyJSONType.render}`);
     });
@@ -65,7 +65,7 @@ export function getFieldsPyJSON(
             if (fieldtype.pyJSONType.render) {
                 fragments.push(`${field.name}: ${fieldtype.pyJSONType.render}`);
             } else {
-                console.log('field.name', field.name, field.type);
+                throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: field.kind, node: field });
             }
         });
     } catch (err: unknown) {
@@ -89,8 +89,8 @@ export function getFieldsToJSON(
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
         imports.mergeWith(fieldtype.toJSON.imports);
-        const toCast = renderString(fieldtype.toJSON.render, { name: 'self.' + notPyKeyCase(field.name) });
-        fragments.push(`"${notPyKeyCase(field.name)}": ${toCast}`);
+        const toCastStr = renderString(fieldtype.toJSON.render, { name: 'self.' + notPyKeyCase(field.name) });
+        fragments.push(`"${notPyKeyCase(field.name)}": ${toCastStr}`);
     });
     return new PyFragment(fragments, imports);
 }
@@ -108,11 +108,10 @@ export function getFieldsToJSONEncodable(
             return;
         }
         if (field.type.kind == 'definedTypeLinkNode') {
-            const toCast = renderString('{{name}}.to_encodable()', { name: 'self.' + field.name });
-            fragments.push(`"${field.name}": ${toCast}`);
+            const toCastStr = renderString('{{name}}.to_encodable()', { name: 'self.' + field.name });
+            fragments.push(`"${field.name}": ${toCastStr}`);
         } else {
             const fieldtype = visit(field.type, typeManifestVisitor);
-            //console.log(fieldtype);
             const JSONEncodeableStr = renderString(fieldtype.toEncode.render, {
                 name: `self.${notPyKeyCase(field.name)}`,
             });
@@ -146,15 +145,8 @@ export function getFieldsDecode(
             }
         } else {
             const fieldtype = visit(field.type, typeManifestVisitor);
-            /*if (fieldtype.isEncodable){
-                fragments.push(''
-                );
-            }else{
-                fragments.push(`${field.name}=dec.${field.name}`);
-            }*/
-
-            const fromCast = renderString(fieldtype.fromDecode.render, { name: `dec.${notPyKeyCase(field.name)}` });
-            fragments.push(`${notPyKeyCase(field.name)}=${fromCast}`);
+            const fromCastStr = renderString(fieldtype.fromDecode.render, { name: `dec.${notPyKeyCase(field.name)}` });
+            fragments.push(`${notPyKeyCase(field.name)}=${fromCastStr}`);
             //fieldtype.fromDecode
         }
     });
@@ -175,8 +167,10 @@ export function getFieldsFromJSON(
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
         imports.mergeWith(fieldtype.fromJSON);
-        const fromCast = renderString(fieldtype.fromJSON.render, { name: 'obj["' + notPyKeyCase(field.name) + '"]' });
-        fragments.push(`${notPyKeyCase(field.name)}=${fromCast}`);
+        const fromCastStr = renderString(fieldtype.fromJSON.render, {
+            name: 'obj["' + notPyKeyCase(field.name) + '"]',
+        });
+        fragments.push(`${notPyKeyCase(field.name)}=${fromCastStr}`);
     });
     return new PyFragment(fragments, imports);
 }
@@ -194,8 +188,8 @@ export function getFieldsFromDecode(
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
         imports.mergeWith(fieldtype.fromDecode);
-        const fromCast = renderString(fieldtype.fromDecode.render, { name: 'obj["' + field.name + '"]' });
-        fragments.push(`${notPyKeyCase(field.name)}=${fromCast}`);
+        const fromCastStr = renderString(fieldtype.fromDecode.render, { name: 'obj["' + field.name + '"]' });
+        fragments.push(`${notPyKeyCase(field.name)}=${fromCastStr}`);
     });
     return new PyFragment(fragments, imports);
 }
@@ -214,14 +208,14 @@ export function getArgsToLayout(
         }
         const fieldtype = visit(field.type, typeManifestVisitor);
         imports.mergeWith(fieldtype.fromDecode);
-        let toCast = '';
+        let toCastStr = '';
         if (fieldtype.isEncodable) {
-            toCast = renderString('{{name}}.to_encodable()', { name: 'args["' + field.name + '"]' });
+            toCastStr = renderString('{{name}}.to_encodable()', { name: 'args["' + field.name + '"]' });
         } else {
-            toCast = renderString(fieldtype.toEncode.render, { name: 'args["' + field.name + '"]' });
+            toCastStr = renderString(fieldtype.toEncode.render, { name: 'args["' + field.name + '"]' });
         }
 
-        fragments.push(`"${field.name}":${toCast}`);
+        fragments.push(`"${field.name}":${toCastStr}`);
     });
     return new PyFragment(fragments);
 }
@@ -243,16 +237,3 @@ export function getArgsToPy(
     });
     return new PyFragment(fragments);
 }
-// export function getTupleItems(scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
-//     fields: TypeNode[]
-// }): PyFragment | null {
-//     //const { fields, typeManifestVisitor } = scope;
-//     const fragments: string[] = [];
-//     //const imports = new ImportMap();
-//     // fields.forEach((field, _index) => {
-//     //     const fieldtype = visit(field.type, typeManifestVisitor);
-//     // //     imports.mergeWith(fieldtype.pyType);
-//     //     fragments.push(`${fieldtype.pyType}`);
-//     // );
-//     return new PyFragment(fragments);
-// }

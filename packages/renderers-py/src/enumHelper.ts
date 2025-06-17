@@ -59,7 +59,6 @@ export class EnumHelper {
             }
         }
         if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
         }
         if (fields) {
@@ -78,7 +77,6 @@ export class EnumHelper {
             }
         }
         if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
         }
         if (fields) {
@@ -98,15 +96,14 @@ export class EnumHelper {
             }
         }
         if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
         }
         if (fields) {
             const render = fields
                 .map(it => {
                     const itemType = visit(it.type, typeManifestVisitor);
-                    const fromCast = renderString(itemType.toJSON.render, { name: `self.value["${it.name}"]` });
-                    return `"${it.name}":${fromCast}`;
+                    const fromCastStr = renderString(itemType.toJSON.render, { name: `self.value["${it.name}"]` });
+                    return `"${it.name}":${fromCastStr}`;
                 })
                 .join(',');
             return new PyFragment([render]);
@@ -123,11 +120,10 @@ export class EnumHelper {
             }
         }
         if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
         }
         if (fields) {
-            const render = fields
+            const renderStr = fields
                 .map(it => {
                     const itemType = visit(it.type, typeManifestVisitor);
                     let innerStr = '';
@@ -142,7 +138,7 @@ export class EnumHelper {
                     return `"${it.name}":${innerStr}`;
                 })
                 .join(',');
-            return new PyFragment([render]);
+            return new PyFragment([renderStr]);
         }
         return new PyFragment(['']);
     }
@@ -155,20 +151,19 @@ export class EnumHelper {
             }
         }
         if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
         }
         if (fields) {
-            const render = fields
+            const renderStr = fields
                 .map(it => {
                     const itemType = visit(it.type, typeManifestVisitor);
-                    const fromCast = renderString(itemType.fromJSON.render, {
+                    const fromCastStr = renderString(itemType.fromJSON.render, {
                         name: `${node.name}JSONValue["${it.name}"]`,
                     });
-                    return `${it.name}=${fromCast}`;
+                    return `${it.name}=${fromCastStr}`;
                 })
                 .join(',');
-            return new PyFragment([render]);
+            return new PyFragment([renderStr]);
         }
         return new PyFragment(['']);
     }
@@ -181,7 +176,6 @@ export class EnumHelper {
             }
         }
         if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
         }
         if (fields) {
@@ -204,7 +198,6 @@ export class EnumHelper {
                 fields = node.struct.type.fields;
             }
         } else if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
             isPrefixType = false;
         }
@@ -234,18 +227,17 @@ export class EnumHelper {
             }
         }
         if (node.struct.kind == 'structTypeNode') {
-            //const fields = node.struct.fields;
             fields = node.struct.fields;
         }
         if (fields) {
-            const render = fields
+            const renderStr = fields
                 .map(it => {
                     const itemType = visit(it.type, typeManifestVisitor);
-                    const fromCast = renderString(itemType.fromDecode.render, { name: `val["${it.name}"]` });
-                    return `${it.name}= ${fromCast}`;
+                    const fromCastStr = renderString(itemType.fromDecode.render, { name: `val["${it.name}"]` });
+                    return `${it.name}= ${fromCastStr}`;
                 })
                 .join(',');
-            return new PyFragment([render]);
+            return new PyFragment([renderStr]);
         }
         return new PyFragment(['']);
     }

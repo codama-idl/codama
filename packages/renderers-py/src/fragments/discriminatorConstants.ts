@@ -63,7 +63,11 @@ export function getConstantDiscriminatorConstantFragment(
     const { discriminatorNodes, typeManifestVisitor } = scope;
     if (discriminatorNodes.length > 0) {
         const value = visit(discriminatorNode.constant.value, typeManifestVisitor).value;
-        return new DiscriminatorFragment(`discriminator_${discriminatorNode.offset}`, value.render, getPyBytesLen(value.render));
+        return new DiscriminatorFragment(
+            `discriminator_${discriminatorNode.offset}`,
+            value.render,
+            getPyBytesLen(value.render),
+        );
     } else {
         return new DiscriminatorFragment('discriminator', `b""`, 0);
     }

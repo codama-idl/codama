@@ -175,11 +175,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add('', 'borsh_construct');
                     imports.add('..program_id', snakeCase(program?.name).toUpperCase() + '_PROGRAM_ADDRESS');
                     imports.add('anchorpy.error', 'AccountInvalidDiscriminator');
-                    imports.mergeWith(accountFieldsJSON!);
-                    imports.mergeWith(accountFieldsPy!);
-                    imports.mergeWith(layoutFragment);
-                    imports.mergeWith(fieldsToJSON!);
-                    imports.mergeWith(fieldsFromJSON!);
+                    imports.mergeWith(accountFieldsJSON, accountFieldsPy, layoutFragment, fieldsToJSON, fieldsFromJSON);
 
                     //console.log("fieldsToJSON:", fieldsToJSON, accountDiscriminatorConstantsFragment);
                     let accountFilename = `${camelCase(node.name)}`;
@@ -253,10 +249,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             ...scope,
                             fields,
                         });
-                        imports.mergeWith(layoutFragment);
-                        imports.mergeWith(fieldsJSON!);
-                        imports.mergeWith(fieldsPy!);
-                        imports.mergeWith(fieldsToJSON!);
+                        imports.mergeWith(layoutFragment, fieldsJSON, fieldsPy, fieldsToJSON);
 
                         return new RenderMap().add(
                             `types/${camelCase(node.name)}.py`,
@@ -357,9 +350,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             imports.add('', 'borsh_construct');
                         }
                     }
-                    imports.mergeWith(argsToLayout!);
-                    imports.mergeWith(layoutFragment);
-                    imports.mergeWith(argsToPy!);
+                    imports.mergeWith(argsToLayout, layoutFragment, argsToPy);
 
                     const discriminatorConstantsFragment = getDiscriminatorConstantsFragment({
                         ...scope,
@@ -398,9 +389,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     },*/
 
                 visitProgram(node, { self }) {
-                    //const scope = { ...globalScope, programNode: node };
-                    //const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
-
                     const renderMap = new RenderMap()
                         .mergeWith(...node.pdas.map(p => visit(p, self)))
                         .mergeWith(...node.accounts.map(a => visit(a, self)))
@@ -426,14 +414,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             }),
                         );
                     }
-                    /*
-                    renderMap.add(
-                        `program_id.py`,
-                        render('programsPage.njk', {
-                            ...scope,
-                            imports: imports.toString(dependencyMap, useGranularImports),
-                        }),
-                        );*/
                     return renderMap;
                 },
 
@@ -477,9 +457,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     if (definedTypesToExport.length > 0) {
                         map.add('types/__init__.py', render('definedTypesIndex.njk', ctx));
                     }
-
-                    map.add('shared/__init__.py', render('sharedIndex.njk', ctx));
-                    map.add('shared/extension.py', render('extension.py', ctx));
+                    {
+                        map.add('shared/__init__.py', render('sharedIndex.njk', ctx));
+                        map.add('shared/extension.py', render('extension.py', ctx));
+                    }
                     {
                         const imports = new ImportMap().add('solders.pubkey', 'Pubkey');
                         map.add(

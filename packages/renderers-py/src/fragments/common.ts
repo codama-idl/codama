@@ -24,9 +24,7 @@ export function mergeFragments(fragments: Fragment[], mergeRenders: (renders: st
 
 export class Fragment {
     public render: string;
-
     public imports: ImportMap;
-
     public features: Set<FragmentFeature>;
 
     constructor(render: string, imports?: ImportMap, features?: Set<FragmentFeature>) {
