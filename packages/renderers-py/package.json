@@ -27,10 +27,10 @@
         "@codama/nodes-from-anchor": "workspace:*",
         "@codama/renderers-core": "workspace:*",
         "@codama/visitors-core": "workspace:*",
+        "@solana/codecs": "2.1.1",
         "@solana/codecs-core": "^2.1.1",
         "@solana/codecs-numbers": "^2.1.1",
-        "@solana/codecs-strings": "rc",
-        "@solana/kit": "^2.1.1",
+        "@solana/codecs-strings": "2.0.0-rc.4",
         "nunjucks": "^3.2.4",
         "prettier": "^3.5.3"
     },
