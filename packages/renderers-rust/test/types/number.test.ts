@@ -18,7 +18,7 @@ test('it exports short u16 numbers', () => {
     // Then we expect a short u16 to be exported.
     codeContains(renderMap.get('types/my_short_u16.rs'), [
         /pub type MyShortU16 = ShortU16/,
-        /use solana_program::short_vec::ShortU16/,
+        /use solana_short_vec::ShortU16/,
     ]);
     codeDoesNotContains(renderMap.get('types/my_short_u16.rs'), [
         /use borsh::BorshSerialize/,
@@ -39,6 +39,6 @@ test('it exports short u16 numbers as struct fields', () => {
     // Then we expect a short u16 to be exported as a struct field.
     codeContains(renderMap.get('types/my_short_u16.rs'), [
         /pub value: ShortU16/,
-        /use solana_program::short_vec::ShortU16/,
+        /use solana_short_vec::ShortU16/,
     ]);
 });

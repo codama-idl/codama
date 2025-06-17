@@ -27,7 +27,7 @@ test('it exports short vecs', () => {
     codeContains(renderMap.get('types/my_short_vec.rs'), [
         /pub type MyShortVec = ShortVec<Pubkey>;/,
         /use solana_pubkey::Pubkey/,
-        /use solana_program::short_vec::ShortVec/,
+        /use solana_short_vec::ShortVec/,
     ]);
     codeDoesNotContains(renderMap.get('types/my_short_vec.rs'), [
         /use borsh::BorshSerialize/,
@@ -54,6 +54,6 @@ test('it exports short vecs as struct fields', () => {
     codeContains(renderMap.get('types/my_short_vec.rs'), [
         /pub value: ShortVec<Pubkey>,/,
         /use solana_pubkey::Pubkey/,
-        /use solana_program::short_vec::ShortVec/,
+        /use solana_short_vec::ShortVec/,
     ]);
 });
