@@ -15,7 +15,7 @@ To get started with Codama, simply install `@codama/cli` which provides the `cod
 
 ```sh
 pnpm install @codama/cli
-codama init
+pnpm codama init
 ```
 
 You will be prompted for the path of your IDL and asked to select any script presets you would like to use.
@@ -25,9 +25,9 @@ You will be prompted for the path of your IDL and asked to select any script pre
 Once you have your codama config file, you can run your Codama scripts using the `codama run` command as follows:
 
 ```sh
-codama run         # Only runs your before visitors.
-codama run js rust # Runs your before visitors followed by the `js` and `rust` scripts.
-codama run --all   # Runs your before visitors followed by all your scripts.
+pnpm codama run         # Only runs your before visitors.
+pnpm codama run js rust # Runs your before visitors followed by the `js` and `rust` scripts.
+pnpm codama run --all   # Runs your before visitors followed by all your scripts.
 ```
 
 ## The configuration file
