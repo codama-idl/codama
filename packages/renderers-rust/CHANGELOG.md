@@ -1,5 +1,19 @@
 # @codama/renderers-rust
 
+## 1.1.0
+
+### Minor Changes
+
+- [#641](https://github.com/codama-idl/codama/pull/641) [`dbeea53`](https://github.com/codama-idl/codama/commit/dbeea5302d39f1673f31397c71f3bcd94c09044b) Thanks [@sonicfromnewyoke](https://github.com/sonicfromnewyoke)! - Extract `solana-instruction` from `solana-program`
+
+- [#647](https://github.com/codama-idl/codama/pull/647) [`dcedfb5`](https://github.com/codama-idl/codama/commit/dcedfb56c1062fbc3b00e3cba9c5f21622acad91) Thanks [@sonicfromnewyoke](https://github.com/sonicfromnewyoke)! - extract entrypoint and error from solana-program
+
+- [#535](https://github.com/codama-idl/codama/pull/535) [`ae3ca97`](https://github.com/codama-idl/codama/commit/ae3ca97d2df4f088cd243129c5625731a45d128e) Thanks [@buffalojoec](https://github.com/buffalojoec)! - renderers-rust: extract pubkey from solana-program
+
+- [#654](https://github.com/codama-idl/codama/pull/654) [`480026d`](https://github.com/codama-idl/codama/commit/480026d2bdd6947e6fcdf1d232fb4dfeec973e67) Thanks [@sonicfromnewyoke](https://github.com/sonicfromnewyoke)! - extract solana-cpi, solana-msg and cleanup
+
+- [#645](https://github.com/codama-idl/codama/pull/645) [`8caf59d`](https://github.com/codama-idl/codama/commit/8caf59d3ceec3210bcbbc74322bf90651fd1fab8) Thanks [@sonicfromnewyoke](https://github.com/sonicfromnewyoke)! - extract `solana-account-info` from `solana-program` & `solana-account` from `solana-sdk`
+
 ## 1.0.22
 
 ### Patch Changes

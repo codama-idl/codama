@@ -1,5 +1,11 @@
 # @codama/nodes-from-anchor
 
+## 1.2.1
+
+### Patch Changes
+
+- [#621](https://github.com/codama-idl/codama/pull/621) [`14aeb2d`](https://github.com/codama-idl/codama/commit/14aeb2d0c8ac022fd043a01bc1589ec600566963) Thanks [@daog1](https://github.com/daog1)! - Recognize program addresses from seeds of kind set to `"account"` if the address of the account it points to is statically known. (See #607)
+
 ## 1.2.0
 
 ### Minor Changes
