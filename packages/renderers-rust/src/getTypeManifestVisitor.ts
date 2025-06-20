@@ -98,7 +98,7 @@ export function getTypeManifestVisitor(options: {
                                 };
                             }
                             case 'shortU16': {
-                                childManifest.imports.add('solana_program::short_vec::ShortVec');
+                                childManifest.imports.add('solana_short_vec::ShortVec');
                                 return {
                                     ...childManifest,
                                     type: `ShortVec<${childManifest.type}>`,
@@ -261,7 +261,7 @@ export function getTypeManifestVisitor(options: {
 
                     if (numberType.format === 'shortU16') {
                         return {
-                            imports: new ImportMap().add('solana_program::short_vec::ShortU16'),
+                            imports: new ImportMap().add('solana_short_vec::ShortU16'),
                             nestedStructs: [],
                             type: 'ShortU16',
                         };
