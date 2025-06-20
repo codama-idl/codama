@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-js",
-    "version": "1.2.12",
+    "version": "1.2.14",
     "description": "JavaScript renderer compatible with the Solana Kit library",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -44,14 +44,14 @@
     "dependencies": {
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
-        "@codama/nodes-from-anchor": "workspace:*",
         "@codama/renderers-core": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/codecs-strings": "rc",
+        "@solana/codecs-strings": "^2.1.0",
         "nunjucks": "^3.2.4",
         "prettier": "^3.5.3"
     },
     "devDependencies": {
+        "@codama/nodes-from-anchor": "workspace:*",
         "@types/nunjucks": "^3.2.6"
     },
     "license": "MIT",

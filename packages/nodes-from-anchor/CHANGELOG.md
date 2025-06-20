@@ -1,5 +1,20 @@
 # @codama/nodes-from-anchor
 
+## 1.2.0
+
+### Minor Changes
+
+- [#590](https://github.com/codama-idl/codama/pull/590) [`9936e03`](https://github.com/codama-idl/codama/commit/9936e036da0d2565e77cecca4d1b7c6ca5d05ce2) Thanks [@fernandodeluret](https://github.com/fernandodeluret)! - Add support for default shank ix discriminators (using 1 byte at the start of the ix data) in nodes-from-anchor
+
+## 1.1.14
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.3.0
+    - @codama/nodes@1.3.0
+    - @codama/visitors@1.3.0
+
 ## 1.1.13
 
 ### Patch Changes

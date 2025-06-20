@@ -8,4 +8,9 @@ pub mod accounts_parser;
 
 pub mod instructions_parser;
 
+{% if hasProtoHelpers %}
+pub mod proto_helpers;
+{% endif %}
+
+
 {% endblock %}

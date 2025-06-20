@@ -35,15 +35,19 @@ test('it renders instructions parsers', () => {
                 ],
                 arguments: [
                     {
-                        defaultValue: { kind: 'numberValueNode', number: 0 },
+                        defaultValue: {
+                            data: (1).toString(16),
+                            encoding: 'base16',
+                            kind: 'bytesValueNode',
+                        },
                         defaultValueStrategy: 'omitted',
                         docs: [],
                         kind: 'instructionArgumentNode',
                         name: camelCase('discriminator'),
                         type: {
-                            endian: 'le',
-                            format: 'u32',
-                            kind: 'numberTypeNode',
+                            kind: 'fixedSizeTypeNode',
+                            size: 1,
+                            type: { kind: 'bytesTypeNode' },
                         },
                     },
                     {
@@ -73,6 +77,13 @@ test('it renders instructions parsers', () => {
                         type: { kind: 'publicKeyTypeNode' },
                     },
                 ],
+                discriminators: [
+                    {
+                        kind: 'fieldDiscriminatorNode',
+                        name: camelCase('discriminator'),
+                        offset: 0,
+                    },
+                ],
                 name: 'createAccount',
             }),
             instructionNode({
@@ -88,15 +99,19 @@ test('it renders instructions parsers', () => {
                 ],
                 arguments: [
                     {
-                        defaultValue: { kind: 'numberValueNode', number: 1 },
+                        defaultValue: {
+                            data: (1).toString(16),
+                            encoding: 'base16',
+                            kind: 'bytesValueNode',
+                        },
                         defaultValueStrategy: 'omitted',
                         docs: [],
                         kind: 'instructionArgumentNode',
                         name: camelCase('discriminator'),
                         type: {
-                            endian: 'le',
-                            format: 'u32',
-                            kind: 'numberTypeNode',
+                            kind: 'fixedSizeTypeNode',
+                            size: 1,
+                            type: { kind: 'bytesTypeNode' },
                         },
                     },
                     {
@@ -106,22 +121,35 @@ test('it renders instructions parsers', () => {
                         type: { kind: 'publicKeyTypeNode' },
                     },
                 ],
+                discriminators: [
+                    {
+                        kind: 'fieldDiscriminatorNode',
+                        name: camelCase('discriminator'),
+                        offset: 0,
+                    },
+                ],
                 name: camelCase('assign'),
             }),
         ],
         kind: 'programNode',
         name: camelCase('test'),
+        origin: 'shank',
         pdas: [],
         publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
         version: '0.0.0',
     });
 
     // When we render it.
-    const renderMap = visit(node, getRenderMapVisitor());
+    const renderMap = visit(
+        node,
+        getRenderMapVisitor({
+            projectName: 'test',
+        }),
+    );
 
     // // Then we expect the following pub struct.
     // codeContains(renderMap.get('instructions/mint_tokens.rs'), [`pub struct MintTokensInstructionData`, `pub fn new(`]);
-    codeContains(renderMap.get('instructions_parser.rs'), [
+    codeContains(renderMap.get('src/generated_parser/instructions_parser.rs'), [
         'pub enum TestProgramIx',
         'CreateAccount(CreateAccountIxAccounts, CreateAccountIxData)',
         'Assign(AssignIxAccounts, AssignIxData)',

@@ -40,7 +40,7 @@ export function instructionAccountNodesFromAnchorV01(
     return idl.flatMap(account =>
         'accounts' in account
             ? instructionAccountNodesFromAnchorV01(allAccounts, instructionArguments, account.accounts)
-            : [instructionAccountNodeFromAnchorV01(allAccounts, instructionArguments, account)],
+            : [instructionAccountNodeFromAnchorV01(allAccounts, instructionArguments, account, idl)],
     );
 }
 
@@ -48,6 +48,7 @@ export function instructionAccountNodeFromAnchorV01(
     allAccounts: AccountNode[],
     instructionArguments: InstructionArgumentNode[],
     idl: IdlV01InstructionAccount,
+    parentIdl: IdlV01InstructionAccountItem[],
 ): InstructionAccountNode {
     const isOptional = idl.optional ?? false;
     const docs = idl.docs ?? [];
@@ -131,6 +132,15 @@ export function instructionAccountNodeFromAnchorV01(
                 switch (kind) {
                     case 'const': {
                         programId = getBase58Codec().decode(new Uint8Array(idl.pda.program.value));
+                        break;
+                    }
+                    case 'account': {
+                        const programPath = idl.pda.program.path;
+                        const programNode = parentIdl.find(acc => acc.name == programPath);
+                        if (!(programNode && 'address' in programNode)) {
+                            throw new CodamaError(CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED, { kind });
+                        }
+                        programId = programNode.address;
                         break;
                     }
                     default: {

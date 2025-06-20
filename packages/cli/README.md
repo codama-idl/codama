@@ -9,15 +9,13 @@
 
 This package provides a CLI for the Codama library that can be used to run scripts on Codama IDLs.
 
-Note that, whilst the CLI code is located in the `@codama/cli` package, the CLI binary is directly provided by the main `codama` library.
-
 ## Getting started
 
-To get started with Codama, simply install `codama` to your project and run the `init` command like so:
+To get started with Codama, simply install `@codama/cli` which provides the `codama` binary. Then, run the `init` command like so:
 
 ```sh
-pnpm install codama
-codama init
+pnpm install @codama/cli
+pnpm codama init
 ```
 
 You will be prompted for the path of your IDL and asked to select any script presets you would like to use.
@@ -27,9 +25,9 @@ You will be prompted for the path of your IDL and asked to select any script pre
 Once you have your codama config file, you can run your Codama scripts using the `codama run` command as follows:
 
 ```sh
-codama run         # Only runs your before visitors.
-codama run js rust # Runs your before visitors followed by the `js` and `rust` scripts.
-codama run --all   # Runs your before visitors followed by all your scripts.
+pnpm codama run         # Only runs your before visitors.
+pnpm codama run js rust # Runs your before visitors followed by the `js` and `rust` scripts.
+pnpm codama run --all   # Runs your before visitors followed by all your scripts.
 ```
 
 ## The configuration file
