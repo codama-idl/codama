@@ -198,7 +198,7 @@ class SolMapU32(Adapter):
         return dict(obj)
 
     def _encode(self, obj, context, path) ->  List[Tuple]:  #Tuple[Any,List[Tuple[Any, Any]]]:
-        print("encode",obj)
+        #print("encode",obj)
         return obj.items()
 
 class PreOffset(Pointer):
