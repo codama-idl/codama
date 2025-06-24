@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-//import { logWarn } from '@codama/errors';
+import { logWarn } from '@codama/errors';
 import {
     camelCase,
     getAllAccounts,
@@ -44,13 +44,7 @@ import {
 } from './fragments';
 import { GeneratedType, getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
-import {
-    getImportFromFactory,
-    //GetImportFromFunction,
-    LinkOverrides,
-    //ParsedCustomDataOptions,
-    render as baseRender,
-} from './utils';
+import { getImportFromFactory, LinkOverrides, render as baseRender } from './utils';
 
 export type GetRenderMapOptions = {
     dependencyMap?: Record<string, string>;
@@ -75,11 +69,11 @@ export function getInstructionPDAs(
     const pdas = accounts
         .map(acc => {
             if (acc.defaultValue) {
-                return acc; //acc.defaultValue
+                return acc;
             }
             return null;
         })
-        .filter(it => it != null);
+        .filter((it): it is NonNullable<typeof it> => it != null);
     return pdas;
 }
 
@@ -93,7 +87,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
     const genType = new GeneratedType('', '');
 
-    //const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
     const typeManifestVisitor = getTypeManifestVisitor({ genType, getImportFrom, linkables, stack });
     const globalScope: GlobalFragmentScope = {
         genType: genType,
@@ -114,7 +107,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     genType.name = 'accounts';
                     const program = findProgramNodeFromPath(accountPath);
                     if (!program) {
-                        throw new Error('Account must be visited inside a program.');
+                        logWarn('Account must be visited inside a program. Skipping account rendering.');
+                        return new RenderMap();
                     }
 
                     const typeManifest = visit(node, typeManifestVisitor);
@@ -177,7 +171,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     imports.add('anchorpy.error', 'AccountInvalidDiscriminator');
                     imports.mergeWith(accountFieldsJSON, accountFieldsPy, layoutFragment, fieldsToJSON, fieldsFromJSON);
 
-                    //console.log("fieldsToJSON:", fieldsToJSON, accountDiscriminatorConstantsFragment);
                     let accountFilename = `${camelCase(node.name)}`;
                     if (accountFilename == 'global') {
                         accountFilename = 'global_';
@@ -396,12 +389,12 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...node.instructions.map(t => visit(t, self)));
 
                     if (node.errors.length > 0) {
-                        renderMap.add(
+                        /*renderMap.add(
                             'errors/__init__.py',
                             render('errorsIndex.njk', {
                                 nodeName: node.name,
                             }),
-                        );
+                        );*/
 
                         const errimports = new ImportMap();
                         errimports.add('anchorpy.error', 'ProgramError');
@@ -467,6 +460,14 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             `program_id.py`,
                             render('programsPage.njk', {
                                 imports: imports.toString(dependencyMap, useGranularImports),
+                                programs: programsToExport,
+                            }),
+                        );
+                    }
+                    {
+                        map.add(
+                            'errors/__init__.py',
+                            render('errorsIndex.njk', {
                                 programs: programsToExport,
                             }),
                         );

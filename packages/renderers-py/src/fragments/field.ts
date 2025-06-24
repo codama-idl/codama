@@ -5,31 +5,56 @@ import { visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
+import { TypeManifest } from '../TypeManifest';
 import { notPyKeyCase } from '../utils';
 import { renderString } from '../utils/render';
 import { PyFragment } from './common';
-export function getFieldsJSON(
+
+// Helper function to process fields and avoid duplicated logic
+function processFields<T>(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
-): PyFragment | null {
+    processFn: (
+        field: InstructionArgumentNode | StructFieldTypeNode,
+        fieldType: TypeManifest,
+        imports: ImportMap,
+    ) => T | null,
+): { fragments: T[]; imports: ImportMap } {
     const { fields, typeManifestVisitor } = scope;
-    const fragments: string[] = [];
+    const fragments: T[] = [];
     const imports = new ImportMap();
 
     fields.forEach((field, _index) => {
         if (field.name.toLowerCase().includes('discriminator')) {
             return;
         }
-        //console.log('field.name', field.name, field.type);
-        const fieldtype = visit(field.type, typeManifestVisitor);
-        if (fieldtype.pyJSONType) {
-            imports.mergeWith(fieldtype.pyJSONType.imports);
+
+        const fieldType = visit(field.type, typeManifestVisitor);
+        const result = processFn(field, fieldType, imports);
+
+        if (result !== null) {
+            fragments.push(result);
+        }
+    });
+
+    return { fragments, imports };
+}
+
+export function getFieldsJSON(
+    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+        fields: InstructionArgumentNode[] | StructFieldTypeNode[];
+    },
+): PyFragment | null {
+    const { fragments, imports } = processFields(scope, (field, fieldType, imports) => {
+        if (fieldType.pyJSONType) {
+            imports.mergeWith(fieldType.pyJSONType);
+            return `${notPyKeyCase(field.name)}: ${fieldType.pyJSONType.render}`;
         } else {
             throw new CodamaError(CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, { kind: field.kind, node: field });
         }
-        fragments.push(`${notPyKeyCase(field.name)}: ${fieldtype.pyJSONType.render}`);
     });
+
     return new PyFragment(fragments, imports);
 }
 
@@ -38,17 +63,13 @@ export function getFieldsPy(
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const { fields, typeManifestVisitor } = scope;
-    const fragments: string[] = [];
-    fields.forEach((field, _index) => {
-        if (field.name.toLowerCase().includes('discriminator')) {
-            return;
-        }
-        const fieldtype = visit(field.type, typeManifestVisitor);
-        fragments.push(`${notPyKeyCase(field.name)}: ${fieldtype.pyType.render}`);
+    const { fragments } = processFields(scope, (field, fieldType) => {
+        return `${notPyKeyCase(field.name)}: ${fieldType.pyType.render}`;
     });
+
     return new PyFragment(fragments);
 }
+
 export function getFieldsPyJSON(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
@@ -75,23 +96,18 @@ export function getFieldsPyJSON(
     }
     return new PyFragment(fragments);
 }
+
 export function getFieldsToJSON(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const { fields, typeManifestVisitor } = scope;
-    const fragments: string[] = [];
-    const imports = new ImportMap();
-    fields.forEach((field, _index) => {
-        if (field.name.toLowerCase().includes('discriminator')) {
-            return;
-        }
-        const fieldtype = visit(field.type, typeManifestVisitor);
-        imports.mergeWith(fieldtype.toJSON.imports);
-        const toCastStr = renderString(fieldtype.toJSON.render, { name: 'self.' + notPyKeyCase(field.name) });
-        fragments.push(`"${notPyKeyCase(field.name)}": ${toCastStr}`);
+    const { fragments, imports } = processFields(scope, (field, fieldType, imports) => {
+        imports.mergeWith(fieldType.toJSON);
+        const toCastStr = renderString(fieldType.toJSON.render, { name: 'self.' + notPyKeyCase(field.name) });
+        return `"${notPyKeyCase(field.name)}": ${toCastStr}`;
     });
+
     return new PyFragment(fragments, imports);
 }
 
@@ -135,7 +151,7 @@ export function getFieldsDecode(
         }
         if (field.type.kind == 'definedTypeLinkNode') {
             const fieldtype = visit(field.type, typeManifestVisitor);
-            imports.mergeWith(fieldtype.toJSON.imports);
+            imports.mergeWith(fieldtype.toJSON);
             if (fieldtype.isEnum) {
                 fragments.push(`${field.name}=types.${field.type.name}.from_decoded(dec.${field.name})`);
             } else {
@@ -147,7 +163,6 @@ export function getFieldsDecode(
             const fieldtype = visit(field.type, typeManifestVisitor);
             const fromCastStr = renderString(fieldtype.fromDecode.render, { name: `dec.${notPyKeyCase(field.name)}` });
             fragments.push(`${notPyKeyCase(field.name)}=${fromCastStr}`);
-            //fieldtype.fromDecode
         }
     });
     return new PyFragment(fragments, imports);
@@ -158,22 +173,17 @@ export function getFieldsFromJSON(
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const { fields, typeManifestVisitor } = scope;
-    const fragments: string[] = [];
-    const imports = new ImportMap();
-    fields.forEach((field, _index) => {
-        if (field.name.toLowerCase().includes('discriminator')) {
-            return;
-        }
-        const fieldtype = visit(field.type, typeManifestVisitor);
-        imports.mergeWith(fieldtype.fromJSON);
-        const fromCastStr = renderString(fieldtype.fromJSON.render, {
+    const { fragments, imports } = processFields(scope, (field, fieldType, imports) => {
+        imports.mergeWith(fieldType.fromJSON);
+        const fromCastStr = renderString(fieldType.fromJSON.render, {
             name: 'obj["' + notPyKeyCase(field.name) + '"]',
         });
-        fragments.push(`${notPyKeyCase(field.name)}=${fromCastStr}`);
+        return `${notPyKeyCase(field.name)}=${fromCastStr}`;
     });
+
     return new PyFragment(fragments, imports);
 }
+
 export function getFieldsFromDecode(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
@@ -219,21 +229,16 @@ export function getArgsToLayout(
     });
     return new PyFragment(fragments);
 }
+
 export function getArgsToPy(
     scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
     },
 ): PyFragment | null {
-    const { fields, typeManifestVisitor } = scope;
-    const fragments: string[] = [];
-    const imports = new ImportMap();
-    fields.forEach((field, _index) => {
-        if (field.name.toLowerCase().includes('discriminator')) {
-            return;
-        }
-        const fieldtype = visit(field.type, typeManifestVisitor);
-        imports.mergeWith(fieldtype.pyType);
-        fragments.push(`${field.name}:${fieldtype.pyType.render}`);
+    const { fragments, imports } = processFields(scope, (field, fieldType, imports) => {
+        imports.mergeWith(fieldType.pyType);
+        return `${field.name}:${fieldType.pyType.render}`;
     });
-    return new PyFragment(fragments);
+
+    return new PyFragment(fragments, imports);
 }

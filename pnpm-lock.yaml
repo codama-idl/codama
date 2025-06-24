@@ -338,9 +338,6 @@ importers:
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
-      prettier:
-        specifier: ^3.5.3
-        version: 3.5.3
     devDependencies:
       '@types/nunjucks':
         specifier: ^3.2.6

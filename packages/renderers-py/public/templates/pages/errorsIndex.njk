@@ -7,26 +7,40 @@ from solders.transaction_status import (
     InstructionErrorCustom,
     TransactionErrorInstructionError,
 )
+from solders.pubkey import Pubkey as SolPubkey
 from solana.rpc.core import RPCException
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from anchorpy.error import extract_code_and_logs
-from ..program_id import PROGRAM_ID
-from . import {{nodeName}}
 
-
-def from_code(code: int) -> typing.Union[{{nodeName}}.CustomError, None]:
-    return {{nodeName}}.from_code(code)
-
+{% for program in programs | sort(false, false, 'name') %}
+from . import {{program.name|camelCase}}
+from ..program_id import {{program.name|snakeCase|toUpperCase}}_PROGRAM_ADDRESS
+{% endfor %}
 
 error_re = re.compile(r"Program (\w+) failed: custom program error: (\w+)")
 
-
+{% if programs.length > 1 %}
+def from_tx_error(
+    error: RPCException,
+    program_id: SolPubkey
+) -> typing.Union[{{nodeName}}.CustomError, None]:
+    err_info = error.args[0]
+    extracted = extract_code_and_logs(err_info, program_id)
+    if extracted is None:
+        return None
+{% for program in programs | sort(false, false, 'name') %}
+    if program_id == {{program.name|snakeCase|toUpperCase}}_PROGRAM_ADDRESS:
+        return {{program.name|camelCase}}.from_code(extracted[0])
+{% endfor %}
+    return None
+{% elseif programs.length == 1 %}
 def from_tx_error(
     error: RPCException,
 ) -> typing.Union[{{nodeName}}.CustomError, None]:
     err_info = error.args[0]
-    extracted = extract_code_and_logs(err_info, PROGRAM_ID)
+    extracted = extract_code_and_logs(err_info, {{programs[0].name|snakeCase|toUpperCase}}_PROGRAM_ADDRESS)
     if extracted is None:
         return None
-    return from_code(extracted[0])
+    return {{programs[0].name|camelCase}}.from_code(extracted[0])
+{% endif %}
 {% endblock %}

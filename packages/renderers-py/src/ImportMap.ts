@@ -132,44 +132,39 @@ export class ImportMap {
 
     toString(dependencies: Record<string, string> = {}, useGranularImports = false): string {
         return [...this.resolve(dependencies, useGranularImports).entries()]
-            .sort(([a], [b]) => {
-                const aIsRelative = a.startsWith('.');
-                const bIsRelative = b.startsWith('.');
-                if (aIsRelative && !bIsRelative) return 1;
-                if (!aIsRelative && bIsRelative) return -1;
-                return a.localeCompare(b);
-            })
-            .map(([module, imports]) => {
-                if (module.length == 0) {
-                    const joinedImports = [...imports]
-                        .sort()
-                        .filter(i => {
-                            const name = i.split(' ');
-                            if (name.length > 1) {
-                                return !imports.has(name[1]);
-                            }
-                            return true;
-                        })
-                        .map(name => `import ${name}`);
-                    const out = joinedImports.join('\n');
-                    //console.log('module.length = 0', out, imports);
-                    return out;
-                } else {
-                    const joinedImports = [...imports]
-                        .sort()
-                        .filter(i => {
-                            // import of a type can either be '<Type>' or 'type <Type>', so
-                            // we filter out 'type <Type>' variation if there is a '<Type>'
-                            const name = i.split(' ');
-                            if (name.length > 1) {
-                                return !imports.has(name[1]);
-                            }
-                            return true;
-                        })
-                        .join(', ');
-                    return `from ${module} import ${joinedImports}`;
-                }
-            })
+            .sort(([a], [b]) => this.compareModuleNames(a, b))
+            .map(([module, imports]) => this.formatModuleImports(module, imports))
+            .filter(line => line.length > 0)
             .join('\n');
+    }
+
+    private compareModuleNames(a: string, b: string): number {
+        const aIsRelative = a.startsWith('.');
+        const bIsRelative = b.startsWith('.');
+        if (aIsRelative && !bIsRelative) return 1;
+        if (!aIsRelative && bIsRelative) return -1;
+        return a.localeCompare(b);
+    }
+
+    private formatModuleImports(module: string, imports: Set<string>): string {
+        const filteredImports = this.filterDuplicateImports(imports);
+
+        if (module.length === 0) {
+            return filteredImports.map(name => `import ${name}`).join('\n');
+        } else {
+            const joinedImports = filteredImports.join(', ');
+            return joinedImports ? `from ${module} import ${joinedImports}` : '';
+        }
+    }
+
+    private filterDuplicateImports(imports: Set<string>): string[] {
+        return [...imports].sort().filter(importName => {
+            // Filter out 'type <Type>' variation if there is a '<Type>'
+            const parts = importName.split(' ');
+            if (parts.length > 1 && parts[0] === 'type') {
+                return !imports.has(parts[1]);
+            }
+            return true;
+        });
     }
 }

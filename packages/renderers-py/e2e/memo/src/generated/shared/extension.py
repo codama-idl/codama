@@ -198,7 +198,7 @@ class SolMapU32(Adapter):
         return dict(obj)
 
     def _encode(self, obj, context, path) ->  List[Tuple]:  #Tuple[Any,List[Tuple[Any, Any]]]:
-        print("encode",obj)
+        #print("encode",obj)
         return obj.items()
 
 class PreOffset(Pointer):
@@ -234,8 +234,6 @@ class PostOffset(Pointer):
         offset = evaluate(self.offset, context)
         stream = evaluate(self.stream, context) or stream
         fallback = stream_tell(stream, path)
-        #print("_parse",offset)
-        #print("stream",stream)
         stream2 = io.BytesIO()
         #print(self.subcon.length)
         stream2.write(stream.read(self.subcon.length+ offset))
@@ -243,22 +241,15 @@ class PostOffset(Pointer):
             stream2.write(generate_zero_bytes(abs(offset)))
         stream2.seek(0, 0)
         obj = self.subcon._parsereport(stream2, context, path)
-        stream_seek(stream, self.subcon.length+ offset, 0, path)
+        #stream_seek(stream, 0, 0, path)
         return obj
 
     def _build(self, obj, stream, context, path):
         offset = evaluate(self.offset, context)
         stream = evaluate(self.stream, context) or stream
         fallback = stream_tell(stream, path)
-        #print("_build",offset)
-        #print("_build fallback",fallback)
         buildret = self.subcon._build(obj, stream, context, path)
-        if offset>0:
-            stream_seek(stream, self.subcon.length+offset, 2 if offset < 0 else 0, path)
-        else:
-            stream_seek(stream, offset, 2 if offset < 0 else 0, path)
-        #stream_seek(stream, fallback, 0, path)
-        return buildret
+        stream_seek(stream, offset, 2, path)
 
 
 def ZeroToType(this:Any,valueType: str,value:Const):

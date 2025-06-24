@@ -28,14 +28,27 @@ import { getBytesFromBytesValueNode } from './utils/codecs';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
 
-export function hexToPyB(hexStr: string) {
-    const buffer: Buffer = Buffer.from(hexStr, 'hex');
-    const hexFormat: string = Array.from(buffer)
-        .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
-        .join('');
-    return hexFormat;
+export function hexToPyB(hexStr: string): string {
+    if (!hexStr || hexStr.length === 0) {
+        return '';
+    }
+
+    try {
+        const buffer: Buffer = Buffer.from(hexStr, 'hex');
+        const hexFormat: string = Array.from(buffer)
+            .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
+            .join('');
+        return hexFormat;
+    } catch {
+        throw new Error(`Invalid hex string: ${hexStr}`);
+    }
 }
-export function bytesToPyB(bytesArray: ReadonlyUint8Array) {
+
+export function bytesToPyB(bytesArray: ReadonlyUint8Array): string {
+    if (!bytesArray || bytesArray.length === 0) {
+        return '';
+    }
+
     const hexFormat: string = Array.from(bytesArray)
         .map(byte => `\\x${byte.toString(16).padStart(2, '0')}`)
         .join('');

@@ -21,11 +21,9 @@ export function notPyKeyCase(name: string): string {
     }
     return name;
 }
-export const render = (template: string, context?: object, options?: NunJucksOptions): string => {
-    // @ts-expect-error import.meta will be used in the right environment.
-    const dirname = __ESM__ ? pathDirname(fileURLToPath(import.meta.url)) : __dirname;
-    const templates = __TEST__ ? join(dirname, '..', '..', 'public', 'templates') : join(dirname, 'templates'); // Path to templates from bundled output file.
-    const env = nunjucks.configure(templates, { autoescape: false, trimBlocks: true, ...options });
+// Configure common filters and globals for Nunjucks environment
+function configureNunjucksEnvironment(env: nunjucks.Environment): void {
+    // Add filters
     env.addFilter('pascalCase', pascalCase);
     env.addFilter('camelCase', camelCase);
     env.addFilter('snakeCase', snakeCase);
@@ -39,6 +37,8 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('dump', function (obj) {
         return JSON.stringify(obj, null, 2);
     });
+
+    // Add globals
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Temporary for legacy compatibility
     env.addGlobal('dump', function (obj: any) {
         return JSON.stringify(obj, null, 2);
@@ -53,17 +53,20 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addGlobal('getSeedType', function (seed: PdaSeedNode): string {
         return getSeedType(seed);
     });
+}
+
+export const render = (template: string, context?: object, options?: NunJucksOptions): string => {
+    // @ts-expect-error import.meta will be used in the right environment.
+    const dirname = __ESM__ ? pathDirname(fileURLToPath(import.meta.url)) : __dirname;
+    const templates = __TEST__ ? join(dirname, '..', '..', 'public', 'templates') : join(dirname, 'templates'); // Path to templates from bundled output file.
+    const env = nunjucks.configure(templates, { autoescape: false, trimBlocks: true, ...options });
+    configureNunjucksEnvironment(env);
 
     return env.render(template, context);
 };
 
 export const renderString = (template: string, context?: object): string => {
     const env = nunjucks.configure({ autoescape: false });
-    env.addFilter('pascalCase', pascalCase);
-    env.addFilter('camelCase', camelCase);
-    env.addFilter('snakeCase', snakeCase);
-    env.addFilter('kebabCase', kebabCase);
-    env.addFilter('titleCase', titleCase);
-    env.addFilter('jsDocblock', jsDocblock);
+    configureNunjucksEnvironment(env);
     return env.renderString(template, context!);
 };
