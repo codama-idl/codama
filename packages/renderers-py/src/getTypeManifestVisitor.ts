@@ -18,7 +18,6 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
-import { ReadonlyUint8Array } from '@solana/codecs-core';
 
 import { Fragment, fragment } from './fragments';
 import { ImportMap } from './ImportMap';
@@ -44,7 +43,7 @@ export function hexToPyB(hexStr: string): string {
     }
 }
 
-export function bytesToPyB(bytesArray: ReadonlyUint8Array): string {
+export function bytesToPyB(bytesArray: Uint8Array): string {
     if (!bytesArray || bytesArray.length === 0) {
         return '';
     }

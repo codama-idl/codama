@@ -1,35 +1,9 @@
 import { Fragment, PyFragment } from './fragments';
 import { TypeManifest } from './TypeManifest';
 
-const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
-    solanaAccounts: '@solana/kit',
-    solanaAddresses: '@solana/kit',
-    solanaCodecsCore: '@solana/kit',
-    solanaCodecsDataStructures: '@solana/kit',
-    solanaCodecsNumbers: '@solana/kit',
-    solanaCodecsStrings: '@solana/kit',
-    solanaErrors: '@solana/kit',
-    solanaInstructions: '@solana/kit',
-    solanaOptions: '@solana/kit',
-    solanaPrograms: '@solana/kit',
-    solanaRpcTypes: '@solana/kit',
-    solanaSigners: '@solana/kit',
-};
+const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {};
 
-const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {
-    solanaAccounts: '@solana/accounts',
-    solanaAddresses: '@solana/addresses',
-    solanaCodecsCore: '@solana/codecs',
-    solanaCodecsDataStructures: '@solana/codecs',
-    solanaCodecsNumbers: '@solana/codecs',
-    solanaCodecsStrings: '@solana/codecs',
-    solanaErrors: '@solana/errors',
-    solanaInstructions: '@solana/instructions',
-    solanaOptions: '@solana/codecs',
-    solanaPrograms: '@solana/programs',
-    solanaRpcTypes: '@solana/rpc-types',
-    solanaSigners: '@solana/signers',
-};
+const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {};
 
 const DEFAULT_INTERNAL_MODULE_MAP: Record<string, string> = {
     errors: '../errors',

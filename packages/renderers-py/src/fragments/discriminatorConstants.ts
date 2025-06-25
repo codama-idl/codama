@@ -8,10 +8,10 @@ import {
     VALUE_NODES,
 } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
-import { getU8Codec, getU16Codec, getU32Codec, getU64Codec } from '@solana/codecs-numbers';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { bytesToPyB } from '../getTypeManifestVisitor';
+import { encodeU8, encodeU16, encodeU32, encodeU64 } from '../utils/codecs';
 import { DiscriminatorFragment } from './common';
 
 export function getDiscriminatorConstantsFragment(
@@ -95,16 +95,16 @@ export function getFieldDiscriminatorConstantFragment(
             let renderStr = '';
             if (field.type.kind == 'numberTypeNode') {
                 if (field.type.format == 'u64') {
-                    const valueBs = getU64Codec().encode(field.defaultValue.number);
+                    const valueBs = encodeU64(field.defaultValue.number);
                     renderStr = `b"${bytesToPyB(valueBs)}"`;
                 } else if (field.type.format == 'u32') {
-                    const valueBs = getU32Codec().encode(field.defaultValue.number);
+                    const valueBs = encodeU32(field.defaultValue.number);
                     renderStr = `b"${bytesToPyB(valueBs)}"`;
                 } else if (field.type.format == 'u16') {
-                    const valueBs = getU16Codec().encode(field.defaultValue.number);
+                    const valueBs = encodeU16(field.defaultValue.number);
                     renderStr = `b"${bytesToPyB(valueBs)}"`;
                 } else if (field.type.format == 'u8') {
-                    const valueBs = getU8Codec().encode(field.defaultValue.number);
+                    const valueBs = encodeU8(field.defaultValue.number);
                     renderStr = `b"${bytesToPyB(valueBs)}"`;
                 }
                 return new DiscriminatorFragment(field.name, renderStr, getPyBytesLen(renderStr));
