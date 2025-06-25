@@ -10,33 +10,40 @@ export function setInitCommand(program: Command): void {
         .argument('[output]', 'Optional path used to output the configuration file')
         .option('-d, --default', 'Bypass prompts and select all defaults options')
         .option('--js', 'Forces the output to be a JavaScript file')
+        .option('--gill', 'Forces the output to be a gill based JavaScript file')
         .action(doInit);
 }
 
 type InitOptions = {
     default?: boolean;
     js?: boolean;
+    gill?: boolean;
 };
+
+type ConfigFileType = "json" | "js" | "gill";
 
 async function doInit(explicitOutput: string | undefined, options: InitOptions) {
     const output = getOutputPath(explicitOutput, options);
-    const useJsFile = options.js || output.endsWith('.js');
+    let configFileType : ConfigFileType = output.endsWith(".json") ? "json" : "js";
+    if (options.gill) configFileType = "gill"
+    else if (options.js) configFileType = "js"
+
     if (await canRead(output)) {
         throw new Error(`Configuration file already exists at "${output}".`);
     }
 
     logBanner();
     const result = await getPromptResult(options);
-    const content = getContentFromPromptResult(result, useJsFile);
+    const content = getContentFromPromptResult(result, configFileType);
     await writeFile(output, content);
     logSuccess(`Configuration file created at "${output}".`);
 }
 
-function getOutputPath(explicitOutput: string | undefined, options: Pick<InitOptions, 'js'>): string {
+function getOutputPath(explicitOutput: string | undefined, options: Pick<InitOptions, 'js' | 'gill'>): string {
     if (explicitOutput) {
         return resolveRelativePath(explicitOutput);
     }
-    return resolveRelativePath(options.js ? 'codama.js' : 'codama.json');
+    return resolveRelativePath(options.js || options.gill ? 'codama.js' : 'codama.json');
 }
 
 type PromptResult = {
@@ -114,7 +121,7 @@ function getDefaultPromptResult(): PromptResult {
     };
 }
 
-function getContentFromPromptResult(result: PromptResult, useJsFile: boolean): string {
+function getContentFromPromptResult(result: PromptResult, configFileType: ConfigFileType): string {
     const scripts: Record<ScriptName, ScriptConfig> = {};
     if (result.scripts.includes('js')) {
         scripts.js = {
@@ -130,8 +137,15 @@ function getContentFromPromptResult(result: PromptResult, useJsFile: boolean): s
     }
     const content: Config = { idl: result.idlPath, before: [], scripts };
 
-    if (!useJsFile) {
+    if (configFileType == "json") {
         return JSON.stringify(content, null, 4);
+    }
+    else if (configFileType == "gill"){
+        return `import { createCodamaConfig } from "gill";\n\n` + 
+            `export default createCodamaConfig({ \n\t` +
+            `idl: "${result.idlPath}", \n\t` +
+            `clientJs: "${result.jsPath}", \n` +
+        `});`
     }
 
     return (
