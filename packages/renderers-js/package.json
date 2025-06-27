@@ -48,7 +48,7 @@
         "@codama/visitors-core": "workspace:*",
         "@solana/codecs-strings": "^2.1.0",
         "nunjucks": "^3.2.4",
-        "prettier": "^3.6.1"
+        "prettier": "^3.6.2"
     },
     "devDependencies": {
         "@codama/nodes-from-anchor": "workspace:*",
