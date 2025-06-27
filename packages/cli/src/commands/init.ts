@@ -24,7 +24,7 @@ type ConfigFileType = 'gill' | 'js' | 'json';
 
 async function doInit(explicitOutput: string | undefined, options: InitOptions) {
     const output = getOutputPath(explicitOutput, options);
-    let configFileType: ConfigFileType = output.endsWith('.json') ? 'json' : 'js';
+    let configFileType: ConfigFileType = output.endsWith('.js') ? 'js' : 'json';
     if (options.gill) configFileType = 'gill';
     else if (options.js) configFileType = 'js';
 
