@@ -140,13 +140,13 @@ function getContentFromPromptResult(result: PromptResult, configFileType: Config
     if (configFileType == 'json') {
         return JSON.stringify(content, null, 4);
     } else if (configFileType == 'gill') {
-        return (
-            `import { createCodamaConfig } from "gill";\n\n` +
+        return `import { createCodamaConfig } from "gill";\n\n` +
             `export default createCodamaConfig({ \n\t` +
             `idl: "${result.idlPath}", \n\t` +
             `clientJs: "${result.jsPath}", \n` +
-            `});`
-        );
+            result.scripts.includes('rust')
+            ? `clientRust: "${result.rustPath}", \n`
+            : `` + `});`;
     }
 
     return (
