@@ -7,10 +7,10 @@
  */
 
 import {
-  ClusterFilter,
-  Context,
-  Program,
-  PublicKey,
+  type ClusterFilter,
+  type Context,
+  type Program,
+  type PublicKey,
 } from '@metaplex-foundation/umi';
 import { getMemoErrorFromCode, getMemoErrorFromName } from '../errors';
 
