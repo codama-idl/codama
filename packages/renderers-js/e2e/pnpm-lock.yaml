@@ -39,11 +39,11 @@ importers:
         specifier: ^8.5.0
         version: 8.5.0(typescript@5.8.3)(yaml@2.8.0)
       typedoc:
-        specifier: ^0.28.6
-        version: 0.28.6(typescript@5.8.3)
+        specifier: ^0.28.7
+        version: 0.28.7(typescript@5.8.3)
       typedoc-plugin-missing-exports:
         specifier: ^4.0.0
-        version: 4.0.0(typedoc@0.28.6(typescript@5.8.3))
+        version: 4.0.0(typedoc@0.28.7(typescript@5.8.3))
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -1956,8 +1956,8 @@ packages:
     peerDependencies:
       typedoc: ^0.28.1
 
-  typedoc@0.28.6:
-    resolution: {integrity: sha512-2VvfK6z3yupcu75qZB00LGICg4qa0lw4yPBrFcnZgqIMwpLjLWopTqNeJ4SSS/s92myvWBECY5zcOSMqpvW3CA==}
+  typedoc@0.28.7:
+    resolution: {integrity: sha512-lpz0Oxl6aidFkmS90VQDQjk/Qf2iw0IUvFqirdONBdj7jPSN9mGXhy66BcGNDxx5ZMyKKiBVAREvPEzT6Uxipw==}
     engines: {node: '>= 18', pnpm: '>= 10'}
     hasBin: true
     peerDependencies:
@@ -4009,11 +4009,11 @@ snapshots:
 
   type-fest@0.20.2: {}
 
-  typedoc-plugin-missing-exports@4.0.0(typedoc@0.28.6(typescript@5.8.3)):
+  typedoc-plugin-missing-exports@4.0.0(typedoc@0.28.7(typescript@5.8.3)):
     dependencies:
-      typedoc: 0.28.6(typescript@5.8.3)
+      typedoc: 0.28.7(typescript@5.8.3)
 
-  typedoc@0.28.6(typescript@5.8.3):
+  typedoc@0.28.7(typescript@5.8.3):
     dependencies:
       '@gerrit0/mini-shiki': 3.7.0
       lunr: 2.3.9
