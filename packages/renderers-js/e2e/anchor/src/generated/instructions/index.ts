@@ -6,7 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './createGuard';
-export * from './execute';
-export * from './initialize';
-export * from './updateGuard';
+export * from './createGuard.js';
+export * from './execute.js';
+export * from './initialize.js';
+export * from './updateGuard.js';

@@ -27,13 +27,13 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { findAssociatedTokenPda } from '../pdas';
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs';
+import { findAssociatedTokenPda } from '../pdas/index.js';
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
 import {
   expectAddress,
   getAccountMetaFactory,
   type ResolvedAccount,
-} from '../shared';
+} from '../shared/index.js';
 
 export const CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR = 0;
 

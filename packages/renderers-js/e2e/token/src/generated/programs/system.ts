@@ -12,7 +12,7 @@ import {
   type Address,
   type ReadonlyUint8Array,
 } from '@solana/kit';
-import { type ParsedCreateAccountInstruction } from '../instructions';
+import { type ParsedCreateAccountInstruction } from '../instructions/index.js';
 
 export const SYSTEM_PROGRAM_ADDRESS =
   '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;

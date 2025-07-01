@@ -2,7 +2,7 @@
 
 {% block main %}
 {% for pda in pdasToExport | sort(false, false, 'name') %}
-export * from './{{ pda.name | camelCase }}';
+export * from './{{ pda.name | camelCase }}.js';
 {% else %}
 export default {};
 {% endfor %}

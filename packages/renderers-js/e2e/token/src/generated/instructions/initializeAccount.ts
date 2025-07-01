@@ -24,8 +24,11 @@ import {
   type ReadonlyAccount,
   type WritableAccount,
 } from '@solana/kit';
-import { TOKEN_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export const INITIALIZE_ACCOUNT_DISCRIMINATOR = 1;
 

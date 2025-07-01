@@ -13,8 +13,11 @@ import {
   type IInstructionWithAccounts,
   type WritableAccount,
 } from '@solana/kit';
-import { DUMMY_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { DUMMY_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export type Instruction7Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,

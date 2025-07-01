@@ -28,8 +28,11 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { SYSTEM_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export const TRANSFER_SOL_DISCRIMINATOR = 2;
 

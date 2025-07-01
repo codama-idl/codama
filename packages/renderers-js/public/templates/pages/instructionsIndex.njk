@@ -2,7 +2,7 @@
 
 {% block main %}
 {% for instruction in instructionsToExport | sort(false, false, 'name') %}
-export * from './{{ instruction.name | camelCase }}';
+export * from './{{ instruction.name | camelCase }}.js';
 {% else %}
 export default {};
 {% endfor %}

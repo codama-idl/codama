@@ -33,12 +33,12 @@ import {
   type TransactionSigner,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
+import { SYSTEM_PROGRAM_ADDRESS } from '../programs/index.js';
 import {
   getAccountMetaFactory,
   type IInstructionWithByteDelta,
   type ResolvedAccount,
-} from '../shared';
+} from '../shared/index.js';
 
 export const CREATE_ACCOUNT_DISCRIMINATOR = 0;
 

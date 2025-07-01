@@ -6,6 +6,6 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './associatedToken';
-export * from './system';
-export * from './token';
+export * from './associatedToken.js';
+export * from './system.js';
+export * from './token.js';

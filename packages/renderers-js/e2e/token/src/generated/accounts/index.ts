@@ -6,6 +6,6 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './mint';
-export * from './multisig';
-export * from './token';
+export * from './mint.js';
+export * from './multisig.js';
+export * from './token.js';

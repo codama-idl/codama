@@ -29,8 +29,11 @@ import {
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
-import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { SYSTEM_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export const WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR = 5;
 

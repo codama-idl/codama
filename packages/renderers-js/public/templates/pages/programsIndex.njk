@@ -2,7 +2,7 @@
 
 {% block main %}
 {% for program in programsToExport | sort(false, false, 'name') %}
-export * from './{{ program.name | camelCase }}';
+export * from './{{ program.name | camelCase }}.js';
 {% else %}
 export default {};
 {% endfor %}

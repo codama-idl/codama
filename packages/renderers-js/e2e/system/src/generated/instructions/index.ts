@@ -6,16 +6,16 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './advanceNonceAccount';
-export * from './allocate';
-export * from './allocateWithSeed';
-export * from './assign';
-export * from './assignWithSeed';
-export * from './authorizeNonceAccount';
-export * from './createAccount';
-export * from './createAccountWithSeed';
-export * from './initializeNonceAccount';
-export * from './transferSol';
-export * from './transferSolWithSeed';
-export * from './upgradeNonceAccount';
-export * from './withdrawNonceAccount';
+export * from './advanceNonceAccount.js';
+export * from './allocate.js';
+export * from './allocateWithSeed.js';
+export * from './assign.js';
+export * from './assignWithSeed.js';
+export * from './authorizeNonceAccount.js';
+export * from './createAccount.js';
+export * from './createAccountWithSeed.js';
+export * from './initializeNonceAccount.js';
+export * from './transferSol.js';
+export * from './transferSolWithSeed.js';
+export * from './upgradeNonceAccount.js';
+export * from './withdrawNonceAccount.js';

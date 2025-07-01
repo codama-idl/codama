@@ -38,12 +38,12 @@ import {
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
-import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs';
+import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs/index.js';
 import {
   expectAddress,
   getAccountMetaFactory,
   type ResolvedAccount,
-} from '../shared';
+} from '../shared/index.js';
 import {
   getCpiRuleDecoder,
   getCpiRuleEncoder,
@@ -57,7 +57,7 @@ import {
   type MetadataAdditionalFieldRuleArgs,
   type TransferAmountRule,
   type TransferAmountRuleArgs,
-} from '../types';
+} from '../types/index.js';
 
 export const UPDATE_GUARD_DISCRIMINATOR = new Uint8Array([
   51, 38, 175, 180, 25, 249, 39, 24,

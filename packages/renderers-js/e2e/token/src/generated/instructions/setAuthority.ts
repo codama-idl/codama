@@ -34,14 +34,17 @@ import {
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
-import { TOKEN_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 import {
   getAuthorityTypeDecoder,
   getAuthorityTypeEncoder,
   type AuthorityType,
   type AuthorityTypeArgs,
-} from '../types';
+} from '../types/index.js';
 
 export const SET_AUTHORITY_DISCRIMINATOR = 6;
 

@@ -25,8 +25,11 @@ import {
   type IInstructionWithData,
   type ReadonlyAccount,
 } from '@solana/kit';
-import { TOKEN_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export const AMOUNT_TO_UI_AMOUNT_DISCRIMINATOR = 23;
 

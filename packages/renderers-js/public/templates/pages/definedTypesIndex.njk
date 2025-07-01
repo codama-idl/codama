@@ -2,7 +2,7 @@
 
 {% block main %}
 {% for definedType in definedTypesToExport | sort(false, false, 'name') %}
-export * from './{{ definedType.name | camelCase }}';
+export * from './{{ definedType.name | camelCase }}.js';
 {% else %}
 export default {};
 {% endfor %}
