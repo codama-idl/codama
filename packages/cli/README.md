@@ -20,6 +20,12 @@ pnpm codama init
 
 You will be prompted for the path of your IDL and asked to select any script presets you would like to use.
 
+To initialize a [gill based Codama](https://gill.site/docs/guides/codama) configuration file, run the `init` command with the `--gill` flag like so:
+
+```sh
+pnpm codama init --gill
+```
+
 ## `codama run`
 
 Once you have your codama config file, you can run your Codama scripts using the `codama run` command as follows:
