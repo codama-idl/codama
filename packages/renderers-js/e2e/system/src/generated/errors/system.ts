@@ -12,7 +12,7 @@ import {
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
 } from '@solana/kit';
-import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
+import { SYSTEM_PROGRAM_ADDRESS } from '../programs/index.js';
 
 /** AccountAlreadyInUse: an account with the same address already exists */
 export const SYSTEM_ERROR__ACCOUNT_ALREADY_IN_USE = 0x0; // 0

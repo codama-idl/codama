@@ -12,7 +12,7 @@ import {
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
 } from '@solana/kit';
-import { TOKEN_PROGRAM_ADDRESS } from '../programs';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
 
 /** NotRentExempt: Lamport balance below rent-exempt threshold */
 export const TOKEN_ERROR__NOT_RENT_EXEMPT = 0x0; // 0

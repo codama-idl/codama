@@ -6,7 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './cpiRule';
-export * from './metadataAdditionalFieldRestriction';
-export * from './metadataAdditionalFieldRule';
-export * from './transferAmountRule';
+export * from './cpiRule.js';
+export * from './metadataAdditionalFieldRestriction.js';
+export * from './metadataAdditionalFieldRule.js';
+export * from './transferAmountRule.js';

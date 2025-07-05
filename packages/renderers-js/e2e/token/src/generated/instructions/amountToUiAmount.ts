@@ -25,8 +25,11 @@ import {
   type IInstructionWithData,
   type ReadonlyAccount,
 } from '@solana/kit';
-import { TOKEN_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export const AMOUNT_TO_UI_AMOUNT_DISCRIMINATOR = 23;
 
@@ -153,7 +156,7 @@ export function parseAmountToUiAmountInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = instruction.accounts![accountIndex]!;
+    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

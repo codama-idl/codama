@@ -22,7 +22,7 @@ import {
   type IInstructionWithAccounts,
   type IInstructionWithData,
 } from '@solana/kit';
-import { DUMMY_PROGRAM_ADDRESS } from '../programs';
+import { DUMMY_PROGRAM_ADDRESS } from '../programs/index.js';
 
 export type Instruction5Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,

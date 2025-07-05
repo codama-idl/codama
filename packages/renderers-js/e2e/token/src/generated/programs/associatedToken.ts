@@ -16,7 +16,7 @@ import {
   type ParsedCreateAssociatedTokenIdempotentInstruction,
   type ParsedCreateAssociatedTokenInstruction,
   type ParsedRecoverNestedAssociatedTokenInstruction,
-} from '../instructions';
+} from '../instructions/index.js';
 
 export const ASSOCIATED_TOKEN_PROGRAM_ADDRESS =
   'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' as Address<'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'>;

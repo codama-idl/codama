@@ -18,7 +18,7 @@ import {
   type ParsedExecuteInstruction,
   type ParsedInitializeInstruction,
   type ParsedUpdateGuardInstruction,
-} from '../instructions';
+} from '../instructions/index.js';
 
 export const WEN_TRANSFER_GUARD_PROGRAM_ADDRESS =
   'LockdqYQ9X2kwtWB99ioSbxubAmEi8o9jqYwbXgrrRw' as Address<'LockdqYQ9X2kwtWB99ioSbxubAmEi8o9jqYwbXgrrRw'>;

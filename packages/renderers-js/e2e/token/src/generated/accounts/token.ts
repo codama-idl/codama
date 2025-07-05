@@ -41,7 +41,7 @@ import {
   getAccountStateEncoder,
   type AccountState,
   type AccountStateArgs,
-} from '../types';
+} from '../types/index.js';
 
 export type Token = {
   /** The mint associated with this account. */

@@ -42,7 +42,7 @@ import {
   type NonceStateArgs,
   type NonceVersion,
   type NonceVersionArgs,
-} from '../types';
+} from '../types/index.js';
 
 export type Nonce = {
   version: NonceVersion;

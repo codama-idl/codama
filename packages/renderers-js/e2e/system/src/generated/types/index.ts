@@ -6,5 +6,5 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './nonceState';
-export * from './nonceVersion';
+export * from './nonceState.js';
+export * from './nonceVersion.js';

@@ -3,22 +3,22 @@
 {% block main %}
 {% if hasAnythingToExport %}
   {% if accountsToExport.length > 0 %}
-    export * from './accounts';
+    export * from './accounts/index.js';
   {% endif %}
   {% if programsWithErrorsToExport.length > 0 %}
-    export * from './errors';
+    export * from './errors/index.js';
   {% endif %}
   {% if instructionsToExport.length > 0 %}
-    export * from './instructions';
+    export * from './instructions/index.js';
   {% endif %}
   {% if pdasToExport.length > 0 %}
-    export * from './pdas';
+    export * from './pdas/index.js';
   {% endif %}
   {% if programsToExport.length > 0 %}
-    export * from './programs';
+    export * from './programs/index.js';
   {% endif %}
   {% if definedTypesToExport.length > 0 %}
-    export * from './types';
+    export * from './types/index.js';
   {% endif %}
 {% else %}
 export default {};

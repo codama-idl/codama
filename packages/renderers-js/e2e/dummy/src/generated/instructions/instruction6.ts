@@ -13,8 +13,11 @@ import {
   type IInstructionWithAccounts,
   type WritableAccount,
 } from '@solana/kit';
-import { DUMMY_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { DUMMY_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export type Instruction6Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
@@ -84,7 +87,7 @@ export function parseInstruction6Instruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = instruction.accounts![accountIndex]!;
+    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

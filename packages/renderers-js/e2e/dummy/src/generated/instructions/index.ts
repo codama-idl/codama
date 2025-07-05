@@ -6,10 +6,10 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './instruction1';
-export * from './instruction2';
-export * from './instruction3';
-export * from './instruction4';
-export * from './instruction5';
-export * from './instruction6';
-export * from './instruction7';
+export * from './instruction1.js';
+export * from './instruction2.js';
+export * from './instruction3.js';
+export * from './instruction4.js';
+export * from './instruction5.js';
+export * from './instruction6.js';
+export * from './instruction7.js';

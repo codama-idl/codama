@@ -30,8 +30,11 @@ import {
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
-import { TOKEN_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export const MINT_TO_CHECKED_DISCRIMINATOR = 14;
 
@@ -222,7 +225,7 @@ export function parseMintToCheckedInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = instruction.accounts![accountIndex]!;
+    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

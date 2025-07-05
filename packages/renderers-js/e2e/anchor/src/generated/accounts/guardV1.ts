@@ -55,7 +55,7 @@ import {
   type MetadataAdditionalFieldRuleArgs,
   type TransferAmountRule,
   type TransferAmountRuleArgs,
-} from '../types';
+} from '../types/index.js';
 
 export const GUARD_V1_DISCRIMINATOR = new Uint8Array([
   185, 149, 156, 78, 245, 108, 172, 68,

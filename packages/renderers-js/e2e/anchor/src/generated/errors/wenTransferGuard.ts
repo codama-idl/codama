@@ -12,7 +12,7 @@ import {
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
 } from '@solana/kit';
-import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs';
+import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs/index.js';
 
 /** CpiRuleEnforcementFailed: Cpi Rule Enforcement Failed */
 export const WEN_TRANSFER_GUARD_ERROR__CPI_RULE_ENFORCEMENT_FAILED = 0x1770; // 6000

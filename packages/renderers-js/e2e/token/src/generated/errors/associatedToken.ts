@@ -12,7 +12,7 @@ import {
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
 } from '@solana/kit';
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs';
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '../programs/index.js';
 
 /** InvalidOwner: Associated token account owner does not match address derivation */
 export const ASSOCIATED_TOKEN_ERROR__INVALID_OWNER = 0x0; // 0

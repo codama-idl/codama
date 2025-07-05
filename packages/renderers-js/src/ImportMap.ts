@@ -32,17 +32,17 @@ const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {
 };
 
 const DEFAULT_INTERNAL_MODULE_MAP: Record<string, string> = {
-    errors: '../errors',
-    generated: '..',
-    generatedAccounts: '../accounts',
-    generatedErrors: '../errors',
-    generatedInstructions: '../instructions',
-    generatedPdas: '../pdas',
-    generatedPrograms: '../programs',
-    generatedTypes: '../types',
-    hooked: '../../hooked',
-    shared: '../shared',
-    types: '../types',
+    errors: '../errors/index.js',
+    generated: '../index.js',
+    generatedAccounts: '../accounts/index.js',
+    generatedErrors: '../errors/index.js',
+    generatedInstructions: '../instructions/index.js',
+    generatedPdas: '../pdas/index.js',
+    generatedPrograms: '../programs/index.js',
+    generatedTypes: '../types/index.js',
+    hooked: '../../hooked/index.js',
+    shared: '../shared/index.js',
+    types: '../types/index.js',
 };
 
 export class ImportMap {

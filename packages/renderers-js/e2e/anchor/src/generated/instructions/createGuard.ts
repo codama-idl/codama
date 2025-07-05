@@ -45,12 +45,12 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs';
+import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs/index.js';
 import {
   expectAddress,
   getAccountMetaFactory,
   type ResolvedAccount,
-} from '../shared';
+} from '../shared/index.js';
 import {
   getCpiRuleDecoder,
   getCpiRuleEncoder,
@@ -64,7 +64,7 @@ import {
   type MetadataAdditionalFieldRuleArgs,
   type TransferAmountRule,
   type TransferAmountRuleArgs,
-} from '../types';
+} from '../types/index.js';
 
 export const CREATE_GUARD_DISCRIMINATOR = new Uint8Array([
   251, 254, 17, 198, 219, 218, 154, 99,
@@ -519,7 +519,7 @@ export function parseCreateGuardInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = instruction.accounts![accountIndex]!;
+    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

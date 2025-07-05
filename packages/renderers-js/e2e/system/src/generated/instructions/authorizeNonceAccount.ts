@@ -28,8 +28,11 @@ import {
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
-import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import { SYSTEM_PROGRAM_ADDRESS } from '../programs/index.js';
+import {
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared/index.js';
 
 export const AUTHORIZE_NONCE_ACCOUNT_DISCRIMINATOR = 7;
 
@@ -181,7 +184,7 @@ export function parseAuthorizeNonceAccountInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = instruction.accounts![accountIndex]!;
+    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

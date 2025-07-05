@@ -7,7 +7,7 @@
  */
 
 import { type Address } from '@solana/kit';
-import { type ParsedAddMemoInstruction } from '../instructions';
+import { type ParsedAddMemoInstruction } from '../instructions/index.js';
 
 export const MEMO_PROGRAM_ADDRESS =
   'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr' as Address<'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'>;

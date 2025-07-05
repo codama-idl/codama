@@ -6,5 +6,5 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './accountState';
-export * from './authorityType';
+export * from './accountState.js';
+export * from './authorityType.js';

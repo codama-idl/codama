@@ -2,7 +2,7 @@
 
 {% block main %}
 {% for account in accountsToExport | sort(false, false, 'name') %}
-export * from './{{ account.name | camelCase }}';
+export * from './{{ account.name | camelCase }}.js';
 {% else %}
 export default {};
 {% endfor %}

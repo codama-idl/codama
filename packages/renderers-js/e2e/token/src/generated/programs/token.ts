@@ -38,7 +38,7 @@ import {
   type ParsedTransferCheckedInstruction,
   type ParsedTransferInstruction,
   type ParsedUiAmountToAmountInstruction,
-} from '../instructions';
+} from '../instructions/index.js';
 
 export const TOKEN_PROGRAM_ADDRESS =
   'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;

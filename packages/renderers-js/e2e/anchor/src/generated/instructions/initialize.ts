@@ -32,12 +32,12 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs';
+import { WEN_TRANSFER_GUARD_PROGRAM_ADDRESS } from '../programs/index.js';
 import {
   expectAddress,
   getAccountMetaFactory,
   type ResolvedAccount,
-} from '../shared';
+} from '../shared/index.js';
 
 export const INITIALIZE_DISCRIMINATOR = new Uint8Array([
   43, 34, 13, 49, 167, 88, 235, 235,
@@ -355,7 +355,7 @@ export function parseInitializeInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = instruction.accounts![accountIndex]!;
+    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };
