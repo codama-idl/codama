@@ -11,22 +11,22 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct WithdrawNonceAccount {
-    pub nonce_account: solana_program::pubkey::Pubkey,
+    pub nonce_account: solana_pubkey::Pubkey,
 
-    pub recipient_account: solana_program::pubkey::Pubkey,
+    pub recipient_account: solana_pubkey::Pubkey,
 
-    pub recent_blockhashes_sysvar: solana_program::pubkey::Pubkey,
+    pub recent_blockhashes_sysvar: solana_pubkey::Pubkey,
 
-    pub rent_sysvar: solana_program::pubkey::Pubkey,
+    pub rent_sysvar: solana_pubkey::Pubkey,
 
-    pub nonce_authority: solana_program::pubkey::Pubkey,
+    pub nonce_authority: solana_pubkey::Pubkey,
 }
 
 impl WithdrawNonceAccount {
     pub fn instruction(
         &self,
         args: WithdrawNonceAccountInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
+    ) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -34,26 +34,26 @@ impl WithdrawNonceAccount {
     pub fn instruction_with_remaining_accounts(
         &self,
         args: WithdrawNonceAccountInstructionArgs,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.nonce_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.recipient_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.recent_blockhashes_sysvar,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.rent_sysvar,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.nonce_authority,
             true,
         ));
@@ -62,7 +62,7 @@ impl WithdrawNonceAccount {
         let mut args = borsh::to_vec(&args).unwrap();
         data.append(&mut args);
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::SYSTEM_ID,
             accounts,
             data,
@@ -105,13 +105,13 @@ pub struct WithdrawNonceAccountInstructionArgs {
 ///   4. `[signer]` nonce_authority
 #[derive(Clone, Debug, Default)]
 pub struct WithdrawNonceAccountBuilder {
-    nonce_account: Option<solana_program::pubkey::Pubkey>,
-    recipient_account: Option<solana_program::pubkey::Pubkey>,
-    recent_blockhashes_sysvar: Option<solana_program::pubkey::Pubkey>,
-    rent_sysvar: Option<solana_program::pubkey::Pubkey>,
-    nonce_authority: Option<solana_program::pubkey::Pubkey>,
+    nonce_account: Option<solana_pubkey::Pubkey>,
+    recipient_account: Option<solana_pubkey::Pubkey>,
+    recent_blockhashes_sysvar: Option<solana_pubkey::Pubkey>,
+    rent_sysvar: Option<solana_pubkey::Pubkey>,
+    nonce_authority: Option<solana_pubkey::Pubkey>,
     withdraw_amount: Option<u64>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl WithdrawNonceAccountBuilder {
@@ -119,15 +119,12 @@ impl WithdrawNonceAccountBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn nonce_account(&mut self, nonce_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn nonce_account(&mut self, nonce_account: solana_pubkey::Pubkey) -> &mut Self {
         self.nonce_account = Some(nonce_account);
         self
     }
     #[inline(always)]
-    pub fn recipient_account(
-        &mut self,
-        recipient_account: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn recipient_account(&mut self, recipient_account: solana_pubkey::Pubkey) -> &mut Self {
         self.recipient_account = Some(recipient_account);
         self
     }
@@ -135,22 +132,19 @@ impl WithdrawNonceAccountBuilder {
     #[inline(always)]
     pub fn recent_blockhashes_sysvar(
         &mut self,
-        recent_blockhashes_sysvar: solana_program::pubkey::Pubkey,
+        recent_blockhashes_sysvar: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.recent_blockhashes_sysvar = Some(recent_blockhashes_sysvar);
         self
     }
     /// `[optional account, default to 'SysvarRent111111111111111111111111111111111']`
     #[inline(always)]
-    pub fn rent_sysvar(&mut self, rent_sysvar: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn rent_sysvar(&mut self, rent_sysvar: solana_pubkey::Pubkey) -> &mut Self {
         self.rent_sysvar = Some(rent_sysvar);
         self
     }
     #[inline(always)]
-    pub fn nonce_authority(
-        &mut self,
-        nonce_authority: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn nonce_authority(&mut self, nonce_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.nonce_authority = Some(nonce_authority);
         self
     }
@@ -161,10 +155,7 @@ impl WithdrawNonceAccountBuilder {
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -172,22 +163,22 @@ impl WithdrawNonceAccountBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = WithdrawNonceAccount {
             nonce_account: self.nonce_account.expect("nonce_account is not set"),
             recipient_account: self
                 .recipient_account
                 .expect("recipient_account is not set"),
             recent_blockhashes_sysvar: self.recent_blockhashes_sysvar.unwrap_or(
-                solana_program::pubkey!("SysvarRecentB1ockHashes11111111111111111111"),
+                solana_pubkey::pubkey!("SysvarRecentB1ockHashes11111111111111111111"),
             ),
-            rent_sysvar: self.rent_sysvar.unwrap_or(solana_program::pubkey!(
+            rent_sysvar: self.rent_sysvar.unwrap_or(solana_pubkey::pubkey!(
                 "SysvarRent111111111111111111111111111111111"
             )),
             nonce_authority: self.nonce_authority.expect("nonce_authority is not set"),
@@ -205,38 +196,38 @@ impl WithdrawNonceAccountBuilder {
 
 /// `withdraw_nonce_account` CPI accounts.
 pub struct WithdrawNonceAccountCpiAccounts<'a, 'b> {
-    pub nonce_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub nonce_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub recipient_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub recipient_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub recent_blockhashes_sysvar: &'b solana_program::account_info::AccountInfo<'a>,
+    pub recent_blockhashes_sysvar: &'b solana_account_info::AccountInfo<'a>,
 
-    pub rent_sysvar: &'b solana_program::account_info::AccountInfo<'a>,
+    pub rent_sysvar: &'b solana_account_info::AccountInfo<'a>,
 
-    pub nonce_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub nonce_authority: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `withdraw_nonce_account` CPI instruction.
 pub struct WithdrawNonceAccountCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub nonce_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub nonce_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub recipient_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub recipient_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub recent_blockhashes_sysvar: &'b solana_program::account_info::AccountInfo<'a>,
+    pub recent_blockhashes_sysvar: &'b solana_account_info::AccountInfo<'a>,
 
-    pub rent_sysvar: &'b solana_program::account_info::AccountInfo<'a>,
+    pub rent_sysvar: &'b solana_account_info::AccountInfo<'a>,
 
-    pub nonce_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub nonce_authority: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: WithdrawNonceAccountInstructionArgs,
 }
 
 impl<'a, 'b> WithdrawNonceAccountCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: WithdrawNonceAccountCpiAccounts<'a, 'b>,
         args: WithdrawNonceAccountInstructionArgs,
     ) -> Self {
@@ -251,25 +242,21 @@ impl<'a, 'b> WithdrawNonceAccountCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -278,35 +265,31 @@ impl<'a, 'b> WithdrawNonceAccountCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.nonce_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.recipient_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.recent_blockhashes_sysvar.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.rent_sysvar.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.nonce_authority.key,
             true,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -316,7 +299,7 @@ impl<'a, 'b> WithdrawNonceAccountCpi<'a, 'b> {
         let mut args = borsh::to_vec(&self.__args).unwrap();
         data.append(&mut args);
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::SYSTEM_ID,
             accounts,
             data,
@@ -333,9 +316,9 @@ impl<'a, 'b> WithdrawNonceAccountCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -355,7 +338,7 @@ pub struct WithdrawNonceAccountCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(WithdrawNonceAccountCpiBuilderInstruction {
             __program: program,
             nonce_account: None,
@@ -371,7 +354,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn nonce_account(
         &mut self,
-        nonce_account: &'b solana_program::account_info::AccountInfo<'a>,
+        nonce_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.nonce_account = Some(nonce_account);
         self
@@ -379,7 +362,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn recipient_account(
         &mut self,
-        recipient_account: &'b solana_program::account_info::AccountInfo<'a>,
+        recipient_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.recipient_account = Some(recipient_account);
         self
@@ -387,7 +370,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn recent_blockhashes_sysvar(
         &mut self,
-        recent_blockhashes_sysvar: &'b solana_program::account_info::AccountInfo<'a>,
+        recent_blockhashes_sysvar: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.recent_blockhashes_sysvar = Some(recent_blockhashes_sysvar);
         self
@@ -395,7 +378,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn rent_sysvar(
         &mut self,
-        rent_sysvar: &'b solana_program::account_info::AccountInfo<'a>,
+        rent_sysvar: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.rent_sysvar = Some(rent_sysvar);
         self
@@ -403,7 +386,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn nonce_authority(
         &mut self,
-        nonce_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        nonce_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.nonce_authority = Some(nonce_authority);
         self
@@ -417,7 +400,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -433,11 +416,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -445,7 +424,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -453,7 +432,7 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let args = WithdrawNonceAccountInstructionArgs {
             withdraw_amount: self
                 .instruction
@@ -499,17 +478,13 @@ impl<'a, 'b> WithdrawNonceAccountCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct WithdrawNonceAccountCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    nonce_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    recipient_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    recent_blockhashes_sysvar: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    rent_sysvar: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    nonce_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    nonce_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    recipient_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    recent_blockhashes_sysvar: Option<&'b solana_account_info::AccountInfo<'a>>,
+    rent_sysvar: Option<&'b solana_account_info::AccountInfo<'a>>,
+    nonce_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
     withdraw_amount: Option<u64>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }
