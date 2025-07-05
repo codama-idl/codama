@@ -7,21 +7,21 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 /// Accounts.
 #[derive(Debug)]
 pub struct AssignWithSeed {
-    pub account: solana_program::pubkey::Pubkey,
+    pub account: solana_pubkey::Pubkey,
 
-    pub base_account: solana_program::pubkey::Pubkey,
+    pub base_account: solana_pubkey::Pubkey,
 }
 
 impl AssignWithSeed {
     pub fn instruction(
         &self,
         args: AssignWithSeedInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
+    ) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -29,14 +29,11 @@ impl AssignWithSeed {
     pub fn instruction_with_remaining_accounts(
         &self,
         args: AssignWithSeedInstructionArgs,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.account,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(self.account, false));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.base_account,
             true,
         ));
@@ -45,7 +42,7 @@ impl AssignWithSeed {
         let mut args = borsh::to_vec(&args).unwrap();
         data.append(&mut args);
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::SYSTEM_ID,
             accounts,
             data,
@@ -89,12 +86,12 @@ pub struct AssignWithSeedInstructionArgs {
 ///   1. `[signer]` base_account
 #[derive(Clone, Debug, Default)]
 pub struct AssignWithSeedBuilder {
-    account: Option<solana_program::pubkey::Pubkey>,
-    base_account: Option<solana_program::pubkey::Pubkey>,
+    account: Option<solana_pubkey::Pubkey>,
+    base_account: Option<solana_pubkey::Pubkey>,
     base: Option<Pubkey>,
     seed: Option<String>,
     program_address: Option<Pubkey>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl AssignWithSeedBuilder {
@@ -102,12 +99,12 @@ impl AssignWithSeedBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn account(&mut self, account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn account(&mut self, account: solana_pubkey::Pubkey) -> &mut Self {
         self.account = Some(account);
         self
     }
     #[inline(always)]
-    pub fn base_account(&mut self, base_account: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn base_account(&mut self, base_account: solana_pubkey::Pubkey) -> &mut Self {
         self.base_account = Some(base_account);
         self
     }
@@ -128,10 +125,7 @@ impl AssignWithSeedBuilder {
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -139,13 +133,13 @@ impl AssignWithSeedBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = AssignWithSeed {
             account: self.account.expect("account is not set"),
             base_account: self.base_account.expect("base_account is not set"),
@@ -165,26 +159,26 @@ impl AssignWithSeedBuilder {
 
 /// `assign_with_seed` CPI accounts.
 pub struct AssignWithSeedCpiAccounts<'a, 'b> {
-    pub account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub base_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub base_account: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `assign_with_seed` CPI instruction.
 pub struct AssignWithSeedCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub base_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub base_account: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: AssignWithSeedInstructionArgs,
 }
 
 impl<'a, 'b> AssignWithSeedCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: AssignWithSeedCpiAccounts<'a, 'b>,
         args: AssignWithSeedInstructionArgs,
     ) -> Self {
@@ -196,25 +190,21 @@ impl<'a, 'b> AssignWithSeedCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -223,23 +213,19 @@ impl<'a, 'b> AssignWithSeedCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.base_account.key,
             true,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -249,7 +235,7 @@ impl<'a, 'b> AssignWithSeedCpi<'a, 'b> {
         let mut args = borsh::to_vec(&self.__args).unwrap();
         data.append(&mut args);
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::SYSTEM_ID,
             accounts,
             data,
@@ -263,9 +249,9 @@ impl<'a, 'b> AssignWithSeedCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -282,7 +268,7 @@ pub struct AssignWithSeedCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> AssignWithSeedCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(AssignWithSeedCpiBuilderInstruction {
             __program: program,
             account: None,
@@ -295,17 +281,14 @@ impl<'a, 'b> AssignWithSeedCpiBuilder<'a, 'b> {
         Self { instruction }
     }
     #[inline(always)]
-    pub fn account(
-        &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn account(&mut self, account: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.account = Some(account);
         self
     }
     #[inline(always)]
     pub fn base_account(
         &mut self,
-        base_account: &'b solana_program::account_info::AccountInfo<'a>,
+        base_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.base_account = Some(base_account);
         self
@@ -329,7 +312,7 @@ impl<'a, 'b> AssignWithSeedCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -345,11 +328,7 @@ impl<'a, 'b> AssignWithSeedCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -357,7 +336,7 @@ impl<'a, 'b> AssignWithSeedCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -365,7 +344,7 @@ impl<'a, 'b> AssignWithSeedCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let args = AssignWithSeedInstructionArgs {
             base: self.instruction.base.clone().expect("base is not set"),
             seed: self.instruction.seed.clone().expect("seed is not set"),
@@ -395,16 +374,12 @@ impl<'a, 'b> AssignWithSeedCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct AssignWithSeedCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    base_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    base_account: Option<&'b solana_account_info::AccountInfo<'a>>,
     base: Option<Pubkey>,
     seed: Option<String>,
     program_address: Option<Pubkey>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

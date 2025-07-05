@@ -39,13 +39,13 @@ pub enum SystemError {
     NonceUnexpectedBlockhashValue = 0x8,
 }
 
-impl solana_program::program_error::PrintProgramError for SystemError {
+impl solana_program_error::PrintProgramError for SystemError {
     fn print<E>(&self) {
-        solana_program::msg!(&self.to_string());
+        solana_msg::msg!(&self.to_string());
     }
 }
 
-impl<T> solana_program::decode_error::DecodeError<T> for SystemError {
+impl<T> solana_decode_error::DecodeError<T> for SystemError {
     fn type_of() -> &'static str {
         "SystemError"
     }

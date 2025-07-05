@@ -121,7 +121,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
         let inner = acct
             .account
             .as_ref()
-            .ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
+            .ok_or(solana_program_error::ProgramError::InvalidArgument)?;
         WhirlpoolProgramState::try_unpack(&inner.data)
     }
 }
