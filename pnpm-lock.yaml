@@ -148,8 +148,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/instructions':
-        specifier: 2.1.1
-        version: 2.1.1(typescript@5.8.3)
+        specifier: 2.2.0
+        version: 2.2.0(typescript@5.8.3)
     devDependencies:
       '@solana/codecs':
         specifier: 2.2.0
@@ -1486,8 +1486,8 @@ packages:
       typescript: ^5.6
       typescript-eslint: ^8.11.0
 
-  '@solana/instructions@2.1.1':
-    resolution: {integrity: sha512-Zx48hav9Lu+JuC+U0QJ8B7g7bXQZElXCjvxosIibU2C7ygDuq0ffOly0/irWJv2xmHYm6z8Hm1ILbZ5w0GhDQQ==}
+  '@solana/instructions@2.2.0':
+    resolution: {integrity: sha512-nWw+u1qzgkn7FNeUbkyz/fWdnIOyh3Q57O+a3ADl1QMDxEp2atR3ijAZ1/W69gQP3hLlBO/dsBGPMNzJ+95Hog==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
       typescript: '>=5.3.3'
@@ -4802,10 +4802,10 @@ snapshots:
       typescript: 5.8.3
       typescript-eslint: 8.16.0(eslint@9.30.1)(typescript@5.8.3)
 
-  '@solana/instructions@2.1.1(typescript@5.8.3)':
+  '@solana/instructions@2.2.0(typescript@5.8.3)':
     dependencies:
-      '@solana/codecs-core': 2.1.1(typescript@5.8.3)
-      '@solana/errors': 2.1.1(typescript@5.8.3)
+      '@solana/codecs-core': 2.2.0(typescript@5.8.3)
+      '@solana/errors': 2.2.0(typescript@5.8.3)
       typescript: 5.8.3
 
   '@solana/options@2.2.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
