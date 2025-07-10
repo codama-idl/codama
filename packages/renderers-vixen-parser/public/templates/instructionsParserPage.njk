@@ -3,6 +3,12 @@
 
 {% block main %}
 
+#[cfg(feature = "shared-data")]
+use std::sync::Arc;
+
+#[cfg(feature = "shared-data")]
+use yellowstone_vixen_core::InstructionUpdateOutput;
+
 {{ imports }}
 
 /// {{ programName | pascalCase }} Instructions
@@ -23,8 +29,13 @@ pub struct InstructionParser;
 
 impl yellowstone_vixen_core::Parser for InstructionParser {
     type Input = yellowstone_vixen_core::instruction::InstructionUpdate;
+
+    #[cfg(not(feature = "shared-data"))]
     type Output = {{ programName  | pascalCase }}ProgramIx;
 
+    #[cfg(feature = "shared-data")]
+    type Output = InstructionUpdateOutput<{{ programName  | pascalCase }}ProgramIx>;
+    
     fn id(&self) -> std::borrow::Cow<str> {
         "{{ programName  | pascalCase }}::InstructionParser".into()
     }
@@ -38,7 +49,23 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
 
     async fn parse(&self, ix_update: &yellowstone_vixen_core::instruction::InstructionUpdate) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         if ix_update.program.equals_ref(ID) {
-            InstructionParser::parse_impl(ix_update)
+            let res = InstructionParser::parse_impl(ix_update);
+
+            #[cfg(feature = "tracing")]
+            if let Err(e) = &res {
+                let ix_discriminator:[u8; {{ ixDiscLen }}] = ix_update.data[0..{{ ixDiscLen }}].try_into()?;
+
+                tracing::info!(
+                    name: "incorrectly_parsed_instruction",
+                    name = "ix_update",
+                    program = ID.to_string(),
+                    ix = "deserialization_error",
+                    discriminator = ?ix_discriminator,
+                    error = ?e
+                );
+            }
+
+            res
         } else {
             Err(yellowstone_vixen_core::ParseError::Filtered)
         }
@@ -53,37 +80,41 @@ impl yellowstone_vixen_core::ProgramParser for InstructionParser {
 }
 
 impl InstructionParser {
-    pub(crate) fn parse_impl(ix:&yellowstone_vixen_core::instruction::InstructionUpdate) -> yellowstone_vixen_core::ParseResult<{{ programName  | pascalCase }}ProgramIx> {
+    pub(crate) fn parse_impl(ix: &yellowstone_vixen_core::instruction::InstructionUpdate) -> yellowstone_vixen_core::ParseResult<<Self as yellowstone_vixen_core::Parser>::Output> {
+
         let accounts_len = ix.accounts.len();
+        let accounts = &mut ix.accounts.iter();
+
+        #[cfg(feature = "shared-data")]
+        let shared_data = Arc::clone(&ix.shared);
         
         let ix_discriminator:[u8; {{ ixDiscLen }}] = ix.data[0..{{ ixDiscLen }}].try_into()?;
-        let mut ix_data = &ix.data[{{ ixDiscLen }}..];
+        let ix_data = &ix.data[{{ ixDiscLen }}..];
             let ix = match ix_discriminator {
                 {% for instruction in instructions %}
                     {% if instruction.discriminator != null %}
                         {{ instruction.discriminator }} => {
-                            check_min_accounts_req(accounts_len, {{ instruction.accounts | length }})?;
+                            {% if instruction.totalOptionalOmittedAccounts > 0 %}
+                                let mut expected_accounts_len = {{ instruction.accounts | length - instruction.totalOptionalOmittedAccounts }};
+                            {% else %}
+                                let expected_accounts_len = {{ instruction.accounts | length }};
+                            {% endif %}
+                            check_min_accounts_req(accounts_len, expected_accounts_len)?;
                             let ix_accounts = {{ instruction.name | pascalCase }}IxAccounts{
                                 {% for account in instruction.accounts %}
                                     {% if account.isOptional %}
                                         {% if instruction.optionalAccountStrategy == 'programId' %}
-                                            {{ account.name | snakeCase }}: if ix.accounts[{{ account.index }}]
-                                                .eq(&yellowstone_vixen_core::KeyBytes::from(ID.to_bytes()))
-                                            {
-                                                None
-                                            } else {
-                                                Some(ix.accounts[{{ account.index }}].0.into())
-                                            },
+                                            {{ account.name | snakeCase }}: next_program_id_optional_account(accounts)?,
                                         {% else %}
-                                            {{ account.name | snakeCase }}: None
+                                            {{ account.name | snakeCase }}: next_optional_account(accounts, accounts_len, &mut expected_accounts_len)?,
                                         {% endif %}
                                     {% else %}
-                                        {{ account.name | snakeCase }}: ix.accounts[{{ account.index }}].0.into(),
+                                        {{ account.name | snakeCase }}: next_account(accounts)?,
                                     {% endif %}
                                 {% endfor %}
                             };
                             {% if instruction.hasArgs %}
-                                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::try_from_slice(ix_data)?;
                                 Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
                             {% else %}
                                 Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts))
@@ -116,7 +147,14 @@ impl InstructionParser {
                 },
             }
 
-            ix
+        #[cfg(not(feature = "shared-data"))]
+        return ix;
+
+        #[cfg(feature = "shared-data")]
+        ix.map(|ix| InstructionUpdateOutput {
+            parsed_ix: ix,
+            shared_data,
+        })
     }
 
 }
@@ -131,6 +169,48 @@ pub fn check_min_accounts_req(actual: usize, expected: usize) -> yellowstone_vix
     }
 }
 
+fn next_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
+    accounts: &mut T,
+) -> Result<solana_program::pubkey::Pubkey, yellowstone_vixen_core::ParseError> {
+    accounts
+        .next()
+        .ok_or(yellowstone_vixen_core::ParseError::from(
+            "No more accounts to parse",
+        ))
+        .map(|acc| acc.0.into())
+}
+
+/// Gets the next optional account using the ommited account strategy (account is not passed at all at the instruction).
+/// ### Be careful to use this function when more than one account is optional in the Instruction.
+///  Only by order there is no way to which ones of the optional accounts are present.
+pub fn next_optional_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
+    accounts: &mut T,
+    actual_accounts_len: usize,
+    expected_accounts_len: &mut usize,
+) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+    if actual_accounts_len == *expected_accounts_len + 1 {
+        *expected_accounts_len += 1;
+        Ok(Some(next_account(accounts)?))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Gets the next optional account using the traditional Program ID strategy.
+///  (If account key is the program ID, means account is not present)
+pub fn next_program_id_optional_account<
+    'a,
+    T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>,
+>(
+    accounts: &mut T,
+) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+    let account_key = next_account(accounts)?;
+    if account_key.eq(&ID) {
+        Ok(None)
+    } else {
+        Ok(Some(account_key))
+    }
+}
 
 
 // #[cfg(feature = "proto")]
@@ -200,7 +280,13 @@ mod proto_parser {
     impl ParseProto for InstructionParser {
         type Message = proto_def::ProgramIxs;
 
-        fn output_into_message(value: Self::Output) -> Self::Message { value.into_proto() }
+        fn output_into_message(value: Self::Output) -> Self::Message { 
+            #[cfg(not(feature = "shared-data"))]
+            return value.into_proto();
+
+            #[cfg(feature = "shared-data")]
+            value.parsed_ix.into_proto()
+        }
     }
 }
 

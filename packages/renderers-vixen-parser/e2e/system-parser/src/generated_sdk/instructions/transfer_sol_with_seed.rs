@@ -62,14 +62,12 @@ impl TransferSolWithSeed {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TransferSolWithSeedInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl TransferSolWithSeedInstructionData {
     pub fn new() -> Self {
-        Self {
-            discriminator: [11],
-        }
+        Self { discriminator: 11 }
     }
 }
 

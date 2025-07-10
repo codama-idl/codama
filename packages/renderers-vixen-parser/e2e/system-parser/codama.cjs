@@ -11,8 +11,7 @@ function main() {
     }
 
     const idl = readJson(path.join(__dirname, 'idl.json'));
-    let node = rootNode(idl.program);
-    node = setDiscriminatorsToFixedSize(node);
+    const node = rootNode(idl.program);
 
     visit(
         node,
@@ -24,45 +23,3 @@ function main() {
 }
 
 main();
-
-// Transform number type discriminators(not supported by vixen renderer yet) to fixed size
-function setDiscriminatorsToFixedSize(node) {
-    const instructions = node.program.instructions.map(instruction => {
-        const index = instruction.arguments.findIndex(arg => arg.name === 'discriminator');
-        const data = instruction.arguments[index].defaultValue.number;
-        if (index !== -1) {
-            instruction.arguments.splice(index, 1);
-        }
-
-        instruction.discriminators = [
-            {
-                kind: 'fieldDiscriminatorNode',
-                name: 'discriminator',
-                offset: 0,
-            },
-        ];
-
-        const discriminatorArgument = {
-            kind: 'instructionArgumentNode',
-            name: 'discriminator',
-            defaultValueStrategy: 'omitted',
-            docs: [],
-            type: {
-                kind: 'fixedSizeTypeNode',
-                size: 1,
-                type: { kind: 'bytesTypeNode' },
-            },
-            defaultValue: {
-                kind: 'bytesValueNode',
-                data: data.toString(16),
-                encoding: 'base16',
-            },
-        };
-
-        instruction.arguments.unshift(discriminatorArgument);
-
-        return instruction;
-    });
-
-    return { ...node, program: { ...node.program, instructions } };
-}

@@ -56,12 +56,12 @@ impl AuthorizeNonceAccount {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AuthorizeNonceAccountInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl AuthorizeNonceAccountInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [7] }
+        Self { discriminator: 7 }
     }
 }
 

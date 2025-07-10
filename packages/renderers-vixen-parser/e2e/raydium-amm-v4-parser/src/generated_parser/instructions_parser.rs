@@ -5,6 +5,12 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+#[cfg(feature = "shared-data")]
+use std::sync::Arc;
+
+#[cfg(feature = "shared-data")]
+use yellowstone_vixen_core::InstructionUpdateOutput;
+
 use crate::instructions::{
     AdminCancelOrders as AdminCancelOrdersIxAccounts,
     AdminCancelOrdersInstructionArgs as AdminCancelOrdersIxData,
@@ -55,7 +61,12 @@ pub struct InstructionParser;
 
 impl yellowstone_vixen_core::Parser for InstructionParser {
     type Input = yellowstone_vixen_core::instruction::InstructionUpdate;
+
+    #[cfg(not(feature = "shared-data"))]
     type Output = RaydiumAmmProgramIx;
+
+    #[cfg(feature = "shared-data")]
+    type Output = InstructionUpdateOutput<RaydiumAmmProgramIx>;
 
     fn id(&self) -> std::borrow::Cow<str> {
         "RaydiumAmm::InstructionParser".into()
@@ -73,7 +84,23 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
         ix_update: &yellowstone_vixen_core::instruction::InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         if ix_update.program.equals_ref(ID) {
-            InstructionParser::parse_impl(ix_update)
+            let res = InstructionParser::parse_impl(ix_update);
+
+            #[cfg(feature = "tracing")]
+            if let Err(e) = &res {
+                let ix_discriminator: [u8; 1] = ix_update.data[0..1].try_into()?;
+
+                tracing::info!(
+                    name: "incorrectly_parsed_instruction",
+                    name = "ix_update",
+                    program = ID.to_string(),
+                    ix = "deserialization_error",
+                    discriminator = ?ix_discriminator,
+                    error = ?e
+                );
+            }
+
+            res
         } else {
             Err(yellowstone_vixen_core::ParseError::Filtered)
         }
@@ -90,360 +117,388 @@ impl yellowstone_vixen_core::ProgramParser for InstructionParser {
 impl InstructionParser {
     pub(crate) fn parse_impl(
         ix: &yellowstone_vixen_core::instruction::InstructionUpdate,
-    ) -> yellowstone_vixen_core::ParseResult<RaydiumAmmProgramIx> {
+    ) -> yellowstone_vixen_core::ParseResult<<Self as yellowstone_vixen_core::Parser>::Output> {
         let accounts_len = ix.accounts.len();
+        let accounts = &mut ix.accounts.iter();
+
+        #[cfg(feature = "shared-data")]
+        let shared_data = Arc::clone(&ix.shared);
 
         let ix_discriminator: [u8; 1] = ix.data[0..1].try_into()?;
-        let mut ix_data = &ix.data[1..];
+        let ix_data = &ix.data[1..];
         let ix = match ix_discriminator {
             [0] => {
-                check_min_accounts_req(accounts_len, 18)?;
+                let expected_accounts_len = 18;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = InitializeIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    system_program: ix.accounts[1].0.into(),
-                    rent: ix.accounts[2].0.into(),
-                    amm: ix.accounts[3].0.into(),
-                    amm_authority: ix.accounts[4].0.into(),
-                    amm_open_orders: ix.accounts[5].0.into(),
-                    lp_mint_address: ix.accounts[6].0.into(),
-                    coin_mint_address: ix.accounts[7].0.into(),
-                    pc_mint_address: ix.accounts[8].0.into(),
-                    pool_coin_token_account: ix.accounts[9].0.into(),
-                    pool_pc_token_account: ix.accounts[10].0.into(),
-                    pool_withdraw_queue: ix.accounts[11].0.into(),
-                    pool_target_orders_account: ix.accounts[12].0.into(),
-                    user_lp_token_account: ix.accounts[13].0.into(),
-                    pool_temp_lp_token_account: ix.accounts[14].0.into(),
-                    serum_program: ix.accounts[15].0.into(),
-                    serum_market: ix.accounts[16].0.into(),
-                    user_wallet: ix.accounts[17].0.into(),
+                    token_program: next_account(accounts)?,
+                    system_program: next_account(accounts)?,
+                    rent: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    lp_mint_address: next_account(accounts)?,
+                    coin_mint_address: next_account(accounts)?,
+                    pc_mint_address: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    pool_withdraw_queue: next_account(accounts)?,
+                    pool_target_orders_account: next_account(accounts)?,
+                    user_lp_token_account: next_account(accounts)?,
+                    pool_temp_lp_token_account: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    user_wallet: next_account(accounts)?,
                 };
-                let de_ix_data: InitializeIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: InitializeIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::Initialize(ix_accounts, de_ix_data))
             }
             [1] => {
-                check_min_accounts_req(accounts_len, 21)?;
+                let expected_accounts_len = 21;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = Initialize2IxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    spl_associated_token_account: ix.accounts[1].0.into(),
-                    system_program: ix.accounts[2].0.into(),
-                    rent: ix.accounts[3].0.into(),
-                    amm: ix.accounts[4].0.into(),
-                    amm_authority: ix.accounts[5].0.into(),
-                    amm_open_orders: ix.accounts[6].0.into(),
-                    lp_mint: ix.accounts[7].0.into(),
-                    coin_mint: ix.accounts[8].0.into(),
-                    pc_mint: ix.accounts[9].0.into(),
-                    pool_coin_token_account: ix.accounts[10].0.into(),
-                    pool_pc_token_account: ix.accounts[11].0.into(),
-                    pool_withdraw_queue: ix.accounts[12].0.into(),
-                    amm_target_orders: ix.accounts[13].0.into(),
-                    pool_temp_lp: ix.accounts[14].0.into(),
-                    serum_program: ix.accounts[15].0.into(),
-                    serum_market: ix.accounts[16].0.into(),
-                    user_wallet: ix.accounts[17].0.into(),
-                    user_token_coin: ix.accounts[18].0.into(),
-                    user_token_pc: ix.accounts[19].0.into(),
-                    user_lp_token_account: ix.accounts[20].0.into(),
+                    token_program: next_account(accounts)?,
+                    spl_associated_token_account: next_account(accounts)?,
+                    system_program: next_account(accounts)?,
+                    rent: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    lp_mint: next_account(accounts)?,
+                    coin_mint: next_account(accounts)?,
+                    pc_mint: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    pool_withdraw_queue: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    pool_temp_lp: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    user_wallet: next_account(accounts)?,
+                    user_token_coin: next_account(accounts)?,
+                    user_token_pc: next_account(accounts)?,
+                    user_lp_token_account: next_account(accounts)?,
                 };
-                let de_ix_data: Initialize2IxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: Initialize2IxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::Initialize2(ix_accounts, de_ix_data))
             }
             [2] => {
-                check_min_accounts_req(accounts_len, 19)?;
+                let expected_accounts_len = 19;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = MonitorStepIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    rent: ix.accounts[1].0.into(),
-                    clock: ix.accounts[2].0.into(),
-                    amm: ix.accounts[3].0.into(),
-                    amm_authority: ix.accounts[4].0.into(),
-                    amm_open_orders: ix.accounts[5].0.into(),
-                    amm_target_orders: ix.accounts[6].0.into(),
-                    pool_coin_token_account: ix.accounts[7].0.into(),
-                    pool_pc_token_account: ix.accounts[8].0.into(),
-                    pool_withdraw_queue: ix.accounts[9].0.into(),
-                    serum_program: ix.accounts[10].0.into(),
-                    serum_market: ix.accounts[11].0.into(),
-                    serum_coin_vault_account: ix.accounts[12].0.into(),
-                    serum_pc_vault_account: ix.accounts[13].0.into(),
-                    serum_vault_signer: ix.accounts[14].0.into(),
-                    serum_req_q: ix.accounts[15].0.into(),
-                    serum_event_q: ix.accounts[16].0.into(),
-                    serum_bids: ix.accounts[17].0.into(),
-                    serum_asks: ix.accounts[18].0.into(),
+                    token_program: next_account(accounts)?,
+                    rent: next_account(accounts)?,
+                    clock: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    pool_withdraw_queue: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_coin_vault_account: next_account(accounts)?,
+                    serum_pc_vault_account: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
+                    serum_req_q: next_account(accounts)?,
+                    serum_event_q: next_account(accounts)?,
+                    serum_bids: next_account(accounts)?,
+                    serum_asks: next_account(accounts)?,
                 };
-                let de_ix_data: MonitorStepIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: MonitorStepIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::MonitorStep(ix_accounts, de_ix_data))
             }
             [3] => {
-                check_min_accounts_req(accounts_len, 14)?;
+                let expected_accounts_len = 14;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = DepositIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_authority: ix.accounts[2].0.into(),
-                    amm_open_orders: ix.accounts[3].0.into(),
-                    amm_target_orders: ix.accounts[4].0.into(),
-                    lp_mint_address: ix.accounts[5].0.into(),
-                    pool_coin_token_account: ix.accounts[6].0.into(),
-                    pool_pc_token_account: ix.accounts[7].0.into(),
-                    serum_market: ix.accounts[8].0.into(),
-                    user_coin_token_account: ix.accounts[9].0.into(),
-                    user_pc_token_account: ix.accounts[10].0.into(),
-                    user_lp_token_account: ix.accounts[11].0.into(),
-                    user_owner: ix.accounts[12].0.into(),
-                    serum_event_queue: ix.accounts[13].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    lp_mint_address: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    user_coin_token_account: next_account(accounts)?,
+                    user_pc_token_account: next_account(accounts)?,
+                    user_lp_token_account: next_account(accounts)?,
+                    user_owner: next_account(accounts)?,
+                    serum_event_queue: next_account(accounts)?,
                 };
-                let de_ix_data: DepositIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: DepositIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::Deposit(ix_accounts, de_ix_data))
             }
             [4] => {
-                check_min_accounts_req(accounts_len, 22)?;
+                let expected_accounts_len = 22;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = WithdrawIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_authority: ix.accounts[2].0.into(),
-                    amm_open_orders: ix.accounts[3].0.into(),
-                    amm_target_orders: ix.accounts[4].0.into(),
-                    lp_mint_address: ix.accounts[5].0.into(),
-                    pool_coin_token_account: ix.accounts[6].0.into(),
-                    pool_pc_token_account: ix.accounts[7].0.into(),
-                    pool_withdraw_queue: ix.accounts[8].0.into(),
-                    pool_temp_lp_token_account: ix.accounts[9].0.into(),
-                    serum_program: ix.accounts[10].0.into(),
-                    serum_market: ix.accounts[11].0.into(),
-                    serum_coin_vault_account: ix.accounts[12].0.into(),
-                    serum_pc_vault_account: ix.accounts[13].0.into(),
-                    serum_vault_signer: ix.accounts[14].0.into(),
-                    user_lp_token_account: ix.accounts[15].0.into(),
-                    uer_coin_token_account: ix.accounts[16].0.into(),
-                    uer_pc_token_account: ix.accounts[17].0.into(),
-                    user_owner: ix.accounts[18].0.into(),
-                    serum_event_q: ix.accounts[19].0.into(),
-                    serum_bids: ix.accounts[20].0.into(),
-                    serum_asks: ix.accounts[21].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    lp_mint_address: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    pool_withdraw_queue: next_account(accounts)?,
+                    pool_temp_lp_token_account: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_coin_vault_account: next_account(accounts)?,
+                    serum_pc_vault_account: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
+                    user_lp_token_account: next_account(accounts)?,
+                    uer_coin_token_account: next_account(accounts)?,
+                    uer_pc_token_account: next_account(accounts)?,
+                    user_owner: next_account(accounts)?,
+                    serum_event_q: next_account(accounts)?,
+                    serum_bids: next_account(accounts)?,
+                    serum_asks: next_account(accounts)?,
                 };
-                let de_ix_data: WithdrawIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: WithdrawIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::Withdraw(ix_accounts, de_ix_data))
             }
             [5] => {
-                check_min_accounts_req(accounts_len, 21)?;
+                let expected_accounts_len = 21;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = MigrateToOpenBookIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    system_program: ix.accounts[1].0.into(),
-                    rent: ix.accounts[2].0.into(),
-                    amm: ix.accounts[3].0.into(),
-                    amm_authority: ix.accounts[4].0.into(),
-                    amm_open_orders: ix.accounts[5].0.into(),
-                    amm_token_coin: ix.accounts[6].0.into(),
-                    amm_token_pc: ix.accounts[7].0.into(),
-                    amm_target_orders: ix.accounts[8].0.into(),
-                    serum_program: ix.accounts[9].0.into(),
-                    serum_market: ix.accounts[10].0.into(),
-                    serum_bids: ix.accounts[11].0.into(),
-                    serum_asks: ix.accounts[12].0.into(),
-                    serum_event_queue: ix.accounts[13].0.into(),
-                    serum_coin_vault: ix.accounts[14].0.into(),
-                    serum_pc_vault: ix.accounts[15].0.into(),
-                    serum_vault_signer: ix.accounts[16].0.into(),
-                    new_amm_open_orders: ix.accounts[17].0.into(),
-                    new_serum_program: ix.accounts[18].0.into(),
-                    new_serum_market: ix.accounts[19].0.into(),
-                    admin: ix.accounts[20].0.into(),
+                    token_program: next_account(accounts)?,
+                    system_program: next_account(accounts)?,
+                    rent: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_token_coin: next_account(accounts)?,
+                    amm_token_pc: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_bids: next_account(accounts)?,
+                    serum_asks: next_account(accounts)?,
+                    serum_event_queue: next_account(accounts)?,
+                    serum_coin_vault: next_account(accounts)?,
+                    serum_pc_vault: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
+                    new_amm_open_orders: next_account(accounts)?,
+                    new_serum_program: next_account(accounts)?,
+                    new_serum_market: next_account(accounts)?,
+                    admin: next_account(accounts)?,
                 };
                 Ok(RaydiumAmmProgramIx::MigrateToOpenBook(ix_accounts))
             }
             [6] => {
-                check_min_accounts_req(accounts_len, 16)?;
+                let expected_accounts_len = 16;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = SetParamsIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_authority: ix.accounts[2].0.into(),
-                    amm_open_orders: ix.accounts[3].0.into(),
-                    amm_target_orders: ix.accounts[4].0.into(),
-                    amm_coin_vault: ix.accounts[5].0.into(),
-                    amm_pc_vault: ix.accounts[6].0.into(),
-                    serum_program: ix.accounts[7].0.into(),
-                    serum_market: ix.accounts[8].0.into(),
-                    serum_coin_vault: ix.accounts[9].0.into(),
-                    serum_pc_vault: ix.accounts[10].0.into(),
-                    serum_vault_signer: ix.accounts[11].0.into(),
-                    serum_event_queue: ix.accounts[12].0.into(),
-                    serum_bids: ix.accounts[13].0.into(),
-                    serum_asks: ix.accounts[14].0.into(),
-                    amm_admin_account: ix.accounts[15].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    amm_coin_vault: next_account(accounts)?,
+                    amm_pc_vault: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_coin_vault: next_account(accounts)?,
+                    serum_pc_vault: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
+                    serum_event_queue: next_account(accounts)?,
+                    serum_bids: next_account(accounts)?,
+                    serum_asks: next_account(accounts)?,
+                    amm_admin_account: next_account(accounts)?,
                 };
-                let de_ix_data: SetParamsIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: SetParamsIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::SetParams(ix_accounts, de_ix_data))
             }
             [7] => {
-                check_min_accounts_req(accounts_len, 17)?;
+                let expected_accounts_len = 17;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = WithdrawPnlIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_config: ix.accounts[2].0.into(),
-                    amm_authority: ix.accounts[3].0.into(),
-                    amm_open_orders: ix.accounts[4].0.into(),
-                    pool_coin_token_account: ix.accounts[5].0.into(),
-                    pool_pc_token_account: ix.accounts[6].0.into(),
-                    coin_pnl_token_account: ix.accounts[7].0.into(),
-                    pc_pnl_token_account: ix.accounts[8].0.into(),
-                    pnl_owner_account: ix.accounts[9].0.into(),
-                    amm_target_orders: ix.accounts[10].0.into(),
-                    serum_program: ix.accounts[11].0.into(),
-                    serum_market: ix.accounts[12].0.into(),
-                    serum_event_queue: ix.accounts[13].0.into(),
-                    serum_coin_vault_account: ix.accounts[14].0.into(),
-                    serum_pc_vault_account: ix.accounts[15].0.into(),
-                    serum_vault_signer: ix.accounts[16].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_config: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    coin_pnl_token_account: next_account(accounts)?,
+                    pc_pnl_token_account: next_account(accounts)?,
+                    pnl_owner_account: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_event_queue: next_account(accounts)?,
+                    serum_coin_vault_account: next_account(accounts)?,
+                    serum_pc_vault_account: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
                 };
                 Ok(RaydiumAmmProgramIx::WithdrawPnl(ix_accounts))
             }
             [8] => {
-                check_min_accounts_req(accounts_len, 6)?;
+                let expected_accounts_len = 6;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = WithdrawSrmIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_owner_account: ix.accounts[2].0.into(),
-                    amm_authority: ix.accounts[3].0.into(),
-                    srm_token: ix.accounts[4].0.into(),
-                    dest_srm_token: ix.accounts[5].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_owner_account: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    srm_token: next_account(accounts)?,
+                    dest_srm_token: next_account(accounts)?,
                 };
-                let de_ix_data: WithdrawSrmIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: WithdrawSrmIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::WithdrawSrm(ix_accounts, de_ix_data))
             }
             [9] => {
-                check_min_accounts_req(accounts_len, 18)?;
+                let mut expected_accounts_len = 17;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = SwapBaseInIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_authority: ix.accounts[2].0.into(),
-                    amm_open_orders: ix.accounts[3].0.into(),
-                    amm_target_orders: ix.accounts[4].0.into(),
-                    pool_coin_token_account: ix.accounts[5].0.into(),
-                    pool_pc_token_account: ix.accounts[6].0.into(),
-                    serum_program: ix.accounts[7].0.into(),
-                    serum_market: ix.accounts[8].0.into(),
-                    serum_bids: ix.accounts[9].0.into(),
-                    serum_asks: ix.accounts[10].0.into(),
-                    serum_event_queue: ix.accounts[11].0.into(),
-                    serum_coin_vault_account: ix.accounts[12].0.into(),
-                    serum_pc_vault_account: ix.accounts[13].0.into(),
-                    serum_vault_signer: ix.accounts[14].0.into(),
-                    uer_source_token_account: ix.accounts[15].0.into(),
-                    uer_destination_token_account: ix.accounts[16].0.into(),
-                    user_source_owner: ix.accounts[17].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_target_orders: next_optional_account(
+                        accounts,
+                        accounts_len,
+                        &mut expected_accounts_len,
+                    )?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_bids: next_account(accounts)?,
+                    serum_asks: next_account(accounts)?,
+                    serum_event_queue: next_account(accounts)?,
+                    serum_coin_vault_account: next_account(accounts)?,
+                    serum_pc_vault_account: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
+                    uer_source_token_account: next_account(accounts)?,
+                    uer_destination_token_account: next_account(accounts)?,
+                    user_source_owner: next_account(accounts)?,
                 };
-                let de_ix_data: SwapBaseInIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: SwapBaseInIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::SwapBaseIn(ix_accounts, de_ix_data))
             }
             [10] => {
-                check_min_accounts_req(accounts_len, 14)?;
+                let expected_accounts_len = 14;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = PreInitializeIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    system_program: ix.accounts[1].0.into(),
-                    rent: ix.accounts[2].0.into(),
-                    amm_target_orders: ix.accounts[3].0.into(),
-                    pool_withdraw_queue: ix.accounts[4].0.into(),
-                    amm_authority: ix.accounts[5].0.into(),
-                    lp_mint_address: ix.accounts[6].0.into(),
-                    coin_mint_address: ix.accounts[7].0.into(),
-                    pc_mint_address: ix.accounts[8].0.into(),
-                    pool_coin_token_account: ix.accounts[9].0.into(),
-                    pool_pc_token_account: ix.accounts[10].0.into(),
-                    pool_temp_lp_token_account: ix.accounts[11].0.into(),
-                    serum_market: ix.accounts[12].0.into(),
-                    user_wallet: ix.accounts[13].0.into(),
+                    token_program: next_account(accounts)?,
+                    system_program: next_account(accounts)?,
+                    rent: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    pool_withdraw_queue: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    lp_mint_address: next_account(accounts)?,
+                    coin_mint_address: next_account(accounts)?,
+                    pc_mint_address: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    pool_temp_lp_token_account: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    user_wallet: next_account(accounts)?,
                 };
-                let de_ix_data: PreInitializeIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: PreInitializeIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::PreInitialize(ix_accounts, de_ix_data))
             }
             [11] => {
-                check_min_accounts_req(accounts_len, 18)?;
+                let mut expected_accounts_len = 17;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = SwapBaseOutIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_authority: ix.accounts[2].0.into(),
-                    amm_open_orders: ix.accounts[3].0.into(),
-                    amm_target_orders: ix.accounts[4].0.into(),
-                    pool_coin_token_account: ix.accounts[5].0.into(),
-                    pool_pc_token_account: ix.accounts[6].0.into(),
-                    serum_program: ix.accounts[7].0.into(),
-                    serum_market: ix.accounts[8].0.into(),
-                    serum_bids: ix.accounts[9].0.into(),
-                    serum_asks: ix.accounts[10].0.into(),
-                    serum_event_queue: ix.accounts[11].0.into(),
-                    serum_coin_vault_account: ix.accounts[12].0.into(),
-                    serum_pc_vault_account: ix.accounts[13].0.into(),
-                    serum_vault_signer: ix.accounts[14].0.into(),
-                    uer_source_token_account: ix.accounts[15].0.into(),
-                    uer_destination_token_account: ix.accounts[16].0.into(),
-                    user_source_owner: ix.accounts[17].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_target_orders: next_optional_account(
+                        accounts,
+                        accounts_len,
+                        &mut expected_accounts_len,
+                    )?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_bids: next_account(accounts)?,
+                    serum_asks: next_account(accounts)?,
+                    serum_event_queue: next_account(accounts)?,
+                    serum_coin_vault_account: next_account(accounts)?,
+                    serum_pc_vault_account: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
+                    uer_source_token_account: next_account(accounts)?,
+                    uer_destination_token_account: next_account(accounts)?,
+                    user_source_owner: next_account(accounts)?,
                 };
-                let de_ix_data: SwapBaseOutIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: SwapBaseOutIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::SwapBaseOut(ix_accounts, de_ix_data))
             }
             [12] => {
-                check_min_accounts_req(accounts_len, 8)?;
+                let expected_accounts_len = 8;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = SimulateInfoIxAccounts {
-                    amm: ix.accounts[0].0.into(),
-                    amm_authority: ix.accounts[1].0.into(),
-                    amm_open_orders: ix.accounts[2].0.into(),
-                    pool_coin_token_account: ix.accounts[3].0.into(),
-                    pool_pc_token_account: ix.accounts[4].0.into(),
-                    lp_mint_address: ix.accounts[5].0.into(),
-                    serum_market: ix.accounts[6].0.into(),
-                    serum_event_queue: ix.accounts[7].0.into(),
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    lp_mint_address: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_event_queue: next_account(accounts)?,
                 };
-                let de_ix_data: SimulateInfoIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: SimulateInfoIxData = BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::SimulateInfo(ix_accounts, de_ix_data))
             }
             [13] => {
-                check_min_accounts_req(accounts_len, 17)?;
+                let expected_accounts_len = 17;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = AdminCancelOrdersIxAccounts {
-                    token_program: ix.accounts[0].0.into(),
-                    amm: ix.accounts[1].0.into(),
-                    amm_authority: ix.accounts[2].0.into(),
-                    amm_open_orders: ix.accounts[3].0.into(),
-                    amm_target_orders: ix.accounts[4].0.into(),
-                    pool_coin_token_account: ix.accounts[5].0.into(),
-                    pool_pc_token_account: ix.accounts[6].0.into(),
-                    amm_owner_account: ix.accounts[7].0.into(),
-                    amm_config: ix.accounts[8].0.into(),
-                    serum_program: ix.accounts[9].0.into(),
-                    serum_market: ix.accounts[10].0.into(),
-                    serum_coin_vault_account: ix.accounts[11].0.into(),
-                    serum_pc_vault_account: ix.accounts[12].0.into(),
-                    serum_vault_signer: ix.accounts[13].0.into(),
-                    serum_event_q: ix.accounts[14].0.into(),
-                    serum_bids: ix.accounts[15].0.into(),
-                    serum_asks: ix.accounts[16].0.into(),
+                    token_program: next_account(accounts)?,
+                    amm: next_account(accounts)?,
+                    amm_authority: next_account(accounts)?,
+                    amm_open_orders: next_account(accounts)?,
+                    amm_target_orders: next_account(accounts)?,
+                    pool_coin_token_account: next_account(accounts)?,
+                    pool_pc_token_account: next_account(accounts)?,
+                    amm_owner_account: next_account(accounts)?,
+                    amm_config: next_account(accounts)?,
+                    serum_program: next_account(accounts)?,
+                    serum_market: next_account(accounts)?,
+                    serum_coin_vault_account: next_account(accounts)?,
+                    serum_pc_vault_account: next_account(accounts)?,
+                    serum_vault_signer: next_account(accounts)?,
+                    serum_event_q: next_account(accounts)?,
+                    serum_bids: next_account(accounts)?,
+                    serum_asks: next_account(accounts)?,
                 };
                 let de_ix_data: AdminCancelOrdersIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::AdminCancelOrders(
                     ix_accounts,
                     de_ix_data,
                 ))
             }
             [14] => {
-                check_min_accounts_req(accounts_len, 5)?;
+                let expected_accounts_len = 5;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = CreateConfigAccountIxAccounts {
-                    admin: ix.accounts[0].0.into(),
-                    amm_config: ix.accounts[1].0.into(),
-                    owner: ix.accounts[2].0.into(),
-                    system_program: ix.accounts[3].0.into(),
-                    rent: ix.accounts[4].0.into(),
+                    admin: next_account(accounts)?,
+                    amm_config: next_account(accounts)?,
+                    owner: next_account(accounts)?,
+                    system_program: next_account(accounts)?,
+                    rent: next_account(accounts)?,
                 };
                 Ok(RaydiumAmmProgramIx::CreateConfigAccount(ix_accounts))
             }
             [15] => {
-                check_min_accounts_req(accounts_len, 2)?;
+                let expected_accounts_len = 2;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = UpdateConfigAccountIxAccounts {
-                    admin: ix.accounts[0].0.into(),
-                    amm_config: ix.accounts[1].0.into(),
+                    admin: next_account(accounts)?,
+                    amm_config: next_account(accounts)?,
                 };
                 let de_ix_data: UpdateConfigAccountIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    BorshDeserialize::try_from_slice(ix_data)?;
                 Ok(RaydiumAmmProgramIx::UpdateConfigAccount(
                     ix_accounts,
                     de_ix_data,
@@ -476,7 +531,14 @@ impl InstructionParser {
             }
         }
 
-        ix
+        #[cfg(not(feature = "shared-data"))]
+        return ix;
+
+        #[cfg(feature = "shared-data")]
+        ix.map(|ix| InstructionUpdateOutput {
+            parsed_ix: ix,
+            shared_data,
+        })
     }
 }
 
@@ -490,6 +552,49 @@ pub fn check_min_accounts_req(
         )))
     } else {
         Ok(())
+    }
+}
+
+fn next_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
+    accounts: &mut T,
+) -> Result<solana_program::pubkey::Pubkey, yellowstone_vixen_core::ParseError> {
+    accounts
+        .next()
+        .ok_or(yellowstone_vixen_core::ParseError::from(
+            "No more accounts to parse",
+        ))
+        .map(|acc| acc.0.into())
+}
+
+/// Gets the next optional account using the ommited account strategy (account is not passed at all at the instruction).
+/// ### Be careful to use this function when more than one account is optional in the Instruction.
+///  Only by order there is no way to which ones of the optional accounts are present.
+pub fn next_optional_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
+    accounts: &mut T,
+    actual_accounts_len: usize,
+    expected_accounts_len: &mut usize,
+) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+    if actual_accounts_len == *expected_accounts_len + 1 {
+        *expected_accounts_len += 1;
+        Ok(Some(next_account(accounts)?))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Gets the next optional account using the traditional Program ID strategy.
+///  (If account key is the program ID, means account is not present)
+pub fn next_program_id_optional_account<
+    'a,
+    T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>,
+>(
+    accounts: &mut T,
+) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+    let account_key = next_account(accounts)?;
+    if account_key.eq(&ID) {
+        Ok(None)
+    } else {
+        Ok(Some(account_key))
     }
 }
 
@@ -793,7 +898,7 @@ mod proto_parser {
                 amm: self.amm.to_string(),
                 amm_authority: self.amm_authority.to_string(),
                 amm_open_orders: self.amm_open_orders.to_string(),
-                amm_target_orders: self.amm_target_orders.to_string(),
+                amm_target_orders: self.amm_target_orders.map(|p| p.to_string()),
                 pool_coin_token_account: self.pool_coin_token_account.to_string(),
                 pool_pc_token_account: self.pool_pc_token_account.to_string(),
                 serum_program: self.serum_program.to_string(),
@@ -856,7 +961,7 @@ mod proto_parser {
                 amm: self.amm.to_string(),
                 amm_authority: self.amm_authority.to_string(),
                 amm_open_orders: self.amm_open_orders.to_string(),
-                amm_target_orders: self.amm_target_orders.to_string(),
+                amm_target_orders: self.amm_target_orders.map(|p| p.to_string()),
                 pool_coin_token_account: self.pool_coin_token_account.to_string(),
                 pool_pc_token_account: self.pool_pc_token_account.to_string(),
                 serum_program: self.serum_program.to_string(),
@@ -1106,7 +1211,11 @@ mod proto_parser {
         type Message = proto_def::ProgramIxs;
 
         fn output_into_message(value: Self::Output) -> Self::Message {
-            value.into_proto()
+            #[cfg(not(feature = "shared-data"))]
+            return value.into_proto();
+
+            #[cfg(feature = "shared-data")]
+            value.parsed_ix.into_proto()
         }
     }
 }

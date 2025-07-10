@@ -10,6 +10,8 @@ use crate::accounts::AmmInfo;
 use crate::accounts::TargetOrders;
 use crate::ID;
 
+use borsh::BorshDeserialize;
+
 /// RaydiumAmm Program State
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
@@ -29,14 +31,14 @@ impl RaydiumAmmProgramState {
 
         let acc = match data_len {
             TARGETORDERS_LEN => Ok(RaydiumAmmProgramState::TargetOrders(
-                TargetOrders::from_bytes(data_bytes)?,
+                TargetOrders::try_from_slice(data_bytes)?,
             )),
-            AMMINFO_LEN => Ok(RaydiumAmmProgramState::AmmInfo(AmmInfo::from_bytes(
+            AMMINFO_LEN => Ok(RaydiumAmmProgramState::AmmInfo(AmmInfo::try_from_slice(
                 data_bytes,
             )?)),
-            AMMCONFIG_LEN => Ok(RaydiumAmmProgramState::AmmConfig(AmmConfig::from_bytes(
-                data_bytes,
-            )?)),
+            AMMCONFIG_LEN => Ok(RaydiumAmmProgramState::AmmConfig(
+                AmmConfig::try_from_slice(data_bytes)?,
+            )),
             _ => Err(yellowstone_vixen_core::ParseError::from(
                 "Invalid Account data length".to_owned(),
             )),
@@ -94,7 +96,22 @@ impl yellowstone_vixen_core::Parser for AccountParser {
             .account
             .as_ref()
             .ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-        RaydiumAmmProgramState::try_unpack(&inner.data)
+        let res = RaydiumAmmProgramState::try_unpack(&inner.data);
+
+        #[cfg(feature = "tracing")]
+        if let Err(e) = &res {
+            let data_len = inner.data.len();
+            tracing::info!(
+                name: "incorrectly_parsed_account",
+                name = "account_update",
+                program = ID.to_string(),
+                account = "deserialization_error",
+                data_len = ?data_len,
+                error = ?e
+            );
+        }
+
+        res
     }
 }
 
