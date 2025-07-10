@@ -75,8 +75,8 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.0.12)(happy-dom@18.0.1)
       zx:
-        specifier: ^8.6.1
-        version: 8.6.1
+        specifier: ^8.6.2
+        version: 8.6.2
 
   packages/cli:
     dependencies:
@@ -3691,8 +3691,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zx@8.6.1:
-    resolution: {integrity: sha512-ig4Gn2e3L9QaQq3OsyDyGKvXFiq7wYvLCPmFJgcneHsr5vTeJefe0SXtDE7qaur9ysv7giAc0CmEtQcS71UA5Q==}
+  zx@8.6.2:
+    resolution: {integrity: sha512-XaDuxcYmfnGFEYFkm1d4/709FmT7mkRgzzWjrkQMb2S5gi+bt0zroZTwjN29ffxxM5PZIkxWgMzXRBZSBRvYwg==}
     engines: {node: '>= 12.17.0'}
     hasBin: true
 
@@ -7236,4 +7236,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zx@8.6.1: {}
+  zx@8.6.2: {}
