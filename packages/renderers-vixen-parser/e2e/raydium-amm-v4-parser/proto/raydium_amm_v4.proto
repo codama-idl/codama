@@ -457,7 +457,7 @@ message SwapBaseInIxAccounts {
 	string amm = 2;
 	string amm_authority = 3;
 	string amm_open_orders = 4;
-	string amm_target_orders = 5;
+	optional string amm_target_orders = 5;
 	string pool_coin_token_account = 6;
 	string pool_pc_token_account = 7;
 	string serum_program = 8;
@@ -504,7 +504,7 @@ message SwapBaseOutIxAccounts {
 	string amm = 2;
 	string amm_authority = 3;
 	string amm_open_orders = 4;
-	string amm_target_orders = 5;
+	optional string amm_target_orders = 5;
 	string pool_coin_token_account = 6;
 	string pool_pc_token_account = 7;
 	string serum_program = 8;

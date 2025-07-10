@@ -73,12 +73,12 @@ impl WithdrawNonceAccount {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct WithdrawNonceAccountInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl WithdrawNonceAccountInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [5] }
+        Self { discriminator: 5 }
     }
 }
 

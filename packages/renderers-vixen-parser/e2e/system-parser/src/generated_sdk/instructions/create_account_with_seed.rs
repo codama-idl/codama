@@ -61,12 +61,12 @@ impl CreateAccountWithSeed {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CreateAccountWithSeedInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl CreateAccountWithSeedInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [3] }
+        Self { discriminator: 3 }
     }
 }
 

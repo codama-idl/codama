@@ -55,12 +55,12 @@ impl TransferSol {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TransferSolInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl TransferSolInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [2] }
+        Self { discriminator: 2 }
     }
 }
 

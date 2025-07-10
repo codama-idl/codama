@@ -56,12 +56,12 @@ impl AllocateWithSeed {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AllocateWithSeedInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl AllocateWithSeedInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [9] }
+        Self { discriminator: 9 }
     }
 }
 
