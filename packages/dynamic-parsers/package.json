@@ -57,7 +57,7 @@
         "@solana/instructions": "2.2.1"
     },
     "devDependencies": {
-        "@solana/codecs": "2.2.1"
+        "@solana/codecs": "2.3.0"
     },
     "license": "MIT",
     "repository": {
