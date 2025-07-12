@@ -17,7 +17,7 @@ import {
     extendVisitor,
     LinkableDictionary,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
@@ -47,10 +47,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
-        staticVisitor(
-            () => new RenderMap(),
-            ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
-        ),
+        staticVisitor(() => new RenderMap(), {
+            keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
+        }),
         v =>
             extendVisitor(v, {
                 visitDefinedType(node) {
@@ -217,7 +216,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
 

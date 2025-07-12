@@ -32,7 +32,7 @@ describe('default values', () => {
         // Then we expect the following traits to be rendered.
         expect(render).toBe(
             `#[derive(Clone, Debug, Eq, PartialEq)]\n` +
-            `#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]\n` +
+                `#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]\n` +
                 `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
         );
 

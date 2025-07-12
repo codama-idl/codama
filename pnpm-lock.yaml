@@ -303,6 +303,31 @@ importers:
         specifier: ^3.2.6
         version: 3.2.6
 
+  packages/renderers-pinocchio:
+    dependencies:
+      '@codama/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@codama/nodes':
+        specifier: workspace:*
+        version: link:../nodes
+      '@codama/renderers-core':
+        specifier: workspace:*
+        version: link:../renderers-core
+      '@codama/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+      '@solana/codecs-strings':
+        specifier: rc
+        version: 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      nunjucks:
+        specifier: ^3.2.4
+        version: 3.2.4(chokidar@3.6.0)
+    devDependencies:
+      '@types/nunjucks':
+        specifier: ^3.2.6
+        version: 3.2.6
+
   packages/renderers-rust:
     dependencies:
       '@codama/errors':
