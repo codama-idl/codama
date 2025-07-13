@@ -271,6 +271,9 @@ function getEnumVariantTransform(variant: EnumVariantTypeNode, idlDefinedTypes: 
                     if (transformWithoutSelfPrefix === fieldName) {
                         return `${acc}${transformWithoutSelfPrefix}, `;
                     }
+                    if (transformWithoutSelfPrefix === `${fieldName}.into_proto()`) {
+                        return `${acc}${fieldName}: Some(${transformWithoutSelfPrefix}), `;
+                    }
                     return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
                 }, '');
 
@@ -295,6 +298,9 @@ function getEnumVariantTransform(variant: EnumVariantTypeNode, idlDefinedTypes: 
                 const transformWithoutSelfPrefix = transform.replace(/^self\./, '');
                 if (transformWithoutSelfPrefix === fieldName) {
                     return `${acc}${transformWithoutSelfPrefix}, `;
+                }
+                if (transformWithoutSelfPrefix === `${fieldName}.into_proto()`) {
+                    return `${acc}${fieldName}: Some(${transformWithoutSelfPrefix}), `;
                 }
                 return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
             }, '');

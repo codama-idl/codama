@@ -171,7 +171,7 @@ pub fn check_min_accounts_req(actual: usize, expected: usize) -> yellowstone_vix
 
 fn next_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
     accounts: &mut T,
-) -> Result<solana_program::pubkey::Pubkey, yellowstone_vixen_core::ParseError> {
+) -> Result<solana_pubkey::Pubkey, yellowstone_vixen_core::ParseError> {
     accounts
         .next()
         .ok_or(yellowstone_vixen_core::ParseError::from(
@@ -187,7 +187,7 @@ pub fn next_optional_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::
     accounts: &mut T,
     actual_accounts_len: usize,
     expected_accounts_len: &mut usize,
-) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+) -> Result<Option<solana_pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
     if actual_accounts_len == *expected_accounts_len + 1 {
         *expected_accounts_len += 1;
         Ok(Some(next_account(accounts)?))
@@ -203,7 +203,7 @@ pub fn next_program_id_optional_account<
     T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>,
 >(
     accounts: &mut T,
-) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+) -> Result<Option<solana_pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
     let account_key = next_account(accounts)?;
     if account_key.eq(&ID) {
         Ok(None)
