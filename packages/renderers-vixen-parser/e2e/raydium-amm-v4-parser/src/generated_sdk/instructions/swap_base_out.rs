@@ -11,48 +11,45 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct SwapBaseOut {
-    pub token_program: solana_program::pubkey::Pubkey,
+    pub token_program: solana_pubkey::Pubkey,
 
-    pub amm: solana_program::pubkey::Pubkey,
+    pub amm: solana_pubkey::Pubkey,
 
-    pub amm_authority: solana_program::pubkey::Pubkey,
+    pub amm_authority: solana_pubkey::Pubkey,
 
-    pub amm_open_orders: solana_program::pubkey::Pubkey,
+    pub amm_open_orders: solana_pubkey::Pubkey,
 
-    pub amm_target_orders: Option<solana_program::pubkey::Pubkey>,
+    pub amm_target_orders: solana_pubkey::Pubkey,
 
-    pub pool_coin_token_account: solana_program::pubkey::Pubkey,
+    pub pool_coin_token_account: solana_pubkey::Pubkey,
 
-    pub pool_pc_token_account: solana_program::pubkey::Pubkey,
+    pub pool_pc_token_account: solana_pubkey::Pubkey,
 
-    pub serum_program: solana_program::pubkey::Pubkey,
+    pub serum_program: solana_pubkey::Pubkey,
 
-    pub serum_market: solana_program::pubkey::Pubkey,
+    pub serum_market: solana_pubkey::Pubkey,
 
-    pub serum_bids: solana_program::pubkey::Pubkey,
+    pub serum_bids: solana_pubkey::Pubkey,
 
-    pub serum_asks: solana_program::pubkey::Pubkey,
+    pub serum_asks: solana_pubkey::Pubkey,
 
-    pub serum_event_queue: solana_program::pubkey::Pubkey,
+    pub serum_event_queue: solana_pubkey::Pubkey,
 
-    pub serum_coin_vault_account: solana_program::pubkey::Pubkey,
+    pub serum_coin_vault_account: solana_pubkey::Pubkey,
 
-    pub serum_pc_vault_account: solana_program::pubkey::Pubkey,
+    pub serum_pc_vault_account: solana_pubkey::Pubkey,
 
-    pub serum_vault_signer: solana_program::pubkey::Pubkey,
+    pub serum_vault_signer: solana_pubkey::Pubkey,
 
-    pub uer_source_token_account: solana_program::pubkey::Pubkey,
+    pub uer_source_token_account: solana_pubkey::Pubkey,
 
-    pub uer_destination_token_account: solana_program::pubkey::Pubkey,
+    pub uer_destination_token_account: solana_pubkey::Pubkey,
 
-    pub user_source_owner: solana_program::pubkey::Pubkey,
+    pub user_source_owner: solana_pubkey::Pubkey,
 }
 
 impl SwapBaseOut {
-    pub fn instruction(
-        &self,
-        args: SwapBaseOutInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self, args: SwapBaseOutInstructionArgs) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -60,79 +57,69 @@ impl SwapBaseOut {
     pub fn instruction_with_remaining_accounts(
         &self,
         args: SwapBaseOutInstructionArgs,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(18 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.amm, false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(self.amm, false));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.amm_authority,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.amm_open_orders,
             false,
         ));
-        if let Some(amm_target_orders) = self.amm_target_orders {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                amm_target_orders,
-                false,
-            ));
-        }
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
+            self.amm_target_orders,
+            false,
+        ));
+        accounts.push(solana_instruction::AccountMeta::new(
             self.pool_coin_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.pool_pc_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.serum_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_market,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.serum_bids,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.serum_asks,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(self.serum_bids, false));
+        accounts.push(solana_instruction::AccountMeta::new(self.serum_asks, false));
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_event_queue,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_coin_vault_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_pc_vault_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.serum_vault_signer,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.uer_source_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.uer_destination_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.user_source_owner,
             true,
         ));
@@ -141,7 +128,7 @@ impl SwapBaseOut {
         let mut args = borsh::to_vec(&args).unwrap();
         data.append(&mut args);
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::RAYDIUM_AMM_ID,
             accounts,
             data,
@@ -200,27 +187,27 @@ pub struct SwapBaseOutInstructionArgs {
 ///   17. `[signer]` user_source_owner
 #[derive(Clone, Debug, Default)]
 pub struct SwapBaseOutBuilder {
-    token_program: Option<solana_program::pubkey::Pubkey>,
-    amm: Option<solana_program::pubkey::Pubkey>,
-    amm_authority: Option<solana_program::pubkey::Pubkey>,
-    amm_open_orders: Option<solana_program::pubkey::Pubkey>,
-    amm_target_orders: Option<solana_program::pubkey::Pubkey>,
-    pool_coin_token_account: Option<solana_program::pubkey::Pubkey>,
-    pool_pc_token_account: Option<solana_program::pubkey::Pubkey>,
-    serum_program: Option<solana_program::pubkey::Pubkey>,
-    serum_market: Option<solana_program::pubkey::Pubkey>,
-    serum_bids: Option<solana_program::pubkey::Pubkey>,
-    serum_asks: Option<solana_program::pubkey::Pubkey>,
-    serum_event_queue: Option<solana_program::pubkey::Pubkey>,
-    serum_coin_vault_account: Option<solana_program::pubkey::Pubkey>,
-    serum_pc_vault_account: Option<solana_program::pubkey::Pubkey>,
-    serum_vault_signer: Option<solana_program::pubkey::Pubkey>,
-    uer_source_token_account: Option<solana_program::pubkey::Pubkey>,
-    uer_destination_token_account: Option<solana_program::pubkey::Pubkey>,
-    user_source_owner: Option<solana_program::pubkey::Pubkey>,
+    token_program: Option<solana_pubkey::Pubkey>,
+    amm: Option<solana_pubkey::Pubkey>,
+    amm_authority: Option<solana_pubkey::Pubkey>,
+    amm_open_orders: Option<solana_pubkey::Pubkey>,
+    amm_target_orders: Option<solana_pubkey::Pubkey>,
+    pool_coin_token_account: Option<solana_pubkey::Pubkey>,
+    pool_pc_token_account: Option<solana_pubkey::Pubkey>,
+    serum_program: Option<solana_pubkey::Pubkey>,
+    serum_market: Option<solana_pubkey::Pubkey>,
+    serum_bids: Option<solana_pubkey::Pubkey>,
+    serum_asks: Option<solana_pubkey::Pubkey>,
+    serum_event_queue: Option<solana_pubkey::Pubkey>,
+    serum_coin_vault_account: Option<solana_pubkey::Pubkey>,
+    serum_pc_vault_account: Option<solana_pubkey::Pubkey>,
+    serum_vault_signer: Option<solana_pubkey::Pubkey>,
+    uer_source_token_account: Option<solana_pubkey::Pubkey>,
+    uer_destination_token_account: Option<solana_pubkey::Pubkey>,
+    user_source_owner: Option<solana_pubkey::Pubkey>,
     max_amount_in: Option<u64>,
     amount_out: Option<u64>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl SwapBaseOutBuilder {
@@ -229,41 +216,35 @@ impl SwapBaseOutBuilder {
     }
     /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
     #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_program(&mut self, token_program: solana_pubkey::Pubkey) -> &mut Self {
         self.token_program = Some(token_program);
         self
     }
     #[inline(always)]
-    pub fn amm(&mut self, amm: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn amm(&mut self, amm: solana_pubkey::Pubkey) -> &mut Self {
         self.amm = Some(amm);
         self
     }
     #[inline(always)]
-    pub fn amm_authority(&mut self, amm_authority: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn amm_authority(&mut self, amm_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_authority = Some(amm_authority);
         self
     }
     #[inline(always)]
-    pub fn amm_open_orders(
-        &mut self,
-        amm_open_orders: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn amm_open_orders(&mut self, amm_open_orders: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_open_orders = Some(amm_open_orders);
         self
     }
     /// `[optional account]`
     #[inline(always)]
-    pub fn amm_target_orders(
-        &mut self,
-        amm_target_orders: Option<solana_program::pubkey::Pubkey>,
-    ) -> &mut Self {
-        self.amm_target_orders = amm_target_orders;
+    pub fn amm_target_orders(&mut self, amm_target_orders: solana_pubkey::Pubkey) -> &mut Self {
+        self.amm_target_orders = Some(amm_target_orders);
         self
     }
     #[inline(always)]
     pub fn pool_coin_token_account(
         &mut self,
-        pool_coin_token_account: solana_program::pubkey::Pubkey,
+        pool_coin_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.pool_coin_token_account = Some(pool_coin_token_account);
         self
@@ -271,43 +252,40 @@ impl SwapBaseOutBuilder {
     #[inline(always)]
     pub fn pool_pc_token_account(
         &mut self,
-        pool_pc_token_account: solana_program::pubkey::Pubkey,
+        pool_pc_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.pool_pc_token_account = Some(pool_pc_token_account);
         self
     }
     #[inline(always)]
-    pub fn serum_program(&mut self, serum_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_program(&mut self, serum_program: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_program = Some(serum_program);
         self
     }
     #[inline(always)]
-    pub fn serum_market(&mut self, serum_market: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_market(&mut self, serum_market: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_market = Some(serum_market);
         self
     }
     #[inline(always)]
-    pub fn serum_bids(&mut self, serum_bids: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_bids(&mut self, serum_bids: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_bids = Some(serum_bids);
         self
     }
     #[inline(always)]
-    pub fn serum_asks(&mut self, serum_asks: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_asks(&mut self, serum_asks: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_asks = Some(serum_asks);
         self
     }
     #[inline(always)]
-    pub fn serum_event_queue(
-        &mut self,
-        serum_event_queue: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn serum_event_queue(&mut self, serum_event_queue: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_event_queue = Some(serum_event_queue);
         self
     }
     #[inline(always)]
     pub fn serum_coin_vault_account(
         &mut self,
-        serum_coin_vault_account: solana_program::pubkey::Pubkey,
+        serum_coin_vault_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.serum_coin_vault_account = Some(serum_coin_vault_account);
         self
@@ -315,23 +293,20 @@ impl SwapBaseOutBuilder {
     #[inline(always)]
     pub fn serum_pc_vault_account(
         &mut self,
-        serum_pc_vault_account: solana_program::pubkey::Pubkey,
+        serum_pc_vault_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.serum_pc_vault_account = Some(serum_pc_vault_account);
         self
     }
     #[inline(always)]
-    pub fn serum_vault_signer(
-        &mut self,
-        serum_vault_signer: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn serum_vault_signer(&mut self, serum_vault_signer: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_vault_signer = Some(serum_vault_signer);
         self
     }
     #[inline(always)]
     pub fn uer_source_token_account(
         &mut self,
-        uer_source_token_account: solana_program::pubkey::Pubkey,
+        uer_source_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.uer_source_token_account = Some(uer_source_token_account);
         self
@@ -339,16 +314,13 @@ impl SwapBaseOutBuilder {
     #[inline(always)]
     pub fn uer_destination_token_account(
         &mut self,
-        uer_destination_token_account: solana_program::pubkey::Pubkey,
+        uer_destination_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.uer_destination_token_account = Some(uer_destination_token_account);
         self
     }
     #[inline(always)]
-    pub fn user_source_owner(
-        &mut self,
-        user_source_owner: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn user_source_owner(&mut self, user_source_owner: solana_pubkey::Pubkey) -> &mut Self {
         self.user_source_owner = Some(user_source_owner);
         self
     }
@@ -364,10 +336,7 @@ impl SwapBaseOutBuilder {
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -375,15 +344,15 @@ impl SwapBaseOutBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = SwapBaseOut {
-            token_program: self.token_program.unwrap_or(solana_program::pubkey!(
+            token_program: self.token_program.unwrap_or(solana_pubkey::pubkey!(
                 "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
             )),
             amm: self.amm.expect("amm is not set"),
@@ -436,90 +405,90 @@ impl SwapBaseOutBuilder {
 
 /// `swap_base_out` CPI accounts.
 pub struct SwapBaseOutCpiAccounts<'a, 'b> {
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_coin_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_pc_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_pc_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_bids: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_bids: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_asks: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_asks: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_event_queue: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_event_queue: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_coin_vault_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_coin_vault_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_pc_vault_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_pc_vault_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_vault_signer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_vault_signer: &'b solana_account_info::AccountInfo<'a>,
 
-    pub uer_source_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub uer_source_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub uer_destination_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub uer_destination_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub user_source_owner: &'b solana_program::account_info::AccountInfo<'a>,
+    pub user_source_owner: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `swap_base_out` CPI instruction.
 pub struct SwapBaseOutCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_coin_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub pool_pc_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub pool_pc_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_bids: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_bids: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_asks: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_asks: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_event_queue: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_event_queue: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_coin_vault_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_coin_vault_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_pc_vault_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_pc_vault_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_vault_signer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_vault_signer: &'b solana_account_info::AccountInfo<'a>,
 
-    pub uer_source_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub uer_source_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub uer_destination_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub uer_destination_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub user_source_owner: &'b solana_program::account_info::AccountInfo<'a>,
+    pub user_source_owner: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: SwapBaseOutInstructionArgs,
 }
 
 impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: SwapBaseOutCpiAccounts<'a, 'b>,
         args: SwapBaseOutInstructionArgs,
     ) -> Self {
@@ -547,25 +516,21 @@ impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -574,89 +539,80 @@ impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(18 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.amm.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(*self.amm.key, false));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.amm_authority.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.amm_open_orders.key,
             false,
         ));
-        if let Some(amm_target_orders) = self.amm_target_orders {
-            accounts.push(solana_program::instruction::AccountMeta::new(
-                *amm_target_orders.key,
-                false,
-            ));
-        }
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
+            *self.amm_target_orders.key,
+            false,
+        ));
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_coin_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_pc_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.serum_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_market.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_bids.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_asks.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_event_queue.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_coin_vault_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_pc_vault_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.serum_vault_signer.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.uer_source_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.uer_destination_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.user_source_owner.key,
             true,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -666,7 +622,7 @@ impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
         let mut args = borsh::to_vec(&self.__args).unwrap();
         data.append(&mut args);
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::RAYDIUM_AMM_ID,
             accounts,
             data,
@@ -698,9 +654,9 @@ impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -733,7 +689,7 @@ pub struct SwapBaseOutCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(SwapBaseOutCpiBuilderInstruction {
             __program: program,
             token_program: None,
@@ -763,20 +719,20 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_program(
         &mut self,
-        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+        token_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_program = Some(token_program);
         self
     }
     #[inline(always)]
-    pub fn amm(&mut self, amm: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn amm(&mut self, amm: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.amm = Some(amm);
         self
     }
     #[inline(always)]
     pub fn amm_authority(
         &mut self,
-        amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_authority = Some(amm_authority);
         self
@@ -784,7 +740,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_open_orders(
         &mut self,
-        amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_open_orders = Some(amm_open_orders);
         self
@@ -793,7 +749,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_target_orders(
         &mut self,
-        amm_target_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+        amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_target_orders = amm_target_orders;
         self
@@ -801,7 +757,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn pool_coin_token_account(
         &mut self,
-        pool_coin_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.pool_coin_token_account = Some(pool_coin_token_account);
         self
@@ -809,7 +765,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn pool_pc_token_account(
         &mut self,
-        pool_pc_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        pool_pc_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.pool_pc_token_account = Some(pool_pc_token_account);
         self
@@ -817,7 +773,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_program(
         &mut self,
-        serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_program = Some(serum_program);
         self
@@ -825,7 +781,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_market(
         &mut self,
-        serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_market: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_market = Some(serum_market);
         self
@@ -833,7 +789,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_bids(
         &mut self,
-        serum_bids: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_bids: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_bids = Some(serum_bids);
         self
@@ -841,7 +797,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_asks(
         &mut self,
-        serum_asks: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_asks: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_asks = Some(serum_asks);
         self
@@ -849,7 +805,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_event_queue(
         &mut self,
-        serum_event_queue: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_event_queue: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_event_queue = Some(serum_event_queue);
         self
@@ -857,7 +813,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_coin_vault_account(
         &mut self,
-        serum_coin_vault_account: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_coin_vault_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_coin_vault_account = Some(serum_coin_vault_account);
         self
@@ -865,7 +821,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_pc_vault_account(
         &mut self,
-        serum_pc_vault_account: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_pc_vault_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_pc_vault_account = Some(serum_pc_vault_account);
         self
@@ -873,7 +829,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_vault_signer(
         &mut self,
-        serum_vault_signer: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_vault_signer: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_vault_signer = Some(serum_vault_signer);
         self
@@ -881,7 +837,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn uer_source_token_account(
         &mut self,
-        uer_source_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        uer_source_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.uer_source_token_account = Some(uer_source_token_account);
         self
@@ -889,7 +845,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn uer_destination_token_account(
         &mut self,
-        uer_destination_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        uer_destination_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.uer_destination_token_account = Some(uer_destination_token_account);
         self
@@ -897,7 +853,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn user_source_owner(
         &mut self,
-        user_source_owner: &'b solana_program::account_info::AccountInfo<'a>,
+        user_source_owner: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.user_source_owner = Some(user_source_owner);
         self
@@ -916,7 +872,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -932,11 +888,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -944,7 +896,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -952,7 +904,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let args = SwapBaseOutInstructionArgs {
             max_amount_in: self
                 .instruction
@@ -1056,31 +1008,27 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct SwapBaseOutCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_open_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_target_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    pool_coin_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    pool_pc_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_bids: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_asks: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_event_queue: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_coin_vault_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_pc_vault_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_vault_signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    uer_source_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    uer_destination_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    user_source_owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    token_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_open_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
+    pool_coin_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    pool_pc_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_market: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_bids: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_asks: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_event_queue: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_coin_vault_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_pc_vault_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_vault_signer: Option<&'b solana_account_info::AccountInfo<'a>>,
+    uer_source_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    uer_destination_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    user_source_owner: Option<&'b solana_account_info::AccountInfo<'a>>,
     max_amount_in: Option<u64>,
     amount_out: Option<u64>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

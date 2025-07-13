@@ -83,23 +83,8 @@ impl yellowstone_vixen_core::Parser for AccountParser {
         let inner = acct
             .account
             .as_ref()
-            .ok_or(solana_program::program_error::ProgramError::InvalidArgument)?;
-        let res = SystemProgramState::try_unpack(&inner.data);
-
-        #[cfg(feature = "tracing")]
-        if let Err(e) = &res {
-            let data_len = inner.data.len();
-            tracing::info!(
-                name: "incorrectly_parsed_account",
-                name = "account_update",
-                program = ID.to_string(),
-                account = "deserialization_error",
-                data_len = ?data_len,
-                error = ?e
-            );
-        }
-
-        res
+            .ok_or(solana_program_error::ProgramError::InvalidArgument)?;
+        SystemProgramState::try_unpack(&inner.data)
     }
 }
 
