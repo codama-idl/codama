@@ -10,7 +10,7 @@
         "@solana/kit": "^2.3.0",
         "@typescript-eslint/eslint-plugin": "^7.3.1",
         "@typescript-eslint/parser": "^7.3.1",
-        "ava": "^6.4.0",
+        "ava": "^6.4.1",
         "eslint": "^8.57.0",
         "prettier": "^3.6.2",
         "rimraf": "^6.0.1",
