@@ -130,7 +130,7 @@ impl yellowstone_vixen_core::Parser for AccountParser {
         #[cfg(feature = "tracing")]
         if let Err(e) = &res {
             {% if hasDiscriminator %}
-                let acc_discriminator:[u8; {{ accDiscLen }}] = &inner.data[0..{{ accDiscLen }}].try_into()?;
+                let acc_discriminator:[u8; {{ accDiscLen }}] = inner.data[0..{{ accDiscLen }}].try_into()?;
                 tracing::info!(
                     name: "incorrectly_parsed_account",
                     name = "account_update",
