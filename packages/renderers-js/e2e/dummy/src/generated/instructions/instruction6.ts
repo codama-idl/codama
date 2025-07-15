@@ -7,10 +7,10 @@
  */
 
 import {
+  type AccountMeta,
   type Address,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
+  type Instruction,
+  type InstructionWithAccounts,
   type WritableAccount,
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
@@ -18,10 +18,10 @@ import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export type Instruction6Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
-  TAccountMyAccount extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithAccounts<
+  TAccountMyAccount extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithAccounts<
     [
       TAccountMyAccount extends string
         ? WritableAccount<TAccountMyAccount>
@@ -64,7 +64,7 @@ export function getInstruction6Instruction<
 
 export type ParsedInstruction6Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -74,9 +74,9 @@ export type ParsedInstruction6Instruction<
 
 export function parseInstruction6Instruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> & IInstructionWithAccounts<TAccountMetas>
+  instruction: Instruction<TProgram> & InstructionWithAccounts<TAccountMetas>
 ): ParsedInstruction6Instruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 1) {
     // TODO: Coded error.

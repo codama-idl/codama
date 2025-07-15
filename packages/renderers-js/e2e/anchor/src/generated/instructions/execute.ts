@@ -19,14 +19,14 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
   type Codec,
   type Decoder,
   type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
   type ReadonlyUint8Array,
 } from '@solana/kit';
@@ -47,19 +47,19 @@ export function getExecuteDiscriminatorBytes() {
 
 export type ExecuteInstruction<
   TProgram extends string = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
-  TAccountSourceAccount extends string | IAccountMeta<string> = string,
-  TAccountMint extends string | IAccountMeta<string> = string,
-  TAccountDestinationAccount extends string | IAccountMeta<string> = string,
-  TAccountOwnerDelegate extends string | IAccountMeta<string> = string,
-  TAccountExtraMetasAccount extends string | IAccountMeta<string> = string,
-  TAccountGuard extends string | IAccountMeta<string> = string,
+  TAccountSourceAccount extends string | AccountMeta<string> = string,
+  TAccountMint extends string | AccountMeta<string> = string,
+  TAccountDestinationAccount extends string | AccountMeta<string> = string,
+  TAccountOwnerDelegate extends string | AccountMeta<string> = string,
+  TAccountExtraMetasAccount extends string | AccountMeta<string> = string,
+  TAccountGuard extends string | AccountMeta<string> = string,
   TAccountInstructionSysvarAccount extends
     | string
-    | IAccountMeta<string> = 'Sysvar1nstructions1111111111111111111111111',
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+    | AccountMeta<string> = 'Sysvar1nstructions1111111111111111111111111',
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<Uint8Array> &
+  InstructionWithAccounts<
     [
       TAccountSourceAccount extends string
         ? ReadonlyAccount<TAccountSourceAccount>
@@ -368,7 +368,7 @@ export function getExecuteInstruction<
 
 export type ParsedExecuteInstruction<
   TProgram extends string = typeof WEN_TRANSFER_GUARD_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -385,11 +385,11 @@ export type ParsedExecuteInstruction<
 
 export function parseExecuteInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<Uint8Array>
 ): ParsedExecuteInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 7) {
     // TODO: Coded error.

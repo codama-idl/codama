@@ -2,7 +2,7 @@
     "name": "@codama/renderers-js-e2e-monorepo",
     "private": true,
     "peedDependencies": {
-        "@solana/kit": "^2.1.0"
+        "@solana/kit": "^2.3.0"
     },
     "devDependencies": {
         "@ava/typescript": "^6.0.0",

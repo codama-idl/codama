@@ -7,16 +7,16 @@ export function getInstructionAccountMetaFragment(instructionAccountNode: Instru
 
     // Writable, signer.
     if (instructionAccountNode.isSigner === true && instructionAccountNode.isWritable) {
-        return fragment(`WritableSignerAccount<${typeParam}> & IAccountSignerMeta<${typeParam}>`)
+        return fragment(`WritableSignerAccount<${typeParam}> & AccountSignerMeta<${typeParam}>`)
             .addImports('solanaInstructions', ['type WritableSignerAccount'])
-            .addImports('solanaSigners', ['type IAccountSignerMeta']);
+            .addImports('solanaSigners', ['type AccountSignerMeta']);
     }
 
     // Readonly, signer.
     if (instructionAccountNode.isSigner === true) {
-        return fragment(`ReadonlySignerAccount<${typeParam}> & IAccountSignerMeta<${typeParam}>`)
+        return fragment(`ReadonlySignerAccount<${typeParam}> & AccountSignerMeta<${typeParam}>`)
             .addImports('solanaInstructions', ['type ReadonlySignerAccount'])
-            .addImports('solanaSigners', ['type IAccountSignerMeta']);
+            .addImports('solanaSigners', ['type AccountSignerMeta']);
     }
 
     // Writable, non-signer or optional signer.
