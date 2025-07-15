@@ -21,6 +21,7 @@ import {
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
+  type ReadonlyUint8Array,
   type TransactionSigner,
 } from '@solana/kit';
 import { MEMO_PROGRAM_ADDRESS } from '../programs';
@@ -29,7 +30,7 @@ export type AddMemoInstruction<
   TProgram extends string = typeof MEMO_PROGRAM_ADDRESS,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<TRemainingAccounts>;
 
 export type AddMemoInstructionData = { memo: string };
@@ -99,7 +100,7 @@ export type ParsedAddMemoInstruction<
 };
 
 export function parseAddMemoInstruction<TProgram extends string>(
-  instruction: Instruction<TProgram> & InstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> & InstructionWithData<ReadonlyUint8Array>
 ): ParsedAddMemoInstruction<TProgram> {
   return {
     programAddress: instruction.programAddress,

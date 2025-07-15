@@ -27,6 +27,7 @@ import {
   type InstructionWithData,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
@@ -46,7 +47,7 @@ export type BurnCheckedInstruction<
   TAccountAuthority extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
       TAccountAccount extends string
@@ -212,7 +213,7 @@ export function parseBurnCheckedInstruction<
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<Uint8Array>
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedBurnCheckedInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.

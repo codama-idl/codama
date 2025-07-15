@@ -31,6 +31,7 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlySignerAccount,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
@@ -49,7 +50,7 @@ export type AllocateWithSeedInstruction<
   TAccountBaseAccount extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
       TAccountNewAccount extends string
@@ -188,7 +189,7 @@ export function parseAllocateWithSeedInstruction<
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<Uint8Array>
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedAllocateWithSeedInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.

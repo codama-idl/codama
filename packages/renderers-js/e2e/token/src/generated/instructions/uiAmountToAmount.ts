@@ -24,6 +24,7 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
 } from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
@@ -39,7 +40,7 @@ export type UiAmountToAmountInstruction<
   TAccountMint extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
       TAccountMint extends string
@@ -145,7 +146,7 @@ export function parseUiAmountToAmountInstruction<
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<Uint8Array>
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedUiAmountToAmountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 1) {
     // TODO: Coded error.

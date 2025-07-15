@@ -25,6 +25,7 @@ import {
   type InstructionWithData,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
@@ -43,7 +44,7 @@ export type RevokeInstruction<
   TAccountOwner extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
       TAccountSource extends string
@@ -171,7 +172,7 @@ export function parseRevokeInstruction<
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<Uint8Array>
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedRevokeInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.

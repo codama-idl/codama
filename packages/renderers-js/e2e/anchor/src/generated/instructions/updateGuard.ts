@@ -83,7 +83,7 @@ export type UpdateGuardInstruction<
     | AccountMeta<string> = '11111111111111111111111111111111',
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
       TAccountGuard extends string
@@ -421,7 +421,7 @@ export function parseUpdateGuardInstruction<
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
-    InstructionWithData<Uint8Array>
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedUpdateGuardInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 6) {
     // TODO: Coded error.

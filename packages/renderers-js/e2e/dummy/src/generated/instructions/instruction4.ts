@@ -20,6 +20,7 @@ import {
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
+  type ReadonlyUint8Array,
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
@@ -27,7 +28,7 @@ export type Instruction4Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<TRemainingAccounts>;
 
 export type Instruction4InstructionData = { myArgument: bigint };
@@ -86,7 +87,7 @@ export type ParsedInstruction4Instruction<
 };
 
 export function parseInstruction4Instruction<TProgram extends string>(
-  instruction: Instruction<TProgram> & InstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> & InstructionWithData<ReadonlyUint8Array>
 ): ParsedInstruction4Instruction<TProgram> {
   return {
     programAddress: instruction.programAddress,

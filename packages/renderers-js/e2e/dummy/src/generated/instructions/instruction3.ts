@@ -21,6 +21,7 @@ import {
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
+  type ReadonlyUint8Array,
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
@@ -34,7 +35,7 @@ export type Instruction3Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
-  InstructionWithData<Uint8Array> &
+  InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<TRemainingAccounts>;
 
 export type Instruction3InstructionData = { discriminator: number };
@@ -88,7 +89,7 @@ export type ParsedInstruction3Instruction<
 };
 
 export function parseInstruction3Instruction<TProgram extends string>(
-  instruction: Instruction<TProgram> & InstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> & InstructionWithData<ReadonlyUint8Array>
 ): ParsedInstruction3Instruction<TProgram> {
   return {
     programAddress: instruction.programAddress,
