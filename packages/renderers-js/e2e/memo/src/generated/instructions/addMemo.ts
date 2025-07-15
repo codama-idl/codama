@@ -13,24 +13,24 @@ import {
   getStructEncoder,
   getUtf8Decoder,
   getUtf8Encoder,
+  type AccountMeta,
   type Address,
   type Codec,
   type Decoder,
   type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type TransactionSigner,
 } from '@solana/kit';
 import { MEMO_PROGRAM_ADDRESS } from '../programs';
 
 export type AddMemoInstruction<
   TProgram extends string = typeof MEMO_PROGRAM_ADDRESS,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<TRemainingAccounts>;
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<Uint8Array> &
+  InstructionWithAccounts<TRemainingAccounts>;
 
 export type AddMemoInstructionData = { memo: string };
 
@@ -72,7 +72,7 @@ export function getAddMemoInstruction<
   const args = { ...input };
 
   // Remaining accounts.
-  const remainingAccounts: IAccountMeta[] = (args.signers ?? []).map(
+  const remainingAccounts: AccountMeta[] = (args.signers ?? []).map(
     (signer) => ({
       address: signer.address,
       role: AccountRole.READONLY_SIGNER,
@@ -99,7 +99,7 @@ export type ParsedAddMemoInstruction<
 };
 
 export function parseAddMemoInstruction<TProgram extends string>(
-  instruction: IInstruction<TProgram> & IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> & InstructionWithData<Uint8Array>
 ): ParsedAddMemoInstruction<TProgram> {
   return {
     programAddress: instruction.programAddress,

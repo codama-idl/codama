@@ -3,7 +3,7 @@
 export type {{ instructionParsedType }}<
   TProgram extends string = typeof {{ programAddressConstant }},
   {% if hasAccounts %}
-    TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+    TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
   {% endif %}
 > = {
   programAddress: Address<TProgram>;
@@ -25,15 +25,15 @@ export type {{ instructionParsedType }}<
 export function {{ instructionParseFunction }}<
   TProgram extends string,
   {% if hasAccounts %}
-    TAccountMetas extends readonly IAccountMeta[],
+    TAccountMetas extends readonly AccountMeta[],
   {% endif %}
 >(
-  instruction: IInstruction<TProgram>
+  instruction: Instruction<TProgram>
     {% if hasAccounts %}
-      & IInstructionWithAccounts<TAccountMetas>
+      & InstructionWithAccounts<TAccountMetas>
     {% endif %}
     {% if hasData %}
-      & IInstructionWithData<Uint8Array>
+      & InstructionWithData<Uint8Array>
     {% endif %}
 ): {{ instructionParsedType }}<TProgram {{ ', TAccountMetas' if hasAccounts }}> {
   {% if hasAccounts %}

@@ -54,10 +54,10 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/instructions": "2.3.0"
+        "@solana/instructions": "^2.3.0"
     },
     "devDependencies": {
-        "@solana/codecs": "2.3.0"
+        "@solana/codecs": "^2.3.0"
     },
     "license": "MIT",
     "repository": {

@@ -13,15 +13,15 @@ import {
   getU32Decoder,
   getU32Encoder,
   transformEncoder,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
   type Codec,
   type Decoder,
   type Encoder,
-  type IAccountMeta,
-  type IAccountSignerMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
   type TransactionSigner,
@@ -38,15 +38,15 @@ export function getAdvanceNonceAccountDiscriminatorBytes() {
 
 export type AdvanceNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountNonceAccount extends string | IAccountMeta<string> = string,
+  TAccountNonceAccount extends string | AccountMeta<string> = string,
   TAccountRecentBlockhashesSysvar extends
     | string
-    | IAccountMeta<string> = 'SysvarRecentB1ockHashes11111111111111111111',
-  TAccountNonceAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+    | AccountMeta<string> = 'SysvarRecentB1ockHashes11111111111111111111',
+  TAccountNonceAuthority extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<Uint8Array> &
+  InstructionWithAccounts<
     [
       TAccountNonceAccount extends string
         ? WritableAccount<TAccountNonceAccount>
@@ -56,7 +56,7 @@ export type AdvanceNonceAccountInstruction<
         : TAccountRecentBlockhashesSysvar,
       TAccountNonceAuthority extends string
         ? ReadonlySignerAccount<TAccountNonceAuthority> &
-            IAccountSignerMeta<TAccountNonceAuthority>
+            AccountSignerMeta<TAccountNonceAuthority>
         : TAccountNonceAuthority,
       ...TRemainingAccounts,
     ]
@@ -162,7 +162,7 @@ export function getAdvanceNonceAccountInstruction<
 
 export type ParsedAdvanceNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -175,11 +175,11 @@ export type ParsedAdvanceNonceAccountInstruction<
 
 export function parseAdvanceNonceAccountInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<Uint8Array>
 ): ParsedAdvanceNonceAccountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.

@@ -1,12 +1,13 @@
 import {
   type Address,
+  type BaseTransactionMessage,
   type Commitment,
-  type CompilableTransactionMessage,
   type Rpc,
   type RpcSubscriptions,
   type SolanaRpcApi,
   type SolanaRpcSubscriptionsApi,
   type TransactionMessageWithBlockhashLifetime,
+  type TransactionMessageWithFeePayer,
   type TransactionSigner,
   airdropFactory,
   appendTransactionMessageInstructions,
@@ -59,7 +60,11 @@ export const generateKeyPairSignerWithSol = async (
 export const createDefaultTransaction = async (
   client: Client,
   feePayer: TransactionSigner
-) => {
+): Promise<
+  BaseTransactionMessage &
+    TransactionMessageWithFeePayer &
+    TransactionMessageWithBlockhashLifetime
+> => {
   const { value: latestBlockhash } = await client.rpc
     .getLatestBlockhash()
     .send();
@@ -72,7 +77,8 @@ export const createDefaultTransaction = async (
 
 export const signAndSendTransaction = async (
   client: Client,
-  transactionMessage: CompilableTransactionMessage &
+  transactionMessage: BaseTransactionMessage &
+    TransactionMessageWithFeePayer &
     TransactionMessageWithBlockhashLifetime,
   commitment: Commitment = 'confirmed'
 ) => {

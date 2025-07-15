@@ -2,11 +2,11 @@ import { getNodeCodec, ReadonlyUint8Array } from '@codama/dynamic-codecs';
 import { AccountNode, CamelCaseString, GetNodeFromKind, InstructionNode, RootNode } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 import type {
-    IAccountLookupMeta,
-    IAccountMeta,
-    IInstruction,
-    IInstructionWithAccounts,
-    IInstructionWithData,
+    AccountLookupMeta,
+    AccountMeta,
+    Instruction,
+    InstructionWithAccounts,
+    InstructionWithData,
 } from '@solana/instructions';
 
 import { identifyData } from './identify';
@@ -42,14 +42,14 @@ export function parseData<TKind extends 'accountNode' | 'instructionNode'>(
     return { data, path };
 }
 
-type ParsedInstructionAccounts = ReadonlyArray<IAccountMeta & { name: CamelCaseString }>;
+type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { name: CamelCaseString }>;
 type ParsedInstruction = ParsedData<InstructionNode> & { accounts: ParsedInstructionAccounts };
 
 export function parseInstruction(
     root: RootNode,
-    instruction: IInstruction &
-        IInstructionWithAccounts<readonly (IAccountLookupMeta | IAccountMeta)[]> &
-        IInstructionWithData<Uint8Array>,
+    instruction: Instruction &
+        InstructionWithAccounts<readonly (AccountLookupMeta | AccountMeta)[]> &
+        InstructionWithData<Uint8Array>,
 ): ParsedInstruction | undefined {
     const parsedData = parseInstructionData(root, instruction.data);
     if (!parsedData) return undefined;

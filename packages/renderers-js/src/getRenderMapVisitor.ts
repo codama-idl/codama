@@ -397,11 +397,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                     ])
                                     .add('solanaInstructions', [
                                         'AccountRole',
-                                        'type IAccountMeta',
+                                        'type AccountMeta',
                                         'upgradeRoleToSigner',
                                     ])
                                     .add('solanaSigners', [
-                                        'type IAccountSignerMeta',
+                                        'type AccountSignerMeta',
                                         'isTransactionSigner',
                                         'type TransactionSigner',
                                     ])

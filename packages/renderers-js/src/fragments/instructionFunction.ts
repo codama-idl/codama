@@ -107,7 +107,7 @@ export function getInstructionFunctionFragment(
     const getReturnType = (instructionType: string) => {
         let returnType = instructionType;
         if (hasByteDeltas) {
-            returnType = `${returnType} & IInstructionWithByteDelta`;
+            returnType = `${returnType} & InstructionWithByteDelta`;
         }
         return useAsync ? `Promise<${returnType}>` : returnType;
     };
@@ -150,12 +150,12 @@ export function getInstructionFunctionFragment(
 
     if (hasAccounts) {
         functionFragment
-            .addImports('solanaInstructions', ['type IAccountMeta'])
+            .addImports('solanaInstructions', ['type AccountMeta'])
             .addImports('shared', ['getAccountMetaFactory', 'type ResolvedAccount']);
     }
 
     if (hasByteDeltas) {
-        functionFragment.addImports('shared', ['type IInstructionWithByteDelta']);
+        functionFragment.addImports('shared', ['type InstructionWithByteDelta']);
     }
 
     return functionFragment;
@@ -183,11 +183,11 @@ function getInstructionType(scope: { instructionPath: NodePath<InstructionNode>;
             const signerRole = account.isWritable ? 'WritableSignerAccount' : 'ReadonlySignerAccount';
             return fragment(
                 `typeof input["${camelName}"] extends TransactionSigner<${typeParam}> ` +
-                    `? ${signerRole}<${typeParam}> & IAccountSignerMeta<${typeParam}> ` +
+                    `? ${signerRole}<${typeParam}> & AccountSignerMeta<${typeParam}> ` +
                     `: ${typeParam}`,
             )
                 .addImports('solanaInstructions', [`type ${signerRole}`])
-                .addImports('solanaSigners', ['type IAccountSignerMeta']);
+                .addImports('solanaSigners', ['type AccountSignerMeta']);
         }
 
         return fragment(typeParam);
