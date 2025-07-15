@@ -28,6 +28,7 @@ export function renderVisitor(options: RenderOptions) {
             renderRustVisitor(`${projectFolder}/src/generated_sdk`, {
                 crateFolder: projectFolder,
                 formatCode: options.formatCode !== false,
+                toolchain: options.toolchain,
             }),
         );
 
