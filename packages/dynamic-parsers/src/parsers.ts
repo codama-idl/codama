@@ -49,7 +49,7 @@ export function parseInstruction(
     root: RootNode,
     instruction: Instruction &
         InstructionWithAccounts<readonly (AccountLookupMeta | AccountMeta)[]> &
-        InstructionWithData<Uint8Array>,
+        InstructionWithData<ReadonlyUint8Array>,
 ): ParsedInstruction | undefined {
     const parsedData = parseInstructionData(root, instruction.data);
     if (!parsedData) return undefined;

@@ -33,7 +33,7 @@ export function {{ instructionParseFunction }}<
       & InstructionWithAccounts<TAccountMetas>
     {% endif %}
     {% if hasData %}
-      & InstructionWithData<Uint8Array>
+      & InstructionWithData<ReadonlyUint8Array>
     {% endif %}
 ): {{ instructionParsedType }}<TProgram {{ ', TAccountMetas' if hasAccounts }}> {
   {% if hasAccounts %}
