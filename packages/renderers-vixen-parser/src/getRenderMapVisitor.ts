@@ -40,6 +40,7 @@ import { getBytesFromBytesValueNode, getImportFromFactory, render } from './util
 
 export type GetRenderMapOptions = {
     generateProto?: boolean;
+    projectCrateDescription?: string;
     projectName: string;
 };
 
@@ -803,6 +804,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                     map.add(
                         'Cargo.toml',
                         render('CargoPage.njk', {
+                            projectCrateDescription: options.projectCrateDescription,
                             projectName,
                         }),
                     );
