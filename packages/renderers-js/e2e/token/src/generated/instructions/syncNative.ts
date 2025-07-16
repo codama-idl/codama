@@ -15,9 +15,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -52,18 +52,18 @@ export type SyncNativeInstructionData = { discriminator: number };
 
 export type SyncNativeInstructionDataArgs = {};
 
-export function getSyncNativeInstructionDataEncoder(): Encoder<SyncNativeInstructionDataArgs> {
+export function getSyncNativeInstructionDataEncoder(): FixedSizeEncoder<SyncNativeInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: SYNC_NATIVE_DISCRIMINATOR })
   );
 }
 
-export function getSyncNativeInstructionDataDecoder(): Decoder<SyncNativeInstructionData> {
+export function getSyncNativeInstructionDataDecoder(): FixedSizeDecoder<SyncNativeInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getSyncNativeInstructionDataCodec(): Codec<
+export function getSyncNativeInstructionDataCodec(): FixedSizeCodec<
   SyncNativeInstructionDataArgs,
   SyncNativeInstructionData
 > {

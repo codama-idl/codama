@@ -17,9 +17,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -61,18 +61,18 @@ export type RevokeInstructionData = { discriminator: number };
 
 export type RevokeInstructionDataArgs = {};
 
-export function getRevokeInstructionDataEncoder(): Encoder<RevokeInstructionDataArgs> {
+export function getRevokeInstructionDataEncoder(): FixedSizeEncoder<RevokeInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: REVOKE_DISCRIMINATOR })
   );
 }
 
-export function getRevokeInstructionDataDecoder(): Decoder<RevokeInstructionData> {
+export function getRevokeInstructionDataDecoder(): FixedSizeDecoder<RevokeInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getRevokeInstructionDataCodec(): Codec<
+export function getRevokeInstructionDataCodec(): FixedSizeCodec<
   RevokeInstructionDataArgs,
   RevokeInstructionData
 > {

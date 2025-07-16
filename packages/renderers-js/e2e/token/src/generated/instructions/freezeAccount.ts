@@ -17,9 +17,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -65,18 +65,18 @@ export type FreezeAccountInstructionData = { discriminator: number };
 
 export type FreezeAccountInstructionDataArgs = {};
 
-export function getFreezeAccountInstructionDataEncoder(): Encoder<FreezeAccountInstructionDataArgs> {
+export function getFreezeAccountInstructionDataEncoder(): FixedSizeEncoder<FreezeAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: FREEZE_ACCOUNT_DISCRIMINATOR })
   );
 }
 
-export function getFreezeAccountInstructionDataDecoder(): Decoder<FreezeAccountInstructionData> {
+export function getFreezeAccountInstructionDataDecoder(): FixedSizeDecoder<FreezeAccountInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getFreezeAccountInstructionDataCodec(): Codec<
+export function getFreezeAccountInstructionDataCodec(): FixedSizeCodec<
   FreezeAccountInstructionDataArgs,
   FreezeAccountInstructionData
 > {

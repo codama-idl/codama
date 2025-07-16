@@ -19,9 +19,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -74,7 +74,7 @@ export type ApproveInstructionDataArgs = {
   amount: number | bigint;
 };
 
-export function getApproveInstructionDataEncoder(): Encoder<ApproveInstructionDataArgs> {
+export function getApproveInstructionDataEncoder(): FixedSizeEncoder<ApproveInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -84,14 +84,14 @@ export function getApproveInstructionDataEncoder(): Encoder<ApproveInstructionDa
   );
 }
 
-export function getApproveInstructionDataDecoder(): Decoder<ApproveInstructionData> {
+export function getApproveInstructionDataDecoder(): FixedSizeDecoder<ApproveInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getApproveInstructionDataCodec(): Codec<
+export function getApproveInstructionDataCodec(): FixedSizeCodec<
   ApproveInstructionDataArgs,
   ApproveInstructionData
 > {

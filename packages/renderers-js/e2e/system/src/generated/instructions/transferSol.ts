@@ -18,9 +18,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -65,7 +65,7 @@ export type TransferSolInstructionData = {
 
 export type TransferSolInstructionDataArgs = { amount: number | bigint };
 
-export function getTransferSolInstructionDataEncoder(): Encoder<TransferSolInstructionDataArgs> {
+export function getTransferSolInstructionDataEncoder(): FixedSizeEncoder<TransferSolInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -75,14 +75,14 @@ export function getTransferSolInstructionDataEncoder(): Encoder<TransferSolInstr
   );
 }
 
-export function getTransferSolInstructionDataDecoder(): Decoder<TransferSolInstructionData> {
+export function getTransferSolInstructionDataDecoder(): FixedSizeDecoder<TransferSolInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getTransferSolInstructionDataCodec(): Codec<
+export function getTransferSolInstructionDataCodec(): FixedSizeCodec<
   TransferSolInstructionDataArgs,
   TransferSolInstructionData
 > {

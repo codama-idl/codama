@@ -19,9 +19,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -74,7 +74,7 @@ export type MintToInstructionDataArgs = {
   amount: number | bigint;
 };
 
-export function getMintToInstructionDataEncoder(): Encoder<MintToInstructionDataArgs> {
+export function getMintToInstructionDataEncoder(): FixedSizeEncoder<MintToInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -84,14 +84,14 @@ export function getMintToInstructionDataEncoder(): Encoder<MintToInstructionData
   );
 }
 
-export function getMintToInstructionDataDecoder(): Decoder<MintToInstructionData> {
+export function getMintToInstructionDataDecoder(): FixedSizeDecoder<MintToInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getMintToInstructionDataCodec(): Codec<
+export function getMintToInstructionDataCodec(): FixedSizeCodec<
   MintToInstructionDataArgs,
   MintToInstructionData
 > {

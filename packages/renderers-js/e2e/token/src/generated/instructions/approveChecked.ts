@@ -19,9 +19,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -82,7 +82,7 @@ export type ApproveCheckedInstructionDataArgs = {
   decimals: number;
 };
 
-export function getApproveCheckedInstructionDataEncoder(): Encoder<ApproveCheckedInstructionDataArgs> {
+export function getApproveCheckedInstructionDataEncoder(): FixedSizeEncoder<ApproveCheckedInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -93,7 +93,7 @@ export function getApproveCheckedInstructionDataEncoder(): Encoder<ApproveChecke
   );
 }
 
-export function getApproveCheckedInstructionDataDecoder(): Decoder<ApproveCheckedInstructionData> {
+export function getApproveCheckedInstructionDataDecoder(): FixedSizeDecoder<ApproveCheckedInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
@@ -101,7 +101,7 @@ export function getApproveCheckedInstructionDataDecoder(): Decoder<ApproveChecke
   ]);
 }
 
-export function getApproveCheckedInstructionDataCodec(): Codec<
+export function getApproveCheckedInstructionDataCodec(): FixedSizeCodec<
   ApproveCheckedInstructionDataArgs,
   ApproveCheckedInstructionData
 > {

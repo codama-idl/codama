@@ -25,12 +25,12 @@ import {
   getU8Encoder,
   type Account,
   type Address,
-  type Codec,
-  type Decoder,
   type EncodedAccount,
-  type Encoder,
   type FetchAccountConfig,
   type FetchAccountsConfig,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type MaybeAccount,
   type MaybeEncodedAccount,
 } from '@solana/kit';
@@ -48,7 +48,7 @@ export type Multisig = {
 
 export type MultisigArgs = Multisig;
 
-export function getMultisigEncoder(): Encoder<MultisigArgs> {
+export function getMultisigEncoder(): FixedSizeEncoder<MultisigArgs> {
   return getStructEncoder([
     ['m', getU8Encoder()],
     ['n', getU8Encoder()],
@@ -57,7 +57,7 @@ export function getMultisigEncoder(): Encoder<MultisigArgs> {
   ]);
 }
 
-export function getMultisigDecoder(): Decoder<Multisig> {
+export function getMultisigDecoder(): FixedSizeDecoder<Multisig> {
   return getStructDecoder([
     ['m', getU8Decoder()],
     ['n', getU8Decoder()],
@@ -66,7 +66,7 @@ export function getMultisigDecoder(): Decoder<Multisig> {
   ]);
 }
 
-export function getMultisigCodec(): Codec<MultisigArgs, Multisig> {
+export function getMultisigCodec(): FixedSizeCodec<MultisigArgs, Multisig> {
   return combineCodec(getMultisigEncoder(), getMultisigDecoder());
 }
 

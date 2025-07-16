@@ -23,9 +23,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -81,7 +81,7 @@ export type CreateAccountInstructionDataArgs = {
   programAddress: Address;
 };
 
-export function getCreateAccountInstructionDataEncoder(): Encoder<CreateAccountInstructionDataArgs> {
+export function getCreateAccountInstructionDataEncoder(): FixedSizeEncoder<CreateAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -93,7 +93,7 @@ export function getCreateAccountInstructionDataEncoder(): Encoder<CreateAccountI
   );
 }
 
-export function getCreateAccountInstructionDataDecoder(): Decoder<CreateAccountInstructionData> {
+export function getCreateAccountInstructionDataDecoder(): FixedSizeDecoder<CreateAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['lamports', getLamportsDecoder(getU64Decoder())],
@@ -102,7 +102,7 @@ export function getCreateAccountInstructionDataDecoder(): Decoder<CreateAccountI
   ]);
 }
 
-export function getCreateAccountInstructionDataCodec(): Codec<
+export function getCreateAccountInstructionDataCodec(): FixedSizeCodec<
   CreateAccountInstructionDataArgs,
   CreateAccountInstructionData
 > {

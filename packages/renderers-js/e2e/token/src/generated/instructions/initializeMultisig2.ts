@@ -16,9 +16,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -60,7 +60,7 @@ export type InitializeMultisig2InstructionDataArgs = {
   m: number;
 };
 
-export function getInitializeMultisig2InstructionDataEncoder(): Encoder<InitializeMultisig2InstructionDataArgs> {
+export function getInitializeMultisig2InstructionDataEncoder(): FixedSizeEncoder<InitializeMultisig2InstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -70,14 +70,14 @@ export function getInitializeMultisig2InstructionDataEncoder(): Encoder<Initiali
   );
 }
 
-export function getInitializeMultisig2InstructionDataDecoder(): Decoder<InitializeMultisig2InstructionData> {
+export function getInitializeMultisig2InstructionDataDecoder(): FixedSizeDecoder<InitializeMultisig2InstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['m', getU8Decoder()],
   ]);
 }
 
-export function getInitializeMultisig2InstructionDataCodec(): Codec<
+export function getInitializeMultisig2InstructionDataCodec(): FixedSizeCodec<
   InitializeMultisig2InstructionDataArgs,
   InitializeMultisig2InstructionData
 > {

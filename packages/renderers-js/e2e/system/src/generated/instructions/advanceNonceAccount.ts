@@ -16,9 +16,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -67,7 +67,7 @@ export type AdvanceNonceAccountInstructionData = { discriminator: number };
 
 export type AdvanceNonceAccountInstructionDataArgs = {};
 
-export function getAdvanceNonceAccountInstructionDataEncoder(): Encoder<AdvanceNonceAccountInstructionDataArgs> {
+export function getAdvanceNonceAccountInstructionDataEncoder(): FixedSizeEncoder<AdvanceNonceAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
     (value) => ({
@@ -77,11 +77,11 @@ export function getAdvanceNonceAccountInstructionDataEncoder(): Encoder<AdvanceN
   );
 }
 
-export function getAdvanceNonceAccountInstructionDataDecoder(): Decoder<AdvanceNonceAccountInstructionData> {
+export function getAdvanceNonceAccountInstructionDataDecoder(): FixedSizeDecoder<AdvanceNonceAccountInstructionData> {
   return getStructDecoder([['discriminator', getU32Decoder()]]);
 }
 
-export function getAdvanceNonceAccountInstructionDataCodec(): Codec<
+export function getAdvanceNonceAccountInstructionDataCodec(): FixedSizeCodec<
   AdvanceNonceAccountInstructionDataArgs,
   AdvanceNonceAccountInstructionData
 > {

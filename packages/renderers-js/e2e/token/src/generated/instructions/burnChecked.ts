@@ -19,9 +19,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -78,7 +78,7 @@ export type BurnCheckedInstructionDataArgs = {
   decimals: number;
 };
 
-export function getBurnCheckedInstructionDataEncoder(): Encoder<BurnCheckedInstructionDataArgs> {
+export function getBurnCheckedInstructionDataEncoder(): FixedSizeEncoder<BurnCheckedInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -89,7 +89,7 @@ export function getBurnCheckedInstructionDataEncoder(): Encoder<BurnCheckedInstr
   );
 }
 
-export function getBurnCheckedInstructionDataDecoder(): Decoder<BurnCheckedInstructionData> {
+export function getBurnCheckedInstructionDataDecoder(): FixedSizeDecoder<BurnCheckedInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
@@ -97,7 +97,7 @@ export function getBurnCheckedInstructionDataDecoder(): Decoder<BurnCheckedInstr
   ]);
 }
 
-export function getBurnCheckedInstructionDataCodec(): Codec<
+export function getBurnCheckedInstructionDataCodec(): FixedSizeCodec<
   BurnCheckedInstructionDataArgs,
   BurnCheckedInstructionData
 > {

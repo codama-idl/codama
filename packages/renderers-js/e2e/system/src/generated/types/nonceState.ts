@@ -12,9 +12,9 @@ import {
   getEnumEncoder,
   getU32Decoder,
   getU32Encoder,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
 } from '@solana/kit';
 
 export enum NonceState {
@@ -24,14 +24,17 @@ export enum NonceState {
 
 export type NonceStateArgs = NonceState;
 
-export function getNonceStateEncoder(): Encoder<NonceStateArgs> {
+export function getNonceStateEncoder(): FixedSizeEncoder<NonceStateArgs> {
   return getEnumEncoder(NonceState, { size: getU32Encoder() });
 }
 
-export function getNonceStateDecoder(): Decoder<NonceState> {
+export function getNonceStateDecoder(): FixedSizeDecoder<NonceState> {
   return getEnumDecoder(NonceState, { size: getU32Decoder() });
 }
 
-export function getNonceStateCodec(): Codec<NonceStateArgs, NonceState> {
+export function getNonceStateCodec(): FixedSizeCodec<
+  NonceStateArgs,
+  NonceState
+> {
   return combineCodec(getNonceStateEncoder(), getNonceStateDecoder());
 }

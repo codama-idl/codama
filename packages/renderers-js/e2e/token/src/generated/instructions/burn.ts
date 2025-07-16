@@ -19,9 +19,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -71,7 +71,7 @@ export type BurnInstructionData = {
 
 export type BurnInstructionDataArgs = { amount: number | bigint };
 
-export function getBurnInstructionDataEncoder(): Encoder<BurnInstructionDataArgs> {
+export function getBurnInstructionDataEncoder(): FixedSizeEncoder<BurnInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -81,14 +81,14 @@ export function getBurnInstructionDataEncoder(): Encoder<BurnInstructionDataArgs
   );
 }
 
-export function getBurnInstructionDataDecoder(): Decoder<BurnInstructionData> {
+export function getBurnInstructionDataDecoder(): FixedSizeDecoder<BurnInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getBurnInstructionDataCodec(): Codec<
+export function getBurnInstructionDataCodec(): FixedSizeCodec<
   BurnInstructionDataArgs,
   BurnInstructionData
 > {

@@ -17,9 +17,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -65,18 +65,18 @@ export type CloseAccountInstructionData = { discriminator: number };
 
 export type CloseAccountInstructionDataArgs = {};
 
-export function getCloseAccountInstructionDataEncoder(): Encoder<CloseAccountInstructionDataArgs> {
+export function getCloseAccountInstructionDataEncoder(): FixedSizeEncoder<CloseAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: CLOSE_ACCOUNT_DISCRIMINATOR })
   );
 }
 
-export function getCloseAccountInstructionDataDecoder(): Decoder<CloseAccountInstructionData> {
+export function getCloseAccountInstructionDataDecoder(): FixedSizeDecoder<CloseAccountInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getCloseAccountInstructionDataCodec(): Codec<
+export function getCloseAccountInstructionDataCodec(): FixedSizeCodec<
   CloseAccountInstructionDataArgs,
   CloseAccountInstructionData
 > {
