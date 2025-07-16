@@ -47,17 +47,17 @@ export function {{ instructionParseFunction }}<
       accountIndex += 1;
       return accountMeta;
     }
-    {% if hasOptionalAccounts and instruction.optionalAccountStrategy === 'programId' %}
-      const getNextOptionalAccount = () => {
-        const accountMeta = getNextAccount();
-        return accountMeta.address === {{ programAddressConstant }} ? undefined : accountMeta;
-      };
-    {% elif hasOptionalAccounts and instruction.optionalAccountStrategy === 'omitted' %}
+    {% if hasOptionalAccounts and instruction.optionalAccountStrategy === 'omitted' %}
       let optionalAccountsRemaining = instruction.accounts.length - {{ minimumNumberOfAccounts }};
       const getNextOptionalAccount = () => {
         if (optionalAccountsRemaining === 0) return undefined;
         optionalAccountsRemaining -= 1;
         return getNextAccount();
+      };
+    {% elif hasOptionalAccounts %}
+      const getNextOptionalAccount = () => {
+        const accountMeta = getNextAccount();
+        return accountMeta.address === {{ programAddressConstant }} ? undefined : accountMeta;
       };
     {% endif %}
   {% endif %}
