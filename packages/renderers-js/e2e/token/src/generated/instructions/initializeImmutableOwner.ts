@@ -15,9 +15,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -52,7 +52,7 @@ export type InitializeImmutableOwnerInstructionData = { discriminator: number };
 
 export type InitializeImmutableOwnerInstructionDataArgs = {};
 
-export function getInitializeImmutableOwnerInstructionDataEncoder(): Encoder<InitializeImmutableOwnerInstructionDataArgs> {
+export function getInitializeImmutableOwnerInstructionDataEncoder(): FixedSizeEncoder<InitializeImmutableOwnerInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({
@@ -62,11 +62,11 @@ export function getInitializeImmutableOwnerInstructionDataEncoder(): Encoder<Ini
   );
 }
 
-export function getInitializeImmutableOwnerInstructionDataDecoder(): Decoder<InitializeImmutableOwnerInstructionData> {
+export function getInitializeImmutableOwnerInstructionDataDecoder(): FixedSizeDecoder<InitializeImmutableOwnerInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getInitializeImmutableOwnerInstructionDataCodec(): Codec<
+export function getInitializeImmutableOwnerInstructionDataCodec(): FixedSizeCodec<
   InitializeImmutableOwnerInstructionDataArgs,
   InitializeImmutableOwnerInstructionData
 > {

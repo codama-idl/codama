@@ -18,6 +18,7 @@ import { RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     findProgramNodeFromPath,
+    getByteSizeVisitor,
     getResolvedInstructionInputsVisitor,
     LinkableDictionary,
     NodeStack,
@@ -116,6 +117,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         stack,
     });
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
+    const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
 
     const globalScope: GlobalFragmentScope = {
         asyncResolvers,
@@ -148,6 +150,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const scope = {
                         ...globalScope,
                         accountPath,
+                        size: visit(node, byteSizeVisitor),
                         typeManifest: visit(node, typeManifestVisitor),
                     };
 
@@ -191,6 +194,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         encoderDocs: [],
                         manifest: visit(node, typeManifestVisitor),
                         name: node.name,
+                        size: visit(node, byteSizeVisitor),
                         typeDocs: node.docs,
                         typeNode: node.type,
                     };
@@ -240,6 +244,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         instructionPath,
                         renamedArgs: getRenamedArgsMap(node),
                         resolvedInputs: visit(node, resolvedInstructionInputVisitor),
+                        size: visit(node, byteSizeVisitor),
                     };
 
                     // Fragments.

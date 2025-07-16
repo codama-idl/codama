@@ -19,9 +19,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -82,7 +82,7 @@ export type TransferCheckedInstructionDataArgs = {
   decimals: number;
 };
 
-export function getTransferCheckedInstructionDataEncoder(): Encoder<TransferCheckedInstructionDataArgs> {
+export function getTransferCheckedInstructionDataEncoder(): FixedSizeEncoder<TransferCheckedInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -93,7 +93,7 @@ export function getTransferCheckedInstructionDataEncoder(): Encoder<TransferChec
   );
 }
 
-export function getTransferCheckedInstructionDataDecoder(): Decoder<TransferCheckedInstructionData> {
+export function getTransferCheckedInstructionDataDecoder(): FixedSizeDecoder<TransferCheckedInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
@@ -101,7 +101,7 @@ export function getTransferCheckedInstructionDataDecoder(): Decoder<TransferChec
   ]);
 }
 
-export function getTransferCheckedInstructionDataCodec(): Codec<
+export function getTransferCheckedInstructionDataCodec(): FixedSizeCodec<
   TransferCheckedInstructionDataArgs,
   TransferCheckedInstructionData
 > {

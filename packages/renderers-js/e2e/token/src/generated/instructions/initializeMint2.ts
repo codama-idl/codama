@@ -20,9 +20,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -74,7 +74,7 @@ export type InitializeMint2InstructionDataArgs = {
   freezeAuthority?: OptionOrNullable<Address>;
 };
 
-export function getInitializeMint2InstructionDataEncoder(): Encoder<InitializeMint2InstructionDataArgs> {
+export function getInitializeMint2InstructionDataEncoder(): FixedSizeEncoder<InitializeMint2InstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -90,7 +90,7 @@ export function getInitializeMint2InstructionDataEncoder(): Encoder<InitializeMi
   );
 }
 
-export function getInitializeMint2InstructionDataDecoder(): Decoder<InitializeMint2InstructionData> {
+export function getInitializeMint2InstructionDataDecoder(): FixedSizeDecoder<InitializeMint2InstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['decimals', getU8Decoder()],
@@ -99,7 +99,7 @@ export function getInitializeMint2InstructionDataDecoder(): Decoder<InitializeMi
   ]);
 }
 
-export function getInitializeMint2InstructionDataCodec(): Codec<
+export function getInitializeMint2InstructionDataCodec(): FixedSizeCodec<
   InitializeMint2InstructionDataArgs,
   InitializeMint2InstructionData
 > {

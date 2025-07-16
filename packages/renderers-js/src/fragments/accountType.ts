@@ -9,6 +9,7 @@ import { getTypeWithCodecFragment } from './typeWithCodec';
 export function getAccountTypeFragment(
     scope: Pick<GlobalFragmentScope, 'customAccountData' | 'nameApi'> & {
         accountPath: NodePath<AccountNode>;
+        size: number | null;
         typeManifest: TypeManifest;
     },
 ): Fragment {
@@ -23,5 +24,6 @@ export function getAccountTypeFragment(
         manifest: typeManifest,
         name: accountNode.name,
         nameApi,
+        size: scope.size,
     });
 }

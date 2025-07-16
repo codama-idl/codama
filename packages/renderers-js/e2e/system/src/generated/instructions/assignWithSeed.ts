@@ -22,9 +22,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -75,7 +75,7 @@ export type AssignWithSeedInstructionDataArgs = {
   programAddress: Address;
 };
 
-export function getAssignWithSeedInstructionDataEncoder(): Encoder<AssignWithSeedInstructionDataArgs> {
+export function getAssignWithSeedInstructionDataEncoder(): FixedSizeEncoder<AssignWithSeedInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -87,7 +87,7 @@ export function getAssignWithSeedInstructionDataEncoder(): Encoder<AssignWithSee
   );
 }
 
-export function getAssignWithSeedInstructionDataDecoder(): Decoder<AssignWithSeedInstructionData> {
+export function getAssignWithSeedInstructionDataDecoder(): FixedSizeDecoder<AssignWithSeedInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['base', getAddressDecoder()],
@@ -96,7 +96,7 @@ export function getAssignWithSeedInstructionDataDecoder(): Decoder<AssignWithSee
   ]);
 }
 
-export function getAssignWithSeedInstructionDataCodec(): Codec<
+export function getAssignWithSeedInstructionDataCodec(): FixedSizeCodec<
   AssignWithSeedInstructionDataArgs,
   AssignWithSeedInstructionData
 > {

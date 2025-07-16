@@ -19,9 +19,9 @@ import {
   getTupleDecoder,
   getTupleEncoder,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type GetDiscriminatedUnionVariant,
   type GetDiscriminatedUnionVariantContent,
 } from '@solana/kit';
@@ -37,7 +37,7 @@ export type CpiRule =
 
 export type CpiRuleArgs = CpiRule;
 
-export function getCpiRuleEncoder(): Encoder<CpiRuleArgs> {
+export function getCpiRuleEncoder(): FixedSizeEncoder<CpiRuleArgs> {
   return getDiscriminatedUnionEncoder([
     [
       'Allow',
@@ -54,7 +54,7 @@ export function getCpiRuleEncoder(): Encoder<CpiRuleArgs> {
   ]);
 }
 
-export function getCpiRuleDecoder(): Decoder<CpiRule> {
+export function getCpiRuleDecoder(): FixedSizeDecoder<CpiRule> {
   return getDiscriminatedUnionDecoder([
     [
       'Allow',
@@ -71,7 +71,7 @@ export function getCpiRuleDecoder(): Decoder<CpiRule> {
   ]);
 }
 
-export function getCpiRuleCodec(): Codec<CpiRuleArgs, CpiRule> {
+export function getCpiRuleCodec(): FixedSizeCodec<CpiRuleArgs, CpiRule> {
   return combineCodec(getCpiRuleEncoder(), getCpiRuleDecoder());
 }
 

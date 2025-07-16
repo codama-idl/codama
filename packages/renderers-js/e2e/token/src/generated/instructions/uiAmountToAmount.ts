@@ -17,9 +17,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -61,7 +61,7 @@ export type UiAmountToAmountInstructionDataArgs = {
   uiAmount: string;
 };
 
-export function getUiAmountToAmountInstructionDataEncoder(): Encoder<UiAmountToAmountInstructionDataArgs> {
+export function getUiAmountToAmountInstructionDataEncoder(): FixedSizeEncoder<UiAmountToAmountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -71,14 +71,14 @@ export function getUiAmountToAmountInstructionDataEncoder(): Encoder<UiAmountToA
   );
 }
 
-export function getUiAmountToAmountInstructionDataDecoder(): Decoder<UiAmountToAmountInstructionData> {
+export function getUiAmountToAmountInstructionDataDecoder(): FixedSizeDecoder<UiAmountToAmountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['uiAmount', getUtf8Decoder()],
   ]);
 }
 
-export function getUiAmountToAmountInstructionDataCodec(): Codec<
+export function getUiAmountToAmountInstructionDataCodec(): FixedSizeCodec<
   UiAmountToAmountInstructionDataArgs,
   UiAmountToAmountInstructionData
 > {

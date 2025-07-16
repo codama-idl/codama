@@ -24,9 +24,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -81,7 +81,7 @@ export type TransferSolWithSeedInstructionDataArgs = {
   fromOwner: Address;
 };
 
-export function getTransferSolWithSeedInstructionDataEncoder(): Encoder<TransferSolWithSeedInstructionDataArgs> {
+export function getTransferSolWithSeedInstructionDataEncoder(): FixedSizeEncoder<TransferSolWithSeedInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -96,7 +96,7 @@ export function getTransferSolWithSeedInstructionDataEncoder(): Encoder<Transfer
   );
 }
 
-export function getTransferSolWithSeedInstructionDataDecoder(): Decoder<TransferSolWithSeedInstructionData> {
+export function getTransferSolWithSeedInstructionDataDecoder(): FixedSizeDecoder<TransferSolWithSeedInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['amount', getU64Decoder()],
@@ -105,7 +105,7 @@ export function getTransferSolWithSeedInstructionDataDecoder(): Decoder<Transfer
   ]);
 }
 
-export function getTransferSolWithSeedInstructionDataCodec(): Codec<
+export function getTransferSolWithSeedInstructionDataCodec(): FixedSizeCodec<
   TransferSolWithSeedInstructionDataArgs,
   TransferSolWithSeedInstructionData
 > {

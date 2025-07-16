@@ -16,9 +16,9 @@ import {
   getTupleEncoder,
   getU64Decoder,
   getU64Encoder,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type GetDiscriminatedUnionVariant,
   type GetDiscriminatedUnionVariantContent,
 } from '@solana/kit';
@@ -40,7 +40,7 @@ export type TransferAmountRuleArgs =
   | { __kind: 'Equal'; fields: readonly [number | bigint] }
   | { __kind: 'Rang'; fields: readonly [number | bigint, number | bigint] };
 
-export function getTransferAmountRuleEncoder(): Encoder<TransferAmountRuleArgs> {
+export function getTransferAmountRuleEncoder(): FixedSizeEncoder<TransferAmountRuleArgs> {
   return getDiscriminatedUnionEncoder([
     [
       'Above',
@@ -63,7 +63,7 @@ export function getTransferAmountRuleEncoder(): Encoder<TransferAmountRuleArgs> 
   ]);
 }
 
-export function getTransferAmountRuleDecoder(): Decoder<TransferAmountRule> {
+export function getTransferAmountRuleDecoder(): FixedSizeDecoder<TransferAmountRule> {
   return getDiscriminatedUnionDecoder([
     [
       'Above',
@@ -86,7 +86,7 @@ export function getTransferAmountRuleDecoder(): Decoder<TransferAmountRule> {
   ]);
 }
 
-export function getTransferAmountRuleCodec(): Codec<
+export function getTransferAmountRuleCodec(): FixedSizeCodec<
   TransferAmountRuleArgs,
   TransferAmountRule
 > {

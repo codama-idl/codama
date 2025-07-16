@@ -19,9 +19,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -78,7 +78,7 @@ export type MintToCheckedInstructionDataArgs = {
   decimals: number;
 };
 
-export function getMintToCheckedInstructionDataEncoder(): Encoder<MintToCheckedInstructionDataArgs> {
+export function getMintToCheckedInstructionDataEncoder(): FixedSizeEncoder<MintToCheckedInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -89,7 +89,7 @@ export function getMintToCheckedInstructionDataEncoder(): Encoder<MintToCheckedI
   );
 }
 
-export function getMintToCheckedInstructionDataDecoder(): Decoder<MintToCheckedInstructionData> {
+export function getMintToCheckedInstructionDataDecoder(): FixedSizeDecoder<MintToCheckedInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
@@ -97,7 +97,7 @@ export function getMintToCheckedInstructionDataDecoder(): Decoder<MintToCheckedI
   ]);
 }
 
-export function getMintToCheckedInstructionDataCodec(): Codec<
+export function getMintToCheckedInstructionDataCodec(): FixedSizeCodec<
   MintToCheckedInstructionDataArgs,
   MintToCheckedInstructionData
 > {

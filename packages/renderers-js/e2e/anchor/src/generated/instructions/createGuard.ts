@@ -30,9 +30,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -146,7 +146,7 @@ export type CreateGuardInstructionDataArgs = {
   additionalFieldsRule: Array<MetadataAdditionalFieldRuleArgs>;
 };
 
-export function getCreateGuardInstructionDataEncoder(): Encoder<CreateGuardInstructionDataArgs> {
+export function getCreateGuardInstructionDataEncoder(): FixedSizeEncoder<CreateGuardInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
@@ -164,7 +164,7 @@ export function getCreateGuardInstructionDataEncoder(): Encoder<CreateGuardInstr
   );
 }
 
-export function getCreateGuardInstructionDataDecoder(): Decoder<CreateGuardInstructionData> {
+export function getCreateGuardInstructionDataDecoder(): FixedSizeDecoder<CreateGuardInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['name', addDecoderSizePrefix(getUtf8Decoder(), getU32Decoder())],
@@ -179,7 +179,7 @@ export function getCreateGuardInstructionDataDecoder(): Decoder<CreateGuardInstr
   ]);
 }
 
-export function getCreateGuardInstructionDataCodec(): Codec<
+export function getCreateGuardInstructionDataCodec(): FixedSizeCodec<
   CreateGuardInstructionDataArgs,
   CreateGuardInstructionData
 > {

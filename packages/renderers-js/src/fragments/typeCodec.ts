@@ -11,22 +11,25 @@ export function getTypeCodecFragment(
         encoderDocs?: string[];
         manifest: Pick<TypeManifest, 'decoder' | 'encoder'>;
         name: string;
+        size: number | null;
     },
 ): Fragment {
     const { name, manifest, nameApi } = scope;
+    const codecType = scope.size === undefined ? 'Codec' : 'FixedSizeCodec';
     return mergeFragments(
         [
             getTypeEncoderFragment({ ...scope, docs: scope.encoderDocs }),
             getTypeDecoderFragment({ ...scope, docs: scope.decoderDocs }),
             fragmentFromTemplate('typeCodec.njk', {
                 codecFunction: nameApi.codecFunction(name),
+                codecType,
                 decoderFunction: nameApi.decoderFunction(name),
                 docs: scope.codecDocs,
                 encoderFunction: nameApi.encoderFunction(name),
                 looseName: nameApi.dataArgsType(name),
                 manifest,
                 strictName: nameApi.dataType(name),
-            }).addImports('solanaCodecsCore', ['type Codec', 'combineCodec']),
+            }).addImports('solanaCodecsCore', [`type ${codecType}`, 'combineCodec']),
         ],
         renders => renders.join('\n\n'),
     );

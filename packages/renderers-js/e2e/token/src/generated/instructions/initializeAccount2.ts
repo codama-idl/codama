@@ -17,9 +17,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -72,7 +72,7 @@ export type InitializeAccount2InstructionDataArgs = {
   owner: Address;
 };
 
-export function getInitializeAccount2InstructionDataEncoder(): Encoder<InitializeAccount2InstructionDataArgs> {
+export function getInitializeAccount2InstructionDataEncoder(): FixedSizeEncoder<InitializeAccount2InstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -82,14 +82,14 @@ export function getInitializeAccount2InstructionDataEncoder(): Encoder<Initializ
   );
 }
 
-export function getInitializeAccount2InstructionDataDecoder(): Decoder<InitializeAccount2InstructionData> {
+export function getInitializeAccount2InstructionDataDecoder(): FixedSizeDecoder<InitializeAccount2InstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['owner', getAddressDecoder()],
   ]);
 }
 
-export function getInitializeAccount2InstructionDataCodec(): Codec<
+export function getInitializeAccount2InstructionDataCodec(): FixedSizeCodec<
   InitializeAccount2InstructionDataArgs,
   InitializeAccount2InstructionData
 > {

@@ -17,9 +17,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -72,7 +72,7 @@ export type InitializeNonceAccountInstructionDataArgs = {
   nonceAuthority: Address;
 };
 
-export function getInitializeNonceAccountInstructionDataEncoder(): Encoder<InitializeNonceAccountInstructionDataArgs> {
+export function getInitializeNonceAccountInstructionDataEncoder(): FixedSizeEncoder<InitializeNonceAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -85,14 +85,14 @@ export function getInitializeNonceAccountInstructionDataEncoder(): Encoder<Initi
   );
 }
 
-export function getInitializeNonceAccountInstructionDataDecoder(): Decoder<InitializeNonceAccountInstructionData> {
+export function getInitializeNonceAccountInstructionDataDecoder(): FixedSizeDecoder<InitializeNonceAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['nonceAuthority', getAddressDecoder()],
   ]);
 }
 
-export function getInitializeNonceAccountInstructionDataCodec(): Codec<
+export function getInitializeNonceAccountInstructionDataCodec(): FixedSizeCodec<
   InitializeNonceAccountInstructionDataArgs,
   InitializeNonceAccountInstructionData
 > {

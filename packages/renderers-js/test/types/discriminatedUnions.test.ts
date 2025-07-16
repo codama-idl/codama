@@ -51,9 +51,9 @@ test('it exports discriminated union codecs', async () => {
 
     // Then we expect the following codec functions to be exported.
     await renderMapContains(renderMap, 'types/event.ts', [
-        'export function getEventEncoder(): Encoder< EventArgs >',
-        'export function getEventDecoder(): Decoder< Event >',
-        'export function getEventCodec(): Codec< EventArgs, Event >',
+        'export function getEventEncoder(): FixedSizeEncoder< EventArgs >',
+        'export function getEventDecoder(): FixedSizeDecoder< Event >',
+        'export function getEventCodec(): FixedSizeCodec< EventArgs, Event >',
     ]);
 });
 

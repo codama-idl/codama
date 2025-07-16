@@ -17,9 +17,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -65,18 +65,18 @@ export type ThawAccountInstructionData = { discriminator: number };
 
 export type ThawAccountInstructionDataArgs = {};
 
-export function getThawAccountInstructionDataEncoder(): Encoder<ThawAccountInstructionDataArgs> {
+export function getThawAccountInstructionDataEncoder(): FixedSizeEncoder<ThawAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: THAW_ACCOUNT_DISCRIMINATOR })
   );
 }
 
-export function getThawAccountInstructionDataDecoder(): Decoder<ThawAccountInstructionData> {
+export function getThawAccountInstructionDataDecoder(): FixedSizeDecoder<ThawAccountInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getThawAccountInstructionDataCodec(): Codec<
+export function getThawAccountInstructionDataCodec(): FixedSizeCodec<
   ThawAccountInstructionDataArgs,
   ThawAccountInstructionData
 > {

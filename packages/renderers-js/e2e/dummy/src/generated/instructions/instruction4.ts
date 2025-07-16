@@ -14,9 +14,9 @@ import {
   getU64Encoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -35,15 +35,15 @@ export type Instruction4InstructionData = { myArgument: bigint };
 
 export type Instruction4InstructionDataArgs = { myArgument: number | bigint };
 
-export function getInstruction4InstructionDataEncoder(): Encoder<Instruction4InstructionDataArgs> {
+export function getInstruction4InstructionDataEncoder(): FixedSizeEncoder<Instruction4InstructionDataArgs> {
   return getStructEncoder([['myArgument', getU64Encoder()]]);
 }
 
-export function getInstruction4InstructionDataDecoder(): Decoder<Instruction4InstructionData> {
+export function getInstruction4InstructionDataDecoder(): FixedSizeDecoder<Instruction4InstructionData> {
   return getStructDecoder([['myArgument', getU64Decoder()]]);
 }
 
-export function getInstruction4InstructionDataCodec(): Codec<
+export function getInstruction4InstructionDataCodec(): FixedSizeCodec<
   Instruction4InstructionDataArgs,
   Instruction4InstructionData
 > {

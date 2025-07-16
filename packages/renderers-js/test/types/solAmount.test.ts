@@ -19,8 +19,8 @@ test('it renders size prefix codecs', async () => {
     await renderMapContains(renderMap, 'types/myType.ts', [
         'export type MyType = Lamports',
         'export type MyTypeArgs = MyType',
-        'export function getMyTypeEncoder(): Encoder<MyTypeArgs> { return getLamportsEncoder(getU64Encoder()); }',
-        'export function getMyTypeDecoder(): Decoder<MyType> { return getLamportsDecoder(getU64Decoder()); }',
+        'export function getMyTypeEncoder(): FixedSizeEncoder<MyTypeArgs> { return getLamportsEncoder(getU64Encoder()); }',
+        'export function getMyTypeDecoder(): FixedSizeDecoder<MyType> { return getLamportsDecoder(getU64Decoder()); }',
     ]);
 
     // And we expect the following type and codec imports.

@@ -10,9 +10,9 @@ import {
   combineCodec,
   getEnumDecoder,
   getEnumEncoder,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
 } from '@solana/kit';
 
 export enum AuthorityType {
@@ -24,15 +24,15 @@ export enum AuthorityType {
 
 export type AuthorityTypeArgs = AuthorityType;
 
-export function getAuthorityTypeEncoder(): Encoder<AuthorityTypeArgs> {
+export function getAuthorityTypeEncoder(): FixedSizeEncoder<AuthorityTypeArgs> {
   return getEnumEncoder(AuthorityType);
 }
 
-export function getAuthorityTypeDecoder(): Decoder<AuthorityType> {
+export function getAuthorityTypeDecoder(): FixedSizeDecoder<AuthorityType> {
   return getEnumDecoder(AuthorityType);
 }
 
-export function getAuthorityTypeCodec(): Codec<
+export function getAuthorityTypeCodec(): FixedSizeCodec<
   AuthorityTypeArgs,
   AuthorityType
 > {

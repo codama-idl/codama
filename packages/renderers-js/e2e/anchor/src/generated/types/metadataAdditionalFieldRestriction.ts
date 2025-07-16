@@ -22,9 +22,9 @@ import {
   getU32Encoder,
   getUtf8Decoder,
   getUtf8Encoder,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type GetDiscriminatedUnionVariant,
   type GetDiscriminatedUnionVariantContent,
 } from '@solana/kit';
@@ -42,7 +42,7 @@ export type MetadataAdditionalFieldRestriction =
 export type MetadataAdditionalFieldRestrictionArgs =
   MetadataAdditionalFieldRestriction;
 
-export function getMetadataAdditionalFieldRestrictionEncoder(): Encoder<MetadataAdditionalFieldRestrictionArgs> {
+export function getMetadataAdditionalFieldRestrictionEncoder(): FixedSizeEncoder<MetadataAdditionalFieldRestrictionArgs> {
   return getDiscriminatedUnionEncoder([
     [
       'Includes',
@@ -73,7 +73,7 @@ export function getMetadataAdditionalFieldRestrictionEncoder(): Encoder<Metadata
   ]);
 }
 
-export function getMetadataAdditionalFieldRestrictionDecoder(): Decoder<MetadataAdditionalFieldRestriction> {
+export function getMetadataAdditionalFieldRestrictionDecoder(): FixedSizeDecoder<MetadataAdditionalFieldRestriction> {
   return getDiscriminatedUnionDecoder([
     [
       'Includes',
@@ -104,7 +104,7 @@ export function getMetadataAdditionalFieldRestrictionDecoder(): Decoder<Metadata
   ]);
 }
 
-export function getMetadataAdditionalFieldRestrictionCodec(): Codec<
+export function getMetadataAdditionalFieldRestrictionCodec(): FixedSizeCodec<
   MetadataAdditionalFieldRestrictionArgs,
   MetadataAdditionalFieldRestriction
 > {

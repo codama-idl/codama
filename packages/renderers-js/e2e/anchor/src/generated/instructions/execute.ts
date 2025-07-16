@@ -21,9 +21,9 @@ import {
   transformEncoder,
   type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -93,7 +93,7 @@ export type ExecuteInstructionData = {
 
 export type ExecuteInstructionDataArgs = { amount: number | bigint };
 
-export function getExecuteInstructionDataEncoder(): Encoder<ExecuteInstructionDataArgs> {
+export function getExecuteInstructionDataEncoder(): FixedSizeEncoder<ExecuteInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
@@ -103,14 +103,14 @@ export function getExecuteInstructionDataEncoder(): Encoder<ExecuteInstructionDa
   );
 }
 
-export function getExecuteInstructionDataDecoder(): Decoder<ExecuteInstructionData> {
+export function getExecuteInstructionDataDecoder(): FixedSizeDecoder<ExecuteInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getExecuteInstructionDataCodec(): Codec<
+export function getExecuteInstructionDataCodec(): FixedSizeCodec<
   ExecuteInstructionDataArgs,
   ExecuteInstructionData
 > {

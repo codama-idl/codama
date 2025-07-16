@@ -18,9 +18,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -84,7 +84,7 @@ export type WithdrawNonceAccountInstructionDataArgs = {
   withdrawAmount: number | bigint;
 };
 
-export function getWithdrawNonceAccountInstructionDataEncoder(): Encoder<WithdrawNonceAccountInstructionDataArgs> {
+export function getWithdrawNonceAccountInstructionDataEncoder(): FixedSizeEncoder<WithdrawNonceAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -97,14 +97,14 @@ export function getWithdrawNonceAccountInstructionDataEncoder(): Encoder<Withdra
   );
 }
 
-export function getWithdrawNonceAccountInstructionDataDecoder(): Decoder<WithdrawNonceAccountInstructionData> {
+export function getWithdrawNonceAccountInstructionDataDecoder(): FixedSizeDecoder<WithdrawNonceAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['withdrawAmount', getU64Decoder()],
   ]);
 }
 
-export function getWithdrawNonceAccountInstructionDataCodec(): Codec<
+export function getWithdrawNonceAccountInstructionDataCodec(): FixedSizeCodec<
   WithdrawNonceAccountInstructionDataArgs,
   WithdrawNonceAccountInstructionData
 > {
