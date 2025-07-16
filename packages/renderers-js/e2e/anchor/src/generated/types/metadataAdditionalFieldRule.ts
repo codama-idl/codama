@@ -18,9 +18,9 @@ import {
   getU32Encoder,
   getUtf8Decoder,
   getUtf8Encoder,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
+  type Codec,
+  type Decoder,
+  type Encoder,
   type Option,
   type OptionOrNullable,
 } from '@solana/kit';
@@ -46,7 +46,7 @@ export type MetadataAdditionalFieldRuleArgs = {
   valueRestrictions: OptionOrNullable<MetadataAdditionalFieldRestrictionArgs>;
 };
 
-export function getMetadataAdditionalFieldRuleEncoder(): FixedSizeEncoder<MetadataAdditionalFieldRuleArgs> {
+export function getMetadataAdditionalFieldRuleEncoder(): Encoder<MetadataAdditionalFieldRuleArgs> {
   return getStructEncoder([
     ['field', addEncoderSizePrefix(getUtf8Encoder(), getU32Encoder())],
     [
@@ -56,7 +56,7 @@ export function getMetadataAdditionalFieldRuleEncoder(): FixedSizeEncoder<Metada
   ]);
 }
 
-export function getMetadataAdditionalFieldRuleDecoder(): FixedSizeDecoder<MetadataAdditionalFieldRule> {
+export function getMetadataAdditionalFieldRuleDecoder(): Decoder<MetadataAdditionalFieldRule> {
   return getStructDecoder([
     ['field', addDecoderSizePrefix(getUtf8Decoder(), getU32Decoder())],
     [
@@ -66,7 +66,7 @@ export function getMetadataAdditionalFieldRuleDecoder(): FixedSizeDecoder<Metada
   ]);
 }
 
-export function getMetadataAdditionalFieldRuleCodec(): FixedSizeCodec<
+export function getMetadataAdditionalFieldRuleCodec(): Codec<
   MetadataAdditionalFieldRuleArgs,
   MetadataAdditionalFieldRule
 > {

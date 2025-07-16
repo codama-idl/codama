@@ -24,9 +24,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
+  type Codec,
+  type Decoder,
+  type Encoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -122,7 +122,7 @@ export type UpdateGuardInstructionDataArgs = {
   additionalFieldsRule: Array<MetadataAdditionalFieldRuleArgs>;
 };
 
-export function getUpdateGuardInstructionDataEncoder(): FixedSizeEncoder<UpdateGuardInstructionDataArgs> {
+export function getUpdateGuardInstructionDataEncoder(): Encoder<UpdateGuardInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
@@ -137,7 +137,7 @@ export function getUpdateGuardInstructionDataEncoder(): FixedSizeEncoder<UpdateG
   );
 }
 
-export function getUpdateGuardInstructionDataDecoder(): FixedSizeDecoder<UpdateGuardInstructionData> {
+export function getUpdateGuardInstructionDataDecoder(): Decoder<UpdateGuardInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['cpiRule', getOptionDecoder(getCpiRuleDecoder())],
@@ -149,7 +149,7 @@ export function getUpdateGuardInstructionDataDecoder(): FixedSizeDecoder<UpdateG
   ]);
 }
 
-export function getUpdateGuardInstructionDataCodec(): FixedSizeCodec<
+export function getUpdateGuardInstructionDataCodec(): Codec<
   UpdateGuardInstructionDataArgs,
   UpdateGuardInstructionData
 > {

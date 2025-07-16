@@ -15,9 +15,9 @@ import {
   getUtf8Encoder,
   type AccountMeta,
   type Address,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
+  type Codec,
+  type Decoder,
+  type Encoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -37,15 +37,15 @@ export type AddMemoInstructionData = { memo: string };
 
 export type AddMemoInstructionDataArgs = AddMemoInstructionData;
 
-export function getAddMemoInstructionDataEncoder(): FixedSizeEncoder<AddMemoInstructionDataArgs> {
+export function getAddMemoInstructionDataEncoder(): Encoder<AddMemoInstructionDataArgs> {
   return getStructEncoder([['memo', getUtf8Encoder()]]);
 }
 
-export function getAddMemoInstructionDataDecoder(): FixedSizeDecoder<AddMemoInstructionData> {
+export function getAddMemoInstructionDataDecoder(): Decoder<AddMemoInstructionData> {
   return getStructDecoder([['memo', getUtf8Decoder()]]);
 }
 
-export function getAddMemoInstructionDataCodec(): FixedSizeCodec<
+export function getAddMemoInstructionDataCodec(): Codec<
   AddMemoInstructionDataArgs,
   AddMemoInstructionData
 > {

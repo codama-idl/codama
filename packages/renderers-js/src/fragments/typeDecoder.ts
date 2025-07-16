@@ -11,7 +11,7 @@ export function getTypeDecoderFragment(
     },
 ): Fragment {
     const { name, manifest, nameApi, docs = [] } = scope;
-    const decoderType = scope.size === undefined ? 'Decoder' : 'FixedSizeDecoder';
+    const decoderType = typeof scope.size === 'number' ? 'FixedSizeDecoder' : 'Decoder';
     return fragmentFromTemplate('typeDecoder.njk', {
         decoderFunction: nameApi.decoderFunction(name),
         decoderType,

@@ -21,9 +21,9 @@ import {
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
+  type Codec,
+  type Decoder,
+  type Encoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -84,7 +84,7 @@ export type SetAuthorityInstructionDataArgs = {
   newAuthority: OptionOrNullable<Address>;
 };
 
-export function getSetAuthorityInstructionDataEncoder(): FixedSizeEncoder<SetAuthorityInstructionDataArgs> {
+export function getSetAuthorityInstructionDataEncoder(): Encoder<SetAuthorityInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -95,7 +95,7 @@ export function getSetAuthorityInstructionDataEncoder(): FixedSizeEncoder<SetAut
   );
 }
 
-export function getSetAuthorityInstructionDataDecoder(): FixedSizeDecoder<SetAuthorityInstructionData> {
+export function getSetAuthorityInstructionDataDecoder(): Decoder<SetAuthorityInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['authorityType', getAuthorityTypeDecoder()],
@@ -103,7 +103,7 @@ export function getSetAuthorityInstructionDataDecoder(): FixedSizeDecoder<SetAut
   ]);
 }
 
-export function getSetAuthorityInstructionDataCodec(): FixedSizeCodec<
+export function getSetAuthorityInstructionDataCodec(): Codec<
   SetAuthorityInstructionDataArgs,
   SetAuthorityInstructionData
 > {

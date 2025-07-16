@@ -11,7 +11,7 @@ export function getTypeEncoderFragment(
     },
 ): Fragment {
     const { name, manifest, nameApi, docs = [] } = scope;
-    const encoderType = scope.size === undefined ? 'Encoder' : 'FixedSizeEncoder';
+    const encoderType = typeof scope.size === 'number' ? 'FixedSizeEncoder' : 'Encoder';
     return fragmentFromTemplate('typeEncoder.njk', {
         docs,
         encoderFunction: nameApi.encoderFunction(name),

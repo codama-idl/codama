@@ -15,7 +15,7 @@ export function getTypeCodecFragment(
     },
 ): Fragment {
     const { name, manifest, nameApi } = scope;
-    const codecType = scope.size === undefined ? 'Codec' : 'FixedSizeCodec';
+    const codecType = typeof scope.size === 'number' ? 'FixedSizeCodec' : 'Codec';
     return mergeFragments(
         [
             getTypeEncoderFragment({ ...scope, docs: scope.encoderDocs }),

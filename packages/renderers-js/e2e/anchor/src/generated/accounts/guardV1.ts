@@ -30,12 +30,12 @@ import {
   transformEncoder,
   type Account,
   type Address,
+  type Codec,
+  type Decoder,
   type EncodedAccount,
+  type Encoder,
   type FetchAccountConfig,
   type FetchAccountsConfig,
-  type FixedSizeCodec,
-  type FixedSizeDecoder,
-  type FixedSizeEncoder,
   type MaybeAccount,
   type MaybeEncodedAccount,
   type Option,
@@ -92,7 +92,7 @@ export type GuardV1Args = {
   additionalFieldsRule: Array<MetadataAdditionalFieldRuleArgs>;
 };
 
-export function getGuardV1Encoder(): FixedSizeEncoder<GuardV1Args> {
+export function getGuardV1Encoder(): Encoder<GuardV1Args> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
@@ -109,7 +109,7 @@ export function getGuardV1Encoder(): FixedSizeEncoder<GuardV1Args> {
   );
 }
 
-export function getGuardV1Decoder(): FixedSizeDecoder<GuardV1> {
+export function getGuardV1Decoder(): Decoder<GuardV1> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['mint', getAddressDecoder()],
@@ -123,7 +123,7 @@ export function getGuardV1Decoder(): FixedSizeDecoder<GuardV1> {
   ]);
 }
 
-export function getGuardV1Codec(): FixedSizeCodec<GuardV1Args, GuardV1> {
+export function getGuardV1Codec(): Codec<GuardV1Args, GuardV1> {
   return combineCodec(getGuardV1Encoder(), getGuardV1Decoder());
 }
 
