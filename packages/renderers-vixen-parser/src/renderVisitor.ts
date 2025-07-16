@@ -9,7 +9,6 @@ import { GetRenderMapOptions, getRenderMapVisitor } from './getRenderMapVisitor'
 export type RenderOptions = GetRenderMapOptions & {
     deleteFolderBeforeRendering?: boolean;
     formatCode?: boolean;
-    projectFolder: string;
     toolchain?: string;
 };
 

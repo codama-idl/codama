@@ -6,6 +6,10 @@ pub use generated_parser::*;
 use generated_sdk as generated;
 use solana_pubkey::Pubkey;
 
+{% if customImplFolder %}
+mod custom_impl;
+{% endif %}
+
 pub const ID: Pubkey = {{ programId | snakeCase | upper }}_ID;
 
 // #[cfg(feature = "proto")]
