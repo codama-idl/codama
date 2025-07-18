@@ -1,5 +1,8 @@
+import { existsSync } from 'node:fs';
+
 import {
     AccountNode,
+    // BytesValueNode,
     DefinedTypeLinkNode,
     DefinedTypeNode,
     EnumTypeNode,
@@ -38,7 +41,13 @@ import { ImportMap } from './ImportMap';
 import { getBytesFromBytesValueNode, getImportFromFactory, render } from './utils';
 
 export type GetRenderMapOptions = {
+    /** Whether to generate the custom_impl/mod.rs file. Meant to write manual impls
+     *  that are not overriden by the generated impls.
+     */
+    customImplFolder?: boolean;
     generateProto?: boolean;
+    projectCrateDescription?: string;
+    projectFolder: string;
     projectName: string;
 };
 
@@ -64,12 +73,12 @@ type ParserInstructionNode = {
     accounts: ParserInstructionAccountNode[];
     discriminator: string | null;
     hasArgs: boolean;
-    hasOptionalAccounts: boolean;
     ixArgs: {
         name: string;
         transform: string;
     }[];
     name: string;
+    totalOptionalOmittedAccounts: number;
 };
 
 function getInnerDefinedTypeTransform(
@@ -270,6 +279,9 @@ function getEnumVariantTransform(variant: EnumVariantTypeNode, idlDefinedTypes: 
                     if (transformWithoutSelfPrefix === fieldName) {
                         return `${acc}${transformWithoutSelfPrefix}, `;
                     }
+                    if (transformWithoutSelfPrefix === `${fieldName}.into_proto()`) {
+                        return `${acc}${fieldName}: Some(${transformWithoutSelfPrefix}), `;
+                    }
                     return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
                 }, '');
 
@@ -295,6 +307,9 @@ function getEnumVariantTransform(variant: EnumVariantTypeNode, idlDefinedTypes: 
                 if (transformWithoutSelfPrefix === fieldName) {
                     return `${acc}${transformWithoutSelfPrefix}, `;
                 }
+                if (transformWithoutSelfPrefix === `${fieldName}.into_proto()`) {
+                    return `${acc}${fieldName}: Some(${transformWithoutSelfPrefix}), `;
+                }
                 return `${acc}${fieldName}: ${transformWithoutSelfPrefix}, `;
             }, '');
 
@@ -307,26 +322,73 @@ function getEnumVariantTransform(variant: EnumVariantTypeNode, idlDefinedTypes: 
 }
 
 const getFieldDiscriminator = (discriminatorValue: InstructionArgumentNode | StructFieldTypeNode): string[] => {
+    let discriminator: string[];
+
     if (
-        discriminatorValue.name !== 'discriminator' ||
-        discriminatorValue.type.kind !== 'fixedSizeTypeNode' ||
-        discriminatorValue.type.type.kind !== 'bytesTypeNode' ||
-        !discriminatorValue.defaultValue ||
-        discriminatorValue.defaultValue.kind !== 'bytesValueNode' ||
-        discriminatorValue.defaultValue.encoding !== 'base16'
+        discriminatorValue.type.kind === 'fixedSizeTypeNode' &&
+        discriminatorValue.name === 'discriminator' &&
+        discriminatorValue.type.type.kind === 'bytesTypeNode' &&
+        discriminatorValue.defaultValue &&
+        discriminatorValue.defaultValue.kind === 'bytesValueNode' &&
+        discriminatorValue.defaultValue.encoding === 'base16'
     ) {
+        // bytesTypeNode Discriminator
+        discriminator = Array.from(getBytesFromBytesValueNode(discriminatorValue.defaultValue)).map(v => v.toString());
+
+        if (discriminator.length !== discriminatorValue.type.size) {
+            throw new Error('Invalid discriminator length');
+        }
+    } else if (
+        discriminatorValue.type.kind === 'numberTypeNode' &&
+        discriminatorValue.type.endian === 'le' &&
+        discriminatorValue.defaultValue &&
+        discriminatorValue.defaultValue.kind === 'numberValueNode'
+    ) {
+        // numberTypeNode Discriminator
+        const discriminatorValueNumber = discriminatorValue.defaultValue.number;
+        const discriminatorSize = getBytesLenFromNumberFormat(discriminatorValue.type);
+
+        discriminator = getDiscriminatorArrayFromNumberTypeDiscriminator(discriminatorSize, discriminatorValueNumber);
+    } else {
         throw new Error(`"${discriminatorValue.name}" does not have a supported discriminator`);
     }
 
-    const discriminator = Array.from(getBytesFromBytesValueNode(discriminatorValue.defaultValue)).map(v =>
-        v.toString(),
-    );
+    return discriminator;
+};
 
-    if (discriminator.length !== discriminatorValue.type.size) {
-        throw new Error('Invalid discriminator length');
+const getBytesLenFromNumberFormat = (type: NumberTypeNode): number => {
+    const firstChar = type.format[0];
+    if (firstChar !== 'u') {
+        throw new Error(`Unsupported number type discriminator format: ${type.format}`);
     }
 
-    return discriminator;
+    return parseInt(type.format.slice(1), 10) / 8;
+};
+
+const getDiscriminatorArrayFromNumberTypeDiscriminator = (bytesLength: number, value: number): string[] => {
+    const buffer = new ArrayBuffer(bytesLength);
+    const view = new DataView(buffer);
+
+    // Write the number to the buffer based on its size
+    switch (bytesLength) {
+        case 1:
+            view.setUint8(0, value);
+            break;
+        case 2:
+            view.setUint16(0, value, true); // true = little-endian
+            break;
+        case 4:
+            view.setUint32(0, value, true); // true = little-endian
+            break;
+        case 8:
+            view.setBigUint64(0, BigInt(value), true); // true = little-endian
+            break;
+        default:
+            throw new Error(`Unsupported number type discriminator size: ${bytesLength}`);
+    }
+
+    // Convert the buffer to an array of byte values as strings
+    return Array.from(new Uint8Array(buffer)).map(byte => byte.toString());
 };
 
 /** Currenty only supports one discriminator per account, being in the discriminator field and at the start of the data.
@@ -344,6 +406,12 @@ const getAccountSizeOrFieldDiscriminator = (node: AccountNode): string[] | null 
     const discriminatorType = discriminators[0];
     if (discriminatorType.kind === 'sizeDiscriminatorNode') {
         return null;
+    } else if (
+        discriminatorType.kind !== 'fieldDiscriminatorNode' ||
+        discriminatorType.name !== 'discriminator' ||
+        discriminatorType.offset !== 0
+    ) {
+        throw new Error(`Account "${node.name}" does not have a supported discriminator`);
     }
 
     const discriminatorValue = resolveNestedTypeNode(node.data).fields[0];
@@ -360,7 +428,12 @@ const getIxFieldDiscriminator = (node: InstructionNode) => {
     }
 
     const discriminatorType = discriminators[0];
-    if (discriminatorType.kind !== 'fieldDiscriminatorNode' || discriminatorType.name !== 'discriminator') {
+
+    if (
+        discriminatorType.kind !== 'fieldDiscriminatorNode' ||
+        discriminatorType.name !== 'discriminator' ||
+        discriminatorType.offset !== 0
+    ) {
         throw new Error(notSupportedDiscriminatorError);
     }
 
@@ -444,7 +517,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                         ixDiscLen = discriminator.length;
 
                         const hasArgs = ix.arguments.length > 1;
-                        const hasOptionalAccounts = ix.accounts.some(acc => acc.isOptional);
+
+                        const totalOptionalOmittedAccounts = ix.accounts.filter(
+                            acc => acc.isOptional && ix.optionalAccountStrategy === 'omitted',
+                        ).length;
+
                         const ixArgs = ix.arguments
                             .filter(arg => arg.name !== 'discriminator')
                             .map(arg => {
@@ -464,10 +541,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                             }),
                             discriminator: `[${discriminator.join(', ')}]`,
                             hasArgs,
-                            hasOptionalAccounts,
                             ixArgs,
                             name: ix.name,
                             optionalAccountStrategy: ix.optionalAccountStrategy,
+                            totalOptionalOmittedAccounts,
                         };
                     });
 
@@ -724,16 +801,26 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                     map.add(
                         'src/lib.rs',
                         render('libPage.njk', {
+                            customImplFolder: options.customImplFolder,
                             programId: node.program.name,
                             protoProjectName,
                         }),
                     );
+
+                    // Only add the custom_impl/mod.rs file if it doesn't exist on the filesystem
+                    if (options.customImplFolder && !existsSync(`${options.projectFolder}/src/custom_impl/mod.rs`)) {
+                        map.add(
+                            'src/custom_impl/mod.rs',
+                            '//! Placeholder for custom impls that are not overriden by the generated code.',
+                        );
+                    }
 
                     map.add('build.rs', render('buildPage.njk', { protoProjectName }));
 
                     map.add(
                         'Cargo.toml',
                         render('CargoPage.njk', {
+                            projectCrateDescription: options.projectCrateDescription,
                             projectName,
                         }),
                     );
