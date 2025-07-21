@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const ALLOCATE_DISCRIMINATOR: u32 = 8;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct Allocate {

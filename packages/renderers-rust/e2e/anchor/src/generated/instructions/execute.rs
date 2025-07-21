@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const EXECUTE_DISCRIMINATOR: [u8; 8] = [105, 37, 101, 197, 75, 251, 102, 26];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct Execute {

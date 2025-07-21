@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const TRANSFER_SOL_DISCRIMINATOR: u32 = 2;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct TransferSol {

@@ -32,6 +32,8 @@ pub struct GuardV1 {
     pub additional_fields_rule: Vec<MetadataAdditionalFieldRule>,
 }
 
+pub const GUARD_V1_DISCRIMINATOR: [u8; 8] = [185, 149, 156, 78, 245, 108, 172, 68];
+
 impl GuardV1 {
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
