@@ -1,5 +1,3 @@
-import { existsSync } from 'node:fs';
-
 import {
     AccountNode,
     // BytesValueNode,
@@ -41,10 +39,6 @@ import { ImportMap } from './ImportMap';
 import { getBytesFromBytesValueNode, getImportFromFactory, render } from './utils';
 
 export type GetRenderMapOptions = {
-    /** Whether to generate the custom_impl/mod.rs file. Meant to write manual impls
-     *  that are not overriden by the generated impls.
-     */
-    customImplFolder?: boolean;
     generateProto?: boolean;
     projectCrateDescription?: string;
     projectFolder: string;
@@ -561,8 +555,6 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
 
                     const instructionParserImports = new ImportMap();
 
-                    instructionParserImports.add('borsh::{BorshDeserialize}');
-
                     const programIdImport = `crate::ID`;
 
                     instructionParserImports.add(programIdImport);
@@ -801,19 +793,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                     map.add(
                         'src/lib.rs',
                         render('libPage.njk', {
-                            customImplFolder: options.customImplFolder,
                             programId: node.program.name,
                             protoProjectName,
                         }),
                     );
-
-                    // Only add the custom_impl/mod.rs file if it doesn't exist on the filesystem
-                    if (options.customImplFolder && !existsSync(`${options.projectFolder}/src/custom_impl/mod.rs`)) {
-                        map.add(
-                            'src/custom_impl/mod.rs',
-                            '//! Placeholder for custom impls that are not overriden by the generated code.',
-                        );
-                    }
 
                     map.add('build.rs', render('buildPage.njk', { protoProjectName }));
 

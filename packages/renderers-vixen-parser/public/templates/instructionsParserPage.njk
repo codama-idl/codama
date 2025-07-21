@@ -9,6 +9,8 @@ use std::sync::Arc;
 #[cfg(feature = "shared-data")]
 use yellowstone_vixen_core::InstructionUpdateOutput;
 
+use crate::deserialize_checked;
+
 {{ imports }}
 
 /// {{ programName | pascalCase }} Instructions
@@ -114,7 +116,7 @@ impl InstructionParser {
                                 {% endfor %}
                             };
                             {% if instruction.hasArgs %}
-                                let de_ix_data:{{ instruction.name | pascalCase }}IxData = BorshDeserialize::try_from_slice(ix_data)?;
+                                let de_ix_data:{{ instruction.name | pascalCase }}IxData = deserialize_checked(ix_data, &ix_discriminator)?;
                                 Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts, de_ix_data))
                             {% else %}
                                 Ok({{ programName  | pascalCase }}ProgramIx::{{ instruction.name | pascalCase }}(ix_accounts))

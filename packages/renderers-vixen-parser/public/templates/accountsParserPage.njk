@@ -5,7 +5,7 @@
 
 {{ imports }}
 
-use borsh::BorshDeserialize;
+use crate::deserialize_checked;
 
 /// {{ programName | pascalCase }} Program State
 #[allow(clippy::large_enum_variant)]
@@ -26,7 +26,7 @@ impl {{ programName | pascalCase }}ProgramState {
                 {% if account.discriminator != null %}
                     {{ account.discriminator }} => Ok(
                         {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                            {{ account.name | pascalCase }}::try_from_slice(data_bytes)?
+                            deserialize_checked(data_bytes, &acc_discriminator)?
                         )
                     ),
                 {% endif %}
@@ -68,7 +68,7 @@ impl {{ programName | pascalCase }}ProgramState {
             {% for account in accounts %}
                 {{account.name | upper }}_LEN => Ok(
                     {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                        {{ account.name | pascalCase }}::try_from_slice(data_bytes)?
+                        deserialize_checked(data_bytes, &data_len.to_le_bytes())?
                     )
                     ),
             {% endfor %}
