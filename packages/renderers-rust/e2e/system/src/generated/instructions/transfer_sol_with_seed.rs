@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const TRANSFER_SOL_WITH_SEED_DISCRIMINATOR: u32 = 11;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct TransferSolWithSeed {
