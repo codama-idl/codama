@@ -11,34 +11,34 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct IncreaseLiquidity {
-    pub whirlpool: solana_program::pubkey::Pubkey,
+    pub whirlpool: solana_pubkey::Pubkey,
 
-    pub token_program: solana_program::pubkey::Pubkey,
+    pub token_program: solana_pubkey::Pubkey,
 
-    pub position_authority: solana_program::pubkey::Pubkey,
+    pub position_authority: solana_pubkey::Pubkey,
 
-    pub position: solana_program::pubkey::Pubkey,
+    pub position: solana_pubkey::Pubkey,
 
-    pub position_token_account: solana_program::pubkey::Pubkey,
+    pub position_token_account: solana_pubkey::Pubkey,
 
-    pub token_owner_account_a: solana_program::pubkey::Pubkey,
+    pub token_owner_account_a: solana_pubkey::Pubkey,
 
-    pub token_owner_account_b: solana_program::pubkey::Pubkey,
+    pub token_owner_account_b: solana_pubkey::Pubkey,
 
-    pub token_vault_a: solana_program::pubkey::Pubkey,
+    pub token_vault_a: solana_pubkey::Pubkey,
 
-    pub token_vault_b: solana_program::pubkey::Pubkey,
+    pub token_vault_b: solana_pubkey::Pubkey,
 
-    pub tick_array_lower: solana_program::pubkey::Pubkey,
+    pub tick_array_lower: solana_pubkey::Pubkey,
 
-    pub tick_array_upper: solana_program::pubkey::Pubkey,
+    pub tick_array_upper: solana_pubkey::Pubkey,
 }
 
 impl IncreaseLiquidity {
     pub fn instruction(
         &self,
         args: IncreaseLiquidityInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
+    ) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -46,50 +46,44 @@ impl IncreaseLiquidity {
     pub fn instruction_with_remaining_accounts(
         &self,
         args: IncreaseLiquidityInstructionArgs,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(11 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.whirlpool,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(self.whirlpool, false));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.position_authority,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.position,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(self.position, false));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.position_token_account,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.token_owner_account_a,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.token_owner_account_b,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.token_vault_a,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.token_vault_b,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.tick_array_lower,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.tick_array_upper,
             false,
         ));
@@ -98,7 +92,7 @@ impl IncreaseLiquidity {
         let mut args = borsh::to_vec(&args).unwrap();
         data.append(&mut args);
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::WHIRLPOOL_ID,
             accounts,
             data,
@@ -151,21 +145,21 @@ pub struct IncreaseLiquidityInstructionArgs {
 ///   10. `[writable]` tick_array_upper
 #[derive(Clone, Debug, Default)]
 pub struct IncreaseLiquidityBuilder {
-    whirlpool: Option<solana_program::pubkey::Pubkey>,
-    token_program: Option<solana_program::pubkey::Pubkey>,
-    position_authority: Option<solana_program::pubkey::Pubkey>,
-    position: Option<solana_program::pubkey::Pubkey>,
-    position_token_account: Option<solana_program::pubkey::Pubkey>,
-    token_owner_account_a: Option<solana_program::pubkey::Pubkey>,
-    token_owner_account_b: Option<solana_program::pubkey::Pubkey>,
-    token_vault_a: Option<solana_program::pubkey::Pubkey>,
-    token_vault_b: Option<solana_program::pubkey::Pubkey>,
-    tick_array_lower: Option<solana_program::pubkey::Pubkey>,
-    tick_array_upper: Option<solana_program::pubkey::Pubkey>,
+    whirlpool: Option<solana_pubkey::Pubkey>,
+    token_program: Option<solana_pubkey::Pubkey>,
+    position_authority: Option<solana_pubkey::Pubkey>,
+    position: Option<solana_pubkey::Pubkey>,
+    position_token_account: Option<solana_pubkey::Pubkey>,
+    token_owner_account_a: Option<solana_pubkey::Pubkey>,
+    token_owner_account_b: Option<solana_pubkey::Pubkey>,
+    token_vault_a: Option<solana_pubkey::Pubkey>,
+    token_vault_b: Option<solana_pubkey::Pubkey>,
+    tick_array_lower: Option<solana_pubkey::Pubkey>,
+    tick_array_upper: Option<solana_pubkey::Pubkey>,
     liquidity_amount: Option<u128>,
     token_max_a: Option<u64>,
     token_max_b: Option<u64>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl IncreaseLiquidityBuilder {
@@ -173,33 +167,30 @@ impl IncreaseLiquidityBuilder {
         Self::default()
     }
     #[inline(always)]
-    pub fn whirlpool(&mut self, whirlpool: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn whirlpool(&mut self, whirlpool: solana_pubkey::Pubkey) -> &mut Self {
         self.whirlpool = Some(whirlpool);
         self
     }
     /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
     #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_program(&mut self, token_program: solana_pubkey::Pubkey) -> &mut Self {
         self.token_program = Some(token_program);
         self
     }
     #[inline(always)]
-    pub fn position_authority(
-        &mut self,
-        position_authority: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn position_authority(&mut self, position_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.position_authority = Some(position_authority);
         self
     }
     #[inline(always)]
-    pub fn position(&mut self, position: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn position(&mut self, position: solana_pubkey::Pubkey) -> &mut Self {
         self.position = Some(position);
         self
     }
     #[inline(always)]
     pub fn position_token_account(
         &mut self,
-        position_token_account: solana_program::pubkey::Pubkey,
+        position_token_account: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.position_token_account = Some(position_token_account);
         self
@@ -207,7 +198,7 @@ impl IncreaseLiquidityBuilder {
     #[inline(always)]
     pub fn token_owner_account_a(
         &mut self,
-        token_owner_account_a: solana_program::pubkey::Pubkey,
+        token_owner_account_a: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.token_owner_account_a = Some(token_owner_account_a);
         self
@@ -215,34 +206,28 @@ impl IncreaseLiquidityBuilder {
     #[inline(always)]
     pub fn token_owner_account_b(
         &mut self,
-        token_owner_account_b: solana_program::pubkey::Pubkey,
+        token_owner_account_b: solana_pubkey::Pubkey,
     ) -> &mut Self {
         self.token_owner_account_b = Some(token_owner_account_b);
         self
     }
     #[inline(always)]
-    pub fn token_vault_a(&mut self, token_vault_a: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_vault_a(&mut self, token_vault_a: solana_pubkey::Pubkey) -> &mut Self {
         self.token_vault_a = Some(token_vault_a);
         self
     }
     #[inline(always)]
-    pub fn token_vault_b(&mut self, token_vault_b: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_vault_b(&mut self, token_vault_b: solana_pubkey::Pubkey) -> &mut Self {
         self.token_vault_b = Some(token_vault_b);
         self
     }
     #[inline(always)]
-    pub fn tick_array_lower(
-        &mut self,
-        tick_array_lower: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn tick_array_lower(&mut self, tick_array_lower: solana_pubkey::Pubkey) -> &mut Self {
         self.tick_array_lower = Some(tick_array_lower);
         self
     }
     #[inline(always)]
-    pub fn tick_array_upper(
-        &mut self,
-        tick_array_upper: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn tick_array_upper(&mut self, tick_array_upper: solana_pubkey::Pubkey) -> &mut Self {
         self.tick_array_upper = Some(tick_array_upper);
         self
     }
@@ -263,10 +248,7 @@ impl IncreaseLiquidityBuilder {
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -274,16 +256,16 @@ impl IncreaseLiquidityBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = IncreaseLiquidity {
             whirlpool: self.whirlpool.expect("whirlpool is not set"),
-            token_program: self.token_program.unwrap_or(solana_program::pubkey!(
+            token_program: self.token_program.unwrap_or(solana_pubkey::pubkey!(
                 "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
             )),
             position_authority: self
@@ -319,62 +301,62 @@ impl IncreaseLiquidityBuilder {
 
 /// `increase_liquidity` CPI accounts.
 pub struct IncreaseLiquidityCpiAccounts<'a, 'b> {
-    pub whirlpool: &'b solana_program::account_info::AccountInfo<'a>,
+    pub whirlpool: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub position_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub position_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub position: &'b solana_program::account_info::AccountInfo<'a>,
+    pub position: &'b solana_account_info::AccountInfo<'a>,
 
-    pub position_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub position_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_owner_account_a: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_owner_account_a: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_owner_account_b: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_owner_account_b: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_vault_a: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_vault_a: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_vault_b: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_vault_b: &'b solana_account_info::AccountInfo<'a>,
 
-    pub tick_array_lower: &'b solana_program::account_info::AccountInfo<'a>,
+    pub tick_array_lower: &'b solana_account_info::AccountInfo<'a>,
 
-    pub tick_array_upper: &'b solana_program::account_info::AccountInfo<'a>,
+    pub tick_array_upper: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `increase_liquidity` CPI instruction.
 pub struct IncreaseLiquidityCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub whirlpool: &'b solana_program::account_info::AccountInfo<'a>,
+    pub whirlpool: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub position_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub position_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub position: &'b solana_program::account_info::AccountInfo<'a>,
+    pub position: &'b solana_account_info::AccountInfo<'a>,
 
-    pub position_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+    pub position_token_account: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_owner_account_a: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_owner_account_a: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_owner_account_b: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_owner_account_b: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_vault_a: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_vault_a: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_vault_b: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_vault_b: &'b solana_account_info::AccountInfo<'a>,
 
-    pub tick_array_lower: &'b solana_program::account_info::AccountInfo<'a>,
+    pub tick_array_lower: &'b solana_account_info::AccountInfo<'a>,
 
-    pub tick_array_upper: &'b solana_program::account_info::AccountInfo<'a>,
+    pub tick_array_upper: &'b solana_account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: IncreaseLiquidityInstructionArgs,
 }
 
 impl<'a, 'b> IncreaseLiquidityCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: IncreaseLiquidityCpiAccounts<'a, 'b>,
         args: IncreaseLiquidityInstructionArgs,
     ) -> Self {
@@ -395,25 +377,21 @@ impl<'a, 'b> IncreaseLiquidityCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -422,59 +400,55 @@ impl<'a, 'b> IncreaseLiquidityCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(11 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.whirlpool.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.position_authority.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.position.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.position_token_account.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.token_owner_account_a.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.token_owner_account_b.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.token_vault_a.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.token_vault_b.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.tick_array_lower.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.tick_array_upper.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -484,7 +458,7 @@ impl<'a, 'b> IncreaseLiquidityCpi<'a, 'b> {
         let mut args = borsh::to_vec(&self.__args).unwrap();
         data.append(&mut args);
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::WHIRLPOOL_ID,
             accounts,
             data,
@@ -507,9 +481,9 @@ impl<'a, 'b> IncreaseLiquidityCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -535,7 +509,7 @@ pub struct IncreaseLiquidityCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(IncreaseLiquidityCpiBuilderInstruction {
             __program: program,
             whirlpool: None,
@@ -557,17 +531,14 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
         Self { instruction }
     }
     #[inline(always)]
-    pub fn whirlpool(
-        &mut self,
-        whirlpool: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn whirlpool(&mut self, whirlpool: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.whirlpool = Some(whirlpool);
         self
     }
     #[inline(always)]
     pub fn token_program(
         &mut self,
-        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+        token_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_program = Some(token_program);
         self
@@ -575,23 +546,20 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn position_authority(
         &mut self,
-        position_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        position_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.position_authority = Some(position_authority);
         self
     }
     #[inline(always)]
-    pub fn position(
-        &mut self,
-        position: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
+    pub fn position(&mut self, position: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.position = Some(position);
         self
     }
     #[inline(always)]
     pub fn position_token_account(
         &mut self,
-        position_token_account: &'b solana_program::account_info::AccountInfo<'a>,
+        position_token_account: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.position_token_account = Some(position_token_account);
         self
@@ -599,7 +567,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_owner_account_a(
         &mut self,
-        token_owner_account_a: &'b solana_program::account_info::AccountInfo<'a>,
+        token_owner_account_a: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_owner_account_a = Some(token_owner_account_a);
         self
@@ -607,7 +575,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_owner_account_b(
         &mut self,
-        token_owner_account_b: &'b solana_program::account_info::AccountInfo<'a>,
+        token_owner_account_b: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_owner_account_b = Some(token_owner_account_b);
         self
@@ -615,7 +583,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_vault_a(
         &mut self,
-        token_vault_a: &'b solana_program::account_info::AccountInfo<'a>,
+        token_vault_a: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_vault_a = Some(token_vault_a);
         self
@@ -623,7 +591,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_vault_b(
         &mut self,
-        token_vault_b: &'b solana_program::account_info::AccountInfo<'a>,
+        token_vault_b: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_vault_b = Some(token_vault_b);
         self
@@ -631,7 +599,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn tick_array_lower(
         &mut self,
-        tick_array_lower: &'b solana_program::account_info::AccountInfo<'a>,
+        tick_array_lower: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.tick_array_lower = Some(tick_array_lower);
         self
@@ -639,7 +607,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn tick_array_upper(
         &mut self,
-        tick_array_upper: &'b solana_program::account_info::AccountInfo<'a>,
+        tick_array_upper: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.tick_array_upper = Some(tick_array_upper);
         self
@@ -663,7 +631,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -679,11 +647,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -691,7 +655,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -699,7 +663,7 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let args = IncreaseLiquidityInstructionArgs {
             liquidity_amount: self
                 .instruction
@@ -779,25 +743,21 @@ impl<'a, 'b> IncreaseLiquidityCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct IncreaseLiquidityCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    whirlpool: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    position_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    position_token_account: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_owner_account_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_owner_account_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_vault_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    token_vault_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    tick_array_lower: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    tick_array_upper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    whirlpool: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    position_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    position: Option<&'b solana_account_info::AccountInfo<'a>>,
+    position_token_account: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_owner_account_a: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_owner_account_b: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_vault_a: Option<&'b solana_account_info::AccountInfo<'a>>,
+    token_vault_b: Option<&'b solana_account_info::AccountInfo<'a>>,
+    tick_array_lower: Option<&'b solana_account_info::AccountInfo<'a>>,
+    tick_array_upper: Option<&'b solana_account_info::AccountInfo<'a>>,
     liquidity_amount: Option<u128>,
     token_max_a: Option<u64>,
     token_max_b: Option<u64>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

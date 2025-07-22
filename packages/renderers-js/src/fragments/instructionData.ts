@@ -10,6 +10,7 @@ export function getInstructionDataFragment(
     scope: Pick<GlobalFragmentScope, 'customInstructionData' | 'nameApi'> & {
         dataArgsManifest: TypeManifest;
         instructionPath: NodePath<InstructionNode>;
+        size: number | null;
     },
 ): Fragment {
     const { instructionPath, dataArgsManifest, nameApi, customInstructionData } = scope;
@@ -23,5 +24,6 @@ export function getInstructionDataFragment(
         manifest: dataArgsManifest,
         name: instructionDataName,
         nameApi,
+        size: scope.size,
     });
 }

@@ -22,10 +22,10 @@ export function getInstructionAccountTypeParamFragment(
     const instructionNode = findInstructionNodeFromPath(instructionAccountPath)!;
     const programNode = findProgramNodeFromPath(instructionAccountPath)!;
     const typeParam = `TAccount${pascalCase(instructionAccountNode.name)}`;
-    const accountMeta = allowAccountMeta ? ' | IAccountMeta<string>' : '';
+    const accountMeta = allowAccountMeta ? ' | AccountMeta<string>' : '';
     const imports = new ImportMap();
     if (allowAccountMeta) {
-        imports.add('solanaInstructions', 'type IAccountMeta');
+        imports.add('solanaInstructions', 'type AccountMeta');
     }
 
     if (instructionNode.optionalAccountStrategy === 'omitted' && instructionAccountNode.isOptional) {

@@ -13,14 +13,15 @@ import {
   getU32Decoder,
   getU32Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
+  type ReadonlyUint8Array,
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
@@ -32,27 +33,27 @@ export function getInstruction3DiscriminatorBytes() {
 
 export type Instruction3Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<TRemainingAccounts>;
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<TRemainingAccounts>;
 
 export type Instruction3InstructionData = { discriminator: number };
 
 export type Instruction3InstructionDataArgs = {};
 
-export function getInstruction3InstructionDataEncoder(): Encoder<Instruction3InstructionDataArgs> {
+export function getInstruction3InstructionDataEncoder(): FixedSizeEncoder<Instruction3InstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
     (value) => ({ ...value, discriminator: INSTRUCTION3_DISCRIMINATOR })
   );
 }
 
-export function getInstruction3InstructionDataDecoder(): Decoder<Instruction3InstructionData> {
+export function getInstruction3InstructionDataDecoder(): FixedSizeDecoder<Instruction3InstructionData> {
   return getStructDecoder([['discriminator', getU32Decoder()]]);
 }
 
-export function getInstruction3InstructionDataCodec(): Codec<
+export function getInstruction3InstructionDataCodec(): FixedSizeCodec<
   Instruction3InstructionDataArgs,
   Instruction3InstructionData
 > {
@@ -88,7 +89,7 @@ export type ParsedInstruction3Instruction<
 };
 
 export function parseInstruction3Instruction<TProgram extends string>(
-  instruction: IInstruction<TProgram> & IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> & InstructionWithData<ReadonlyUint8Array>
 ): ParsedInstruction3Instruction<TProgram> {
   return {
     programAddress: instruction.programAddress,

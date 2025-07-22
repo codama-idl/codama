@@ -7,17 +7,17 @@
  */
 
 import {
+  type AccountMeta,
   type Address,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
+  type Instruction,
+  type InstructionWithAccounts,
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
 export type Instruction1Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> & IInstructionWithAccounts<TRemainingAccounts>;
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> & InstructionWithAccounts<TRemainingAccounts>;
 
 export type Instruction1Input = {};
 
@@ -43,7 +43,7 @@ export type ParsedInstruction1Instruction<
 };
 
 export function parseInstruction1Instruction<TProgram extends string>(
-  instruction: IInstruction<TProgram>
+  instruction: Instruction<TProgram>
 ): ParsedInstruction1Instruction<TProgram> {
   return {
     programAddress: instruction.programAddress,

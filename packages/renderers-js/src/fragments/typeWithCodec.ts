@@ -11,6 +11,7 @@ export function getTypeWithCodecFragment(
         encoderDocs?: string[];
         manifest: TypeManifest;
         name: string;
+        size: number | null;
         typeDocs?: string[];
     },
 ): Fragment {

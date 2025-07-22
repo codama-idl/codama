@@ -15,15 +15,16 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
   type WritableAccount,
 } from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
@@ -37,15 +38,15 @@ export function getInitializeAccount2DiscriminatorBytes() {
 
 export type InitializeAccount2Instruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountAccount extends string | IAccountMeta<string> = string,
-  TAccountMint extends string | IAccountMeta<string> = string,
+  TAccountAccount extends string | AccountMeta<string> = string,
+  TAccountMint extends string | AccountMeta<string> = string,
   TAccountRent extends
     | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+    | AccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountAccount extends string
         ? WritableAccount<TAccountAccount>
@@ -71,7 +72,7 @@ export type InitializeAccount2InstructionDataArgs = {
   owner: Address;
 };
 
-export function getInitializeAccount2InstructionDataEncoder(): Encoder<InitializeAccount2InstructionDataArgs> {
+export function getInitializeAccount2InstructionDataEncoder(): FixedSizeEncoder<InitializeAccount2InstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -81,14 +82,14 @@ export function getInitializeAccount2InstructionDataEncoder(): Encoder<Initializ
   );
 }
 
-export function getInitializeAccount2InstructionDataDecoder(): Decoder<InitializeAccount2InstructionData> {
+export function getInitializeAccount2InstructionDataDecoder(): FixedSizeDecoder<InitializeAccount2InstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['owner', getAddressDecoder()],
   ]);
 }
 
-export function getInitializeAccount2InstructionDataCodec(): Codec<
+export function getInitializeAccount2InstructionDataCodec(): FixedSizeCodec<
   InitializeAccount2InstructionDataArgs,
   InitializeAccount2InstructionData
 > {
@@ -172,7 +173,7 @@ export function getInitializeAccount2Instruction<
 
 export type ParsedInitializeAccount2Instruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -188,11 +189,11 @@ export type ParsedInitializeAccount2Instruction<
 
 export function parseInitializeAccount2Instruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeAccount2Instruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.

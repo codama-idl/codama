@@ -8,7 +8,7 @@
 use crate::generated::types::WhirlpoolRewardInfo;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -65,12 +65,10 @@ impl Whirlpool {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Whirlpool {
+impl<'a> TryFrom<&solana_account_info::AccountInfo<'a>> for Whirlpool {
     type Error = std::io::Error;
 
-    fn try_from(
-        account_info: &solana_program::account_info::AccountInfo<'a>,
-    ) -> Result<Self, Self::Error> {
+    fn try_from(account_info: &solana_account_info::AccountInfo<'a>) -> Result<Self, Self::Error> {
         let mut data: &[u8] = &(*account_info.data).borrow();
         Self::deserialize(&mut data)
     }
@@ -79,7 +77,7 @@ impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Whirlpool {
 #[cfg(feature = "fetch")]
 pub fn fetch_whirlpool(
     rpc: &solana_client::rpc_client::RpcClient,
-    address: &solana_program::pubkey::Pubkey,
+    address: &solana_pubkey::Pubkey,
 ) -> Result<crate::shared::DecodedAccount<Whirlpool>, std::io::Error> {
     let accounts = fetch_all_whirlpool(rpc, &[*address])?;
     Ok(accounts[0].clone())
@@ -88,7 +86,7 @@ pub fn fetch_whirlpool(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_whirlpool(
     rpc: &solana_client::rpc_client::RpcClient,
-    addresses: &[solana_program::pubkey::Pubkey],
+    addresses: &[solana_pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::DecodedAccount<Whirlpool>>, std::io::Error> {
     let accounts = rpc
         .get_multiple_accounts(addresses)
@@ -113,7 +111,7 @@ pub fn fetch_all_whirlpool(
 #[cfg(feature = "fetch")]
 pub fn fetch_maybe_whirlpool(
     rpc: &solana_client::rpc_client::RpcClient,
-    address: &solana_program::pubkey::Pubkey,
+    address: &solana_pubkey::Pubkey,
 ) -> Result<crate::shared::MaybeAccount<Whirlpool>, std::io::Error> {
     let accounts = fetch_all_maybe_whirlpool(rpc, &[*address])?;
     Ok(accounts[0].clone())
@@ -122,7 +120,7 @@ pub fn fetch_maybe_whirlpool(
 #[cfg(feature = "fetch")]
 pub fn fetch_all_maybe_whirlpool(
     rpc: &solana_client::rpc_client::RpcClient,
-    addresses: &[solana_program::pubkey::Pubkey],
+    addresses: &[solana_pubkey::Pubkey],
 ) -> Result<Vec<crate::shared::MaybeAccount<Whirlpool>>, std::io::Error> {
     let accounts = rpc
         .get_multiple_accounts(addresses)

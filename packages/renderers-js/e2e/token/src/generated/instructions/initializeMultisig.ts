@@ -14,15 +14,16 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
   type WritableAccount,
 } from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
@@ -36,14 +37,14 @@ export function getInitializeMultisigDiscriminatorBytes() {
 
 export type InitializeMultisigInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountMultisig extends string | IAccountMeta<string> = string,
+  TAccountMultisig extends string | AccountMeta<string> = string,
   TAccountRent extends
     | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+    | AccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountMultisig extends string
         ? WritableAccount<TAccountMultisig>
@@ -66,7 +67,7 @@ export type InitializeMultisigInstructionDataArgs = {
   m: number;
 };
 
-export function getInitializeMultisigInstructionDataEncoder(): Encoder<InitializeMultisigInstructionDataArgs> {
+export function getInitializeMultisigInstructionDataEncoder(): FixedSizeEncoder<InitializeMultisigInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -76,14 +77,14 @@ export function getInitializeMultisigInstructionDataEncoder(): Encoder<Initializ
   );
 }
 
-export function getInitializeMultisigInstructionDataDecoder(): Decoder<InitializeMultisigInstructionData> {
+export function getInitializeMultisigInstructionDataDecoder(): FixedSizeDecoder<InitializeMultisigInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['m', getU8Decoder()],
   ]);
 }
 
-export function getInitializeMultisigInstructionDataCodec(): Codec<
+export function getInitializeMultisigInstructionDataCodec(): FixedSizeCodec<
   InitializeMultisigInstructionDataArgs,
   InitializeMultisigInstructionData
 > {
@@ -140,7 +141,7 @@ export function getInitializeMultisigInstruction<
   }
 
   // Remaining accounts.
-  const remainingAccounts: IAccountMeta[] = args.signers.map((address) => ({
+  const remainingAccounts: AccountMeta[] = args.signers.map((address) => ({
     address,
     role: AccountRole.READONLY,
   }));
@@ -167,7 +168,7 @@ export function getInitializeMultisigInstruction<
 
 export type ParsedInitializeMultisigInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -181,11 +182,11 @@ export type ParsedInitializeMultisigInstruction<
 
 export function parseInitializeMultisigInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeMultisigInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.

@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const CREATE_ACCOUNT_WITH_SEED_DISCRIMINATOR: u32 = 3;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct CreateAccountWithSeed {

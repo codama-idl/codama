@@ -15,15 +15,16 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IAccountSignerMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableSignerAccount,
 } from '@solana/kit';
@@ -38,15 +39,15 @@ export function getAllocateDiscriminatorBytes() {
 
 export type AllocateInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountNewAccount extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+  TAccountNewAccount extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountNewAccount extends string
         ? WritableSignerAccount<TAccountNewAccount> &
-            IAccountSignerMeta<TAccountNewAccount>
+            AccountSignerMeta<TAccountNewAccount>
         : TAccountNewAccount,
       ...TRemainingAccounts,
     ]
@@ -56,7 +57,7 @@ export type AllocateInstructionData = { discriminator: number; space: bigint };
 
 export type AllocateInstructionDataArgs = { space: number | bigint };
 
-export function getAllocateInstructionDataEncoder(): Encoder<AllocateInstructionDataArgs> {
+export function getAllocateInstructionDataEncoder(): FixedSizeEncoder<AllocateInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -66,14 +67,14 @@ export function getAllocateInstructionDataEncoder(): Encoder<AllocateInstruction
   );
 }
 
-export function getAllocateInstructionDataDecoder(): Decoder<AllocateInstructionData> {
+export function getAllocateInstructionDataDecoder(): FixedSizeDecoder<AllocateInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['space', getU64Decoder()],
   ]);
 }
 
-export function getAllocateInstructionDataCodec(): Codec<
+export function getAllocateInstructionDataCodec(): FixedSizeCodec<
   AllocateInstructionDataArgs,
   AllocateInstructionData
 > {
@@ -124,7 +125,7 @@ export function getAllocateInstruction<
 
 export type ParsedAllocateInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -135,11 +136,11 @@ export type ParsedAllocateInstruction<
 
 export function parseAllocateInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedAllocateInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 1) {
     // TODO: Coded error.

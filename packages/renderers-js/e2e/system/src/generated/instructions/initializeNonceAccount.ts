@@ -15,15 +15,16 @@ import {
   getU32Decoder,
   getU32Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
   type WritableAccount,
 } from '@solana/kit';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
@@ -37,17 +38,17 @@ export function getInitializeNonceAccountDiscriminatorBytes() {
 
 export type InitializeNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountNonceAccount extends string | IAccountMeta<string> = string,
+  TAccountNonceAccount extends string | AccountMeta<string> = string,
   TAccountRecentBlockhashesSysvar extends
     | string
-    | IAccountMeta<string> = 'SysvarRecentB1ockHashes11111111111111111111',
+    | AccountMeta<string> = 'SysvarRecentB1ockHashes11111111111111111111',
   TAccountRentSysvar extends
     | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+    | AccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountNonceAccount extends string
         ? WritableAccount<TAccountNonceAccount>
@@ -71,7 +72,7 @@ export type InitializeNonceAccountInstructionDataArgs = {
   nonceAuthority: Address;
 };
 
-export function getInitializeNonceAccountInstructionDataEncoder(): Encoder<InitializeNonceAccountInstructionDataArgs> {
+export function getInitializeNonceAccountInstructionDataEncoder(): FixedSizeEncoder<InitializeNonceAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -84,14 +85,14 @@ export function getInitializeNonceAccountInstructionDataEncoder(): Encoder<Initi
   );
 }
 
-export function getInitializeNonceAccountInstructionDataDecoder(): Decoder<InitializeNonceAccountInstructionData> {
+export function getInitializeNonceAccountInstructionDataDecoder(): FixedSizeDecoder<InitializeNonceAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['nonceAuthority', getAddressDecoder()],
   ]);
 }
 
-export function getInitializeNonceAccountInstructionDataCodec(): Codec<
+export function getInitializeNonceAccountInstructionDataCodec(): FixedSizeCodec<
   InitializeNonceAccountInstructionDataArgs,
   InitializeNonceAccountInstructionData
 > {
@@ -183,7 +184,7 @@ export function getInitializeNonceAccountInstruction<
 
 export type ParsedInitializeNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -196,11 +197,11 @@ export type ParsedInitializeNonceAccountInstruction<
 
 export function parseInitializeNonceAccountInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeNonceAccountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.

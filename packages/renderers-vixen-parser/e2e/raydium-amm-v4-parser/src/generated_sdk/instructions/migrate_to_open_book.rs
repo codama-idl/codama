@@ -11,145 +11,135 @@ use borsh::BorshSerialize;
 /// Accounts.
 #[derive(Debug)]
 pub struct MigrateToOpenBook {
-    pub token_program: solana_program::pubkey::Pubkey,
+    pub token_program: solana_pubkey::Pubkey,
 
-    pub system_program: solana_program::pubkey::Pubkey,
+    pub system_program: solana_pubkey::Pubkey,
 
-    pub rent: solana_program::pubkey::Pubkey,
+    pub rent: solana_pubkey::Pubkey,
 
-    pub amm: solana_program::pubkey::Pubkey,
+    pub amm: solana_pubkey::Pubkey,
 
-    pub amm_authority: solana_program::pubkey::Pubkey,
+    pub amm_authority: solana_pubkey::Pubkey,
 
-    pub amm_open_orders: solana_program::pubkey::Pubkey,
+    pub amm_open_orders: solana_pubkey::Pubkey,
 
-    pub amm_token_coin: solana_program::pubkey::Pubkey,
+    pub amm_token_coin: solana_pubkey::Pubkey,
 
-    pub amm_token_pc: solana_program::pubkey::Pubkey,
+    pub amm_token_pc: solana_pubkey::Pubkey,
 
-    pub amm_target_orders: solana_program::pubkey::Pubkey,
+    pub amm_target_orders: solana_pubkey::Pubkey,
 
-    pub serum_program: solana_program::pubkey::Pubkey,
+    pub serum_program: solana_pubkey::Pubkey,
 
-    pub serum_market: solana_program::pubkey::Pubkey,
+    pub serum_market: solana_pubkey::Pubkey,
 
-    pub serum_bids: solana_program::pubkey::Pubkey,
+    pub serum_bids: solana_pubkey::Pubkey,
 
-    pub serum_asks: solana_program::pubkey::Pubkey,
+    pub serum_asks: solana_pubkey::Pubkey,
 
-    pub serum_event_queue: solana_program::pubkey::Pubkey,
+    pub serum_event_queue: solana_pubkey::Pubkey,
 
-    pub serum_coin_vault: solana_program::pubkey::Pubkey,
+    pub serum_coin_vault: solana_pubkey::Pubkey,
 
-    pub serum_pc_vault: solana_program::pubkey::Pubkey,
+    pub serum_pc_vault: solana_pubkey::Pubkey,
 
-    pub serum_vault_signer: solana_program::pubkey::Pubkey,
+    pub serum_vault_signer: solana_pubkey::Pubkey,
 
-    pub new_amm_open_orders: solana_program::pubkey::Pubkey,
+    pub new_amm_open_orders: solana_pubkey::Pubkey,
 
-    pub new_serum_program: solana_program::pubkey::Pubkey,
+    pub new_serum_program: solana_pubkey::Pubkey,
 
-    pub new_serum_market: solana_program::pubkey::Pubkey,
+    pub new_serum_market: solana_pubkey::Pubkey,
 
-    pub admin: solana_program::pubkey::Pubkey,
+    pub admin: solana_pubkey::Pubkey,
 }
 
 impl MigrateToOpenBook {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         self.instruction_with_remaining_accounts(&[])
     }
     #[allow(clippy::arithmetic_side_effects)]
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        remaining_accounts: &[solana_program::instruction::AccountMeta],
-    ) -> solana_program::instruction::Instruction {
+        remaining_accounts: &[solana_instruction::AccountMeta],
+    ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(21 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.system_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.rent, false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.amm, false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(self.amm, false));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.amm_authority,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.amm_open_orders,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.amm_token_coin,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.amm_token_pc,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.amm_target_orders,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.serum_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_market,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.serum_bids,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.serum_asks,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(self.serum_bids, false));
+        accounts.push(solana_instruction::AccountMeta::new(self.serum_asks, false));
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_event_queue,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_coin_vault,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.serum_pc_vault,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.serum_vault_signer,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             self.new_amm_open_orders,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.new_serum_program,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.new_serum_market,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.admin, true,
-        ));
+        accounts.push(solana_instruction::AccountMeta::new(self.admin, true));
         accounts.extend_from_slice(remaining_accounts);
         let data = borsh::to_vec(&MigrateToOpenBookInstructionData::new()).unwrap();
 
-        solana_program::instruction::Instruction {
+        solana_instruction::Instruction {
             program_id: crate::RAYDIUM_AMM_ID,
             accounts,
             data,
@@ -202,28 +192,28 @@ impl Default for MigrateToOpenBookInstructionData {
 ///   20. `[writable, signer]` admin
 #[derive(Clone, Debug, Default)]
 pub struct MigrateToOpenBookBuilder {
-    token_program: Option<solana_program::pubkey::Pubkey>,
-    system_program: Option<solana_program::pubkey::Pubkey>,
-    rent: Option<solana_program::pubkey::Pubkey>,
-    amm: Option<solana_program::pubkey::Pubkey>,
-    amm_authority: Option<solana_program::pubkey::Pubkey>,
-    amm_open_orders: Option<solana_program::pubkey::Pubkey>,
-    amm_token_coin: Option<solana_program::pubkey::Pubkey>,
-    amm_token_pc: Option<solana_program::pubkey::Pubkey>,
-    amm_target_orders: Option<solana_program::pubkey::Pubkey>,
-    serum_program: Option<solana_program::pubkey::Pubkey>,
-    serum_market: Option<solana_program::pubkey::Pubkey>,
-    serum_bids: Option<solana_program::pubkey::Pubkey>,
-    serum_asks: Option<solana_program::pubkey::Pubkey>,
-    serum_event_queue: Option<solana_program::pubkey::Pubkey>,
-    serum_coin_vault: Option<solana_program::pubkey::Pubkey>,
-    serum_pc_vault: Option<solana_program::pubkey::Pubkey>,
-    serum_vault_signer: Option<solana_program::pubkey::Pubkey>,
-    new_amm_open_orders: Option<solana_program::pubkey::Pubkey>,
-    new_serum_program: Option<solana_program::pubkey::Pubkey>,
-    new_serum_market: Option<solana_program::pubkey::Pubkey>,
-    admin: Option<solana_program::pubkey::Pubkey>,
-    __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+    token_program: Option<solana_pubkey::Pubkey>,
+    system_program: Option<solana_pubkey::Pubkey>,
+    rent: Option<solana_pubkey::Pubkey>,
+    amm: Option<solana_pubkey::Pubkey>,
+    amm_authority: Option<solana_pubkey::Pubkey>,
+    amm_open_orders: Option<solana_pubkey::Pubkey>,
+    amm_token_coin: Option<solana_pubkey::Pubkey>,
+    amm_token_pc: Option<solana_pubkey::Pubkey>,
+    amm_target_orders: Option<solana_pubkey::Pubkey>,
+    serum_program: Option<solana_pubkey::Pubkey>,
+    serum_market: Option<solana_pubkey::Pubkey>,
+    serum_bids: Option<solana_pubkey::Pubkey>,
+    serum_asks: Option<solana_pubkey::Pubkey>,
+    serum_event_queue: Option<solana_pubkey::Pubkey>,
+    serum_coin_vault: Option<solana_pubkey::Pubkey>,
+    serum_pc_vault: Option<solana_pubkey::Pubkey>,
+    serum_vault_signer: Option<solana_pubkey::Pubkey>,
+    new_amm_open_orders: Option<solana_pubkey::Pubkey>,
+    new_serum_program: Option<solana_pubkey::Pubkey>,
+    new_serum_market: Option<solana_pubkey::Pubkey>,
+    admin: Option<solana_pubkey::Pubkey>,
+    __remaining_accounts: Vec<solana_instruction::AccountMeta>,
 }
 
 impl MigrateToOpenBookBuilder {
@@ -232,142 +222,115 @@ impl MigrateToOpenBookBuilder {
     }
     /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
     #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn token_program(&mut self, token_program: solana_pubkey::Pubkey) -> &mut Self {
         self.token_program = Some(token_program);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
     #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn system_program(&mut self, system_program: solana_pubkey::Pubkey) -> &mut Self {
         self.system_program = Some(system_program);
         self
     }
     /// `[optional account, default to 'SysvarRent111111111111111111111111111111111']`
     #[inline(always)]
-    pub fn rent(&mut self, rent: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn rent(&mut self, rent: solana_pubkey::Pubkey) -> &mut Self {
         self.rent = Some(rent);
         self
     }
     #[inline(always)]
-    pub fn amm(&mut self, amm: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn amm(&mut self, amm: solana_pubkey::Pubkey) -> &mut Self {
         self.amm = Some(amm);
         self
     }
     #[inline(always)]
-    pub fn amm_authority(&mut self, amm_authority: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn amm_authority(&mut self, amm_authority: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_authority = Some(amm_authority);
         self
     }
     #[inline(always)]
-    pub fn amm_open_orders(
-        &mut self,
-        amm_open_orders: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn amm_open_orders(&mut self, amm_open_orders: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_open_orders = Some(amm_open_orders);
         self
     }
     #[inline(always)]
-    pub fn amm_token_coin(&mut self, amm_token_coin: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn amm_token_coin(&mut self, amm_token_coin: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_token_coin = Some(amm_token_coin);
         self
     }
     #[inline(always)]
-    pub fn amm_token_pc(&mut self, amm_token_pc: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn amm_token_pc(&mut self, amm_token_pc: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_token_pc = Some(amm_token_pc);
         self
     }
     #[inline(always)]
-    pub fn amm_target_orders(
-        &mut self,
-        amm_target_orders: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn amm_target_orders(&mut self, amm_target_orders: solana_pubkey::Pubkey) -> &mut Self {
         self.amm_target_orders = Some(amm_target_orders);
         self
     }
     #[inline(always)]
-    pub fn serum_program(&mut self, serum_program: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_program(&mut self, serum_program: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_program = Some(serum_program);
         self
     }
     #[inline(always)]
-    pub fn serum_market(&mut self, serum_market: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_market(&mut self, serum_market: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_market = Some(serum_market);
         self
     }
     #[inline(always)]
-    pub fn serum_bids(&mut self, serum_bids: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_bids(&mut self, serum_bids: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_bids = Some(serum_bids);
         self
     }
     #[inline(always)]
-    pub fn serum_asks(&mut self, serum_asks: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_asks(&mut self, serum_asks: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_asks = Some(serum_asks);
         self
     }
     #[inline(always)]
-    pub fn serum_event_queue(
-        &mut self,
-        serum_event_queue: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn serum_event_queue(&mut self, serum_event_queue: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_event_queue = Some(serum_event_queue);
         self
     }
     #[inline(always)]
-    pub fn serum_coin_vault(
-        &mut self,
-        serum_coin_vault: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn serum_coin_vault(&mut self, serum_coin_vault: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_coin_vault = Some(serum_coin_vault);
         self
     }
     #[inline(always)]
-    pub fn serum_pc_vault(&mut self, serum_pc_vault: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn serum_pc_vault(&mut self, serum_pc_vault: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_pc_vault = Some(serum_pc_vault);
         self
     }
     #[inline(always)]
-    pub fn serum_vault_signer(
-        &mut self,
-        serum_vault_signer: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn serum_vault_signer(&mut self, serum_vault_signer: solana_pubkey::Pubkey) -> &mut Self {
         self.serum_vault_signer = Some(serum_vault_signer);
         self
     }
     #[inline(always)]
-    pub fn new_amm_open_orders(
-        &mut self,
-        new_amm_open_orders: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn new_amm_open_orders(&mut self, new_amm_open_orders: solana_pubkey::Pubkey) -> &mut Self {
         self.new_amm_open_orders = Some(new_amm_open_orders);
         self
     }
     #[inline(always)]
-    pub fn new_serum_program(
-        &mut self,
-        new_serum_program: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn new_serum_program(&mut self, new_serum_program: solana_pubkey::Pubkey) -> &mut Self {
         self.new_serum_program = Some(new_serum_program);
         self
     }
     #[inline(always)]
-    pub fn new_serum_market(
-        &mut self,
-        new_serum_market: solana_program::pubkey::Pubkey,
-    ) -> &mut Self {
+    pub fn new_serum_market(&mut self, new_serum_market: solana_pubkey::Pubkey) -> &mut Self {
         self.new_serum_market = Some(new_serum_market);
         self
     }
     #[inline(always)]
-    pub fn admin(&mut self, admin: solana_program::pubkey::Pubkey) -> &mut Self {
+    pub fn admin(&mut self, admin: solana_pubkey::Pubkey) -> &mut Self {
         self.admin = Some(admin);
         self
     }
     /// Add an additional account to the instruction.
     #[inline(always)]
-    pub fn add_remaining_account(
-        &mut self,
-        account: solana_program::instruction::AccountMeta,
-    ) -> &mut Self {
+    pub fn add_remaining_account(&mut self, account: solana_instruction::AccountMeta) -> &mut Self {
         self.__remaining_accounts.push(account);
         self
     }
@@ -375,21 +338,21 @@ impl MigrateToOpenBookBuilder {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[solana_program::instruction::AccountMeta],
+        accounts: &[solana_instruction::AccountMeta],
     ) -> &mut Self {
         self.__remaining_accounts.extend_from_slice(accounts);
         self
     }
     #[allow(clippy::clone_on_copy)]
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+    pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = MigrateToOpenBook {
-            token_program: self.token_program.unwrap_or(solana_program::pubkey!(
+            token_program: self.token_program.unwrap_or(solana_pubkey::pubkey!(
                 "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
             )),
             system_program: self
                 .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
-            rent: self.rent.unwrap_or(solana_program::pubkey!(
+                .unwrap_or(solana_pubkey::pubkey!("11111111111111111111111111111111")),
+            rent: self.rent.unwrap_or(solana_pubkey::pubkey!(
                 "SysvarRent111111111111111111111111111111111"
             )),
             amm: self.amm.expect("amm is not set"),
@@ -428,100 +391,100 @@ impl MigrateToOpenBookBuilder {
 
 /// `migrate_to_open_book` CPI accounts.
 pub struct MigrateToOpenBookCpiAccounts<'a, 'b> {
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub rent: &'b solana_program::account_info::AccountInfo<'a>,
+    pub rent: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_token_coin: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_token_coin: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_token_pc: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_token_pc: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_bids: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_bids: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_asks: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_asks: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_event_queue: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_event_queue: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_coin_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_coin_vault: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_pc_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_pc_vault: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_vault_signer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_vault_signer: &'b solana_account_info::AccountInfo<'a>,
 
-    pub new_amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub new_amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub new_serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub new_serum_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub new_serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub new_serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub admin: &'b solana_program::account_info::AccountInfo<'a>,
+    pub admin: &'b solana_account_info::AccountInfo<'a>,
 }
 
 /// `migrate_to_open_book` CPI instruction.
 pub struct MigrateToOpenBookCpi<'a, 'b> {
     /// The program to invoke.
-    pub __program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub __program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub token_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub rent: &'b solana_program::account_info::AccountInfo<'a>,
+    pub rent: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_authority: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_token_coin: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_token_coin: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_token_pc: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_token_pc: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_bids: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_bids: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_asks: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_asks: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_event_queue: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_event_queue: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_coin_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_coin_vault: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_pc_vault: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_pc_vault: &'b solana_account_info::AccountInfo<'a>,
 
-    pub serum_vault_signer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub serum_vault_signer: &'b solana_account_info::AccountInfo<'a>,
 
-    pub new_amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+    pub new_amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub new_serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub new_serum_program: &'b solana_account_info::AccountInfo<'a>,
 
-    pub new_serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+    pub new_serum_market: &'b solana_account_info::AccountInfo<'a>,
 
-    pub admin: &'b solana_program::account_info::AccountInfo<'a>,
+    pub admin: &'b solana_account_info::AccountInfo<'a>,
 }
 
 impl<'a, 'b> MigrateToOpenBookCpi<'a, 'b> {
     pub fn new(
-        program: &'b solana_program::account_info::AccountInfo<'a>,
+        program: &'b solana_account_info::AccountInfo<'a>,
         accounts: MigrateToOpenBookCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
@@ -550,25 +513,21 @@ impl<'a, 'b> MigrateToOpenBookCpi<'a, 'b> {
         }
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], &[])
     }
     #[inline(always)]
     pub fn invoke_with_remaining_accounts(
         &self,
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(&[], remaining_accounts)
     }
     #[inline(always)]
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -577,99 +536,89 @@ impl<'a, 'b> MigrateToOpenBookCpi<'a, 'b> {
     pub fn invoke_signed_with_remaining_accounts(
         &self,
         signers_seeds: &[&[&[u8]]],
-        remaining_accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
-    ) -> solana_program::entrypoint::ProgramResult {
+        remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
+    ) -> solana_program_entrypoint::ProgramResult {
         let mut accounts = Vec::with_capacity(21 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.system_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.rent.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.amm.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new(*self.amm.key, false));
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.amm_authority.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.amm_open_orders.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.amm_token_coin.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.amm_token_pc.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.amm_target_orders.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.serum_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_market.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_bids.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_asks.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_event_queue.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_coin_vault.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.serum_pc_vault.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.serum_vault_signer.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
+        accounts.push(solana_instruction::AccountMeta::new(
             *self.new_amm_open_orders.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.new_serum_program.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.new_serum_market.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.admin.key,
-            true,
-        ));
+        accounts.push(solana_instruction::AccountMeta::new(*self.admin.key, true));
         remaining_accounts.iter().for_each(|remaining_account| {
-            accounts.push(solana_program::instruction::AccountMeta {
+            accounts.push(solana_instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
                 is_signer: remaining_account.1,
                 is_writable: remaining_account.2,
@@ -677,7 +626,7 @@ impl<'a, 'b> MigrateToOpenBookCpi<'a, 'b> {
         });
         let data = borsh::to_vec(&MigrateToOpenBookInstructionData::new()).unwrap();
 
-        let instruction = solana_program::instruction::Instruction {
+        let instruction = solana_instruction::Instruction {
             program_id: crate::RAYDIUM_AMM_ID,
             accounts,
             data,
@@ -710,9 +659,9 @@ impl<'a, 'b> MigrateToOpenBookCpi<'a, 'b> {
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
         if signers_seeds.is_empty() {
-            solana_program::program::invoke(&instruction, &account_infos)
+            solana_cpi::invoke(&instruction, &account_infos)
         } else {
-            solana_program::program::invoke_signed(&instruction, &account_infos, signers_seeds)
+            solana_cpi::invoke_signed(&instruction, &account_infos, signers_seeds)
         }
     }
 }
@@ -748,7 +697,7 @@ pub struct MigrateToOpenBookCpiBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
-    pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
+    pub fn new(program: &'b solana_account_info::AccountInfo<'a>) -> Self {
         let instruction = Box::new(MigrateToOpenBookCpiBuilderInstruction {
             __program: program,
             token_program: None,
@@ -779,7 +728,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn token_program(
         &mut self,
-        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+        token_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.token_program = Some(token_program);
         self
@@ -787,25 +736,25 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn system_program(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        system_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.system_program = Some(system_program);
         self
     }
     #[inline(always)]
-    pub fn rent(&mut self, rent: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn rent(&mut self, rent: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.rent = Some(rent);
         self
     }
     #[inline(always)]
-    pub fn amm(&mut self, amm: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn amm(&mut self, amm: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.amm = Some(amm);
         self
     }
     #[inline(always)]
     pub fn amm_authority(
         &mut self,
-        amm_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_authority: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_authority = Some(amm_authority);
         self
@@ -813,7 +762,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_open_orders(
         &mut self,
-        amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_open_orders = Some(amm_open_orders);
         self
@@ -821,7 +770,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_token_coin(
         &mut self,
-        amm_token_coin: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_token_coin: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_token_coin = Some(amm_token_coin);
         self
@@ -829,7 +778,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_token_pc(
         &mut self,
-        amm_token_pc: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_token_pc: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_token_pc = Some(amm_token_pc);
         self
@@ -837,7 +786,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_target_orders(
         &mut self,
-        amm_target_orders: &'b solana_program::account_info::AccountInfo<'a>,
+        amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.amm_target_orders = Some(amm_target_orders);
         self
@@ -845,7 +794,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_program(
         &mut self,
-        serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_program = Some(serum_program);
         self
@@ -853,7 +802,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_market(
         &mut self,
-        serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_market: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_market = Some(serum_market);
         self
@@ -861,7 +810,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_bids(
         &mut self,
-        serum_bids: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_bids: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_bids = Some(serum_bids);
         self
@@ -869,7 +818,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_asks(
         &mut self,
-        serum_asks: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_asks: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_asks = Some(serum_asks);
         self
@@ -877,7 +826,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_event_queue(
         &mut self,
-        serum_event_queue: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_event_queue: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_event_queue = Some(serum_event_queue);
         self
@@ -885,7 +834,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_coin_vault(
         &mut self,
-        serum_coin_vault: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_coin_vault: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_coin_vault = Some(serum_coin_vault);
         self
@@ -893,7 +842,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_pc_vault(
         &mut self,
-        serum_pc_vault: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_pc_vault: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_pc_vault = Some(serum_pc_vault);
         self
@@ -901,7 +850,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn serum_vault_signer(
         &mut self,
-        serum_vault_signer: &'b solana_program::account_info::AccountInfo<'a>,
+        serum_vault_signer: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.serum_vault_signer = Some(serum_vault_signer);
         self
@@ -909,7 +858,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn new_amm_open_orders(
         &mut self,
-        new_amm_open_orders: &'b solana_program::account_info::AccountInfo<'a>,
+        new_amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.new_amm_open_orders = Some(new_amm_open_orders);
         self
@@ -917,7 +866,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn new_serum_program(
         &mut self,
-        new_serum_program: &'b solana_program::account_info::AccountInfo<'a>,
+        new_serum_program: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.new_serum_program = Some(new_serum_program);
         self
@@ -925,13 +874,13 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn new_serum_market(
         &mut self,
-        new_serum_market: &'b solana_program::account_info::AccountInfo<'a>,
+        new_serum_market: &'b solana_account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.new_serum_market = Some(new_serum_market);
         self
     }
     #[inline(always)]
-    pub fn admin(&mut self, admin: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+    pub fn admin(&mut self, admin: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.admin = Some(admin);
         self
     }
@@ -939,7 +888,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_account(
         &mut self,
-        account: &'b solana_program::account_info::AccountInfo<'a>,
+        account: &'b solana_account_info::AccountInfo<'a>,
         is_writable: bool,
         is_signer: bool,
     ) -> &mut Self {
@@ -955,11 +904,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn add_remaining_accounts(
         &mut self,
-        accounts: &[(
-            &'b solana_program::account_info::AccountInfo<'a>,
-            bool,
-            bool,
-        )],
+        accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> &mut Self {
         self.instruction
             .__remaining_accounts
@@ -967,7 +912,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
+    pub fn invoke(&self) -> solana_program_entrypoint::ProgramResult {
         self.invoke_signed(&[])
     }
     #[allow(clippy::clone_on_copy)]
@@ -975,7 +920,7 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
     pub fn invoke_signed(
         &self,
         signers_seeds: &[&[&[u8]]],
-    ) -> solana_program::entrypoint::ProgramResult {
+    ) -> solana_program_entrypoint::ProgramResult {
         let instruction = MigrateToOpenBookCpi {
             __program: self.instruction.__program,
 
@@ -1078,32 +1023,28 @@ impl<'a, 'b> MigrateToOpenBookCpiBuilder<'a, 'b> {
 
 #[derive(Clone, Debug)]
 struct MigrateToOpenBookCpiBuilderInstruction<'a, 'b> {
-    __program: &'b solana_program::account_info::AccountInfo<'a>,
-    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    rent: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_open_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_token_coin: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_token_pc: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    amm_target_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_bids: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_asks: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_event_queue: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_coin_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_pc_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    serum_vault_signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    new_amm_open_orders: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    new_serum_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    new_serum_market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    admin: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    __program: &'b solana_account_info::AccountInfo<'a>,
+    token_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    system_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    rent: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_open_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_token_coin: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_token_pc: Option<&'b solana_account_info::AccountInfo<'a>>,
+    amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_market: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_bids: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_asks: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_event_queue: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_coin_vault: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_pc_vault: Option<&'b solana_account_info::AccountInfo<'a>>,
+    serum_vault_signer: Option<&'b solana_account_info::AccountInfo<'a>>,
+    new_amm_open_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
+    new_serum_program: Option<&'b solana_account_info::AccountInfo<'a>>,
+    new_serum_market: Option<&'b solana_account_info::AccountInfo<'a>>,
+    admin: Option<&'b solana_account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
-    __remaining_accounts: Vec<(
-        &'b solana_program::account_info::AccountInfo<'a>,
-        bool,
-        bool,
-    )>,
+    __remaining_accounts: Vec<(&'b solana_account_info::AccountInfo<'a>, bool, bool)>,
 }

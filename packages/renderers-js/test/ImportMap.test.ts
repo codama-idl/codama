@@ -6,7 +6,7 @@ test('it renders JavaScript import statements', () => {
     // Given an import map with 3 imports from 2 sources.
     const importMap = new ImportMap()
         .add('@solana/addresses', ['getAddressEncoder', 'type Address'])
-        .add('@solana/instructions', 'type IInstructionWithData');
+        .add('@solana/instructions', 'type InstructionWithData');
 
     // When we render it.
     const importStatements = importMap.toString();
@@ -14,7 +14,7 @@ test('it renders JavaScript import statements', () => {
     // Then we expect the following import statements.
     expect(importStatements).toBe(
         "import { getAddressEncoder, type Address } from '@solana/addresses';\n" +
-            "import { type IInstructionWithData } from '@solana/instructions';",
+            "import { type InstructionWithData } from '@solana/instructions';",
     );
 });
 

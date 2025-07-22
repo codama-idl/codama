@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const AUTHORIZE_NONCE_ACCOUNT_DISCRIMINATOR: u32 = 7;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct AuthorizeNonceAccount {

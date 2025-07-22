@@ -13,16 +13,17 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IAccountSignerMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
@@ -45,23 +46,23 @@ export type RecoverNestedAssociatedTokenInstruction<
   TProgram extends string = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   TAccountNestedAssociatedAccountAddress extends
     | string
-    | IAccountMeta<string> = string,
-  TAccountNestedTokenMintAddress extends string | IAccountMeta<string> = string,
+    | AccountMeta<string> = string,
+  TAccountNestedTokenMintAddress extends string | AccountMeta<string> = string,
   TAccountDestinationAssociatedAccountAddress extends
     | string
-    | IAccountMeta<string> = string,
+    | AccountMeta<string> = string,
   TAccountOwnerAssociatedAccountAddress extends
     | string
-    | IAccountMeta<string> = string,
-  TAccountOwnerTokenMintAddress extends string | IAccountMeta<string> = string,
-  TAccountWalletAddress extends string | IAccountMeta<string> = string,
+    | AccountMeta<string> = string,
+  TAccountOwnerTokenMintAddress extends string | AccountMeta<string> = string,
+  TAccountWalletAddress extends string | AccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+    | AccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountNestedAssociatedAccountAddress extends string
         ? WritableAccount<TAccountNestedAssociatedAccountAddress>
@@ -80,7 +81,7 @@ export type RecoverNestedAssociatedTokenInstruction<
         : TAccountOwnerTokenMintAddress,
       TAccountWalletAddress extends string
         ? WritableSignerAccount<TAccountWalletAddress> &
-            IAccountSignerMeta<TAccountWalletAddress>
+            AccountSignerMeta<TAccountWalletAddress>
         : TAccountWalletAddress,
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
@@ -95,7 +96,7 @@ export type RecoverNestedAssociatedTokenInstructionData = {
 
 export type RecoverNestedAssociatedTokenInstructionDataArgs = {};
 
-export function getRecoverNestedAssociatedTokenInstructionDataEncoder(): Encoder<RecoverNestedAssociatedTokenInstructionDataArgs> {
+export function getRecoverNestedAssociatedTokenInstructionDataEncoder(): FixedSizeEncoder<RecoverNestedAssociatedTokenInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({
@@ -105,11 +106,11 @@ export function getRecoverNestedAssociatedTokenInstructionDataEncoder(): Encoder
   );
 }
 
-export function getRecoverNestedAssociatedTokenInstructionDataDecoder(): Decoder<RecoverNestedAssociatedTokenInstructionData> {
+export function getRecoverNestedAssociatedTokenInstructionDataDecoder(): FixedSizeDecoder<RecoverNestedAssociatedTokenInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getRecoverNestedAssociatedTokenInstructionDataCodec(): Codec<
+export function getRecoverNestedAssociatedTokenInstructionDataCodec(): FixedSizeCodec<
   RecoverNestedAssociatedTokenInstructionDataArgs,
   RecoverNestedAssociatedTokenInstructionData
 > {
@@ -392,7 +393,7 @@ export function getRecoverNestedAssociatedTokenInstruction<
 
 export type ParsedRecoverNestedAssociatedTokenInstruction<
   TProgram extends string = typeof ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -416,11 +417,11 @@ export type ParsedRecoverNestedAssociatedTokenInstruction<
 
 export function parseRecoverNestedAssociatedTokenInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedRecoverNestedAssociatedTokenInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 7) {
     // TODO: Coded error.

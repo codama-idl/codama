@@ -1,5 +1,21 @@
 # @codama/renderers-js
 
+## 1.3.1
+
+### Patch Changes
+
+- [#718](https://github.com/codama-idl/codama/pull/718) [`6466226`](https://github.com/codama-idl/codama/commit/6466226471340209932a073176090b262aae0b84) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Use fixed size return types — e.g. `FixedSizeCodec` or `FixedSizeEncoder` — whenever possible. This avoid fixed-size codecs to be wrongly interpreted as variable-size codecs when wrapped in other codecs.
+
+- [#715](https://github.com/codama-idl/codama/pull/715) [`9536f33`](https://github.com/codama-idl/codama/commit/9536f337370535a6b747a0128ef0c030ae65d299) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix an issue where `getNextOptionalAccount` would not get generated even if optional accounts exist on the instruction.
+
+## 1.3.0
+
+### Minor Changes
+
+- [#714](https://github.com/codama-idl/codama/pull/714) [`855c094`](https://github.com/codama-idl/codama/commit/855c094e0a47ca0cc179bd2516f6dcfda1e3d552) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Use `ReadonlyUint8Arrays` with `InstructionWithData` types
+
+- [#713](https://github.com/codama-idl/codama/pull/713) [`364578e`](https://github.com/codama-idl/codama/commit/364578e45eca74fa24b452cc9ef22222da03ba39) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update `@solana/kit` dependencies and remove `I` prefixes in types
+
 ## 1.2.14
 
 ### Patch Changes

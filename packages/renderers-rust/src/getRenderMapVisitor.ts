@@ -29,7 +29,14 @@ import {
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
-import { getImportFromFactory, getTraitsFromNodeFactory, LinkOverrides, render, TraitOptions } from './utils';
+import {
+    getDiscriminatorConstants,
+    getImportFromFactory,
+    getTraitsFromNodeFactory,
+    LinkOverrides,
+    render,
+    TraitOptions,
+} from './utils';
 
 export type GetRenderMapOptions = {
     anchorTraits?: boolean;
@@ -60,6 +67,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
             extendVisitor(v, {
                 visitAccount(node) {
                     const typeManifest = visit(node, typeManifestVisitor);
+
+                    // Discriminator constants.
+                    const fields = resolveNestedTypeNode(node.data).fields;
+                    const discriminatorConstants = getDiscriminatorConstants({
+                        discriminatorNodes: node.discriminators ?? [],
+                        fields,
+                        getImportFrom,
+                        prefix: node.name,
+                        typeManifestVisitor,
+                    });
 
                     // Seeds.
                     const seedsImports = new ImportMap();
@@ -98,8 +115,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             account: node,
                             anchorTraits,
                             constantSeeds,
+                            discriminatorConstants: discriminatorConstants.render,
                             hasVariableSeeds,
                             imports: imports
+                                .mergeWith(discriminatorConstants.imports)
                                 .remove(`generatedAccounts::${pascalCase(node.name)}`)
                                 .toString(dependencyMap),
                             pda,
@@ -138,6 +157,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 'You may want to rename the conflicting attributes.',
                         );
                     }
+
+                    // Discriminator constants.
+                    const discriminatorConstants = getDiscriminatorConstants({
+                        discriminatorNodes: node.discriminators ?? [],
+                        fields: node.arguments,
+                        getImportFrom,
+                        prefix: node.name,
+                        typeManifestVisitor,
+                    });
 
                     // Instruction args.
                     const instructionArgs: {
@@ -207,9 +235,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         `instructions/${snakeCase(node.name)}.rs`,
                         render('instructionsPage.njk', {
                             dataTraits: dataTraits.render,
+                            discriminatorConstants: discriminatorConstants.render,
                             hasArgs,
                             hasOptional,
                             imports: imports
+                                .mergeWith(discriminatorConstants.imports)
                                 .remove(`generatedInstructions::${pascalCase(node.name)}`)
                                 .toString(dependencyMap),
                             instruction: node,

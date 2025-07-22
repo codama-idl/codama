@@ -16,17 +16,18 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IAccountSignerMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
@@ -41,13 +42,13 @@ export function getTransferDiscriminatorBytes() {
 
 export type TransferInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountSource extends string | IAccountMeta<string> = string,
-  TAccountDestination extends string | IAccountMeta<string> = string,
-  TAccountAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+  TAccountSource extends string | AccountMeta<string> = string,
+  TAccountDestination extends string | AccountMeta<string> = string,
+  TAccountAuthority extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountSource extends string
         ? WritableAccount<TAccountSource>
@@ -73,7 +74,7 @@ export type TransferInstructionDataArgs = {
   amount: number | bigint;
 };
 
-export function getTransferInstructionDataEncoder(): Encoder<TransferInstructionDataArgs> {
+export function getTransferInstructionDataEncoder(): FixedSizeEncoder<TransferInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -83,14 +84,14 @@ export function getTransferInstructionDataEncoder(): Encoder<TransferInstruction
   );
 }
 
-export function getTransferInstructionDataDecoder(): Decoder<TransferInstructionData> {
+export function getTransferInstructionDataDecoder(): FixedSizeDecoder<TransferInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getTransferInstructionDataCodec(): Codec<
+export function getTransferInstructionDataCodec(): FixedSizeCodec<
   TransferInstructionDataArgs,
   TransferInstructionData
 > {
@@ -129,7 +130,7 @@ export function getTransferInstruction<
   TAccountDestination,
   (typeof input)['authority'] extends TransactionSigner<TAccountAuthority>
     ? ReadonlySignerAccount<TAccountAuthority> &
-        IAccountSignerMeta<TAccountAuthority>
+        AccountSignerMeta<TAccountAuthority>
     : TAccountAuthority
 > {
   // Program address.
@@ -150,7 +151,7 @@ export function getTransferInstruction<
   const args = { ...input };
 
   // Remaining accounts.
-  const remainingAccounts: IAccountMeta[] = (args.multiSigners ?? []).map(
+  const remainingAccounts: AccountMeta[] = (args.multiSigners ?? []).map(
     (signer) => ({
       address: signer.address,
       role: AccountRole.READONLY_SIGNER,
@@ -176,7 +177,7 @@ export function getTransferInstruction<
     TAccountDestination,
     (typeof input)['authority'] extends TransactionSigner<TAccountAuthority>
       ? ReadonlySignerAccount<TAccountAuthority> &
-          IAccountSignerMeta<TAccountAuthority>
+          AccountSignerMeta<TAccountAuthority>
       : TAccountAuthority
   >;
 
@@ -185,7 +186,7 @@ export function getTransferInstruction<
 
 export type ParsedTransferInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -201,11 +202,11 @@ export type ParsedTransferInstruction<
 
 export function parseTransferInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedTransferInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.

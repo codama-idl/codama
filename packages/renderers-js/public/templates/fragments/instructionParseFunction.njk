@@ -3,7 +3,7 @@
 export type {{ instructionParsedType }}<
   TProgram extends string = typeof {{ programAddressConstant }},
   {% if hasAccounts %}
-    TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+    TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
   {% endif %}
 > = {
   programAddress: Address<TProgram>;
@@ -25,15 +25,15 @@ export type {{ instructionParsedType }}<
 export function {{ instructionParseFunction }}<
   TProgram extends string,
   {% if hasAccounts %}
-    TAccountMetas extends readonly IAccountMeta[],
+    TAccountMetas extends readonly AccountMeta[],
   {% endif %}
 >(
-  instruction: IInstruction<TProgram>
+  instruction: Instruction<TProgram>
     {% if hasAccounts %}
-      & IInstructionWithAccounts<TAccountMetas>
+      & InstructionWithAccounts<TAccountMetas>
     {% endif %}
     {% if hasData %}
-      & IInstructionWithData<Uint8Array>
+      & InstructionWithData<ReadonlyUint8Array>
     {% endif %}
 ): {{ instructionParsedType }}<TProgram {{ ', TAccountMetas' if hasAccounts }}> {
   {% if hasAccounts %}
@@ -47,17 +47,17 @@ export function {{ instructionParseFunction }}<
       accountIndex += 1;
       return accountMeta;
     }
-    {% if hasOptionalAccounts and instruction.optionalAccountStrategy === 'programId' %}
-      const getNextOptionalAccount = () => {
-        const accountMeta = getNextAccount();
-        return accountMeta.address === {{ programAddressConstant }} ? undefined : accountMeta;
-      };
-    {% elif hasOptionalAccounts and instruction.optionalAccountStrategy === 'omitted' %}
+    {% if hasOptionalAccounts and instruction.optionalAccountStrategy === 'omitted' %}
       let optionalAccountsRemaining = instruction.accounts.length - {{ minimumNumberOfAccounts }};
       const getNextOptionalAccount = () => {
         if (optionalAccountsRemaining === 0) return undefined;
         optionalAccountsRemaining -= 1;
         return getNextAccount();
+      };
+    {% elif hasOptionalAccounts %}
+      const getNextOptionalAccount = () => {
+        const accountMeta = getNextAccount();
+        return accountMeta.address === {{ programAddressConstant }} ? undefined : accountMeta;
       };
     {% endif %}
   {% endif %}

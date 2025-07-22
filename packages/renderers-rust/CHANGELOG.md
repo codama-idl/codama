@@ -1,5 +1,11 @@
 # @codama/renderers-rust
 
+## 1.1.1
+
+### Patch Changes
+
+- [#713](https://github.com/codama-idl/codama/pull/713) [`364578e`](https://github.com/codama-idl/codama/commit/364578e45eca74fa24b452cc9ef22222da03ba39) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update `@solana/kit` dependencies and remove `I` prefixes in types
+
 ## 1.1.0
 
 ### Minor Changes

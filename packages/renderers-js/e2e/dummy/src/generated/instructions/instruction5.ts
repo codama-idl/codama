@@ -13,40 +13,41 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
+  type ReadonlyUint8Array,
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
 export type Instruction5Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<TRemainingAccounts>;
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<TRemainingAccounts>;
 
 export type Instruction5InstructionData = { myArgument: bigint };
 
 export type Instruction5InstructionDataArgs = { myArgument?: number | bigint };
 
-export function getInstruction5InstructionDataEncoder(): Encoder<Instruction5InstructionDataArgs> {
+export function getInstruction5InstructionDataEncoder(): FixedSizeEncoder<Instruction5InstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['myArgument', getU64Encoder()]]),
     (value) => ({ ...value, myArgument: value.myArgument ?? 42 })
   );
 }
 
-export function getInstruction5InstructionDataDecoder(): Decoder<Instruction5InstructionData> {
+export function getInstruction5InstructionDataDecoder(): FixedSizeDecoder<Instruction5InstructionData> {
   return getStructDecoder([['myArgument', getU64Decoder()]]);
 }
 
-export function getInstruction5InstructionDataCodec(): Codec<
+export function getInstruction5InstructionDataCodec(): FixedSizeCodec<
   Instruction5InstructionDataArgs,
   Instruction5InstructionData
 > {
@@ -90,7 +91,7 @@ export type ParsedInstruction5Instruction<
 };
 
 export function parseInstruction5Instruction<TProgram extends string>(
-  instruction: IInstruction<TProgram> & IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> & InstructionWithData<ReadonlyUint8Array>
 ): ParsedInstruction5Instruction<TProgram> {
   return {
     programAddress: instruction.programAddress,
