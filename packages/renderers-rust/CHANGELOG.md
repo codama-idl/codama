@@ -1,5 +1,11 @@
 # @codama/renderers-rust
 
+## 1.1.2
+
+### Patch Changes
+
+- [#721](https://github.com/codama-idl/codama/pull/721) [`a305a91`](https://github.com/codama-idl/codama/commit/a305a91e04d2d420ac57c31ccbb0ea98fc7f8823) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Export discriminator constants for accounts and instructions
+
 ## 1.1.1
 
 ### Patch Changes
