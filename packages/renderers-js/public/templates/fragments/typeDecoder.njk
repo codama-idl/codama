@@ -2,5 +2,5 @@
 
 {{ macros.docblock(docs) }}
 export function {{ decoderFunction }}(): {{ decoderType }}<{{ strictName }}> {
-  return {{ manifest.decoder.render }};
+  return {{ manifest.decoder.render }}{% if useTypeCast %} as {{ decoderType }}<{{ strictName }}>{% endif %};
 }

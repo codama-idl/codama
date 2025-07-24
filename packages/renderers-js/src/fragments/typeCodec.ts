@@ -1,3 +1,5 @@
+import type { TypeNode } from '@codama/nodes';
+
 import { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
 import { Fragment, fragmentFromTemplate, mergeFragments } from './common';
@@ -11,6 +13,7 @@ export function getTypeCodecFragment(
         encoderDocs?: string[];
         manifest: Pick<TypeManifest, 'decoder' | 'encoder'>;
         name: string;
+        node: TypeNode;
         size: number | null;
     },
 ): Fragment {

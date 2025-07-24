@@ -122,3 +122,36 @@ test('it use a custom discriminator property for selected unions', async () => {
         "| { typeB: 'Move'; x: number; y: number }",
     ]);
 });
+
+test('it exports fixed-size discriminated union helpers with a type cast', async () => {
+    // Given.
+    const fixedSizeEnum = definedTypeNode({
+        name: 'choice',
+        type: enumTypeNode([
+            enumTupleVariantTypeNode('a', tupleTypeNode([numberTypeNode('u32')])),
+            enumStructVariantTypeNode(
+                'b',
+                structTypeNode([
+                    structFieldTypeNode({ name: 'x', type: numberTypeNode('u16') }),
+                    structFieldTypeNode({ name: 'y', type: numberTypeNode('u16') }),
+                ]),
+            ),
+        ]),
+    });
+
+    // When we render a discriminated union.
+    const renderMap = visit(fixedSizeEnum, getRenderMapVisitor());
+
+    // Then we expect the following helpers to be exported.
+    await renderMapContains(renderMap, 'types/choice.ts', [
+        'export function getChoiceEncoder(): FixedSizeEncoder< ChoiceArgs >',
+        'export function getChoiceDecoder(): FixedSizeDecoder< Choice >',
+        'export function getChoiceCodec(): FixedSizeCodec< ChoiceArgs, Choice >',
+    ]);
+
+    // And we expect the following type casts.
+    await renderMapContains(renderMap, 'types/choice.ts', [
+        'as FixedSizeEncoder< ChoiceArgs >',
+        'as FixedSizeDecoder< Choice >',
+    ]);
+});
