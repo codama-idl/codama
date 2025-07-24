@@ -367,6 +367,15 @@
   ],
   "types": [
     {
+      "name": "BurnArgs",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          { "name": "V1", "fields": [{ "name": "amount", "type": "u64" }] }
+        ]
+      }
+    },
+    {
       "name": "CpiRule",
       "docs": [
         "Controls which protocols can interact with the token by",

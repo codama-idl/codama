@@ -6,6 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
+export * from './burnArgs';
 export * from './cpiRule';
 export * from './metadataAdditionalFieldRestriction';
 export * from './metadataAdditionalFieldRule';
