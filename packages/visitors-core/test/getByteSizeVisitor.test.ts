@@ -1,18 +1,24 @@
 import {
+    arrayTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
     enumEmptyVariantTypeNode,
     enumStructVariantTypeNode,
     enumTupleVariantTypeNode,
     enumTypeNode,
+    fixedCountNode,
     fixedSizeTypeNode,
+    mapTypeNode,
     Node,
     NumberFormat,
     numberTypeNode,
+    prefixedCountNode,
     programLinkNode,
     programNode,
     publicKeyTypeNode,
+    remainderCountNode,
     rootNode,
+    setTypeNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -106,6 +112,27 @@ test('it gets the size of variable data enums', () => {
         ]),
         null,
     );
+});
+
+test('it gets the size of fixed size array-like nodes with `FixCountNodes`', () => {
+    expectSize(arrayTypeNode(numberTypeNode('u16'), fixedCountNode(3)), 2 * 3);
+    expectSize(setTypeNode(numberTypeNode('u16'), fixedCountNode(3)), 2 * 3);
+    expectSize(mapTypeNode(numberTypeNode('u16'), numberTypeNode('u8'), fixedCountNode(3)), (2 + 1) * 3);
+});
+
+test('it returns null for array-like nodes with `PrefixedCountNodes`', () => {
+    expectSize(arrayTypeNode(numberTypeNode('u16'), prefixedCountNode(numberTypeNode('u32'))), null);
+    expectSize(setTypeNode(numberTypeNode('u16'), prefixedCountNode(numberTypeNode('u32'))), null);
+    expectSize(
+        mapTypeNode(numberTypeNode('u16'), numberTypeNode('u8'), prefixedCountNode(numberTypeNode('u32'))),
+        null,
+    );
+});
+
+test('it returns null for array-like nodes with `RemainderCountNodes`', () => {
+    expectSize(arrayTypeNode(numberTypeNode('u16'), remainderCountNode()), null);
+    expectSize(setTypeNode(numberTypeNode('u16'), remainderCountNode()), null);
+    expectSize(mapTypeNode(numberTypeNode('u16'), numberTypeNode('u8'), remainderCountNode()), null);
 });
 
 test('it follows linked nodes using the correct paths', () => {

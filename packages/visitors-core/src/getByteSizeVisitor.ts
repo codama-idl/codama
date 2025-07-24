@@ -54,10 +54,10 @@ export function getByteSizeVisitor(
 
                 visitArrayType(node, { self }) {
                     if (!isNode(node.count, 'fixedCountNode')) return null;
-                    const fixedSize = node.count.value;
+                    const count = node.count.value;
+                    if (count === 0) return 0;
                     const itemSize = visit(node.item, self);
-                    const arraySize = itemSize !== null ? itemSize * fixedSize : null;
-                    return fixedSize === 0 ? 0 : arraySize;
+                    return itemSize !== null ? itemSize * count : null;
                 },
 
                 visitDefinedType(node, { self }) {
@@ -116,6 +116,15 @@ export function getByteSizeVisitor(
                     return visit(node.type, self);
                 },
 
+                visitMapType(node, { self }) {
+                    if (!isNode(node.count, 'fixedCountNode')) return null;
+                    const count = node.count.value;
+                    if (count === 0) return 0;
+                    const keySize = visit(node.key, self);
+                    const valueSize = visit(node.value, self);
+                    return keySize !== null && valueSize !== null ? (keySize + valueSize) * count : null;
+                },
+
                 visitNumberType(node) {
                     if (node.format === 'shortU16') return null;
                     return parseInt(node.format.slice(1), 10) / 8;
@@ -130,6 +139,14 @@ export function getByteSizeVisitor(
 
                 visitPublicKeyType() {
                     return 32;
+                },
+
+                visitSetType(node, { self }) {
+                    if (!isNode(node.count, 'fixedCountNode')) return null;
+                    const count = node.count.value;
+                    if (count === 0) return 0;
+                    const itemSize = visit(node.item, self);
+                    return itemSize !== null ? itemSize * count : null;
                 },
             }),
         v => recordNodeStackVisitor(v, stack),
