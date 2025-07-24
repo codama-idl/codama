@@ -1,4 +1,4 @@
-import { InstructionNode } from '@codama/nodes';
+import { InstructionNode, structTypeNodeFromInstructionArgumentNodes } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
@@ -24,6 +24,7 @@ export function getInstructionDataFragment(
         manifest: dataArgsManifest,
         name: instructionDataName,
         nameApi,
+        node: structTypeNodeFromInstructionArgumentNodes(instructionNode.arguments),
         size: scope.size,
     });
 }
