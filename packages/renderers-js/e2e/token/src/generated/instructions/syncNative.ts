@@ -56,11 +56,13 @@ export function getSyncNativeInstructionDataEncoder(): FixedSizeEncoder<SyncNati
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: SYNC_NATIVE_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<SyncNativeInstructionDataArgs>;
 }
 
 export function getSyncNativeInstructionDataDecoder(): FixedSizeDecoder<SyncNativeInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<SyncNativeInstructionData>;
 }
 
 export function getSyncNativeInstructionDataCodec(): FixedSizeCodec<
@@ -70,7 +72,7 @@ export function getSyncNativeInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getSyncNativeInstructionDataEncoder(),
     getSyncNativeInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<SyncNativeInstructionDataArgs, SyncNativeInstructionData>;
 }
 
 export type SyncNativeInput<TAccountAccount extends string = string> = {

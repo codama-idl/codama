@@ -72,14 +72,14 @@ export function getTransferSolInstructionDataEncoder(): FixedSizeEncoder<Transfe
       ['amount', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: TRANSFER_SOL_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<TransferSolInstructionDataArgs>;
 }
 
 export function getTransferSolInstructionDataDecoder(): FixedSizeDecoder<TransferSolInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['amount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<TransferSolInstructionData>;
 }
 
 export function getTransferSolInstructionDataCodec(): FixedSizeCodec<
@@ -89,7 +89,10 @@ export function getTransferSolInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getTransferSolInstructionDataEncoder(),
     getTransferSolInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    TransferSolInstructionDataArgs,
+    TransferSolInstructionData
+  >;
 }
 
 export type TransferSolInput<

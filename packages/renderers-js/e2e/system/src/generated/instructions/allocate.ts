@@ -64,14 +64,14 @@ export function getAllocateInstructionDataEncoder(): FixedSizeEncoder<AllocateIn
       ['space', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: ALLOCATE_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<AllocateInstructionDataArgs>;
 }
 
 export function getAllocateInstructionDataDecoder(): FixedSizeDecoder<AllocateInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['space', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<AllocateInstructionData>;
 }
 
 export function getAllocateInstructionDataCodec(): FixedSizeCodec<
@@ -81,7 +81,7 @@ export function getAllocateInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getAllocateInstructionDataEncoder(),
     getAllocateInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<AllocateInstructionDataArgs, AllocateInstructionData>;
 }
 
 export type AllocateInput<TAccountNewAccount extends string = string> = {

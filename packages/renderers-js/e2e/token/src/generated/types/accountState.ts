@@ -24,16 +24,19 @@ export enum AccountState {
 export type AccountStateArgs = AccountState;
 
 export function getAccountStateEncoder(): FixedSizeEncoder<AccountStateArgs> {
-  return getEnumEncoder(AccountState);
+  return getEnumEncoder(AccountState) as FixedSizeEncoder<AccountStateArgs>;
 }
 
 export function getAccountStateDecoder(): FixedSizeDecoder<AccountState> {
-  return getEnumDecoder(AccountState);
+  return getEnumDecoder(AccountState) as FixedSizeDecoder<AccountState>;
 }
 
 export function getAccountStateCodec(): FixedSizeCodec<
   AccountStateArgs,
   AccountState
 > {
-  return combineCodec(getAccountStateEncoder(), getAccountStateDecoder());
+  return combineCodec(
+    getAccountStateEncoder(),
+    getAccountStateDecoder()
+  ) as FixedSizeCodec<AccountStateArgs, AccountState>;
 }

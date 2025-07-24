@@ -73,14 +73,14 @@ export function getInitializeAccount3InstructionDataEncoder(): FixedSizeEncoder<
       ['owner', getAddressEncoder()],
     ]),
     (value) => ({ ...value, discriminator: INITIALIZE_ACCOUNT3_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<InitializeAccount3InstructionDataArgs>;
 }
 
 export function getInitializeAccount3InstructionDataDecoder(): FixedSizeDecoder<InitializeAccount3InstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['owner', getAddressDecoder()],
-  ]);
+  ]) as FixedSizeDecoder<InitializeAccount3InstructionData>;
 }
 
 export function getInitializeAccount3InstructionDataCodec(): FixedSizeCodec<
@@ -90,7 +90,10 @@ export function getInitializeAccount3InstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInitializeAccount3InstructionDataEncoder(),
     getInitializeAccount3InstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    InitializeAccount3InstructionDataArgs,
+    InitializeAccount3InstructionData
+  >;
 }
 
 export type InitializeAccount3Input<

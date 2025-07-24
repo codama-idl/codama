@@ -78,14 +78,14 @@ export function getBurnInstructionDataEncoder(): FixedSizeEncoder<BurnInstructio
       ['amount', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: BURN_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<BurnInstructionDataArgs>;
 }
 
 export function getBurnInstructionDataDecoder(): FixedSizeDecoder<BurnInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<BurnInstructionData>;
 }
 
 export function getBurnInstructionDataCodec(): FixedSizeCodec<
@@ -95,7 +95,7 @@ export function getBurnInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getBurnInstructionDataEncoder(),
     getBurnInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<BurnInstructionDataArgs, BurnInstructionData>;
 }
 
 export type BurnInput<

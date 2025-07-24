@@ -59,11 +59,13 @@ export function getUpgradeNonceAccountInstructionDataEncoder(): FixedSizeEncoder
       ...value,
       discriminator: UPGRADE_NONCE_ACCOUNT_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<UpgradeNonceAccountInstructionDataArgs>;
 }
 
 export function getUpgradeNonceAccountInstructionDataDecoder(): FixedSizeDecoder<UpgradeNonceAccountInstructionData> {
-  return getStructDecoder([['discriminator', getU32Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU32Decoder()],
+  ]) as FixedSizeDecoder<UpgradeNonceAccountInstructionData>;
 }
 
 export function getUpgradeNonceAccountInstructionDataCodec(): FixedSizeCodec<
@@ -73,7 +75,10 @@ export function getUpgradeNonceAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getUpgradeNonceAccountInstructionDataEncoder(),
     getUpgradeNonceAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    UpgradeNonceAccountInstructionDataArgs,
+    UpgradeNonceAccountInstructionData
+  >;
 }
 
 export type UpgradeNonceAccountInput<

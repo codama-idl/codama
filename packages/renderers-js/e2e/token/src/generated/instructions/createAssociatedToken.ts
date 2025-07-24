@@ -91,11 +91,13 @@ export function getCreateAssociatedTokenInstructionDataEncoder(): FixedSizeEncod
       ...value,
       discriminator: CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<CreateAssociatedTokenInstructionDataArgs>;
 }
 
 export function getCreateAssociatedTokenInstructionDataDecoder(): FixedSizeDecoder<CreateAssociatedTokenInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<CreateAssociatedTokenInstructionData>;
 }
 
 export function getCreateAssociatedTokenInstructionDataCodec(): FixedSizeCodec<
@@ -105,7 +107,10 @@ export function getCreateAssociatedTokenInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getCreateAssociatedTokenInstructionDataEncoder(),
     getCreateAssociatedTokenInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    CreateAssociatedTokenInstructionDataArgs,
+    CreateAssociatedTokenInstructionData
+  >;
 }
 
 export type CreateAssociatedTokenAsyncInput<

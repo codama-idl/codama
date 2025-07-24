@@ -94,14 +94,14 @@ export function getWithdrawNonceAccountInstructionDataEncoder(): FixedSizeEncode
       ...value,
       discriminator: WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<WithdrawNonceAccountInstructionDataArgs>;
 }
 
 export function getWithdrawNonceAccountInstructionDataDecoder(): FixedSizeDecoder<WithdrawNonceAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['withdrawAmount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<WithdrawNonceAccountInstructionData>;
 }
 
 export function getWithdrawNonceAccountInstructionDataCodec(): FixedSizeCodec<
@@ -111,7 +111,10 @@ export function getWithdrawNonceAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getWithdrawNonceAccountInstructionDataEncoder(),
     getWithdrawNonceAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    WithdrawNonceAccountInstructionDataArgs,
+    WithdrawNonceAccountInstructionData
+  >;
 }
 
 export type WithdrawNonceAccountInput<

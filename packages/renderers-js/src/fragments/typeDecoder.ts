@@ -19,6 +19,7 @@ export function getTypeDecoderFragment(
         looseName: nameApi.dataArgsType(name),
         manifest,
         strictName: nameApi.dataType(name),
+        tightenReturnedType: typeof scope.size === 'number'
     })
         .mergeImportsWith(manifest.decoder)
         .addImports('solanaCodecsCore', `type ${decoderType}`);

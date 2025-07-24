@@ -86,7 +86,7 @@ export function getBurnCheckedInstructionDataEncoder(): FixedSizeEncoder<BurnChe
       ['decimals', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: BURN_CHECKED_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<BurnCheckedInstructionDataArgs>;
 }
 
 export function getBurnCheckedInstructionDataDecoder(): FixedSizeDecoder<BurnCheckedInstructionData> {
@@ -94,7 +94,7 @@ export function getBurnCheckedInstructionDataDecoder(): FixedSizeDecoder<BurnChe
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
     ['decimals', getU8Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<BurnCheckedInstructionData>;
 }
 
 export function getBurnCheckedInstructionDataCodec(): FixedSizeCodec<
@@ -104,7 +104,10 @@ export function getBurnCheckedInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getBurnCheckedInstructionDataEncoder(),
     getBurnCheckedInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    BurnCheckedInstructionDataArgs,
+    BurnCheckedInstructionData
+  >;
 }
 
 export type BurnCheckedInput<

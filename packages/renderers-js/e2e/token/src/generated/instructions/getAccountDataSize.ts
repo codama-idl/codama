@@ -59,11 +59,13 @@ export function getGetAccountDataSizeInstructionDataEncoder(): FixedSizeEncoder<
       ...value,
       discriminator: GET_ACCOUNT_DATA_SIZE_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<GetAccountDataSizeInstructionDataArgs>;
 }
 
 export function getGetAccountDataSizeInstructionDataDecoder(): FixedSizeDecoder<GetAccountDataSizeInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<GetAccountDataSizeInstructionData>;
 }
 
 export function getGetAccountDataSizeInstructionDataCodec(): FixedSizeCodec<
@@ -73,7 +75,10 @@ export function getGetAccountDataSizeInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getGetAccountDataSizeInstructionDataEncoder(),
     getGetAccountDataSizeInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    GetAccountDataSizeInstructionDataArgs,
+    GetAccountDataSizeInstructionData
+  >;
 }
 
 export type GetAccountDataSizeInput<TAccountMint extends string = string> = {

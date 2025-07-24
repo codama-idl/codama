@@ -68,14 +68,14 @@ export function getAmountToUiAmountInstructionDataEncoder(): FixedSizeEncoder<Am
       ['amount', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: AMOUNT_TO_UI_AMOUNT_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<AmountToUiAmountInstructionDataArgs>;
 }
 
 export function getAmountToUiAmountInstructionDataDecoder(): FixedSizeDecoder<AmountToUiAmountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<AmountToUiAmountInstructionData>;
 }
 
 export function getAmountToUiAmountInstructionDataCodec(): FixedSizeCodec<
@@ -85,7 +85,10 @@ export function getAmountToUiAmountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getAmountToUiAmountInstructionDataEncoder(),
     getAmountToUiAmountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    AmountToUiAmountInstructionDataArgs,
+    AmountToUiAmountInstructionData
+  >;
 }
 
 export type AmountToUiAmountInput<TAccountMint extends string = string> = {

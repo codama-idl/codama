@@ -90,7 +90,7 @@ export function getCreateAccountInstructionDataEncoder(): FixedSizeEncoder<Creat
       ['programAddress', getAddressEncoder()],
     ]),
     (value) => ({ ...value, discriminator: CREATE_ACCOUNT_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<CreateAccountInstructionDataArgs>;
 }
 
 export function getCreateAccountInstructionDataDecoder(): FixedSizeDecoder<CreateAccountInstructionData> {
@@ -99,7 +99,7 @@ export function getCreateAccountInstructionDataDecoder(): FixedSizeDecoder<Creat
     ['lamports', getLamportsDecoder(getU64Decoder())],
     ['space', getU64Decoder()],
     ['programAddress', getAddressDecoder()],
-  ]);
+  ]) as FixedSizeDecoder<CreateAccountInstructionData>;
 }
 
 export function getCreateAccountInstructionDataCodec(): FixedSizeCodec<
@@ -109,7 +109,10 @@ export function getCreateAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getCreateAccountInstructionDataEncoder(),
     getCreateAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    CreateAccountInstructionDataArgs,
+    CreateAccountInstructionData
+  >;
 }
 
 export type CreateAccountInput<

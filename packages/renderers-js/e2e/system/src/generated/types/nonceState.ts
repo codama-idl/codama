@@ -25,16 +25,23 @@ export enum NonceState {
 export type NonceStateArgs = NonceState;
 
 export function getNonceStateEncoder(): FixedSizeEncoder<NonceStateArgs> {
-  return getEnumEncoder(NonceState, { size: getU32Encoder() });
+  return getEnumEncoder(NonceState, {
+    size: getU32Encoder(),
+  }) as FixedSizeEncoder<NonceStateArgs>;
 }
 
 export function getNonceStateDecoder(): FixedSizeDecoder<NonceState> {
-  return getEnumDecoder(NonceState, { size: getU32Decoder() });
+  return getEnumDecoder(NonceState, {
+    size: getU32Decoder(),
+  }) as FixedSizeDecoder<NonceState>;
 }
 
 export function getNonceStateCodec(): FixedSizeCodec<
   NonceStateArgs,
   NonceState
 > {
-  return combineCodec(getNonceStateEncoder(), getNonceStateDecoder());
+  return combineCodec(
+    getNonceStateEncoder(),
+    getNonceStateDecoder()
+  ) as FixedSizeCodec<NonceStateArgs, NonceState>;
 }

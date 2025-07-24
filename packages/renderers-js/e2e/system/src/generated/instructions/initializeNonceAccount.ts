@@ -82,14 +82,14 @@ export function getInitializeNonceAccountInstructionDataEncoder(): FixedSizeEnco
       ...value,
       discriminator: INITIALIZE_NONCE_ACCOUNT_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<InitializeNonceAccountInstructionDataArgs>;
 }
 
 export function getInitializeNonceAccountInstructionDataDecoder(): FixedSizeDecoder<InitializeNonceAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['nonceAuthority', getAddressDecoder()],
-  ]);
+  ]) as FixedSizeDecoder<InitializeNonceAccountInstructionData>;
 }
 
 export function getInitializeNonceAccountInstructionDataCodec(): FixedSizeCodec<
@@ -99,7 +99,10 @@ export function getInitializeNonceAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInitializeNonceAccountInstructionDataEncoder(),
     getInitializeNonceAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    InitializeNonceAccountInstructionDataArgs,
+    InitializeNonceAccountInstructionData
+  >;
 }
 
 export type InitializeNonceAccountInput<

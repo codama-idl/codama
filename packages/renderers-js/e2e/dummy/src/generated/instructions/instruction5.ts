@@ -40,11 +40,13 @@ export function getInstruction5InstructionDataEncoder(): FixedSizeEncoder<Instru
   return transformEncoder(
     getStructEncoder([['myArgument', getU64Encoder()]]),
     (value) => ({ ...value, myArgument: value.myArgument ?? 42 })
-  );
+  ) as FixedSizeEncoder<Instruction5InstructionDataArgs>;
 }
 
 export function getInstruction5InstructionDataDecoder(): FixedSizeDecoder<Instruction5InstructionData> {
-  return getStructDecoder([['myArgument', getU64Decoder()]]);
+  return getStructDecoder([
+    ['myArgument', getU64Decoder()],
+  ]) as FixedSizeDecoder<Instruction5InstructionData>;
 }
 
 export function getInstruction5InstructionDataCodec(): FixedSizeCodec<
@@ -54,7 +56,10 @@ export function getInstruction5InstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInstruction5InstructionDataEncoder(),
     getInstruction5InstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    Instruction5InstructionDataArgs,
+    Instruction5InstructionData
+  >;
 }
 
 export type Instruction5Input = {

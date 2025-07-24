@@ -77,14 +77,14 @@ export function getAuthorizeNonceAccountInstructionDataEncoder(): FixedSizeEncod
       ...value,
       discriminator: AUTHORIZE_NONCE_ACCOUNT_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<AuthorizeNonceAccountInstructionDataArgs>;
 }
 
 export function getAuthorizeNonceAccountInstructionDataDecoder(): FixedSizeDecoder<AuthorizeNonceAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['newNonceAuthority', getAddressDecoder()],
-  ]);
+  ]) as FixedSizeDecoder<AuthorizeNonceAccountInstructionData>;
 }
 
 export function getAuthorizeNonceAccountInstructionDataCodec(): FixedSizeCodec<
@@ -94,7 +94,10 @@ export function getAuthorizeNonceAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getAuthorizeNonceAccountInstructionDataEncoder(),
     getAuthorizeNonceAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    AuthorizeNonceAccountInstructionDataArgs,
+    AuthorizeNonceAccountInstructionData
+  >;
 }
 
 export type AuthorizeNonceAccountInput<

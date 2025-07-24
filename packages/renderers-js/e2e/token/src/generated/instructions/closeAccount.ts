@@ -69,11 +69,13 @@ export function getCloseAccountInstructionDataEncoder(): FixedSizeEncoder<CloseA
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: CLOSE_ACCOUNT_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<CloseAccountInstructionDataArgs>;
 }
 
 export function getCloseAccountInstructionDataDecoder(): FixedSizeDecoder<CloseAccountInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<CloseAccountInstructionData>;
 }
 
 export function getCloseAccountInstructionDataCodec(): FixedSizeCodec<
@@ -83,7 +85,10 @@ export function getCloseAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getCloseAccountInstructionDataEncoder(),
     getCloseAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    CloseAccountInstructionDataArgs,
+    CloseAccountInstructionData
+  >;
 }
 
 export type CloseAccountInput<

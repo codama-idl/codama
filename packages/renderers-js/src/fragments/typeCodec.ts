@@ -29,6 +29,7 @@ export function getTypeCodecFragment(
                 looseName: nameApi.dataArgsType(name),
                 manifest,
                 strictName: nameApi.dataType(name),
+                tightenReturnedType: typeof scope.size === 'number'
             }).addImports('solanaCodecsCore', [`type ${codecType}`, 'combineCodec']),
         ],
         renders => renders.join('\n\n'),

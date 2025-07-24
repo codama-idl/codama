@@ -74,14 +74,14 @@ export function getInitializeMultisigInstructionDataEncoder(): FixedSizeEncoder<
       ['m', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: INITIALIZE_MULTISIG_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<InitializeMultisigInstructionDataArgs>;
 }
 
 export function getInitializeMultisigInstructionDataDecoder(): FixedSizeDecoder<InitializeMultisigInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['m', getU8Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<InitializeMultisigInstructionData>;
 }
 
 export function getInitializeMultisigInstructionDataCodec(): FixedSizeCodec<
@@ -91,7 +91,10 @@ export function getInitializeMultisigInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInitializeMultisigInstructionDataEncoder(),
     getInitializeMultisigInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    InitializeMultisigInstructionDataArgs,
+    InitializeMultisigInstructionData
+  >;
 }
 
 export type InitializeMultisigInput<

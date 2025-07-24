@@ -86,7 +86,7 @@ export function getMintToCheckedInstructionDataEncoder(): FixedSizeEncoder<MintT
       ['decimals', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: MINT_TO_CHECKED_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<MintToCheckedInstructionDataArgs>;
 }
 
 export function getMintToCheckedInstructionDataDecoder(): FixedSizeDecoder<MintToCheckedInstructionData> {
@@ -94,7 +94,7 @@ export function getMintToCheckedInstructionDataDecoder(): FixedSizeDecoder<MintT
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
     ['decimals', getU8Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<MintToCheckedInstructionData>;
 }
 
 export function getMintToCheckedInstructionDataCodec(): FixedSizeCodec<
@@ -104,7 +104,10 @@ export function getMintToCheckedInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getMintToCheckedInstructionDataEncoder(),
     getMintToCheckedInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    MintToCheckedInstructionDataArgs,
+    MintToCheckedInstructionData
+  >;
 }
 
 export type MintToCheckedInput<

@@ -81,14 +81,14 @@ export function getMintToInstructionDataEncoder(): FixedSizeEncoder<MintToInstru
       ['amount', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: MINT_TO_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<MintToInstructionDataArgs>;
 }
 
 export function getMintToInstructionDataDecoder(): FixedSizeDecoder<MintToInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<MintToInstructionData>;
 }
 
 export function getMintToInstructionDataCodec(): FixedSizeCodec<
@@ -98,7 +98,7 @@ export function getMintToInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getMintToInstructionDataEncoder(),
     getMintToInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<MintToInstructionDataArgs, MintToInstructionData>;
 }
 
 export type MintToInput<

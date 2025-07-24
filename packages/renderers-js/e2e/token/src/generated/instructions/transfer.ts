@@ -81,14 +81,14 @@ export function getTransferInstructionDataEncoder(): FixedSizeEncoder<TransferIn
       ['amount', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: TRANSFER_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<TransferInstructionDataArgs>;
 }
 
 export function getTransferInstructionDataDecoder(): FixedSizeDecoder<TransferInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<TransferInstructionData>;
 }
 
 export function getTransferInstructionDataCodec(): FixedSizeCodec<
@@ -98,7 +98,7 @@ export function getTransferInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getTransferInstructionDataEncoder(),
     getTransferInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<TransferInstructionDataArgs, TransferInstructionData>;
 }
 
 export type TransferInput<

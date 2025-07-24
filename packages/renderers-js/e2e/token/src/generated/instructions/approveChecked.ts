@@ -90,7 +90,7 @@ export function getApproveCheckedInstructionDataEncoder(): FixedSizeEncoder<Appr
       ['decimals', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: APPROVE_CHECKED_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<ApproveCheckedInstructionDataArgs>;
 }
 
 export function getApproveCheckedInstructionDataDecoder(): FixedSizeDecoder<ApproveCheckedInstructionData> {
@@ -98,7 +98,7 @@ export function getApproveCheckedInstructionDataDecoder(): FixedSizeDecoder<Appr
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
     ['decimals', getU8Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<ApproveCheckedInstructionData>;
 }
 
 export function getApproveCheckedInstructionDataCodec(): FixedSizeCodec<
@@ -108,7 +108,10 @@ export function getApproveCheckedInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getApproveCheckedInstructionDataEncoder(),
     getApproveCheckedInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    ApproveCheckedInstructionDataArgs,
+    ApproveCheckedInstructionData
+  >;
 }
 
 export type ApproveCheckedInput<

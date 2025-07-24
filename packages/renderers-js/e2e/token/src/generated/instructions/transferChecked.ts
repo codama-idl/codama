@@ -90,7 +90,7 @@ export function getTransferCheckedInstructionDataEncoder(): FixedSizeEncoder<Tra
       ['decimals', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: TRANSFER_CHECKED_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<TransferCheckedInstructionDataArgs>;
 }
 
 export function getTransferCheckedInstructionDataDecoder(): FixedSizeDecoder<TransferCheckedInstructionData> {
@@ -98,7 +98,7 @@ export function getTransferCheckedInstructionDataDecoder(): FixedSizeDecoder<Tra
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
     ['decimals', getU8Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<TransferCheckedInstructionData>;
 }
 
 export function getTransferCheckedInstructionDataCodec(): FixedSizeCodec<
@@ -108,7 +108,10 @@ export function getTransferCheckedInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getTransferCheckedInstructionDataEncoder(),
     getTransferCheckedInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    TransferCheckedInstructionDataArgs,
+    TransferCheckedInstructionData
+  >;
 }
 
 export type TransferCheckedInput<

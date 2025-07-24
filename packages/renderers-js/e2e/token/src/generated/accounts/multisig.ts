@@ -54,7 +54,7 @@ export function getMultisigEncoder(): FixedSizeEncoder<MultisigArgs> {
     ['n', getU8Encoder()],
     ['isInitialized', getBooleanEncoder()],
     ['signers', getArrayEncoder(getAddressEncoder(), { size: 11 })],
-  ]);
+  ]) as FixedSizeEncoder<MultisigArgs>;
 }
 
 export function getMultisigDecoder(): FixedSizeDecoder<Multisig> {
@@ -63,11 +63,14 @@ export function getMultisigDecoder(): FixedSizeDecoder<Multisig> {
     ['n', getU8Decoder()],
     ['isInitialized', getBooleanDecoder()],
     ['signers', getArrayDecoder(getAddressDecoder(), { size: 11 })],
-  ]);
+  ]) as FixedSizeDecoder<Multisig>;
 }
 
 export function getMultisigCodec(): FixedSizeCodec<MultisigArgs, Multisig> {
-  return combineCodec(getMultisigEncoder(), getMultisigDecoder());
+  return combineCodec(
+    getMultisigEncoder(),
+    getMultisigDecoder()
+  ) as FixedSizeCodec<MultisigArgs, Multisig>;
 }
 
 export function decodeMultisig<TAddress extends string = string>(

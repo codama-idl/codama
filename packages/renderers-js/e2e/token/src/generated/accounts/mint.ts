@@ -94,7 +94,7 @@ export function getMintEncoder(): FixedSizeEncoder<MintArgs> {
         noneValue: 'zeroes',
       }),
     ],
-  ]);
+  ]) as FixedSizeEncoder<MintArgs>;
 }
 
 export function getMintDecoder(): FixedSizeDecoder<Mint> {
@@ -116,11 +116,14 @@ export function getMintDecoder(): FixedSizeDecoder<Mint> {
         noneValue: 'zeroes',
       }),
     ],
-  ]);
+  ]) as FixedSizeDecoder<Mint>;
 }
 
 export function getMintCodec(): FixedSizeCodec<MintArgs, Mint> {
-  return combineCodec(getMintEncoder(), getMintDecoder());
+  return combineCodec(getMintEncoder(), getMintDecoder()) as FixedSizeCodec<
+    MintArgs,
+    Mint
+  >;
 }
 
 export function decodeMint<TAddress extends string = string>(

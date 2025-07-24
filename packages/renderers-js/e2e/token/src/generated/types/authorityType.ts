@@ -25,16 +25,19 @@ export enum AuthorityType {
 export type AuthorityTypeArgs = AuthorityType;
 
 export function getAuthorityTypeEncoder(): FixedSizeEncoder<AuthorityTypeArgs> {
-  return getEnumEncoder(AuthorityType);
+  return getEnumEncoder(AuthorityType) as FixedSizeEncoder<AuthorityTypeArgs>;
 }
 
 export function getAuthorityTypeDecoder(): FixedSizeDecoder<AuthorityType> {
-  return getEnumDecoder(AuthorityType);
+  return getEnumDecoder(AuthorityType) as FixedSizeDecoder<AuthorityType>;
 }
 
 export function getAuthorityTypeCodec(): FixedSizeCodec<
   AuthorityTypeArgs,
   AuthorityType
 > {
-  return combineCodec(getAuthorityTypeEncoder(), getAuthorityTypeDecoder());
+  return combineCodec(
+    getAuthorityTypeEncoder(),
+    getAuthorityTypeDecoder()
+  ) as FixedSizeCodec<AuthorityTypeArgs, AuthorityType>;
 }

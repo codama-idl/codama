@@ -103,11 +103,13 @@ export function getRecoverNestedAssociatedTokenInstructionDataEncoder(): FixedSi
       ...value,
       discriminator: RECOVER_NESTED_ASSOCIATED_TOKEN_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<RecoverNestedAssociatedTokenInstructionDataArgs>;
 }
 
 export function getRecoverNestedAssociatedTokenInstructionDataDecoder(): FixedSizeDecoder<RecoverNestedAssociatedTokenInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<RecoverNestedAssociatedTokenInstructionData>;
 }
 
 export function getRecoverNestedAssociatedTokenInstructionDataCodec(): FixedSizeCodec<
@@ -117,7 +119,10 @@ export function getRecoverNestedAssociatedTokenInstructionDataCodec(): FixedSize
   return combineCodec(
     getRecoverNestedAssociatedTokenInstructionDataEncoder(),
     getRecoverNestedAssociatedTokenInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    RecoverNestedAssociatedTokenInstructionDataArgs,
+    RecoverNestedAssociatedTokenInstructionData
+  >;
 }
 
 export type RecoverNestedAssociatedTokenAsyncInput<

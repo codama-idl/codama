@@ -69,11 +69,13 @@ export function getThawAccountInstructionDataEncoder(): FixedSizeEncoder<ThawAcc
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: THAW_ACCOUNT_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<ThawAccountInstructionDataArgs>;
 }
 
 export function getThawAccountInstructionDataDecoder(): FixedSizeDecoder<ThawAccountInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<ThawAccountInstructionData>;
 }
 
 export function getThawAccountInstructionDataCodec(): FixedSizeCodec<
@@ -83,7 +85,10 @@ export function getThawAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getThawAccountInstructionDataEncoder(),
     getThawAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    ThawAccountInstructionDataArgs,
+    ThawAccountInstructionData
+  >;
 }
 
 export type ThawAccountInput<

@@ -81,14 +81,14 @@ export function getApproveInstructionDataEncoder(): FixedSizeEncoder<ApproveInst
       ['amount', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: APPROVE_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<ApproveInstructionDataArgs>;
 }
 
 export function getApproveInstructionDataDecoder(): FixedSizeDecoder<ApproveInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<ApproveInstructionData>;
 }
 
 export function getApproveInstructionDataCodec(): FixedSizeCodec<
@@ -98,7 +98,7 @@ export function getApproveInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getApproveInstructionDataEncoder(),
     getApproveInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<ApproveInstructionDataArgs, ApproveInstructionData>;
 }
 
 export type ApproveInput<

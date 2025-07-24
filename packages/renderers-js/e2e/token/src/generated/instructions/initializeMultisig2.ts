@@ -67,14 +67,14 @@ export function getInitializeMultisig2InstructionDataEncoder(): FixedSizeEncoder
       ['m', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: INITIALIZE_MULTISIG2_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<InitializeMultisig2InstructionDataArgs>;
 }
 
 export function getInitializeMultisig2InstructionDataDecoder(): FixedSizeDecoder<InitializeMultisig2InstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['m', getU8Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<InitializeMultisig2InstructionData>;
 }
 
 export function getInitializeMultisig2InstructionDataCodec(): FixedSizeCodec<
@@ -84,7 +84,10 @@ export function getInitializeMultisig2InstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInitializeMultisig2InstructionDataEncoder(),
     getInitializeMultisig2InstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    InitializeMultisig2InstructionDataArgs,
+    InitializeMultisig2InstructionData
+  >;
 }
 
 export type InitializeMultisig2Input<TAccountMultisig extends string = string> =

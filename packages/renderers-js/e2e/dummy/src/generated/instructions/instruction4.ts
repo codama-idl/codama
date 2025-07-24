@@ -36,11 +36,15 @@ export type Instruction4InstructionData = { myArgument: bigint };
 export type Instruction4InstructionDataArgs = { myArgument: number | bigint };
 
 export function getInstruction4InstructionDataEncoder(): FixedSizeEncoder<Instruction4InstructionDataArgs> {
-  return getStructEncoder([['myArgument', getU64Encoder()]]);
+  return getStructEncoder([
+    ['myArgument', getU64Encoder()],
+  ]) as FixedSizeEncoder<Instruction4InstructionDataArgs>;
 }
 
 export function getInstruction4InstructionDataDecoder(): FixedSizeDecoder<Instruction4InstructionData> {
-  return getStructDecoder([['myArgument', getU64Decoder()]]);
+  return getStructDecoder([
+    ['myArgument', getU64Decoder()],
+  ]) as FixedSizeDecoder<Instruction4InstructionData>;
 }
 
 export function getInstruction4InstructionDataCodec(): FixedSizeCodec<
@@ -50,7 +54,10 @@ export function getInstruction4InstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInstruction4InstructionDataEncoder(),
     getInstruction4InstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    Instruction4InstructionDataArgs,
+    Instruction4InstructionData
+  >;
 }
 
 export type Instruction4Input = {

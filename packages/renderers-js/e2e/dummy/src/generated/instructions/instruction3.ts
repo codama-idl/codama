@@ -46,11 +46,13 @@ export function getInstruction3InstructionDataEncoder(): FixedSizeEncoder<Instru
   return transformEncoder(
     getStructEncoder([['discriminator', getU32Encoder()]]),
     (value) => ({ ...value, discriminator: INSTRUCTION3_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<Instruction3InstructionDataArgs>;
 }
 
 export function getInstruction3InstructionDataDecoder(): FixedSizeDecoder<Instruction3InstructionData> {
-  return getStructDecoder([['discriminator', getU32Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU32Decoder()],
+  ]) as FixedSizeDecoder<Instruction3InstructionData>;
 }
 
 export function getInstruction3InstructionDataCodec(): FixedSizeCodec<
@@ -60,7 +62,10 @@ export function getInstruction3InstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInstruction3InstructionDataEncoder(),
     getInstruction3InstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    Instruction3InstructionDataArgs,
+    Instruction3InstructionData
+  >;
 }
 
 export type Instruction3Input = {};

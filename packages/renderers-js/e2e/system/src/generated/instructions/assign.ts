@@ -67,14 +67,14 @@ export function getAssignInstructionDataEncoder(): FixedSizeEncoder<AssignInstru
       ['programAddress', getAddressEncoder()],
     ]),
     (value) => ({ ...value, discriminator: ASSIGN_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<AssignInstructionDataArgs>;
 }
 
 export function getAssignInstructionDataDecoder(): FixedSizeDecoder<AssignInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['programAddress', getAddressDecoder()],
-  ]);
+  ]) as FixedSizeDecoder<AssignInstructionData>;
 }
 
 export function getAssignInstructionDataCodec(): FixedSizeCodec<
@@ -84,7 +84,7 @@ export function getAssignInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getAssignInstructionDataEncoder(),
     getAssignInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<AssignInstructionDataArgs, AssignInstructionData>;
 }
 
 export type AssignInput<TAccountAccount extends string = string> = {

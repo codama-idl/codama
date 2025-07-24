@@ -65,11 +65,13 @@ export function getRevokeInstructionDataEncoder(): FixedSizeEncoder<RevokeInstru
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: REVOKE_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<RevokeInstructionDataArgs>;
 }
 
 export function getRevokeInstructionDataDecoder(): FixedSizeDecoder<RevokeInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<RevokeInstructionData>;
 }
 
 export function getRevokeInstructionDataCodec(): FixedSizeCodec<
@@ -79,7 +81,7 @@ export function getRevokeInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getRevokeInstructionDataEncoder(),
     getRevokeInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<RevokeInstructionDataArgs, RevokeInstructionData>;
 }
 
 export type RevokeInput<

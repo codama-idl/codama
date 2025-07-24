@@ -100,14 +100,14 @@ export function getExecuteInstructionDataEncoder(): FixedSizeEncoder<ExecuteInst
       ['amount', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: EXECUTE_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<ExecuteInstructionDataArgs>;
 }
 
 export function getExecuteInstructionDataDecoder(): FixedSizeDecoder<ExecuteInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['amount', getU64Decoder()],
-  ]);
+  ]) as FixedSizeDecoder<ExecuteInstructionData>;
 }
 
 export function getExecuteInstructionDataCodec(): FixedSizeCodec<
@@ -117,7 +117,7 @@ export function getExecuteInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getExecuteInstructionDataEncoder(),
     getExecuteInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<ExecuteInstructionDataArgs, ExecuteInstructionData>;
 }
 
 export type ExecuteAsyncInput<

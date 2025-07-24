@@ -67,7 +67,7 @@ export function getNonceEncoder(): FixedSizeEncoder<NonceArgs> {
     ['authority', getAddressEncoder()],
     ['blockhash', getAddressEncoder()],
     ['lamportsPerSignature', getLamportsEncoder(getU64Encoder())],
-  ]);
+  ]) as FixedSizeEncoder<NonceArgs>;
 }
 
 export function getNonceDecoder(): FixedSizeDecoder<Nonce> {
@@ -77,11 +77,14 @@ export function getNonceDecoder(): FixedSizeDecoder<Nonce> {
     ['authority', getAddressDecoder()],
     ['blockhash', getAddressDecoder()],
     ['lamportsPerSignature', getLamportsDecoder(getU64Decoder())],
-  ]);
+  ]) as FixedSizeDecoder<Nonce>;
 }
 
 export function getNonceCodec(): FixedSizeCodec<NonceArgs, Nonce> {
-  return combineCodec(getNonceEncoder(), getNonceDecoder());
+  return combineCodec(getNonceEncoder(), getNonceDecoder()) as FixedSizeCodec<
+    NonceArgs,
+    Nonce
+  >;
 }
 
 export function decodeNonce<TAddress extends string = string>(

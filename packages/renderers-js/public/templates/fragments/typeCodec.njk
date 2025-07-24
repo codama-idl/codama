@@ -2,5 +2,5 @@
 
 {{ macros.docblock(docs) }}
 export function {{ codecFunction }}(): {{ codecType }}<{{ looseName }}, {{ strictName }}> {
-  return combineCodec({{ encoderFunction }}(), {{ decoderFunction }}());
+  return combineCodec({{ encoderFunction }}(), {{ decoderFunction }}()){% if tightenReturnedType %} as {{ codecType }}<{{ looseName }}, {{ strictName }}>{% endif %};
 }

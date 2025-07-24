@@ -74,11 +74,13 @@ export function getAdvanceNonceAccountInstructionDataEncoder(): FixedSizeEncoder
       ...value,
       discriminator: ADVANCE_NONCE_ACCOUNT_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<AdvanceNonceAccountInstructionDataArgs>;
 }
 
 export function getAdvanceNonceAccountInstructionDataDecoder(): FixedSizeDecoder<AdvanceNonceAccountInstructionData> {
-  return getStructDecoder([['discriminator', getU32Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU32Decoder()],
+  ]) as FixedSizeDecoder<AdvanceNonceAccountInstructionData>;
 }
 
 export function getAdvanceNonceAccountInstructionDataCodec(): FixedSizeCodec<
@@ -88,7 +90,10 @@ export function getAdvanceNonceAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getAdvanceNonceAccountInstructionDataEncoder(),
     getAdvanceNonceAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    AdvanceNonceAccountInstructionDataArgs,
+    AdvanceNonceAccountInstructionData
+  >;
 }
 
 export type AdvanceNonceAccountInput<

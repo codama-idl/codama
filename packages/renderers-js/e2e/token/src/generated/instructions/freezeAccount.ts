@@ -69,11 +69,13 @@ export function getFreezeAccountInstructionDataEncoder(): FixedSizeEncoder<Freez
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({ ...value, discriminator: FREEZE_ACCOUNT_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<FreezeAccountInstructionDataArgs>;
 }
 
 export function getFreezeAccountInstructionDataDecoder(): FixedSizeDecoder<FreezeAccountInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<FreezeAccountInstructionData>;
 }
 
 export function getFreezeAccountInstructionDataCodec(): FixedSizeCodec<
@@ -83,7 +85,10 @@ export function getFreezeAccountInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getFreezeAccountInstructionDataEncoder(),
     getFreezeAccountInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    FreezeAccountInstructionDataArgs,
+    FreezeAccountInstructionData
+  >;
 }
 
 export type FreezeAccountInput<

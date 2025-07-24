@@ -59,11 +59,13 @@ export function getInitializeImmutableOwnerInstructionDataEncoder(): FixedSizeEn
       ...value,
       discriminator: INITIALIZE_IMMUTABLE_OWNER_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<InitializeImmutableOwnerInstructionDataArgs>;
 }
 
 export function getInitializeImmutableOwnerInstructionDataDecoder(): FixedSizeDecoder<InitializeImmutableOwnerInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<InitializeImmutableOwnerInstructionData>;
 }
 
 export function getInitializeImmutableOwnerInstructionDataCodec(): FixedSizeCodec<
@@ -73,7 +75,10 @@ export function getInitializeImmutableOwnerInstructionDataCodec(): FixedSizeCode
   return combineCodec(
     getInitializeImmutableOwnerInstructionDataEncoder(),
     getInitializeImmutableOwnerInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    InitializeImmutableOwnerInstructionDataArgs,
+    InitializeImmutableOwnerInstructionData
+  >;
 }
 
 export type InitializeImmutableOwnerInput<

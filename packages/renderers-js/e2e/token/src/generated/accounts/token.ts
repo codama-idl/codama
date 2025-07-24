@@ -125,7 +125,7 @@ export function getTokenEncoder(): FixedSizeEncoder<TokenArgs> {
         noneValue: 'zeroes',
       }),
     ],
-  ]);
+  ]) as FixedSizeEncoder<TokenArgs>;
 }
 
 export function getTokenDecoder(): FixedSizeDecoder<Token> {
@@ -156,11 +156,14 @@ export function getTokenDecoder(): FixedSizeDecoder<Token> {
         noneValue: 'zeroes',
       }),
     ],
-  ]);
+  ]) as FixedSizeDecoder<Token>;
 }
 
 export function getTokenCodec(): FixedSizeCodec<TokenArgs, Token> {
-  return combineCodec(getTokenEncoder(), getTokenDecoder());
+  return combineCodec(getTokenEncoder(), getTokenDecoder()) as FixedSizeCodec<
+    TokenArgs,
+    Token
+  >;
 }
 
 export function decodeToken<TAddress extends string = string>(

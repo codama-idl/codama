@@ -94,13 +94,13 @@ export function getInitializeInstructionDataEncoder(): FixedSizeEncoder<Initiali
   return transformEncoder(
     getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
     (value) => ({ ...value, discriminator: INITIALIZE_DISCRIMINATOR })
-  );
+  ) as FixedSizeEncoder<InitializeInstructionDataArgs>;
 }
 
 export function getInitializeInstructionDataDecoder(): FixedSizeDecoder<InitializeInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-  ]);
+  ]) as FixedSizeDecoder<InitializeInstructionData>;
 }
 
 export function getInitializeInstructionDataCodec(): FixedSizeCodec<
@@ -110,7 +110,7 @@ export function getInitializeInstructionDataCodec(): FixedSizeCodec<
   return combineCodec(
     getInitializeInstructionDataEncoder(),
     getInitializeInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<InitializeInstructionDataArgs, InitializeInstructionData>;
 }
 
 export type InitializeAsyncInput<

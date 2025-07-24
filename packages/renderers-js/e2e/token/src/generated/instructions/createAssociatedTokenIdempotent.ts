@@ -95,11 +95,13 @@ export function getCreateAssociatedTokenIdempotentInstructionDataEncoder(): Fixe
       ...value,
       discriminator: CREATE_ASSOCIATED_TOKEN_IDEMPOTENT_DISCRIMINATOR,
     })
-  );
+  ) as FixedSizeEncoder<CreateAssociatedTokenIdempotentInstructionDataArgs>;
 }
 
 export function getCreateAssociatedTokenIdempotentInstructionDataDecoder(): FixedSizeDecoder<CreateAssociatedTokenIdempotentInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', getU8Decoder()],
+  ]) as FixedSizeDecoder<CreateAssociatedTokenIdempotentInstructionData>;
 }
 
 export function getCreateAssociatedTokenIdempotentInstructionDataCodec(): FixedSizeCodec<
@@ -109,7 +111,10 @@ export function getCreateAssociatedTokenIdempotentInstructionDataCodec(): FixedS
   return combineCodec(
     getCreateAssociatedTokenIdempotentInstructionDataEncoder(),
     getCreateAssociatedTokenIdempotentInstructionDataDecoder()
-  );
+  ) as FixedSizeCodec<
+    CreateAssociatedTokenIdempotentInstructionDataArgs,
+    CreateAssociatedTokenIdempotentInstructionData
+  >;
 }
 
 export type CreateAssociatedTokenIdempotentAsyncInput<
