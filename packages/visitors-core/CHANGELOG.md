@@ -1,5 +1,15 @@
 # @codama/visitors-core
 
+## 1.3.1
+
+### Patch Changes
+
+- [#731](https://github.com/codama-idl/codama/pull/731) [`71caa87`](https://github.com/codama-idl/codama/commit/71caa87d7010ecfeed5fb08e79955e5a7e8c0779) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix size computation of array-like nodes (arrays, sets and maps).
+
+- Updated dependencies []:
+    - @codama/errors@1.3.1
+    - @codama/nodes@1.3.1
+
 ## 1.3.0
 
 ### Patch Changes
