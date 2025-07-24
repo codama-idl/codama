@@ -194,6 +194,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         encoderDocs: [],
                         manifest: visit(node, typeManifestVisitor),
                         name: node.name,
+                        node: node.type,
                         size: visit(node, byteSizeVisitor),
                         typeDocs: node.docs,
                         typeNode: node.type,
