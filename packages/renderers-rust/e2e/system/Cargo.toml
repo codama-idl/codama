@@ -13,24 +13,22 @@ fetch = ["dep:solana-client", "dep:solana-sdk"]
 [dependencies]
 anchor-lang = { version = "0.30.0", optional = true }
 borsh = "^0.10"
-num-derive = "^0.3"
+num-derive = "^0.4"
 num-traits = "^0.2"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde-big-array = { version = "^0.5", optional = true }
 serde_with = { version = "^3.0", optional = true }
-solana-account-info = "2.2.1"
+solana-account-info = "2.3.0"
 solana-client = { version = "~1.18", optional = true }
 solana-cpi = "2.2.1"
-solana-decode-error = "2.2.1"
-solana-instruction = "2.2.1"
-solana-msg = "2.2.1"
-solana-program-entrypoint = "2.2.1"
-solana-program-error = "2.2.1"
-solana-pubkey = { version = "2.2.1", features = ["curve25519", "borsh"] }
+solana-decode-error = "2.3.0"
+solana-instruction = "2.3.0"
+solana-program-error = "2.2.2"
+solana-pubkey = { version = "2.3.0", features = ["curve25519", "borsh"] }
 solana-sdk = { version = "~1.18", optional = true }
 thiserror = "^1.0"
 
 [dev-dependencies]
 assert_matches = "1.5.0"
 solana-account = "2.2.1"
-solana-sdk = "^2.1.6"
+solana-sdk = "^2.3.0"

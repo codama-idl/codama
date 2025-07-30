@@ -14,15 +14,9 @@ pub enum {{ program.name | pascalCase }}Error {
 {% endfor %}
 }
 
-impl solana_program_error::PrintProgramError for {{ program.name | pascalCase }}Error {
-    fn print<E>(&self) {
-        solana_msg::msg!(&self.to_string());
-    }
-}
-
-impl<T> solana_decode_error::DecodeError<T> for {{ program.name | pascalCase }}Error {
-    fn type_of() -> &'static str {
-        "{{ program.name | pascalCase }}Error"
+impl From<{{ program.name | pascalCase }}Error> for solana_program_error::ProgramError {
+    fn from(e: {{ program.name | pascalCase }}Error) -> Self {
+        solana_program_error::ProgramError::Custom(e as u32)
     }
 }
 

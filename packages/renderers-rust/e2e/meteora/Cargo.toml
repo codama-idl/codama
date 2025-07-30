@@ -22,10 +22,8 @@ solana-account = { version = "2.2.1", optional = true }
 solana-account-info = "2.2.1"
 solana-client = { version = "~1.18", optional = true }
 solana-cpi = "2.2.1"
-solana-decode-error = "2.2.1"
-solana-instruction = "2.2.1"
-solana-msg = "2.2.1"
-solana-program-entrypoint = "2.2.1"
+solana-decode-error = "2.3.0"
+solana-instruction = "2.3.0"
 solana-program-error = "2.2.1"
 solana-pubkey = { version = "2.2.1", features = ["curve25519"] }
 solana-sdk = { version = "~1.18", optional = true }
