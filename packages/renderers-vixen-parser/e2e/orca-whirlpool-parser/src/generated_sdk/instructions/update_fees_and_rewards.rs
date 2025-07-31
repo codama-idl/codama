@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const UPDATE_FEES_AND_REWARDS_DISCRIMINATOR: [u8; 8] = [154, 230, 250, 13, 236, 209, 75, 223];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct UpdateFeesAndRewards {

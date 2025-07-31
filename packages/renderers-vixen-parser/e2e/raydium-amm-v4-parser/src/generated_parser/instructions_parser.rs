@@ -11,6 +11,8 @@ use std::sync::Arc;
 #[cfg(feature = "shared-data")]
 use yellowstone_vixen_core::InstructionUpdateOutput;
 
+use crate::deserialize_checked;
+
 use crate::instructions::{
     AdminCancelOrders as AdminCancelOrdersIxAccounts,
     AdminCancelOrdersInstructionArgs as AdminCancelOrdersIxData,
@@ -32,7 +34,6 @@ use crate::instructions::{
     WithdrawSrmInstructionArgs as WithdrawSrmIxData,
 };
 use crate::ID;
-use borsh::BorshDeserialize;
 
 /// RaydiumAmm Instructions
 #[derive(Debug)]
@@ -150,7 +151,7 @@ impl InstructionParser {
                     serum_market: next_account(accounts)?,
                     user_wallet: next_account(accounts)?,
                 };
-                let de_ix_data: InitializeIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: InitializeIxData = deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::Initialize(ix_accounts, de_ix_data))
             }
             [1] => {
@@ -179,7 +180,8 @@ impl InstructionParser {
                     user_token_pc: next_account(accounts)?,
                     user_lp_token_account: next_account(accounts)?,
                 };
-                let de_ix_data: Initialize2IxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: Initialize2IxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::Initialize2(ix_accounts, de_ix_data))
             }
             [2] => {
@@ -206,7 +208,8 @@ impl InstructionParser {
                     serum_bids: next_account(accounts)?,
                     serum_asks: next_account(accounts)?,
                 };
-                let de_ix_data: MonitorStepIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: MonitorStepIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::MonitorStep(ix_accounts, de_ix_data))
             }
             [3] => {
@@ -228,7 +231,7 @@ impl InstructionParser {
                     user_owner: next_account(accounts)?,
                     serum_event_queue: next_account(accounts)?,
                 };
-                let de_ix_data: DepositIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: DepositIxData = deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::Deposit(ix_accounts, de_ix_data))
             }
             [4] => {
@@ -258,7 +261,7 @@ impl InstructionParser {
                     serum_bids: next_account(accounts)?,
                     serum_asks: next_account(accounts)?,
                 };
-                let de_ix_data: WithdrawIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: WithdrawIxData = deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::Withdraw(ix_accounts, de_ix_data))
             }
             [5] => {
@@ -310,7 +313,7 @@ impl InstructionParser {
                     serum_asks: next_account(accounts)?,
                     amm_admin_account: next_account(accounts)?,
                 };
-                let de_ix_data: SetParamsIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: SetParamsIxData = deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::SetParams(ix_accounts, de_ix_data))
             }
             [7] => {
@@ -348,7 +351,8 @@ impl InstructionParser {
                     srm_token: next_account(accounts)?,
                     dest_srm_token: next_account(accounts)?,
                 };
-                let de_ix_data: WithdrawSrmIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: WithdrawSrmIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::WithdrawSrm(ix_accounts, de_ix_data))
             }
             [9] => {
@@ -378,7 +382,7 @@ impl InstructionParser {
                     uer_destination_token_account: next_account(accounts)?,
                     user_source_owner: next_account(accounts)?,
                 };
-                let de_ix_data: SwapBaseInIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: SwapBaseInIxData = deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::SwapBaseIn(ix_accounts, de_ix_data))
             }
             [10] => {
@@ -400,7 +404,8 @@ impl InstructionParser {
                     serum_market: next_account(accounts)?,
                     user_wallet: next_account(accounts)?,
                 };
-                let de_ix_data: PreInitializeIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: PreInitializeIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::PreInitialize(ix_accounts, de_ix_data))
             }
             [11] => {
@@ -430,7 +435,8 @@ impl InstructionParser {
                     uer_destination_token_account: next_account(accounts)?,
                     user_source_owner: next_account(accounts)?,
                 };
-                let de_ix_data: SwapBaseOutIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: SwapBaseOutIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::SwapBaseOut(ix_accounts, de_ix_data))
             }
             [12] => {
@@ -446,7 +452,8 @@ impl InstructionParser {
                     serum_market: next_account(accounts)?,
                     serum_event_queue: next_account(accounts)?,
                 };
-                let de_ix_data: SimulateInfoIxData = BorshDeserialize::try_from_slice(ix_data)?;
+                let de_ix_data: SimulateInfoIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::SimulateInfo(ix_accounts, de_ix_data))
             }
             [13] => {
@@ -472,7 +479,7 @@ impl InstructionParser {
                     serum_asks: next_account(accounts)?,
                 };
                 let de_ix_data: AdminCancelOrdersIxData =
-                    BorshDeserialize::try_from_slice(ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::AdminCancelOrders(
                     ix_accounts,
                     de_ix_data,
@@ -498,7 +505,7 @@ impl InstructionParser {
                     amm_config: next_account(accounts)?,
                 };
                 let de_ix_data: UpdateConfigAccountIxData =
-                    BorshDeserialize::try_from_slice(ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(RaydiumAmmProgramIx::UpdateConfigAccount(
                     ix_accounts,
                     de_ix_data,
@@ -557,7 +564,7 @@ pub fn check_min_accounts_req(
 
 fn next_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
     accounts: &mut T,
-) -> Result<solana_program::pubkey::Pubkey, yellowstone_vixen_core::ParseError> {
+) -> Result<solana_pubkey::Pubkey, yellowstone_vixen_core::ParseError> {
     accounts
         .next()
         .ok_or(yellowstone_vixen_core::ParseError::from(
@@ -573,7 +580,7 @@ pub fn next_optional_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::
     accounts: &mut T,
     actual_accounts_len: usize,
     expected_accounts_len: &mut usize,
-) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+) -> Result<Option<solana_pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
     if actual_accounts_len == *expected_accounts_len + 1 {
         *expected_accounts_len += 1;
         Ok(Some(next_account(accounts)?))
@@ -589,7 +596,7 @@ pub fn next_program_id_optional_account<
     T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>,
 >(
     accounts: &mut T,
-) -> Result<Option<solana_program::pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+) -> Result<Option<solana_pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
     let account_key = next_account(accounts)?;
     if account_key.eq(&ID) {
         Ok(None)

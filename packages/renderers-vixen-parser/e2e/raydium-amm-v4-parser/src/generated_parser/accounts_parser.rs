@@ -10,7 +10,7 @@ use crate::accounts::AmmInfo;
 use crate::accounts::TargetOrders;
 use crate::ID;
 
-use borsh::BorshDeserialize;
+use crate::deserialize_checked;
 
 /// RaydiumAmm Program State
 #[allow(clippy::large_enum_variant)]
@@ -30,15 +30,18 @@ impl RaydiumAmmProgramState {
         const AMMCONFIG_LEN: usize = std::mem::size_of::<AmmConfig>();
 
         let acc = match data_len {
-            TARGETORDERS_LEN => Ok(RaydiumAmmProgramState::TargetOrders(
-                TargetOrders::try_from_slice(data_bytes)?,
-            )),
-            AMMINFO_LEN => Ok(RaydiumAmmProgramState::AmmInfo(AmmInfo::try_from_slice(
+            TARGETORDERS_LEN => Ok(RaydiumAmmProgramState::TargetOrders(deserialize_checked(
                 data_bytes,
+                &data_len.to_le_bytes(),
             )?)),
-            AMMCONFIG_LEN => Ok(RaydiumAmmProgramState::AmmConfig(
-                AmmConfig::try_from_slice(data_bytes)?,
-            )),
+            AMMINFO_LEN => Ok(RaydiumAmmProgramState::AmmInfo(deserialize_checked(
+                data_bytes,
+                &data_len.to_le_bytes(),
+            )?)),
+            AMMCONFIG_LEN => Ok(RaydiumAmmProgramState::AmmConfig(deserialize_checked(
+                data_bytes,
+                &data_len.to_le_bytes(),
+            )?)),
             _ => Err(yellowstone_vixen_core::ParseError::from(
                 "Invalid Account data length".to_owned(),
             )),
@@ -96,7 +99,22 @@ impl yellowstone_vixen_core::Parser for AccountParser {
             .account
             .as_ref()
             .ok_or(solana_program_error::ProgramError::InvalidArgument)?;
-        RaydiumAmmProgramState::try_unpack(&inner.data)
+        let res = RaydiumAmmProgramState::try_unpack(&inner.data);
+
+        #[cfg(feature = "tracing")]
+        if let Err(e) = &res {
+            let data_len = inner.data.len();
+            tracing::info!(
+                name: "incorrectly_parsed_account",
+                name = "account_update",
+                program = ID.to_string(),
+                account = "deserialization_error",
+                data_len = ?data_len,
+                error = ?e
+            );
+        }
+
+        res
     }
 }
 

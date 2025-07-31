@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const TWO_HOP_SWAP_DISCRIMINATOR: [u8; 8] = [195, 96, 237, 108, 68, 162, 219, 230];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct TwoHopSwap {

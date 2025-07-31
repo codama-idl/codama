@@ -30,6 +30,8 @@ pub struct WhirlpoolsConfigExtension {
     pub token_badge_authority: Pubkey,
 }
 
+pub const WHIRLPOOLS_CONFIG_EXTENSION_DISCRIMINATOR: [u8; 8] = [2, 99, 215, 163, 240, 26, 153, 58];
+
 impl WhirlpoolsConfigExtension {
     pub const LEN: usize = 104;
 

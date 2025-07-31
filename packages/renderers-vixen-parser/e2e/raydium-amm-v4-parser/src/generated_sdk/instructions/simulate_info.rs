@@ -10,6 +10,8 @@ use crate::generated::types::SwapInstructionBaseOut;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SIMULATE_INFO_DISCRIMINATOR: [u8; 1] = [12];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SimulateInfo {

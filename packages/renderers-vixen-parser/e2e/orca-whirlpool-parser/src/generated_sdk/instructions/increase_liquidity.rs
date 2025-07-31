@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const INCREASE_LIQUIDITY_DISCRIMINATOR: [u8; 8] = [46, 156, 243, 118, 13, 205, 251, 178];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct IncreaseLiquidity {

@@ -12,6 +12,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const SET_PARAMS_DISCRIMINATOR: [u8; 1] = [6];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SetParams {

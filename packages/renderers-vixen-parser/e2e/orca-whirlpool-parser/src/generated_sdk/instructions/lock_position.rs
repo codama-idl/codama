@@ -9,6 +9,8 @@ use crate::generated::types::LockType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const LOCK_POSITION_DISCRIMINATOR: [u8; 8] = [227, 62, 2, 252, 247, 10, 171, 185];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct LockPosition {

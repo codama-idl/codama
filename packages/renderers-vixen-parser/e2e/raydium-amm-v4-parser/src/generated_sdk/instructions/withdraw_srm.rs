@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const WITHDRAW_SRM_DISCRIMINATOR: [u8; 1] = [8];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct WithdrawSrm {

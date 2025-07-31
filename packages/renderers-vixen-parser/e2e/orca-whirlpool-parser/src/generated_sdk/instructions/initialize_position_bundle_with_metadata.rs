@@ -8,6 +8,9 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const INITIALIZE_POSITION_BUNDLE_WITH_METADATA_DISCRIMINATOR: [u8; 8] =
+    [93, 124, 16, 179, 249, 131, 115, 245];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct InitializePositionBundleWithMetadata {

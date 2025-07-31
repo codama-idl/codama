@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR: u32 = 5;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct WithdrawNonceAccount {

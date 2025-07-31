@@ -4,10 +4,14 @@
 name = "yellowstone-vixen-system-parser"
 version = "0.1.0"
 edition = "2021"
+description = ""
+license = "MIT"
+repository = "https://github.com/rpcpool/yellowstone-vixen"
 
 
 [dependencies]
 prost = "0.13.1"
+yellowstone-vixen-core = { git = "https://github.com/rpcpool/yellowstone-vixen", branch = "main",features = ["proto"] }
 tonic = { version = "0.12.1", features = ["gzip", "zstd"] }
 solana-account-info = "2.2.1"
 solana-cpi = "2.2.1"
@@ -18,7 +22,6 @@ solana-msg = "2.2.1"
 solana-program-entrypoint = "2.2.1"
 solana-program-error = "2.2.1"
 borsh = "^0.10"
-yellowstone-vixen-core = { git = "https://github.com/rpcpool/yellowstone-vixen", branch = "main",features = ["proto"] }
 num-derive = "0.4"
 thiserror = "1.0.64"
 num-traits = "^0.2"

@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const DELETE_POSITION_BUNDLE_DISCRIMINATOR: [u8; 8] = [100, 25, 99, 2, 217, 239, 124, 173];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct DeletePositionBundle {

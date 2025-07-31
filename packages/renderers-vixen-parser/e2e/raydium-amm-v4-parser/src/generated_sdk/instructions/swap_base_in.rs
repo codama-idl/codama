@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SWAP_BASE_IN_DISCRIMINATOR: [u8; 1] = [9];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SwapBaseIn {
@@ -19,7 +21,7 @@ pub struct SwapBaseIn {
 
     pub amm_open_orders: solana_pubkey::Pubkey,
 
-    pub amm_target_orders: solana_pubkey::Pubkey,
+    pub amm_target_orders: Option<solana_pubkey::Pubkey>,
 
     pub pool_coin_token_account: solana_pubkey::Pubkey,
 
@@ -73,10 +75,12 @@ impl SwapBaseIn {
             self.amm_open_orders,
             false,
         ));
-        accounts.push(solana_instruction::AccountMeta::new(
-            self.amm_target_orders,
-            false,
-        ));
+        if let Some(amm_target_orders) = self.amm_target_orders {
+            accounts.push(solana_instruction::AccountMeta::new(
+                amm_target_orders,
+                false,
+            ));
+        }
         accounts.push(solana_instruction::AccountMeta::new(
             self.pool_coin_token_account,
             false,
@@ -235,8 +239,11 @@ impl SwapBaseInBuilder {
     }
     /// `[optional account]`
     #[inline(always)]
-    pub fn amm_target_orders(&mut self, amm_target_orders: solana_pubkey::Pubkey) -> &mut Self {
-        self.amm_target_orders = Some(amm_target_orders);
+    pub fn amm_target_orders(
+        &mut self,
+        amm_target_orders: Option<solana_pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.amm_target_orders = amm_target_orders;
         self
     }
     #[inline(always)]
@@ -411,7 +418,7 @@ pub struct SwapBaseInCpiAccounts<'a, 'b> {
 
     pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
+    pub amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
 
     pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
@@ -453,7 +460,7 @@ pub struct SwapBaseInCpi<'a, 'b> {
 
     pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
+    pub amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
 
     pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
@@ -553,10 +560,12 @@ impl<'a, 'b> SwapBaseInCpi<'a, 'b> {
             *self.amm_open_orders.key,
             false,
         ));
-        accounts.push(solana_instruction::AccountMeta::new(
-            *self.amm_target_orders.key,
-            false,
-        ));
+        if let Some(amm_target_orders) = self.amm_target_orders {
+            accounts.push(solana_instruction::AccountMeta::new(
+                *amm_target_orders.key,
+                false,
+            ));
+        }
         accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_coin_token_account.key,
             false,
@@ -747,7 +756,7 @@ impl<'a, 'b> SwapBaseInCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn amm_target_orders(
         &mut self,
-        amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
+        amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.amm_target_orders = amm_target_orders;
         self

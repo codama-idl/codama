@@ -9,6 +9,8 @@ use crate::generated::types::RemainingAccountsInfo;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const COLLECT_FEES_V2_DISCRIMINATOR: [u8; 8] = [207, 117, 95, 191, 229, 180, 226, 15];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct CollectFeesV2 {

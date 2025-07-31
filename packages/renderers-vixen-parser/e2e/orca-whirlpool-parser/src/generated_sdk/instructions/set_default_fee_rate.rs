@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SET_DEFAULT_FEE_RATE_DISCRIMINATOR: [u8; 8] = [118, 215, 214, 157, 182, 229, 208, 228];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SetDefaultFeeRate {

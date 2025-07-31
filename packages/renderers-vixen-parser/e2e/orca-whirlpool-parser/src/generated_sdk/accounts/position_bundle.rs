@@ -21,6 +21,8 @@ pub struct PositionBundle {
     pub position_bitmap: [u8; 32],
 }
 
+pub const POSITION_BUNDLE_DISCRIMINATOR: [u8; 8] = [129, 169, 175, 65, 185, 95, 32, 100];
+
 impl PositionBundle {
     pub const LEN: usize = 72;
 

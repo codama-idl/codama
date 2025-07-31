@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const OPEN_BUNDLED_POSITION_DISCRIMINATOR: [u8; 8] = [169, 113, 126, 171, 213, 172, 212, 49];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct OpenBundledPosition {

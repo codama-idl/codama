@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const DELETE_TOKEN_BADGE_DISCRIMINATOR: [u8; 8] = [53, 146, 68, 8, 18, 117, 17, 185];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct DeleteTokenBadge {

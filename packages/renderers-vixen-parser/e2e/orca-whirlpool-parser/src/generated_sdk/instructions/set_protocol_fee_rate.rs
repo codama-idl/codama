@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SET_PROTOCOL_FEE_RATE_DISCRIMINATOR: [u8; 8] = [95, 7, 4, 50, 154, 79, 156, 131];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SetProtocolFeeRate {
