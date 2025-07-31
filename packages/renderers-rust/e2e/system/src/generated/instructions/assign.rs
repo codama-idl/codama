@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const ASSIGN_DISCRIMINATOR: u32 = 1;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct Assign {

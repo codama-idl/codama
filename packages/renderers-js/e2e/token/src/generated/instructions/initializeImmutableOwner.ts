@@ -13,14 +13,15 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
+  type ReadonlyUint8Array,
   type WritableAccount,
 } from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
@@ -34,11 +35,11 @@ export function getInitializeImmutableOwnerDiscriminatorBytes() {
 
 export type InitializeImmutableOwnerInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountAccount extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+  TAccountAccount extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountAccount extends string
         ? WritableAccount<TAccountAccount>
@@ -51,7 +52,7 @@ export type InitializeImmutableOwnerInstructionData = { discriminator: number };
 
 export type InitializeImmutableOwnerInstructionDataArgs = {};
 
-export function getInitializeImmutableOwnerInstructionDataEncoder(): Encoder<InitializeImmutableOwnerInstructionDataArgs> {
+export function getInitializeImmutableOwnerInstructionDataEncoder(): FixedSizeEncoder<InitializeImmutableOwnerInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
     (value) => ({
@@ -61,11 +62,11 @@ export function getInitializeImmutableOwnerInstructionDataEncoder(): Encoder<Ini
   );
 }
 
-export function getInitializeImmutableOwnerInstructionDataDecoder(): Decoder<InitializeImmutableOwnerInstructionData> {
+export function getInitializeImmutableOwnerInstructionDataDecoder(): FixedSizeDecoder<InitializeImmutableOwnerInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getInitializeImmutableOwnerInstructionDataCodec(): Codec<
+export function getInitializeImmutableOwnerInstructionDataCodec(): FixedSizeCodec<
   InitializeImmutableOwnerInstructionDataArgs,
   InitializeImmutableOwnerInstructionData
 > {
@@ -113,7 +114,7 @@ export function getInitializeImmutableOwnerInstruction<
 
 export type ParsedInitializeImmutableOwnerInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -125,11 +126,11 @@ export type ParsedInitializeImmutableOwnerInstruction<
 
 export function parseInitializeImmutableOwnerInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeImmutableOwnerInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 1) {
     // TODO: Coded error.

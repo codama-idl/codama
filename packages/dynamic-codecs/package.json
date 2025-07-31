@@ -1,6 +1,6 @@
 {
     "name": "@codama/dynamic-codecs",
-    "version": "1.1.15",
+    "version": "1.1.17",
     "description": "Get codecs on demand for Codama IDLs",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -53,7 +53,7 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/codecs": "2.3.0"
+        "@solana/codecs": "^2.3.0"
     },
     "license": "MIT",
     "repository": {

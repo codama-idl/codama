@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-vixen-parser",
-    "version": "1.0.16",
+    "version": "1.1.2",
     "description": "Renders Yellowstone Account and Instruction Parsers",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -44,7 +44,7 @@
         "@codama/renderers-core": "workspace:*",
         "@codama/visitors-core": "workspace:*",
         "@codama/renderers-rust": "workspace:*",
-        "@solana/codecs-strings": "rc",
+        "@solana/codecs-strings": "^2.3.0",
         "nunjucks": "^3.2.4"
     },
     "devDependencies": {

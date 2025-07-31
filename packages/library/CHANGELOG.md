@@ -1,5 +1,15 @@
 # codama
 
+## 1.3.1
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/validators@1.3.1
+    - @codama/visitors@1.3.1
+    - @codama/errors@1.3.1
+    - @codama/nodes@1.3.1
+
 ## 1.3.0
 
 ### Minor Changes

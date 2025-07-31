@@ -1,4 +1,4 @@
-import { AccountNode } from '@codama/nodes';
+import { AccountNode, resolveNestedTypeNode } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
@@ -9,6 +9,7 @@ import { getTypeWithCodecFragment } from './typeWithCodec';
 export function getAccountTypeFragment(
     scope: Pick<GlobalFragmentScope, 'customAccountData' | 'nameApi'> & {
         accountPath: NodePath<AccountNode>;
+        size: number | null;
         typeManifest: TypeManifest;
     },
 ): Fragment {
@@ -23,5 +24,7 @@ export function getAccountTypeFragment(
         manifest: typeManifest,
         name: accountNode.name,
         nameApi,
+        node: resolveNestedTypeNode(accountNode.data),
+        size: scope.size,
     });
 }

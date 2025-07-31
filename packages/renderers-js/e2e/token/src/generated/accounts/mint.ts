@@ -29,12 +29,12 @@ import {
   getU8Encoder,
   type Account,
   type Address,
-  type Codec,
-  type Decoder,
   type EncodedAccount,
-  type Encoder,
   type FetchAccountConfig,
   type FetchAccountsConfig,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type MaybeAccount,
   type MaybeEncodedAccount,
   type Option,
@@ -75,7 +75,7 @@ export type MintArgs = {
   freezeAuthority: OptionOrNullable<Address>;
 };
 
-export function getMintEncoder(): Encoder<MintArgs> {
+export function getMintEncoder(): FixedSizeEncoder<MintArgs> {
   return getStructEncoder([
     [
       'mintAuthority',
@@ -97,7 +97,7 @@ export function getMintEncoder(): Encoder<MintArgs> {
   ]);
 }
 
-export function getMintDecoder(): Decoder<Mint> {
+export function getMintDecoder(): FixedSizeDecoder<Mint> {
   return getStructDecoder([
     [
       'mintAuthority',
@@ -119,7 +119,7 @@ export function getMintDecoder(): Decoder<Mint> {
   ]);
 }
 
-export function getMintCodec(): Codec<MintArgs, Mint> {
+export function getMintCodec(): FixedSizeCodec<MintArgs, Mint> {
   return combineCodec(getMintEncoder(), getMintDecoder());
 }
 

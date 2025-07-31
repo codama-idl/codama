@@ -1,5 +1,20 @@
 # @codama/nodes-from-anchor
 
+## 1.2.3
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/visitors@1.3.1
+    - @codama/errors@1.3.1
+    - @codama/nodes@1.3.1
+
+## 1.2.2
+
+### Patch Changes
+
+- [#713](https://github.com/codama-idl/codama/pull/713) [`364578e`](https://github.com/codama-idl/codama/commit/364578e45eca74fa24b452cc9ef22222da03ba39) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update `@solana/kit` dependencies and remove `I` prefixes in types
+
 ## 1.2.1
 
 ### Patch Changes

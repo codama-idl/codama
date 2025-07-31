@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const ADVANCE_NONCE_ACCOUNT_DISCRIMINATOR: u32 = 4;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct AdvanceNonceAccount {

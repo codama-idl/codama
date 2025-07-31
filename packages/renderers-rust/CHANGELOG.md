@@ -1,5 +1,27 @@
 # @codama/renderers-rust
 
+## 1.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`71caa87`](https://github.com/codama-idl/codama/commit/71caa87d7010ecfeed5fb08e79955e5a7e8c0779)]:
+    - @codama/visitors-core@1.3.1
+    - @codama/renderers-core@1.0.17
+    - @codama/errors@1.3.1
+    - @codama/nodes@1.3.1
+
+## 1.1.2
+
+### Patch Changes
+
+- [#721](https://github.com/codama-idl/codama/pull/721) [`a305a91`](https://github.com/codama-idl/codama/commit/a305a91e04d2d420ac57c31ccbb0ea98fc7f8823) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Export discriminator constants for accounts and instructions
+
+## 1.1.1
+
+### Patch Changes
+
+- [#713](https://github.com/codama-idl/codama/pull/713) [`364578e`](https://github.com/codama-idl/codama/commit/364578e45eca74fa24b452cc9ef22222da03ba39) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update `@solana/kit` dependencies and remove `I` prefixes in types
+
 ## 1.1.0
 
 ### Minor Changes

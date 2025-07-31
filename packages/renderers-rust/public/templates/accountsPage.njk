@@ -12,6 +12,8 @@
 {{ nestedStruct }}
 {% endfor %}
 
+{{ discriminatorConstants }}
+
 impl {{ account.name | pascalCase }} {
   {% if account.size != null %}
     pub const LEN: usize = {{ account.size }};

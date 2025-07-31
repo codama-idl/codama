@@ -10,9 +10,9 @@ import {
   combineCodec,
   getEnumDecoder,
   getEnumEncoder,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
 } from '@solana/kit';
 
 export enum AccountState {
@@ -23,14 +23,17 @@ export enum AccountState {
 
 export type AccountStateArgs = AccountState;
 
-export function getAccountStateEncoder(): Encoder<AccountStateArgs> {
+export function getAccountStateEncoder(): FixedSizeEncoder<AccountStateArgs> {
   return getEnumEncoder(AccountState);
 }
 
-export function getAccountStateDecoder(): Decoder<AccountState> {
+export function getAccountStateDecoder(): FixedSizeDecoder<AccountState> {
   return getEnumDecoder(AccountState);
 }
 
-export function getAccountStateCodec(): Codec<AccountStateArgs, AccountState> {
+export function getAccountStateCodec(): FixedSizeCodec<
+  AccountStateArgs,
+  AccountState
+> {
   return combineCodec(getAccountStateEncoder(), getAccountStateDecoder());
 }

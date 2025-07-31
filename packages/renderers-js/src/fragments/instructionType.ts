@@ -56,14 +56,15 @@ export function getInstructionTypeFragment(
     })
         .mergeImportsWith(accountTypeParamsFragment, accountMetasFragment)
         .addImports('generatedPrograms', [programAddressConstant])
+        .addImports('solanaCodecsCore', hasData ? ['type ReadonlyUint8Array'] : [])
         .addImports('solanaInstructions', [
-            'type IAccountMeta',
-            'type IInstruction',
-            'type IInstructionWithAccounts',
-            ...(hasData ? ['type IInstructionWithData'] : []),
+            'type AccountMeta',
+            'type Instruction',
+            'type InstructionWithAccounts',
+            ...(hasData ? ['type InstructionWithData'] : []),
         ]);
 
-    // TODO: if link, add import for data type. Unless we don't need to inject the data type in IInstructionWithData.
+    // TODO: if link, add import for data type. Unless we don't need to inject the data type in InstructionWithData.
 
     return fragment;
 }

@@ -73,7 +73,7 @@ export type ResolvedAccount<T extends string = string, U extends Address<T> | Pr
  * Defines an instruction that stores additional bytes on-chain.
  * @internal
  */
-export type IInstructionWithByteDelta = {
+export type InstructionWithByteDelta = {
   byteDelta: number;
 };
 
@@ -85,7 +85,7 @@ export function getAccountMetaFactory(
   programAddress: Address,
   optionalAccountStrategy: 'omitted' | 'programId',
 ) {
-  return (account: ResolvedAccount): IAccountMeta | IAccountSignerMeta | undefined => {
+  return (account: ResolvedAccount): AccountMeta | AccountSignerMeta | undefined => {
     if (!account.value) {
       if (optionalAccountStrategy === 'omitted') return;
       return Object.freeze({ address: programAddress, role: AccountRole.READONLY });

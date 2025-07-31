@@ -15,15 +15,16 @@ import {
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
+  type AccountMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlyUint8Array,
 } from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
@@ -36,11 +37,11 @@ export function getAmountToUiAmountDiscriminatorBytes() {
 
 export type AmountToUiAmountInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountMint extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+  TAccountMint extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountMint extends string
         ? ReadonlyAccount<TAccountMint>
@@ -60,7 +61,7 @@ export type AmountToUiAmountInstructionDataArgs = {
   amount: number | bigint;
 };
 
-export function getAmountToUiAmountInstructionDataEncoder(): Encoder<AmountToUiAmountInstructionDataArgs> {
+export function getAmountToUiAmountInstructionDataEncoder(): FixedSizeEncoder<AmountToUiAmountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU8Encoder()],
@@ -70,14 +71,14 @@ export function getAmountToUiAmountInstructionDataEncoder(): Encoder<AmountToUiA
   );
 }
 
-export function getAmountToUiAmountInstructionDataDecoder(): Decoder<AmountToUiAmountInstructionData> {
+export function getAmountToUiAmountInstructionDataDecoder(): FixedSizeDecoder<AmountToUiAmountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU8Decoder()],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getAmountToUiAmountInstructionDataCodec(): Codec<
+export function getAmountToUiAmountInstructionDataCodec(): FixedSizeCodec<
   AmountToUiAmountInstructionDataArgs,
   AmountToUiAmountInstructionData
 > {
@@ -129,7 +130,7 @@ export function getAmountToUiAmountInstruction<
 
 export type ParsedAmountToUiAmountInstruction<
   TProgram extends string = typeof TOKEN_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -141,11 +142,11 @@ export type ParsedAmountToUiAmountInstruction<
 
 export function parseAmountToUiAmountInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedAmountToUiAmountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 1) {
     // TODO: Coded error.

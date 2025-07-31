@@ -8,17 +8,17 @@
 
 import {
   AccountRole,
+  type AccountMeta,
   type Address,
-  type IAccountMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
+  type Instruction,
+  type InstructionWithAccounts,
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
 export type Instruction2Instruction<
   TProgram extends string = typeof DUMMY_PROGRAM_ADDRESS,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> & IInstructionWithAccounts<TRemainingAccounts>;
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> & InstructionWithAccounts<TRemainingAccounts>;
 
 export type Instruction2Input = {
   remainingAccounts?: Array<Address>;
@@ -37,7 +37,7 @@ export function getInstruction2Instruction<
   const args = { ...input };
 
   // Remaining accounts.
-  const remainingAccounts: IAccountMeta[] = (args.remainingAccounts ?? []).map(
+  const remainingAccounts: AccountMeta[] = (args.remainingAccounts ?? []).map(
     (address) => ({ address, role: AccountRole.READONLY })
   );
 
@@ -56,7 +56,7 @@ export type ParsedInstruction2Instruction<
 };
 
 export function parseInstruction2Instruction<TProgram extends string>(
-  instruction: IInstruction<TProgram>
+  instruction: Instruction<TProgram>
 ): ParsedInstruction2Instruction<TProgram> {
   return {
     programAddress: instruction.programAddress,

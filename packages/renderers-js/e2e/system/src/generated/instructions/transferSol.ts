@@ -15,15 +15,16 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IAccountSignerMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
@@ -39,16 +40,16 @@ export function getTransferSolDiscriminatorBytes() {
 
 export type TransferSolInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountSource extends string | IAccountMeta<string> = string,
-  TAccountDestination extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+  TAccountSource extends string | AccountMeta<string> = string,
+  TAccountDestination extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountSource extends string
         ? WritableSignerAccount<TAccountSource> &
-            IAccountSignerMeta<TAccountSource>
+            AccountSignerMeta<TAccountSource>
         : TAccountSource,
       TAccountDestination extends string
         ? WritableAccount<TAccountDestination>
@@ -64,7 +65,7 @@ export type TransferSolInstructionData = {
 
 export type TransferSolInstructionDataArgs = { amount: number | bigint };
 
-export function getTransferSolInstructionDataEncoder(): Encoder<TransferSolInstructionDataArgs> {
+export function getTransferSolInstructionDataEncoder(): FixedSizeEncoder<TransferSolInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -74,14 +75,14 @@ export function getTransferSolInstructionDataEncoder(): Encoder<TransferSolInstr
   );
 }
 
-export function getTransferSolInstructionDataDecoder(): Decoder<TransferSolInstructionData> {
+export function getTransferSolInstructionDataDecoder(): FixedSizeDecoder<TransferSolInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['amount', getU64Decoder()],
   ]);
 }
 
-export function getTransferSolInstructionDataCodec(): Codec<
+export function getTransferSolInstructionDataCodec(): FixedSizeCodec<
   TransferSolInstructionDataArgs,
   TransferSolInstructionData
 > {
@@ -149,7 +150,7 @@ export function getTransferSolInstruction<
 
 export type ParsedTransferSolInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -161,11 +162,11 @@ export type ParsedTransferSolInstruction<
 
 export function parseTransferSolInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedTransferSolInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.

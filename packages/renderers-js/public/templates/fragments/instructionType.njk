@@ -5,14 +5,14 @@ export type {{ instructionType }}<
   {% if hasAccounts %}
     {{ accountTypeParams }},
   {% endif %}
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram>
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram>
   {% if hasData %}
-    & IInstructionWithData<Uint8Array>
+    & InstructionWithData<ReadonlyUint8Array>
   {% endif %}
   {% if hasAccounts %}
-    & IInstructionWithAccounts<[{{ accountMetas }}, ...TRemainingAccounts]>
+    & InstructionWithAccounts<[{{ accountMetas }}, ...TRemainingAccounts]>
   {% else %}
-    & IInstructionWithAccounts<TRemainingAccounts>
+    & InstructionWithAccounts<TRemainingAccounts>
   {% endif %}
 ;

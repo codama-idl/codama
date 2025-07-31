@@ -11,6 +11,8 @@ use crate::generated::types::TransferAmountRule;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const CREATE_GUARD_DISCRIMINATOR: [u8; 8] = [251, 254, 17, 198, 219, 218, 154, 99];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct CreateGuard {

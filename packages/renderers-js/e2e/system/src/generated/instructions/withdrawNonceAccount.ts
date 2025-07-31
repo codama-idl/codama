@@ -15,17 +15,18 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IAccountSignerMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type ReadonlyAccount,
   type ReadonlySignerAccount,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
 } from '@solana/kit';
@@ -40,19 +41,19 @@ export function getWithdrawNonceAccountDiscriminatorBytes() {
 
 export type WithdrawNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountNonceAccount extends string | IAccountMeta<string> = string,
-  TAccountRecipientAccount extends string | IAccountMeta<string> = string,
+  TAccountNonceAccount extends string | AccountMeta<string> = string,
+  TAccountRecipientAccount extends string | AccountMeta<string> = string,
   TAccountRecentBlockhashesSysvar extends
     | string
-    | IAccountMeta<string> = 'SysvarRecentB1ockHashes11111111111111111111',
+    | AccountMeta<string> = 'SysvarRecentB1ockHashes11111111111111111111',
   TAccountRentSysvar extends
     | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
-  TAccountNonceAuthority extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+    | AccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
+  TAccountNonceAuthority extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountNonceAccount extends string
         ? WritableAccount<TAccountNonceAccount>
@@ -68,7 +69,7 @@ export type WithdrawNonceAccountInstruction<
         : TAccountRentSysvar,
       TAccountNonceAuthority extends string
         ? ReadonlySignerAccount<TAccountNonceAuthority> &
-            IAccountSignerMeta<TAccountNonceAuthority>
+            AccountSignerMeta<TAccountNonceAuthority>
         : TAccountNonceAuthority,
       ...TRemainingAccounts,
     ]
@@ -83,7 +84,7 @@ export type WithdrawNonceAccountInstructionDataArgs = {
   withdrawAmount: number | bigint;
 };
 
-export function getWithdrawNonceAccountInstructionDataEncoder(): Encoder<WithdrawNonceAccountInstructionDataArgs> {
+export function getWithdrawNonceAccountInstructionDataEncoder(): FixedSizeEncoder<WithdrawNonceAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -96,14 +97,14 @@ export function getWithdrawNonceAccountInstructionDataEncoder(): Encoder<Withdra
   );
 }
 
-export function getWithdrawNonceAccountInstructionDataDecoder(): Decoder<WithdrawNonceAccountInstructionData> {
+export function getWithdrawNonceAccountInstructionDataDecoder(): FixedSizeDecoder<WithdrawNonceAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['withdrawAmount', getU64Decoder()],
   ]);
 }
 
-export function getWithdrawNonceAccountInstructionDataCodec(): Codec<
+export function getWithdrawNonceAccountInstructionDataCodec(): FixedSizeCodec<
   WithdrawNonceAccountInstructionDataArgs,
   WithdrawNonceAccountInstructionData
 > {
@@ -214,7 +215,7 @@ export function getWithdrawNonceAccountInstruction<
 
 export type ParsedWithdrawNonceAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -229,11 +230,11 @@ export type ParsedWithdrawNonceAccountInstruction<
 
 export function parseWithdrawNonceAccountInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedWithdrawNonceAccountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 5) {
     // TODO: Coded error.

@@ -25,12 +25,12 @@ import {
   getU64Encoder,
   type Account,
   type Address,
-  type Codec,
-  type Decoder,
   type EncodedAccount,
-  type Encoder,
   type FetchAccountConfig,
   type FetchAccountsConfig,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type MaybeAccount,
   type MaybeEncodedAccount,
   type Option,
@@ -97,7 +97,7 @@ export type TokenArgs = {
   closeAuthority: OptionOrNullable<Address>;
 };
 
-export function getTokenEncoder(): Encoder<TokenArgs> {
+export function getTokenEncoder(): FixedSizeEncoder<TokenArgs> {
   return getStructEncoder([
     ['mint', getAddressEncoder()],
     ['owner', getAddressEncoder()],
@@ -128,7 +128,7 @@ export function getTokenEncoder(): Encoder<TokenArgs> {
   ]);
 }
 
-export function getTokenDecoder(): Decoder<Token> {
+export function getTokenDecoder(): FixedSizeDecoder<Token> {
   return getStructDecoder([
     ['mint', getAddressDecoder()],
     ['owner', getAddressDecoder()],
@@ -159,7 +159,7 @@ export function getTokenDecoder(): Decoder<Token> {
   ]);
 }
 
-export function getTokenCodec(): Codec<TokenArgs, Token> {
+export function getTokenCodec(): FixedSizeCodec<TokenArgs, Token> {
   return combineCodec(getTokenEncoder(), getTokenDecoder());
 }
 

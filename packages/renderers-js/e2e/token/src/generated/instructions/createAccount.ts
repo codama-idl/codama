@@ -20,23 +20,24 @@ import {
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
+  type AccountMeta,
+  type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
-  type IAccountMeta,
-  type IAccountSignerMeta,
-  type IInstruction,
-  type IInstructionWithAccounts,
-  type IInstructionWithData,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
+  type Instruction,
+  type InstructionWithAccounts,
+  type InstructionWithData,
   type Lamports,
+  type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableSignerAccount,
 } from '@solana/kit';
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import {
   getAccountMetaFactory,
-  type IInstructionWithByteDelta,
+  type InstructionWithByteDelta,
   type ResolvedAccount,
 } from '../shared';
 
@@ -48,20 +49,20 @@ export function getCreateAccountDiscriminatorBytes() {
 
 export type CreateAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountPayer extends string | IAccountMeta<string> = string,
-  TAccountNewAccount extends string | IAccountMeta<string> = string,
-  TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
-> = IInstruction<TProgram> &
-  IInstructionWithData<Uint8Array> &
-  IInstructionWithAccounts<
+  TAccountPayer extends string | AccountMeta<string> = string,
+  TAccountNewAccount extends string | AccountMeta<string> = string,
+  TRemainingAccounts extends readonly AccountMeta<string>[] = [],
+> = Instruction<TProgram> &
+  InstructionWithData<ReadonlyUint8Array> &
+  InstructionWithAccounts<
     [
       TAccountPayer extends string
         ? WritableSignerAccount<TAccountPayer> &
-            IAccountSignerMeta<TAccountPayer>
+            AccountSignerMeta<TAccountPayer>
         : TAccountPayer,
       TAccountNewAccount extends string
         ? WritableSignerAccount<TAccountNewAccount> &
-            IAccountSignerMeta<TAccountNewAccount>
+            AccountSignerMeta<TAccountNewAccount>
         : TAccountNewAccount,
       ...TRemainingAccounts,
     ]
@@ -80,7 +81,7 @@ export type CreateAccountInstructionDataArgs = {
   programAddress: Address;
 };
 
-export function getCreateAccountInstructionDataEncoder(): Encoder<CreateAccountInstructionDataArgs> {
+export function getCreateAccountInstructionDataEncoder(): FixedSizeEncoder<CreateAccountInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', getU32Encoder()],
@@ -92,7 +93,7 @@ export function getCreateAccountInstructionDataEncoder(): Encoder<CreateAccountI
   );
 }
 
-export function getCreateAccountInstructionDataDecoder(): Decoder<CreateAccountInstructionData> {
+export function getCreateAccountInstructionDataDecoder(): FixedSizeDecoder<CreateAccountInstructionData> {
   return getStructDecoder([
     ['discriminator', getU32Decoder()],
     ['lamports', getLamportsDecoder(getU64Decoder())],
@@ -101,7 +102,7 @@ export function getCreateAccountInstructionDataDecoder(): Decoder<CreateAccountI
   ]);
 }
 
-export function getCreateAccountInstructionDataCodec(): Codec<
+export function getCreateAccountInstructionDataCodec(): FixedSizeCodec<
   CreateAccountInstructionDataArgs,
   CreateAccountInstructionData
 > {
@@ -134,7 +135,7 @@ export function getCreateAccountInstruction<
   TAccountPayer,
   TAccountNewAccount
 > &
-  IInstructionWithByteDelta {
+  InstructionWithByteDelta {
   // Program address.
   const programAddress = config?.programAddress ?? SYSTEM_PROGRAM_ADDRESS;
 
@@ -178,7 +179,7 @@ export function getCreateAccountInstruction<
 
 export type ParsedCreateAccountInstruction<
   TProgram extends string = typeof SYSTEM_PROGRAM_ADDRESS,
-  TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
@@ -190,11 +191,11 @@ export type ParsedCreateAccountInstruction<
 
 export function parseCreateAccountInstruction<
   TProgram extends string,
-  TAccountMetas extends readonly IAccountMeta[],
+  TAccountMetas extends readonly AccountMeta[],
 >(
-  instruction: IInstruction<TProgram> &
-    IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+  instruction: Instruction<TProgram> &
+    InstructionWithAccounts<TAccountMetas> &
+    InstructionWithData<ReadonlyUint8Array>
 ): ParsedCreateAccountInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.

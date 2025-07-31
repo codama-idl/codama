@@ -63,14 +63,14 @@ if (parsedData) {
 
 ### `parseInstruction(rootNode, instruction)`
 
-This function accepts a `RootNode` and an `IInstruction` type — as defined in `@solana/instructions` — in order to return a `ParsedData<InstructionNode>` object that also includes an `accounts` array that match each `IAccountMeta` with its corresponding account name.
+This function accepts a `RootNode` and an `Instruction` type — as defined in `@solana/instructions` — in order to return a `ParsedData<InstructionNode>` object that also includes an `accounts` array that match each `AccountMeta` with its corresponding account name.
 
 ```ts
 const parsedData = parseInstruction(rootNode, instruction);
 
 if (parsedData) {
     const namedAccounts = parsedData.accounts;
-    // ^ Array<IAccountMeta & { name: string }>
+    // ^ Array<AccountMeta & { name: string }>
 }
 ```
 
