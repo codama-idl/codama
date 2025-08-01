@@ -10,22 +10,22 @@ serde = ["dep:serde", "dep:serde_with", "dep:serde-big-array"]
 test-sbf = []
 
 [dependencies]
-anchor-lang = { version = "0.30.0", optional = true }
+anchor-lang = { version = "~0.31", optional = true }
 borsh = "^0.10"
-kaigan = "0.2.5"
+kaigan = { version = "0.2.6", features = ["serde"] }
 num-derive = "^0.4"
 num-traits = "^0.2"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 serde-big-array = { version = "^0.5", optional = true }
 serde_with = { version = "^3.0", optional = true }
-solana-account-info = "2.3.0"
-solana-cpi = "2.2.1"
-solana-decode-error = "2.3.0"
-solana-instruction = "2.3.0"
-solana-program-error = "2.2.1"
-solana-pubkey = { version = "2.3.0", features = ["curve25519"] }
+solana-account-info = "~2.3"
+solana-cpi = "~2.2"
+solana-decode-error = "~2.3"
+solana-instruction = "~2.3"
+solana-program-error = "~2.2"
+solana-pubkey = { version = "~2.3", features = ["curve25519", "borsh"] }
 thiserror = "^1.0"
 
 [dev-dependencies]
 assert_matches = "1.5.0"
-solana-sdk = "^2.1.6"
+solana-sdk = "~2.3"
