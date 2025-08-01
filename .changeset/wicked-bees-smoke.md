@@ -1,5 +1,5 @@
 ---
-"@codama/renderers-vixen-parser": patch
+"@codama/renderers-vixen-parser": minor
 ---
 
 `feat` Updates for parsers generator:
