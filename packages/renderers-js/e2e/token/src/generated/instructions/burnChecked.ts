@@ -221,7 +221,7 @@ export function parseBurnCheckedInstruction<
   }
   let accountIndex = 0;
   const getNextAccount = () => {
-    const accountMeta = instruction.accounts![accountIndex]!;
+    const accountMeta = (instruction.accounts as TAccountMetas)[accountIndex]!;
     accountIndex += 1;
     return accountMeta;
   };

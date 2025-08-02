@@ -23,7 +23,7 @@ import {
  * @internal
  */
 export function expectSome<T>(value: T | null | undefined): T {
-  if (value == null) {
+  if (value === null || value === undefined) {
     throw new Error('Expected a value but received null or undefined.');
   }
   return value;
@@ -48,7 +48,7 @@ export function expectAddress<T extends string = string>(
     return value.address;
   }
   if (Array.isArray(value)) {
-    return value[0];
+    return value[0] as Address<T>;
   }
   return value as Address<T>;
 }
