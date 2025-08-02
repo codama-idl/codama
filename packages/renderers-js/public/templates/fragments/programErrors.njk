@@ -2,7 +2,7 @@
 
 {% for error in errors | sort(false, false, 'code') %}
   {{ macros.docblock(error.docs) }}
-  export const {{ getProgramErrorConstant(error.name) }} = 0x{{ error.code.toString(16) }}, // {{ error.code }}
+  export const {{ getProgramErrorConstant(error.name) }} = 0x{{ error.code.toString(16) }}; // {{ error.code }}
 {% endfor %}
 
 export type {{ programErrorUnion }} =
