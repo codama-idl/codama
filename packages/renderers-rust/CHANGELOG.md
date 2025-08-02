@@ -1,5 +1,11 @@
 # @codama/renderers-rust
 
+## 1.2.0
+
+### Minor Changes
+
+- [#737](https://github.com/codama-idl/codama/pull/737) [`7b7dc00`](https://github.com/codama-idl/codama/commit/7b7dc00e925827887c354e983dcc0eb273e55390) Thanks [@sonicfromnewyoke](https://github.com/sonicfromnewyoke)! - get rid of deprecated methods & bump sol deps
+
 ## 1.1.3
 
 ### Patch Changes
