@@ -33,6 +33,8 @@ pub struct LockConfig {
     pub lock_type: LockTypeLabel,
 }
 
+pub const LOCK_CONFIG_DISCRIMINATOR: [u8; 8] = [106, 47, 238, 159, 124, 12, 160, 192];
+
 impl LockConfig {
     pub const LEN: usize = 113;
 

@@ -24,6 +24,8 @@ pub struct TickArray {
     pub whirlpool: Pubkey,
 }
 
+pub const TICK_ARRAY_DISCRIMINATOR: [u8; 8] = [69, 97, 189, 190, 110, 7, 66, 187];
+
 impl TickArray {
     pub const LEN: usize = 9988;
 

@@ -5,6 +5,14 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+#[cfg(feature = "shared-data")]
+use std::sync::Arc;
+
+#[cfg(feature = "shared-data")]
+use yellowstone_vixen_core::InstructionUpdateOutput;
+
+use crate::deserialize_checked;
+
 use crate::instructions::{
     AdvanceNonceAccount as AdvanceNonceAccountIxAccounts, Allocate as AllocateIxAccounts,
     AllocateInstructionArgs as AllocateIxData, AllocateWithSeed as AllocateWithSeedIxAccounts,
@@ -26,7 +34,6 @@ use crate::instructions::{
     WithdrawNonceAccountInstructionArgs as WithdrawNonceAccountIxData,
 };
 use crate::ID;
-use borsh::BorshDeserialize;
 
 /// System Instructions
 #[derive(Debug)]
@@ -55,7 +62,12 @@ pub struct InstructionParser;
 
 impl yellowstone_vixen_core::Parser for InstructionParser {
     type Input = yellowstone_vixen_core::instruction::InstructionUpdate;
+
+    #[cfg(not(feature = "shared-data"))]
     type Output = SystemProgramIx;
+
+    #[cfg(feature = "shared-data")]
+    type Output = InstructionUpdateOutput<SystemProgramIx>;
 
     fn id(&self) -> std::borrow::Cow<str> {
         "System::InstructionParser".into()
@@ -73,7 +85,23 @@ impl yellowstone_vixen_core::Parser for InstructionParser {
         ix_update: &yellowstone_vixen_core::instruction::InstructionUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         if ix_update.program.equals_ref(ID) {
-            InstructionParser::parse_impl(ix_update)
+            let res = InstructionParser::parse_impl(ix_update);
+
+            #[cfg(feature = "tracing")]
+            if let Err(e) = &res {
+                let ix_discriminator: [u8; 4] = ix_update.data[0..4].try_into()?;
+
+                tracing::info!(
+                    name: "incorrectly_parsed_instruction",
+                    name = "ix_update",
+                    program = ID.to_string(),
+                    ix = "deserialization_error",
+                    discriminator = ?ix_discriminator,
+                    error = ?e
+                );
+            }
+
+            res
         } else {
             Err(yellowstone_vixen_core::ParseError::Filtered)
         }
@@ -90,149 +118,169 @@ impl yellowstone_vixen_core::ProgramParser for InstructionParser {
 impl InstructionParser {
     pub(crate) fn parse_impl(
         ix: &yellowstone_vixen_core::instruction::InstructionUpdate,
-    ) -> yellowstone_vixen_core::ParseResult<SystemProgramIx> {
+    ) -> yellowstone_vixen_core::ParseResult<<Self as yellowstone_vixen_core::Parser>::Output> {
         let accounts_len = ix.accounts.len();
+        let accounts = &mut ix.accounts.iter();
 
-        let ix_discriminator: [u8; 1] = ix.data[0..1].try_into()?;
-        let mut ix_data = &ix.data[1..];
+        #[cfg(feature = "shared-data")]
+        let shared_data = Arc::clone(&ix.shared);
+
+        let ix_discriminator: [u8; 4] = ix.data[0..4].try_into()?;
+        let ix_data = &ix.data[4..];
         let ix = match ix_discriminator {
-            [0] => {
-                check_min_accounts_req(accounts_len, 2)?;
+            [0, 0, 0, 0] => {
+                let expected_accounts_len = 2;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = CreateAccountIxAccounts {
-                    payer: ix.accounts[0].0.into(),
-                    new_account: ix.accounts[1].0.into(),
+                    payer: next_account(accounts)?,
+                    new_account: next_account(accounts)?,
                 };
-                let de_ix_data: CreateAccountIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: CreateAccountIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::CreateAccount(ix_accounts, de_ix_data))
             }
-            [1] => {
-                check_min_accounts_req(accounts_len, 1)?;
+            [1, 0, 0, 0] => {
+                let expected_accounts_len = 1;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = AssignIxAccounts {
-                    account: ix.accounts[0].0.into(),
+                    account: next_account(accounts)?,
                 };
-                let de_ix_data: AssignIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: AssignIxData = deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::Assign(ix_accounts, de_ix_data))
             }
-            [2] => {
-                check_min_accounts_req(accounts_len, 2)?;
+            [2, 0, 0, 0] => {
+                let expected_accounts_len = 2;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = TransferSolIxAccounts {
-                    source: ix.accounts[0].0.into(),
-                    destination: ix.accounts[1].0.into(),
+                    source: next_account(accounts)?,
+                    destination: next_account(accounts)?,
                 };
-                let de_ix_data: TransferSolIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: TransferSolIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::TransferSol(ix_accounts, de_ix_data))
             }
-            [3] => {
-                check_min_accounts_req(accounts_len, 3)?;
+            [3, 0, 0, 0] => {
+                let expected_accounts_len = 3;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = CreateAccountWithSeedIxAccounts {
-                    payer: ix.accounts[0].0.into(),
-                    new_account: ix.accounts[1].0.into(),
-                    base_account: ix.accounts[2].0.into(),
+                    payer: next_account(accounts)?,
+                    new_account: next_account(accounts)?,
+                    base_account: next_account(accounts)?,
                 };
                 let de_ix_data: CreateAccountWithSeedIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::CreateAccountWithSeed(
                     ix_accounts,
                     de_ix_data,
                 ))
             }
-            [4] => {
-                check_min_accounts_req(accounts_len, 3)?;
+            [4, 0, 0, 0] => {
+                let expected_accounts_len = 3;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = AdvanceNonceAccountIxAccounts {
-                    nonce_account: ix.accounts[0].0.into(),
-                    recent_blockhashes_sysvar: ix.accounts[1].0.into(),
-                    nonce_authority: ix.accounts[2].0.into(),
+                    nonce_account: next_account(accounts)?,
+                    recent_blockhashes_sysvar: next_account(accounts)?,
+                    nonce_authority: next_account(accounts)?,
                 };
                 Ok(SystemProgramIx::AdvanceNonceAccount(ix_accounts))
             }
-            [5] => {
-                check_min_accounts_req(accounts_len, 5)?;
+            [5, 0, 0, 0] => {
+                let expected_accounts_len = 5;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = WithdrawNonceAccountIxAccounts {
-                    nonce_account: ix.accounts[0].0.into(),
-                    recipient_account: ix.accounts[1].0.into(),
-                    recent_blockhashes_sysvar: ix.accounts[2].0.into(),
-                    rent_sysvar: ix.accounts[3].0.into(),
-                    nonce_authority: ix.accounts[4].0.into(),
+                    nonce_account: next_account(accounts)?,
+                    recipient_account: next_account(accounts)?,
+                    recent_blockhashes_sysvar: next_account(accounts)?,
+                    rent_sysvar: next_account(accounts)?,
+                    nonce_authority: next_account(accounts)?,
                 };
                 let de_ix_data: WithdrawNonceAccountIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::WithdrawNonceAccount(
                     ix_accounts,
                     de_ix_data,
                 ))
             }
-            [6] => {
-                check_min_accounts_req(accounts_len, 3)?;
+            [6, 0, 0, 0] => {
+                let expected_accounts_len = 3;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = InitializeNonceAccountIxAccounts {
-                    nonce_account: ix.accounts[0].0.into(),
-                    recent_blockhashes_sysvar: ix.accounts[1].0.into(),
-                    rent_sysvar: ix.accounts[2].0.into(),
+                    nonce_account: next_account(accounts)?,
+                    recent_blockhashes_sysvar: next_account(accounts)?,
+                    rent_sysvar: next_account(accounts)?,
                 };
                 let de_ix_data: InitializeNonceAccountIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::InitializeNonceAccount(
                     ix_accounts,
                     de_ix_data,
                 ))
             }
-            [7] => {
-                check_min_accounts_req(accounts_len, 2)?;
+            [7, 0, 0, 0] => {
+                let expected_accounts_len = 2;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = AuthorizeNonceAccountIxAccounts {
-                    nonce_account: ix.accounts[0].0.into(),
-                    nonce_authority: ix.accounts[1].0.into(),
+                    nonce_account: next_account(accounts)?,
+                    nonce_authority: next_account(accounts)?,
                 };
                 let de_ix_data: AuthorizeNonceAccountIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::AuthorizeNonceAccount(
                     ix_accounts,
                     de_ix_data,
                 ))
             }
-            [8] => {
-                check_min_accounts_req(accounts_len, 1)?;
+            [8, 0, 0, 0] => {
+                let expected_accounts_len = 1;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = AllocateIxAccounts {
-                    new_account: ix.accounts[0].0.into(),
+                    new_account: next_account(accounts)?,
                 };
-                let de_ix_data: AllocateIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: AllocateIxData = deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::Allocate(ix_accounts, de_ix_data))
             }
-            [9] => {
-                check_min_accounts_req(accounts_len, 2)?;
+            [9, 0, 0, 0] => {
+                let expected_accounts_len = 2;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = AllocateWithSeedIxAccounts {
-                    new_account: ix.accounts[0].0.into(),
-                    base_account: ix.accounts[1].0.into(),
+                    new_account: next_account(accounts)?,
+                    base_account: next_account(accounts)?,
                 };
                 let de_ix_data: AllocateWithSeedIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::AllocateWithSeed(ix_accounts, de_ix_data))
             }
-            [10] => {
-                check_min_accounts_req(accounts_len, 2)?;
+            [10, 0, 0, 0] => {
+                let expected_accounts_len = 2;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = AssignWithSeedIxAccounts {
-                    account: ix.accounts[0].0.into(),
-                    base_account: ix.accounts[1].0.into(),
+                    account: next_account(accounts)?,
+                    base_account: next_account(accounts)?,
                 };
-                let de_ix_data: AssignWithSeedIxData = BorshDeserialize::deserialize(&mut ix_data)?;
+                let de_ix_data: AssignWithSeedIxData =
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::AssignWithSeed(ix_accounts, de_ix_data))
             }
-            [11] => {
-                check_min_accounts_req(accounts_len, 3)?;
+            [11, 0, 0, 0] => {
+                let expected_accounts_len = 3;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = TransferSolWithSeedIxAccounts {
-                    source: ix.accounts[0].0.into(),
-                    base_account: ix.accounts[1].0.into(),
-                    destination: ix.accounts[2].0.into(),
+                    source: next_account(accounts)?,
+                    base_account: next_account(accounts)?,
+                    destination: next_account(accounts)?,
                 };
                 let de_ix_data: TransferSolWithSeedIxData =
-                    BorshDeserialize::deserialize(&mut ix_data)?;
+                    deserialize_checked(ix_data, &ix_discriminator)?;
                 Ok(SystemProgramIx::TransferSolWithSeed(
                     ix_accounts,
                     de_ix_data,
                 ))
             }
-            [12] => {
-                check_min_accounts_req(accounts_len, 1)?;
+            [12, 0, 0, 0] => {
+                let expected_accounts_len = 1;
+                check_min_accounts_req(accounts_len, expected_accounts_len)?;
                 let ix_accounts = UpgradeNonceAccountIxAccounts {
-                    nonce_account: ix.accounts[0].0.into(),
+                    nonce_account: next_account(accounts)?,
                 };
                 Ok(SystemProgramIx::UpgradeNonceAccount(ix_accounts))
             }
@@ -263,7 +311,14 @@ impl InstructionParser {
             }
         }
 
-        ix
+        #[cfg(not(feature = "shared-data"))]
+        return ix;
+
+        #[cfg(feature = "shared-data")]
+        ix.map(|ix| InstructionUpdateOutput {
+            parsed_ix: ix,
+            shared_data,
+        })
     }
 }
 
@@ -277,6 +332,49 @@ pub fn check_min_accounts_req(
         )))
     } else {
         Ok(())
+    }
+}
+
+fn next_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
+    accounts: &mut T,
+) -> Result<solana_pubkey::Pubkey, yellowstone_vixen_core::ParseError> {
+    accounts
+        .next()
+        .ok_or(yellowstone_vixen_core::ParseError::from(
+            "No more accounts to parse",
+        ))
+        .map(|acc| acc.0.into())
+}
+
+/// Gets the next optional account using the ommited account strategy (account is not passed at all at the instruction).
+/// ### Be careful to use this function when more than one account is optional in the Instruction.
+///  Only by order there is no way to which ones of the optional accounts are present.
+pub fn next_optional_account<'a, T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>>(
+    accounts: &mut T,
+    actual_accounts_len: usize,
+    expected_accounts_len: &mut usize,
+) -> Result<Option<solana_pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+    if actual_accounts_len == *expected_accounts_len + 1 {
+        *expected_accounts_len += 1;
+        Ok(Some(next_account(accounts)?))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Gets the next optional account using the traditional Program ID strategy.
+///  (If account key is the program ID, means account is not present)
+pub fn next_program_id_optional_account<
+    'a,
+    T: Iterator<Item = &'a yellowstone_vixen_core::KeyBytes<32>>,
+>(
+    accounts: &mut T,
+) -> Result<Option<solana_pubkey::Pubkey>, yellowstone_vixen_core::ParseError> {
+    let account_key = next_account(accounts)?;
+    if account_key.eq(&ID) {
+        Ok(None)
+    } else {
+        Ok(Some(account_key))
     }
 }
 
@@ -622,7 +720,11 @@ mod proto_parser {
         type Message = proto_def::ProgramIxs;
 
         fn output_into_message(value: Self::Output) -> Self::Message {
-            value.into_proto()
+            #[cfg(not(feature = "shared-data"))]
+            return value.into_proto();
+
+            #[cfg(feature = "shared-data")]
+            value.parsed_ix.into_proto()
         }
     }
 }

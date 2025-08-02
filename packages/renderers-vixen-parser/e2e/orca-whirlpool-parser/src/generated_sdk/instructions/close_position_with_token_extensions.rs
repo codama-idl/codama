@@ -8,6 +8,9 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const CLOSE_POSITION_WITH_TOKEN_EXTENSIONS_DISCRIMINATOR: [u8; 8] =
+    [1, 182, 135, 59, 155, 25, 99, 223];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct ClosePositionWithTokenExtensions {

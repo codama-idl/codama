@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const WITHDRAW_PNL_DISCRIMINATOR: [u8; 1] = [7];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct WithdrawPnl {

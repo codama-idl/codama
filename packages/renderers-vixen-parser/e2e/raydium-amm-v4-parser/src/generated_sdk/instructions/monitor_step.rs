@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const MONITOR_STEP_DISCRIMINATOR: [u8; 1] = [2];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct MonitorStep {

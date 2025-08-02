@@ -9,6 +9,8 @@ use crate::generated::types::RemainingAccountsInfo;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SWAP_V2_DISCRIMINATOR: [u8; 8] = [43, 4, 237, 11, 26, 201, 30, 98];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SwapV2 {

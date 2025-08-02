@@ -31,6 +31,8 @@ pub struct WhirlpoolsConfig {
     pub default_protocol_fee_rate: u16,
 }
 
+pub const WHIRLPOOLS_CONFIG_DISCRIMINATOR: [u8; 8] = [157, 20, 49, 224, 217, 87, 193, 254];
+
 impl WhirlpoolsConfig {
     pub const LEN: usize = 106;
 

@@ -8,6 +8,9 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SET_CONFIG_EXTENSION_AUTHORITY_DISCRIMINATOR: [u8; 8] =
+    [44, 94, 241, 116, 24, 188, 60, 143];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SetConfigExtensionAuthority {

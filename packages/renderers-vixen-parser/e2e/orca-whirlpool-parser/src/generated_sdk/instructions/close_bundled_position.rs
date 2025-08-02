@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const CLOSE_BUNDLED_POSITION_DISCRIMINATOR: [u8; 8] = [41, 36, 216, 245, 27, 85, 103, 67];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct CloseBundledPosition {

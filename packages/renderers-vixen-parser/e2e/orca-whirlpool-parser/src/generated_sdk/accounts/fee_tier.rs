@@ -22,6 +22,8 @@ pub struct FeeTier {
     pub default_fee_rate: u16,
 }
 
+pub const FEE_TIER_DISCRIMINATOR: [u8; 8] = [56, 75, 159, 76, 142, 68, 190, 105];
+
 impl FeeTier {
     pub const LEN: usize = 44;
 

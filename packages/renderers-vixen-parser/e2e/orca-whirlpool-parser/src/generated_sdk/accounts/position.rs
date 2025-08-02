@@ -34,6 +34,8 @@ pub struct Position {
     pub reward_infos: [PositionRewardInfo; 3],
 }
 
+pub const POSITION_DISCRIMINATOR: [u8; 8] = [170, 188, 143, 228, 122, 64, 247, 208];
+
 impl Position {
     pub const LEN: usize = 216;
 

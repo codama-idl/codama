@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const INITIALIZE_CONFIG_EXTENSION_DISCRIMINATOR: [u8; 8] = [55, 9, 53, 9, 114, 57, 209, 52];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct InitializeConfigExtension {

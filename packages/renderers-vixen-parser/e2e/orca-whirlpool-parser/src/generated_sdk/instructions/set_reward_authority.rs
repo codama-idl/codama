@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SET_REWARD_AUTHORITY_DISCRIMINATOR: [u8; 8] = [34, 39, 183, 252, 83, 28, 85, 127];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SetRewardAuthority {

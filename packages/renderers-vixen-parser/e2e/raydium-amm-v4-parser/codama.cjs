@@ -91,7 +91,35 @@ function generateProject(project, node) {
     const feesIndex = accounts.findIndex(account => account.name === 'fees');
     accounts.splice(feesIndex, 1);
 
-    const updatedNode = { ...node, program: { ...node.program, definedTypes, accounts } };
+    // ###############################################
+    // # Add optionalAccountStrategy to Instructions #
+    // ###############################################
+
+    // List of instructions and account indexes for each instruction that are optional
+    const optionalAccounts = {
+        // monitorStep: [18, 19],   //poolWithdrawQueue account not present in program (but it's present in idl)(https://github.com/raydium-io/raydium-amm/blob/master/program/src/instruction.rs#L179-L180)
+        // setParams: [16],         //TODO: optional account not in idl, needs to be added
+        // withdrawPnl: [17],       //TODO: optional account not in idl, needs to be added
+        swapBaseIn: [4],
+        swapBaseOut: [4],
+    }
+
+    const instructions = node.program.instructions.map(instruction => {
+        let updated_instruction = { ...instruction };
+        if (instruction.name in optionalAccounts) {
+            updated_instruction.optionalAccountStrategy = 'omitted';
+
+            const ix_accounts = [...updated_instruction.accounts];
+
+            for (const accountIndex of optionalAccounts[instruction.name]) {
+                ix_accounts[accountIndex] = { ...ix_accounts[accountIndex], isOptional: true };
+            }
+            updated_instruction.accounts = [...ix_accounts];
+        }
+        return updated_instruction;
+    });
+
+    const updatedNode = { ...node, program: { ...node.program, definedTypes, accounts, instructions } };
 
     visit(
         updatedNode,

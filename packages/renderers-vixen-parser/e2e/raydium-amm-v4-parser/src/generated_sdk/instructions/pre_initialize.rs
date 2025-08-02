@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const PRE_INITIALIZE_DISCRIMINATOR: [u8; 1] = [10];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct PreInitialize {

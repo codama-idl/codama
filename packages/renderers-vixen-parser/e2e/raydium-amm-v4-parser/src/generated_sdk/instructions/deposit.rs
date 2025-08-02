@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const DEPOSIT_DISCRIMINATOR: [u8; 1] = [3];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct Deposit {

@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const AUTHORIZE_NONCE_ACCOUNT_DISCRIMINATOR: u32 = 7;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct AuthorizeNonceAccount {
@@ -56,12 +58,12 @@ impl AuthorizeNonceAccount {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AuthorizeNonceAccountInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl AuthorizeNonceAccountInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [7] }
+        Self { discriminator: 7 }
     }
 }
 

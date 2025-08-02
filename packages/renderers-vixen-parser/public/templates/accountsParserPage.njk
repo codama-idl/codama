@@ -5,6 +5,7 @@
 
 {{ imports }}
 
+use crate::deserialize_checked;
 
 /// {{ programName | pascalCase }} Program State
 #[allow(clippy::large_enum_variant)]
@@ -25,7 +26,7 @@ impl {{ programName | pascalCase }}ProgramState {
                 {% if account.discriminator != null %}
                     {{ account.discriminator }} => Ok(
                         {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                            {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                            deserialize_checked(data_bytes, &acc_discriminator)?
                         )
                     ),
                 {% endif %}
@@ -67,7 +68,7 @@ impl {{ programName | pascalCase }}ProgramState {
             {% for account in accounts %}
                 {{account.name | upper }}_LEN => Ok(
                     {{ programName | pascalCase }}ProgramState::{{ account.name | pascalCase }}(
-                        {{ account.name | pascalCase }}::from_bytes(data_bytes)?
+                        deserialize_checked(data_bytes, &data_len.to_le_bytes())?
                     )
                     ),
             {% endfor %}
@@ -124,7 +125,34 @@ impl yellowstone_vixen_core::Parser for AccountParser {
         acct: &yellowstone_vixen_core::AccountUpdate,
     ) -> yellowstone_vixen_core::ParseResult<Self::Output> {
         let inner = acct.account.as_ref().ok_or(solana_program_error::ProgramError::InvalidArgument)?;
-           {{ programName | pascalCase }}ProgramState::try_unpack(&inner.data)
+        let res = {{ programName | pascalCase }}ProgramState::try_unpack(&inner.data);
+
+        #[cfg(feature = "tracing")]
+        if let Err(e) = &res {
+            {% if hasDiscriminator %}
+                let acc_discriminator:[u8; {{ accDiscLen }}] = inner.data[0..{{ accDiscLen }}].try_into()?;
+                tracing::info!(
+                    name: "incorrectly_parsed_account",
+                    name = "account_update",
+                    program = ID.to_string(),
+                    account = "deserialization_error",
+                    discriminator = ?acc_discriminator,
+                    error = ?e
+                );
+            {% else %}
+                let data_len = inner.data.len();
+                tracing::info!(
+                    name: "incorrectly_parsed_account",
+                    name = "account_update",
+                    program = ID.to_string(),
+                    account = "deserialization_error",
+                    data_len = ?data_len,
+                    error = ?e
+                );
+            {% endif %}
+        }
+
+        res
     }
 }
 

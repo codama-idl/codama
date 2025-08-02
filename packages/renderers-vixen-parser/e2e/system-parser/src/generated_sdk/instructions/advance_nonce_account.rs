@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const ADVANCE_NONCE_ACCOUNT_DISCRIMINATOR: u32 = 4;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct AdvanceNonceAccount {
@@ -55,12 +57,12 @@ impl AdvanceNonceAccount {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AdvanceNonceAccountInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl AdvanceNonceAccountInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [4] }
+        Self { discriminator: 4 }
     }
 }
 

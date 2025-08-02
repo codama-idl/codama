@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const INITIALIZE_TICK_ARRAY_DISCRIMINATOR: [u8; 8] = [11, 188, 193, 214, 141, 91, 149, 184];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct InitializeTickArray {

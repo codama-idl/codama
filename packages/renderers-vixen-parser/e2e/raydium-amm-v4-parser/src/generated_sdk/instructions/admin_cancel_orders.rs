@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const ADMIN_CANCEL_ORDERS_DISCRIMINATOR: [u8; 1] = [13];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct AdminCancelOrders {

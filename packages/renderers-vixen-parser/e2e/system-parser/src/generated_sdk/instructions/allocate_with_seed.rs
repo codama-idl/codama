@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const ALLOCATE_WITH_SEED_DISCRIMINATOR: u32 = 9;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct AllocateWithSeed {
@@ -56,12 +58,12 @@ impl AllocateWithSeed {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AllocateWithSeedInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl AllocateWithSeedInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [9] }
+        Self { discriminator: 9 }
     }
 }
 

@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const INITIALIZE_FEE_TIER_DISCRIMINATOR: [u8; 8] = [183, 74, 156, 160, 112, 2, 42, 30];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct InitializeFeeTier {

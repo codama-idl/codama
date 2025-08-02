@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const UPDATE_CONFIG_ACCOUNT_DISCRIMINATOR: [u8; 1] = [15];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct UpdateConfigAccount {

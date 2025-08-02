@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const INITIALIZE_POOL_V2_DISCRIMINATOR: [u8; 8] = [207, 45, 87, 242, 27, 63, 204, 67];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct InitializePoolV2 {

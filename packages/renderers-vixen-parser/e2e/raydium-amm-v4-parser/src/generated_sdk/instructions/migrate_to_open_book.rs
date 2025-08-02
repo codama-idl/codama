@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const MIGRATE_TO_OPEN_BOOK_DISCRIMINATOR: [u8; 1] = [5];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct MigrateToOpenBook {

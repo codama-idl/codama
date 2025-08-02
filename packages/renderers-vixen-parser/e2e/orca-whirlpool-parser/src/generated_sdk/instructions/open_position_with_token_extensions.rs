@@ -8,6 +8,9 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const OPEN_POSITION_WITH_TOKEN_EXTENSIONS_DISCRIMINATOR: [u8; 8] =
+    [212, 47, 95, 92, 114, 102, 131, 250];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct OpenPositionWithTokenExtensions {

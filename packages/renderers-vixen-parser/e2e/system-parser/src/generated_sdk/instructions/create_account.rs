@@ -9,6 +9,8 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_pubkey::Pubkey;
 
+pub const CREATE_ACCOUNT_DISCRIMINATOR: u32 = 0;
+
 /// Accounts.
 #[derive(Debug)]
 pub struct CreateAccount {
@@ -50,12 +52,12 @@ impl CreateAccount {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CreateAccountInstructionData {
-    discriminator: [u8; 1],
+    discriminator: u32,
 }
 
 impl CreateAccountInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: [0] }
+        Self { discriminator: 0 }
     }
 }
 

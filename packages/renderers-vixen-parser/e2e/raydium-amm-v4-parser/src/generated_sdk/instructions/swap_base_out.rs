@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SWAP_BASE_OUT_DISCRIMINATOR: [u8; 1] = [11];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SwapBaseOut {
@@ -19,7 +21,7 @@ pub struct SwapBaseOut {
 
     pub amm_open_orders: solana_pubkey::Pubkey,
 
-    pub amm_target_orders: solana_pubkey::Pubkey,
+    pub amm_target_orders: Option<solana_pubkey::Pubkey>,
 
     pub pool_coin_token_account: solana_pubkey::Pubkey,
 
@@ -73,10 +75,12 @@ impl SwapBaseOut {
             self.amm_open_orders,
             false,
         ));
-        accounts.push(solana_instruction::AccountMeta::new(
-            self.amm_target_orders,
-            false,
-        ));
+        if let Some(amm_target_orders) = self.amm_target_orders {
+            accounts.push(solana_instruction::AccountMeta::new(
+                amm_target_orders,
+                false,
+            ));
+        }
         accounts.push(solana_instruction::AccountMeta::new(
             self.pool_coin_token_account,
             false,
@@ -171,7 +175,7 @@ pub struct SwapBaseOutInstructionArgs {
 ///   1. `[writable]` amm
 ///   2. `[]` amm_authority
 ///   3. `[writable]` amm_open_orders
-///   4. `[writable]` amm_target_orders
+///   4. `[writable, optional]` amm_target_orders
 ///   5. `[writable]` pool_coin_token_account
 ///   6. `[writable]` pool_pc_token_account
 ///   7. `[]` serum_program
@@ -235,9 +239,13 @@ impl SwapBaseOutBuilder {
         self.amm_open_orders = Some(amm_open_orders);
         self
     }
+    /// `[optional account]`
     #[inline(always)]
-    pub fn amm_target_orders(&mut self, amm_target_orders: solana_pubkey::Pubkey) -> &mut Self {
-        self.amm_target_orders = Some(amm_target_orders);
+    pub fn amm_target_orders(
+        &mut self,
+        amm_target_orders: Option<solana_pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.amm_target_orders = amm_target_orders;
         self
     }
     #[inline(always)]
@@ -357,9 +365,7 @@ impl SwapBaseOutBuilder {
             amm: self.amm.expect("amm is not set"),
             amm_authority: self.amm_authority.expect("amm_authority is not set"),
             amm_open_orders: self.amm_open_orders.expect("amm_open_orders is not set"),
-            amm_target_orders: self
-                .amm_target_orders
-                .expect("amm_target_orders is not set"),
+            amm_target_orders: self.amm_target_orders,
             pool_coin_token_account: self
                 .pool_coin_token_account
                 .expect("pool_coin_token_account is not set"),
@@ -414,7 +420,7 @@ pub struct SwapBaseOutCpiAccounts<'a, 'b> {
 
     pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
+    pub amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
 
     pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
@@ -456,7 +462,7 @@ pub struct SwapBaseOutCpi<'a, 'b> {
 
     pub amm_open_orders: &'b solana_account_info::AccountInfo<'a>,
 
-    pub amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
+    pub amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
 
     pub pool_coin_token_account: &'b solana_account_info::AccountInfo<'a>,
 
@@ -556,10 +562,12 @@ impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
             *self.amm_open_orders.key,
             false,
         ));
-        accounts.push(solana_instruction::AccountMeta::new(
-            *self.amm_target_orders.key,
-            false,
-        ));
+        if let Some(amm_target_orders) = self.amm_target_orders {
+            accounts.push(solana_instruction::AccountMeta::new(
+                *amm_target_orders.key,
+                false,
+            ));
+        }
         accounts.push(solana_instruction::AccountMeta::new(
             *self.pool_coin_token_account.key,
             false,
@@ -634,7 +642,9 @@ impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
         account_infos.push(self.amm.clone());
         account_infos.push(self.amm_authority.clone());
         account_infos.push(self.amm_open_orders.clone());
-        account_infos.push(self.amm_target_orders.clone());
+        if let Some(amm_target_orders) = self.amm_target_orders {
+            account_infos.push(amm_target_orders.clone());
+        }
         account_infos.push(self.pool_coin_token_account.clone());
         account_infos.push(self.pool_pc_token_account.clone());
         account_infos.push(self.serum_program.clone());
@@ -668,7 +678,7 @@ impl<'a, 'b> SwapBaseOutCpi<'a, 'b> {
 ///   1. `[writable]` amm
 ///   2. `[]` amm_authority
 ///   3. `[writable]` amm_open_orders
-///   4. `[writable]` amm_target_orders
+///   4. `[writable, optional]` amm_target_orders
 ///   5. `[writable]` pool_coin_token_account
 ///   6. `[writable]` pool_pc_token_account
 ///   7. `[]` serum_program
@@ -744,12 +754,13 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
         self.instruction.amm_open_orders = Some(amm_open_orders);
         self
     }
+    /// `[optional account]`
     #[inline(always)]
     pub fn amm_target_orders(
         &mut self,
-        amm_target_orders: &'b solana_account_info::AccountInfo<'a>,
+        amm_target_orders: Option<&'b solana_account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.amm_target_orders = Some(amm_target_orders);
+        self.instruction.amm_target_orders = amm_target_orders;
         self
     }
     #[inline(always)]
@@ -935,10 +946,7 @@ impl<'a, 'b> SwapBaseOutCpiBuilder<'a, 'b> {
                 .amm_open_orders
                 .expect("amm_open_orders is not set"),
 
-            amm_target_orders: self
-                .instruction
-                .amm_target_orders
-                .expect("amm_target_orders is not set"),
+            amm_target_orders: self.instruction.amm_target_orders,
 
             pool_coin_token_account: self
                 .instruction

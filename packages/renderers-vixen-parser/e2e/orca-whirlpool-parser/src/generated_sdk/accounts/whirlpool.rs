@@ -55,6 +55,8 @@ pub struct Whirlpool {
     pub reward_infos: [WhirlpoolRewardInfo; 3],
 }
 
+pub const WHIRLPOOL_DISCRIMINATOR: [u8; 8] = [63, 149, 209, 12, 225, 128, 99, 9];
+
 impl Whirlpool {
     pub const LEN: usize = 653;
 

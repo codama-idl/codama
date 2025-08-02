@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const SET_TOKEN_BADGE_AUTHORITY_DISCRIMINATOR: [u8; 8] = [207, 202, 4, 32, 205, 79, 13, 178];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct SetTokenBadgeAuthority {

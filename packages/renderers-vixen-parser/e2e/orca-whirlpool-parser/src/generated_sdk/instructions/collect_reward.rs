@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const COLLECT_REWARD_DISCRIMINATOR: [u8; 8] = [70, 5, 132, 87, 86, 235, 177, 34];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct CollectReward {

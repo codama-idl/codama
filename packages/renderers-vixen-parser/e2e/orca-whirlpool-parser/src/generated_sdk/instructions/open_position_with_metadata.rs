@@ -8,6 +8,8 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
+pub const OPEN_POSITION_WITH_METADATA_DISCRIMINATOR: [u8; 8] = [242, 29, 134, 48, 58, 110, 14, 60];
+
 /// Accounts.
 #[derive(Debug)]
 pub struct OpenPositionWithMetadata {
