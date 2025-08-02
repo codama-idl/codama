@@ -140,5 +140,5 @@ impl anchor_lang::IdlBuild for Nonce {}
 
 #[cfg(feature = "anchor-idl-build")]
 impl anchor_lang::Discriminator for Nonce {
-    const DISCRIMINATOR: [u8; 8] = [0; 8];
+    const DISCRIMINATOR: &[u8] = &[0; 8];
 }

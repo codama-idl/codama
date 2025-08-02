@@ -143,5 +143,5 @@ impl anchor_lang::IdlBuild for GuardV1 {}
 
 #[cfg(feature = "anchor-idl-build")]
 impl anchor_lang::Discriminator for GuardV1 {
-    const DISCRIMINATOR: [u8; 8] = [0; 8];
+    const DISCRIMINATOR: &[u8] = &[0; 8];
 }
