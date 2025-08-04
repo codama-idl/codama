@@ -1,4 +1,4 @@
-import { Node, NodeKind } from '@codama/nodes';
+import { Node, NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { identityVisitor } from './identityVisitor';
 import { interceptVisitor } from './interceptVisitor';
@@ -22,7 +22,7 @@ export function bottomUpTransformerVisitor<TNodeKind extends NodeKind = NodeKind
     const transformerFunctions = transformers.map((transformer): BottomUpNodeTransformer => {
         if (typeof transformer === 'function') return transformer;
         return (node, stack) =>
-            getConjunctiveNodeSelectorFunction(transformer.select)(stack.getPath())
+            getConjunctiveNodeSelectorFunction(transformer.select)(stack.getPath(REGISTERED_NODE_KINDS))
                 ? transformer.transform(node, stack)
                 : node;
     });

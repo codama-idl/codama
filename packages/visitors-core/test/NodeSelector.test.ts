@@ -27,6 +27,7 @@ import {
     identityVisitor,
     interceptVisitor,
     isNodePath,
+    NodePath,
     NodeSelector,
     NodeStack,
     pipe,
@@ -199,7 +200,7 @@ const macro = (selector: NodeSelector, expectedSelected: Node[]) => {
             identityVisitor(),
             v =>
                 interceptVisitor(v, (node, next) => {
-                    if (selectorFunction(stack.getPath())) selected.push(node);
+                    if (selectorFunction(stack.getPath() as NodePath<Node>)) selected.push(node);
                     return next(node);
                 }),
             v => recordNodeStackVisitor(v, stack),
