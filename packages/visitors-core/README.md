@@ -614,7 +614,13 @@ const visitor = bottomUpTransformerVisitor([
     },
     {
         // Delete all account nodes that start with "m".
-        select: ['[accountNode]', node => 'name' in node && node.name.startsWith('m')],
+        select: [
+            '[accountNode]',
+            path => {
+                const node = getLastNodeFromPath(path);
+                return 'name' in node && node.name.startsWith('m');
+            },
+        ],
         transform: () => null,
     },
     {
