@@ -1,6 +1,6 @@
 {
     "name": "@codama/cli",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "A CLI for setting up and managing Codama IDLs",
     "exports": {
         "types": "./dist/types/index.d.ts",
