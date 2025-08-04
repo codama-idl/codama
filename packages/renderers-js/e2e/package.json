@@ -15,7 +15,7 @@
         "prettier": "^3.6.2",
         "rimraf": "^6.0.1",
         "tsup": "^8.5.0",
-        "typedoc": "^0.28.8",
+        "typedoc": "^0.28.9",
         "typedoc-plugin-missing-exports": "^4.0.0",
         "typescript": "^5.8.3"
     },
