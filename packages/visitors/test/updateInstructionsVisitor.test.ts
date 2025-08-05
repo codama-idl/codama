@@ -1,10 +1,18 @@
 import {
+    ArgumentValueNode,
+    argumentValueNode,
     assertIsNode,
     CamelCaseString,
+    ConstantDiscriminatorNode,
+    constantDiscriminatorNode,
+    constantValueNode,
     instructionAccountNode,
     instructionArgumentNode,
+    instructionByteDeltaNode,
     instructionNode,
+    instructionRemainingAccountsNode,
     numberTypeNode,
+    NumberValueNode,
     numberValueNode,
     programNode,
     rootNode,
@@ -198,4 +206,73 @@ test('it updates the default value strategy of an instruction argument', () => {
     expect(result.arguments[0].defaultValueStrategy).toBe('omitted');
     expect(result.arguments[1].defaultValue).toEqual(numberValueNode(1));
     expect(result.arguments[1].defaultValueStrategy).toBe('optional');
+});
+
+test('it updates the byteDeltas of an instruction', () => {
+    // Given the following instruction node with no byteDeltas.
+    const node = instructionNode({
+        name: 'myInstruction',
+    });
+
+    // When we update the byteDeltas of that instruction.
+    const result = visit(
+        node,
+        updateInstructionsVisitor({
+            myInstruction: {
+                byteDeltas: [instructionByteDeltaNode(numberValueNode(100))],
+            },
+        }),
+    );
+
+    // Then we expect the following tree changes.
+    assertIsNode(result, 'instructionNode');
+    expect(result.byteDeltas).toEqual([instructionByteDeltaNode(numberValueNode(100))]);
+});
+
+test('it updates the discriminators of an instruction', () => {
+    // Given the following instruction node with no discriminators.
+    const node = instructionNode({
+        name: 'myInstruction',
+    });
+
+    // When we update the discriminators of that instruction.
+    const result = visit(
+        node,
+        updateInstructionsVisitor({
+            myInstruction: {
+                discriminators: [
+                    constantDiscriminatorNode(constantValueNode(numberTypeNode('u64'), numberValueNode(42))),
+                ],
+            },
+        }),
+    );
+
+    // Then we expect the following tree changes.
+    assertIsNode(result, 'instructionNode');
+    expect(result.discriminators![0].kind).toBe('constantDiscriminatorNode');
+    expect(((result.discriminators![0] as ConstantDiscriminatorNode).constant.value as NumberValueNode).number).toEqual(
+        42,
+    );
+});
+
+test('it updates the remainingAccounts of an instruction', () => {
+    // Given the following instruction node with no remaining accounts.
+    const node = instructionNode({
+        name: 'myInstruction',
+    });
+
+    // When we update the remaining accounts of that instruction.
+    const result = visit(
+        node,
+        updateInstructionsVisitor({
+            myInstruction: {
+                remainingAccounts: [instructionRemainingAccountsNode(argumentValueNode('abc'))],
+            },
+        }),
+    );
+
+    // Then we expect the following tree changes.
+    assertIsNode(result, 'instructionNode');
+    expect(result.remainingAccounts![0].kind).toBe('instructionRemainingAccountsNode');
+    expect((result.remainingAccounts![0].value as ArgumentValueNode).name).toBe('abc');
 });
