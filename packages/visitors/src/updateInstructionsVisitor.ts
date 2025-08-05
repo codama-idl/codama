@@ -27,24 +27,13 @@ import {
 import { fillDefaultPdaSeedValuesVisitor } from './fillDefaultPdaSeedValuesVisitor';
 
 export type InstructionUpdates =
-    | { delete: true }
-    | (InstructionMetadataUpdates & {
-          accounts?: InstructionAccountUpdates;
-          arguments?: InstructionArgumentUpdates;
-      });
-
-export type InstructionMetadataUpdates = Partial<
-    Omit<
-        InstructionNodeInput,
-        | 'accounts'
-        | 'arguments'
-        | 'byteDeltas'
-        | 'discriminators'
-        | 'extraArguments'
-        | 'remainingAccounts'
-        | 'subInstructions'
-    >
->;
+    | Partial<
+          Omit<InstructionNodeInput, 'accounts' | 'arguments' | 'extraArguments'> & {
+              accounts?: InstructionAccountUpdates;
+              arguments?: InstructionArgumentUpdates;
+          }
+      >
+    | { delete: true };
 
 export type InstructionAccountUpdates = Record<
     string,
