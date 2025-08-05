@@ -5,6 +5,7 @@ import {
     enumStructVariantTypeNode,
     getAllDefinedTypes,
     isNode,
+    REGISTERED_NODE_KINDS,
     resolveNestedTypeNode,
     StructTypeNode,
     transformNestedTypeNode,
@@ -27,7 +28,8 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
             ? [() => true]
             : enumsOrVariantsToUnwrap.map(selector => getNodeSelectorFunction(selector));
 
-    const shouldUnwrap = (stack: NodeStack): boolean => selectorFunctions.some(selector => selector(stack.getPath()));
+    const shouldUnwrap = (stack: NodeStack): boolean =>
+        selectorFunctions.some(selector => selector(stack.getPath(REGISTERED_NODE_KINDS)));
 
     return rootNodeVisitor(root => {
         const typesToPotentiallyUnwrap: string[] = [];

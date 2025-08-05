@@ -13,23 +13,23 @@
 > [!NOTE]  
 > Wait, wasn't this project called Kinobi before? We've [renamed this project to **Codama**](https://github.com/codama-idl/codama/pull/234).
 
-Codama is a tool that describes any Solana program in a standardised format called a **Codama IDL**. 
+Codama is a tool that describes any Solana program in a standardised format called a **Codama IDL**.
 
 A Codama IDL can be used to:
 
- - Create clients for your programs in various languages/frameworks
- - Make CLIs
- - Provide additional information to explorers
+- Create clients for your programs in various languages/frameworks
+- Make CLIs
+- Provide additional information to explorers
 
 ![Codama header: A small double-sided mind-map with the Codama logo in the middle. On the left, we see the various ways to get a Codama IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/user-attachments/assets/029af336-ea71-4e7f-9612-ef5bb187e3a0)
 
 ## I'm a busy Anchor developer. How do I use Codama?
 
-If you're using [Anchor](https://www.anchor-lang.com/), Codama can be used to create a TypeScript client that works with [Solana Kit](https://github.com/anza-xyz/kit). This combination replaces the traditional `@coral-xyz/anchor` and `@solana/web3.js` packages, and can be used in both TypeScript tests, and the browser. 
+If you're using [Anchor](https://www.anchor-lang.com/), Codama can be used to create a TypeScript client that works with [Solana Kit](https://github.com/anza-xyz/kit). This combination replaces the traditional `@coral-xyz/anchor` and `@solana/web3.js` packages, and can be used in both TypeScript tests, and the browser.
 
- - The `programClient` created by Codama will be used to create instructions for your Anchor program, and decode your Anchor program's data accounts. 
- - [`@solana/kit`](https://github.com/anza-xyz/kit) will be used to connect to the network, send transactions, and do most tasks that aren't specific to your program.
- - [`@solana/react`](https://github.com/anza-xyz/kit/tree/main/packages/react) will be used to connect to Solana wallet apps like Phantom, Solflare, etc. in React.
+- The `programClient` created by Codama will be used to create instructions for your Anchor program, and decode your Anchor program's data accounts.
+- [`@solana/kit`](https://github.com/anza-xyz/kit) will be used to connect to the network, send transactions, and do most tasks that aren't specific to your program.
+- [`@solana/react`](https://github.com/anza-xyz/kit/tree/main/packages/react) will be used to connect to Solana wallet apps like Phantom, Solflare, etc. in React.
 
 This Codama README shows you how to create the TypeScript client for your Anchor program, but if you're interested in the bigger picture, see QuickNode's video on [Anchor and Solana Kit](https://www.youtube.com/watch?v=2T3DOMv7iR4).
 
@@ -102,7 +102,7 @@ The Codama IDL is designed as a tree of nodes starting with the `RootNode,` whic
 
 ![A small example of a Codama IDL as a tree of nodes. It starts with a RootNode and goes down to ProgramNode, AccountNode, InstructionNode, etc.](https://github.com/codama-idl/codama/assets/3642397/9d53485d-a4f6-459a-b7eb-58faab716bc1)
 
-Because everything is designed as a `Node`, we can transform the IDL, aggregate information, and output various utility tools using special objects that can traverse node trees known as visitors. [See this documentation to learn more about Codama visitors](./packages/visitors). 
+Because everything is designed as a `Node`, we can transform the IDL, aggregate information, and output various utility tools using special objects that can traverse node trees known as visitors. [See this documentation to learn more about Codama visitors](./packages/visitors).
 
 ![A small example of how a visitor can transform a Codama IDL into another Codama IDL. This example illustrates the "deleteNodesVisitor" which recursively removes NumberTypeNodes from a tree of nested TypleTypeNodes.](https://github.com/codama-idl/codama/assets/3642397/f54e83d1-eade-4674-80dc-7ddc360f5f66)
 

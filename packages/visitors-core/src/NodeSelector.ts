@@ -15,7 +15,7 @@ export type NodeSelector = NodeSelectorFunction | NodeSelectorPath;
  */
 export type NodeSelectorPath = string;
 
-export type NodeSelectorFunction = (path: NodePath) => boolean;
+export type NodeSelectorFunction = (path: NodePath<Node>) => boolean;
 
 export const getNodeSelectorFunction = (selector: NodeSelector): NodeSelectorFunction => {
     if (typeof selector === 'function') return selector;
