@@ -20,20 +20,16 @@ type InitOptions = {
     gill?: boolean;
 };
 
-type ConfigFileType = 'gill' | 'js' | 'json';
-
 async function doInit(explicitOutput: string | undefined, options: InitOptions) {
     const output = getOutputPath(explicitOutput, options);
-    let configFileType: ConfigFileType = output.endsWith('.js') ? 'js' : 'json';
-    if (options.gill) configFileType = 'gill';
-    else if (options.js) configFileType = 'js';
+    const configFileType = getConfigFileType(output, options);
 
     if (await canRead(output)) {
         throw new Error(`Configuration file already exists at "${output}".`);
     }
 
     logBanner();
-    const result = await getPromptResult(options);
+    const result = await getPromptResult(options, configFileType);
     const content = getContentFromPromptResult(result, configFileType);
     await writeFile(output, content);
     logSuccess(`Configuration file created at "${output}".`);
@@ -54,7 +50,10 @@ type PromptResult = {
     scripts: string[];
 };
 
-async function getPromptResult(options: Pick<InitOptions, 'default'>): Promise<PromptResult> {
+async function getPromptResult(
+    options: Pick<InitOptions, 'default'>,
+    configFileType: ConfigFileType,
+): Promise<PromptResult> {
     const defaults = getDefaultPromptResult();
     if (options.default) {
         return defaults;
@@ -81,6 +80,14 @@ async function getPromptResult(options: Pick<InitOptions, 'default'>): Promise<P
                 message: 'Which script preset would you like to use?',
                 name: 'scripts',
                 type: 'multiselect',
+                onRender(kleur) {
+                    if (configFileType === 'gill') {
+                        const value = (this as unknown as { value: prompts.Choice[] }).value;
+                        const jsChoice = value.find(choice => choice.value === 'js')!;
+                        jsChoice.description = kleur.yellow('Required with --gill option.');
+                        jsChoice.selected = true;
+                    }
+                },
             },
             {
                 initial: defaults.jsPath,
@@ -121,7 +128,33 @@ function getDefaultPromptResult(): PromptResult {
     };
 }
 
+type ConfigFileType = 'gill' | 'js' | 'json';
+function getConfigFileType(output: string, options: Pick<InitOptions, 'gill' | 'js'>): ConfigFileType {
+    if (options.gill) return 'gill';
+    else if (options.js) return 'js';
+    return output.endsWith('.js') ? 'js' : 'json';
+}
+
 function getContentFromPromptResult(result: PromptResult, configFileType: ConfigFileType): string {
+    switch (configFileType) {
+        case 'gill':
+            return getContentForGill(result);
+        case 'js':
+            return (
+                `export default ` +
+                JSON.stringify(getConfigFromPromptResult(result), null, 4)
+                    // Remove quotes around property names
+                    .replace(/"([^"]+)":/g, '$1:')
+                    // Convert double-quoted strings to single quotes
+                    .replace(/"([^"]*)"/g, "'$1'")
+            );
+        case 'json':
+        default:
+            return JSON.stringify(getConfigFromPromptResult(result), null, 4);
+    }
+}
+
+function getConfigFromPromptResult(result: PromptResult): Config {
     const scripts: Record<ScriptName, ScriptConfig> = {};
     if (result.scripts.includes('js')) {
         scripts.js = {
@@ -135,26 +168,19 @@ function getContentFromPromptResult(result: PromptResult, configFileType: Config
             args: [result.rustPath, { crateFolder: result.rustCrate, formatCode: true }],
         };
     }
-    const content: Config = { idl: result.idlPath, before: [], scripts };
+    return { idl: result.idlPath, before: [], scripts };
+}
 
-    if (configFileType == 'json') {
-        return JSON.stringify(content, null, 4);
-    } else if (configFileType == 'gill') {
-        return `import { createCodamaConfig } from "gill";\n\n` +
-            `export default createCodamaConfig({ \n\t` +
-            `idl: "${result.idlPath}", \n\t` +
-            `clientJs: "${result.jsPath}", \n` +
-            result.scripts.includes('rust')
-            ? `clientRust: "${result.rustPath}", \n`
-            : `` + `});`;
-    }
+function getContentForGill(result: PromptResult): string {
+    const attributes: string[] = [
+        `idl: "${result.idlPath}"`,
+        `clientJs: "${result.jsPath}"`,
+        ...(result.scripts.includes('rust') ? [`clientRust: "${result.rustPath}"`] : []),
+    ];
+    const attributesString = attributes.map(attr => `    ${attr},\n`).join('');
 
     return (
-        'export default ' +
-        JSON.stringify(content, null, 4)
-            // Remove quotes around property names
-            .replace(/"([^"]+)":/g, '$1:')
-            // Convert double-quoted strings to single quotes
-            .replace(/"([^"]*)"/g, "'$1'")
+        `import { createCodamaConfig } from "gill";\n\n` +
+        `export default createCodamaConfig({\n${attributesString}});\n`
     );
 }
