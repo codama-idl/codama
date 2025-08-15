@@ -1,5 +1,17 @@
 # @codama/renderers-js
 
+## 1.3.3
+
+### Patch Changes
+
+- [#739](https://github.com/codama-idl/codama/pull/739) [`992176b`](https://github.com/codama-idl/codama/commit/992176b6ea8086bbdfbfe862192669a96df4838c) Thanks [@macalinao](https://github.com/macalinao)! - Update generated JS code to be more linter/formatter friendly
+
+- Updated dependencies [[`b912ac8`](https://github.com/codama-idl/codama/commit/b912ac89b2d041c1f783da8d6f023fdf77dbd7e7)]:
+    - @codama/visitors-core@1.3.2
+    - @codama/renderers-core@1.0.18
+    - @codama/errors@1.3.2
+    - @codama/nodes@1.3.2
+
 ## 1.3.2
 
 ### Patch Changes

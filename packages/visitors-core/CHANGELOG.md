@@ -1,5 +1,15 @@
 # @codama/visitors-core
 
+## 1.3.2
+
+### Patch Changes
+
+- [#746](https://github.com/codama-idl/codama/pull/746) [`b912ac8`](https://github.com/codama-idl/codama/commit/b912ac89b2d041c1f783da8d6f023fdf77dbd7e7) Thanks [@mcintyre94](https://github.com/mcintyre94)! - Use NodePath<Node> instead of Node[] for node selector function
+
+- Updated dependencies []:
+    - @codama/errors@1.3.2
+    - @codama/nodes@1.3.2
+
 ## 1.3.1
 
 ### Patch Changes
