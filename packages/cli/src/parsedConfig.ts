@@ -30,7 +30,7 @@ export type ParsedVisitorConfig<T extends readonly unknown[] = readonly unknown[
 }>;
 
 export async function getParsedConfigFromCommand(cmd: Command): Promise<ParsedConfig> {
-    return await getParsedConfig(cmd.optsWithGlobals() as ProgramOptions);
+    return await getParsedConfig(cmd.optsWithGlobals());
 }
 
 export async function getParsedConfig(options: Pick<ProgramOptions, 'config' | 'idl'>): Promise<ParsedConfig> {
