@@ -1,14 +1,30 @@
 import type { RootNode } from '@codama/nodes';
-import { type AnchorIdl, rootNodeFromAnchor } from '@codama/nodes-from-anchor';
 
-export function getRootNodeFromIdl(idl: unknown): RootNode {
+import { importModuleItem } from './import';
+import { installMissingDependencies } from './packageInstall';
+
+export async function getRootNodeFromIdl(idl: unknown): Promise<RootNode> {
     if (typeof idl !== 'object' || idl === null) {
         throw new Error('Unexpected IDL content. Expected an object, got ' + typeof idl);
     }
     if (isRootNode(idl)) {
         return idl;
     }
-    return rootNodeFromAnchor(idl as AnchorIdl);
+
+    const hasNodesFromAnchor = await installMissingDependencies(
+        'Anchor IDL detected. Additional dependencies are required to process Anchor IDLs.',
+        ['@codama/nodes-from-anchor'],
+    );
+    if (!hasNodesFromAnchor) {
+        throw new Error('Cannot proceed without Anchor IDL support. Install cancelled by user.');
+    }
+
+    const rootNodeFromAnchor = await importModuleItem<(idl: unknown) => RootNode>(
+        'Anchor adapter',
+        '@codama/nodes-from-anchor',
+        'rootNodeFromAnchor',
+    );
+    return rootNodeFromAnchor(idl);
 }
 
 export function isRootNode(value: unknown): value is RootNode {
