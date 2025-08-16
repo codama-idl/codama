@@ -19,11 +19,10 @@ export async function getRootNodeFromIdl(idl: unknown): Promise<RootNode> {
         throw new Error('Cannot proceed without Anchor IDL support. Install cancelled by user.');
     }
 
-    const rootNodeFromAnchor = await importModuleItem<(idl: unknown) => RootNode>(
-        'Anchor adapter',
-        '@codama/nodes-from-anchor',
-        'rootNodeFromAnchor',
-    );
+    const rootNodeFromAnchor = await importModuleItem<(idl: unknown) => RootNode>({
+        from: '@codama/nodes-from-anchor',
+        item: 'rootNodeFromAnchor',
+    });
     return rootNodeFromAnchor(idl);
 }
 

@@ -203,7 +203,7 @@ async function isAnchorIdl(idlPath: string): Promise<boolean> {
     const resolvedIdlPath = resolveRelativePath(idlPath);
     if (!(await canRead(resolvedIdlPath))) return false;
     try {
-        const idlContent = await importModuleItem('IDL', resolvedIdlPath);
+        const idlContent = await importModuleItem({ identifier: 'IDL', from: resolvedIdlPath });
         return !isRootNode(idlContent);
     } catch {
         return false;
