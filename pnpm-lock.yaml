@@ -86,18 +86,6 @@ importers:
       '@codama/nodes-from-anchor':
         specifier: workspace:*
         version: link:../nodes-from-anchor
-      '@codama/renderers':
-        specifier: workspace:*
-        version: link:../renderers
-      '@codama/renderers-js':
-        specifier: workspace:*
-        version: link:../renderers-js
-      '@codama/renderers-js-umi':
-        specifier: workspace:*
-        version: link:../renderers-js-umi
-      '@codama/renderers-rust':
-        specifier: workspace:*
-        version: link:../renderers-rust
       '@codama/visitors':
         specifier: workspace:*
         version: link:../visitors
