@@ -1,3 +1,4 @@
+export * from './childCommands';
 export * from './fs';
 export * from './import';
 export * from './logs';
