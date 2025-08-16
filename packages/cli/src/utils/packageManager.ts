@@ -1,5 +1,4 @@
-import { spawnSync } from 'child_process';
-
+import { ChildCommand, createChildCommand, spawnChildCommand } from './childCommands';
 import { canRead, resolveRelativePath } from './fs';
 import { getPackageJson } from './packageJson';
 
@@ -15,6 +14,15 @@ export async function getPackageManager(): Promise<PackageManager> {
     return packageManager;
 }
 
+export async function getPackageManagerInstallCommand(
+    packages: string[],
+    options: string[] = [],
+): Promise<ChildCommand> {
+    const packageManager = await getPackageManager();
+    const args = [packageManager === 'yarn' ? 'add' : 'install', ...packages, ...options];
+    return createChildCommand(packageManager, args);
+}
+
 async function detectPackageManager(): Promise<PackageManager> {
     const fromPackageJson = await detectPackageManagerFromPackageJson();
     if (fromPackageJson) return fromPackageJson;
@@ -22,7 +30,7 @@ async function detectPackageManager(): Promise<PackageManager> {
     const fromLockfile = await detectPackageManagerFromLockfile();
     if (fromLockfile) return fromLockfile;
 
-    const fromInstalledCli = detectPackageManagerFromInstalledCli();
+    const fromInstalledCli = await detectPackageManagerFromInstalledCli();
     if (fromInstalledCli) return fromInstalledCli;
 
     return FALLBACK_PACKAGE_MANAGER;
@@ -53,14 +61,21 @@ async function detectPackageManagerFromLockfile(): Promise<PackageManager | unde
     return undefined;
 }
 
-function detectPackageManagerFromInstalledCli(): PackageManager | undefined {
-    if (hasPackageManagerCli('yarn')) return 'yarn';
-    if (hasPackageManagerCli('pnpm')) return 'pnpm';
-    if (hasPackageManagerCli('bun')) return 'bun';
+async function detectPackageManagerFromInstalledCli(): Promise<PackageManager | undefined> {
+    const [isPnpm, isYarn, isBun] = await Promise.all([
+        hasPackageManagerCli('pnpm'),
+        hasPackageManagerCli('yarn'),
+        hasPackageManagerCli('bun'),
+    ]);
+
+    if (isPnpm) return 'pnpm';
+    if (isYarn) return 'yarn';
+    if (isBun) return 'bun';
     return undefined;
 }
 
-export function hasPackageManagerCli(packageManager: PackageManager): boolean {
-    const consoleOutput = spawnSync(packageManager, ['--version'], { stdio: 'pipe' });
-    return consoleOutput.status === 0;
+async function hasPackageManagerCli(packageManager: PackageManager): Promise<boolean> {
+    return await spawnChildCommand(createChildCommand(packageManager, ['--version']), { quiet: true })
+        .then(() => true)
+        .catch(() => false);
 }
