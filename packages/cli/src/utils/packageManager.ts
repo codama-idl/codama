@@ -1,4 +1,4 @@
-import { ChildCommand, createChildCommand, spawnChildCommand } from './childCommands';
+import { createChildCommand, spawnChildCommand } from './childCommands';
 import { canRead, resolveRelativePath } from './fs';
 import { getPackageJson } from './packageJson';
 
@@ -12,15 +12,6 @@ export async function getPackageManager(): Promise<PackageManager> {
         packageManager = await detectPackageManager();
     }
     return packageManager;
-}
-
-export async function getPackageManagerInstallCommand(
-    packages: string[],
-    options: string[] = [],
-): Promise<ChildCommand> {
-    const packageManager = await getPackageManager();
-    const args = [packageManager === 'yarn' ? 'add' : 'install', ...packages, ...options];
-    return createChildCommand(packageManager, args);
 }
 
 async function detectPackageManager(): Promise<PackageManager> {
