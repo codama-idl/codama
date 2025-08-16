@@ -1,23 +1,23 @@
 import pico from 'picocolors';
 
 export function logSuccess(...args: unknown[]): void {
-    console.log(pico.green('[Success]'), ...args);
+    console.log(pico.green('✔'), ...args);
 }
 
 export function logInfo(...args: unknown[]): void {
-    console.log(pico.blueBright('[Info]'), ...args);
+    console.log(pico.blueBright('→'), ...args);
 }
 
 export function logWarning(...args: unknown[]): void {
-    console.log(pico.yellow('[Warning]'), ...args);
+    console.log(pico.yellow('▲'), ...args);
 }
 
 export function logError(...args: unknown[]): void {
-    console.log(pico.red('[Error]'), ...args);
+    console.log(pico.red('✖'), ...args);
 }
 
 export function logDebug(...args: unknown[]): void {
-    console.log(pico.magenta('[Debug]'), ...args);
+    console.log(pico.magenta('✱'), ...args);
 }
 
 export function logBanner(): void {

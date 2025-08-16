@@ -20,3 +20,11 @@ export async function getPackageJson(): Promise<PackageJson> {
     }
     return packageJson;
 }
+
+export async function getPackageJsonDependencies(options: { includeDev?: boolean } = {}): Promise<string[]> {
+    const packageJson = await getPackageJson();
+    return [
+        ...(packageJson.dependencies ? Object.keys(packageJson.dependencies) : []),
+        ...(options.includeDev && packageJson.devDependencies ? Object.keys(packageJson.devDependencies) : []),
+    ];
+}
