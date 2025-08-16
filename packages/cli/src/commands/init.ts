@@ -5,23 +5,13 @@ import prompts, { PromptType } from 'prompts';
 import { Config, ScriptConfig, ScriptName } from '../config';
 import {
     canRead,
-    formatChildCommand,
-    getPackageJsonDependencies,
-    getPackageManagerInstallCommand,
+    installMissingDependencies,
     logBanner,
-    logInfo,
     logSuccess,
-    logWarning,
+    PROMPT_OPTIONS,
     resolveRelativePath,
-    spawnChildCommand,
     writeFile,
 } from '../utils';
-
-const PROMPT_OPTIONS: prompts.Options = {
-    onCancel: () => {
-        throw new Error('Operation cancelled.');
-    },
-};
 
 export function setInitCommand(program: Command): void {
     program
@@ -130,35 +120,12 @@ async function getPromptResult(
         PROMPT_OPTIONS,
     );
 
-    await installMissingDependencies(result);
-    return result;
-}
-
-async function installMissingDependencies(result: PromptResult): Promise<void> {
-    const requiredDependencies = [
+    await installMissingDependencies(`Your configuration requires additional dependencies.`, [
         ...(result.scripts.includes('js') ? ['@codama/renderers-js'] : []),
         ...(result.scripts.includes('rust') ? ['@codama/renderers-rust'] : []),
-    ];
-    if (requiredDependencies.length === 0) return;
+    ]);
 
-    const installedDependencies = await getPackageJsonDependencies({ includeDev: true });
-    const missingDependencies = requiredDependencies.filter(dep => !installedDependencies.includes(dep));
-    if (missingDependencies.length === 0) return;
-
-    const installCommand = await getPackageManagerInstallCommand(missingDependencies);
-
-    logWarning(`Some dependencies are missing for the selected scripts.`);
-    logWarning(`Install command: ${pico.yellow(formatChildCommand(installCommand))}`);
-
-    const dependencyResult: { installDependencies: boolean } = await prompts(
-        { initial: true, message: 'Install missing dependencies?', name: 'installDependencies', type: 'confirm' },
-        PROMPT_OPTIONS,
-    );
-    if (!dependencyResult.installDependencies) return;
-
-    logInfo(`Installing: ${missingDependencies.join(', ')}`);
-    await spawnChildCommand(installCommand, { quiet: true });
-    logSuccess(`Dependencies installed successfully.`);
+    return result;
 }
 
 function getDefaultPromptResult(): PromptResult {
