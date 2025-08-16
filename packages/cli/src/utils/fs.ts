@@ -15,6 +15,14 @@ export function isLocalModulePath(modulePath: string) {
     return modulePath.startsWith('.') || modulePath.startsWith('/');
 }
 
+export async function readJson<T>(filePath: string): Promise<T> {
+    return JSON.parse(await readFile(filePath)) as T;
+}
+
+export async function readFile(filePath: string): Promise<string> {
+    return await fs.promises.readFile(filePath, 'utf8');
+}
+
 export async function writeFile(filePath: string, content: string) {
     const directory = path.dirname(filePath);
     if (!(await canWrite(directory))) {
