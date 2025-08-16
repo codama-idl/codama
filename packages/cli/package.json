@@ -44,7 +44,6 @@
     },
     "dependencies": {
         "@codama/nodes": "workspace:*",
-        "@codama/nodes-from-anchor": "workspace:*",
         "@codama/visitors": "workspace:*",
         "@codama/visitors-core": "workspace:*",
         "commander": "^14.0.0",
