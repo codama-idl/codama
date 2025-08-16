@@ -45,7 +45,7 @@ async function parseConfig(
 ): Promise<ParsedConfig> {
     const idlPath = parseIdlPath(config, configPath, options);
     const idlContent = await importModuleItem('IDL', idlPath);
-    const rootNode = getRootNodeFromIdl(idlContent);
+    const rootNode = await getRootNodeFromIdl(idlContent);
     const scripts = parseScripts(config.scripts ?? {}, configPath);
     const visitors = (config.before ?? []).map((v, i) => parseVisitorConfig(v, configPath, i, null));
 

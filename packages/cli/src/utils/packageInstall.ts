@@ -16,18 +16,18 @@ export async function getPackageManagerInstallCommand(
     return createChildCommand(packageManager, args);
 }
 
-export async function installMissingDependencies(message: string, requiredDependencies: string[]): Promise<void> {
-    if (requiredDependencies.length === 0) return;
+export async function installMissingDependencies(message: string, requiredDependencies: string[]): Promise<boolean> {
+    if (requiredDependencies.length === 0) return true;
 
     const installedDependencies = await getPackageJsonDependencies({ includeDev: true });
     const missingDependencies = requiredDependencies.filter(dep => !installedDependencies.includes(dep));
-    if (missingDependencies.length === 0) return;
+    if (missingDependencies.length === 0) return true;
 
-    await installDependencies(message, missingDependencies);
+    return await installDependencies(message, missingDependencies);
 }
 
-export async function installDependencies(message: string, dependencies: string[]): Promise<void> {
-    if (dependencies.length === 0) return;
+export async function installDependencies(message: string, dependencies: string[]): Promise<boolean> {
+    if (dependencies.length === 0) return true;
     const installCommand = await getPackageManagerInstallCommand(dependencies);
 
     logWarning(message);
@@ -38,17 +38,18 @@ export async function installDependencies(message: string, dependencies: string[
         PROMPT_OPTIONS,
     );
     if (!dependencyResult.installDependencies) {
-        logWarning('Skipping installation. You can install manually later with:');
-        logWarning(pico.yellow(formatChildCommand(installCommand)));
-        return;
+        logWarning('Skipping installation.');
+        return false;
     }
 
     try {
         logInfo(`Installing`, dependencies);
         await spawnChildCommand(installCommand, { quiet: true });
         logSuccess(`Dependencies installed successfully.`);
+        return true;
     } catch {
         logError(`Failed to install dependencies. Please try manually:`);
         logError(pico.yellow(formatChildCommand(installCommand)));
+        return false;
     }
 }

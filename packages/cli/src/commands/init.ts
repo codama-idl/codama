@@ -5,7 +5,9 @@ import prompts, { PromptType } from 'prompts';
 import { Config, ScriptConfig, ScriptName } from '../config';
 import {
     canRead,
+    importModuleItem,
     installMissingDependencies,
+    isRootNode,
     logBanner,
     logSuccess,
     PROMPT_OPTIONS,
@@ -120,7 +122,9 @@ async function getPromptResult(
         PROMPT_OPTIONS,
     );
 
+    const isAnchor = await isAnchorIdl(result.idlPath);
     await installMissingDependencies(`Your configuration requires additional dependencies.`, [
+        ...(isAnchor ? ['@codama/nodes-from-anchor'] : []),
         ...(result.scripts.includes('js') ? ['@codama/renderers-js'] : []),
         ...(result.scripts.includes('rust') ? ['@codama/renderers-rust'] : []),
     ]);
@@ -193,4 +197,15 @@ function getContentForGill(result: PromptResult): string {
         `import { createCodamaConfig } from "gill";\n\n` +
         `export default createCodamaConfig({\n${attributesString}});\n`
     );
+}
+
+async function isAnchorIdl(idlPath: string): Promise<boolean> {
+    const resolvedIdlPath = resolveRelativePath(idlPath);
+    if (!(await canRead(resolvedIdlPath))) return false;
+    try {
+        const idlContent = await importModuleItem('IDL', resolvedIdlPath);
+        return !isRootNode(idlContent);
+    } catch {
+        return false;
+    }
 }
