@@ -45,10 +45,6 @@
     "dependencies": {
         "@codama/nodes": "workspace:*",
         "@codama/nodes-from-anchor": "workspace:*",
-        "@codama/renderers": "workspace:*",
-        "@codama/renderers-js": "workspace:*",
-        "@codama/renderers-js-umi": "workspace:*",
-        "@codama/renderers-rust": "workspace:*",
         "@codama/visitors": "workspace:*",
         "@codama/visitors-core": "workspace:*",
         "commander": "^14.0.0",
