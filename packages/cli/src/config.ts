@@ -28,7 +28,7 @@ export async function getConfig(options: Pick<ProgramOptions, 'config'>): Promis
         return [{}, configPath];
     }
 
-    const configFile = await importModuleItem('config file', configPath);
+    const configFile = await importModuleItem({ identifier: 'config file', from: configPath });
     if (!configFile || typeof configFile !== 'object') {
         throw new Error(`Invalid config file at "${configPath}"`);
     }

@@ -15,7 +15,7 @@ export async function getRootNodeVisitors(
 async function getRootNodeVisitor(visitorConfig: ParsedVisitorConfig): Promise<Visitor<RootNode, 'rootNode'>> {
     const { args, item, path } = visitorConfig;
     const identifier = getVisitorIdentifier(visitorConfig);
-    const moduleItem = await importModuleItem(identifier, path, item);
+    const moduleItem = await importModuleItem({ identifier, from: path, item });
     const visitor = await getVisitorFromModuleItem(identifier, moduleItem, args);
     return rootNodeVisitor(root => {
         const result = visit(root, visitor);
