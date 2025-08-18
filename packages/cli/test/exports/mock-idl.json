@@ -1,6 +1,15 @@
 {
     "kind": "rootNode",
-    "spec": "codama",
+    "standard": "codama",
     "version": "1.0.0",
-    "program": { "kind": "programNode" }
+    "program": {
+        "kind": "programNode",
+        "name": "myProgram",
+        "accounts": [],
+        "instructions": [],
+        "definedTypes": [],
+        "errors": [],
+        "pdas": []
+    },
+    "additionalPrograms": []
 }
