@@ -1,3 +1,6 @@
+import pico from 'picocolors';
+
+import { CliError } from './errors';
 import { canRead, readJson, resolveRelativePath } from './fs';
 
 type PackageJson = {
@@ -14,7 +17,7 @@ export async function getPackageJson(): Promise<PackageJson> {
     if (!packageJson) {
         const packageJsonPath = resolveRelativePath('package.json');
         if (!(await canRead(packageJsonPath))) {
-            throw new Error(`Cannot read ${packageJsonPath}`);
+            throw new CliError('Cannot read package.json.', [`${pico.bold('Path')}: ${packageJsonPath}`]);
         }
         packageJson = await readJson<PackageJson>(packageJsonPath);
     }

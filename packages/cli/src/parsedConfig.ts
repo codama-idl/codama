@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { Config, getConfig, ScriptName, ScriptsConfig, VisitorConfig, VisitorPath } from './config';
 import { ProgramOptions } from './programOptions';
 import {
+    CliError,
     getRootNodeFromIdl,
     importModuleItem,
     isLocalModulePath,
@@ -63,7 +64,7 @@ function parseIdlPath(
     if (config.idl) {
         return resolveConfigPath(config.idl, configPath);
     }
-    throw new Error('No IDL identified. Please provide the `--idl` option or set it in the config file.');
+    throw new CliError('No IDL identified. Please provide the `--idl` option or set it in the configuration file.');
 }
 
 function parseScripts(scripts: ScriptsConfig, configPath: string | null): ParsedScriptsConfig {

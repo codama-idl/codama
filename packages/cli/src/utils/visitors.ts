@@ -1,7 +1,9 @@
 import type { RootNode } from '@codama/nodes';
 import { rootNodeVisitor, visit, type Visitor } from '@codama/visitors-core';
+import pico from 'picocolors';
 
 import { ParsedVisitorConfig } from '../parsedConfig';
+import { CliError } from './errors';
 import { importModuleItem } from './import';
 import { isRootNode } from './nodes';
 import { promisify } from './promises';
@@ -13,10 +15,10 @@ export async function getRootNodeVisitors(
 }
 
 async function getRootNodeVisitor(visitorConfig: ParsedVisitorConfig): Promise<Visitor<RootNode, 'rootNode'>> {
-    const { args, item, path } = visitorConfig;
+    const { item, path } = visitorConfig;
     const identifier = getVisitorIdentifier(visitorConfig);
     const moduleItem = await importModuleItem({ identifier, from: path, item });
-    const visitor = await getVisitorFromModuleItem(identifier, moduleItem, args);
+    const visitor = await getVisitorFromModuleItem(identifier, moduleItem, visitorConfig);
     return rootNodeVisitor(root => {
         const result = visit(root, visitor);
         return isRootNode(result) ? result : root;
@@ -27,8 +29,9 @@ type UnknownFunction = (...args: readonly unknown[]) => unknown;
 async function getVisitorFromModuleItem(
     identifier: string,
     moduleItem: unknown,
-    args: readonly unknown[],
+    visitorConfig: ParsedVisitorConfig,
 ): Promise<Visitor<unknown, 'rootNode'>> {
+    const { args, item, path } = visitorConfig;
     if (isRootNodeVisitor(moduleItem)) {
         return moduleItem;
     }
@@ -38,7 +41,11 @@ async function getVisitorFromModuleItem(
             return result;
         }
     }
-    throw new Error(`Invalid ${identifier}. Expected a visitor or a function returning a visitor.`);
+    throw new CliError(`Invalid visitor. Expected a visitor or a function returning a visitor.`, [
+        `${pico.bold('Visitor')}: ${identifier}`,
+        `${pico.bold('Path')}: ${path}`,
+        ...(item ? [`${pico.bold('Item')}: ${item}`] : []),
+    ]);
 }
 
 function isRootNodeVisitor(value: unknown): value is Visitor<unknown, 'rootNode'> {
@@ -46,10 +53,8 @@ function isRootNodeVisitor(value: unknown): value is Visitor<unknown, 'rootNode'
 }
 
 function getVisitorIdentifier(visitorConfig: ParsedVisitorConfig): string {
-    const { index, item, path, script } = visitorConfig;
-    const pathWithItem = item ? `${path}#${item}` : path;
-    let identifier = `visitor of index #${index}`;
+    const { index, script } = visitorConfig;
+    let identifier = `visitor #${index}`;
     identifier += script ? ` in script "${script}"` : '';
-    identifier += ` (at path "${pathWithItem}")`;
     return identifier;
 }

@@ -1,5 +1,8 @@
 import { createRequire } from 'node:module';
 
+import pico from 'picocolors';
+
+import { CliError } from './errors';
 import { canRead, isLocalModulePath, resolveRelativePath } from './fs';
 
 type ImportModuleItemOptions = {
@@ -12,8 +15,8 @@ export async function importModuleItem<T = unknown>(options: ImportModuleItemOpt
     const module = await importModule(options);
     const moduleItem = pickModuleItem(module, options.item) as T | undefined;
     if (moduleItem === undefined) {
-        const moduleInfo = getModuleInfo(options);
-        throw new Error(`Failed to ${moduleInfo}.`);
+        const items = getErrorItems(options);
+        throw new CliError(`Failed to load ${options.identifier ?? 'module'}.`, items);
     }
     return moduleItem;
 }
@@ -43,9 +46,10 @@ async function importModule<T extends object>(options: ImportModuleItemOptions):
 }
 
 async function importLocalModule<T extends object>(options: ImportModuleItemOptions): Promise<T> {
-    const { identifier, from } = options;
+    const { from, identifier } = options;
     if (!(await canRead(from))) {
-        throw new Error(`Cannot access ${identifier ?? 'module'} at "${from}"`);
+        const items = getErrorItems(options);
+        throw new CliError(`Cannot access ${identifier ?? 'module'}.`, items);
     }
 
     const dotIndex = from.lastIndexOf('.');
@@ -71,20 +75,23 @@ async function handleImportPromise<T extends object>(
 ): Promise<T> {
     try {
         return (await importPromise) as T;
-    } catch (error) {
-        const moduleInfo = getModuleInfo(options);
-        let causeMessage =
-            !!error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
-                ? (error as { message: string }).message
-                : undefined;
-        causeMessage = causeMessage ? `\n(caused by: ${causeMessage})` : '';
-        throw new Error(`Failed to ${moduleInfo}.${causeMessage}`, { cause: error });
+    } catch (cause) {
+        const items = getErrorItems(options, cause);
+        throw new CliError(`Failed to load ${options.identifier ?? 'module'}.`, items, { cause });
     }
 }
 
-function getModuleInfo(options: ImportModuleItemOptions): string {
-    const { identifier, from, item } = options;
-    const importStatement = item ? `import { ${item} } from '${from}'` : `import default from '${from}'`;
-    if (!identifier) return importStatement;
-    return `import ${identifier} [${importStatement}]`;
+function getErrorItems(options: ImportModuleItemOptions, cause?: unknown): string[] {
+    const { from, item } = options;
+    const items = [`${pico.bold('Module')}: ${from}`];
+    if (item) {
+        items.push(`${pico.bold('Item')}: ${item}`);
+    }
+
+    const hasCause = !!cause && typeof cause === 'object' && 'message' in cause && typeof cause.message === 'string';
+    if (hasCause) {
+        items.push(`${pico.bold('Caused by')}: ${(cause as { message: string }).message}`);
+    }
+
+    return items;
 }

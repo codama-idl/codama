@@ -1,16 +1,17 @@
 import type { RootNode } from '@codama/nodes';
 import { visit, type Visitor } from '@codama/visitors-core';
 import { Command } from 'commander';
+import pico from 'picocolors';
 
 import { ScriptName } from '../config';
 import { getParsedConfigFromCommand, ParsedConfig } from '../parsedConfig';
-import { getRootNodeVisitors, logInfo, logSuccess, logWarning } from '../utils';
+import { CliError, getRootNodeVisitors, logInfo, logSuccess, logWarning } from '../utils';
 
 export function setRunCommand(program: Command): void {
     program
         .command('run')
         .argument('[scripts...]', 'The scripts to execute')
-        .option('-a, --all', 'Run all scripts in the config file')
+        .option('-a, --all', 'Run all scripts in the configuration file')
         .action(doRun);
 }
 
@@ -39,17 +40,20 @@ async function getPlans(
 ): Promise<RunPlan[]> {
     const plans: RunPlan[] = [];
     if (scripts.length === 0 && parsedConfig.before.length === 0) {
-        throw new Error('There are no scripts or before visitors to run.');
+        throw new CliError('There are no scripts or before visitors to run.');
     }
 
     const missingScripts = scripts.filter(script => !parsedConfig.scripts[script]);
     if (missingScripts.length > 0) {
         const scriptPluralized = missingScripts.length === 1 ? 'Script' : 'Scripts';
-        const missingScriptsIdentifier = `${scriptPluralized} "${missingScripts.join(', ')}"`;
         const message = parsedConfig.configPath
-            ? `${missingScriptsIdentifier} not found in config file "${parsedConfig.configPath}"`
-            : `${missingScriptsIdentifier} not found because no config file was found`;
-        throw new Error(message);
+            ? `${scriptPluralized} not found in configuration file.`
+            : `${scriptPluralized} not found because no configuration file was found.`;
+        const items = [
+            `${pico.bold(scriptPluralized)}: ${missingScripts.join(', ')}`,
+            ...(parsedConfig.configPath ? [`${pico.bold('Path')}: ${parsedConfig.configPath}`] : []),
+        ];
+        throw new CliError(message, items);
     }
 
     if (parsedConfig.before.length > 0) {

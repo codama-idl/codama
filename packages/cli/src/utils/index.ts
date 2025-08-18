@@ -1,4 +1,5 @@
 export * from './childCommands';
+export * from './errors';
 export * from './fs';
 export * from './import';
 export * from './logs';
