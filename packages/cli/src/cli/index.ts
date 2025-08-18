@@ -1,3 +1,5 @@
+import pico from 'picocolors';
+
 import { createProgram } from '../program';
 import { logDebug, logError } from '../utils';
 
@@ -7,10 +9,11 @@ export async function run(argv: readonly string[]) {
     try {
         await program.parseAsync(argv);
     } catch (err) {
+        const error = err as { message: string; stack?: string; items?: string[] };
         if (program.opts().debug) {
-            logDebug(`${(err as { stack: string }).stack}`);
+            logDebug(`${error.stack}`);
         }
-        logError((err as { message: string }).message);
+        logError(pico.bold(error.message), error.items ?? []);
         process.exitCode = 1;
     }
 }

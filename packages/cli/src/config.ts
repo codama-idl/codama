@@ -1,7 +1,9 @@
 import path from 'node:path';
 
+import pico from 'picocolors';
+
 import { ProgramOptions } from './programOptions';
-import { canRead, importModuleItem, logWarning } from './utils';
+import { canRead, CliError, importModuleItem, logWarning } from './utils';
 
 export type Config = Readonly<{
     idl?: string;
@@ -24,13 +26,13 @@ export async function getConfig(options: Pick<ProgramOptions, 'config'>): Promis
     const configPath = options.config != null ? path.resolve(options.config) : await getDefaultConfigPath();
 
     if (!configPath) {
-        logWarning('No config file found. Using empty configs. Make sure you provide the `--idl` option.');
+        logWarning('No configuration file found. Using empty configs. Make sure you provide the `--idl` option.');
         return [{}, configPath];
     }
 
-    const configFile = await importModuleItem({ identifier: 'config file', from: configPath });
+    const configFile = await importModuleItem({ identifier: 'configuration file', from: configPath });
     if (!configFile || typeof configFile !== 'object') {
-        throw new Error(`Invalid config file at "${configPath}"`);
+        throw new CliError(`Invalid configuration file.`, [`${pico.bold('Path')}: ${configPath}`]);
     }
 
     return [configFile, configPath];

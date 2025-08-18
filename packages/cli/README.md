@@ -28,7 +28,7 @@ pnpm codama init --gill
 
 ## `codama run`
 
-Once you have your codama config file, you can run your Codama scripts using the `codama run` command as follows:
+Once you have your codama configuration file, you can run your Codama scripts using the `codama run` command as follows:
 
 ```sh
 pnpm codama run         # Only runs your before visitors.
@@ -38,7 +38,7 @@ pnpm codama run --all   # Runs your before visitors followed by all your scripts
 
 ## The configuration file
 
-The codama config file defines an object containing the following fields:
+The codama configuration file defines an object containing the following fields:
 
 - `idl` (string): The path to the IDL file. This can be a Codama IDL or an Anchor IDL which will be automatically converted to a Codama IDL.
 - `before` (array): An array of visitors that will run before every script.

@@ -29,9 +29,17 @@ export async function installMissingDependencies(message: string, requiredDepend
 export async function installDependencies(message: string, dependencies: string[]): Promise<boolean> {
     if (dependencies.length === 0) return true;
     const installCommand = await getPackageManagerInstallCommand(dependencies);
+    const formattedInstallCommand = pico.yellow(formatChildCommand(installCommand));
+
+    if (process.env.CI) {
+        logWarning(message);
+        logWarning(`Skipping installation in CI environment. Please install manually:`);
+        logWarning(formattedInstallCommand);
+        return false;
+    }
 
     logWarning(message);
-    logWarning(`Install command: ${pico.yellow(formatChildCommand(installCommand))}`);
+    logWarning(`Install command: ${formattedInstallCommand}`);
 
     const dependencyResult: { installDependencies: boolean } = await prompts(
         { initial: true, message: 'Install dependencies?', name: 'installDependencies', type: 'confirm' },
@@ -49,7 +57,7 @@ export async function installDependencies(message: string, dependencies: string[
         return true;
     } catch {
         logError(`Failed to install dependencies. Please try manually:`);
-        logError(pico.yellow(formatChildCommand(installCommand)));
+        logError(formattedInstallCommand);
         return false;
     }
 }

@@ -5,6 +5,7 @@ import prompts, { PromptType } from 'prompts';
 import { Config, ScriptConfig, ScriptName } from '../config';
 import {
     canRead,
+    CliError,
     importModuleItem,
     installMissingDependencies,
     isRootNode,
@@ -36,14 +37,26 @@ async function doInit(explicitOutput: string | undefined, options: InitOptions) 
     const configFileType = getConfigFileType(output, options);
 
     if (await canRead(output)) {
-        throw new Error(`Configuration file already exists at "${output}".`);
+        throw new CliError(`Configuration file already exists.`, [`${pico.bold('Path')}: ${output}`]);
     }
 
+    // Start prompts.
     logBanner();
     const result = await getPromptResult(options, configFileType);
+
+    // Check dependencies.
+    const isAnchor = await isAnchorIdl(result.idlPath);
+    await installMissingDependencies(`Your configuration requires additional dependencies.`, [
+        ...(isAnchor ? ['@codama/nodes-from-anchor'] : []),
+        ...(result.scripts.includes('js') ? ['@codama/renderers-js'] : []),
+        ...(result.scripts.includes('rust') ? ['@codama/renderers-rust'] : []),
+    ]);
+
+    // Write configuration file.
     const content = getContentFromPromptResult(result, configFileType);
     await writeFile(output, content);
-    logSuccess(`Configuration file created at "${output}".`);
+    console.log();
+    logSuccess(pico.bold('Configuration file created.'), [`${pico.bold('Path')}: ${output}`]);
 }
 
 function getOutputPath(explicitOutput: string | undefined, options: Pick<InitOptions, 'gill' | 'js'>): string {
@@ -74,7 +87,7 @@ async function getPromptResult(
         (script: string, type: PromptType = 'text') =>
         (_: unknown, values: { scripts: string[] }) =>
             values.scripts.includes(script) ? type : null;
-    const result: PromptResult = await prompts(
+    return await prompts(
         [
             {
                 initial: defaults.idlPath,
@@ -121,15 +134,6 @@ async function getPromptResult(
         ],
         PROMPT_OPTIONS,
     );
-
-    const isAnchor = await isAnchorIdl(result.idlPath);
-    await installMissingDependencies(`Your configuration requires additional dependencies.`, [
-        ...(isAnchor ? ['@codama/nodes-from-anchor'] : []),
-        ...(result.scripts.includes('js') ? ['@codama/renderers-js'] : []),
-        ...(result.scripts.includes('rust') ? ['@codama/renderers-rust'] : []),
-    ]);
-
-    return result;
 }
 
 function getDefaultPromptResult(): PromptResult {
