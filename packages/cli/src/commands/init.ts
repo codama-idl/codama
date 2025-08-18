@@ -21,6 +21,7 @@ export function setInitCommand(program: Command): void {
         .command('init')
         .argument('[output]', 'Optional path used to output the configuration file')
         .option('-d, --default', 'Bypass prompts and select all defaults options')
+        .option('--force', 'Overwrite existing configuration file, if any')
         .option('--js', 'Forces the output to be a JavaScript file')
         .option('--gill', 'Forces the output to be a gill based JavaScript file')
         .action(doInit);
@@ -28,15 +29,16 @@ export function setInitCommand(program: Command): void {
 
 type InitOptions = {
     default?: boolean;
-    js?: boolean;
+    force?: boolean;
     gill?: boolean;
+    js?: boolean;
 };
 
 async function doInit(explicitOutput: string | undefined, options: InitOptions) {
     const output = getOutputPath(explicitOutput, options);
     const configFileType = getConfigFileType(output, options);
 
-    if (await canRead(output)) {
+    if (!options.force && (await canRead(output))) {
         throw new CliError(`Configuration file already exists.`, [`${pico.bold('Path')}: ${output}`]);
     }
 
