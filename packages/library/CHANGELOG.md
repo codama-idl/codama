@@ -1,5 +1,18 @@
 # codama
 
+## 1.3.2
+
+### Patch Changes
+
+- [#777](https://github.com/codama-idl/codama/pull/777) [`14e1614`](https://github.com/codama-idl/codama/commit/14e1614e233423b7acc21d96eb135bfdb9113f30) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Include CLI in main Codama library
+
+- Updated dependencies [[`8d1888b`](https://github.com/codama-idl/codama/commit/8d1888bae841f2655783291f268cd8d6489cc99b), [`a11fcdc`](https://github.com/codama-idl/codama/commit/a11fcdc4894222621b137900df00ef175b028dea), [`14e1614`](https://github.com/codama-idl/codama/commit/14e1614e233423b7acc21d96eb135bfdb9113f30), [`99c299d`](https://github.com/codama-idl/codama/commit/99c299d65eb354100d97553111d85c73109533e7), [`1a93f7c`](https://github.com/codama-idl/codama/commit/1a93f7c8626c8c442146fb290ec9ec28eb517aab), [`4039219`](https://github.com/codama-idl/codama/commit/4039219df20b77a1e2c9a96066c3d79c5cebe626)]:
+    - @codama/cli@1.3.0
+    - @codama/visitors@1.3.2
+    - @codama/validators@1.3.2
+    - @codama/errors@1.3.2
+    - @codama/nodes@1.3.2
+
 ## 1.3.1
 
 ### Patch Changes

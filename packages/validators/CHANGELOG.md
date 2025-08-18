@@ -1,5 +1,14 @@
 # @codama/validators
 
+## 1.3.2
+
+### Patch Changes
+
+- Updated dependencies [[`b912ac8`](https://github.com/codama-idl/codama/commit/b912ac89b2d041c1f783da8d6f023fdf77dbd7e7)]:
+    - @codama/visitors-core@1.3.2
+    - @codama/errors@1.3.2
+    - @codama/nodes@1.3.2
+
 ## 1.3.1
 
 ### Patch Changes
