@@ -1,4 +1,4 @@
-import { createProgram, runProgram } from '../program';
+import { createProgram, runProgram } from '@codama/cli';
 
 const program = createProgram();
 

@@ -160,6 +160,9 @@ importers:
 
   packages/library:
     dependencies:
+      '@codama/cli':
+        specifier: workspace:*
+        version: link:../cli
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
