@@ -99,3 +99,48 @@ test('it fails to add a PDA if its name conflicts with an existing PDA on the pr
         }),
     );
 });
+
+test('it adds PDA nodes to a program with docs', () => {
+    // Given a program with a single PDA.
+    const node = programNode({
+        name: 'myProgram',
+        pdas: [
+            pdaNode({
+                name: 'associatedToken',
+                seeds: [
+                    variablePdaSeedNode('owner', publicKeyTypeNode()),
+                    constantPdaSeedNodeFromProgramId(),
+                    variablePdaSeedNode('mint', publicKeyTypeNode()),
+                ],
+            }),
+        ],
+        publicKey: 'Epo9rxh99jpeeWabRZi4tpgUVxZQeVn9vbbDjUztJtu4',
+    });
+
+    // When we add two more PDAs.
+    const newPdas = [
+        pdaNode({
+            docs: 'Metadata for a token.',
+            name: 'metadata',
+            seeds: [
+                constantPdaSeedNodeFromString('utf8', 'metadata'),
+                constantPdaSeedNodeFromProgramId(),
+                variablePdaSeedNode('mint', publicKeyTypeNode()),
+            ],
+        }),
+        pdaNode({
+            docs: 'The master edition.',
+            name: 'masterEdition',
+            seeds: [
+                constantPdaSeedNodeFromString('utf8', 'metadata'),
+                constantPdaSeedNodeFromProgramId(),
+                variablePdaSeedNode('mint', publicKeyTypeNode()),
+                constantPdaSeedNodeFromString('utf8', 'edition'),
+            ],
+        }),
+    ];
+    const result = visit(node, addPdasVisitor({ myProgram: newPdas }));
+
+    // Then we expect the following program to be returned.
+    expect(result).toEqual({ ...node, pdas: [...node.pdas, ...newPdas] });
+});

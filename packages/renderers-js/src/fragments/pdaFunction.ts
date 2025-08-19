@@ -37,6 +37,7 @@ export function getPdaFunctionFragment(
     return fragmentFromTemplate('pdaFunction.njk', {
         findPdaFunction: nameApi.pdaFindFunction(pdaNode.name),
         hasVariableSeeds,
+        pdaDocs: pdaNode.docs,
         pdaSeedsType: nameApi.pdaSeedsType(pdaNode.name),
         programAddress: pdaNode.programId ?? programNode.publicKey,
         seeds,

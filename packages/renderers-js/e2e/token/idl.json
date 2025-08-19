@@ -2260,6 +2260,7 @@
         {
           "kind": "pdaNode",
           "name": "associatedToken",
+          "docs": ["The address of the associated token account."],
           "seeds": [
             {
               "kind": "variablePdaSeedNode",

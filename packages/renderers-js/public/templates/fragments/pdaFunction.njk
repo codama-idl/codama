@@ -11,6 +11,7 @@ export type {{ pdaSeedsType }} = {
 }
 {% endif %}
 
+{{ macros.docblock(pdaDocs) }}
 export async function {{ findPdaFunction }}(
   {% if hasVariableSeeds %}
     seeds: {{ pdaSeedsType }},
