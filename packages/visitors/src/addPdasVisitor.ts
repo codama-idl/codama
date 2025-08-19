@@ -1,8 +1,8 @@
 import { CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, CodamaError } from '@codama/errors';
-import { assertIsNode, camelCase, pdaNode, PdaSeedNode, programNode } from '@codama/nodes';
+import { assertIsNode, camelCase, pdaNode, PdaNodeInput, programNode } from '@codama/nodes';
 import { bottomUpTransformerVisitor } from '@codama/visitors-core';
 
-export function addPdasVisitor(pdas: Record<string, { name: string; seeds: PdaSeedNode[] }[]>) {
+export function addPdasVisitor(pdas: Record<string, Omit<PdaNodeInput, 'programId'>[]>) {
     return bottomUpTransformerVisitor(
         Object.entries(pdas).map(([uncasedProgramName, newPdas]) => {
             const programName = camelCase(uncasedProgramName);
@@ -22,7 +22,7 @@ export function addPdasVisitor(pdas: Record<string, { name: string; seeds: PdaSe
                     }
                     return programNode({
                         ...node,
-                        pdas: [...node.pdas, ...newPdas.map(pda => pdaNode({ name: pda.name, seeds: pda.seeds }))],
+                        pdas: [...node.pdas, ...newPdas.map(({ name, seeds, docs }) => pdaNode({ docs, name, seeds }))],
                     });
                 },
             };
