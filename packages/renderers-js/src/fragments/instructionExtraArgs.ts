@@ -1,9 +1,9 @@
 import { InstructionNode } from '@codama/nodes';
-import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
+import { getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
 
 import { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
-import { Fragment, fragment, fragmentFromTemplate } from './common';
+import { Fragment, fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
 
 export function getInstructionExtraArgsFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi'> & {
@@ -18,9 +18,12 @@ export function getInstructionExtraArgsFragment(
     }
 
     const instructionExtraName = nameApi.instructionExtraType(instructionNode.name);
-    return fragmentFromTemplate('instructionExtraArgs.njk', {
-        looseName: nameApi.dataArgsType(instructionExtraName),
-        manifest: extraArgsManifest,
-        strictName: nameApi.dataType(instructionExtraName),
-    }).mergeImportsWith(extraArgsManifest.looseType);
+    return pipe(
+        fragmentFromTemplate('instructionExtraArgs.njk', {
+            looseName: nameApi.dataArgsType(instructionExtraName),
+            manifest: extraArgsManifest,
+            strictName: nameApi.dataType(instructionExtraName),
+        }),
+        f => mergeFragmentImports(f, [extraArgsManifest.looseType.imports]),
+    );
 }

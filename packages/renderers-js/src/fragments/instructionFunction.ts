@@ -1,16 +1,27 @@
 import { camelCase, InstructionArgumentNode, InstructionNode, isNode, isNodeFilter, pascalCase } from '@codama/nodes';
+import { mapFragmentContent } from '@codama/renderers-core';
 import {
     findProgramNodeFromPath,
     getLastNodeFromPath,
     NodePath,
+    pipe,
     ResolvedInstructionInput,
 } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { NameApi } from '../nameTransformers';
 import { TypeManifest } from '../TypeManifest';
-import { getInstructionDependencies, hasAsyncFunction, isAsyncDefaultValue } from '../utils';
-import { Fragment, fragment, fragmentFromTemplate, mergeFragments } from './common';
+import {
+    addFragmentImports,
+    Fragment,
+    fragment,
+    fragmentFromTemplate,
+    getInstructionDependencies,
+    hasAsyncFunction,
+    isAsyncDefaultValue,
+    mergeFragmentImports,
+    mergeFragments,
+} from '../utils';
 import { getInstructionByteDeltaFragment } from './instructionByteDelta';
 import { getInstructionInputResolvedFragment } from './instructionInputResolved';
 import { getInstructionInputTypeFragment } from './instructionInputType';
@@ -73,14 +84,14 @@ export function getInstructionFunctionFragment(
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
     const encoderFunction = customData
-        ? dataArgsManifest.encoder.render
+        ? dataArgsManifest.encoder.content
         : `${nameApi.encoderFunction(instructionDataName)}()`;
-    const argsTypeFragment = fragment(
-        customData ? dataArgsManifest.looseType.render : nameApi.dataArgsType(instructionDataName),
+    const argsTypeFragment = pipe(
+        fragment(customData ? dataArgsManifest.looseType.content : nameApi.dataArgsType(instructionDataName)),
+        customData
+            ? f => mergeFragmentImports(f, [dataArgsManifest.looseType.imports, dataArgsManifest.encoder.imports])
+            : f => f,
     );
-    if (customData) {
-        argsTypeFragment.mergeImportsWith(dataArgsManifest.looseType, dataArgsManifest.encoder);
-    }
 
     const functionName = useAsync
         ? nameApi.instructionAsyncFunction(instructionNode.name)
@@ -99,11 +110,11 @@ export function getInstructionFunctionFragment(
     const byteDeltaFragment = getInstructionByteDeltaFragment(scope);
     const resolvedFragment = mergeFragments(
         [resolvedInputsFragment, remainingAccountsFragment, byteDeltaFragment],
-        renders => renders.join('\n\n'),
+        content => content.join('\n\n'),
     );
-    const hasRemainingAccounts = remainingAccountsFragment.render !== '';
-    const hasByteDeltas = byteDeltaFragment.render !== '';
-    const hasResolver = resolvedFragment.hasFeatures('instruction:resolverScopeVariable');
+    const hasRemainingAccounts = remainingAccountsFragment.content !== '';
+    const hasByteDeltas = byteDeltaFragment.content !== '';
+    const hasResolver = resolvedFragment.features.has('instruction:resolverScopeVariable');
     const getReturnType = (instructionType: string) => {
         let returnType = instructionType;
         if (hasByteDeltas) {
@@ -112,62 +123,58 @@ export function getInstructionFunctionFragment(
         return useAsync ? `Promise<${returnType}>` : returnType;
     };
 
-    const functionFragment = fragmentFromTemplate('instructionFunction.njk', {
-        argsTypeFragment,
-        encoderFunction,
-        functionName,
-        getReturnType,
-        hasAccounts,
-        hasAnyArgs,
-        hasByteDeltas,
-        hasData,
-        hasDataArgs,
-        hasExtraArgs,
-        hasInput,
-        hasLegacyOptionalAccounts,
-        hasRemainingAccounts,
-        hasResolver,
-        inputTypeCallFragment,
-        inputTypeFragment,
-        instruction: instructionNode,
-        instructionTypeFragment,
-        programAddressConstant,
-        renamedArgs: renamedArgsText,
-        resolvedFragment,
-        typeParamsFragment,
-        useAsync,
-    })
-        .mergeImportsWith(
-            typeParamsFragment,
-            instructionTypeFragment,
-            inputTypeFragment,
-            inputTypeCallFragment,
-            resolvedFragment,
-            argsTypeFragment,
-        )
-        .addImports('generatedPrograms', [programAddressConstant])
-        .addImports('solanaAddresses', ['type Address']);
-
-    if (hasAccounts) {
-        functionFragment
-            .addImports('solanaInstructions', ['type AccountMeta'])
-            .addImports('shared', ['getAccountMetaFactory', 'type ResolvedAccount']);
-    }
-
-    if (hasByteDeltas) {
-        functionFragment.addImports('shared', ['type InstructionWithByteDelta']);
-    }
-
-    return functionFragment;
+    return pipe(
+        fragmentFromTemplate('instructionFunction.njk', {
+            argsTypeFragment: argsTypeFragment.content,
+            encoderFunction,
+            functionName,
+            getReturnType,
+            hasAccounts,
+            hasAnyArgs,
+            hasByteDeltas,
+            hasData,
+            hasDataArgs,
+            hasExtraArgs,
+            hasInput,
+            hasLegacyOptionalAccounts,
+            hasRemainingAccounts,
+            hasResolver,
+            inputTypeCallFragment: inputTypeCallFragment.content,
+            inputTypeFragment: inputTypeFragment.content,
+            instruction: instructionNode,
+            instructionTypeFragment: instructionTypeFragment.content,
+            programAddressConstant,
+            renamedArgs: renamedArgsText,
+            resolvedFragment: resolvedFragment.content,
+            typeParamsFragment: typeParamsFragment.content,
+            useAsync,
+        }),
+        f =>
+            mergeFragmentImports(f, [
+                typeParamsFragment.imports,
+                instructionTypeFragment.imports,
+                inputTypeFragment.imports,
+                inputTypeCallFragment.imports,
+                resolvedFragment.imports,
+                argsTypeFragment.imports,
+            ]),
+        f => addFragmentImports(f, 'generatedPrograms', [programAddressConstant]),
+        f => addFragmentImports(f, 'solanaAddresses', ['type Address']),
+        f => (hasAccounts ? addFragmentImports(f, 'solanaInstructions', ['type AccountMeta']) : f),
+        f => (hasAccounts ? addFragmentImports(f, 'shared', ['getAccountMetaFactory', 'type ResolvedAccount']) : f),
+        f => (hasByteDeltas ? addFragmentImports(f, 'shared', ['type InstructionWithByteDelta']) : f),
+    );
 }
 
 function getTypeParams(instructionNode: InstructionNode, programAddressConstant: string): Fragment {
     const typeParams = instructionNode.accounts.map(account => `TAccount${pascalCase(account.name)} extends string`);
     // after all accounts, add an optional type for program address
     typeParams.push(`TProgramAddress extends Address = typeof ${programAddressConstant}`);
-    return fragment(typeParams.filter(x => !!x).join(', '))
-        .mapRender(r => `<${r}>`)
-        .addImports('generatedPrograms', [programAddressConstant]);
+    return pipe(
+        fragment(typeParams.filter(x => !!x).join(', ')),
+        f => mapFragmentContent(f, c => `<${c}>`),
+        f => addFragmentImports(f, 'generatedPrograms', [programAddressConstant]),
+    );
 }
 
 function getInstructionType(scope: { instructionPath: NodePath<InstructionNode>; nameApi: NameApi }): Fragment {
@@ -181,21 +188,24 @@ function getInstructionType(scope: { instructionPath: NodePath<InstructionNode>;
 
         if (account.isSigner === 'either') {
             const signerRole = account.isWritable ? 'WritableSignerAccount' : 'ReadonlySignerAccount';
-            return fragment(
-                `typeof input["${camelName}"] extends TransactionSigner<${typeParam}> ` +
-                    `? ${signerRole}<${typeParam}> & AccountSignerMeta<${typeParam}> ` +
-                    `: ${typeParam}`,
-            )
-                .addImports('solanaInstructions', [`type ${signerRole}`])
-                .addImports('solanaSigners', ['type AccountSignerMeta']);
+            return pipe(
+                fragment(
+                    `typeof input["${camelName}"] extends TransactionSigner<${typeParam}> ` +
+                        `? ${signerRole}<${typeParam}> & AccountSignerMeta<${typeParam}> ` +
+                        `: ${typeParam}`,
+                ),
+                f => addFragmentImports(f, 'solanaInstructions', [`type ${signerRole}`]),
+                f => addFragmentImports(f, 'solanaSigners', ['type AccountSignerMeta']),
+            );
         }
 
         return fragment(typeParam);
     });
 
-    return mergeFragments([programAddressFragment, ...accountTypeParamsFragments], renders =>
-        renders.join(', '),
-    ).mapRender(r => `${instructionTypeName}<${r}>`);
+    return pipe(
+        mergeFragments([programAddressFragment, ...accountTypeParamsFragments], c => c.join(', ')),
+        f => mapFragmentContent(f, c => `${instructionTypeName}<${c}>`),
+    );
 }
 
 function getInputTypeCall(scope: {

@@ -1,9 +1,9 @@
 import { isNode, isNodeFilter, PdaNode } from '@codama/nodes';
-import { findProgramNodeFromPath, getLastNodeFromPath, NodePath, visit } from '@codama/visitors-core';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath, pipe, visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
-import { Fragment, fragmentFromTemplate } from './common';
+import { addFragmentImports, Fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
 
 export function getPdaFunctionFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
@@ -34,14 +34,21 @@ export function getPdaFunctionFragment(
     });
     const hasVariableSeeds = pdaNode.seeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
 
-    return fragmentFromTemplate('pdaFunction.njk', {
-        findPdaFunction: nameApi.pdaFindFunction(pdaNode.name),
-        hasVariableSeeds,
-        pdaDocs: pdaNode.docs,
-        pdaSeedsType: nameApi.pdaSeedsType(pdaNode.name),
-        programAddress: pdaNode.programId ?? programNode.publicKey,
-        seeds,
-    })
-        .mergeImportsWith(imports)
-        .addImports('solanaAddresses', ['type Address', 'getProgramDerivedAddress', 'type ProgramDerivedAddress']);
+    return pipe(
+        fragmentFromTemplate('pdaFunction.njk', {
+            findPdaFunction: nameApi.pdaFindFunction(pdaNode.name),
+            hasVariableSeeds,
+            pdaDocs: pdaNode.docs,
+            pdaSeedsType: nameApi.pdaSeedsType(pdaNode.name),
+            programAddress: pdaNode.programId ?? programNode.publicKey,
+            seeds,
+        }),
+        f => mergeFragmentImports(f, [imports]),
+        f =>
+            addFragmentImports(f, 'solanaAddresses', [
+                'type Address',
+                'getProgramDerivedAddress',
+                'type ProgramDerivedAddress',
+            ]),
+    );
 }

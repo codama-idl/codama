@@ -1,4 +1,5 @@
 import { errorNode, programNode } from '@codama/nodes';
+import { getFromRenderMap } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
@@ -28,5 +29,8 @@ test('it renders codes for errors', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following errors with codes.
-    codeContains(renderMap.get('errors/spl_token.rs'), [`InvalidInstruction = 0x1770,`, `InvalidProgram = 0x1B58,`]);
+    codeContains(getFromRenderMap(renderMap, 'errors/spl_token.rs'), [
+        `InvalidInstruction = 0x1770,`,
+        `InvalidProgram = 0x1B58,`,
+    ]);
 });

@@ -9,10 +9,11 @@ import {
     StructFieldTypeNode,
     VALUE_NODES,
 } from '@codama/nodes';
+import { mapFragmentContent } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, mergeFragments } from './common';
+import { Fragment, mergeFragments } from '../utils';
 
 export function getDiscriminatorConstantsFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
@@ -25,7 +26,7 @@ export function getDiscriminatorConstantsFragment(
         .map(node => getDiscriminatorConstantFragment(node, scope))
         .filter(Boolean) as Fragment[];
 
-    return mergeFragments(fragments, r => r.join('\n\n'));
+    return mergeFragments(fragments, c => c.join('\n\n'));
 }
 
 export function getDiscriminatorConstantFragment(
@@ -97,9 +98,12 @@ function getConstantFragment(
 
     return mergeFragments(
         [
-            value.mapRender(r => `export const ${constantName} = ${r};`),
-            encoder.mapRender(r => `export function ${constantFunction}() { return ${r}.encode(${constantName}); }`),
+            mapFragmentContent(value, c => `export const ${constantName} = ${c};`),
+            mapFragmentContent(
+                encoder,
+                c => `export function ${constantFunction}() { return ${c}.encode(${constantName}); }`,
+            ),
         ],
-        r => r.join('\n\n'),
+        c => c.join('\n\n'),
     );
 }

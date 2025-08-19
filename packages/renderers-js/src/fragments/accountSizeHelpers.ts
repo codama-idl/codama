@@ -2,7 +2,7 @@ import { AccountNode } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, fragmentFromTemplate } from './common';
+import { Fragment, fragment, fragmentFromTemplate } from '../utils';
 
 export function getAccountSizeHelpersFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi'> & { accountPath: NodePath<AccountNode> },

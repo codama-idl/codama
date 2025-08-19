@@ -1,4 +1,4 @@
-import { RenderMap } from '@codama/renderers-core';
+import { getFromRenderMap, RenderMap } from '@codama/renderers-core';
 import { Plugin } from 'prettier';
 import * as estreePlugin from 'prettier/plugins/estree';
 import * as typeScriptPlugin from 'prettier/plugins/typescript';
@@ -19,7 +19,7 @@ const PRETTIER_OPTIONS: Parameters<typeof format>[1] = {
 
 export function renderMapContains(renderMap: RenderMap, key: string, expected: (RegExp | string)[] | RegExp | string) {
     expect(renderMap.has(key), `RenderMap is missing key "${key}".`).toBe(true);
-    return codeContains(renderMap.get(key), expected);
+    return codeContains(getFromRenderMap(renderMap, key), expected);
 }
 
 export function renderMapDoesNotContain(
@@ -28,7 +28,7 @@ export function renderMapDoesNotContain(
     expected: (RegExp | string)[] | RegExp | string,
 ) {
     expect(renderMap.has(key), `RenderMap is missing key "${key}".`).toBe(true);
-    return codeDoesNotContain(renderMap.get(key), expected);
+    return codeDoesNotContain(getFromRenderMap(renderMap, key), expected);
 }
 
 export async function codeContains(actual: string, expected: (RegExp | string)[] | RegExp | string) {
@@ -57,7 +57,7 @@ export async function codeDoesNotContain(actual: string, expected: (RegExp | str
 
 export function renderMapContainsImports(renderMap: RenderMap, key: string, expectedImports: Record<string, string[]>) {
     expect(renderMap.has(key), `RenderMap is missing key "${key}".`).toBe(true);
-    return codeContainsImports(renderMap.get(key), expectedImports);
+    return codeContainsImports(getFromRenderMap(renderMap, key), expectedImports);
 }
 
 export function renderMapDoesNotContainImports(
@@ -66,7 +66,7 @@ export function renderMapDoesNotContainImports(
     expectedImports: Record<string, string[]>,
 ) {
     expect(renderMap.has(key), `RenderMap is missing key "${key}".`).toBe(true);
-    return codeDoesNotContainImports(renderMap.get(key), expectedImports);
+    return codeDoesNotContainImports(getFromRenderMap(renderMap, key), expectedImports);
 }
 
 export async function codeContainsImports(actual: string, expectedImports: Record<string, string[]>) {

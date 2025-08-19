@@ -1,8 +1,9 @@
 import { camelCase, InstructionNode, isNode, parseOptionalAccountStrategy } from '@codama/nodes';
+import { mapFragmentContent } from '@codama/renderers-core';
 import { getLastNodeFromPath, NodePath, ResolvedInstructionInput } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, mergeFragments } from './common';
+import { Fragment, fragment, mergeFragments } from '../utils';
 import { getInstructionInputDefaultFragment } from './instructionInputDefault';
 
 export function getInstructionInputResolvedFragment(
@@ -19,13 +20,13 @@ export function getInstructionInputResolvedFragment(
             input,
             optionalAccountStrategy: parseOptionalAccountStrategy(instructionNode.optionalAccountStrategy),
         });
-        if (!inputFragment.render) return [];
+        if (!inputFragment.content) return [];
         const camelName = camelCase(input.name);
         return [
-            inputFragment.mapRender(r =>
+            mapFragmentContent(inputFragment, c =>
                 isNode(input, 'instructionArgumentNode')
-                    ? `if (!args.${camelName}) {\n${r}\n}`
-                    : `if (!accounts.${camelName}.value) {\n${r}\n}`,
+                    ? `if (!args.${camelName}) {\n${c}\n}`
+                    : `if (!accounts.${camelName}.value) {\n${c}\n}`,
             ),
         ];
     });
@@ -34,7 +35,5 @@ export function getInstructionInputResolvedFragment(
         return fragment('');
     }
 
-    return mergeFragments([fragment('// Resolve default values.'), ...resolvedInputFragments], renders =>
-        renders.join('\n'),
-    );
+    return mergeFragments([fragment('// Resolve default values.'), ...resolvedInputFragments], c => c.join('\n'));
 }

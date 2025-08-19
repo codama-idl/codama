@@ -14,7 +14,7 @@ import {
     resolveNestedTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
 } from '@codama/nodes';
-import { RenderMap } from '@codama/renderers-core';
+import { addToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     findProgramNodeFromPath,
@@ -136,7 +136,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     };
 
     return pipe(
-        staticVisitor(() => new RenderMap(), {
+        staticVisitor(() => renderMap(), {
             keys: ['rootNode', 'programNode', 'pdaNode', 'accountNode', 'definedTypeNode', 'instructionNode'],
         }),
         v =>
@@ -173,14 +173,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         accountPdaHelpersFragment,
                     );
 
-                    return new RenderMap().add(
+                    return addToRenderMap(
+                        renderMap(),
                         `accounts/${camelCase(node.name)}.ts`,
                         render('accountsPage.njk', {
-                            accountDiscriminatorConstantsFragment,
-                            accountFetchHelpersFragment,
-                            accountPdaHelpersFragment,
-                            accountSizeHelpersFragment,
-                            accountTypeFragment,
+                            accountDiscriminatorConstantsFragment: accountDiscriminatorConstantsFragment.content,
+                            accountFetchHelpersFragment: accountFetchHelpersFragment.content,
+                            accountPdaHelpersFragment: accountPdaHelpersFragment.content,
+                            accountSizeHelpersFragment: accountSizeHelpersFragment.content,
+                            accountTypeFragment: accountTypeFragment.content,
                             imports: imports.toString(dependencyMap, useGranularImports),
                         }),
                     );
@@ -212,15 +213,13 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             nameApi.codecFunction(node.name),
                         ]);
 
-                    return new RenderMap().add(
+                    return addToRenderMap(
+                        renderMap(),
                         `types/${camelCase(node.name)}.ts`,
                         render('definedTypesPage.njk', {
-                            imports: imports.toString({
-                                ...dependencyMap,
-                                generatedTypes: '.',
-                            }),
-                            typeDiscriminatedUnionHelpersFragment,
-                            typeWithCodecFragment,
+                            imports: imports.toString({ ...dependencyMap, generatedTypes: '.' }),
+                            typeDiscriminatedUnionHelpersFragment: typeDiscriminatedUnionHelpersFragment.content,
+                            typeWithCodecFragment: typeWithCodecFragment.content,
                         }),
                     );
                 },
@@ -279,18 +278,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         instructionParseFunctionFragment,
                     );
 
-                    return new RenderMap().add(
+                    return addToRenderMap(
+                        renderMap(),
                         `instructions/${camelCase(node.name)}.ts`,
                         render('instructionsPage.njk', {
                             imports: imports.toString(dependencyMap, useGranularImports),
                             instruction: node,
-                            instructionDataFragment,
-                            instructionDiscriminatorConstantsFragment,
-                            instructionExtraArgsFragment,
-                            instructionFunctionAsyncFragment,
-                            instructionFunctionSyncFragment,
-                            instructionParseFunctionFragment,
-                            instructionTypeFragment,
+                            instructionDataFragment: instructionDataFragment.content,
+                            instructionDiscriminatorConstantsFragment:
+                                instructionDiscriminatorConstantsFragment.content,
+                            instructionExtraArgsFragment: instructionExtraArgsFragment.content,
+                            instructionFunctionAsyncFragment: instructionFunctionAsyncFragment.content,
+                            instructionFunctionSyncFragment: instructionFunctionSyncFragment.content,
+                            instructionParseFunctionFragment: instructionParseFunctionFragment.content,
+                            instructionTypeFragment: instructionTypeFragment.content,
                         }),
                     );
                 },
@@ -298,18 +299,19 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                 visitPda(node) {
                     const pdaPath = stack.getPath('pdaNode');
                     if (!findProgramNodeFromPath(pdaPath)) {
-                        throw new Error('Account must be visited inside a program.');
+                        throw new Error('PDA must be visited inside a program.');
                     }
 
                     const scope = { ...globalScope, pdaPath };
                     const pdaFunctionFragment = getPdaFunctionFragment(scope);
                     const imports = new ImportMap().mergeWith(pdaFunctionFragment);
 
-                    return new RenderMap().add(
+                    return addToRenderMap(
+                        renderMap(),
                         `pdas/${camelCase(node.name)}.ts`,
                         render('pdasPage.njk', {
                             imports: imports.toString(dependencyMap, useGranularImports),
-                            pdaFunctionFragment,
+                            pdaFunctionFragment: pdaFunctionFragment.content,
                         }),
                     );
                 },
@@ -320,21 +322,23 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...getDefinedTypeNodesToExtract(node.instructions, customInstructionData),
                     ];
                     const scope = { ...globalScope, programNode: node };
-                    const renderMap = new RenderMap()
-                        .mergeWith(...node.pdas.map(p => visit(p, self)))
-                        .mergeWith(...node.accounts.map(a => visit(a, self)))
-                        .mergeWith(...node.definedTypes.map(t => visit(t, self)))
-                        .mergeWith(...customDataDefinedType.map(t => visit(t, self)));
+                    let renders = mergeRenderMaps([
+                        ...node.pdas.map(p => visit(p, self)),
+                        ...node.accounts.map(a => visit(a, self)),
+                        ...node.definedTypes.map(t => visit(t, self)),
+                        ...customDataDefinedType.map(t => visit(t, self)),
+                    ]);
 
                     if (node.errors.length > 0) {
                         const programErrorsFragment = getProgramErrorsFragment(scope);
-                        renderMap.add(
+                        renders = addToRenderMap(
+                            renders,
                             `errors/${camelCase(node.name)}.ts`,
                             render('errorsPage.njk', {
                                 imports: new ImportMap()
                                     .mergeWith(programErrorsFragment)
                                     .toString(dependencyMap, useGranularImports),
-                                programErrorsFragment,
+                                programErrorsFragment: programErrorsFragment.content,
                             }),
                         );
                     }
@@ -342,24 +346,25 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const programFragment = getProgramFragment(scope);
                     const programAccountsFragment = getProgramAccountsFragment(scope);
                     const programInstructionsFragment = getProgramInstructionsFragment(scope);
-                    renderMap.add(
+                    renders = addToRenderMap(
+                        renders,
                         `programs/${camelCase(node.name)}.ts`,
                         render('programsPage.njk', {
                             imports: new ImportMap()
                                 .mergeWith(programFragment, programAccountsFragment, programInstructionsFragment)
                                 .toString(dependencyMap, useGranularImports),
-                            programAccountsFragment,
-                            programFragment,
-                            programInstructionsFragment,
+                            programAccountsFragment: programAccountsFragment.content,
+                            programFragment: programFragment.content,
+                            programInstructionsFragment: programInstructionsFragment.content,
                         }),
                     );
 
-                    renderMap.mergeWith(
+                    return mergeRenderMaps([
+                        renders,
                         ...getAllInstructionsWithSubs(node, {
                             leavesOnly: !renderParentInstructions,
                         }).map(ix => visit(ix, self)),
-                    );
-                    return renderMap;
+                    ]);
                 },
 
                 visitRoot(node, { self }) {
@@ -389,9 +394,10 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         root: node,
                     };
 
-                    const map = new RenderMap();
+                    let renders = renderMap();
                     if (hasAnythingToExport) {
-                        map.add(
+                        renders = addToRenderMap(
+                            renders,
                             'shared/index.ts',
                             render('sharedPage.njk', {
                                 ...ctx,
@@ -417,27 +423,33 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         );
                     }
                     if (programsToExport.length > 0) {
-                        map.add('programs/index.ts', render('programsIndex.njk', ctx));
+                        renders = addToRenderMap(renders, 'programs/index.ts', render('programsIndex.njk', ctx));
                     }
                     if (programsWithErrorsToExport.length > 0) {
-                        map.add('errors/index.ts', render('errorsIndex.njk', ctx));
+                        renders = addToRenderMap(renders, 'errors/index.ts', render('errorsIndex.njk', ctx));
                     }
                     if (accountsToExport.length > 0) {
-                        map.add('accounts/index.ts', render('accountsIndex.njk', ctx));
+                        renders = addToRenderMap(renders, 'accounts/index.ts', render('accountsIndex.njk', ctx));
                     }
                     if (pdasToExport.length > 0) {
-                        map.add('pdas/index.ts', render('pdasIndex.njk', ctx));
+                        renders = addToRenderMap(renders, 'pdas/index.ts', render('pdasIndex.njk', ctx));
                     }
                     if (instructionsToExport.length > 0) {
-                        map.add('instructions/index.ts', render('instructionsIndex.njk', ctx));
+                        renders = addToRenderMap(
+                            renders,
+                            'instructions/index.ts',
+                            render('instructionsIndex.njk', ctx),
+                        );
                     }
                     if (definedTypesToExport.length > 0) {
-                        map.add('types/index.ts', render('definedTypesIndex.njk', ctx));
+                        renders = addToRenderMap(renders, 'types/index.ts', render('definedTypesIndex.njk', ctx));
                     }
 
-                    return map
-                        .add('index.ts', render('rootIndex.njk', ctx))
-                        .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
+                    return pipe(
+                        renders,
+                        r => addToRenderMap(r, 'index.ts', render('rootIndex.njk', ctx)),
+                        r => mergeRenderMaps([r, ...getAllPrograms(node).map(p => visit(p, self))]),
+                    );
                 },
             }),
         v => recordNodeStackVisitor(v, stack),

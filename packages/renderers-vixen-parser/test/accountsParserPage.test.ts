@@ -1,4 +1,5 @@
 import { accountNode, camelCase, rootNode } from '@codama/nodes';
+import { getFromRenderMap } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
@@ -9,21 +10,11 @@ test('it renders accounts parsers', () => {
     // Given the following program with 1 account and 1 pda with a byte array as seeds.
     const node = rootNode({
         accounts: [
-            accountNode({
-                name: 'mint',
-            }),
-            accountNode({
-                name: 'account',
-            }),
-            accountNode({
-                name: 'metadata',
-            }),
-            accountNode({
-                name: 'master_edition',
-            }),
-            accountNode({
-                name: 'edition',
-            }),
+            accountNode({ name: 'mint' }),
+            accountNode({ name: 'account' }),
+            accountNode({ name: 'metadata' }),
+            accountNode({ name: 'master_edition' }),
+            accountNode({ name: 'edition' }),
         ],
         definedTypes: [],
         docs: [],
@@ -41,13 +32,14 @@ test('it renders accounts parsers', () => {
     const renderMap = visit(
         node,
         getRenderMapVisitor({
+            projectFolder: 'test',
             projectName: 'test',
         }),
     );
 
     // Then we expect the following identifier and reference to the byte array
     // as a parameters to be rendered.
-    codeContains(renderMap.get('src/generated_parser/accounts_parser.rs'), [
+    codeContains(getFromRenderMap(renderMap, 'src/generated_parser/accounts_parser.rs'), [
         'pub enum TestProgramState',
         'Mint(Mint)',
         'Account(Account)',

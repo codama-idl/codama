@@ -5,11 +5,12 @@ import {
     getLastNodeFromPath,
     LinkableDictionary,
     NodePath,
+    pipe,
 } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
-import { Fragment, fragment } from './common';
+import { Fragment, fragment, mergeFragmentImports } from '../utils';
 
 export function getInstructionAccountTypeParamFragment(
     scope: Pick<GlobalFragmentScope, 'linkables'> & {
@@ -29,12 +30,16 @@ export function getInstructionAccountTypeParamFragment(
     }
 
     if (instructionNode.optionalAccountStrategy === 'omitted' && instructionAccountNode.isOptional) {
-        return fragment(`${typeParam} extends string${accountMeta} | undefined = undefined`, imports);
+        return pipe(fragment(`${typeParam} extends string${accountMeta} | undefined = undefined`), f =>
+            mergeFragmentImports(f, [imports]),
+        );
     }
 
     const defaultAddress = getDefaultAddress(instructionAccountNode.defaultValue, programNode.publicKey, linkables);
 
-    return fragment(`${typeParam} extends string${accountMeta} = ${defaultAddress}`, imports);
+    return pipe(fragment(`${typeParam} extends string${accountMeta} = ${defaultAddress}`), f =>
+        mergeFragmentImports(f, [imports]),
+    );
 }
 
 function getDefaultAddress(

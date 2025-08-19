@@ -11,11 +11,12 @@ import {
     type SizeDiscriminatorNode,
     type StructTypeNode,
 } from '@codama/nodes';
-import { visit } from '@codama/visitors-core';
+import { mapFragmentContent } from '@codama/renderers-core';
+import { pipe, visit } from '@codama/visitors-core';
 import { getBase64Decoder } from '@solana/codecs-strings';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, mergeFragments } from './common';
+import { addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
 
 /**
  * ```
@@ -41,21 +42,24 @@ export function getDiscriminatorConditionFragment(
         struct: StructTypeNode;
     },
 ): Fragment {
-    return mergeFragments(
-        scope.discriminators.flatMap(discriminator => {
-            if (isNode(discriminator, 'sizeDiscriminatorNode')) {
-                return [getSizeConditionFragment(discriminator, scope)];
-            }
-            if (isNode(discriminator, 'constantDiscriminatorNode')) {
-                return [getByteConditionFragment(discriminator, scope)];
-            }
-            if (isNode(discriminator, 'fieldDiscriminatorNode')) {
-                return [getFieldConditionFragment(discriminator, scope)];
-            }
-            return [];
-        }),
-        r => r.join(' && '),
-    ).mapRender(r => `if (${r}) { ${scope.ifTrue}; }`);
+    return pipe(
+        mergeFragments(
+            scope.discriminators.flatMap(discriminator => {
+                if (isNode(discriminator, 'sizeDiscriminatorNode')) {
+                    return [getSizeConditionFragment(discriminator, scope)];
+                }
+                if (isNode(discriminator, 'constantDiscriminatorNode')) {
+                    return [getByteConditionFragment(discriminator, scope)];
+                }
+                if (isNode(discriminator, 'fieldDiscriminatorNode')) {
+                    return [getFieldConditionFragment(discriminator, scope)];
+                }
+                return [];
+            }),
+            c => c.join(' && '),
+        ),
+        f => mapFragmentContent(f, c => `if (${c}) { ${scope.ifTrue}; }`),
+    );
 }
 
 function getSizeConditionFragment(
@@ -76,9 +80,12 @@ function getByteConditionFragment(
 ): Fragment {
     const { dataName, typeManifestVisitor } = scope;
     const constant = visit(discriminator.constant, typeManifestVisitor).value;
-    return constant
-        .mapRender(r => `containsBytes(${dataName}, ${r}, ${discriminator.offset})`)
-        .addImports('solanaCodecsCore', 'containsBytes');
+
+    return pipe(
+        constant,
+        f => mapFragmentContent(f, c => `containsBytes(${dataName}, ${c}, ${discriminator.offset})`),
+        f => addFragmentImports(f, 'solanaCodecsCore', ['containsBytes']),
+    );
 }
 
 function getFieldConditionFragment(

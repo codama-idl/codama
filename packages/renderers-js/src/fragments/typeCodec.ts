@@ -1,8 +1,9 @@
 import type { TypeNode } from '@codama/nodes';
+import { pipe } from '@codama/visitors-core';
 
 import { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
-import { Fragment, fragmentFromTemplate, mergeFragments } from './common';
+import { addFragmentImports, Fragment, fragmentFromTemplate, mergeFragments } from '../utils';
 import { getTypeDecoderFragment } from './typeDecoder';
 import { getTypeEncoderFragment } from './typeEncoder';
 
@@ -23,16 +24,19 @@ export function getTypeCodecFragment(
         [
             getTypeEncoderFragment({ ...scope, docs: scope.encoderDocs }),
             getTypeDecoderFragment({ ...scope, docs: scope.decoderDocs }),
-            fragmentFromTemplate('typeCodec.njk', {
-                codecFunction: nameApi.codecFunction(name),
-                codecType,
-                decoderFunction: nameApi.decoderFunction(name),
-                docs: scope.codecDocs,
-                encoderFunction: nameApi.encoderFunction(name),
-                looseName: nameApi.dataArgsType(name),
-                manifest,
-                strictName: nameApi.dataType(name),
-            }).addImports('solanaCodecsCore', [`type ${codecType}`, 'combineCodec']),
+            pipe(
+                fragmentFromTemplate('typeCodec.njk', {
+                    codecFunction: nameApi.codecFunction(name),
+                    codecType,
+                    decoderFunction: nameApi.decoderFunction(name),
+                    docs: scope.codecDocs,
+                    encoderFunction: nameApi.encoderFunction(name),
+                    looseName: nameApi.dataArgsType(name),
+                    manifest,
+                    strictName: nameApi.dataType(name),
+                }),
+                f => addFragmentImports(f, 'solanaCodecsCore', [`type ${codecType}`, 'combineCodec']),
+            ),
         ],
         renders => renders.join('\n\n'),
     );
