@@ -27,7 +27,7 @@
         "happy-dom": "^18.0.1",
         "prettier": "^3.6.2",
         "rimraf": "6.0.1",
-        "turbo": "^2.5.5",
+        "turbo": "^2.5.6",
         "tsup": "^8.5.0",
         "typescript": "^5.9.2",
         "vitest": "^3.2.4",
