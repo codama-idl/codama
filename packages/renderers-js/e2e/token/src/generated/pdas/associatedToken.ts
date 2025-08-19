@@ -22,6 +22,7 @@ export type AssociatedTokenSeeds = {
   mint: Address;
 };
 
+/** The address of the associated token account. */
 export async function findAssociatedTokenPda(
   seeds: AssociatedTokenSeeds,
   config: { programAddress?: Address | undefined } = {}
