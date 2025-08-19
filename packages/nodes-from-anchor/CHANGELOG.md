@@ -1,5 +1,16 @@
 # @codama/nodes-from-anchor
 
+## 1.2.5
+
+### Patch Changes
+
+- [#780](https://github.com/codama-idl/codama/pull/780) [`2de1b2c`](https://github.com/codama-idl/codama/commit/2de1b2c11f9f8790e62a8fad2c4e286dd87a900f) Thanks [@mcintyre94](https://github.com/mcintyre94)! - Export defaultVisitor from nodes-with-anchor
+
+- Updated dependencies [[`a32c424`](https://github.com/codama-idl/codama/commit/a32c42450bea12a53ccc120e5bcee1c20868f4e0)]:
+    - @codama/visitors@1.3.3
+    - @codama/errors@1.3.3
+    - @codama/nodes@1.3.3
+
 ## 1.2.4
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @codama/renderers-rust
 
+## 1.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.3.3
+    - @codama/nodes@1.3.3
+    - @codama/visitors-core@1.3.3
+    - @codama/renderers-core@1.0.19
+
 ## 1.2.1
 
 ### Patch Changes
