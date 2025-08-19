@@ -2,15 +2,9 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 
 import { CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, CodamaError } from '@codama/errors';
 
-export function readJson<T extends object>(value: string): T {
-    if (!__NODEJS__) {
-        throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'readFileSync' });
-    }
+import { Path, pathDirectory } from './path';
 
-    return JSON.parse(readFileSync(value, 'utf-8')) as T;
-}
-
-export const createDirectory = (path: string): void => {
+export const createDirectory = (path: Path): void => {
     if (!__NODEJS__) {
         throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'mkdirSync' });
     }
@@ -18,7 +12,7 @@ export const createDirectory = (path: string): void => {
     mkdirSync(path, { recursive: true });
 };
 
-export const deleteDirectory = (path: string): void => {
+export const deleteDirectory = (path: Path): void => {
     if (!__NODEJS__) {
         throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'rmSync' });
     }
@@ -28,14 +22,26 @@ export const deleteDirectory = (path: string): void => {
     }
 };
 
-export const createFile = (path: string, content: string): void => {
+export const writeFile = (path: Path, content: string): void => {
     if (!__NODEJS__) {
         throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'writeFileSync' });
     }
 
-    const directory = path.substring(0, path.lastIndexOf('/'));
+    const directory = pathDirectory(path);
     if (!existsSync(directory)) {
         createDirectory(directory);
     }
     writeFileSync(path, content);
 };
+
+export function readFile(path: Path): string {
+    if (!__NODEJS__) {
+        throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'readFileSync' });
+    }
+
+    return readFileSync(path, 'utf-8');
+}
+
+export function readJson<T>(path: Path): T {
+    return JSON.parse(readFile(path)) as T;
+}

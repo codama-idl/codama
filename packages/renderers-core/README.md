@@ -34,7 +34,7 @@ deleteDirectory(directoryPath);
 
 // Creates a new file at the given path with the given content.
 // Creates its parent directory, recursively, if it does not exist.
-createFile(filePath, content);
+writeFile(filePath, content);
 ```
 
 ## Render maps

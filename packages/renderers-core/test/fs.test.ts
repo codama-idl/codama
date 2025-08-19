@@ -1,7 +1,7 @@
 import { CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, CodamaError } from '@codama/errors';
 import { expect, test } from 'vitest';
 
-import { createDirectory, createFile, deleteDirectory, readJson } from '../src';
+import { createDirectory, deleteDirectory, readJson, writeFile } from '../src';
 
 if (__NODEJS__) {
     test('it reads JSON objects from files', () => {
@@ -24,8 +24,8 @@ if (__NODEJS__) {
             new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'rmSync' }),
         );
     });
-    test('it fails to call createFile', () => {
-        expect(() => createFile('./path', 'content')).toThrow(
+    test('it fails to call writeFile', () => {
+        expect(() => writeFile('./path', 'content')).toThrow(
             new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'writeFileSync' }),
         );
     });
