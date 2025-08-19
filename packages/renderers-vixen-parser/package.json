@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-vixen-parser",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Renders Yellowstone Account and Instruction Parsers",
     "exports": {
         "types": "./dist/types/index.d.ts",
