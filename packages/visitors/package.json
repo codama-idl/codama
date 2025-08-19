@@ -1,6 +1,6 @@
 {
     "name": "@codama/visitors",
-    "version": "1.3.2",
+    "version": "1.3.3",
     "description": "All visitors for the Codama framework",
     "exports": {
         "types": "./dist/types/index.d.ts",

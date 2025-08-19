@@ -1,5 +1,17 @@
 # @codama/renderers-js
 
+## 1.3.4
+
+### Patch Changes
+
+- [#778](https://github.com/codama-idl/codama/pull/778) [`a32c424`](https://github.com/codama-idl/codama/commit/a32c42450bea12a53ccc120e5bcee1c20868f4e0) Thanks [@macalinao](https://github.com/macalinao)! - Add docs to PDA derivation functions
+
+- Updated dependencies []:
+    - @codama/errors@1.3.3
+    - @codama/nodes@1.3.3
+    - @codama/visitors-core@1.3.3
+    - @codama/renderers-core@1.0.19
+
 ## 1.3.3
 
 ### Patch Changes
