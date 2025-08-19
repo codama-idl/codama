@@ -5,6 +5,7 @@ import { defaultVisitor } from './defaultVisitor';
 import { IdlV00, rootNodeFromAnchorV00 } from './v00';
 import { IdlV01, rootNodeFromAnchorV01 } from './v01';
 
+export * from './defaultVisitor';
 export * from './discriminators';
 export * from './v00';
 export * from './v01';
