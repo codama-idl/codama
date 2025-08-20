@@ -1,6 +1,6 @@
 import { CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, CodamaError } from '@codama/errors';
 
-import { createFile } from './fs';
+import { writeFile } from './fs';
 
 export class RenderMap {
     protected readonly _map: Map<string, string> = new Map();
@@ -67,7 +67,7 @@ export class RenderMap {
 
     write(path: string): void {
         this._map.forEach((code, relativePath) => {
-            createFile(`${path}/${relativePath}`, code);
+            writeFile(`${path}/${relativePath}`, code);
         });
     }
 }
