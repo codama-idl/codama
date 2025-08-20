@@ -1,0 +1,10 @@
+{
+    "idl": "idl.json",
+    "before": [],
+    "scripts": {
+        "demo": {
+            "from": "@codama/renderers-demo",
+            "args": ["docs"]
+        }
+    }
+}

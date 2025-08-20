@@ -12,6 +12,12 @@ export function renderMap(): RenderMap {
     return new Map<Path, string>();
 }
 
+export function fragmentToRenderMap(fragment: BaseFragment, path: Path): RenderMap {
+    const newMap = new Map<Path, string>();
+    newMap.set(path, fragment.content);
+    return newMap;
+}
+
 export function addToRenderMap(renderMap: RenderMap, path: Path, content: BaseFragment | string): RenderMap {
     const newMap = new Map(renderMap);
     newMap.set(path, typeof content === 'string' ? content : content.content);
