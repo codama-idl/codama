@@ -18,7 +18,7 @@ import {
     titleCase,
     TypeNode,
 } from '@codama/nodes';
-import { RenderMap } from '@codama/renderers-core';
+import { addToRenderMap, renderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -446,7 +446,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
     const typeManifestVisitor = getProtoTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
-        staticVisitor(() => new RenderMap(), {
+        staticVisitor(() => renderMap(), {
             keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
         }),
         v =>
@@ -577,7 +577,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                     });
 
                     instructionParserImports.add(`crate::instructions::{${ixImports}}`);
-                    const map = new RenderMap();
+                    let renders = renderMap();
 
                     const programStateOneOf: string[] = [];
 
@@ -718,7 +718,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
 
                         definedTypes.push(...matrixProtoTypes);
 
-                        map.add(
+                        renders = addToRenderMap(
+                            renders,
                             `proto/${protoProjectName}.proto`,
                             render('proto.njk', {
                                 accounts: protoAccounts,
@@ -741,7 +742,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                                 });
                             };
 
-                            map.add(
+                            renders = addToRenderMap(
+                                renders,
                                 `src/generated_parser/proto_helpers.rs`,
                                 render('protoHelpersPage.njk', {
                                     normalizeAcronyms,
@@ -772,43 +774,52 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
 
                     // only two files are generated as part of account and instruction parser
                     if (accCtx.accounts.length > 0) {
-                        map.add(`src/generated_parser/accounts_parser.rs`, render('accountsParserPage.njk', accCtx));
+                        renders = addToRenderMap(
+                            renders,
+                            `src/generated_parser/accounts_parser.rs`,
+                            render('accountsParserPage.njk', accCtx),
+                        );
                     }
 
                     if (ixCtx.instructions.length > 0) {
-                        map.add(
+                        renders = addToRenderMap(
+                            renders,
                             `src/generated_parser/instructions_parser.rs`,
                             render('instructionsParserPage.njk', ixCtx),
                         );
                     }
 
-                    map.add(
-                        `src/generated_parser/mod.rs`,
-                        render('rootMod.njk', {
-                            hasAccounts: accCtx.accounts.length > 0,
-                            hasProtoHelpers,
-                        }),
+                    return pipe(
+                        renders,
+                        r =>
+                            addToRenderMap(
+                                r,
+                                `src/generated_parser/mod.rs`,
+                                render('rootMod.njk', {
+                                    hasAccounts: accCtx.accounts.length > 0,
+                                    hasProtoHelpers,
+                                }),
+                            ),
+                        r =>
+                            addToRenderMap(
+                                r,
+                                'src/lib.rs',
+                                render('libPage.njk', {
+                                    programId: node.program.name,
+                                    protoProjectName,
+                                }),
+                            ),
+                        r => addToRenderMap(r, 'build.rs', render('buildPage.njk', { protoProjectName })),
+                        r =>
+                            addToRenderMap(
+                                r,
+                                'Cargo.toml',
+                                render('CargoPage.njk', {
+                                    projectCrateDescription: options.projectCrateDescription,
+                                    projectName,
+                                }),
+                            ),
                     );
-
-                    map.add(
-                        'src/lib.rs',
-                        render('libPage.njk', {
-                            programId: node.program.name,
-                            protoProjectName,
-                        }),
-                    );
-
-                    map.add('build.rs', render('buildPage.njk', { protoProjectName }));
-
-                    map.add(
-                        'Cargo.toml',
-                        render('CargoPage.njk', {
-                            projectCrateDescription: options.projectCrateDescription,
-                            projectName,
-                        }),
-                    );
-
-                    return map;
                 },
             }),
         v => recordNodeStackVisitor(v, stack),

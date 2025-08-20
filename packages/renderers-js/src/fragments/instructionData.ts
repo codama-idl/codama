@@ -3,7 +3,7 @@ import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
-import { Fragment, fragment } from './common';
+import { Fragment, fragment } from '../utils';
 import { getTypeWithCodecFragment } from './typeWithCodec';
 
 export function getInstructionDataFragment(

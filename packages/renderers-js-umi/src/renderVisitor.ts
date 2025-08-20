@@ -1,4 +1,4 @@
-import { deleteDirectory } from '@codama/renderers-core';
+import { deleteDirectory, mapRenderMapContentAsync, writeRenderMap } from '@codama/renderers-core';
 import { LogLevel, throwValidatorItemsVisitor } from '@codama/validators';
 import { rootNodeVisitor, visit } from '@codama/visitors-core';
 import { Plugin } from 'prettier';
@@ -41,14 +41,14 @@ export function renderVisitor(path: string, options: RenderOptions = {}) {
         }
 
         // Render the new files.
-        const renderMap = visit(root, getRenderMapVisitor(options));
+        let renderMap = visit(root, getRenderMapVisitor(options));
 
         // Format the code.
         if (options.formatCode ?? true) {
             const prettierOptions = { ...DEFAULT_PRETTIER_OPTIONS, ...options.prettierOptions };
-            await renderMap.mapContentAsync(code => format(code, prettierOptions));
+            renderMap = await mapRenderMapContentAsync(renderMap, code => format(code, prettierOptions));
         }
 
-        renderMap.write(path);
+        writeRenderMap(renderMap, path);
     });
 }

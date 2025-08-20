@@ -1,7 +1,9 @@
 import { ProgramNode, resolveNestedTypeNode } from '@codama/nodes';
+import { mapFragmentContent } from '@codama/renderers-core';
+import { pipe } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, mergeFragments } from './common';
+import { addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
 import { getDiscriminatorConditionFragment } from './discriminatorCondition';
 
 export function getProgramAccountsFragment(
@@ -12,7 +14,7 @@ export function getProgramAccountsFragment(
     if (scope.programNode.accounts.length === 0) return fragment('');
     return mergeFragments(
         [getProgramAccountsEnumFragment(scope), getProgramAccountsIdentifierFunctionFragment(scope)],
-        r => `${r.join('\n\n')}\n`,
+        c => `${c.join('\n\n')}\n`,
     );
 }
 
@@ -43,30 +45,33 @@ function getProgramAccountsIdentifierFunctionFragment(
 
     const programAccountsEnum = nameApi.programAccountsEnum(programNode.name);
     const programAccountsIdentifierFunction = nameApi.programAccountsIdentifierFunction(programNode.name);
-    const discriminatorsFragment = mergeFragments(
-        accountsWithDiscriminators.map((account): Fragment => {
-            const variant = nameApi.programAccountsEnumVariant(account.name);
-            return getDiscriminatorConditionFragment({
-                ...scope,
-                dataName: 'data',
-                discriminators: account.discriminators ?? [],
-                ifTrue: `return ${programAccountsEnum}.${variant};`,
-                struct: resolveNestedTypeNode(account.data),
-            });
-        }),
-        r => r.join('\n'),
-    );
 
-    return discriminatorsFragment
-        .mapRender(
-            discriminators =>
-                `export function ${programAccountsIdentifierFunction}(` +
-                `account: { data: ReadonlyUint8Array } | ReadonlyUint8Array` +
-                `): ${programAccountsEnum} {\n` +
-                `const data = 'data' in account ? account.data : account;\n` +
-                `${discriminators}\n` +
-                `throw new Error("The provided account could not be identified as a ${programNode.name} account.")\n` +
-                `}`,
-        )
-        .addImports('solanaCodecsCore', 'type ReadonlyUint8Array');
+    return pipe(
+        mergeFragments(
+            accountsWithDiscriminators.map((account): Fragment => {
+                const variant = nameApi.programAccountsEnumVariant(account.name);
+                return getDiscriminatorConditionFragment({
+                    ...scope,
+                    dataName: 'data',
+                    discriminators: account.discriminators ?? [],
+                    ifTrue: `return ${programAccountsEnum}.${variant};`,
+                    struct: resolveNestedTypeNode(account.data),
+                });
+            }),
+            c => c.join('\n'),
+        ),
+        f =>
+            mapFragmentContent(
+                f,
+                discriminators =>
+                    `export function ${programAccountsIdentifierFunction}(` +
+                    `account: { data: ReadonlyUint8Array } | ReadonlyUint8Array` +
+                    `): ${programAccountsEnum} {\n` +
+                    `const data = 'data' in account ? account.data : account;\n` +
+                    `${discriminators}\n` +
+                    `throw new Error("The provided account could not be identified as a ${programNode.name} account.")\n` +
+                    `}`,
+            ),
+        f => addFragmentImports(f, 'solanaCodecsCore', ['type ReadonlyUint8Array']),
+    );
 }

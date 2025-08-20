@@ -1,4 +1,5 @@
 import { definedTypeNode, numberTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
+import { getFromRenderMap } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
@@ -16,11 +17,11 @@ test('it exports short u16 numbers', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect a short u16 to be exported.
-    codeContains(renderMap.get('types/my_short_u16.rs'), [
+    codeContains(getFromRenderMap(renderMap, 'types/my_short_u16.rs'), [
         /pub type MyShortU16 = ShortU16/,
         /use solana_short_vec::ShortU16/,
     ]);
-    codeDoesNotContains(renderMap.get('types/my_short_u16.rs'), [
+    codeDoesNotContains(getFromRenderMap(renderMap, 'types/my_short_u16.rs'), [
         /use borsh::BorshSerialize/,
         /use borsh::BorshDeserialize/,
     ]);
@@ -37,5 +38,8 @@ test('it exports short u16 numbers as struct fields', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect a short u16 to be exported as a struct field.
-    codeContains(renderMap.get('types/my_short_u16.rs'), [/pub value: ShortU16/, /use solana_short_vec::ShortU16/]);
+    codeContains(getFromRenderMap(renderMap, 'types/my_short_u16.rs'), [
+        /pub value: ShortU16/,
+        /use solana_short_vec::ShortU16/,
+    ]);
 });

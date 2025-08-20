@@ -1,9 +1,9 @@
 import { AccountNode, isNodeFilter } from '@codama/nodes';
-import { findProgramNodeFromPath, getLastNodeFromPath, NodePath } from '@codama/visitors-core';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import type { TypeManifest } from '../TypeManifest';
-import { Fragment, fragment, fragmentFromTemplate } from './common';
+import { addFragmentImports, Fragment, fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
 
 export function getAccountPdaHelpersFragment(
     scope: Pick<GlobalFragmentScope, 'customAccountData' | 'linkables' | 'nameApi'> & {
@@ -20,7 +20,7 @@ export function getAccountPdaHelpersFragment(
     }
 
     const accountTypeFragment = customAccountData.has(accountNode.name)
-        ? typeManifest.strictType.clone()
+        ? typeManifest.strictType
         : fragment(nameApi.dataType(accountNode.name));
 
     // Here we cannot use the `getImportFrom` function because
@@ -31,24 +31,27 @@ export function getAccountPdaHelpersFragment(
     const findPdaFunction = nameApi.pdaFindFunction(pdaNode.name);
     const hasVariableSeeds = pdaNode.seeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
 
-    return fragmentFromTemplate('accountPdaHelpers.njk', {
-        accountType: accountTypeFragment.render,
-        fetchFromSeedsFunction: nameApi.accountFetchFromSeedsFunction(accountNode.name),
-        fetchFunction: nameApi.accountFetchFunction(accountNode.name),
-        fetchMaybeFromSeedsFunction: nameApi.accountFetchMaybeFromSeedsFunction(accountNode.name),
-        fetchMaybeFunction: nameApi.accountFetchMaybeFunction(accountNode.name),
-        findPdaFunction,
-        hasVariableSeeds,
-        pdaSeedsType,
-        program: programNode,
-    })
-        .mergeImportsWith(accountTypeFragment)
-        .addImports(importFrom, hasVariableSeeds ? [pdaSeedsType, findPdaFunction] : [findPdaFunction])
-        .addImports('solanaAddresses', ['type Address'])
-        .addImports('solanaAccounts', [
-            'type Account',
-            'assertAccountExists',
-            'type FetchAccountConfig',
-            'type MaybeAccount',
-        ]);
+    return pipe(
+        fragmentFromTemplate('accountPdaHelpers.njk', {
+            accountType: accountTypeFragment.content,
+            fetchFromSeedsFunction: nameApi.accountFetchFromSeedsFunction(accountNode.name),
+            fetchFunction: nameApi.accountFetchFunction(accountNode.name),
+            fetchMaybeFromSeedsFunction: nameApi.accountFetchMaybeFromSeedsFunction(accountNode.name),
+            fetchMaybeFunction: nameApi.accountFetchMaybeFunction(accountNode.name),
+            findPdaFunction,
+            hasVariableSeeds,
+            pdaSeedsType,
+            program: programNode,
+        }),
+        f => mergeFragmentImports(f, [accountTypeFragment.imports]),
+        f => addFragmentImports(f, importFrom, hasVariableSeeds ? [pdaSeedsType, findPdaFunction] : [findPdaFunction]),
+        f => addFragmentImports(f, 'solanaAddresses', ['type Address']),
+        f =>
+            addFragmentImports(f, 'solanaAccounts', [
+                'type Account',
+                'assertAccountExists',
+                'type FetchAccountConfig',
+                'type MaybeAccount',
+            ]),
+    );
 }

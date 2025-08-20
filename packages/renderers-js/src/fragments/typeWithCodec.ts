@@ -2,7 +2,7 @@ import type { TypeNode } from '@codama/nodes';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
-import { Fragment, mergeFragments } from './common';
+import { Fragment, mergeFragments } from '../utils';
 import { getTypeFragment } from './type';
 import { getTypeCodecFragment } from './typeCodec';
 

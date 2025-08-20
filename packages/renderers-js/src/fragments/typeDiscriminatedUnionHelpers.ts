@@ -1,7 +1,8 @@
 import { isDataEnum, isNode, TypeNode } from '@codama/nodes';
+import { pipe } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, fragmentFromTemplate } from './common';
+import { addFragmentImports, Fragment, fragment, fragmentFromTemplate } from '../utils';
 
 export function getTypeDiscriminatedUnionHelpersFragment(
     scope: Pick<GlobalFragmentScope, 'nameApi'> & {
@@ -16,16 +17,20 @@ export function getTypeDiscriminatedUnionHelpersFragment(
         return fragment('');
     }
 
-    return fragmentFromTemplate('typeDiscriminatedUnionHelpers.njk', {
-        discriminatedUnionDiscriminator: nameApi.discriminatedUnionDiscriminator(name),
-        discriminatedUnionFunction: nameApi.discriminatedUnionFunction(name),
-        getVariant: (variant: string) => nameApi.discriminatedUnionVariant(variant),
-        isDiscriminatedUnionFunction: nameApi.isDiscriminatedUnionFunction(name),
-        looseName: nameApi.dataArgsType(name),
-        strictName: nameApi.dataType(name),
-        typeNode,
-    }).addImports('solanaCodecsDataStructures', [
-        'type GetDiscriminatedUnionVariantContent',
-        'type GetDiscriminatedUnionVariant',
-    ]);
+    return pipe(
+        fragmentFromTemplate('typeDiscriminatedUnionHelpers.njk', {
+            discriminatedUnionDiscriminator: nameApi.discriminatedUnionDiscriminator(name),
+            discriminatedUnionFunction: nameApi.discriminatedUnionFunction(name),
+            getVariant: (variant: string) => nameApi.discriminatedUnionVariant(variant),
+            isDiscriminatedUnionFunction: nameApi.isDiscriminatedUnionFunction(name),
+            looseName: nameApi.dataArgsType(name),
+            strictName: nameApi.dataType(name),
+            typeNode,
+        }),
+        f =>
+            addFragmentImports(f, 'solanaCodecsDataStructures', [
+                'type GetDiscriminatedUnionVariantContent',
+                'type GetDiscriminatedUnionVariant',
+            ]),
+    );
 }

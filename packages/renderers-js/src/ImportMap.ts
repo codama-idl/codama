@@ -1,5 +1,5 @@
-import { Fragment } from './fragments';
 import { TypeManifest } from './TypeManifest';
+import { Fragment } from './utils';
 
 const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaAccounts: '@solana/kit',

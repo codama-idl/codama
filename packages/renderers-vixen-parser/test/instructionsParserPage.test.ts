@@ -1,4 +1,5 @@
 import { camelCase, instructionNode, rootNode } from '@codama/nodes';
+import { getFromRenderMap } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
@@ -143,13 +144,14 @@ test('it renders instructions parsers', () => {
     const renderMap = visit(
         node,
         getRenderMapVisitor({
+            projectFolder: 'test',
             projectName: 'test',
         }),
     );
 
     // // Then we expect the following pub struct.
-    // codeContains(renderMap.get('instructions/mint_tokens.rs'), [`pub struct MintTokensInstructionData`, `pub fn new(`]);
-    codeContains(renderMap.get('src/generated_parser/instructions_parser.rs'), [
+    // codeContains(getFromRenderMap(renderMap, 'instructions/mint_tokens.rs'), [`pub struct MintTokensInstructionData`, `pub fn new(`]);
+    codeContains(getFromRenderMap(renderMap, 'src/generated_parser/instructions_parser.rs'), [
         'pub enum TestProgramIx',
         'CreateAccount(CreateAccountIxAccounts, CreateAccountIxData)',
         'Assign(AssignIxAccounts, AssignIxData)',

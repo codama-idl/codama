@@ -1,9 +1,9 @@
 import { InstructionNode } from '@codama/nodes';
-import { findProgramNodeFromPath, getLastNodeFromPath, NodePath } from '@codama/visitors-core';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { TypeManifest } from '../TypeManifest';
-import { Fragment, fragment, fragmentFromTemplate } from './common';
+import { addFragmentImports, Fragment, fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
 
 export function getInstructionParseFunctionFragment(
     scope: Pick<GlobalFragmentScope, 'customInstructionData' | 'nameApi'> & {
@@ -25,32 +25,41 @@ export function getInstructionParseFunctionFragment(
 
     const instructionDataName = nameApi.instructionDataType(instructionNode.name);
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
-    const dataTypeFragment = fragment(
-        customData ? dataArgsManifest.strictType.render : nameApi.dataType(instructionDataName),
-    );
+    const dataTypeFragment = customData
+        ? pipe(fragment(dataArgsManifest.strictType.content), f =>
+              mergeFragmentImports(f, [dataArgsManifest.strictType.imports, dataArgsManifest.decoder.imports]),
+          )
+        : fragment(nameApi.dataType(instructionDataName));
     const decoderFunction = customData
-        ? dataArgsManifest.decoder.render
+        ? dataArgsManifest.decoder.content
         : `${nameApi.decoderFunction(instructionDataName)}()`;
-    if (customData) {
-        dataTypeFragment.mergeImportsWith(dataArgsManifest.strictType, dataArgsManifest.decoder);
-    }
 
-    return fragmentFromTemplate('instructionParseFunction.njk', {
-        dataTypeFragment,
-        decoderFunction,
-        hasAccounts,
-        hasData,
-        hasOptionalAccounts,
-        instruction: instructionNode,
-        instructionParseFunction: nameApi.instructionParseFunction(instructionNode.name),
-        instructionParsedType: nameApi.instructionParsedType(instructionNode.name),
-        minimumNumberOfAccounts,
-        programAddressConstant,
-    })
-        .mergeImportsWith(dataTypeFragment)
-        .addImports('generatedPrograms', [programAddressConstant])
-        .addImports('solanaInstructions', ['type Instruction'])
-        .addImports('solanaInstructions', hasAccounts ? ['type InstructionWithAccounts', 'type AccountMeta'] : [])
-        .addImports('solanaInstructions', hasData ? ['type InstructionWithData'] : [])
-        .addImports('solanaCodecsCore', hasData ? ['type ReadonlyUint8Array'] : []);
+    return pipe(
+        fragmentFromTemplate('instructionParseFunction.njk', {
+            dataTypeFragment: dataTypeFragment.content,
+            decoderFunction,
+            hasAccounts,
+            hasData,
+            hasOptionalAccounts,
+            instruction: instructionNode,
+            instructionParseFunction: nameApi.instructionParseFunction(instructionNode.name),
+            instructionParsedType: nameApi.instructionParsedType(instructionNode.name),
+            minimumNumberOfAccounts,
+            programAddressConstant,
+        }),
+        f => mergeFragmentImports(f, [dataTypeFragment.imports]),
+        f => addFragmentImports(f, 'generatedPrograms', [programAddressConstant]),
+        f => addFragmentImports(f, 'solanaInstructions', ['type Instruction']),
+        hasAccounts
+            ? f => addFragmentImports(f, 'solanaInstructions', ['type InstructionWithAccounts', 'type AccountMeta'])
+            : f => f,
+        hasData
+            ? f =>
+                  addFragmentImports(
+                      addFragmentImports(f, 'solanaInstructions', ['type InstructionWithData']),
+                      'solanaCodecsCore',
+                      ['type ReadonlyUint8Array'],
+                  )
+            : f => f,
+    );
 }

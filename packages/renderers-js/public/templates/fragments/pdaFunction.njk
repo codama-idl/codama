@@ -5,7 +5,7 @@ export type {{ pdaSeedsType }} = {
   {% for seed in seeds %}
     {% if seed.kind === 'variablePdaSeedNode' %}
       {{ macros.docblock(seed.docs) }}
-      {{ seed.name | camelCase }}: {{ seed.typeManifest.looseType.render }};
+      {{ seed.name | camelCase }}: {{ seed.typeManifest.looseType.content }};
     {% endif %}
   {% endfor %}
 }
@@ -24,9 +24,9 @@ export async function {{ findPdaFunction }}(
       {% if seed.kind === 'constantPdaSeedNode' and seed.value.kind === 'programIdValueNode' %}
         getAddressEncoder().encode(programAddress),
       {% elif seed.kind === 'constantPdaSeedNode' %}
-        {{ seed.typeManifest.encoder.render }}.encode({{ seed.valueManifest.render }}),
+        {{ seed.typeManifest.encoder.content }}.encode({{ seed.valueManifest.content }}),
       {% else %}
-        {{ seed.typeManifest.encoder.render }}.encode(seeds.{{ seed.name | camelCase }}),
+        {{ seed.typeManifest.encoder.content }}.encode(seeds.{{ seed.name | camelCase }}),
       {% endif %}
     {% endfor %}
   ]});

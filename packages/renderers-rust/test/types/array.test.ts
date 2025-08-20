@@ -7,6 +7,7 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
+import { getFromRenderMap } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
@@ -24,12 +25,12 @@ test('it exports short vecs', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect a short vec to be exported.
-    codeContains(renderMap.get('types/my_short_vec.rs'), [
+    codeContains(getFromRenderMap(renderMap, 'types/my_short_vec.rs'), [
         /pub type MyShortVec = ShortVec<Pubkey>;/,
         /use solana_pubkey::Pubkey/,
         /use solana_short_vec::ShortVec/,
     ]);
-    codeDoesNotContains(renderMap.get('types/my_short_vec.rs'), [
+    codeDoesNotContains(getFromRenderMap(renderMap, 'types/my_short_vec.rs'), [
         /use borsh::BorshSerialize/,
         /use borsh::BorshDeserialize/,
     ]);
@@ -51,7 +52,7 @@ test('it exports short vecs as struct fields', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect a short vec to be exported as a struct field.
-    codeContains(renderMap.get('types/my_short_vec.rs'), [
+    codeContains(getFromRenderMap(renderMap, 'types/my_short_vec.rs'), [
         /pub value: ShortVec<Pubkey>,/,
         /use solana_pubkey::Pubkey/,
         /use solana_short_vec::ShortVec/,

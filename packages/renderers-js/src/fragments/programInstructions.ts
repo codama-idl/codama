@@ -4,9 +4,11 @@ import {
     ProgramNode,
     structTypeNodeFromInstructionArgumentNodes,
 } from '@codama/nodes';
+import { mapFragmentContent } from '@codama/renderers-core';
+import { pipe } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, mergeFragments } from './common';
+import { addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
 import { getDiscriminatorConditionFragment } from './discriminatorCondition';
 
 export function getProgramInstructionsFragment(
@@ -26,7 +28,7 @@ export function getProgramInstructionsFragment(
             getProgramInstructionsIdentifierFunctionFragment(scopeWithInstructions),
             getProgramInstructionsParsedUnionTypeFragment(scopeWithInstructions),
         ],
-        r => `${r.join('\n\n')}\n`,
+        c => `${c.join('\n\n')}\n`,
     );
 }
 
@@ -72,21 +74,25 @@ function getProgramInstructionsIdentifierFunctionFragment(
                 struct: structTypeNodeFromInstructionArgumentNodes(instruction.arguments),
             });
         }),
-        r => r.join('\n'),
+        c => c.join('\n'),
     );
 
-    return discriminatorsFragment
-        .mapRender(
-            discriminators =>
-                `export function ${programInstructionsIdentifierFunction}(` +
-                `instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array` +
-                `): ${programInstructionsEnum} {\n` +
-                `const data = 'data' in instruction ? instruction.data : instruction;\n` +
-                `${discriminators}\n` +
-                `throw new Error("The provided instruction could not be identified as a ${programNode.name} instruction.")\n` +
-                `}`,
-        )
-        .addImports('solanaCodecsCore', 'type ReadonlyUint8Array');
+    return pipe(
+        discriminatorsFragment,
+        f =>
+            mapFragmentContent(
+                f,
+                discriminators =>
+                    `export function ${programInstructionsIdentifierFunction}(` +
+                    `instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array` +
+                    `): ${programInstructionsEnum} {\n` +
+                    `const data = 'data' in instruction ? instruction.data : instruction;\n` +
+                    `${discriminators}\n` +
+                    `throw new Error("The provided instruction could not be identified as a ${programNode.name} instruction.")\n` +
+                    `}`,
+            ),
+        f => addFragmentImports(f, 'solanaCodecsCore', ['type ReadonlyUint8Array']),
+    );
 }
 
 function getProgramInstructionsParsedUnionTypeFragment(
@@ -100,17 +106,18 @@ function getProgramInstructionsParsedUnionTypeFragment(
     const programAddress = programNode.publicKey;
 
     const programInstructionsType = nameApi.programInstructionsParsedUnionType(programNode.name);
-
     const programInstructionsEnum = nameApi.programInstructionsEnum(programNode.name);
 
     const typeVariants = allInstructions.map((instruction): Fragment => {
         const instructionEnumVariant = nameApi.programInstructionsEnumVariant(instruction.name);
-
         const parsedInstructionType = nameApi.instructionParsedType(instruction.name);
 
-        return fragment(
-            `| { instructionType: ${programInstructionsEnum}.${instructionEnumVariant} } & ${parsedInstructionType}<TProgram>`,
-        ).addImports('generatedInstructions', `type ${parsedInstructionType}`);
+        return pipe(
+            fragment(
+                `| { instructionType: ${programInstructionsEnum}.${instructionEnumVariant} } & ${parsedInstructionType}<TProgram>`,
+            ),
+            f => addFragmentImports(f, 'generatedInstructions', [`type ${parsedInstructionType}`]),
+        );
     });
 
     return mergeFragments(
@@ -118,6 +125,6 @@ function getProgramInstructionsParsedUnionTypeFragment(
             fragment(`export type ${programInstructionsType}<TProgram extends string = '${programAddress}'> =`),
             ...typeVariants,
         ],
-        r => r.join('\n'),
+        c => c.join('\n'),
     );
 }

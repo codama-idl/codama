@@ -18,6 +18,7 @@ import {
     resolverValueNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
+import { getFromRenderMap } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 import { test } from 'vitest';
 
@@ -109,9 +110,9 @@ test('it renders the args variable on the async function only if the extra argum
     const renderMap = visit(node, getRenderMapVisitor({ asyncResolvers: ['myAsyncResolver'] }));
 
     // And split the async and sync functions.
-    const [asyncFunction, syncFunction] = renderMap
-        .get('instructions/create.ts')
-        .split(/export\s+function\s+getCreateInstruction/);
+    const [asyncFunction, syncFunction] = getFromRenderMap(renderMap, 'instructions/create.ts').split(
+        /export\s+function\s+getCreateInstruction/,
+    );
 
     // Then we expect only the async function to contain the args variable.
     await codeContains(asyncFunction, ['// Original args.', 'const args = { ...input }']);
@@ -149,9 +150,9 @@ test('it only renders the args variable on the async function if the extra argum
     const renderMap = visit(node, getRenderMapVisitor({ asyncResolvers: ['myAsyncResolver'] }));
 
     // And split the async and sync functions.
-    const [asyncFunction, syncFunction] = renderMap
-        .get('instructions/create.ts')
-        .split(/export\s+function\s+getCreateInstruction/);
+    const [asyncFunction, syncFunction] = getFromRenderMap(renderMap, 'instructions/create.ts').split(
+        /export\s+function\s+getCreateInstruction/,
+    );
 
     // Then we expect only the async function to contain the args variable.
     await codeContains(asyncFunction, ['// Original args.', 'const args = { ...input }']);

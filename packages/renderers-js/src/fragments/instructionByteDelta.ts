@@ -1,8 +1,9 @@
 import { assertIsNode, camelCase, InstructionByteDeltaNode, InstructionNode, isNode } from '@codama/nodes';
-import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
+import { mapFragmentContent } from '@codama/renderers-core';
+import { getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
 
 import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, mergeFragments } from './common';
+import { addFragmentFeatures, addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
 
 export function getInstructionByteDeltaFragment(
     scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
@@ -11,13 +12,13 @@ export function getInstructionByteDeltaFragment(
     },
 ): Fragment {
     const { byteDeltas } = getLastNodeFromPath(scope.instructionPath);
-    const fragments = (byteDeltas ?? []).flatMap(r => getByteDeltaFragment(r, scope));
+    const fragments = (byteDeltas ?? []).flatMap(c => getByteDeltaFragment(c, scope));
     if (fragments.length === 0) return fragment('');
     return mergeFragments(
         fragments,
-        r =>
+        c =>
             `// Bytes created or reallocated by the instruction.\n` +
-            `const byteDelta: number = [${r.join(',')}].reduce((a, b) => a + b, 0);`,
+            `const byteDelta: number = [${c.join(',')}].reduce((a, b) => a + b, 0);`,
     );
 }
 
@@ -27,7 +28,7 @@ function getByteDeltaFragment(
         useAsync: boolean;
     },
 ): Fragment[] {
-    const bytesFragment = ((): Fragment | null => {
+    let bytesFragment = ((): Fragment | null => {
         if (isNode(byteDelta.value, 'numberValueNode')) {
             return getNumberValueNodeFragment(byteDelta);
         }
@@ -46,11 +47,15 @@ function getByteDeltaFragment(
     if (bytesFragment === null) return [];
 
     if (byteDelta.withHeader) {
-        bytesFragment.mapRender(r => `${r} + BASE_ACCOUNT_SIZE`).addImports('solanaAccounts', 'BASE_ACCOUNT_SIZE');
+        bytesFragment = pipe(
+            bytesFragment,
+            f => mapFragmentContent(f, c => `${c} + BASE_ACCOUNT_SIZE`),
+            f => addFragmentImports(f, 'solanaAccounts', ['BASE_ACCOUNT_SIZE']),
+        );
     }
 
     if (byteDelta.subtract) {
-        bytesFragment.mapRender(r => `- (${r})`);
+        bytesFragment = pipe(bytesFragment, f => mapFragmentContent(f, c => `- (${c})`));
     }
 
     return [bytesFragment];
@@ -73,7 +78,8 @@ function getAccountLinkNodeFragment(
 ): Fragment {
     assertIsNode(byteDelta.value, 'accountLinkNode');
     const functionName = scope.nameApi.accountGetSizeFunction(byteDelta.value.name);
-    return fragment(`${functionName}()`).addImports(scope.getImportFrom(byteDelta.value), functionName);
+    const module = scope.getImportFrom(byteDelta.value);
+    return pipe(fragment(`${functionName}()`), f => addFragmentImports(f, module, [functionName]));
 }
 
 function getResolverValueNodeFragment(
@@ -88,7 +94,10 @@ function getResolverValueNodeFragment(
 
     const awaitKeyword = scope.useAsync && isAsync ? 'await ' : '';
     const functionName = scope.nameApi.resolverFunction(byteDelta.value.name);
-    return fragment(`${awaitKeyword}${functionName}(resolverScope)`)
-        .addImports(scope.getImportFrom(byteDelta.value), functionName)
-        .addFeatures(['instruction:resolverScopeVariable']);
+    const module = scope.getImportFrom(byteDelta.value);
+    return pipe(
+        fragment(`${awaitKeyword}${functionName}(resolverScope)`),
+        f => addFragmentImports(f, module, [functionName]),
+        f => addFragmentFeatures(f, ['instruction:resolverScopeVariable']),
+    );
 }
