@@ -58,7 +58,7 @@ export function getDiscriminatorConditionFragment(
             }),
             c => c.join(' && '),
         ),
-        f => mapFragmentContent(f, c => `if (${c}) { ${scope.ifTrue}; }`),
+        f => mapFragmentContent(f, c => `if (${c}) { ${scope.ifTrue} }`),
     );
 }
 
