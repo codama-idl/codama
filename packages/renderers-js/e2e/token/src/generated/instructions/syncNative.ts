@@ -78,6 +78,14 @@ export type SyncNativeInput<TAccountAccount extends string = string> = {
   account: Address<TAccountAccount>;
 };
 
+/**
+ * Given a wrapped / native token account (a token account containing SOL)
+ * updates its amount field based on the account's underlying `lamports`.
+ * This is useful if a non-wrapped SOL account uses
+ * `system_instruction::transfer` to move lamports to a wrapped token
+ * account, and needs to have its token `amount` field updated.
+ */
+
 export function getSyncNativeInstruction<
   TAccountAccount extends string,
   TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,

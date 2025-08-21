@@ -113,6 +113,11 @@ export type BurnInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/**
+ * Burns tokens by removing them from an account. `Burn` does not support
+ * accounts associated with the native mint, use `CloseAccount` instead.
+ */
+
 export function getBurnInstruction<
   TAccountAccount extends string,
   TAccountMint extends string,

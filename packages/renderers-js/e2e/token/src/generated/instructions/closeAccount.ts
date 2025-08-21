@@ -100,6 +100,11 @@ export type CloseAccountInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/**
+ * Close an account by transferring all its SOL to the destination account.
+ * Non-native accounts may only be closed if its token amount is zero.
+ */
+
 export function getCloseAccountInstruction<
   TAccountAccount extends string,
   TAccountDestination extends string,

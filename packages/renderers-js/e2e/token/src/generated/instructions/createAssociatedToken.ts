@@ -130,6 +130,11 @@ export type CreateAssociatedTokenAsyncInput<
   tokenProgram?: Address<TAccountTokenProgram>;
 };
 
+/**
+ * Creates an associated token account for the given wallet address and
+ * token mint Returns an error if the account exists.
+ */
+
 export async function getCreateAssociatedTokenInstructionAsync<
   TAccountPayer extends string,
   TAccountAta extends string,
@@ -240,6 +245,11 @@ export type CreateAssociatedTokenInput<
   /** SPL Token program. */
   tokenProgram?: Address<TAccountTokenProgram>;
 };
+
+/**
+ * Creates an associated token account for the given wallet address and
+ * token mint Returns an error if the account exists.
+ */
 
 export function getCreateAssociatedTokenInstruction<
   TAccountPayer extends string,

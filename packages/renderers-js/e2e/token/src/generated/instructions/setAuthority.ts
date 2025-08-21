@@ -126,6 +126,7 @@ export type SetAuthorityInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/** Sets a new authority of a mint or account. */
 export function getSetAuthorityInstruction<
   TAccountOwned extends string,
   TAccountOwner extends string,

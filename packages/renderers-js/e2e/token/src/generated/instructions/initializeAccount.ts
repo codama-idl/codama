@@ -104,6 +104,19 @@ export type InitializeAccountInput<
   rent?: Address<TAccountRent>;
 };
 
+/**
+ * Initializes a new account to hold tokens. If this account is associated
+ * with the native mint then the token balance of the initialized account
+ * will be equal to the amount of SOL in the account. If this account is
+ * associated with another mint, that mint must be initialized before this
+ * command can succeed.
+ *
+ * The `InitializeAccount` instruction requires no signers and MUST be
+ * included within the same Transaction as the system program's
+ * `CreateAccount` instruction that creates the account being initialized.
+ * Otherwise another party can acquire ownership of the uninitialized account.
+ */
+
 export function getInitializeAccountInstruction<
   TAccountAccount extends string,
   TAccountMint extends string,

@@ -116,6 +116,12 @@ export type TransferInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/**
+ * Transfers tokens from one account to another either directly or via a delegate.
+ * If this account is associated with the native mint then equal amounts
+ * of SOL and Tokens will be transferred to the destination account.
+ */
+
 export function getTransferInstruction<
   TAccountSource extends string,
   TAccountDestination extends string,

@@ -57,6 +57,7 @@ export type Instruction4Input = {
   myArgument: Instruction4InstructionDataArgs['myArgument'];
 };
 
+/** Testing instructions with arguments only */
 export function getInstruction4Instruction<
   TProgramAddress extends Address = typeof DUMMY_PROGRAM_ADDRESS,
 >(

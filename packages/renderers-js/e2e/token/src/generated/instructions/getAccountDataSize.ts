@@ -81,6 +81,14 @@ export type GetAccountDataSizeInput<TAccountMint extends string = string> = {
   mint: Address<TAccountMint>;
 };
 
+/**
+ * Gets the required size of an account for the given mint as a
+ * little-endian `u64`.
+ *
+ * Return data can be fetched using `sol_get_return_data` and deserializing
+ * the return data as a little-endian `u64`.
+ */
+
 export function getGetAccountDataSizeInstruction<
   TAccountMint extends string,
   TProgramAddress extends Address = typeof TOKEN_PROGRAM_ADDRESS,
