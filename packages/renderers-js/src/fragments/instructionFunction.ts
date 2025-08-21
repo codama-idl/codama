@@ -126,6 +126,7 @@ export function getInstructionFunctionFragment(
     return pipe(
         fragmentFromTemplate('instructionFunction.njk', {
             argsTypeFragment: argsTypeFragment.content,
+            docs: instructionNode.docs,
             encoderFunction,
             functionName,
             getReturnType,
