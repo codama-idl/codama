@@ -123,6 +123,15 @@ export type BurnCheckedInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/**
+ * Burns tokens by removing them from an account. `BurnChecked` does not
+ * support accounts associated with the native mint, use `CloseAccount` instead.
+ *
+ * This instruction differs from Burn in that the decimals value is checked
+ * by the caller. This may be useful when creating transactions offline or
+ * within a hardware wallet.
+ */
+
 export function getBurnCheckedInstruction<
   TAccountAccount extends string,
   TAccountMint extends string,

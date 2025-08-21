@@ -113,6 +113,13 @@ export type InitializeAccount2Input<
   owner: InitializeAccount2InstructionDataArgs['owner'];
 };
 
+/**
+ * Like InitializeAccount, but the owner pubkey is passed via instruction
+ * data rather than the accounts list. This variant may be preferable
+ * when using Cross Program Invocation from an instruction that does
+ * not need the owner's `AccountInfo` otherwise.
+ */
+
 export function getInitializeAccount2Instruction<
   TAccountAccount extends string,
   TAccountMint extends string,

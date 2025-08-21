@@ -65,6 +65,7 @@ export function getInstruction3InstructionDataCodec(): FixedSizeCodec<
 
 export type Instruction3Input = {};
 
+/** Testing instructions with discriminator only */
 export function getInstruction3Instruction<
   TProgramAddress extends Address = typeof DUMMY_PROGRAM_ADDRESS,
 >(config?: {
