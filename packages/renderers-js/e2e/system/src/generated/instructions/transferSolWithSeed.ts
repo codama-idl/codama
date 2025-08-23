@@ -38,7 +38,7 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const TRANSFER_SOL_WITH_SEED_DISCRIMINATOR: ReadonlyUint8Array = 11;
+export const TRANSFER_SOL_WITH_SEED_DISCRIMINATOR: number = 11;
 
 export function getTransferSolWithSeedDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(TRANSFER_SOL_WITH_SEED_DISCRIMINATOR);

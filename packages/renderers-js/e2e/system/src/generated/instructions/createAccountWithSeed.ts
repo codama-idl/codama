@@ -39,7 +39,7 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const CREATE_ACCOUNT_WITH_SEED_DISCRIMINATOR: ReadonlyUint8Array = 3;
+export const CREATE_ACCOUNT_WITH_SEED_DISCRIMINATOR: number = 3;
 
 export function getCreateAccountWithSeedDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(CREATE_ACCOUNT_WITH_SEED_DISCRIMINATOR);

@@ -27,7 +27,7 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const UPGRADE_NONCE_ACCOUNT_DISCRIMINATOR: ReadonlyUint8Array = 12;
+export const UPGRADE_NONCE_ACCOUNT_DISCRIMINATOR: number = 12;
 
 export function getUpgradeNonceAccountDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(UPGRADE_NONCE_ACCOUNT_DISCRIMINATOR);

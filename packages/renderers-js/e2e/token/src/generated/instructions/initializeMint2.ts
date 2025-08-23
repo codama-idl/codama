@@ -34,7 +34,7 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const INITIALIZE_MINT2_DISCRIMINATOR: ReadonlyUint8Array = 20;
+export const INITIALIZE_MINT2_DISCRIMINATOR: number = 20;
 
 export function getInitializeMint2DiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(INITIALIZE_MINT2_DISCRIMINATOR);

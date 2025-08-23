@@ -32,7 +32,7 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const CLOSE_ACCOUNT_DISCRIMINATOR: ReadonlyUint8Array = 9;
+export const CLOSE_ACCOUNT_DISCRIMINATOR: number = 9;
 
 export function getCloseAccountDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(CLOSE_ACCOUNT_DISCRIMINATOR);

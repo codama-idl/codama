@@ -34,7 +34,7 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const BURN_CHECKED_DISCRIMINATOR: ReadonlyUint8Array = 15;
+export const BURN_CHECKED_DISCRIMINATOR: number = 15;
 
 export function getBurnCheckedDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(BURN_CHECKED_DISCRIMINATOR);

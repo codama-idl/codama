@@ -27,7 +27,7 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const SYNC_NATIVE_DISCRIMINATOR: ReadonlyUint8Array = 17;
+export const SYNC_NATIVE_DISCRIMINATOR: number = 17;
 
 export function getSyncNativeDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(SYNC_NATIVE_DISCRIMINATOR);

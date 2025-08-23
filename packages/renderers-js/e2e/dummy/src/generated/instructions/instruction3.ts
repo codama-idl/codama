@@ -25,7 +25,7 @@ import {
 } from '@solana/kit';
 import { DUMMY_PROGRAM_ADDRESS } from '../programs';
 
-export const INSTRUCTION3_DISCRIMINATOR: ReadonlyUint8Array = 42;
+export const INSTRUCTION3_DISCRIMINATOR: number = 42;
 
 export function getInstruction3DiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(INSTRUCTION3_DISCRIMINATOR);

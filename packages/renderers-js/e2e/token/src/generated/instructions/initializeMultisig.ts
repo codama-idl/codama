@@ -29,7 +29,7 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const INITIALIZE_MULTISIG_DISCRIMINATOR: ReadonlyUint8Array = 2;
+export const INITIALIZE_MULTISIG_DISCRIMINATOR: number = 2;
 
 export function getInitializeMultisigDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(INITIALIZE_MULTISIG_DISCRIMINATOR);

@@ -30,7 +30,7 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const INITIALIZE_ACCOUNT3_DISCRIMINATOR: ReadonlyUint8Array = 18;
+export const INITIALIZE_ACCOUNT3_DISCRIMINATOR: number = 18;
 
 export function getInitializeAccount3DiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(INITIALIZE_ACCOUNT3_DISCRIMINATOR);

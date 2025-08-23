@@ -33,7 +33,7 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR: ReadonlyUint8Array = 5;
+export const WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR: number = 5;
 
 export function getWithdrawNonceAccountDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(WITHDRAW_NONCE_ACCOUNT_DISCRIMINATOR);

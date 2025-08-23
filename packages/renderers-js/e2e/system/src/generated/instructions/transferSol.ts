@@ -32,7 +32,7 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const TRANSFER_SOL_DISCRIMINATOR: ReadonlyUint8Array = 2;
+export const TRANSFER_SOL_DISCRIMINATOR: number = 2;
 
 export function getTransferSolDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(TRANSFER_SOL_DISCRIMINATOR);
