@@ -98,10 +98,11 @@ function getConstantFragment(
 
     return mergeFragments(
         [
-            mapFragmentContent(value, c => `export const ${constantName} = ${c};`),
+            mapFragmentContent(value, c => `export const ${constantName}: ReadonlyUint8Array = ${c};`),
             mapFragmentContent(
                 encoder,
-                c => `export function ${constantFunction}() { return ${c}.encode(${constantName}); }`,
+                c =>
+                    `export function ${constantFunction}(): ReadonlyUint8Array { return ${c}.encode(${constantName}); }`,
             ),
         ],
         c => c.join('\n\n'),
