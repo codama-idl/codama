@@ -32,9 +32,9 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const FREEZE_ACCOUNT_DISCRIMINATOR = 10;
+export const FREEZE_ACCOUNT_DISCRIMINATOR: ReadonlyUint8Array = 10;
 
-export function getFreezeAccountDiscriminatorBytes() {
+export function getFreezeAccountDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(FREEZE_ACCOUNT_DISCRIMINATOR);
 }
 

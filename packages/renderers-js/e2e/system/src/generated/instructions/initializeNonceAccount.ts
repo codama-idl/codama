@@ -30,9 +30,9 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const INITIALIZE_NONCE_ACCOUNT_DISCRIMINATOR = 6;
+export const INITIALIZE_NONCE_ACCOUNT_DISCRIMINATOR: ReadonlyUint8Array = 6;
 
-export function getInitializeNonceAccountDiscriminatorBytes() {
+export function getInitializeNonceAccountDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(INITIALIZE_NONCE_ACCOUNT_DISCRIMINATOR);
 }
 

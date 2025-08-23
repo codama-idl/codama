@@ -32,9 +32,9 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const REVOKE_DISCRIMINATOR = 5;
+export const REVOKE_DISCRIMINATOR: ReadonlyUint8Array = 5;
 
-export function getRevokeDiscriminatorBytes() {
+export function getRevokeDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(REVOKE_DISCRIMINATOR);
 }
 

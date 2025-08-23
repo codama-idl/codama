@@ -31,9 +31,9 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const ALLOCATE_DISCRIMINATOR = 8;
+export const ALLOCATE_DISCRIMINATOR: ReadonlyUint8Array = 8;
 
-export function getAllocateDiscriminatorBytes() {
+export function getAllocateDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(ALLOCATE_DISCRIMINATOR);
 }
 

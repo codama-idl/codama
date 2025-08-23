@@ -32,9 +32,9 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const THAW_ACCOUNT_DISCRIMINATOR = 11;
+export const THAW_ACCOUNT_DISCRIMINATOR: ReadonlyUint8Array = 11;
 
-export function getThawAccountDiscriminatorBytes() {
+export function getThawAccountDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(THAW_ACCOUNT_DISCRIMINATOR);
 }
 

@@ -36,9 +36,9 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
-export const CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR = 0;
+export const CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR: ReadonlyUint8Array = 0;
 
-export function getCreateAssociatedTokenDiscriminatorBytes() {
+export function getCreateAssociatedTokenDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(CREATE_ASSOCIATED_TOKEN_DISCRIMINATOR);
 }
 

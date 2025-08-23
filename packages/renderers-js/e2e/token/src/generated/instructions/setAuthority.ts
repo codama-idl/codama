@@ -44,9 +44,9 @@ import {
   type AuthorityTypeArgs,
 } from '../types';
 
-export const SET_AUTHORITY_DISCRIMINATOR = 6;
+export const SET_AUTHORITY_DISCRIMINATOR: ReadonlyUint8Array = 6;
 
-export function getSetAuthorityDiscriminatorBytes() {
+export function getSetAuthorityDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(SET_AUTHORITY_DISCRIMINATOR);
 }
 

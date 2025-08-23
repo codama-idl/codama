@@ -34,9 +34,9 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const TRANSFER_CHECKED_DISCRIMINATOR = 12;
+export const TRANSFER_CHECKED_DISCRIMINATOR: ReadonlyUint8Array = 12;
 
-export function getTransferCheckedDiscriminatorBytes() {
+export function getTransferCheckedDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(TRANSFER_CHECKED_DISCRIMINATOR);
 }
 

@@ -32,9 +32,9 @@ import {
 import { SYSTEM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const AUTHORIZE_NONCE_ACCOUNT_DISCRIMINATOR = 7;
+export const AUTHORIZE_NONCE_ACCOUNT_DISCRIMINATOR: ReadonlyUint8Array = 7;
 
-export function getAuthorizeNonceAccountDiscriminatorBytes() {
+export function getAuthorizeNonceAccountDiscriminatorBytes(): ReadonlyUint8Array {
   return getU32Encoder().encode(AUTHORIZE_NONCE_ACCOUNT_DISCRIMINATOR);
 }
 

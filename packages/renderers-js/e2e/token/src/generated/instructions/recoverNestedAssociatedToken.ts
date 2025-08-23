@@ -36,9 +36,9 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
-export const RECOVER_NESTED_ASSOCIATED_TOKEN_DISCRIMINATOR = 2;
+export const RECOVER_NESTED_ASSOCIATED_TOKEN_DISCRIMINATOR: ReadonlyUint8Array = 2;
 
-export function getRecoverNestedAssociatedTokenDiscriminatorBytes() {
+export function getRecoverNestedAssociatedTokenDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(RECOVER_NESTED_ASSOCIATED_TOKEN_DISCRIMINATOR);
 }
 

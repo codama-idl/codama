@@ -27,9 +27,9 @@ import {
 import { TOKEN_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const INITIALIZE_IMMUTABLE_OWNER_DISCRIMINATOR = 22;
+export const INITIALIZE_IMMUTABLE_OWNER_DISCRIMINATOR: ReadonlyUint8Array = 22;
 
-export function getInitializeImmutableOwnerDiscriminatorBytes() {
+export function getInitializeImmutableOwnerDiscriminatorBytes(): ReadonlyUint8Array {
   return getU8Encoder().encode(INITIALIZE_IMMUTABLE_OWNER_DISCRIMINATOR);
 }
 
