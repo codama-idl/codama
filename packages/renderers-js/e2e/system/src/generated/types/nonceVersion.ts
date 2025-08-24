@@ -24,6 +24,11 @@ export enum NonceVersion {
 
 export type NonceVersionArgs = NonceVersion;
 
+export const NONCE_VERSION_LABELS: Record<NonceVersion, string> = {
+  [NonceVersion.Legacy]: 'Legacy',
+  [NonceVersion.Current]: 'Current',
+};
+
 export function getNonceVersionEncoder(): FixedSizeEncoder<NonceVersionArgs> {
   return getEnumEncoder(NonceVersion, { size: getU32Encoder() });
 }

@@ -24,6 +24,13 @@ export enum AuthorityType {
 
 export type AuthorityTypeArgs = AuthorityType;
 
+export const AUTHORITY_TYPE_LABELS: Record<AuthorityType, string> = {
+  [AuthorityType.MintTokens]: 'MintTokens',
+  [AuthorityType.FreezeAccount]: 'FreezeAccount',
+  [AuthorityType.AccountOwner]: 'AccountOwner',
+  [AuthorityType.CloseAccount]: 'CloseAccount',
+};
+
 export function getAuthorityTypeEncoder(): FixedSizeEncoder<AuthorityTypeArgs> {
   return getEnumEncoder(AuthorityType);
 }

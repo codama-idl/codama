@@ -5,6 +5,11 @@
 export enum {{ strictName }} {{ manifest.strictType.content }};
 
 export type {{ looseName }} = {{ strictName }};
+
+export const {{ labelsName }}: Record<{{ strictName }}, string> = {
+{{ labelsFragment.content }}
+};
+
 {% else %}
 export type {{ strictName }} = {{ manifest.strictType.content }};
 

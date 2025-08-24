@@ -24,6 +24,11 @@ export enum NonceState {
 
 export type NonceStateArgs = NonceState;
 
+export const NONCE_STATE_LABELS: Record<NonceState, string> = {
+  [NonceState.Uninitialized]: 'Uninitialized',
+  [NonceState.Initialized]: 'Initialized',
+};
+
 export function getNonceStateEncoder(): FixedSizeEncoder<NonceStateArgs> {
   return getEnumEncoder(NonceState, { size: getU32Encoder() });
 }

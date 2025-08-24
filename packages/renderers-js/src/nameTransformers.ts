@@ -30,6 +30,7 @@ export type NameTransformerKey =
     | 'discriminatedUnionFunction'
     | 'discriminatedUnionVariant'
     | 'encoderFunction'
+    | 'enumLabels'
     | 'enumVariant'
     | 'instructionAsyncFunction'
     | 'instructionAsyncInputType'
@@ -96,6 +97,7 @@ export const DEFAULT_NAME_TRANSFORMERS: NameTransformers = {
     discriminatedUnionFunction: name => `${camelCase(name)}`,
     discriminatedUnionVariant: name => `${pascalCase(name)}`,
     encoderFunction: name => `get${pascalCase(name)}Encoder`,
+    enumLabels: name => `${snakeCase(name).toUpperCase()}_LABELS`,
     enumVariant: name => `${pascalCase(name)}`,
     instructionAsyncFunction: name => `get${pascalCase(name)}InstructionAsync`,
     instructionAsyncInputType: name => `${pascalCase(name)}AsyncInput`,
