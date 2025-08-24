@@ -1,0 +1,149 @@
+{
+    "kind": "rootNode",
+    "program": {
+      "kind": "programNode",
+      "pdas": [],
+      "accounts": [],
+      "instructions": [
+        {
+          "kind": "instructionNode",
+          "name": "instruction1",
+          "optionalAccountStrategy": "programId",
+          "docs": ["Testing instructions with no accounts or arguments"],
+          "accounts": [],
+          "arguments": [],
+          "remainingAccounts": []
+        },
+        {
+          "kind": "instructionNode",
+          "name": "instruction2",
+          "optionalAccountStrategy": "programId",
+          "docs": ["Testing instructions with remaining accounts only"],
+          "accounts": [],
+          "arguments": [],
+          "remainingAccounts": [
+            {
+              "kind": "instructionRemainingAccountsNode",
+              "value": {
+                "kind": "argumentValueNode",
+                "name": "remainingAccounts"
+              },
+              "isOptional": true,
+              "isSigner": false
+            }
+          ]
+        },
+        {
+          "kind": "instructionNode",
+          "name": "instruction3",
+          "optionalAccountStrategy": "programId",
+          "docs": ["Testing instructions with discriminator only"],
+          "accounts": [],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "docs": [],
+              "defaultValue": { "kind": "numberValueNode", "number": 42 },
+              "defaultValueStrategy": "omitted"
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "kind": "instructionNode",
+          "name": "instruction4",
+          "optionalAccountStrategy": "programId",
+          "docs": ["Testing instructions with arguments only"],
+          "accounts": [],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "myArgument",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": []
+            }
+          ]
+        },
+        {
+          "kind": "instructionNode",
+          "name": "instruction5",
+          "optionalAccountStrategy": "programId",
+          "docs": ["Testing instructions with optional arguments only"],
+          "accounts": [],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "myArgument",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "defaultValue": { "kind": "numberValueNode", "number": 42 },
+              "docs": []
+            }
+          ]
+        },
+        {
+          "kind": "instructionNode",
+          "name": "instruction6",
+          "optionalAccountStrategy": "programId",
+          "docs": ["Testing instructions with accounts only"],
+          "accounts": [
+            {
+              "kind": "instructionAccountNode",
+              "name": "myAccount",
+              "isWritable": true,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": []
+            }
+          ],
+          "arguments": []
+        },
+        {
+          "kind": "instructionNode",
+          "name": "instruction7",
+          "optionalAccountStrategy": "programId",
+          "docs": ["Testing instructions with optional accounts only"],
+          "accounts": [
+            {
+              "kind": "instructionAccountNode",
+              "name": "myAccount",
+              "isWritable": true,
+              "isSigner": false,
+              "isOptional": true,
+              "docs": []
+            }
+          ],
+          "arguments": []
+        }
+      ],
+      "definedTypes": [],
+      "errors": [],
+      "name": "dummy",
+      "prefix": "",
+      "publicKey": "Dummy11111111111111111111111111111111111111",
+      "version": "3.0.1",
+      "origin": "shank"
+    },
+    "additionalPrograms": [],
+    "standard": "codama",
+    "version": "1.0.0"
+  }
