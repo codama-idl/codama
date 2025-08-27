@@ -13,7 +13,7 @@
         "@changesets/cli": "^2.29.6",
         "@codama/internals": "workspace:*",
         "@eslint/js": "^9.34.0",
-        "@eslint/json": "^0.13.1",
+        "@eslint/json": "^0.13.2",
         "@solana/eslint-config-solana": "^4.0.0",
         "@solana/prettier-config-solana": "0.0.5",
         "@types/node": "^24",
