@@ -1,0 +1,7 @@
+{% for pda in pdasToExport %}
+pub mod {{ pda.name | snakeCase }};
+{% endfor %}
+
+{% for pda in pdasToExport %}
+pub use self::{{ pda.name | snakeCase }}::*;
+{% endfor %}

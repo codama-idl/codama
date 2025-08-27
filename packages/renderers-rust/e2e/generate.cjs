@@ -19,7 +19,7 @@ async function main() {
 
 async function generateProject(project) {
     const idl = readJson(path.join(__dirname, project, 'idl.json'));
-    const node = rootNode(idl.program);
+    const node = rootNode(idl.program, idl.additionalPrograms);
     visit(
         node,
         renderVisitor(path.join(__dirname, project, 'src', 'generated'), {
