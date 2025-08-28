@@ -44,7 +44,7 @@
         "@codama/renderers-core": "workspace:*",
         "@codama/visitors-core": "workspace:*",
         "@codama/renderers-rust": "workspace:*",
-        "@solana/codecs-strings": "^2.3.0",
+        "@solana/codecs-strings": "^3.0.0",
         "nunjucks": "^3.2.4"
     },
     "devDependencies": {
