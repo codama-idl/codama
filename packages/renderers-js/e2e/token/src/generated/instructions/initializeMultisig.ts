@@ -106,6 +106,20 @@ export type InitializeMultisigInput<
   signers: Array<Address>;
 };
 
+/**
+ * Initializes a multisignature account with N provided signers.
+ *
+ * Multisignature accounts can used in place of any single owner/delegate
+ * accounts in any token instruction that require an owner/delegate to be
+ * present. The variant field represents the number of signers (M)
+ * required to validate this multisignature account.
+ *
+ * The `InitializeMultisig` instruction requires no signers and MUST be
+ * included within the same Transaction as the system program's
+ * `CreateAccount` instruction that creates the account being initialized.
+ * Otherwise another party can acquire ownership of the uninitialized account.
+ */
+
 export function getInitializeMultisigInstruction<
   TAccountMultisig extends string,
   TAccountRent extends string,

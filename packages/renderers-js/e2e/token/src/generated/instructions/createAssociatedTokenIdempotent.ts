@@ -134,6 +134,12 @@ export type CreateAssociatedTokenIdempotentAsyncInput<
   tokenProgram?: Address<TAccountTokenProgram>;
 };
 
+/**
+ * Creates an associated token account for the given wallet address and
+ * token mint, if it doesn't already exist. Returns an error if the
+ * account exists, but with a different owner.
+ */
+
 export async function getCreateAssociatedTokenIdempotentInstructionAsync<
   TAccountPayer extends string,
   TAccountAta extends string,
@@ -244,6 +250,12 @@ export type CreateAssociatedTokenIdempotentInput<
   /** SPL Token program. */
   tokenProgram?: Address<TAccountTokenProgram>;
 };
+
+/**
+ * Creates an associated token account for the given wallet address and
+ * token mint, if it doesn't already exist. Returns an error if the
+ * account exists, but with a different owner.
+ */
 
 export function getCreateAssociatedTokenIdempotentInstruction<
   TAccountPayer extends string,

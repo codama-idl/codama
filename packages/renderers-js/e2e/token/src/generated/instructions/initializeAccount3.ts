@@ -104,6 +104,7 @@ export type InitializeAccount3Input<
   owner: InitializeAccount3InstructionDataArgs['owner'];
 };
 
+/** Like InitializeAccount2, but does not require the Rent sysvar to be provided. */
 export function getInitializeAccount3Instruction<
   TAccountAccount extends string,
   TAccountMint extends string,
