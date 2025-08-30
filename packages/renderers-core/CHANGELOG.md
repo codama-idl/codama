@@ -1,5 +1,13 @@
 # @codama/renderers-core
 
+## 1.1.0
+
+### Minor Changes
+
+- [#787](https://github.com/codama-idl/codama/pull/787) [`d6e2349`](https://github.com/codama-idl/codama/commit/d6e23493ee0228765ec3dbdb5c0ff9e712394b29) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add new path helpers and refactor fs helpers.
+
+- [#788](https://github.com/codama-idl/codama/pull/788) [`44f725e`](https://github.com/codama-idl/codama/commit/44f725e8243edb19b60a3f046974aaef87563f93) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Refactor fragments and render maps so that they are functional and immutable.
+
 ## 1.0.19
 
 ### Patch Changes
