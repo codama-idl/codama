@@ -141,6 +141,11 @@ export function getByteSizeVisitor(
                     return 32;
                 },
 
+                visitRemainderOptionType(node, { self }) {
+                    const itemSize = visit(node.item, self);
+                    return itemSize === 0 ? 0 : null;
+                },
+
                 visitSetType(node, { self }) {
                     if (!isNode(node.count, 'fixedCountNode')) return null;
                     const count = node.count.value;

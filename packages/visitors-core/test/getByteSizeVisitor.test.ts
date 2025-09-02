@@ -17,6 +17,7 @@ import {
     programNode,
     publicKeyTypeNode,
     remainderCountNode,
+    remainderOptionTypeNode,
     rootNode,
     setTypeNode,
     stringTypeNode,
@@ -133,6 +134,11 @@ test('it returns null for array-like nodes with `RemainderCountNodes`', () => {
     expectSize(arrayTypeNode(numberTypeNode('u16'), remainderCountNode()), null);
     expectSize(setTypeNode(numberTypeNode('u16'), remainderCountNode()), null);
     expectSize(mapTypeNode(numberTypeNode('u16'), numberTypeNode('u8'), remainderCountNode()), null);
+});
+
+test('it returns null with visiting remainder option types', () => {
+    expectSize(remainderOptionTypeNode(stringTypeNode('utf8')), null);
+    expectSize(remainderOptionTypeNode(numberTypeNode('u16')), null);
 });
 
 test('it follows linked nodes using the correct paths', () => {
