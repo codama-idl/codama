@@ -1,5 +1,15 @@
 # @codama/visitors-core
 
+## 1.3.4
+
+### Patch Changes
+
+- [#813](https://github.com/codama-idl/codama/pull/813) [`1f9f614`](https://github.com/codama-idl/codama/commit/1f9f614d3ed02439135a6037343f139e8a127c48) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix size computation of the `RemainderOptionTypeNode`. This node should always be of variable size unless the item it wraps is of size 0.
+
+- Updated dependencies []:
+    - @codama/errors@1.3.4
+    - @codama/nodes@1.3.4
+
 ## 1.3.3
 
 ### Patch Changes

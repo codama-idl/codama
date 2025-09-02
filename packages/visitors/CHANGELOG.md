@@ -1,5 +1,14 @@
 # @codama/visitors
 
+## 1.3.4
+
+### Patch Changes
+
+- Updated dependencies [[`1f9f614`](https://github.com/codama-idl/codama/commit/1f9f614d3ed02439135a6037343f139e8a127c48)]:
+    - @codama/visitors-core@1.3.4
+    - @codama/errors@1.3.4
+    - @codama/nodes@1.3.4
+
 ## 1.3.3
 
 ### Patch Changes

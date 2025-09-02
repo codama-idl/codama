@@ -1,5 +1,13 @@
 # @codama/nodes
 
+## 1.3.4
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.3.4
+    - @codama/node-types@1.3.4
+
 ## 1.3.3
 
 ### Patch Changes
