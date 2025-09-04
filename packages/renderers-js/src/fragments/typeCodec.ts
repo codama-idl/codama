@@ -1,14 +1,11 @@
 import type { TypeNode } from '@codama/nodes';
-import { pipe } from '@codama/visitors-core';
 
-import { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { TypeManifest } from '../TypeManifest';
-import { addFragmentImports, Fragment, fragmentFromTemplate, mergeFragments } from '../utils';
+import { Fragment, fragment, getDocblockFragment, mergeFragments, RenderScope, TypeManifest, use } from '../utils';
 import { getTypeDecoderFragment } from './typeDecoder';
 import { getTypeEncoderFragment } from './typeEncoder';
 
 export function getTypeCodecFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         codecDocs?: string[];
         decoderDocs?: string[];
         encoderDocs?: string[];
@@ -18,25 +15,23 @@ export function getTypeCodecFragment(
         size: number | null;
     },
 ): Fragment {
-    const { name, manifest, nameApi } = scope;
-    const codecType = typeof scope.size === 'number' ? 'FixedSizeCodec' : 'Codec';
+    const { codecDocs = [], name, nameApi } = scope;
+    const codecFunction = nameApi.codecFunction(name);
+    const decoderFunction = nameApi.decoderFunction(name);
+    const encoderFunction = nameApi.encoderFunction(name);
+    const looseName = nameApi.dataArgsType(name);
+    const strictName = nameApi.dataType(name);
+
+    const docblock = getDocblockFragment(codecDocs, true);
+    const codecType = use(typeof scope.size === 'number' ? 'type FixedSizeCodec' : 'type Codec', 'solanaCodecsCore');
+
     return mergeFragments(
         [
             getTypeEncoderFragment({ ...scope, docs: scope.encoderDocs }),
             getTypeDecoderFragment({ ...scope, docs: scope.decoderDocs }),
-            pipe(
-                fragmentFromTemplate('typeCodec.njk', {
-                    codecFunction: nameApi.codecFunction(name),
-                    codecType,
-                    decoderFunction: nameApi.decoderFunction(name),
-                    docs: scope.codecDocs,
-                    encoderFunction: nameApi.encoderFunction(name),
-                    looseName: nameApi.dataArgsType(name),
-                    manifest,
-                    strictName: nameApi.dataType(name),
-                }),
-                f => addFragmentImports(f, 'solanaCodecsCore', [`type ${codecType}`, 'combineCodec']),
-            ),
+            fragment`${docblock}export function ${codecFunction}(): ${codecType}<${looseName}, ${strictName}> {
+    return ${use('combineCodec', 'solanaCodecsCore')}(${encoderFunction}(), ${decoderFunction}());
+}`,
         ],
         renders => renders.join('\n\n'),
     );

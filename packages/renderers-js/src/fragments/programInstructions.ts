@@ -7,16 +7,16 @@ import {
 import { mapFragmentContent } from '@codama/renderers-core';
 import { pipe } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
+import { addFragmentImports, Fragment, fragment, mergeFragments, RenderScope, use } from '../utils';
 import { getDiscriminatorConditionFragment } from './discriminatorCondition';
 
 export function getProgramInstructionsFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'renderParentInstructions' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'renderParentInstructions' | 'typeManifestVisitor'> & {
         programNode: ProgramNode;
     },
-): Fragment {
-    if (scope.programNode.instructions.length === 0) return fragment('');
+): Fragment | undefined {
+    if (scope.programNode.instructions.length === 0) return;
+
     const allInstructions = getAllInstructionsWithSubs(scope.programNode, {
         leavesOnly: !scope.renderParentInstructions,
         subInstructionsFirst: true,
@@ -28,12 +28,12 @@ export function getProgramInstructionsFragment(
             getProgramInstructionsIdentifierFunctionFragment(scopeWithInstructions),
             getProgramInstructionsParsedUnionTypeFragment(scopeWithInstructions),
         ],
-        c => `${c.join('\n\n')}\n`,
+        c => c.join('\n\n'),
     );
 }
 
 function getProgramInstructionsEnumFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         allInstructions: InstructionNode[];
         programNode: ProgramNode;
     },
@@ -43,23 +43,21 @@ function getProgramInstructionsEnumFragment(
     const programInstructionsEnumVariants = allInstructions.map(instruction =>
         nameApi.programInstructionsEnumVariant(instruction.name),
     );
-    return fragment(
-        `export enum ${programInstructionsEnum} { ` + `${programInstructionsEnumVariants.join(', ')}` + ` }`,
-    );
+    return fragment`export enum ${programInstructionsEnum} { ${programInstructionsEnumVariants.join(', ')} }`;
 }
 
 function getProgramInstructionsIdentifierFunctionFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         allInstructions: InstructionNode[];
         programNode: ProgramNode;
     },
-): Fragment {
+): Fragment | undefined {
     const { programNode, nameApi, allInstructions } = scope;
     const instructionsWithDiscriminators = allInstructions.filter(
         instruction => (instruction.discriminators ?? []).length > 0,
     );
     const hasInstructionDiscriminators = instructionsWithDiscriminators.length > 0;
-    if (!hasInstructionDiscriminators) return fragment('');
+    if (!hasInstructionDiscriminators) return;
 
     const programInstructionsEnum = nameApi.programInstructionsEnum(programNode.name);
     const programInstructionsIdentifierFunction = nameApi.programInstructionsIdentifierFunction(programNode.name);
@@ -96,7 +94,7 @@ function getProgramInstructionsIdentifierFunctionFragment(
 }
 
 function getProgramInstructionsParsedUnionTypeFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         allInstructions: InstructionNode[];
         programNode: ProgramNode;
     },
@@ -104,25 +102,22 @@ function getProgramInstructionsParsedUnionTypeFragment(
     const { programNode, allInstructions, nameApi } = scope;
 
     const programAddress = programNode.publicKey;
-
     const programInstructionsType = nameApi.programInstructionsParsedUnionType(programNode.name);
     const programInstructionsEnum = nameApi.programInstructionsEnum(programNode.name);
 
     const typeVariants = allInstructions.map((instruction): Fragment => {
         const instructionEnumVariant = nameApi.programInstructionsEnumVariant(instruction.name);
-        const parsedInstructionType = nameApi.instructionParsedType(instruction.name);
-
-        return pipe(
-            fragment(
-                `| { instructionType: ${programInstructionsEnum}.${instructionEnumVariant} } & ${parsedInstructionType}<TProgram>`,
-            ),
-            f => addFragmentImports(f, 'generatedInstructions', [`type ${parsedInstructionType}`]),
+        const parsedInstructionType = use(
+            `type ${nameApi.instructionParsedType(instruction.name)}`,
+            'generatedInstructions',
         );
+
+        return fragment`| { instructionType: ${programInstructionsEnum}.${instructionEnumVariant} } & ${parsedInstructionType}<TProgram>`;
     });
 
     return mergeFragments(
         [
-            fragment(`export type ${programInstructionsType}<TProgram extends string = '${programAddress}'> =`),
+            fragment`export type ${programInstructionsType}<TProgram extends string = '${programAddress}'> =`,
             ...typeVariants,
         ],
         c => c.join('\n'),

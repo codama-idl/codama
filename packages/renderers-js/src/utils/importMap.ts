@@ -1,6 +1,3 @@
-import { TypeManifest } from './TypeManifest';
-import { Fragment } from './utils';
-
 const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaAccounts: '@solana/kit',
     solanaAddresses: '@solana/kit',
@@ -72,9 +69,8 @@ export class ImportMap {
         return this;
     }
 
-    mergeWith(...others: (Fragment | ImportMap)[]): ImportMap {
-        others.forEach(rawOther => {
-            const other = 'imports' in rawOther ? rawOther.imports : rawOther;
+    mergeWith(...others: ImportMap[]): ImportMap {
+        others.forEach(other => {
             other._imports.forEach((imports, module) => {
                 this.add(module, imports);
             });
@@ -85,10 +81,6 @@ export class ImportMap {
             });
         });
         return this;
-    }
-
-    mergeWithManifest(manifest: TypeManifest): ImportMap {
-        return this.mergeWith(manifest.strictType, manifest.looseType, manifest.encoder, manifest.decoder);
     }
 
     addAlias(module: string, name: string, alias: string): ImportMap {

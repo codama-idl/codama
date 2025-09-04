@@ -5,15 +5,12 @@ import {
     getLastNodeFromPath,
     LinkableDictionary,
     NodePath,
-    pipe,
 } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { ImportMap } from '../ImportMap';
-import { Fragment, fragment, mergeFragmentImports } from '../utils';
+import { Fragment, fragment, RenderScope, use } from '../utils';
 
 export function getInstructionAccountTypeParamFragment(
-    scope: Pick<GlobalFragmentScope, 'linkables'> & {
+    scope: Pick<RenderScope, 'linkables'> & {
         allowAccountMeta: boolean;
         instructionAccountPath: NodePath<InstructionAccountNode>;
     },
@@ -23,23 +20,16 @@ export function getInstructionAccountTypeParamFragment(
     const instructionNode = findInstructionNodeFromPath(instructionAccountPath)!;
     const programNode = findProgramNodeFromPath(instructionAccountPath)!;
     const typeParam = `TAccount${pascalCase(instructionAccountNode.name)}`;
-    const accountMeta = allowAccountMeta ? ' | AccountMeta<string>' : '';
-    const imports = new ImportMap();
-    if (allowAccountMeta) {
-        imports.add('solanaInstructions', 'type AccountMeta');
-    }
+    const accountMeta = allowAccountMeta
+        ? fragment` | ${use('type AccountMeta', 'solanaInstructions')}<string>`
+        : undefined;
 
     if (instructionNode.optionalAccountStrategy === 'omitted' && instructionAccountNode.isOptional) {
-        return pipe(fragment(`${typeParam} extends string${accountMeta} | undefined = undefined`), f =>
-            mergeFragmentImports(f, [imports]),
-        );
+        return fragment`${typeParam} extends string${accountMeta} | undefined = undefined`;
     }
 
     const defaultAddress = getDefaultAddress(instructionAccountNode.defaultValue, programNode.publicKey, linkables);
-
-    return pipe(fragment(`${typeParam} extends string${accountMeta} = ${defaultAddress}`), f =>
-        mergeFragmentImports(f, [imports]),
-    );
+    return fragment`${typeParam} extends string${accountMeta} = ${defaultAddress}`;
 }
 
 function getDefaultAddress(
