@@ -1,5 +1,12 @@
 # @codama/renderers-js-umi
 
+## 1.1.21
+
+### Patch Changes
+
+- Updated dependencies [[`5282efe`](https://github.com/codama-idl/codama/commit/5282efe3ad56083e0210d3e76e5834690335fa42)]:
+    - @codama/renderers-core@1.1.1
+
 ## 1.1.20
 
 ### Patch Changes
