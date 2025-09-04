@@ -1,12 +1,11 @@
 import { isNode, isNodeFilter, PdaNode } from '@codama/nodes';
 import { findProgramNodeFromPath, getLastNodeFromPath, NodePath, pipe, visit } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
-import { addFragmentImports, Fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
+import { addFragmentImports, Fragment, fragmentFromTemplate, mergeFragmentImports, RenderScope } from '../utils';
 
 export function getPdaFunctionFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         pdaPath: NodePath<PdaNode>;
     },
 ): Fragment {

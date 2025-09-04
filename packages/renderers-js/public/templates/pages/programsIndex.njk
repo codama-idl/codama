@@ -1,9 +1,0 @@
-{% extends "layout.njk" %}
-
-{% block main %}
-{% for program in programsToExport | sort(false, false, 'name') %}
-export * from './{{ program.name | camelCase }}';
-{% else %}
-export default {};
-{% endfor %}
-{% endblock %}

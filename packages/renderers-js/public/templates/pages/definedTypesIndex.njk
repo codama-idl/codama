@@ -1,9 +1,0 @@
-{% extends "layout.njk" %}
-
-{% block main %}
-{% for definedType in definedTypesToExport | sort(false, false, 'name') %}
-export * from './{{ definedType.name | camelCase }}';
-{% else %}
-export default {};
-{% endfor %}
-{% endblock %}

@@ -1,13 +1,10 @@
 import { ProgramNode } from '@codama/nodes';
 import { pipe } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { addFragmentImports, Fragment, fragmentFromTemplate } from '../utils';
+import { addFragmentImports, Fragment, fragmentFromTemplate, getPageFragment, RenderScope } from '../utils';
 
-export function getProgramErrorsFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
-        programNode: ProgramNode;
-    },
+export function getErrorPageFragment(
+    scope: Pick<RenderScope, 'dependencyMap' | 'nameApi' | 'useGranularImports'> & { programNode: ProgramNode },
 ): Fragment {
     const { programNode, nameApi } = scope;
     const programAddressConstant = nameApi.programAddressConstant(programNode.name);
@@ -28,5 +25,6 @@ export function getProgramErrorsFragment(
         f =>
             addFragmentImports(f, 'solanaErrors', ['type SolanaError', 'type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM']),
         f => addFragmentImports(f, 'solanaAddresses', ['type Address']),
+        f => getPageFragment(f, scope),
     );
 }

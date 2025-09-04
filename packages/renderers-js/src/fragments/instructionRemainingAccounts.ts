@@ -8,18 +8,25 @@ import {
 } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { addFragmentFeatures, addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
+import {
+    addFragmentFeatures,
+    addFragmentImports,
+    Fragment,
+    fragment,
+    mergeFragments,
+    RenderScope,
+    use,
+} from '../utils';
 
 export function getInstructionRemainingAccountsFragment(
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
+    scope: Pick<RenderScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         instructionPath: NodePath<InstructionNode>;
         useAsync: boolean;
     },
-): Fragment {
+): Fragment | undefined {
     const { remainingAccounts } = getLastNodeFromPath(scope.instructionPath);
     const fragments = (remainingAccounts ?? []).flatMap(a => getRemainingAccountsFragment(a, scope));
-    if (fragments.length === 0) return fragment('');
+    if (fragments.length === 0) return;
     return pipe(
         mergeFragments(
             fragments,
@@ -33,7 +40,7 @@ export function getInstructionRemainingAccountsFragment(
 
 function getRemainingAccountsFragment(
     remainingAccounts: InstructionRemainingAccountsNode,
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
+    scope: Pick<RenderScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         instructionPath: NodePath<InstructionNode>;
         useAsync: boolean;
     },
@@ -62,8 +69,9 @@ function getArgumentValueNodeFragment(
     const isOptional = remainingAccounts.isOptional ?? false;
     const isSigner = remainingAccounts.isSigner ?? false;
     const isWritable = remainingAccounts.isWritable ?? false;
-    const nonSignerRole = isWritable ? 'AccountRole.WRITABLE' : 'AccountRole.READONLY';
-    const signerRole = isWritable ? 'AccountRole.WRITABLE_SIGNER' : 'AccountRole.READONLY_SIGNER';
+    const accountRole = use('AccountRole', 'solanaInstructions');
+    const nonSignerRole = isWritable ? fragment`${accountRole}.WRITABLE` : fragment`${accountRole}.READONLY`;
+    const signerRole = isWritable ? fragment`${accountRole}.WRITABLE_SIGNER` : fragment`${accountRole}.READONLY_SIGNER`;
     const role = isSigner === true ? signerRole : nonSignerRole;
     const argumentArray = isOptional ? `(args.${argumentName} ?? [])` : `args.${argumentName}`;
 
@@ -71,36 +79,21 @@ function getArgumentValueNodeFragment(
     const allArguments = getAllInstructionArguments(instructionNode);
     const argumentExists = allArguments.some(arg => arg.name === remainingAccounts.value.name);
     if (argumentExists || isSigner === false) {
-        return pipe(fragment(`${argumentArray}.map((address) => ({ address, role: ${role} }))`), f =>
-            addFragmentImports(f, 'solanaInstructions', ['AccountRole']),
-        );
+        return fragment`${argumentArray}.map((address) => ({ address, role: ${role} }))`;
     }
 
     // The argument was added as `Array<TransactionSigner | Address>`.
     if (isSigner === 'either') {
-        return pipe(
-            fragment(
-                `${argumentArray}.map((addressOrSigner) => (` +
-                    `isTransactionSigner(addressOrSigner)\n` +
-                    `? { address: addressOrSigner.address, role: ${role}, signer: addressOrSigner }\n` +
-                    `: { address: addressOrSigner, role: ${role} }\n` +
-                    `))`,
-            ),
-            f => addFragmentImports(f, 'solanaInstructions', ['AccountRole']),
-            f => addFragmentImports(f, 'shared', ['isTransactionSigner']),
-        );
+        return fragment`${argumentArray}.map((addressOrSigner) => (${use('isTransactionSigner', 'shared')}(addressOrSigner) ? { address: addressOrSigner.address, role: ${role}, signer: addressOrSigner } : { address: addressOrSigner, role: ${role} }))`;
     }
 
     // The argument was added as `Array<TransactionSigner>`.
-    return pipe(
-        fragment(`${argumentArray}.map((signer) => ({ address: signer.address, role: ${signerRole}, signer }))`),
-        f => addFragmentImports(f, 'solanaInstructions', ['AccountRole']),
-    );
+    return fragment`${argumentArray}.map((signer) => ({ address: signer.address, role: ${signerRole}, signer }))`;
 }
 
 function getResolverValueNodeFragment(
     remainingAccounts: InstructionRemainingAccountsNode,
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
+    scope: Pick<RenderScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi'> & {
         useAsync: boolean;
     },
 ): Fragment | null {
@@ -109,11 +102,11 @@ function getResolverValueNodeFragment(
     if (!scope.useAsync && isAsync) return null;
 
     const awaitKeyword = scope.useAsync && isAsync ? 'await ' : '';
-    const functionName = scope.nameApi.resolverFunction(remainingAccounts.value.name);
-    const module = scope.getImportFrom(remainingAccounts.value);
-    return pipe(
-        fragment(`${awaitKeyword}${functionName}(resolverScope)`),
-        f => addFragmentImports(f, module, [functionName]),
-        f => addFragmentFeatures(f, ['instruction:resolverScopeVariable']),
+    const functionName = use(
+        scope.nameApi.resolverFunction(remainingAccounts.value.name),
+        scope.getImportFrom(remainingAccounts.value),
+    );
+    return pipe(fragment`${awaitKeyword}${functionName}(resolverScope)`, f =>
+        addFragmentFeatures(f, ['instruction:resolverScopeVariable']),
     );
 }

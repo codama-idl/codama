@@ -2,24 +2,23 @@ import { ProgramNode, resolveNestedTypeNode } from '@codama/nodes';
 import { mapFragmentContent } from '@codama/renderers-core';
 import { pipe } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
+import { addFragmentImports, Fragment, fragment, mergeFragments, RenderScope } from '../utils';
 import { getDiscriminatorConditionFragment } from './discriminatorCondition';
 
 export function getProgramAccountsFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         programNode: ProgramNode;
     },
-): Fragment {
-    if (scope.programNode.accounts.length === 0) return fragment('');
+): Fragment | undefined {
+    if (scope.programNode.accounts.length === 0) return;
     return mergeFragments(
         [getProgramAccountsEnumFragment(scope), getProgramAccountsIdentifierFunctionFragment(scope)],
-        c => `${c.join('\n\n')}\n`,
+        c => c.join('\n\n'),
     );
 }
 
 function getProgramAccountsEnumFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         programNode: ProgramNode;
     },
 ): Fragment {
@@ -28,20 +27,20 @@ function getProgramAccountsEnumFragment(
     const programAccountsEnumVariants = programNode.accounts.map(account =>
         nameApi.programAccountsEnumVariant(account.name),
     );
-    return fragment(`export enum ${programAccountsEnum} { ` + `${programAccountsEnumVariants.join(', ')}` + ` }`);
+    return fragment`export enum ${programAccountsEnum} { ${programAccountsEnumVariants.join(', ')} }`;
 }
 
 function getProgramAccountsIdentifierFunctionFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         programNode: ProgramNode;
     },
-): Fragment {
+): Fragment | undefined {
     const { programNode, nameApi } = scope;
     const accountsWithDiscriminators = programNode.accounts.filter(
         account => (account.discriminators ?? []).length > 0,
     );
     const hasAccountDiscriminators = accountsWithDiscriminators.length > 0;
-    if (!hasAccountDiscriminators) return fragment('');
+    if (!hasAccountDiscriminators) return;
 
     const programAccountsEnum = nameApi.programAccountsEnum(programNode.name);
     const programAccountsIdentifierFunction = nameApi.programAccountsIdentifierFunction(programNode.name);

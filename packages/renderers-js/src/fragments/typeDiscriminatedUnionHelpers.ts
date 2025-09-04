@@ -1,21 +1,17 @@
 import { isDataEnum, isNode, TypeNode } from '@codama/nodes';
 import { pipe } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { addFragmentImports, Fragment, fragment, fragmentFromTemplate } from '../utils';
+import { addFragmentImports, Fragment, fragmentFromTemplate, RenderScope } from '../utils';
 
 export function getTypeDiscriminatedUnionHelpersFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         name: string;
         typeNode: TypeNode;
     },
-): Fragment {
+): Fragment | undefined {
     const { name, typeNode, nameApi } = scope;
     const isDiscriminatedUnion = isNode(typeNode, 'enumTypeNode') && isDataEnum(typeNode);
-
-    if (!isDiscriminatedUnion) {
-        return fragment('');
-    }
+    if (!isDiscriminatedUnion) return;
 
     return pipe(
         fragmentFromTemplate('typeDiscriminatedUnionHelpers.njk', {
