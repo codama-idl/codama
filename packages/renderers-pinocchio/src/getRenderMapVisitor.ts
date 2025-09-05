@@ -12,12 +12,13 @@ import {
     structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
 } from '@codama/nodes';
-import { RenderMap } from '@codama/renderers-core';
+import { addToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
+    getByteSizeVisitor,
     LinkableDictionary,
     pipe,
-    recordLinkablesVisitor,
+    recordLinkablesOnFirstVisitVisitor,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
@@ -45,19 +46,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
     const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
     const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
+    const byteSizeVisitor = getByteSizeVisitor(linkables);
 
     return pipe(
-        staticVisitor(
-            () => new RenderMap(),
-            ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
-        ),
+        staticVisitor(() => renderMap(), {
+            keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
+        }),
         v =>
             extendVisitor(v, {
                 visitDefinedType(node) {
                     const typeManifest = visit(node, typeManifestVisitor);
                     const imports = new ImportMap().mergeWithManifest(typeManifest);
 
-                    return new RenderMap().add(
+                    return addToRenderMap(
+                        renderMap(),
                         `types/${snakeCase(node.name)}.rs`,
                         render('definedTypesPage.njk', {
                             definedType: node,
@@ -88,6 +90,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         innerOptionType: string | null;
                         name: string;
                         optional: boolean;
+                        size: number;
                         type: string;
                         value: string | null;
                     }[] = [];
@@ -130,6 +133,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             innerOptionType,
                             name,
                             optional: hasDefaultValue && argument.defaultValueStrategy !== 'omitted',
+                            size: visit(argument.type, byteSizeVisitor) as number, // We fail later if the whole data is variable.
                             type: manifest.type,
                             value: renderValue,
                         });
@@ -142,8 +146,19 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         parentName: `${pascalCase(node.name)}InstructionData`,
                     });
                     const typeManifest = visit(struct, structVisitor);
+                    const instructionSize = visit(struct, byteSizeVisitor);
 
-                    return new RenderMap().add(
+                    /*
+                    if (instructionSize === null) {
+                        throw new Error(
+                            `[Rust] Cannot compute static byte size for instruction [${node.name}]. ` +
+                                'Consider using types with static size for instruction arguments.',
+                        );
+                    }
+                    */
+
+                    return addToRenderMap(
+                        renderMap(),
                         `instructions/${snakeCase(node.name)}.rs`,
                         render('instructionPage.njk', {
                             hasArgs,
@@ -155,20 +170,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                             instructionArgs,
                             program,
                             typeManifest,
+                            instructionSize,
                         }),
                     );
                 },
 
                 visitProgram(node, { self }) {
                     program = node;
-                    const renderMap = new RenderMap()
-                        .mergeWith(...node.accounts.map(account => visit(account, self)))
-                        .mergeWith(...node.definedTypes.map(type => visit(type, self)))
-                        .mergeWith(
-                            ...getAllInstructionsWithSubs(node, {
-                                leavesOnly: !renderParentInstructions,
-                            }).map(ix => visit(ix, self)),
-                        );
+                    let renderMap = mergeRenderMaps([
+                        ...node.accounts.map(account => visit(account, self)),
+                        ...node.definedTypes.map(type => visit(type, self)),
+                        ...getAllInstructionsWithSubs(node, {
+                            leavesOnly: !renderParentInstructions,
+                        }).map(ix => visit(ix, self)),
+                    ]);
 
                     program = null;
                     return renderMap;
@@ -196,9 +211,9 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         root: node,
                     };
 
-                    const map = new RenderMap();
+                    let renders = renderMap();
                     if (programsToExport.length > 0) {
-                        map.add('programs.rs', render('programsMod.njk', ctx));
+                        renders = addToRenderMap(renders, 'programs.rs', render('programsMod.njk', ctx));
                     }
                     /*
                     if (accountsToExport.length > 0) {
@@ -206,18 +221,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     }
                     */
                     if (definedTypesToExport.length > 0) {
-                        map.add('types/mod.rs', render('definedTypesMod.njk', ctx));
+                        renders = addToRenderMap(renders, 'types/mod.rs', render('definedTypesMod.njk', ctx));
                     }
                     if (instructionsToExport.length > 0) {
-                        map.add('instructions/mod.rs', render('instructionsMod.njk', ctx));
+                        renders = addToRenderMap(renders, 'instructions/mod.rs', render('instructionsMod.njk', ctx));
                     }
 
-                    return map
-                        .add('mod.rs', render('rootMod.njk', ctx))
-                        .mergeWith(...getAllPrograms(node).map(p => visit(p, self)));
+                    return pipe(
+                        renders,
+                        r => addToRenderMap(r, 'mod.rs', render('rootMod.njk', ctx)),
+                        r => mergeRenderMaps([r, ...getAllPrograms(node).map(p => visit(p, self))]),
+                    );
                 },
             }),
-        v => recordLinkablesVisitor(v, linkables),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
 

@@ -25,6 +25,12 @@ impl<'a> AuthorizeNonceAccount<'a> {
         &self,
         _signers: &[pinocchio::instruction::Signer],
     ) -> pinocchio::ProgramResult {
+        // account metadata
+        let account_metas: [pinocchio::instruction::AccountMeta; 2] = [
+            pinocchio::instruction::AccountMeta::new(self.nonce_account.key(), true, false),
+            pinocchio::instruction::AccountMeta::new(self.nonce_authority.key(), false, true),
+        ];
+
         Ok(())
     }
 }

@@ -15,6 +15,7 @@ import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
 import { codeContains, codeDoesNotContains } from './_setup';
+import { getFromRenderMap } from '@codama/renderers-core';
 
 test('it renders a prefix string on a defined type', () => {
     // Given the following program with 1 defined type using a prefixed size string.
@@ -38,7 +39,7 @@ test('it renders a prefix string on a defined type', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following use and identifier to be rendered.
-    codeContains(renderMap.get('types/blob.rs'), [
+    codeContains(getFromRenderMap(renderMap, 'types/blob.rs'), [
         `use kaigan::types::U8PrefixString;`,
         `content_type: U8PrefixString,`,
     ]);
@@ -61,7 +62,7 @@ test('it renders a scalar enum with Copy derive', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following use and identifier to be rendered.
-    codeContains(renderMap.get('types/tag.rs'), [`#[derive(`, `Copy`, `pub enum Tag`]);
+    codeContains(getFromRenderMap(renderMap, 'types/tag.rs'), [`#[derive(`, `Copy`, `pub enum Tag`]);
 });
 
 test('it renders a non-scalar enum without Copy derive', () => {
@@ -92,7 +93,7 @@ test('it renders a non-scalar enum without Copy derive', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following use and identifier to be rendered.
-    codeContains(renderMap.get('types/tag_with_struct.rs'), [`#[derive(`, `pub enum TagWithStruct`]);
+    codeContains(getFromRenderMap(renderMap, 'types/tag_with_struct.rs'), [`#[derive(`, `pub enum TagWithStruct`]);
     // And we expect the Copy derive to be missing.
-    codeDoesNotContains(renderMap.get('types/tag_with_struct.rs'), `Copy`);
+    codeDoesNotContains(getFromRenderMap(renderMap, 'types/tag_with_struct.rs'), `Copy`);
 });

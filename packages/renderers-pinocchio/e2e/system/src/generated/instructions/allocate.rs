@@ -21,6 +21,14 @@ impl<'a> Allocate<'a> {
         &self,
         _signers: &[pinocchio::instruction::Signer],
     ) -> pinocchio::ProgramResult {
+        // account metadata
+        let account_metas: [pinocchio::instruction::AccountMeta; 1] =
+            [pinocchio::instruction::AccountMeta::new(
+                self.new_account.key(),
+                true,
+                true,
+            )];
+
         Ok(())
     }
 }

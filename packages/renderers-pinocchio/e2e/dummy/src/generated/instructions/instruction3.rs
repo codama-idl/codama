@@ -18,6 +18,9 @@ impl Instruction3 {
         &self,
         _signers: &[pinocchio::instruction::Signer],
     ) -> pinocchio::ProgramResult {
+        // account metadata
+        let account_metas: [pinocchio::instruction::AccountMeta; 0] = [];
+
         Ok(())
     }
 }

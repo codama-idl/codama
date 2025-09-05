@@ -23,6 +23,12 @@ impl<'a> TransferSol<'a> {
         &self,
         _signers: &[pinocchio::instruction::Signer],
     ) -> pinocchio::ProgramResult {
+        // account metadata
+        let account_metas: [pinocchio::instruction::AccountMeta; 2] = [
+            pinocchio::instruction::AccountMeta::new(self.source.key(), true, true),
+            pinocchio::instruction::AccountMeta::new(self.destination.key(), true, false),
+        ];
+
         Ok(())
     }
 }

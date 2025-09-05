@@ -29,6 +29,13 @@ impl<'a> TransferSolWithSeed<'a> {
         &self,
         _signers: &[pinocchio::instruction::Signer],
     ) -> pinocchio::ProgramResult {
+        // account metadata
+        let account_metas: [pinocchio::instruction::AccountMeta; 3] = [
+            pinocchio::instruction::AccountMeta::new(self.source.key(), true, false),
+            pinocchio::instruction::AccountMeta::new(self.base_account.key(), false, true),
+            pinocchio::instruction::AccountMeta::new(self.destination.key(), true, false),
+        ];
+
         Ok(())
     }
 }

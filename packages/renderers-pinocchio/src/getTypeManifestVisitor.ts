@@ -7,6 +7,7 @@ import {
     isNode,
     NumberTypeNode,
     numberTypeNode,
+    parseDocs,
     pascalCase,
     prefixedCountNode,
     REGISTERED_TYPE_NODE_KINDS,
@@ -44,7 +45,7 @@ export function getTypeManifestVisitor(options: {
                 ...mergeManifests(values),
                 type: values.map(v => v.type).join('\n'),
             }),
-            [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'],
+            { keys: [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'] },
         ),
         v =>
             extendVisitor(v, {
@@ -342,7 +343,7 @@ export function getTypeManifestVisitor(options: {
                     nestedStruct = originalNestedStruct;
 
                     const fieldName = snakeCase(structFieldType.name);
-                    const docblock = rustDocblock(structFieldType.docs);
+                    const docblock = rustDocblock(parseDocs(structFieldType.docs));
                     const resolvedNestedType = resolveNestedTypeNode(structFieldType.type);
 
                     let derive = '';

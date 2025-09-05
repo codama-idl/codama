@@ -27,6 +27,12 @@ impl<'a> AssignWithSeed<'a> {
         &self,
         _signers: &[pinocchio::instruction::Signer],
     ) -> pinocchio::ProgramResult {
+        // account metadata
+        let account_metas: [pinocchio::instruction::AccountMeta; 2] = [
+            pinocchio::instruction::AccountMeta::new(self.account.key(), true, false),
+            pinocchio::instruction::AccountMeta::new(self.base_account.key(), false, true),
+        ];
+
         Ok(())
     }
 }

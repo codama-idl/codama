@@ -4,6 +4,7 @@ import { test } from 'vitest';
 
 import { getRenderMapVisitor } from '../src';
 import { codeContains } from './_setup';
+import { getFromRenderMap } from '@codama/renderers-core';
 
 test('it renders a public instruction data struct', () => {
     // Given the following program with 1 instruction.
@@ -17,5 +18,8 @@ test('it renders a public instruction data struct', () => {
     const renderMap = visit(node, getRenderMapVisitor());
 
     // Then we expect the following pub struct.
-    codeContains(renderMap.get('instructions/mint_tokens.rs'), [`pub struct MintTokens`]);
+    codeContains(getFromRenderMap(renderMap, 'instructions/mint_tokens.rs'), [
+        `pub struct MintTokensInstructionData`,
+        `pub fn new(`,
+    ]);
 });

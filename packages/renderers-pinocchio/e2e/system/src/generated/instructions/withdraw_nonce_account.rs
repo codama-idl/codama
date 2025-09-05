@@ -29,6 +29,19 @@ impl<'a> WithdrawNonceAccount<'a> {
         &self,
         _signers: &[pinocchio::instruction::Signer],
     ) -> pinocchio::ProgramResult {
+        // account metadata
+        let account_metas: [pinocchio::instruction::AccountMeta; 5] = [
+            pinocchio::instruction::AccountMeta::new(self.nonce_account.key(), true, false),
+            pinocchio::instruction::AccountMeta::new(self.recipient_account.key(), true, false),
+            pinocchio::instruction::AccountMeta::new(
+                self.recent_blockhashes_sysvar.key(),
+                false,
+                false,
+            ),
+            pinocchio::instruction::AccountMeta::new(self.rent_sysvar.key(), false, false),
+            pinocchio::instruction::AccountMeta::new(self.nonce_authority.key(), false, true),
+        ];
+
         Ok(())
     }
 }
