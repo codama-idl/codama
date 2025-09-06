@@ -12,6 +12,9 @@
   {% if instructionsToExport.length > 0 %}
     pub mod instructions;
   {% endif %}
+  {% if pdasToExport.length > 0 %}
+    pub mod pdas;
+  {% endif %}
   {% if programsToExport.length > 0 %}
     pub mod programs;
   {% endif %}
