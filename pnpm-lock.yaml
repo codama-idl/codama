@@ -13,7 +13,7 @@ importers:
         version: 0.5.1
       '@changesets/cli':
         specifier: ^2.29.6
-        version: 2.29.6(@types/node@24.3.1)
+        version: 2.29.6(@types/node@24.3.0)
       '@codama/internals':
         specifier: workspace:*
         version: link:packages/internals
@@ -25,13 +25,13 @@ importers:
         version: 0.13.2
       '@solana/eslint-config-solana':
         specifier: ^5.0.0
-        version: 5.0.0(@eslint/js@9.34.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.34.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.34.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript-eslint@8.16.0(eslint@9.34.0)(typescript@5.9.2))(typescript@5.9.2)
+        version: 5.0.0(@eslint/js@9.34.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.0))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.34.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.34.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.0))(typescript-eslint@8.16.0(eslint@9.34.0)(typescript@5.9.2))(typescript@5.9.2)
       '@solana/prettier-config-solana':
         specifier: 0.0.5
         version: 0.0.5(prettier@3.6.2)
       '@types/node':
         specifier: ^24
-        version: 24.3.1
+        version: 24.3.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.42.0
         version: 8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2)
@@ -73,7 +73,7 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@24.3.1)(happy-dom@18.0.1)
+        version: 3.2.4(@types/node@24.3.0)(happy-dom@18.0.1)
       zx:
         specifier: ^8.8.1
         version: 8.8.1
@@ -328,33 +328,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs-strings':
-        specifier: rc
-        version: 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
-      nunjucks:
-        specifier: ^3.2.4
-        version: 3.2.4(chokidar@3.6.0)
-    devDependencies:
-      '@types/nunjucks':
-        specifier: ^3.2.6
-        version: 3.2.6
-
-  packages/renderers-rust:
-    dependencies:
-      '@codama/errors':
-        specifier: workspace:*
-        version: link:../errors
-      '@codama/nodes':
-        specifier: workspace:*
-        version: link:../nodes
-      '@codama/renderers-core':
-        specifier: workspace:*
-        version: link:../renderers-core
-      '@codama/visitors-core':
-        specifier: workspace:*
-        version: link:../visitors-core
-      '@solana/codecs-strings':
-        specifier: rc
-        version: 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)
+        specifier: ^3.0.2
+        version: 3.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
@@ -1429,63 +1404,67 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@solana/codecs-core@2.0.0-rc.1':
-    resolution: {integrity: sha512-bauxqMfSs8EHD0JKESaNmNuNvkvHSuN3bbWAF5RjOfDu2PugxHrvRebmYauvSumZ3cTfQ4HJJX6PG5rN852qyQ==}
-    peerDependencies:
-      typescript: '>=5'
+  '@rollup/rollup-win32-x64-msvc@4.43.0':
+    resolution: {integrity: sha512-SnGhLiE5rlK0ofq8kzuDkM0g7FN1s5VYY+YSMTibP7CqShxCQvqtNxTARS4xX4PFJfHjG0ZQYX9iGzI3FQh5Aw==}
+    cpu: [x64]
+    os: [win32]
 
-  '@solana/codecs-core@2.0.0-rc.4':
-    resolution: {integrity: sha512-JIrTSps032mSE3wBxW3bXOqWfoy4CMy1CX/XeVCijyh5kLVxZTSDIdRTYdePdL1yzaOZF1Xysvt1DhOUgBdM+A==}
+  '@sinclair/typebox@0.33.22':
+    resolution: {integrity: sha512-auUj4k+f4pyrIVf4GW5UKquSZFHJWri06QgARy9C0t9ZTjJLIuNIrr1yl9bWcJWJ1Gz1vOvYN1D+QPaIlNMVkQ==}
+
+  '@sinonjs/commons@3.0.1':
+    resolution: {integrity: sha512-K3mCHKQ9sVh8o1C9cxkwxaOmXoAMlDxC1mYyHrjqOWEcBjYr76t96zL2zlj5dUGZ3HSw240X1qgH3Mjf1yJWpQ==}
+
+  '@sinonjs/fake-timers@11.3.1':
+    resolution: {integrity: sha512-EVJO7nW5M/F5Tur0Rf2z/QoMo+1Ia963RiMtapiQrEWvY0iBUvADo8Beegwjpnle5BHkyHuoxSTW3jF43H1XRA==}
+
+  '@solana/codecs-core@3.0.2':
+    resolution: {integrity: sha512-vpy8ySWgPF8+APwpeEr4dQbU/EyHjisd/TywIw3rymguWeZ9/wcThS0WDRi08Z44W6InCIbtI08RdtuHQZoSag==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
-  '@solana/codecs-numbers@2.0.0-rc.1':
-    resolution: {integrity: sha512-J5i5mOkvukXn8E3Z7sGIPxsThRCgSdgTWJDQeZvucQ9PT6Y3HiVXJ0pcWiOWAoQ3RX8e/f4I3IC+wE6pZiJzDQ==}
-    peerDependencies:
-      typescript: '>=5'
-
-  '@solana/codecs-numbers@2.0.0-rc.4':
-    resolution: {integrity: sha512-ZJR7TaUO65+3Hzo3YOOUCS0wlzh17IW+j0MZC2LCk1R0woaypRpHKj4iSMYeQOZkMxsd9QT3WNvjFrPC2qA6Sw==}
+  '@solana/codecs-data-structures@3.0.2':
+    resolution: {integrity: sha512-07L3czS7xughfCSx2pTC4/3amyjuCd3kOW4m4RJoXqWVzyg5lX4vCIVrlQE4MtM7/5SLLvGHXbCPHcp92esGcQ==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
-  '@solana/codecs-strings@2.0.0-rc.1':
-    resolution: {integrity: sha512-9/wPhw8TbGRTt6mHC4Zz1RqOnuPTqq1Nb4EyuvpZ39GW6O2t2Q7Q0XxiB3+BdoEjwA2XgPw6e2iRfvYgqty44g==}
+  '@solana/codecs-numbers@3.0.2':
+    resolution: {integrity: sha512-Yr9kWo2BF4Wdu9mhceUQ3ksA6ZTi2CvQr8GWkRh9DQjvmrdqE2vwxwWWcmnzGDzwbta5o4tAr8JjtAtmwpiLEg==}
+    engines: {node: '>=20.18.0'}
+    peerDependencies:
+      typescript: '>=5.3.3'
+
+  '@solana/codecs-strings@3.0.2':
+    resolution: {integrity: sha512-V7Ivy3TjdrLL4E3wT2d32MpGYQFWM1UKnevLXPib/Aqws4nP/bGMHq6gSIJ4b9HrkFfrlEgSjusOyEJbRBBFag==}
+    engines: {node: '>=20.18.0'}
     peerDependencies:
       fastestsmallesttextencoderdecoder: ^1.0.22
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
-  '@solana/codecs-strings@2.0.0-rc.4':
-    resolution: {integrity: sha512-LGfK2RL0BKjYYUfzu2FG/gTgCsYOMz9FKVs2ntji6WneZygPxJTV5W98K3J8Rl0JewpCSCFQH3xjLSHBJUS0fA==}
+  '@solana/codecs@3.0.2':
+    resolution: {integrity: sha512-ihsmK+OnwuVd5le66lIDqsj0BQiHiYbL3pv4kUCVacxoo8pgqxGHTPh1/Ei1GNSm2N7LF/kwPvnZVECgY+ZaJg==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
-      fastestsmallesttextencoderdecoder: ^1.0.22
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
-  '@solana/errors@2.0.0-rc.1':
-    resolution: {integrity: sha512-ejNvQ2oJ7+bcFAYWj225lyRkHnixuAeb7RQCixm+5mH4n1IA4Qya/9Bmfy5RAAHQzxK43clu3kZmL5eF9VGtYQ==}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=5'
-
-  '@solana/errors@2.0.0-rc.4':
-    resolution: {integrity: sha512-0PPaMyB81keEHG/1pnyEuiBVKctbXO641M2w3CIOrYT/wzjunfF0FTxsqq9wYJeYo0AyiefCKGgSPs6wiY2PpQ==}
+  '@solana/errors@3.0.2':
+    resolution: {integrity: sha512-0B4y9JUsX8/DzflhdSXSAF+UPUKyo1R1rrQ/ShS/8ApCOIWIFqZlve0TPatuTOGGNBememoukPOvDVtFy0ZYpg==}
     engines: {node: '>=20.18.0'}
     hasBin: true
     peerDependencies:
-      typescript: '>=5'
+      typescript: '>=5.3.3'
 
-  '@solana/eslint-config-solana@3.0.3':
-    resolution: {integrity: sha512-yTaeCbOBwjmK4oUkknixOpwOzzAK8+4YWvJEJFNHuueESetieDnAeEHV7rzJllFgHEWa9nXps9Q3aD4/XJp71A==}
+  '@solana/eslint-config-solana@5.0.0':
+    resolution: {integrity: sha512-DPsoloOpVf/4JD7m3j394BvJX8mCKTSQ1xJrP0tyyeLEZN7x09OL9uj2bo2Ma4UTYZsyV97p2eiuiHmJVA0Kfw==}
     peerDependencies:
-      '@typescript-eslint/eslint-plugin': ^6.0.0
-      '@typescript-eslint/parser': ^6.0.0
-      eslint: ^8.45.0
-      eslint-plugin-jest: ^27.2.3
-      eslint-plugin-react-hooks: ^4.6.0
-      eslint-plugin-simple-import-sort: ^10.0.0
+      '@eslint/js': ^9.13.0
+      '@types/eslint__js': ^8.42.3
+      eslint: ^9.13.0
+      eslint-plugin-jest: ^29.0.0
+      eslint-plugin-react-hooks: ^5.0.0
+      eslint-plugin-simple-import-sort: ^12.1.1
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-typescript-sort-keys: ^3.3.0
       globals: ^15.11.0
@@ -1562,11 +1541,14 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@20.19.13':
-    resolution: {integrity: sha512-yCAeZl7a0DxgNVteXFHt9+uyFbqXGy/ShC4BlcHkoE0AfGXYv/BUiplV72DjMYXHDBXFjhvr6DD1NiRVfB4j8g==}
+  '@types/node@20.19.11':
+    resolution: {integrity: sha512-uug3FEEGv0r+jrecvUUpbY8lLisvIjg6AAic6a2bSP5OEOLeJsDSnvhCDov7ipFFMXS3orMpzlmi0ZcuGkBbow==}
 
   '@types/node@22.12.0':
     resolution: {integrity: sha512-Fll2FZ1riMjNmlmJOdAyY5pUbkftXslB5DgEzlIuNaiWhXd00FhWxVC/r4yV/4wBb9JfImTu+jiSvXTkJ7F/gA==}
+
+  '@types/node@24.3.0':
+    resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
 
   '@types/node@24.3.1':
     resolution: {integrity: sha512-3vXmQDXy+woz+gnrTvuvNrPzekOi+Ds0ReMxw0LzBiK3a+1k0kQn9f2NWk+lgD4rJehFUmYy2gMhJ2ZI+7YP9g==}
@@ -1962,8 +1944,8 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  caniuse-lite@1.0.30001741:
-    resolution: {integrity: sha512-QGUGitqsc8ARjLdgAfxETDhRbJ0REsP6O3I96TAth/mVjh2cYzN2u+3AzPP3aVSm2FehEItaJw1xd+IGBXWeSw==}
+  caniuse-lite@1.0.30001739:
+    resolution: {integrity: sha512-y+j60d6ulelrNSwpPyrHdl+9mJnQzHBr08xm48Qno0nSk4h3Qojh+ziv2qE6rXf4k3tadF4o1J/1tAbVm1NtnA==}
 
   chai@5.2.0:
     resolution: {integrity: sha512-mCuXncKXk5iCLhfhwTc0izo0gtEmpz5CtG2y8GiOINBlMVS6v8TMRc5TaLWKS6692m9+dVVfzgeVxR5UxWHTYw==}
@@ -2024,10 +2006,6 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
-
-  commander@12.1.0:
-    resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
-    engines: {node: '>=18'}
 
   commander@14.0.0:
     resolution: {integrity: sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA==}
@@ -3914,7 +3892,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@changesets/cli@2.29.6(@types/node@24.3.1)':
+  '@changesets/cli@2.29.6(@types/node@24.3.0)':
     dependencies:
       '@changesets/apply-release-plan': 7.0.12
       '@changesets/assemble-release-plan': 6.0.9
@@ -3930,7 +3908,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@changesets/write': 0.4.0
-      '@inquirer/external-editor': 1.0.1(@types/node@24.3.1)
+      '@inquirer/external-editor': 1.0.1(@types/node@24.3.0)
       '@manypkg/get-packages': 1.1.3
       ansi-colors: 4.1.3
       ci-info: 3.9.0
@@ -4257,12 +4235,12 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@inquirer/external-editor@1.0.1(@types/node@24.3.1)':
+  '@inquirer/external-editor@1.0.1(@types/node@24.3.0)':
     dependencies:
       chardet: 2.1.0
       iconv-lite: 0.6.3
     optionalDependencies:
-      '@types/node': 24.3.1
+      '@types/node': 24.3.0
 
   '@isaacs/balanced-match@4.0.1': {}
 
@@ -4658,67 +4636,64 @@ snapshots:
       type-detect: 4.0.8
 
   '@sinonjs/fake-timers@11.3.1':
-  '@solana/codecs-core@2.0.0-rc.4(typescript@5.6.3)':
-    dependencies:
-      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
-      typescript: 5.6.3
-
-  '@solana/codecs-numbers@2.0.0-rc.1(typescript@5.6.3)':
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@solana/codecs-numbers@2.0.0-rc.4(typescript@5.6.3)':
+  '@solana/codecs-core@3.0.2(typescript@5.9.2)':
     dependencies:
-      '@solana/codecs-core': 2.0.0-rc.4(typescript@5.6.3)
-      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
-      typescript: 5.6.3
+      '@solana/errors': 3.0.2(typescript@5.9.2)
+      typescript: 5.9.2
 
-  '@solana/codecs-strings@2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
+  '@solana/codecs-data-structures@3.0.2(typescript@5.9.2)':
     dependencies:
-      '@solana/codecs-core': 2.0.0-rc.1(typescript@5.6.3)
-      '@solana/codecs-numbers': 2.0.0-rc.1(typescript@5.6.3)
-      '@solana/errors': 2.0.0-rc.1(typescript@5.6.3)
+      '@solana/codecs-core': 3.0.2(typescript@5.9.2)
+      '@solana/codecs-numbers': 3.0.2(typescript@5.9.2)
+      '@solana/errors': 3.0.2(typescript@5.9.2)
+      typescript: 5.9.2
+
+  '@solana/codecs-numbers@3.0.2(typescript@5.9.2)':
+    dependencies:
+      '@solana/codecs-core': 3.0.2(typescript@5.9.2)
+      '@solana/errors': 3.0.2(typescript@5.9.2)
+      typescript: 5.9.2
+
+  '@solana/codecs-strings@3.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)':
+    dependencies:
+      '@solana/codecs-core': 3.0.2(typescript@5.9.2)
+      '@solana/codecs-numbers': 3.0.2(typescript@5.9.2)
+      '@solana/errors': 3.0.2(typescript@5.9.2)
       fastestsmallesttextencoderdecoder: 1.0.22
       typescript: 5.9.2
 
-  '@solana/codecs-strings@2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.6.3)':
+  '@solana/codecs@3.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)':
     dependencies:
-      '@solana/codecs-core': 2.0.0-rc.4(typescript@5.6.3)
-      '@solana/codecs-numbers': 2.0.0-rc.4(typescript@5.6.3)
-      '@solana/errors': 2.0.0-rc.4(typescript@5.6.3)
-      fastestsmallesttextencoderdecoder: 1.0.22
-      typescript: 5.6.3
+      '@solana/codecs-core': 3.0.2(typescript@5.9.2)
+      '@solana/codecs-data-structures': 3.0.2(typescript@5.9.2)
+      '@solana/codecs-numbers': 3.0.2(typescript@5.9.2)
+      '@solana/codecs-strings': 3.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)
+      '@solana/options': 3.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - fastestsmallesttextencoderdecoder
 
-  '@solana/errors@2.0.0-rc.1(typescript@5.6.3)':
-    dependencies:
-      chalk: 5.3.0
-      commander: 12.1.0
-      typescript: 5.6.3
-
-  '@solana/errors@2.0.0-rc.4(typescript@5.6.3)':
-    dependencies:
-      chalk: 5.3.0
-      commander: 12.1.0
-      typescript: 5.6.3
-
-  '@solana/eslint-config-solana@3.0.3(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.1))(eslint-plugin-simple-import-sort@10.0.0(eslint@8.57.1))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3)':
+  '@solana/errors@3.0.2(typescript@5.9.2)':
     dependencies:
       chalk: 5.6.0
       commander: 14.0.0
       typescript: 5.9.2
 
-  '@solana/eslint-config-solana@5.0.0(@eslint/js@9.34.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.34.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.34.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript-eslint@8.16.0(eslint@9.34.0)(typescript@5.9.2))(typescript@5.9.2)':
+  '@solana/eslint-config-solana@5.0.0(@eslint/js@9.34.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.0))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.34.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.34.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.0))(typescript-eslint@8.16.0(eslint@9.34.0)(typescript@5.9.2))(typescript@5.9.2)':
     dependencies:
       '@eslint/js': 9.34.0
       '@types/eslint__js': 8.42.3
       eslint: 9.34.0
-      eslint-plugin-jest: 27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2)
+      eslint-plugin-jest: 27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.0))(typescript@5.9.2)
       eslint-plugin-react-hooks: 4.6.0(eslint@9.34.0)
       eslint-plugin-simple-import-sort: 12.1.1(eslint@9.34.0)
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-typescript-sort-keys: 3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2)
       globals: 14.0.0
-      jest: 30.0.0-alpha.6(@types/node@24.3.1)
+      jest: 30.0.0-alpha.6(@types/node@24.3.0)
       typescript: 5.9.2
       typescript-eslint: 8.16.0(eslint@9.34.0)(typescript@5.9.2)
 
@@ -4803,13 +4778,17 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@20.19.13':
+  '@types/node@20.19.11':
     dependencies:
       undici-types: 6.21.0
 
   '@types/node@22.12.0':
     dependencies:
       undici-types: 6.20.0
+
+  '@types/node@24.3.0':
+    dependencies:
+      undici-types: 7.10.0
 
   '@types/node@24.3.1':
     dependencies:
@@ -5068,13 +5047,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@6.3.5(@types/node@24.3.1))':
+  '@vitest/mocker@3.2.4(vite@6.3.5(@types/node@24.3.0))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 6.3.5(@types/node@24.3.1)
+      vite: 6.3.5(@types/node@24.3.0)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -5251,7 +5230,7 @@ snapshots:
 
   browserslist@4.25.4:
     dependencies:
-      caniuse-lite: 1.0.30001741
+      caniuse-lite: 1.0.30001739
       electron-to-chromium: 1.5.214
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.4)
@@ -5297,7 +5276,7 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  caniuse-lite@1.0.30001741: {}
+  caniuse-lite@1.0.30001739: {}
 
   chai@5.2.0:
     dependencies:
@@ -5359,7 +5338,7 @@ snapshots:
 
   color-name@1.1.4: {}
 
-  commander@12.1.0: {}
+  commander@14.0.0: {}
 
   commander@4.1.1: {}
 
@@ -5512,13 +5491,13 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2):
+  eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(jest@30.0.0-alpha.6(@types/node@24.3.0))(typescript@5.9.2):
     dependencies:
       '@typescript-eslint/utils': 5.62.0(eslint@9.34.0)(typescript@5.9.2)
       eslint: 9.34.0
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0)(typescript@5.9.2))(eslint@9.34.0)(typescript@5.9.2)
-      jest: 30.0.0-alpha.6(@types/node@24.3.1)
+      jest: 30.0.0-alpha.6(@types/node@24.3.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -5849,7 +5828,7 @@ snapshots:
 
   happy-dom@18.0.1:
     dependencies:
-      '@types/node': 20.19.13
+      '@types/node': 20.19.11
       '@types/whatwg-mimetype': 3.0.2
       whatwg-mimetype: 3.0.0
 
@@ -6008,7 +5987,7 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-  jest-cli@30.0.0-alpha.6(@types/node@24.3.1):
+  jest-cli@30.0.0-alpha.6(@types/node@24.3.0):
     dependencies:
       '@jest/core': 30.0.0-alpha.6
       '@jest/test-result': 30.0.0-alpha.6
@@ -6016,7 +5995,7 @@ snapshots:
       chalk: 4.1.2
       exit: 0.1.2
       import-local: 3.2.0
-      jest-config: 30.0.0-alpha.6(@types/node@24.3.1)
+      jest-config: 30.0.0-alpha.6(@types/node@24.3.0)
       jest-util: 30.0.0-alpha.6
       jest-validate: 30.0.0-alpha.6
       yargs: 17.7.2
@@ -6026,6 +6005,38 @@ snapshots:
       - esbuild-register
       - supports-color
       - ts-node
+
+  jest-config@30.0.0-alpha.6(@types/node@24.3.0):
+    dependencies:
+      '@babel/core': 7.28.3
+      '@jest/pattern': 30.0.0-alpha.6
+      '@jest/test-sequencer': 30.0.0-alpha.6
+      '@jest/types': 30.0.0-alpha.6
+      babel-jest: 30.0.0-alpha.6(@babel/core@7.28.3)
+      chalk: 4.1.2
+      ci-info: 4.3.0
+      deepmerge: 4.3.1
+      glob: 10.4.5
+      graceful-fs: 4.2.11
+      jest-circus: 30.0.0-alpha.6
+      jest-docblock: 30.0.0-alpha.6
+      jest-environment-node: 30.0.0-alpha.6
+      jest-get-type: 30.0.0-alpha.6
+      jest-regex-util: 30.0.0-alpha.6
+      jest-resolve: 30.0.0-alpha.6
+      jest-runner: 30.0.0-alpha.6
+      jest-util: 30.0.0-alpha.6
+      jest-validate: 30.0.0-alpha.6
+      micromatch: 4.0.8
+      parse-json: 5.2.0
+      pretty-format: 30.0.0-alpha.6
+      slash: 3.0.0
+      strip-json-comments: 3.1.1
+    optionalDependencies:
+      '@types/node': 24.3.0
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
 
   jest-config@30.0.0-alpha.6(@types/node@24.3.1):
     dependencies:
@@ -6275,12 +6286,12 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
-  jest@30.0.0-alpha.6(@types/node@24.3.1):
+  jest@30.0.0-alpha.6(@types/node@24.3.0):
     dependencies:
       '@jest/core': 30.0.0-alpha.6
       '@jest/types': 30.0.0-alpha.6
       import-local: 3.2.0
-      jest-cli: 30.0.0-alpha.6(@types/node@24.3.1)
+      jest-cli: 30.0.0-alpha.6(@types/node@24.3.0)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -7005,13 +7016,13 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.6
       convert-source-map: 2.0.0
 
-  vite-node@3.2.4(@types/node@24.3.1):
+  vite-node@3.2.4(@types/node@24.3.0):
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 6.3.5(@types/node@24.3.1)
+      vite: 6.3.5(@types/node@24.3.0)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -7026,7 +7037,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@6.3.5(@types/node@24.3.1):
+  vite@6.3.5(@types/node@24.3.0):
     dependencies:
       esbuild: 0.25.5
       fdir: 6.4.6(picomatch@4.0.2)
@@ -7035,14 +7046,14 @@ snapshots:
       rollup: 4.43.0
       tinyglobby: 0.2.14
     optionalDependencies:
-      '@types/node': 24.3.1
+      '@types/node': 24.3.0
       fsevents: 2.3.3
 
-  vitest@3.2.4(@types/node@24.3.1)(happy-dom@18.0.1):
+  vitest@3.2.4(@types/node@24.3.0)(happy-dom@18.0.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@6.3.5(@types/node@24.3.1))
+      '@vitest/mocker': 3.2.4(vite@6.3.5(@types/node@24.3.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -7060,11 +7071,11 @@ snapshots:
       tinyglobby: 0.2.14
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 6.3.5(@types/node@24.3.1)
-      vite-node: 3.2.4(@types/node@24.3.1)
+      vite: 6.3.5(@types/node@24.3.0)
+      vite-node: 3.2.4(@types/node@24.3.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 24.3.1
+      '@types/node': 24.3.0
       happy-dom: 18.0.1
     transitivePeerDependencies:
       - jiti
