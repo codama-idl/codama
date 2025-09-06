@@ -32,15 +32,7 @@ export function getInstructionPageFragment(
     }
 
     // Instruction args.
-    const instructionArgs: {
-        default: boolean;
-        innerOptionType: string | null;
-        name: string;
-        optional: boolean;
-        size: number;
-        type: string;
-        value: string | null;
-    }[] = [];
+    const instructionArgs: ParsedInstructionArgument[] = [];
     // let hasArgs = false;
     // let hasOptional = false;
     // hasArgs = hasArgs || argument.defaultValueStrategy !== 'omitted';
@@ -81,10 +73,12 @@ function getParsedInstructionArgument(
     argument: InstructionArgumentNode,
     argumentVisitor: TypeManifestVisitor,
     accountsAndArgsConflicts: string[],
+    scope: Pick<RenderScope, 'byteSizeVisitor' | 'getImportFrom'>,
 ): ParsedInstructionArgument {
     const manifest = visit(argument.type, argumentVisitor);
-    imports.mergeWith(manifest.imports);
-    const innerOptionType = isNode(argument.type, 'optionTypeNode') ? manifest.type.slice('Option<'.length, -1) : null;
+    const innerOptionType = isNode(argument.type, 'optionTypeNode')
+        ? manifest.type.content.slice('Option<'.length, -1)
+        : null;
 
     const hasDefaultValue = !!argument.defaultValue && isNode(argument.defaultValue, VALUE_NODES);
     let renderValue: string | null = null;
