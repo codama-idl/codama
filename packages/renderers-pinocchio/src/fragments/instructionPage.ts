@@ -10,8 +10,6 @@ import {
 } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath, visit } from '@codama/visitors-core';
 
-import { getTypeManifestVisitor, TypeManifest } from '../visitors/getTypeManifestVisitor';
-import { renderValueNode } from '../visitors/renderValueNodeVisitor';
 import {
     addFragmentImports,
     Fragment,
@@ -21,6 +19,8 @@ import {
     mergeFragments,
     RenderScope,
 } from '../utils';
+import { getTypeManifestVisitor, TypeManifest } from '../visitors/getTypeManifestVisitor';
+import { renderValueNode } from '../visitors/renderValueNodeVisitor';
 
 export function getInstructionPageFragment(
     scope: Pick<RenderScope, 'byteSizeVisitor' | 'dependencyMap' | 'getImportFrom' | 'getTraitsFromNode'> & {
@@ -56,6 +56,7 @@ export function getInstructionPageFragment(
             [
                 getInstructionStructFragment(instructionNode, instructionArguments, lifetime),
                 getInstructionImplFragment(instructionNode, instructionArguments, lifetime),
+                getInstructionNestedStructsFragment(instructionArguments),
             ],
             cs => cs.join('\n\n'),
         ),
@@ -134,6 +135,13 @@ function getInstructionImplFragment(
       Ok(())
     }
 }`;
+}
+
+function getInstructionNestedStructsFragment(instructionArguments: ParsedInstructionArgument[]): Fragment {
+    return mergeFragments(
+        instructionArguments.flatMap(arg => arg.manifest.nestedStructs),
+        cs => cs.join('\n\n'),
+    );
 }
 
 type ParsedInstructionArgument = InstructionArgumentNode & {
