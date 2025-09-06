@@ -1,5 +1,11 @@
 # @codama/renderers-core
 
+## 1.1.1
+
+### Patch Changes
+
+- [#807](https://github.com/codama-idl/codama/pull/807) [`5282efe`](https://github.com/codama-idl/codama/commit/5282efe3ad56083e0210d3e76e5834690335fa42) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add `fragmentToRenderMap` helper
+
 ## 1.1.0
 
 ### Minor Changes
