@@ -15,8 +15,7 @@ import { mapFragmentContent } from '@codama/renderers-core';
 import { pipe, visit } from '@codama/visitors-core';
 import { getBase64Decoder } from '@solana/codecs-strings';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { addFragmentImports, Fragment, fragment, mergeFragments } from '../utils';
+import { Fragment, fragment, mergeFragments, RenderScope, use } from '../utils';
 
 /**
  * ```
@@ -34,7 +33,7 @@ import { addFragmentImports, Fragment, fragment, mergeFragments } from '../utils
  * ```
  */
 export function getDiscriminatorConditionFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         dataName: string;
         discriminators: DiscriminatorNode[];
         ifTrue: string;
@@ -64,33 +63,28 @@ export function getDiscriminatorConditionFragment(
 
 function getSizeConditionFragment(
     discriminator: SizeDiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'typeManifestVisitor'> & {
         dataName: string;
     },
 ): Fragment {
     const { dataName } = scope;
-    return fragment(`${dataName}.length === ${discriminator.size}`);
+    return fragment`${dataName}.length === ${discriminator.size}`;
 }
 
 function getByteConditionFragment(
     discriminator: ConstantDiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'typeManifestVisitor'> & {
         dataName: string;
     },
 ): Fragment {
     const { dataName, typeManifestVisitor } = scope;
     const constant = visit(discriminator.constant, typeManifestVisitor).value;
-
-    return pipe(
-        constant,
-        f => mapFragmentContent(f, c => `containsBytes(${dataName}, ${c}, ${discriminator.offset})`),
-        f => addFragmentImports(f, 'solanaCodecsCore', ['containsBytes']),
-    );
+    return fragment`${use('containsBytes', 'solanaCodecsCore')}(${dataName}, ${constant}, ${discriminator.offset})`;
 }
 
 function getFieldConditionFragment(
     discriminator: FieldDiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'typeManifestVisitor'> & {
         dataName: string;
         struct: StructTypeNode;
     },

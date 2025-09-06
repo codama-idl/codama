@@ -27,8 +27,6 @@ import {
     Visitor,
 } from '@codama/visitors-core';
 
-import { ImportMap } from './ImportMap';
-import { NameApi } from './nameTransformers';
 import { mergeTypeManifests, TypeManifest, typeManifest } from './TypeManifest';
 import {
     addFragmentImports,
@@ -37,9 +35,10 @@ import {
     getBytesFromBytesValueNode,
     GetImportFromFunction,
     jsDocblock,
-    mergeFragmentImports,
     mergeFragments,
+    NameApi,
     ParsedCustomDataOptions,
+    use,
 } from './utils';
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
@@ -88,25 +87,15 @@ export function getTypeManifestVisitor(input: {
                 visitArrayType(arrayType, { self }) {
                     const childManifest = visit(arrayType.item, self);
                     const sizeManifest = getArrayLikeSizeOption(arrayType.count, self);
-                    const encoderOptions = sizeManifest.encoder.content ? `, { ${sizeManifest.encoder.content} }` : '';
-                    const decoderOptions = sizeManifest.decoder.content ? `, { ${sizeManifest.decoder.content} }` : '';
+                    const encoderOptions = sizeManifest.encoder ? fragment`, { ${sizeManifest.encoder} }` : '';
+                    const decoderOptions = sizeManifest.decoder ? fragment`, { ${sizeManifest.decoder} }` : '';
 
                     return typeManifest({
                         ...childManifest,
-                        decoder: pipe(
-                            childManifest.decoder,
-                            f => mapFragmentContent(f, c => `getArrayDecoder(${c + decoderOptions})`),
-                            f => mergeFragmentImports(f, [sizeManifest.decoder.imports]),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getArrayDecoder']),
-                        ),
-                        encoder: pipe(
-                            childManifest.encoder,
-                            f => mapFragmentContent(f, c => `getArrayEncoder(${c + encoderOptions})`),
-                            f => mergeFragmentImports(f, [sizeManifest.encoder.imports]),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getArrayEncoder']),
-                        ),
-                        looseType: mapFragmentContent(childManifest.looseType, c => `Array<${c}>`),
-                        strictType: mapFragmentContent(childManifest.strictType, c => `Array<${c}>`),
+                        decoder: fragment`${use('getArrayDecoder', 'solanaCodecsDataStructures')}(${childManifest.decoder}${decoderOptions})`,
+                        encoder: fragment`${use('getArrayEncoder', 'solanaCodecsDataStructures')}(${childManifest.encoder}${encoderOptions})`,
+                        looseType: fragment`Array<${childManifest.looseType}>`,
+                        strictType: fragment`Array<${childManifest.strictType}>`,
                     });
                 },
 
@@ -118,49 +107,32 @@ export function getTypeManifestVisitor(input: {
                 },
 
                 visitBooleanType(booleanType, { self }) {
-                    const encoderImports = new ImportMap().add('solanaCodecsDataStructures', 'getBooleanEncoder');
-                    const decoderImports = new ImportMap().add('solanaCodecsDataStructures', 'getBooleanDecoder');
-
-                    let sizeEncoder = '';
-                    let sizeDecoder = '';
+                    let sizeEncoder = fragment``;
+                    let sizeDecoder = fragment``;
                     const resolvedSize = resolveNestedTypeNode(booleanType.size);
                     if (resolvedSize.format !== 'u8' || resolvedSize.endian !== 'le') {
                         const size = visit(booleanType.size, self);
-                        encoderImports.mergeWith(size.encoder);
-                        decoderImports.mergeWith(size.decoder);
-                        sizeEncoder = `{ size: ${size.encoder.content} }`;
-                        sizeDecoder = `{ size: ${size.decoder.content} }`;
+                        sizeEncoder = fragment`{ size: ${size.encoder} }`;
+                        sizeDecoder = fragment`{ size: ${size.decoder} }`;
                     }
 
                     return typeManifest({
-                        decoder: pipe(fragment(`getBooleanDecoder(${sizeDecoder})`), f =>
-                            mergeFragmentImports(f, [decoderImports]),
-                        ),
-                        encoder: pipe(fragment(`getBooleanEncoder(${sizeEncoder})`), f =>
-                            mergeFragmentImports(f, [encoderImports]),
-                        ),
-                        looseType: fragment('boolean'),
-                        strictType: fragment('boolean'),
+                        decoder: fragment`${use('getBooleanDecoder', 'solanaCodecsDataStructures')}(${sizeDecoder})`,
+                        encoder: fragment`${use('getBooleanEncoder', 'solanaCodecsDataStructures')}(${sizeEncoder})`,
+                        looseType: fragment`boolean`,
+                        strictType: fragment`boolean`,
                     });
                 },
 
                 visitBooleanValue(node) {
-                    return typeManifest({
-                        value: fragment(JSON.stringify(node.boolean)),
-                    });
+                    return typeManifest({ value: fragment`${JSON.stringify(node.boolean)}` });
                 },
 
                 visitBytesType() {
-                    const readonlyUint8Array = pipe(fragment('ReadonlyUint8Array'), f =>
-                        addFragmentImports(f, 'solanaCodecsCore', ['type ReadonlyUint8Array']),
-                    );
+                    const readonlyUint8Array = use('type ReadonlyUint8Array', 'solanaCodecsCore');
                     return typeManifest({
-                        decoder: pipe(fragment(`getBytesDecoder()`), f =>
-                            addFragmentImports(f, 'solanaCodecsDataStructures', ['getBytesDecoder']),
-                        ),
-                        encoder: pipe(fragment(`getBytesEncoder()`), f =>
-                            addFragmentImports(f, 'solanaCodecsDataStructures', ['getBytesEncoder']),
-                        ),
+                        decoder: fragment`${use('getBytesDecoder', 'solanaCodecsDataStructures')}()`,
+                        encoder: fragment`${use('getBytesEncoder', 'solanaCodecsDataStructures')}()`,
                         looseType: readonlyUint8Array,
                         strictType: readonlyUint8Array,
                     });
@@ -168,9 +140,7 @@ export function getTypeManifestVisitor(input: {
 
                 visitBytesValue(node) {
                     const bytes = getBytesFromBytesValueNode(node);
-                    return typeManifest({
-                        value: fragment(`new Uint8Array([${Array.from(bytes).join(', ')}])`),
-                    });
+                    return typeManifest({ value: fragment`new Uint8Array([${Array.from(bytes).join(', ')}])` });
                 },
 
                 visitConstantValue(node, { self }) {
@@ -178,10 +148,7 @@ export function getTypeManifestVisitor(input: {
                         return visit(node.value, self);
                     }
                     return typeManifest({
-                        value: mergeFragments(
-                            [visit(node.type, self).encoder, visit(node.value, self).value],
-                            ([encoderFunction, value]) => `${encoderFunction}.encode(${value})`,
-                        ),
+                        value: fragment`${visit(node.type, self).encoder}.encode(${visit(node.value, self).value})`,
                     });
                 },
 
@@ -207,18 +174,10 @@ export function getTypeManifestVisitor(input: {
                     const importFrom = getImportFrom(node);
 
                     return typeManifest({
-                        decoder: pipe(fragment(`${decoderFunction}()`), f =>
-                            addFragmentImports(f, importFrom, [decoderFunction]),
-                        ),
-                        encoder: pipe(fragment(`${encoderFunction}()`), f =>
-                            addFragmentImports(f, importFrom, [encoderFunction]),
-                        ),
-                        looseType: pipe(fragment(looseName), f =>
-                            addFragmentImports(f, importFrom, [`type ${looseName}`]),
-                        ),
-                        strictType: pipe(fragment(strictName), f =>
-                            addFragmentImports(f, importFrom, [`type ${strictName}`]),
-                        ),
+                        decoder: fragment`${use(decoderFunction, importFrom)}()`,
+                        encoder: fragment`${use(encoderFunction, importFrom)}()`,
+                        looseType: use(`type ${looseName}`, importFrom),
+                        strictType: use(`type ${strictName}`, importFrom),
                     });
                 },
 
@@ -227,14 +186,10 @@ export function getTypeManifestVisitor(input: {
                     const name = nameApi.discriminatedUnionVariant(enumEmptyVariantType.name);
                     const kindAttribute = `${discriminator}: "${name}"`;
                     return typeManifest({
-                        decoder: pipe(fragment(`['${name}', getUnitDecoder()]`), f =>
-                            addFragmentImports(f, 'solanaCodecsDataStructures', ['getUnitDecoder']),
-                        ),
-                        encoder: pipe(fragment(`['${name}', getUnitEncoder()]`), f =>
-                            addFragmentImports(f, 'solanaCodecsDataStructures', ['getUnitEncoder']),
-                        ),
-                        looseType: fragment(`{ ${kindAttribute} }`),
-                        strictType: fragment(`{ ${kindAttribute} }`),
+                        decoder: fragment`['${name}', ${use('getUnitDecoder', 'solanaCodecsDataStructures')}()]`,
+                        encoder: fragment`['${name}', ${use('getUnitEncoder', 'solanaCodecsDataStructures')}()]`,
+                        looseType: fragment`{ ${kindAttribute} }`,
+                        strictType: fragment`{ ${kindAttribute} }`,
                     });
                 },
 
@@ -252,8 +207,8 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...structManifest,
-                        decoder: pipe(structManifest.decoder, f => mapFragmentContent(f, c => `['${name}', ${c}]`)),
-                        encoder: pipe(structManifest.encoder, f => mapFragmentContent(f, c => `['${name}', ${c}]`)),
+                        decoder: fragment`['${name}', ${structManifest.decoder}]`,
+                        encoder: fragment`['${name}', ${structManifest.encoder}]`,
                         looseType: pipe(structManifest.looseType, f =>
                             mapFragmentContent(f, c => `{ ${kindAttribute},${c.slice(1, -1)}}`),
                         ),
@@ -283,8 +238,8 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...structManifest,
-                        decoder: pipe(structManifest.decoder, f => mapFragmentContent(f, c => `['${name}', ${c}]`)),
-                        encoder: pipe(structManifest.encoder, f => mapFragmentContent(f, c => `['${name}', ${c}]`)),
+                        decoder: fragment`['${name}', ${structManifest.decoder}]`,
+                        encoder: fragment`['${name}', ${structManifest.encoder}]`,
                         looseType: pipe(structManifest.looseType, f =>
                             mapFragmentContent(f, c => `{ ${kindAttribute},${c.slice(1, -1)}}`),
                         ),
@@ -296,32 +251,30 @@ export function getTypeManifestVisitor(input: {
 
                 visitEnumType(enumType, { self }) {
                     const currentParentName = parentName;
-                    const encoderImports = new ImportMap();
-                    const decoderImports = new ImportMap();
-                    const encoderOptions: string[] = [];
-                    const decoderOptions: string[] = [];
+                    const encoderOptions: Fragment[] = [];
+                    const decoderOptions: Fragment[] = [];
 
                     const enumSize = resolveNestedTypeNode(enumType.size);
                     if (enumSize.format !== 'u8' || enumSize.endian !== 'le') {
                         const sizeManifest = visit(enumType.size, self);
-                        encoderImports.mergeWith(sizeManifest.encoder);
-                        decoderImports.mergeWith(sizeManifest.decoder);
-                        encoderOptions.push(`size: ${sizeManifest.encoder.content}`);
-                        decoderOptions.push(`size: ${sizeManifest.decoder.content}`);
+                        encoderOptions.push(fragment`size: ${sizeManifest.encoder}`);
+                        decoderOptions.push(fragment`size: ${sizeManifest.decoder}`);
                     }
 
                     const discriminator = nameApi.discriminatedUnionDiscriminator(
                         camelCase(currentParentName?.strict ?? ''),
                     );
                     if (!isScalarEnum(enumType) && discriminator !== '__kind') {
-                        encoderOptions.push(`discriminator: '${discriminator}'`);
-                        decoderOptions.push(`discriminator: '${discriminator}'`);
+                        encoderOptions.push(fragment`discriminator: '${discriminator}'`);
+                        decoderOptions.push(fragment`discriminator: '${discriminator}'`);
                     }
 
-                    const encoderOptionsAsString =
-                        encoderOptions.length > 0 ? `, { ${encoderOptions.join(', ')} }` : '';
-                    const decoderOptionsAsString =
-                        decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
+                    const encoderOptionsFragment = mergeFragments(encoderOptions, cs =>
+                        cs.length > 0 ? `, { ${cs.join(', ')} }` : '',
+                    );
+                    const decoderOptionsFragment = mergeFragments(decoderOptions, cs =>
+                        cs.length > 0 ? `, { ${cs.join(', ')} }` : '',
+                    );
 
                     if (isScalarEnum(enumType)) {
                         if (currentParentName === null) {
@@ -333,19 +286,11 @@ export function getTypeManifestVisitor(input: {
                         }
                         const variantNames = enumType.variants.map(({ name }) => nameApi.enumVariant(name));
                         return typeManifest({
-                            decoder: pipe(
-                                fragment(`getEnumDecoder(${currentParentName.strict + decoderOptionsAsString})`),
-                                f => mergeFragmentImports(f, [decoderImports]),
-                                f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getEnumDecoder']),
-                            ),
-                            encoder: pipe(
-                                fragment(`getEnumEncoder(${currentParentName.strict + encoderOptionsAsString})`),
-                                f => mergeFragmentImports(f, [encoderImports]),
-                                f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getEnumEncoder']),
-                            ),
+                            decoder: fragment`${use('getEnumDecoder', 'solanaCodecsDataStructures')}(${currentParentName.strict}${decoderOptionsFragment})`,
+                            encoder: fragment`${use('getEnumEncoder', 'solanaCodecsDataStructures')}(${currentParentName.strict}${encoderOptionsFragment})`,
                             isEnum: true,
-                            looseType: fragment(`{ ${variantNames.join(', ')} }`),
-                            strictType: fragment(`{ ${variantNames.join(', ')} }`),
+                            looseType: fragment`{ ${variantNames.join(', ')} }`,
+                            strictType: fragment`{ ${variantNames.join(', ')} }`,
                         });
                     }
 
@@ -359,26 +304,8 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...mergedManifest,
-                        decoder: pipe(
-                            mergedManifest.decoder,
-                            f =>
-                                mapFragmentContent(
-                                    f,
-                                    c => `getDiscriminatedUnionDecoder([${c}]${decoderOptionsAsString})`,
-                                ),
-                            f => mergeFragmentImports(f, [decoderImports]),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getDiscriminatedUnionDecoder']),
-                        ),
-                        encoder: pipe(
-                            mergedManifest.encoder,
-                            f =>
-                                mapFragmentContent(
-                                    f,
-                                    c => `getDiscriminatedUnionEncoder([${c}]${encoderOptionsAsString})`,
-                                ),
-                            f => mergeFragmentImports(f, [encoderImports]),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getDiscriminatedUnionEncoder']),
-                        ),
+                        decoder: fragment`${use('getDiscriminatedUnionDecoder', 'solanaCodecsDataStructures')}([${mergedManifest.decoder}]${decoderOptionsFragment})`,
+                        encoder: fragment`${use('getDiscriminatedUnionEncoder', 'solanaCodecsDataStructures')}([${mergedManifest.encoder}]${encoderOptionsFragment})`,
                     });
                 },
 
@@ -432,16 +359,8 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(node.type, self);
                     return typeManifest({
                         ...manifest,
-                        decoder: pipe(
-                            manifest.decoder,
-                            f => mapFragmentContent(f, c => `fixDecoderSize(${c}, ${node.size})`),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['fixDecoderSize']),
-                        ),
-                        encoder: pipe(
-                            manifest.encoder,
-                            f => mapFragmentContent(f, c => `fixEncoderSize(${c}, ${node.size})`),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['fixEncoderSize']),
-                        ),
+                        decoder: fragment`${use('fixDecoderSize', 'solanaCodecsCore')}(${manifest.decoder}, ${node.size})`,
+                        encoder: fragment`${use('fixEncoderSize', 'solanaCodecsCore')}(${manifest.encoder}, ${node.size})`,
                     });
                 },
 
@@ -449,30 +368,18 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(node.type, self);
                     const prefixes = node.prefix.map(c => visit(c, self).value);
                     const prefixEncoders = pipe(
-                        mergeFragments(prefixes, contents => contents.map(c => `getConstantEncoder(${c})`).join(', ')),
+                        mergeFragments(prefixes, cs => cs.map(c => `getConstantEncoder(${c})`).join(', ')),
                         f => addFragmentImports(f, 'solanaCodecsCore', ['getConstantEncoder']),
                     );
                     const prefixDecoders = pipe(
-                        mergeFragments(prefixes, contents => contents.map(c => `getConstantDecoder(${c})`).join(', ')),
+                        mergeFragments(prefixes, cs => cs.map(c => `getConstantDecoder(${c})`).join(', ')),
                         f => addFragmentImports(f, 'solanaCodecsCore', ['getConstantDecoder']),
                     );
 
                     return typeManifest({
                         ...manifest,
-                        decoder: pipe(
-                            mergeFragments(
-                                [manifest.decoder, prefixDecoders],
-                                ([child, prefixes]) => `getHiddenPrefixDecoder(${child}, [${prefixes}])`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getHiddenPrefixDecoder']),
-                        ),
-                        encoder: pipe(
-                            mergeFragments(
-                                [manifest.encoder, prefixEncoders],
-                                ([child, prefixes]) => `getHiddenPrefixEncoder(${child}, [${prefixes}])`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getHiddenPrefixEncoder']),
-                        ),
+                        decoder: fragment`${use('getHiddenPrefixDecoder', 'solanaCodecsDataStructures')}(${manifest.decoder}, [${prefixDecoders}])`,
+                        encoder: fragment`${use('getHiddenPrefixEncoder', 'solanaCodecsDataStructures')}(${manifest.encoder}, [${prefixEncoders}])`,
                     });
                 },
 
@@ -480,30 +387,18 @@ export function getTypeManifestVisitor(input: {
                     const manifest = visit(node.type, self);
                     const suffixes = node.suffix.map(c => visit(c, self).value);
                     const suffixEncoders = pipe(
-                        mergeFragments(suffixes, contents => contents.map(c => `getConstantEncoder(${c})`).join(', ')),
+                        mergeFragments(suffixes, cs => cs.map(c => `getConstantEncoder(${c})`).join(', ')),
                         f => addFragmentImports(f, 'solanaCodecsCore', ['getConstantEncoder']),
                     );
                     const suffixDecoders = pipe(
-                        mergeFragments(suffixes, contents => contents.map(c => `getConstantDecoder(${c})`).join(', ')),
+                        mergeFragments(suffixes, cs => cs.map(c => `getConstantDecoder(${c})`).join(', ')),
                         f => addFragmentImports(f, 'solanaCodecsCore', ['getConstantDecoder']),
                     );
 
                     return typeManifest({
                         ...manifest,
-                        decoder: pipe(
-                            mergeFragments(
-                                [manifest.decoder, suffixDecoders],
-                                ([child, suffixes]) => `getHiddenSuffixDecoder(${child}, [${suffixes}])`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getHiddenSuffixDecoder']),
-                        ),
-                        encoder: pipe(
-                            mergeFragments(
-                                [manifest.encoder, suffixEncoders],
-                                ([child, suffixes]) => `getHiddenSuffixEncoder(${child}, [${suffixes}])`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getHiddenSuffixEncoder']),
-                        ),
+                        decoder: fragment`${use('getHiddenSuffixDecoder', 'solanaCodecsDataStructures')}(${manifest.decoder}, [${suffixDecoders}])`,
+                        encoder: fragment`${use('getHiddenSuffixEncoder', 'solanaCodecsDataStructures')}(${manifest.encoder}, [${suffixEncoders}])`,
                     });
                 },
 
@@ -534,21 +429,13 @@ export function getTypeManifestVisitor(input: {
                         mergeTypes: ([k, v]) => `Map<${k}, ${v}>`,
                     });
                     const sizeManifest = getArrayLikeSizeOption(mapType.count, self);
-                    const encoderOptions = sizeManifest.encoder.content ? `, { ${sizeManifest.encoder.content} }` : '';
-                    const decoderOptions = sizeManifest.decoder.content ? `, { ${sizeManifest.decoder.content} }` : '';
+                    const encoderOptions = sizeManifest.encoder ? fragment`, { ${sizeManifest.encoder} }` : '';
+                    const decoderOptions = sizeManifest.decoder ? fragment`, { ${sizeManifest.decoder} }` : '';
 
                     return typeManifest({
                         ...mergedManifest,
-                        decoder: pipe(
-                            mergedManifest.decoder,
-                            f => mapFragmentContent(f, c => `getMapDecoder(${c}${decoderOptions})`),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getMapDecoder']),
-                        ),
-                        encoder: pipe(
-                            mergedManifest.encoder,
-                            f => mapFragmentContent(f, c => `getMapEncoder(${c}${encoderOptions})`),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getMapEncoder']),
-                        ),
+                        decoder: fragment`${use('getMapDecoder', 'solanaCodecsDataStructures')}(${mergedManifest.decoder}${decoderOptions})`,
+                        encoder: fragment`${use('getMapEncoder', 'solanaCodecsDataStructures')}(${mergedManifest.encoder}${encoderOptions})`,
                     });
                 },
 
@@ -561,92 +448,62 @@ export function getTypeManifestVisitor(input: {
 
                 visitNoneValue() {
                     return typeManifest({
-                        value: pipe(fragment('none()'), f => addFragmentImports(f, 'solanaOptions', ['none'])),
+                        value: fragment`${use('none', 'solanaOptions')}()`,
                     });
                 },
 
                 visitNumberType(numberType) {
-                    const encoderFunction = nameApi.encoderFunction(numberType.format);
-                    const decoderFunction = nameApi.decoderFunction(numberType.format);
+                    const encoderFunction = use(nameApi.encoderFunction(numberType.format), 'solanaCodecsNumbers');
+                    const decoderFunction = use(nameApi.decoderFunction(numberType.format), 'solanaCodecsNumbers');
                     const isBigNumber = ['u64', 'u128', 'i64', 'i128'].includes(numberType.format);
-                    const encoderImports = new ImportMap().add('solanaCodecsNumbers', encoderFunction);
-                    const decoderImports = new ImportMap().add('solanaCodecsNumbers', decoderFunction);
-                    let endianness = '';
-                    if (numberType.endian === 'be') {
-                        encoderImports.add('solanaCodecsNumbers', 'Endian');
-                        decoderImports.add('solanaCodecsNumbers', 'Endian');
-                        endianness = '{ endian: Endian.Big }';
-                    }
+                    const endianness =
+                        numberType.endian === 'be'
+                            ? fragment`{ endian: ${use('Endian', 'solanaCodecsNumbers')}.Big }`
+                            : '';
                     return typeManifest({
-                        decoder: pipe(fragment(`${decoderFunction}(${endianness})`), f =>
-                            mergeFragmentImports(f, [decoderImports]),
-                        ),
-                        encoder: pipe(fragment(`${encoderFunction}(${endianness})`), f =>
-                            mergeFragmentImports(f, [encoderImports]),
-                        ),
-                        looseType: fragment(isBigNumber ? 'number | bigint' : 'number'),
-                        strictType: fragment(isBigNumber ? 'bigint' : 'number'),
+                        decoder: fragment`${decoderFunction}(${endianness})`,
+                        encoder: fragment`${encoderFunction}(${endianness})`,
+                        looseType: fragment`${isBigNumber ? 'number | bigint' : 'number'}`,
+                        strictType: fragment`${isBigNumber ? 'bigint' : 'number'}`,
                     });
                 },
 
                 visitNumberValue(node) {
-                    return typeManifest({
-                        value: fragment(JSON.stringify(node.number)),
-                    });
+                    return typeManifest({ value: fragment`${JSON.stringify(node.number)}` });
                 },
 
                 visitOptionType(optionType, { self }) {
                     const childManifest = visit(optionType.item, self);
-                    const encoderOptions: string[] = [];
-                    const decoderOptions: string[] = [];
-                    const encoderImports = new ImportMap();
-                    const decoderImports = new ImportMap();
+                    const encoderOptions: Fragment[] = [];
+                    const decoderOptions: Fragment[] = [];
 
                     // Prefix option.
                     const optionPrefix = resolveNestedTypeNode(optionType.prefix);
                     if (optionPrefix.format !== 'u8' || optionPrefix.endian !== 'le') {
                         const prefixManifest = visit(optionType.prefix, self);
-                        encoderImports.mergeWith(prefixManifest.encoder);
-                        decoderImports.mergeWith(prefixManifest.decoder);
-                        encoderOptions.push(`prefix: ${prefixManifest.encoder.content}`);
-                        decoderOptions.push(`prefix: ${prefixManifest.decoder.content}`);
+                        encoderOptions.push(fragment`prefix: ${prefixManifest.encoder}`);
+                        decoderOptions.push(fragment`prefix: ${prefixManifest.decoder}`);
                     }
 
                     // Fixed option.
                     if (optionType.fixed) {
-                        encoderOptions.push(`noneValue: "zeroes"`);
-                        decoderOptions.push(`noneValue: "zeroes"`);
+                        encoderOptions.push(fragment`noneValue: "zeroes"`);
+                        decoderOptions.push(fragment`noneValue: "zeroes"`);
                     }
 
-                    const encoderOptionsAsString =
-                        encoderOptions.length > 0 ? `, { ${encoderOptions.join(', ')} }` : '';
-                    const decoderOptionsAsString =
-                        decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
+                    const encoderOptionsFragment = mergeFragments(encoderOptions, cs =>
+                        cs.length > 0 ? `, { ${cs.join(', ')} }` : '',
+                    );
+                    const decoderOptionsFragment = mergeFragments(decoderOptions, cs =>
+                        cs.length > 0 ? `, { ${cs.join(', ')} }` : '',
+                    );
 
                     return typeManifest({
                         ...childManifest,
-                        decoder: pipe(
-                            childManifest.decoder,
-                            f => mapFragmentContent(f, c => `getOptionDecoder(${c + decoderOptionsAsString})`),
-                            f => addFragmentImports(f, 'solanaOptions', ['getOptionDecoder']),
-                            f => mergeFragmentImports(f, [decoderImports]),
-                        ),
-                        encoder: pipe(
-                            childManifest.encoder,
-                            f => mapFragmentContent(f, c => `getOptionEncoder(${c + encoderOptionsAsString})`),
-                            f => addFragmentImports(f, 'solanaOptions', ['getOptionEncoder']),
-                            f => mergeFragmentImports(f, [encoderImports]),
-                        ),
-                        looseType: pipe(
-                            childManifest.looseType,
-                            f => mapFragmentContent(f, c => `OptionOrNullable<${c}>`),
-                            f => addFragmentImports(f, 'solanaOptions', ['type OptionOrNullable']),
-                        ),
-                        strictType: pipe(
-                            childManifest.strictType,
-                            f => mapFragmentContent(f, c => `Option<${c}>`),
-                            f => addFragmentImports(f, 'solanaOptions', ['type Option']),
-                        ),
+                        decoder: fragment`${use('getOptionDecoder', 'solanaOptions')}(${childManifest.decoder}${decoderOptionsFragment})`,
+                        encoder: fragment`${use('getOptionEncoder', 'solanaOptions')}(${childManifest.encoder}${encoderOptionsFragment})`,
+                        looseType: fragment`${use('type OptionOrNullable', 'solanaOptions')}<${childManifest.looseType}>`,
+                        strictType: fragment`${use('type Option', 'solanaOptions')}<${childManifest.strictType}>`,
                     });
                 },
 
@@ -655,16 +512,8 @@ export function getTypeManifestVisitor(input: {
                     if (node.strategy === 'padded') {
                         return typeManifest({
                             ...manifest,
-                            decoder: pipe(
-                                manifest.decoder,
-                                f => mapFragmentContent(f, c => `padRightDecoder(${c}, ${node.offset})`),
-                                f => addFragmentImports(f, 'solanaCodecsCore', ['padRightDecoder']),
-                            ),
-                            encoder: pipe(
-                                manifest.encoder,
-                                f => mapFragmentContent(f, c => `padRightEncoder(${c}, ${node.offset})`),
-                                f => addFragmentImports(f, 'solanaCodecsCore', ['padRightEncoder']),
-                            ),
+                            decoder: fragment`${use('padRightDecoder', 'solanaCodecsCore')}(${manifest.decoder}, ${node.offset})`,
+                            encoder: fragment`${use('padRightEncoder', 'solanaCodecsCore')}(${manifest.encoder}, ${node.offset})`,
                         });
                     }
 
@@ -688,16 +537,8 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...manifest,
-                        decoder: pipe(
-                            manifest.decoder,
-                            f => mapFragmentContent(f, c => `offsetDecoder(${c}, { postOffset: ${fn} })`),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['offsetDecoder']),
-                        ),
-                        encoder: pipe(
-                            manifest.encoder,
-                            f => mapFragmentContent(f, c => `offsetEncoder(${c}, { postOffset: ${fn} })`),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['offsetEncoder']),
-                        ),
+                        decoder: fragment`${use('offsetDecoder', 'solanaCodecsCore')}(${manifest.decoder}, { postOffset: ${fn} })`,
+                        encoder: fragment`${use('offsetEncoder', 'solanaCodecsCore')}(${manifest.encoder}, { postOffset: ${fn} })`,
                     });
                 },
 
@@ -706,16 +547,8 @@ export function getTypeManifestVisitor(input: {
                     if (node.strategy === 'padded') {
                         return typeManifest({
                             ...manifest,
-                            decoder: pipe(
-                                manifest.decoder,
-                                f => mapFragmentContent(f, c => `padLeftDecoder(${c}, ${node.offset})`),
-                                f => addFragmentImports(f, 'solanaCodecsCore', ['padLeftDecoder']),
-                            ),
-                            encoder: pipe(
-                                manifest.encoder,
-                                f => mapFragmentContent(f, c => `padLeftEncoder(${c}, ${node.offset})`),
-                                f => addFragmentImports(f, 'solanaCodecsCore', ['padLeftEncoder']),
-                            ),
+                            decoder: fragment`${use('padLeftDecoder', 'solanaCodecsCore')}(${manifest.decoder}, ${node.offset})`,
+                            encoder: fragment`${use('padLeftEncoder', 'solanaCodecsCore')}(${manifest.encoder}, ${node.offset})`,
                         });
                     }
 
@@ -735,40 +568,23 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...manifest,
-                        decoder: pipe(
-                            manifest.decoder,
-                            f => mapFragmentContent(f, c => `offsetDecoder(${c}, { preOffset: ${fn} })`),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['offsetDecoder']),
-                        ),
-                        encoder: pipe(
-                            manifest.encoder,
-                            f => mapFragmentContent(f, c => `offsetEncoder(${c}, { preOffset: ${fn} })`),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['offsetEncoder']),
-                        ),
+                        decoder: fragment`${use('offsetDecoder', 'solanaCodecsCore')}(${manifest.decoder}, { preOffset: ${fn} })`,
+                        encoder: fragment`${use('offsetEncoder', 'solanaCodecsCore')}(${manifest.encoder}, { preOffset: ${fn} })`,
                     });
                 },
 
                 visitPublicKeyType() {
-                    const addressFragment = pipe(fragment('Address'), f =>
-                        addFragmentImports(f, 'solanaAddresses', ['type Address']),
-                    );
                     return typeManifest({
-                        decoder: pipe(fragment('getAddressDecoder()'), f =>
-                            addFragmentImports(f, 'solanaAddresses', ['getAddressDecoder']),
-                        ),
-                        encoder: pipe(fragment('getAddressEncoder()'), f =>
-                            addFragmentImports(f, 'solanaAddresses', ['getAddressEncoder']),
-                        ),
-                        looseType: addressFragment,
-                        strictType: addressFragment,
+                        decoder: fragment`${use('getAddressDecoder', 'solanaAddresses')}()`,
+                        encoder: fragment`${use('getAddressEncoder', 'solanaAddresses')}()`,
+                        looseType: use('type Address', 'solanaAddresses'),
+                        strictType: use('type Address', 'solanaAddresses'),
                     });
                 },
 
                 visitPublicKeyValue(node) {
                     return typeManifest({
-                        value: pipe(fragment(`address("${node.publicKey}")`), f =>
-                            addFragmentImports(f, 'solanaAddresses', ['address']),
-                        ),
+                        value: fragment`${use('address', 'solanaAddresses')}("${node.publicKey}")`,
                     });
                 },
 
@@ -784,26 +600,10 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...childManifest,
-                        decoder: pipe(
-                            childManifest.decoder,
-                            f => mapFragmentContent(f, c => `getOptionDecoder(${c + decoderOptionsAsString})`),
-                            f => addFragmentImports(f, 'solanaOptions', ['getOptionDecoder']),
-                        ),
-                        encoder: pipe(
-                            childManifest.encoder,
-                            f => mapFragmentContent(f, c => `getOptionEncoder(${c + encoderOptionsAsString})`),
-                            f => addFragmentImports(f, 'solanaOptions', ['getOptionEncoder']),
-                        ),
-                        looseType: pipe(
-                            childManifest.looseType,
-                            f => mapFragmentContent(f, c => `OptionOrNullable<${c}>`),
-                            f => addFragmentImports(f, 'solanaOptions', ['type OptionOrNullable']),
-                        ),
-                        strictType: pipe(
-                            childManifest.strictType,
-                            f => mapFragmentContent(f, c => `Option<${c}>`),
-                            f => addFragmentImports(f, 'solanaOptions', ['type Option']),
-                        ),
+                        decoder: fragment`${use('getOptionDecoder', 'solanaOptions')}(${childManifest.decoder}${decoderOptionsAsString})`,
+                        encoder: fragment`${use('getOptionEncoder', 'solanaOptions')}(${childManifest.encoder}${encoderOptionsAsString})`,
+                        looseType: fragment`${use('type OptionOrNullable', 'solanaOptions')}<${childManifest.looseType}>`,
+                        strictType: fragment`${use('type Option', 'solanaOptions')}<${childManifest.strictType}>`,
                     });
                 },
 
@@ -812,45 +612,23 @@ export function getTypeManifestVisitor(input: {
                     const sentinel = visit(node.sentinel, self).value;
                     return typeManifest({
                         ...manifest,
-                        decoder: pipe(
-                            mergeFragments(
-                                [manifest.decoder, sentinel],
-                                ([child, sentinel]) => `addDecoderSentinel(${child}, ${sentinel})`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['addDecoderSentinel']),
-                        ),
-                        encoder: pipe(
-                            mergeFragments(
-                                [manifest.encoder, sentinel],
-                                ([child, sentinel]) => `addEncoderSentinel(${child}, ${sentinel})`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['addEncoderSentinel']),
-                        ),
+                        decoder: fragment`${use('addDecoderSentinel', 'solanaCodecsCore')}(${manifest.decoder}, ${sentinel})`,
+                        encoder: fragment`${use('addEncoderSentinel', 'solanaCodecsCore')}(${manifest.encoder}, ${sentinel})`,
                     });
                 },
 
                 visitSetType(setType, { self }) {
                     const childManifest = visit(setType.item, self);
                     const sizeManifest = getArrayLikeSizeOption(setType.count, self);
-                    const encoderOptions = sizeManifest.encoder.content ? `, { ${sizeManifest.encoder.content} }` : '';
-                    const decoderOptions = sizeManifest.decoder.content ? `, { ${sizeManifest.decoder.content} }` : '';
+                    const encoderOptions = sizeManifest.encoder ? fragment`, { ${sizeManifest.encoder} }` : '';
+                    const decoderOptions = sizeManifest.decoder ? fragment`, { ${sizeManifest.decoder} }` : '';
 
                     return typeManifest({
                         ...childManifest,
-                        decoder: pipe(
-                            childManifest.decoder,
-                            f => mapFragmentContent(f, c => `getSetDecoder(${c + decoderOptions})`),
-                            f => mergeFragmentImports(f, [sizeManifest.decoder.imports]),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getSetDecoder']),
-                        ),
-                        encoder: pipe(
-                            childManifest.encoder,
-                            f => mapFragmentContent(f, c => `getSetEncoder(${c + encoderOptions})`),
-                            f => mergeFragmentImports(f, [sizeManifest.encoder.imports]),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getSetEncoder']),
-                        ),
-                        looseType: pipe(childManifest.looseType, f => mapFragmentContent(f, c => `Set<${c}>`)),
-                        strictType: pipe(childManifest.strictType, f => mapFragmentContent(f, c => `Set<${c}>`)),
+                        decoder: fragment`${use('getSetDecoder', 'solanaCodecsDataStructures')}(${childManifest.decoder}${decoderOptions})`,
+                        encoder: fragment`${use('getSetEncoder', 'solanaCodecsDataStructures')}(${childManifest.encoder}${encoderOptions})`,
+                        looseType: fragment`Set<${childManifest.looseType}>`,
+                        strictType: fragment`Set<${childManifest.strictType}>`,
                     });
                 },
 
@@ -867,53 +645,27 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...manifest,
-                        decoder: pipe(
-                            mergeFragments(
-                                [manifest.decoder, prefix.decoder],
-                                ([decoder, prefix]) => `addDecoderSizePrefix(${decoder}, ${prefix})`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['addDecoderSizePrefix']),
-                        ),
-                        encoder: pipe(
-                            mergeFragments(
-                                [manifest.encoder, prefix.encoder],
-                                ([encoder, prefix]) => `addEncoderSizePrefix(${encoder}, ${prefix})`,
-                            ),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['addEncoderSizePrefix']),
-                        ),
+                        decoder: fragment`${use('addDecoderSizePrefix', 'solanaCodecsCore')}(${manifest.decoder}, ${prefix.decoder})`,
+                        encoder: fragment`${use('addEncoderSizePrefix', 'solanaCodecsCore')}(${manifest.encoder}, ${prefix.encoder})`,
                     });
                 },
 
                 visitSolAmountType({ number }, { self }) {
                     const numberManifest = visit(number, self);
-                    const lamportFragment = pipe(fragment('Lamports'), f =>
-                        addFragmentImports(f, 'solanaRpcTypes', ['type Lamports']),
-                    );
 
                     return typeManifest({
                         ...numberManifest,
-                        decoder: pipe(
-                            numberManifest.decoder,
-                            f => mapFragmentContent(f, c => `getLamportsDecoder(${c})`),
-                            f => addFragmentImports(f, 'solanaRpcTypes', ['getLamportsDecoder']),
-                        ),
-                        encoder: pipe(
-                            numberManifest.encoder,
-                            f => mapFragmentContent(f, c => `getLamportsEncoder(${c})`),
-                            f => addFragmentImports(f, 'solanaRpcTypes', ['getLamportsEncoder']),
-                        ),
-                        looseType: lamportFragment,
-                        strictType: lamportFragment,
+                        decoder: fragment`${use('getLamportsDecoder', 'solanaRpcTypes')}(${numberManifest.decoder})`,
+                        encoder: fragment`${use('getLamportsEncoder', 'solanaRpcTypes')}(${numberManifest.encoder})`,
+                        looseType: use('type Lamports', 'solanaRpcTypes'),
+                        strictType: use('type Lamports', 'solanaRpcTypes'),
                     });
                 },
 
                 visitSomeValue(node, { self }) {
+                    const innerValue = visit(node.value, self).value;
                     return typeManifest({
-                        value: pipe(
-                            visit(node.value, self).value,
-                            f => mapFragmentContent(f, c => `some(${c})`),
-                            f => addFragmentImports(f, 'solanaOptions', ['some']),
-                        ),
+                        value: fragment`${use('some', 'solanaOptions')}(${innerValue})`,
                     });
                 },
 
@@ -934,20 +686,16 @@ export function getTypeManifestVisitor(input: {
                     })();
 
                     return typeManifest({
-                        decoder: pipe(fragment(`${decoder}()`), f =>
-                            addFragmentImports(f, 'solanaCodecsStrings', [decoder]),
-                        ),
-                        encoder: pipe(fragment(`${encoder}()`), f =>
-                            addFragmentImports(f, 'solanaCodecsStrings', [encoder]),
-                        ),
-                        looseType: fragment('string'),
-                        strictType: fragment('string'),
+                        decoder: fragment`${use(decoder, 'solanaCodecsStrings')}()`,
+                        encoder: fragment`${use(encoder, 'solanaCodecsStrings')}()`,
+                        looseType: fragment`string`,
+                        strictType: fragment`string`,
                     });
                 },
 
                 visitStringValue(node) {
                     return typeManifest({
-                        value: fragment(JSON.stringify(node.string)),
+                        value: fragment`${JSON.stringify(node.string)}`,
                     });
                 },
 
@@ -959,18 +707,10 @@ export function getTypeManifestVisitor(input: {
                     const originalLooseType = originalChildManifest.looseType.content;
                     const childManifest = typeManifest({
                         ...originalChildManifest,
-                        decoder: pipe(originalChildManifest.decoder, f =>
-                            mapFragmentContent(f, c => `['${name}', ${c}]`),
-                        ),
-                        encoder: pipe(originalChildManifest.encoder, f =>
-                            mapFragmentContent(f, c => `['${name}', ${c}]`),
-                        ),
-                        looseType: pipe(originalChildManifest.looseType, f =>
-                            mapFragmentContent(f, c => `${docblock}${name}: ${c}; `),
-                        ),
-                        strictType: pipe(originalChildManifest.strictType, f =>
-                            mapFragmentContent(f, c => `${docblock}${name}: ${c}; `),
-                        ),
+                        decoder: fragment`['${name}', ${originalChildManifest.decoder}]`,
+                        encoder: fragment`['${name}', ${originalChildManifest.encoder}]`,
+                        looseType: fragment`${docblock}${name}: ${originalChildManifest.looseType}; `,
+                        strictType: fragment`${docblock}${name}: ${originalChildManifest.strictType}; `,
                     });
 
                     // No default value.
@@ -989,17 +729,13 @@ export function getTypeManifestVisitor(input: {
                     }
 
                     // Omitted default value.
-                    return typeManifest({
-                        ...childManifest,
-                        looseType: fragment(''),
-                    });
+                    return typeManifest({ ...childManifest, looseType: fragment`` });
                 },
 
                 visitStructFieldValue(node, { self }) {
+                    const innerValue = visit(node.value, self).value;
                     return typeManifest({
-                        value: pipe(visit(node.value, self).value, f =>
-                            mapFragmentContent(f, c => `${node.name}: ${c}`),
-                        ),
+                        value: fragment`${node.name}: ${innerValue}`,
                     });
                 },
 
@@ -1017,16 +753,8 @@ export function getTypeManifestVisitor(input: {
                         manifest =>
                             typeManifest({
                                 ...manifest,
-                                decoder: pipe(
-                                    manifest.decoder,
-                                    f => mapFragmentContent(f, c => `getStructDecoder${c}`),
-                                    f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getStructDecoder']),
-                                ),
-                                encoder: pipe(
-                                    manifest.encoder,
-                                    f => mapFragmentContent(f, c => `getStructEncoder${c}`),
-                                    f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getStructEncoder']),
-                                ),
+                                decoder: fragment`${use('getStructDecoder', 'solanaCodecsDataStructures')}${manifest.decoder}`,
+                                encoder: fragment`${use('getStructEncoder', 'solanaCodecsDataStructures')}${manifest.encoder}`,
                             }),
                     );
 
@@ -1042,41 +770,31 @@ export function getTypeManifestVisitor(input: {
                     const discriminators =
                         (instructionNode ? instructionNode.discriminators : accountNode?.discriminators) ?? [];
                     const fieldDiscriminators = discriminators.filter(isNodeFilter('fieldDiscriminatorNode'));
-                    const encoderImports = new ImportMap();
 
-                    const defaultValues = optionalFields
-                        .map(f => {
+                    const defaultValues = mergeFragments(
+                        optionalFields.map((f): Fragment => {
                             const key = camelCase(f.name);
 
                             // If the field has an associated discriminator node, use the constant value instead.
                             if (fieldDiscriminators.some(d => d.name === f.name)) {
                                 const constantName = nameApi.constant(camelCase(`${discriminatorPrefix}_${f.name}`));
                                 return f.defaultValueStrategy === 'omitted'
-                                    ? `${key}: ${constantName}`
-                                    : `${key}: value.${key} ?? ${constantName}`;
+                                    ? fragment`${key}: ${constantName}`
+                                    : fragment`${key}: value.${key} ?? ${constantName}`;
                             }
 
                             const defaultValue = f.defaultValue as NonNullable<typeof f.defaultValue>;
-                            const { content: renderedValue, imports } = visit(defaultValue, self).value;
-                            encoderImports.mergeWith(imports);
+                            const value = visit(defaultValue, self).value;
                             return f.defaultValueStrategy === 'omitted'
-                                ? `${key}: ${renderedValue}`
-                                : `${key}: value.${key} ?? ${renderedValue}`;
-                        })
-                        .join(', ');
+                                ? fragment`${key}: ${value}`
+                                : fragment`${key}: value.${key} ?? ${value}`;
+                        }),
+                        cs => cs.join(', '),
+                    );
 
                     return typeManifest({
                         ...mergedManifest,
-                        encoder: pipe(
-                            mergedManifest.encoder,
-                            f =>
-                                mapFragmentContent(
-                                    f,
-                                    c => `transformEncoder(${c}, (value) => ({ ...value, ${defaultValues} }))`,
-                                ),
-                            f => addFragmentImports(f, 'solanaCodecsCore', ['transformEncoder']),
-                            f => mergeFragmentImports(f, [encoderImports]),
-                        ),
+                        encoder: fragment`${use('transformEncoder', 'solanaCodecsCore')}(${mergedManifest.encoder}, (value) => ({ ...value, ${defaultValues} }))`,
                     });
                 },
 
@@ -1096,16 +814,8 @@ export function getTypeManifestVisitor(input: {
 
                     return typeManifest({
                         ...mergedManifest,
-                        decoder: pipe(
-                            mergedManifest.decoder,
-                            f => mapFragmentContent(f, c => `getTupleDecoder(${c})`),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getTupleDecoder']),
-                        ),
-                        encoder: pipe(
-                            mergedManifest.encoder,
-                            f => mapFragmentContent(f, c => `getTupleEncoder(${c})`),
-                            f => addFragmentImports(f, 'solanaCodecsDataStructures', ['getTupleEncoder']),
-                        ),
+                        decoder: fragment`${use('getTupleDecoder', 'solanaCodecsDataStructures')}(${mergedManifest.decoder})`,
+                        encoder: fragment`${use('getTupleEncoder', 'solanaCodecsDataStructures')}(${mergedManifest.encoder})`,
                     });
                 },
 
@@ -1118,52 +828,32 @@ export function getTypeManifestVisitor(input: {
 
                 visitZeroableOptionType(node, { self }) {
                     const childManifest = visit(node.item, self);
-                    const encoderOptions: string[] = ['prefix: null'];
-                    const decoderOptions: string[] = ['prefix: null'];
-                    const encoderImports = new ImportMap();
-                    const decoderImports = new ImportMap();
+                    const encoderOptions: Fragment[] = [fragment`prefix: null`];
+                    const decoderOptions: Fragment[] = [fragment`prefix: null`];
 
                     // Zero-value option.
                     if (node.zeroValue) {
                         const zeroValueManifest = visit(node.zeroValue, self);
-                        encoderImports.mergeWith(zeroValueManifest.value);
-                        decoderImports.mergeWith(zeroValueManifest.value);
-                        encoderOptions.push(`noneValue: ${zeroValueManifest.value.content}`);
-                        decoderOptions.push(`noneValue: ${zeroValueManifest.value.content}`);
+                        encoderOptions.push(fragment`noneValue: ${zeroValueManifest.value}`);
+                        decoderOptions.push(fragment`noneValue: ${zeroValueManifest.value}`);
                     } else {
-                        encoderOptions.push(`noneValue: "zeroes"`);
-                        decoderOptions.push(`noneValue: "zeroes"`);
+                        encoderOptions.push(fragment`noneValue: "zeroes"`);
+                        decoderOptions.push(fragment`noneValue: "zeroes"`);
                     }
 
-                    const encoderOptionsAsString =
-                        encoderOptions.length > 0 ? `, { ${encoderOptions.join(', ')} }` : '';
-                    const decoderOptionsAsString =
-                        decoderOptions.length > 0 ? `, { ${decoderOptions.join(', ')} }` : '';
+                    const encoderOptionsFragment = mergeFragments(encoderOptions, cs =>
+                        cs.length > 0 ? `, { ${cs.join(', ')} }` : '',
+                    );
+                    const decoderOptionsFragment = mergeFragments(decoderOptions, cs =>
+                        cs.length > 0 ? `, { ${cs.join(', ')} }` : '',
+                    );
 
                     return typeManifest({
                         ...childManifest,
-                        decoder: pipe(
-                            childManifest.decoder,
-                            f => mapFragmentContent(f, c => `getOptionDecoder(${c + decoderOptionsAsString})`),
-                            f => addFragmentImports(f, 'solanaOptions', ['getOptionDecoder']),
-                            f => mergeFragmentImports(f, [decoderImports]),
-                        ),
-                        encoder: pipe(
-                            childManifest.encoder,
-                            f => mapFragmentContent(f, c => `getOptionEncoder(${c + encoderOptionsAsString})`),
-                            f => addFragmentImports(f, 'solanaOptions', ['getOptionEncoder']),
-                            f => mergeFragmentImports(f, [encoderImports]),
-                        ),
-                        looseType: pipe(
-                            childManifest.looseType,
-                            f => mapFragmentContent(f, c => `OptionOrNullable<${c}>`),
-                            f => addFragmentImports(f, 'solanaOptions', ['type OptionOrNullable']),
-                        ),
-                        strictType: pipe(
-                            childManifest.strictType,
-                            f => mapFragmentContent(f, c => `Option<${c}>`),
-                            f => addFragmentImports(f, 'solanaOptions', ['type Option']),
-                        ),
+                        decoder: fragment`${use('getOptionDecoder', 'solanaOptions')}(${childManifest.decoder}${decoderOptionsFragment})`,
+                        encoder: fragment`${use('getOptionEncoder', 'solanaOptions')}(${childManifest.encoder}${encoderOptionsFragment})`,
+                        looseType: fragment`${use('type OptionOrNullable', 'solanaOptions')}<${childManifest.looseType}>`,
+                        strictType: fragment`${use('type Option', 'solanaOptions')}<${childManifest.strictType}>`,
                     });
                 },
             }),
@@ -1175,24 +865,24 @@ function getArrayLikeSizeOption(
     count: CountNode,
     visitor: Visitor<TypeManifest, TypeNode['kind']>,
 ): {
-    decoder: Fragment;
-    encoder: Fragment;
+    decoder: Fragment | undefined;
+    encoder: Fragment | undefined;
 } {
     if (isNode(count, 'fixedCountNode')) {
         return {
-            decoder: fragment(`size: ${count.value}`),
-            encoder: fragment(`size: ${count.value}`),
+            decoder: fragment`size: ${count.value}`,
+            encoder: fragment`size: ${count.value}`,
         };
     }
     if (isNode(count, 'remainderCountNode')) {
         return {
-            decoder: fragment(`size: 'remainder'`),
-            encoder: fragment(`size: 'remainder'`),
+            decoder: fragment`size: 'remainder'`,
+            encoder: fragment`size: 'remainder'`,
         };
     }
     const prefix = resolveNestedTypeNode(count.prefix);
     if (prefix.format === 'u32' && prefix.endian === 'le') {
-        return { decoder: fragment(''), encoder: fragment('') };
+        return { decoder: undefined, encoder: undefined };
     }
     const prefixManifest = visit(count.prefix, visitor);
     return {

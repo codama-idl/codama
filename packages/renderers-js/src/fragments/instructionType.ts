@@ -1,14 +1,13 @@
 import { InstructionNode, pascalCase } from '@codama/nodes';
 import { mapFragmentContent } from '@codama/renderers-core';
-import { findProgramNodeFromPath, getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
+import { findProgramNodeFromPath, getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { addFragmentImports, Fragment, fragmentFromTemplate, mergeFragmentImports, mergeFragments } from '../utils';
+import { Fragment, fragment, mergeFragments, RenderScope, use } from '../utils';
 import { getInstructionAccountMetaFragment } from './instructionAccountMeta';
 import { getInstructionAccountTypeParamFragment } from './instructionAccountTypeParam';
 
 export function getInstructionTypeFragment(
-    scope: Pick<GlobalFragmentScope, 'customInstructionData' | 'linkables' | 'nameApi'> & {
+    scope: Pick<RenderScope, 'customInstructionData' | 'linkables' | 'nameApi'> & {
         instructionPath: NodePath<InstructionNode>;
     },
 ): Fragment {
@@ -18,10 +17,11 @@ export function getInstructionTypeFragment(
     const hasAccounts = instructionNode.accounts.length > 0;
     const customData = customInstructionData.get(instructionNode.name);
     const hasData = !!customData || instructionNode.arguments.length > 0;
-    const instructionDataName = nameApi.instructionDataType(instructionNode.name);
-    const programAddressConstant = nameApi.programAddressConstant(programNode.name);
-    const dataType = customData ? pascalCase(customData.importAs) : pascalCase(instructionDataName);
-    const accountTypeParamsFragment = mergeFragments(
+
+    const instructionType = nameApi.instructionType(instructionNode.name);
+    const programAddressConstant = use(nameApi.programAddressConstant(programNode.name), 'generatedPrograms');
+
+    const accountTypeParams = mergeFragments(
         instructionNode.accounts.map(account =>
             getInstructionAccountTypeParamFragment({
                 ...scope,
@@ -29,8 +29,13 @@ export function getInstructionTypeFragment(
                 instructionAccountPath: [...instructionPath, account],
             }),
         ),
-        renders => renders.join(', '),
+        cs => (cs.length > 0 ? `${cs.join(', ')}, ` : ''),
     );
+
+    const data = hasData
+        ? fragment` & ${use('type InstructionWithData', 'solanaInstructions')}<${use('type ReadonlyUint8Array', 'solanaCodecsCore')}>`
+        : undefined;
+
     const usesLegacyOptionalAccounts = instructionNode.optionalAccountStrategy === 'omitted';
     const accountMetasFragment = mergeFragments(
         instructionNode.accounts.map(account =>
@@ -45,29 +50,11 @@ export function getInstructionTypeFragment(
         c => c.join(', '),
     );
 
-    const fragment = pipe(
-        fragmentFromTemplate('instructionType.njk', {
-            accountMetas: accountMetasFragment.content,
-            accountTypeParams: accountTypeParamsFragment.content,
-            dataType,
-            hasAccounts,
-            hasData,
-            instruction: instructionNode,
-            instructionType: nameApi.instructionType(instructionNode.name),
-            programAddressConstant,
-        }),
-        f => mergeFragmentImports(f, [accountTypeParamsFragment.imports, accountMetasFragment.imports]),
-        f => addFragmentImports(f, 'generatedPrograms', [programAddressConstant]),
-        f =>
-            addFragmentImports(f, 'solanaInstructions', [
-                'type AccountMeta',
-                'type Instruction',
-                'type InstructionWithAccounts',
-                ...(hasData ? ['type InstructionWithData'] : []),
-            ]),
-    );
+    const instructionWithAccounts = use('type InstructionWithAccounts', 'solanaInstructions');
+    const accounts = hasAccounts
+        ? fragment` & ${instructionWithAccounts}<[${accountMetasFragment}, ...TRemainingAccounts]>`
+        : fragment` & ${instructionWithAccounts}<TRemainingAccounts>`;
 
-    // TODO: if link, add import for data type. Unless we don't need to inject the data type in InstructionWithData.
-
-    return fragment;
+    return fragment`export type ${instructionType}<TProgram extends string = typeof ${programAddressConstant}, ${accountTypeParams}TRemainingAccounts extends readonly ${use('type AccountMeta', 'solanaInstructions')}<string>[] = []> =
+${use('type Instruction', 'solanaInstructions')}<TProgram>${data}${accounts};`;
 }

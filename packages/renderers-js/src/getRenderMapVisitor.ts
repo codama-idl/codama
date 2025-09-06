@@ -1,23 +1,15 @@
-import { join } from 'node:path';
-
-import { logWarn } from '@codama/errors';
 import {
     camelCase,
     CamelCaseString,
-    definedTypeNode,
     getAllAccounts,
     getAllDefinedTypes,
     getAllInstructionsWithSubs,
     getAllPdas,
     getAllPrograms,
-    InstructionNode,
-    resolveNestedTypeNode,
-    structTypeNodeFromInstructionArgumentNodes,
 } from '@codama/nodes';
-import { addToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
+import { fragmentToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
-    findProgramNodeFromPath,
     getByteSizeVisitor,
     getResolvedInstructionInputsVisitor,
     LinkableDictionary,
@@ -28,65 +20,28 @@ import {
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
-import type { ConfigureOptions } from 'nunjucks';
 
 import {
-    getAccountFetchHelpersFragment,
-    getAccountPdaHelpersFragment,
-    getAccountSizeHelpersFragment,
-    getAccountTypeFragment,
-    getDiscriminatorConstantsFragment,
-    getInstructionDataFragment,
-    getInstructionExtraArgsFragment,
-    getInstructionFunctionFragment,
-    getInstructionParseFunctionFragment,
-    getInstructionTypeFragment,
-    getPdaFunctionFragment,
-    getProgramAccountsFragment,
-    getProgramErrorsFragment,
-    getProgramFragment,
-    getProgramInstructionsFragment,
-    getTypeDiscriminatedUnionHelpersFragment,
-    getTypeWithCodecFragment,
+    getAccountPageFragment,
+    getErrorPageFragment,
+    getIndexPageFragment,
+    getInstructionPageFragment,
+    getPdaPageFragment,
+    getProgramPageFragment,
+    getRootIndexPageFragment,
+    getSharedPageFragment,
+    getTypePageFragment,
 } from './fragments';
-import { getTypeManifestVisitor, TypeManifestVisitor } from './getTypeManifestVisitor';
-import { ImportMap } from './ImportMap';
-import { DEFAULT_NAME_TRANSFORMERS, getNameApi, NameApi, NameTransformers } from './nameTransformers';
+import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import {
-    CustomDataOptions,
+    DEFAULT_NAME_TRANSFORMERS,
     getDefinedTypeNodesToExtract,
     getImportFromFactory,
-    GetImportFromFunction,
-    LinkOverrides,
+    getNameApi,
+    GetRenderMapOptions,
     parseCustomDataOptions,
-    ParsedCustomDataOptions,
-    render as baseRender,
+    RenderScope,
 } from './utils';
-
-export type GetRenderMapOptions = {
-    asyncResolvers?: string[];
-    customAccountData?: CustomDataOptions[];
-    customInstructionData?: CustomDataOptions[];
-    dependencyMap?: Record<string, string>;
-    internalNodes?: string[];
-    linkOverrides?: LinkOverrides;
-    nameTransformers?: Partial<NameTransformers>;
-    nonScalarEnums?: string[];
-    renderParentInstructions?: boolean;
-    useGranularImports?: boolean;
-};
-
-export type GlobalFragmentScope = {
-    asyncResolvers: CamelCaseString[];
-    customAccountData: ParsedCustomDataOptions;
-    customInstructionData: ParsedCustomDataOptions;
-    getImportFrom: GetImportFromFunction;
-    linkables: LinkableDictionary;
-    nameApi: NameApi;
-    nonScalarEnums: CamelCaseString[];
-    renderParentInstructions: boolean;
-    typeManifestVisitor: TypeManifestVisitor;
-};
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
@@ -119,20 +74,18 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
     const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
 
-    const globalScope: GlobalFragmentScope = {
+    const renderScope: RenderScope = {
         asyncResolvers,
         customAccountData,
         customInstructionData,
+        dependencyMap,
         getImportFrom,
         linkables,
         nameApi,
         nonScalarEnums,
         renderParentInstructions,
         typeManifestVisitor,
-    };
-
-    const render = (template: string, context?: object, renderOptions?: ConfigureOptions): string => {
-        return baseRender(join('pages', template), context, renderOptions);
+        useGranularImports,
     };
 
     return pipe(
@@ -142,177 +95,39 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
         v =>
             extendVisitor(v, {
                 visitAccount(node) {
-                    const accountPath = stack.getPath('accountNode');
-                    if (!findProgramNodeFromPath(accountPath)) {
-                        throw new Error('Account must be visited inside a program.');
-                    }
-
-                    const scope = {
-                        ...globalScope,
-                        accountPath,
-                        size: visit(node, byteSizeVisitor),
-                        typeManifest: visit(node, typeManifestVisitor),
-                    };
-
-                    const fields = resolveNestedTypeNode(node.data).fields;
-                    const accountDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
-                        ...scope,
-                        discriminatorNodes: node.discriminators ?? [],
-                        fields,
-                        prefix: node.name,
-                    });
-                    const accountTypeFragment = getAccountTypeFragment(scope);
-                    const accountFetchHelpersFragment = getAccountFetchHelpersFragment(scope);
-                    const accountSizeHelpersFragment = getAccountSizeHelpersFragment(scope);
-                    const accountPdaHelpersFragment = getAccountPdaHelpersFragment(scope);
-                    const imports = new ImportMap().mergeWith(
-                        accountDiscriminatorConstantsFragment,
-                        accountTypeFragment,
-                        accountFetchHelpersFragment,
-                        accountSizeHelpersFragment,
-                        accountPdaHelpersFragment,
-                    );
-
-                    return addToRenderMap(
-                        renderMap(),
-                        `accounts/${camelCase(node.name)}.ts`,
-                        render('accountsPage.njk', {
-                            accountDiscriminatorConstantsFragment: accountDiscriminatorConstantsFragment.content,
-                            accountFetchHelpersFragment: accountFetchHelpersFragment.content,
-                            accountPdaHelpersFragment: accountPdaHelpersFragment.content,
-                            accountSizeHelpersFragment: accountSizeHelpersFragment.content,
-                            accountTypeFragment: accountTypeFragment.content,
-                            imports: imports.toString(dependencyMap, useGranularImports),
+                    return fragmentToRenderMap(
+                        getAccountPageFragment({
+                            ...renderScope,
+                            accountPath: stack.getPath('accountNode'),
+                            size: visit(node, byteSizeVisitor),
                         }),
+                        `accounts/${camelCase(node.name)}.ts`,
                     );
                 },
 
                 visitDefinedType(node) {
-                    const scope = {
-                        ...globalScope,
-                        codecDocs: [],
-                        decoderDocs: [],
-                        encoderDocs: [],
-                        manifest: visit(node, typeManifestVisitor),
-                        name: node.name,
-                        node: node.type,
-                        size: visit(node, byteSizeVisitor),
-                        typeDocs: node.docs,
-                        typeNode: node.type,
-                    };
-
-                    const typeWithCodecFragment = getTypeWithCodecFragment(scope);
-                    const typeDiscriminatedUnionHelpersFragment = getTypeDiscriminatedUnionHelpersFragment(scope);
-                    const imports = new ImportMap()
-                        .mergeWith(typeWithCodecFragment, typeDiscriminatedUnionHelpersFragment)
-                        .remove('generatedTypes', [
-                            nameApi.dataType(node.name),
-                            nameApi.dataArgsType(node.name),
-                            nameApi.encoderFunction(node.name),
-                            nameApi.decoderFunction(node.name),
-                            nameApi.codecFunction(node.name),
-                        ]);
-
-                    return addToRenderMap(
-                        renderMap(),
+                    return fragmentToRenderMap(
+                        getTypePageFragment({ ...renderScope, node, size: visit(node, byteSizeVisitor) }),
                         `types/${camelCase(node.name)}.ts`,
-                        render('definedTypesPage.njk', {
-                            imports: imports.toString({ ...dependencyMap, generatedTypes: '.' }),
-                            typeDiscriminatedUnionHelpersFragment: typeDiscriminatedUnionHelpersFragment.content,
-                            typeWithCodecFragment: typeWithCodecFragment.content,
-                        }),
                     );
                 },
 
                 visitInstruction(node) {
-                    const instructionPath = stack.getPath('instructionNode');
-                    if (!findProgramNodeFromPath(instructionPath)) {
-                        throw new Error('Instruction must be visited inside a program.');
-                    }
-
-                    const instructionExtraName = nameApi.instructionExtraType(node.name);
-                    const scope = {
-                        ...globalScope,
-                        dataArgsManifest: visit(node, typeManifestVisitor),
-                        extraArgsManifest: visit(
-                            definedTypeNode({
-                                name: instructionExtraName,
-                                type: structTypeNodeFromInstructionArgumentNodes(node.extraArguments ?? []),
-                            }),
-                            typeManifestVisitor,
-                        ),
-                        instructionPath,
-                        renamedArgs: getRenamedArgsMap(node),
-                        resolvedInputs: visit(node, resolvedInstructionInputVisitor),
-                        size: visit(node, byteSizeVisitor),
-                    };
-
-                    // Fragments.
-                    const instructionDiscriminatorConstantsFragment = getDiscriminatorConstantsFragment({
-                        ...scope,
-                        discriminatorNodes: node.discriminators ?? [],
-                        fields: node.arguments,
-                        prefix: node.name,
-                    });
-                    const instructionTypeFragment = getInstructionTypeFragment(scope);
-                    const instructionDataFragment = getInstructionDataFragment(scope);
-                    const instructionExtraArgsFragment = getInstructionExtraArgsFragment(scope);
-                    const instructionFunctionAsyncFragment = getInstructionFunctionFragment({
-                        ...scope,
-                        useAsync: true,
-                    });
-                    const instructionFunctionSyncFragment = getInstructionFunctionFragment({
-                        ...scope,
-                        useAsync: false,
-                    });
-                    const instructionParseFunctionFragment = getInstructionParseFunctionFragment(scope);
-
-                    // Imports and interfaces.
-                    const imports = new ImportMap().mergeWith(
-                        instructionDiscriminatorConstantsFragment,
-                        instructionTypeFragment,
-                        instructionDataFragment,
-                        instructionExtraArgsFragment,
-                        instructionFunctionAsyncFragment,
-                        instructionFunctionSyncFragment,
-                        instructionParseFunctionFragment,
-                    );
-
-                    return addToRenderMap(
-                        renderMap(),
-                        `instructions/${camelCase(node.name)}.ts`,
-                        render('instructionsPage.njk', {
-                            imports: imports.toString(dependencyMap, useGranularImports),
-                            instruction: node,
-                            instructionDataFragment: instructionDataFragment.content,
-                            instructionDiscriminatorConstantsFragment:
-                                instructionDiscriminatorConstantsFragment.content,
-                            instructionExtraArgsFragment: instructionExtraArgsFragment.content,
-                            instructionFunctionAsyncFragment: instructionFunctionAsyncFragment.content,
-                            instructionFunctionSyncFragment: instructionFunctionSyncFragment.content,
-                            instructionParseFunctionFragment: instructionParseFunctionFragment.content,
-                            instructionTypeFragment: instructionTypeFragment.content,
+                    return fragmentToRenderMap(
+                        getInstructionPageFragment({
+                            ...renderScope,
+                            instructionPath: stack.getPath('instructionNode'),
+                            resolvedInputs: visit(node, resolvedInstructionInputVisitor),
+                            size: visit(node, byteSizeVisitor),
                         }),
+                        `instructions/${camelCase(node.name)}.ts`,
                     );
                 },
 
                 visitPda(node) {
-                    const pdaPath = stack.getPath('pdaNode');
-                    if (!findProgramNodeFromPath(pdaPath)) {
-                        throw new Error('PDA must be visited inside a program.');
-                    }
-
-                    const scope = { ...globalScope, pdaPath };
-                    const pdaFunctionFragment = getPdaFunctionFragment(scope);
-                    const imports = new ImportMap().mergeWith(pdaFunctionFragment);
-
-                    return addToRenderMap(
-                        renderMap(),
+                    return fragmentToRenderMap(
+                        getPdaPageFragment({ ...renderScope, pdaPath: stack.getPath('pdaNode') }),
                         `pdas/${camelCase(node.name)}.ts`,
-                        render('pdasPage.njk', {
-                            imports: imports.toString(dependencyMap, useGranularImports),
-                            pdaFunctionFragment: pdaFunctionFragment.content,
-                        }),
                     );
                 },
 
@@ -321,49 +136,20 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         ...getDefinedTypeNodesToExtract(node.accounts, customAccountData),
                         ...getDefinedTypeNodesToExtract(node.instructions, customInstructionData),
                     ];
-                    const scope = { ...globalScope, programNode: node };
-                    let renders = mergeRenderMaps([
+                    const scope = { ...renderScope, programNode: node };
+
+                    return mergeRenderMaps([
+                        fragmentToRenderMap(getProgramPageFragment(scope), `programs/${camelCase(node.name)}.ts`),
+                        ...(node.errors.length > 0
+                            ? [fragmentToRenderMap(getErrorPageFragment(scope), `errors/${camelCase(node.name)}.ts`)]
+                            : []),
                         ...node.pdas.map(p => visit(p, self)),
                         ...node.accounts.map(a => visit(a, self)),
                         ...node.definedTypes.map(t => visit(t, self)),
                         ...customDataDefinedType.map(t => visit(t, self)),
-                    ]);
-
-                    if (node.errors.length > 0) {
-                        const programErrorsFragment = getProgramErrorsFragment(scope);
-                        renders = addToRenderMap(
-                            renders,
-                            `errors/${camelCase(node.name)}.ts`,
-                            render('errorsPage.njk', {
-                                imports: new ImportMap()
-                                    .mergeWith(programErrorsFragment)
-                                    .toString(dependencyMap, useGranularImports),
-                                programErrorsFragment: programErrorsFragment.content,
-                            }),
-                        );
-                    }
-
-                    const programFragment = getProgramFragment(scope);
-                    const programAccountsFragment = getProgramAccountsFragment(scope);
-                    const programInstructionsFragment = getProgramInstructionsFragment(scope);
-                    renders = addToRenderMap(
-                        renders,
-                        `programs/${camelCase(node.name)}.ts`,
-                        render('programsPage.njk', {
-                            imports: new ImportMap()
-                                .mergeWith(programFragment, programAccountsFragment, programInstructionsFragment)
-                                .toString(dependencyMap, useGranularImports),
-                            programAccountsFragment: programAccountsFragment.content,
-                            programFragment: programFragment.content,
-                            programInstructionsFragment: programInstructionsFragment.content,
-                        }),
-                    );
-
-                    return mergeRenderMaps([
-                        renders,
-                        ...getAllInstructionsWithSubs(node, {
-                            leavesOnly: !renderParentInstructions,
-                        }).map(ix => visit(ix, self)),
+                        ...getAllInstructionsWithSubs(node, { leavesOnly: !renderParentInstructions }).map(i =>
+                            visit(i, self),
+                        ),
                     ]);
                 },
 
@@ -383,99 +169,53 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         instructionsToExport.length > 0 ||
                         definedTypesToExport.length > 0;
 
-                    const ctx = {
+                    const scope = {
+                        ...renderScope,
                         accountsToExport,
                         definedTypesToExport,
-                        hasAnythingToExport,
                         instructionsToExport,
                         pdasToExport,
                         programsToExport,
-                        programsWithErrorsToExport,
-                        root: node,
                     };
 
-                    let renders = renderMap();
-                    if (hasAnythingToExport) {
-                        renders = addToRenderMap(
-                            renders,
-                            'shared/index.ts',
-                            render('sharedPage.njk', {
-                                ...ctx,
-                                imports: new ImportMap()
-                                    .add('solanaAddresses', [
-                                        'type Address',
-                                        'isProgramDerivedAddress',
-                                        'type ProgramDerivedAddress',
-                                    ])
-                                    .add('solanaInstructions', [
-                                        'AccountRole',
-                                        'type AccountMeta',
-                                        'upgradeRoleToSigner',
-                                    ])
-                                    .add('solanaSigners', [
-                                        'type AccountSignerMeta',
-                                        'isTransactionSigner',
-                                        'type TransactionSigner',
-                                    ])
-                                    .addAlias('solanaSigners', 'isTransactionSigner', 'kitIsTransactionSigner')
-                                    .toString(dependencyMap, useGranularImports),
-                            }),
-                        );
-                    }
-                    if (programsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'programs/index.ts', render('programsIndex.njk', ctx));
-                    }
-                    if (programsWithErrorsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'errors/index.ts', render('errorsIndex.njk', ctx));
-                    }
-                    if (accountsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'accounts/index.ts', render('accountsIndex.njk', ctx));
-                    }
-                    if (pdasToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'pdas/index.ts', render('pdasIndex.njk', ctx));
-                    }
-                    if (instructionsToExport.length > 0) {
-                        renders = addToRenderMap(
-                            renders,
-                            'instructions/index.ts',
-                            render('instructionsIndex.njk', ctx),
-                        );
-                    }
-                    if (definedTypesToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'types/index.ts', render('definedTypesIndex.njk', ctx));
-                    }
-
-                    return pipe(
-                        renders,
-                        r => addToRenderMap(r, 'index.ts', render('rootIndex.njk', ctx)),
-                        r => mergeRenderMaps([r, ...getAllPrograms(node).map(p => visit(p, self))]),
-                    );
+                    return mergeRenderMaps([
+                        fragmentToRenderMap(getRootIndexPageFragment(scope), 'index.ts'),
+                        ...(accountsToExport.length > 0
+                            ? [fragmentToRenderMap(getIndexPageFragment(accountsToExport, scope), 'accounts/index.ts')]
+                            : []),
+                        ...(programsWithErrorsToExport.length > 0
+                            ? [
+                                  fragmentToRenderMap(
+                                      getIndexPageFragment(programsWithErrorsToExport, scope),
+                                      'errors/index.ts',
+                                  ),
+                              ]
+                            : []),
+                        ...(instructionsToExport.length > 0
+                            ? [
+                                  fragmentToRenderMap(
+                                      getIndexPageFragment(instructionsToExport, scope),
+                                      'instructions/index.ts',
+                                  ),
+                              ]
+                            : []),
+                        ...(pdasToExport.length > 0
+                            ? [fragmentToRenderMap(getIndexPageFragment(pdasToExport, scope), 'pdas/index.ts')]
+                            : []),
+                        ...(programsToExport.length > 0
+                            ? [fragmentToRenderMap(getIndexPageFragment(programsToExport, scope), 'programs/index.ts')]
+                            : []),
+                        ...(hasAnythingToExport
+                            ? [fragmentToRenderMap(getSharedPageFragment(scope), 'shared/index.ts')]
+                            : []),
+                        ...(definedTypesToExport.length > 0
+                            ? [fragmentToRenderMap(getIndexPageFragment(definedTypesToExport, scope), 'types/index.ts')]
+                            : []),
+                        ...getAllPrograms(node).map(p => visit(p, self)),
+                    ]);
                 },
             }),
         v => recordNodeStackVisitor(v, stack),
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
-}
-
-function getRenamedArgsMap(instruction: InstructionNode): Map<string, string> {
-    const argNames = [
-        ...instruction.arguments.map(a => a.name),
-        ...(instruction.extraArguments ?? []).map(a => a.name),
-    ];
-    const duplicateArgs = argNames.filter((e, i, a) => a.indexOf(e) !== i);
-    if (duplicateArgs.length > 0) {
-        throw new Error(`Duplicate args found: [${duplicateArgs.join(', ')}] in instruction [${instruction.name}].`);
-    }
-
-    const allNames = [...instruction.accounts.map(account => account.name), ...argNames];
-    const duplicates = allNames.filter((e, i, a) => a.indexOf(e) !== i);
-    if (duplicates.length === 0) return new Map();
-
-    logWarn(
-        `[JavaScript] Accounts and args of instruction [${instruction.name}] have the following ` +
-            `conflicting attributes [${duplicates.join(', ')}]. ` +
-            `Thus, the arguments have been renamed to avoid conflicts in the input type.`,
-    );
-
-    return new Map(duplicates.map(name => [camelCase(name), camelCase(`${name}Arg`)]));
 }

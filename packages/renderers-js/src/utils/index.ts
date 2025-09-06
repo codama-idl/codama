@@ -3,4 +3,6 @@ export * from './codecs';
 export * from './customData';
 export * from './fragment';
 export * from './linkOverrides';
+export * from './nameTransformers';
+export * from './options';
 export * from './render';

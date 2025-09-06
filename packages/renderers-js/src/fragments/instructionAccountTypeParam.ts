@@ -8,12 +8,11 @@ import {
     pipe,
 } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
 import { ImportMap } from '../ImportMap';
-import { Fragment, fragment, mergeFragmentImports } from '../utils';
+import { Fragment, fragment, mergeFragmentImports, RenderScope } from '../utils';
 
 export function getInstructionAccountTypeParamFragment(
-    scope: Pick<GlobalFragmentScope, 'linkables'> & {
+    scope: Pick<RenderScope, 'linkables'> & {
         allowAccountMeta: boolean;
         instructionAccountPath: NodePath<InstructionAccountNode>;
     },
@@ -30,14 +29,14 @@ export function getInstructionAccountTypeParamFragment(
     }
 
     if (instructionNode.optionalAccountStrategy === 'omitted' && instructionAccountNode.isOptional) {
-        return pipe(fragment(`${typeParam} extends string${accountMeta} | undefined = undefined`), f =>
+        return pipe(fragment`${typeParam} extends string${accountMeta} | undefined = undefined`, f =>
             mergeFragmentImports(f, [imports]),
         );
     }
 
     const defaultAddress = getDefaultAddress(instructionAccountNode.defaultValue, programNode.publicKey, linkables);
 
-    return pipe(fragment(`${typeParam} extends string${accountMeta} = ${defaultAddress}`), f =>
+    return pipe(fragment`${typeParam} extends string${accountMeta} = ${defaultAddress}`, f =>
         mergeFragmentImports(f, [imports]),
     );
 }

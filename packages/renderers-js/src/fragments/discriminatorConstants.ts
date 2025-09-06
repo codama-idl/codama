@@ -9,14 +9,12 @@ import {
     StructFieldTypeNode,
     VALUE_NODES,
 } from '@codama/nodes';
-import { mapFragmentContent } from '@codama/renderers-core';
 import { visit } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, mergeFragments } from '../utils';
+import { Fragment, fragment, mergeFragments, RenderScope } from '../utils';
 
 export function getDiscriminatorConstantsFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         discriminatorNodes: DiscriminatorNode[];
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
         prefix: string;
@@ -31,7 +29,7 @@ export function getDiscriminatorConstantsFragment(
 
 export function getDiscriminatorConstantFragment(
     discriminatorNode: DiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         discriminatorNodes: DiscriminatorNode[];
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
         prefix: string;
@@ -49,7 +47,7 @@ export function getDiscriminatorConstantFragment(
 
 export function getConstantDiscriminatorConstantFragment(
     discriminatorNode: ConstantDiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         discriminatorNodes: DiscriminatorNode[];
         prefix: string;
     },
@@ -67,7 +65,7 @@ export function getConstantDiscriminatorConstantFragment(
 
 export function getFieldDiscriminatorConstantFragment(
     discriminatorNode: FieldDiscriminatorNode,
-    scope: Pick<GlobalFragmentScope, 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'nameApi' | 'typeManifestVisitor'> & {
         fields: InstructionArgumentNode[] | StructFieldTypeNode[];
         prefix: string;
     },
@@ -86,7 +84,7 @@ export function getFieldDiscriminatorConstantFragment(
 }
 
 function getConstantFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         encoder: Fragment;
         name: string;
         value: Fragment;
@@ -96,14 +94,5 @@ function getConstantFragment(
     const constantName = nameApi.constant(name);
     const constantFunction = nameApi.constantFunction(name);
 
-    return mergeFragments(
-        [
-            mapFragmentContent(value, c => `export const ${constantName} = ${c};`),
-            mapFragmentContent(
-                encoder,
-                c => `export function ${constantFunction}() { return ${c}.encode(${constantName}); }`,
-            ),
-        ],
-        c => c.join('\n\n'),
-    );
+    return fragment`export const ${constantName} = ${value};\n\nexport function ${constantFunction}() { return ${encoder}.encode(${constantName}); }`;
 }
