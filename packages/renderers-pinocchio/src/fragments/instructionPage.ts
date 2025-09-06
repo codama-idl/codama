@@ -4,12 +4,14 @@ import {
     InstructionNode,
     isNode,
     pascalCase,
+    snakeCase,
+    SnakeCaseString,
     structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
 } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath, visit } from '@codama/visitors-core';
 
-import { getTypeManifestVisitor, TypeManifestVisitor } from '../getTypeManifestVisitor';
+import { getTypeManifestVisitor, TypeManifest } from '../getTypeManifestVisitor';
 import { renderValueNode } from '../renderValueNodeVisitor';
 import { Fragment, fragment, getPageFragment, RenderScope } from '../utils';
 
@@ -32,17 +34,11 @@ export function getInstructionPageFragment(
     }
 
     // Instruction args.
-    const instructionArgs: ParsedInstructionArgument[] = [];
-    // let hasArgs = false;
-    // let hasOptional = false;
-    // hasArgs = hasArgs || argument.defaultValueStrategy !== 'omitted';
-    // hasOptional = hasOptional || (hasDefaultValue && argument.defaultValueStrategy !== 'omitted');
-
-    const argumentVisitor = getTypeManifestVisitor({
-        ...scope,
-        nestedStruct: true,
-        parentName: `${pascalCase(instructionNode.name)}InstructionData`,
-    });
+    const instructionArguments = getParsedInstructionArguments(instructionNode, accountsAndArgsConflicts, scope);
+    const hasArgs = instructionArguments.some(arg => arg.defaultValueStrategy !== 'omitted');
+    const hasOptional = instructionArguments.some(
+        arg => !arg.resolvedDefaultValue && arg.defaultValueStrategy !== 'omitted',
+    );
 
     const struct = structTypeNodeFromInstructionArgumentNodes(instructionNode.arguments);
     const structVisitor = getTypeManifestVisitor({
@@ -60,45 +56,41 @@ export function getInstructionPageFragment(
 }
 
 type ParsedInstructionArgument = InstructionArgumentNode & {
-    default: boolean;
-    innerOptionType: string | null;
-    name: string;
-    optional: boolean;
-    size: number;
-    type: string;
-    value: string | null;
+    displayName: SnakeCaseString;
+    fixedSize: number | null;
+    manifest: TypeManifest;
+    resolvedDefaultValue: Fragment | null;
+    resolvedInnerOptionType: Fragment | null;
 };
 
-function getParsedInstructionArgument(
-    argument: InstructionArgumentNode,
-    argumentVisitor: TypeManifestVisitor,
+function getParsedInstructionArguments(
+    instructionNode: InstructionNode,
     accountsAndArgsConflicts: string[],
-    scope: Pick<RenderScope, 'byteSizeVisitor' | 'getImportFrom'>,
-): ParsedInstructionArgument {
-    const manifest = visit(argument.type, argumentVisitor);
-    const innerOptionType = isNode(argument.type, 'optionTypeNode')
-        ? manifest.type.content.slice('Option<'.length, -1)
-        : null;
+    scope: Pick<RenderScope, 'byteSizeVisitor' | 'getImportFrom' | 'getTraitsFromNode'>,
+): ParsedInstructionArgument[] {
+    const argumentVisitor = getTypeManifestVisitor({
+        ...scope,
+        nestedStruct: true,
+        parentName: `${pascalCase(instructionNode.name)}InstructionData`,
+    });
 
-    const hasDefaultValue = !!argument.defaultValue && isNode(argument.defaultValue, VALUE_NODES);
-    let renderValue: string | null = null;
-    if (hasDefaultValue) {
-        const { imports: argImports, render: value } = renderValueNode(argument.defaultValue, scope.getImportFrom);
-        imports.mergeWith(argImports);
-        renderValue = value;
-    }
-
-    const name = accountsAndArgsConflicts.includes(argument.name) ? `${argument.name}_arg` : argument.name;
-
-    return {
-        default: hasDefaultValue && argument.defaultValueStrategy === 'omitted',
-        innerOptionType,
-        name,
-        optional: hasDefaultValue && argument.defaultValueStrategy !== 'omitted',
-        size: visit(argument.type, scope.byteSizeVisitor) as number, // We fail later if the whole data is variable.
-        type: manifest.type,
-        value: renderValue,
-    };
+    return instructionNode.arguments.map(argument => {
+        return {
+            ...argument,
+            displayName: accountsAndArgsConflicts.includes(argument.name)
+                ? (`${snakeCase(argument.name)}_arg` as SnakeCaseString)
+                : snakeCase(argument.name),
+            fixedSize: visit(argument.type, scope.byteSizeVisitor),
+            manifest: visit(argument.type, argumentVisitor),
+            resolvedDefaultValue:
+                !!argument.defaultValue && isNode(argument.defaultValue, VALUE_NODES)
+                    ? renderValueNode(argument.defaultValue, scope.getImportFrom)
+                    : null,
+            resolvedInnerOptionType: isNode(argument.type, 'optionTypeNode')
+                ? visit(argument.type.item, argumentVisitor).type
+                : null,
+        };
+    });
 }
 
 function getConflictsBetweenAccountsAndArguments(instructionNode: InstructionNode): string[] {
