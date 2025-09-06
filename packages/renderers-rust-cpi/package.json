@@ -1,7 +1,7 @@
 {
-    "name": "@codama/renderers-pinocchio",
+    "name": "@codama/renderers-rust-cpi",
     "version": "0.1.0",
-    "description": "Renders Pinocchio-based Rust clients for your programs",
+    "description": "Renders CPI clients for your programs",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "node": {
