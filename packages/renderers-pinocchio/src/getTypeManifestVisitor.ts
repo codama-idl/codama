@@ -26,6 +26,8 @@ export type TypeManifest = {
     type: string;
 };
 
+export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
+
 export function getTypeManifestVisitor(options: {
     getImportFrom: GetImportFromFunction;
     getTraitsFromNode: GetTraitsFromNodeFunction;

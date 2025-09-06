@@ -1,14 +1,19 @@
 import { ProgramNode, snakeCase } from '@codama/nodes';
 import { pipe } from '@codama/visitors-core';
 
-import { addFragmentImports, Fragment, fragment, getPageFragment, mergeFragments } from '../utils';
+import { addFragmentImports, Fragment, fragment, getPageFragment, mergeFragments, RenderScope } from '../utils';
 
-export function getProgramModPageFragment(scope: { programsToExport: ProgramNode[] }): Fragment | undefined {
+export function getProgramModPageFragment(
+    scope: Pick<RenderScope, 'dependencyMap'> & { programsToExport: ProgramNode[] },
+): Fragment | undefined {
     const programsToExport = scope.programsToExport;
     if (programsToExport.length === 0) return;
 
     const programAddresses = programsToExport.map(getProgramAddressFragment);
-    return getPageFragment(mergeFragments(programAddresses, cs => cs.join('\n')));
+    return getPageFragment(
+        mergeFragments(programAddresses, cs => cs.join('\n')),
+        scope,
+    );
 }
 
 function getProgramAddressFragment(program: ProgramNode): Fragment {

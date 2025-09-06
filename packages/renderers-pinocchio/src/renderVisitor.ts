@@ -3,14 +3,8 @@ import { deleteDirectory, writeRenderMapVisitor } from '@codama/renderers-core';
 import { rootNodeVisitor, visit } from '@codama/visitors-core';
 import { spawnSync } from 'child_process';
 
-import { GetRenderMapOptions, getRenderMapVisitor } from './getRenderMapVisitor';
-
-export type RenderOptions = GetRenderMapOptions & {
-    crateFolder?: string;
-    deleteFolderBeforeRendering?: boolean;
-    formatCode?: boolean;
-    toolchain?: string;
-};
+import { getRenderMapVisitor } from './getRenderMapVisitor';
+import { RenderOptions } from './utils';
 
 export function renderVisitor(path: string, options: RenderOptions = {}) {
     return rootNodeVisitor(root => {

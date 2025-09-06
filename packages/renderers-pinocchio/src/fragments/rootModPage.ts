@@ -1,11 +1,13 @@
 import { InstructionNode, ProgramNode } from '@codama/nodes';
 
-import { Fragment, fragment, getPageFragment, mergeFragments } from '../utils';
+import { Fragment, fragment, getPageFragment, mergeFragments, RenderScope } from '../utils';
 
-export function getRootModPageFragment(scope: {
-    instructionsToExport: InstructionNode[];
-    programsToExport: ProgramNode[];
-}): Fragment | undefined {
+export function getRootModPageFragment(
+    scope: Pick<RenderScope, 'dependencyMap'> & {
+        instructionsToExport: InstructionNode[];
+        programsToExport: ProgramNode[];
+    },
+): Fragment | undefined {
     const hasPrograms = scope.programsToExport.length > 0;
     const hasInstructions = scope.instructionsToExport.length > 0;
     const hasAnythingToExport = hasPrograms || hasInstructions;
@@ -19,5 +21,6 @@ export function getRootModPageFragment(scope: {
             ],
             cs => cs.join('\n'),
         ),
+        scope,
     );
 }

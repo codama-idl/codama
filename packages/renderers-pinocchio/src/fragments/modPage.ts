@@ -1,8 +1,10 @@
 import { CamelCaseString, snakeCase } from '@codama/nodes';
 
-import { Fragment, fragment, getPageFragment, mergeFragments } from '../utils';
+import { Fragment, fragment, getPageFragment, mergeFragments, RenderScope } from '../utils';
 
-export function getModPageFragment(scope: { items: { name: CamelCaseString }[] }): Fragment | undefined {
+export function getModPageFragment(
+    scope: Pick<RenderScope, 'dependencyMap'> & { items: { name: CamelCaseString }[] },
+): Fragment | undefined {
     const { items } = scope;
     if (items.length === 0) return;
 
@@ -16,5 +18,8 @@ export function getModPageFragment(scope: { items: { name: CamelCaseString }[] }
         cs => cs.join('\n'),
     );
 
-    return getPageFragment(mergeFragments([modStatements, useStatements], cs => cs.join('\n\n')));
+    return getPageFragment(
+        mergeFragments([modStatements, useStatements], cs => cs.join('\n\n')),
+        scope,
+    );
 }

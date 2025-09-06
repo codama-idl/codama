@@ -15,8 +15,10 @@ import {
     extendVisitor,
     getByteSizeVisitor,
     LinkableDictionary,
+    NodeStack,
     pipe,
     recordLinkablesOnFirstVisitVisitor,
+    recordNodeStackVisitor,
     staticVisitor,
     visit,
 } from '@codama/visitors-core';
@@ -27,19 +29,11 @@ import { getProgramModPageFragment } from './fragments/programModPage';
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
-import { getImportFromFactory, getTraitsFromNodeFactory, LinkOverrides, render, TraitOptions } from './utils';
-
-export type GetRenderMapOptions = {
-    anchorTraits?: boolean;
-    defaultTraitOverrides?: string[];
-    dependencyMap?: Record<string, string>;
-    linkOverrides?: LinkOverrides;
-    renderParentInstructions?: boolean;
-    traitOptions?: TraitOptions;
-};
+import { getImportFromFactory, GetRenderMapOptions, getTraitsFromNodeFactory, render, RenderScope } from './utils';
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
     let program: ProgramNode | null = null;
 
     const renderParentInstructions = options.renderParentInstructions ?? false;
@@ -47,7 +41,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const getImportFrom = getImportFromFactory(options.linkOverrides ?? {});
     const getTraitsFromNode = getTraitsFromNodeFactory(options.traitOptions);
     const typeManifestVisitor = getTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
-    const byteSizeVisitor = getByteSizeVisitor(linkables);
+    const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
+
+    const renderScope: RenderScope = {
+        byteSizeVisitor,
+        dependencyMap,
+        getImportFrom,
+        linkables,
+        renderParentInstructions,
+        typeManifestVisitor,
+    };
 
     return pipe(
         staticVisitor(() => renderMap(), {
@@ -169,16 +172,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                                 .toString(dependencyMap),
                             instruction: node,
                             instructionArgs,
+                            instructionSize,
                             program,
                             typeManifest,
-                            instructionSize,
                         }),
                     );
                 },
 
                 visitProgram(node, { self }) {
                     program = node;
-                    let renderMap = mergeRenderMaps([
+                    const renderMap = mergeRenderMaps([
                         ...node.accounts.map(account => visit(account, self)),
                         ...node.definedTypes.map(type => visit(type, self)),
                         ...getAllInstructionsWithSubs(node, {
@@ -195,10 +198,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const instructionsToExport = getAllInstructionsWithSubs(node, {
                         leavesOnly: !renderParentInstructions,
                     });
+                    const scope = { ...renderScope, instructionsToExport, programsToExport };
 
-                    const rootMod = getRootModPageFragment({ instructionsToExport, programsToExport });
-                    const programsMod = getProgramModPageFragment({ programsToExport });
-                    const instructionsMod = getModPageFragment({ items: instructionsToExport });
+                    const rootMod = getRootModPageFragment(scope);
+                    const programsMod = getProgramModPageFragment(scope);
+                    const instructionsMod = getModPageFragment({ ...renderScope, items: instructionsToExport });
 
                     return mergeRenderMaps([
                         // mod.rs
@@ -212,6 +216,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     ]);
                 },
             }),
+        v => recordNodeStackVisitor(v, stack),
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
