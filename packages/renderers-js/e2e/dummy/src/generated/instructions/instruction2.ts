@@ -24,6 +24,7 @@ export type Instruction2Input = {
   remainingAccounts?: Array<Address>;
 };
 
+/** Testing instructions with remaining accounts only */
 export function getInstruction2Instruction<
   TProgramAddress extends Address = typeof DUMMY_PROGRAM_ADDRESS,
 >(

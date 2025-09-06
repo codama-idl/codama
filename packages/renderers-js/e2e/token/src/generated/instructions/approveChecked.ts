@@ -130,6 +130,15 @@ export type ApproveCheckedInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/**
+ * Approves a delegate. A delegate is given the authority over tokens on
+ * behalf of the source account's owner.
+ *
+ * This instruction differs from Approve in that the token mint and
+ * decimals value is checked by the caller. This may be useful when
+ * creating transactions offline or within a hardware wallet.
+ */
+
 export function getApproveCheckedInstruction<
   TAccountSource extends string,
   TAccountMint extends string,

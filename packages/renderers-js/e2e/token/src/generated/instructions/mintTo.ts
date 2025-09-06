@@ -118,6 +118,7 @@ export type MintToInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/** Mints new tokens to an account. The native mint does not support minting. */
 export function getMintToInstruction<
   TAccountMint extends string,
   TAccountToken extends string,

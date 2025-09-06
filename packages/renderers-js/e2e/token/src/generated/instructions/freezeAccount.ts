@@ -100,6 +100,7 @@ export type FreezeAccountInput<
   multiSigners?: Array<TransactionSigner>;
 };
 
+/** Freeze an Initialized account using the Mint's freeze_authority (if set). */
 export function getFreezeAccountInstruction<
   TAccountAccount extends string,
   TAccountMint extends string,

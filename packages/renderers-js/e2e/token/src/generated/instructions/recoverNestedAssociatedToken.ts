@@ -145,6 +145,19 @@ export type RecoverNestedAssociatedTokenAsyncInput<
   tokenProgram?: Address<TAccountTokenProgram>;
 };
 
+/**
+ * Transfers from and closes a nested associated token account: an
+ * associated token account owned by an associated token account.
+ *
+ * The tokens are moved from the nested associated token account to the
+ * wallet's associated token account, and the nested account lamports are
+ * moved to the wallet.
+ *
+ * Note: Nested token accounts are an anti-pattern, and almost always
+ * created unintentionally, so this instruction should only be used to
+ * recover from errors.
+ */
+
 export async function getRecoverNestedAssociatedTokenInstructionAsync<
   TAccountNestedAssociatedAccountAddress extends string,
   TAccountNestedTokenMintAddress extends string,
@@ -293,6 +306,19 @@ export type RecoverNestedAssociatedTokenInput<
   /** SPL Token program. */
   tokenProgram?: Address<TAccountTokenProgram>;
 };
+
+/**
+ * Transfers from and closes a nested associated token account: an
+ * associated token account owned by an associated token account.
+ *
+ * The tokens are moved from the nested associated token account to the
+ * wallet's associated token account, and the nested account lamports are
+ * moved to the wallet.
+ *
+ * Note: Nested token accounts are an anti-pattern, and almost always
+ * created unintentionally, so this instruction should only be used to
+ * recover from errors.
+ */
 
 export function getRecoverNestedAssociatedTokenInstruction<
   TAccountNestedAssociatedAccountAddress extends string,
