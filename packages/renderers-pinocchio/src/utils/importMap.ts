@@ -1,5 +1,3 @@
-import { TypeManifest } from './getTypeManifestVisitor';
-
 const DEFAULT_MODULE_MAP: Record<string, string> = {
     generated: 'crate::generated',
     generatedAccounts: 'crate::generated::accounts',
@@ -42,10 +40,6 @@ export class ImportMap {
             other._aliases.forEach((alias, importName) => this.addAlias(importName, alias));
         });
         return this;
-    }
-
-    mergeWithManifest(manifest: TypeManifest): ImportMap {
-        return this.mergeWith(manifest.imports);
     }
 
     addAlias(importName: string, alias: string): ImportMap {

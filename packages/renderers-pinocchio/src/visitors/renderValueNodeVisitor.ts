@@ -16,7 +16,7 @@ import {
     getBytesFromBytesValueNode,
     GetImportFromFunction,
     mergeFragments,
-} from './utils';
+} from '../utils';
 
 export function renderValueNode(
     value: ValueNode,

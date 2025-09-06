@@ -10,8 +10,8 @@ import {
 } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath, visit } from '@codama/visitors-core';
 
-import { getTypeManifestVisitor, TypeManifest } from '../getTypeManifestVisitor';
-import { renderValueNode } from '../renderValueNodeVisitor';
+import { getTypeManifestVisitor, TypeManifest } from '../visitors/getTypeManifestVisitor';
+import { renderValueNode } from '../visitors/renderValueNodeVisitor';
 import {
     addFragmentImports,
     Fragment,

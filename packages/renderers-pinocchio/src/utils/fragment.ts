@@ -1,7 +1,7 @@
 import { Docs } from '@codama/nodes';
 import { BaseFragment } from '@codama/renderers-core';
 
-import { ImportMap } from '../ImportMap';
+import { ImportMap } from './importMap';
 import { RenderScope } from './options';
 
 export type Fragment = BaseFragment & Readonly<{ imports: ImportMap }>;

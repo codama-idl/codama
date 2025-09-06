@@ -1,6 +1,6 @@
 import { getByteSizeVisitor, LinkableDictionary } from '@codama/visitors-core';
 
-import { TypeManifestVisitor } from '../getTypeManifestVisitor';
+import { TypeManifestVisitor } from '../visitors/getTypeManifestVisitor';
 import { GetImportFromFunction, LinkOverrides } from './linkOverrides';
 import { GetTraitsFromNodeFunction, TraitOptions } from './traitOptions';
 

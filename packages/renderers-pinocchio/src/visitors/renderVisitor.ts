@@ -3,8 +3,8 @@ import { deleteDirectory, writeRenderMapVisitor } from '@codama/renderers-core';
 import { rootNodeVisitor, visit } from '@codama/visitors-core';
 import { spawnSync } from 'child_process';
 
+import { RenderOptions } from '../utils';
 import { getRenderMapVisitor } from './getRenderMapVisitor';
-import { RenderOptions } from './utils';
 
 export function renderVisitor(path: string, options: RenderOptions = {}) {
     return rootNodeVisitor(root => {

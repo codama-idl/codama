@@ -12,11 +12,14 @@ import {
     visit,
 } from '@codama/visitors-core';
 
-import { getInstructionPageFragment, getRootModPageFragment } from './fragments';
-import { getModPageFragment } from './fragments/modPage';
-import { getProgramModPageFragment } from './fragments/programModPage';
+import {
+    getInstructionPageFragment,
+    getModPageFragment,
+    getProgramModPageFragment,
+    getRootModPageFragment,
+} from '../fragments';
+import { getImportFromFactory, GetRenderMapOptions, getTraitsFromNodeFactory, RenderScope } from '../utils';
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
-import { getImportFromFactory, GetRenderMapOptions, getTraitsFromNodeFactory, RenderScope } from './utils';
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();

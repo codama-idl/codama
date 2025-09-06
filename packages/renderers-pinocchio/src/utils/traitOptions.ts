@@ -1,7 +1,7 @@
 import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode, isScalarEnum } from '@codama/nodes';
 
-import { ImportMap } from '../ImportMap';
 import { Fragment, fragment, mergeFragmentImports } from './fragment';
+import { ImportMap } from './importMap';
 
 export type TraitOptions = {
     /** The default traits to implement for all types. */

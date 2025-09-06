@@ -25,7 +25,7 @@ import {
     GetTraitsFromNodeFunction,
     mergeFragments,
     rustDocblock,
-} from './utils';
+} from '../utils';
 
 export type TypeManifest = {
     nestedStructs: Fragment[];

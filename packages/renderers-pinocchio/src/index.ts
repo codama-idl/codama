@@ -1,4 +1,3 @@
-export * from './ImportMap';
-export * from './getRenderMapVisitor';
-export * from './getTypeManifestVisitor';
-export * from './renderVisitor';
+export * from './visitors';
+
+export { renderVisitor as default } from './visitors/renderVisitor';
