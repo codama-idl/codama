@@ -23,6 +23,12 @@ export enum AccountState {
 
 export type AccountStateArgs = AccountState;
 
+export const ACCOUNT_STATE_LABELS: Record<AccountState, string> = {
+  [AccountState.Uninitialized]: 'Uninitialized',
+  [AccountState.Initialized]: 'Initialized',
+  [AccountState.Frozen]: 'Frozen',
+};
+
 export function getAccountStateEncoder(): FixedSizeEncoder<AccountStateArgs> {
   return getEnumEncoder(AccountState);
 }
