@@ -1,7 +1,5 @@
 import { logWarn } from '@codama/errors';
 import {
-    getAllAccounts,
-    getAllDefinedTypes,
     getAllInstructionsWithSubs,
     getAllPrograms,
     InstructionNode,
@@ -12,7 +10,7 @@ import {
     structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
 } from '@codama/nodes';
-import { addToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
+import { addToRenderMap, fragmentToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     getByteSizeVisitor,
@@ -23,6 +21,9 @@ import {
     visit,
 } from '@codama/visitors-core';
 
+import { getRootModPageFragment } from './fragments';
+import { getModPageFragment } from './fragments/modPage';
+import { getProgramModPageFragment } from './fragments/programModPage';
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
 import { ImportMap } from './ImportMap';
 import { renderValueNode } from './renderValueNodeVisitor';
@@ -191,47 +192,24 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                 visitRoot(node, { self }) {
                     const programsToExport = getAllPrograms(node);
-                    const accountsToExport = getAllAccounts(node);
                     const instructionsToExport = getAllInstructionsWithSubs(node, {
                         leavesOnly: !renderParentInstructions,
                     });
-                    const definedTypesToExport = getAllDefinedTypes(node);
-                    const hasAnythingToExport =
-                        programsToExport.length > 0 ||
-                        accountsToExport.length > 0 ||
-                        instructionsToExport.length > 0 ||
-                        definedTypesToExport.length > 0;
 
-                    const ctx = {
-                        accountsToExport,
-                        definedTypesToExport,
-                        hasAnythingToExport,
-                        instructionsToExport,
-                        programsToExport,
-                        root: node,
-                    };
+                    const rootMod = getRootModPageFragment({ instructionsToExport, programsToExport });
+                    const programsMod = getProgramModPageFragment({ programsToExport });
+                    const instructionsMod = getModPageFragment({ items: instructionsToExport });
 
-                    let renders = renderMap();
-                    if (programsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'programs.rs', render('programsMod.njk', ctx));
-                    }
-                    /*
-                    if (accountsToExport.length > 0) {
-                        map.add('accounts/mod.rs', render('accountsMod.njk', ctx));
-                    }
-                    */
-                    if (definedTypesToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'types/mod.rs', render('definedTypesMod.njk', ctx));
-                    }
-                    if (instructionsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'instructions/mod.rs', render('instructionsMod.njk', ctx));
-                    }
-
-                    return pipe(
-                        renders,
-                        r => addToRenderMap(r, 'mod.rs', render('rootMod.njk', ctx)),
-                        r => mergeRenderMaps([r, ...getAllPrograms(node).map(p => visit(p, self))]),
-                    );
+                    return mergeRenderMaps([
+                        // mod.rs
+                        ...(rootMod ? [fragmentToRenderMap(rootMod, 'mod.rs')] : []),
+                        // programs/mod.rs
+                        ...(programsMod ? [fragmentToRenderMap(programsMod, 'programs/mod.rs')] : []),
+                        // instructions/mod.rs
+                        ...(instructionsMod ? [fragmentToRenderMap(instructionsMod, 'instructions/mod.rs')] : []),
+                        // Rest of the generated content.
+                        ...programsToExport.map(p => visit(p, self)),
+                    ]);
                 },
             }),
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
