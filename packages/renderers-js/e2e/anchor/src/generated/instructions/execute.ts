@@ -37,11 +37,11 @@ import {
   type ResolvedAccount,
 } from '../shared';
 
-export const EXECUTE_DISCRIMINATOR = new Uint8Array([
+export const EXECUTE_DISCRIMINATOR: ReadonlyUint8Array = new Uint8Array([
   105, 37, 101, 197, 75, 251, 102, 26,
 ]);
 
-export function getExecuteDiscriminatorBytes() {
+export function getExecuteDiscriminatorBytes(): ReadonlyUint8Array {
   return fixEncoderSize(getBytesEncoder(), 8).encode(EXECUTE_DISCRIMINATOR);
 }
 

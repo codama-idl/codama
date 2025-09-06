@@ -59,11 +59,11 @@ import {
   type TransferAmountRuleArgs,
 } from '../types';
 
-export const UPDATE_GUARD_DISCRIMINATOR = new Uint8Array([
+export const UPDATE_GUARD_DISCRIMINATOR: ReadonlyUint8Array = new Uint8Array([
   51, 38, 175, 180, 25, 249, 39, 24,
 ]);
 
-export function getUpdateGuardDiscriminatorBytes() {
+export function getUpdateGuardDiscriminatorBytes(): ReadonlyUint8Array {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
     UPDATE_GUARD_DISCRIMINATOR
   );
