@@ -6,14 +6,21 @@ import {
     pascalCase,
     snakeCase,
     SnakeCaseString,
-    structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
 } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath, visit } from '@codama/visitors-core';
 
 import { getTypeManifestVisitor, TypeManifest } from '../getTypeManifestVisitor';
 import { renderValueNode } from '../renderValueNodeVisitor';
-import { Fragment, fragment, getPageFragment, RenderScope } from '../utils';
+import {
+    addFragmentImports,
+    Fragment,
+    fragment,
+    getDocblockFragment,
+    getPageFragment,
+    mergeFragments,
+    RenderScope,
+} from '../utils';
 
 export function getInstructionPageFragment(
     scope: Pick<RenderScope, 'byteSizeVisitor' | 'dependencyMap' | 'getImportFrom' | 'getTraitsFromNode'> & {
@@ -33,26 +40,100 @@ export function getInstructionPageFragment(
         );
     }
 
-    // Instruction args.
+    // Instruction arguments.
     const instructionArguments = getParsedInstructionArguments(instructionNode, accountsAndArgsConflicts, scope);
     const hasArgs = instructionArguments.some(arg => arg.defaultValueStrategy !== 'omitted');
     const hasOptional = instructionArguments.some(
         arg => !arg.resolvedDefaultValue && arg.defaultValueStrategy !== 'omitted',
     );
 
-    const struct = structTypeNodeFromInstructionArgumentNodes(instructionNode.arguments);
-    const structVisitor = getTypeManifestVisitor({
-        ...scope,
-        parentName: `${pascalCase(instructionNode.name)}InstructionData`,
-    });
-    const typeManifest = visit(struct, structVisitor);
-    const instructionSize = visit(struct, scope.byteSizeVisitor);
+    // Helpers.
+    const instructionFixedSize = visit(instructionNode, scope.byteSizeVisitor);
+    const lifetime = instructionNode.accounts.length > 0 ? "<'a>" : '';
 
-    // imports: imports
-    //     .remove(`generatedInstructions::${pascalCase(node.name)}`)
-    //     .toString(dependencyMap),
+    return getPageFragment(
+        mergeFragments(
+            [
+                getInstructionStructFragment(instructionNode, instructionArguments, lifetime),
+                getInstructionImplFragment(instructionNode, instructionArguments, lifetime),
+            ],
+            cs => cs.join('\n\n'),
+        ),
+        scope,
+    );
+}
 
-    return getPageFragment(fragment``, scope);
+function getInstructionStructFragment(
+    instructionNode: InstructionNode,
+    instructionArguments: ParsedInstructionArgument[],
+    lifetime: string,
+) {
+    const accountsFragment = mergeFragments(
+        instructionNode.accounts.map(account => {
+            const docs = getDocblockFragment(account.docs ?? [], true);
+            const name = snakeCase(account.name);
+            const type = addFragmentImports(
+                account.isSigner === 'either' ? fragment`(&'a AccountInfo, bool)` : fragment`&'a AccountInfo`,
+                ['pinocchio::account_info::AccountInfo'],
+            );
+            return account.isOptional
+                ? fragment`${docs}pub ${name}: Option<${type}>,`
+                : fragment`${docs}pub ${name}: ${type},`;
+        }),
+        cs => cs.join('\n'),
+    );
+
+    const argumentsFragment = mergeFragments(
+        instructionArguments
+            .filter(arg => !arg.resolvedDefaultValue)
+            .map(arg => {
+                const docs = getDocblockFragment(arg.docs ?? [], true);
+                return fragment`${docs}pub ${arg.displayName}: ${arg.manifest.type},`;
+            }),
+        cs => cs.join('\n'),
+    );
+
+    return fragment`/// \`${snakeCase(instructionNode.name)}\` CPI helper.
+pub struct ${pascalCase(instructionNode.name)}${lifetime} {
+  ${accountsFragment}
+  ${argumentsFragment}
+}`;
+}
+
+function getInstructionImplFragment(
+    instructionNode: InstructionNode,
+    _instructionArguments: ParsedInstructionArgument[],
+    lifetime: string,
+) {
+    const accountsFragment = mergeFragments(
+        instructionNode.accounts.map(account => {
+            const name = snakeCase(account.name);
+            const isWritable = account.isWritable ? 'true' : 'false';
+            const accountMetaArguments =
+                account.isSigner === 'either'
+                    ? fragment`self.${name}.0.key(), ${isWritable}, self.${name}.1`
+                    : fragment`self.${name}.key(), ${isWritable}, ${account.isSigner}`;
+            return fragment`pinocchio::instruction::AccountMeta::new(${accountMetaArguments}),`;
+        }),
+        cs => cs.join('\n'),
+    );
+
+    return fragment`impl${lifetime} ${pascalCase(instructionNode.name)}${lifetime} {
+    #[inline(always)]
+    pub fn invoke(&self) -> pinocchio::ProgramResult {
+        self.invoke_signed(&[])
+    }
+
+    pub fn invoke_signed(&self, _signers: &[pinocchio::instruction::Signer]) -> pinocchio::ProgramResult {
+
+      // account metadata
+      let account_metas: [pinocchio::instruction::AccountMeta; {{ instruction.accounts.length }}] = [
+        ${accountsFragment}
+      ];
+
+      Ok(())
+    }
+}`;
 }
 
 type ParsedInstructionArgument = InstructionArgumentNode & {
