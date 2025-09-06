@@ -35,9 +35,11 @@ function runFormatter(cmd: string, args: string[]) {
         return;
     }
     if (stdout.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         logWarn(`(cargo-fmt) ${stdout || error}`);
     }
     if (stderr.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         logError(`(cargo-fmt) ${stderr || error}`);
     }
 }

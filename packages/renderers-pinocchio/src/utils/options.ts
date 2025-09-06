@@ -2,7 +2,7 @@ import { getByteSizeVisitor, LinkableDictionary } from '@codama/visitors-core';
 
 import { TypeManifestVisitor } from '../getTypeManifestVisitor';
 import { GetImportFromFunction, LinkOverrides } from './linkOverrides';
-import { TraitOptions } from './traitOptions';
+import { GetTraitsFromNodeFunction, TraitOptions } from './traitOptions';
 
 export type RenderOptions = GetRenderMapOptions & {
     crateFolder?: string;
@@ -24,6 +24,7 @@ export type RenderScope = {
     byteSizeVisitor: ReturnType<typeof getByteSizeVisitor>;
     dependencyMap: Record<string, string>;
     getImportFrom: GetImportFromFunction;
+    getTraitsFromNode: GetTraitsFromNodeFunction;
     linkables: LinkableDictionary;
     renderParentInstructions: boolean;
     typeManifestVisitor: TypeManifestVisitor;

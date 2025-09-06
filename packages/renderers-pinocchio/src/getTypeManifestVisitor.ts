@@ -17,13 +17,19 @@ import {
 } from '@codama/nodes';
 import { extendVisitor, mergeVisitor, pipe, visit } from '@codama/visitors-core';
 
-import { ImportMap } from './ImportMap';
-import { GetImportFromFunction, GetTraitsFromNodeFunction, rustDocblock } from './utils';
+import {
+    addFragmentImports,
+    Fragment,
+    fragment,
+    GetImportFromFunction,
+    GetTraitsFromNodeFunction,
+    mergeFragments,
+    rustDocblock,
+} from './utils';
 
 export type TypeManifest = {
-    imports: ImportMap;
-    nestedStructs: string[];
-    type: string;
+    nestedStructs: Fragment[];
+    type: Fragment;
 };
 
 export type TypeManifestVisitor = ReturnType<typeof getTypeManifestVisitor>;
@@ -42,11 +48,8 @@ export function getTypeManifestVisitor(options: {
 
     return pipe(
         mergeVisitor(
-            (): TypeManifest => ({ imports: new ImportMap(), nestedStructs: [], type: '' }),
-            (_, values) => ({
-                ...mergeManifests(values),
-                type: values.map(v => v.type).join('\n'),
-            }),
+            (): TypeManifest => ({ nestedStructs: [], type: fragment`` }),
+            (_, manifests) => mergeManifests(manifests),
             { keys: [...REGISTERED_TYPE_NODE_KINDS, 'definedTypeLinkNode', 'definedTypeNode', 'accountNode'] },
         ),
         v =>
@@ -55,12 +58,8 @@ export function getTypeManifestVisitor(options: {
                     parentName = pascalCase(account.name);
                     const manifest = visit(account.data, self);
                     const traits = getTraitsFromNode(account);
-                    manifest.imports.mergeWith(traits.imports);
                     parentName = null;
-                    return {
-                        ...manifest,
-                        type: traits.render + manifest.type,
-                    };
+                    return { ...manifest, type: fragment`${traits}${manifest.type}` };
                 },
 
                 visitArrayType(arrayType, { self }) {
@@ -69,7 +68,7 @@ export function getTypeManifestVisitor(options: {
                     if (isNode(arrayType.count, 'fixedCountNode')) {
                         return {
                             ...childManifest,
-                            type: `[${childManifest.type}; ${arrayType.count.value}]`,
+                            type: fragment`[${childManifest.type}; ${arrayType.count.value}]`,
                         };
                     }
 
@@ -80,11 +79,7 @@ export function getTypeManifestVisitor(options: {
                 visitBooleanType(booleanType) {
                     const resolvedSize = resolveNestedTypeNode(booleanType.size);
                     if (resolvedSize.format === 'u8' && resolvedSize.endian === 'le') {
-                        return {
-                            imports: new ImportMap(),
-                            nestedStructs: [],
-                            type: 'bool',
-                        };
+                        return { nestedStructs: [], type: fragment`bool` };
                     }
 
                     // TODO: Add to the Rust validator.
@@ -106,33 +101,29 @@ export function getTypeManifestVisitor(options: {
                     parentName = pascalCase(definedType.name);
                     const manifest = visit(definedType.type, self);
                     const traits = getTraitsFromNode(definedType);
-                    manifest.imports.mergeWith(traits.imports);
                     parentName = null;
 
                     const renderedType = isNode(definedType.type, ['enumTypeNode', 'structTypeNode'])
                         ? manifest.type
-                        : `pub type ${pascalCase(definedType.name)} = ${manifest.type};`;
+                        : fragment`pub type ${pascalCase(definedType.name)} = ${manifest.type};`;
 
-                    return { ...manifest, type: `${traits.render}${renderedType}` };
+                    return { ...manifest, type: fragment`${traits}${renderedType}` };
                 },
 
                 visitDefinedTypeLink(node) {
                     const pascalCaseDefinedType = pascalCase(node.name);
                     const importFrom = getImportFrom(node);
                     return {
-                        imports: new ImportMap().add(`${importFrom}::${pascalCaseDefinedType}`),
                         nestedStructs: [],
-                        type: pascalCaseDefinedType,
+                        type: addFragmentImports(fragment`${pascalCaseDefinedType}`, [
+                            `${importFrom}::${pascalCaseDefinedType}`,
+                        ]),
                     };
                 },
 
                 visitEnumEmptyVariantType(enumEmptyVariantType) {
                     const name = pascalCase(enumEmptyVariantType.name);
-                    return {
-                        imports: new ImportMap(),
-                        nestedStructs: [],
-                        type: `${name},`,
-                    };
+                    return { nestedStructs: [], type: fragment`${name},` };
                 },
 
                 visitEnumStructVariantType(enumStructVariantType, { self }) {
@@ -151,7 +142,7 @@ export function getTypeManifestVisitor(options: {
 
                     return {
                         ...typeManifest,
-                        type: `${name} ${typeManifest.type},`,
+                        type: fragment`${name} ${typeManifest.type},`,
                     };
                 },
 
@@ -168,17 +159,17 @@ export function getTypeManifestVisitor(options: {
                     parentName = originalParentName;
 
                     let derive = '';
-                    if (childManifest.type === '(Pubkey)') {
+                    if (childManifest.type.content === '(Pubkey)') {
                         derive =
                             '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]\n';
-                    } else if (childManifest.type === '(Vec<Pubkey>)') {
+                    } else if (childManifest.type.content === '(Vec<Pubkey>)') {
                         derive =
                             '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>"))]\n';
                     }
 
                     return {
                         ...childManifest,
-                        type: `${derive}${name}${childManifest.type},`,
+                        type: fragment`${derive}${name}${childManifest.type},`,
                     };
                 },
 
@@ -190,12 +181,11 @@ export function getTypeManifestVisitor(options: {
                     }
 
                     const variants = enumType.variants.map(variant => visit(variant, self));
-                    const variantNames = variants.map(variant => variant.type).join('\n');
                     const mergedManifest = mergeManifests(variants);
 
                     return {
                         ...mergedManifest,
-                        type: `pub enum ${pascalCase(originalParentName)} {\n${variantNames}\n}`,
+                        type: fragment`pub enum ${pascalCase(originalParentName)} {\n${mergedManifest.type}\n}`,
                     };
                 },
 
@@ -210,10 +200,11 @@ export function getTypeManifestVisitor(options: {
                     const key = visit(mapType.key, self);
                     const value = visit(mapType.value, self);
                     const mergedManifest = mergeManifests([key, value]);
-                    mergedManifest.imports.add('std::collections::HashMap');
                     return {
                         ...mergedManifest,
-                        type: `HashMap<${key.type}, ${value.type}>`,
+                        type: addFragmentImports(fragment`HashMap<${key.type}, ${value.type}>`, [
+                            'std::collections::HashMap',
+                        ]),
                     };
                 },
 
@@ -225,17 +216,12 @@ export function getTypeManifestVisitor(options: {
 
                     if (numberType.format === 'shortU16') {
                         return {
-                            imports: new ImportMap().add('solana_program::short_vec::ShortU16'),
                             nestedStructs: [],
-                            type: 'ShortU16',
+                            type: addFragmentImports(fragment`ShortU16`, ['solana_program::short_vec::ShortU16']),
                         };
                     }
 
-                    return {
-                        imports: new ImportMap(),
-                        nestedStructs: [],
-                        type: numberType.format,
-                    };
+                    return { nestedStructs: [], type: fragment`${numberType.format}` };
                 },
 
                 visitOptionType(optionType, { self }) {
@@ -245,7 +231,7 @@ export function getTypeManifestVisitor(options: {
                     if (optionPrefix.format === 'u8' && optionPrefix.endian === 'le') {
                         return {
                             ...childManifest,
-                            type: `Option<${childManifest.type}>`,
+                            type: fragment`Option<${childManifest.type}>`,
                         };
                     }
 
@@ -255,9 +241,8 @@ export function getTypeManifestVisitor(options: {
 
                 visitPublicKeyType() {
                     return {
-                        imports: new ImportMap().add('pinocchio::pubkey::Pubkey'),
                         nestedStructs: [],
-                        type: 'Pubkey',
+                        type: addFragmentImports(fragment`Pubkey`, ['pinocchio::pubkey::Pubkey']),
                     };
                 },
 
@@ -267,10 +252,11 @@ export function getTypeManifestVisitor(options: {
 
                 visitSetType(setType, { self }) {
                     const childManifest = visit(setType.item, self);
-                    childManifest.imports.add('std::collections::HashSet');
                     return {
                         ...childManifest,
-                        type: `HashSet<${childManifest.type}>`,
+                        type: addFragmentImports(fragment`HashSet<${childManifest.type}>`, [
+                            'std::collections::HashSet',
+                        ]),
                     };
                 },
 
@@ -283,37 +269,26 @@ export function getTypeManifestVisitor(options: {
 
                 visitStringType() {
                     if (!parentSize) {
-                        return {
-                            imports: new ImportMap(),
-                            nestedStructs: [],
-                            type: `str`,
-                        };
+                        return { nestedStructs: [], type: fragment`str` };
                     }
 
                     if (typeof parentSize === 'number') {
-                        return {
-                            imports: new ImportMap(),
-                            nestedStructs: [],
-                            type: `[u8; ${parentSize}]`,
-                        };
+                        return { nestedStructs: [], type: fragment`[u8; ${parentSize}]` };
                     }
 
                     if (isNode(parentSize, 'numberTypeNode') && parentSize.endian === 'le') {
                         switch (parentSize.format) {
                             case 'u32':
-                                return {
-                                    imports: new ImportMap(),
-                                    nestedStructs: [],
-                                    type: 'String',
-                                };
+                                return { nestedStructs: [], type: fragment`String` };
                             case 'u8':
                             case 'u16':
                             case 'u64': {
                                 const prefix = parentSize.format.toUpperCase();
                                 return {
-                                    imports: new ImportMap().add(`kaigan::types::${prefix}PrefixString`),
                                     nestedStructs: [],
-                                    type: `${prefix}PrefixString`,
+                                    type: addFragmentImports(fragment`${prefix}PrefixString`, [
+                                        `kaigan::types::${prefix}PrefixString`,
+                                    ]),
                                 };
                             }
                             default:
@@ -322,7 +297,7 @@ export function getTypeManifestVisitor(options: {
                     }
 
                     // TODO: Add to the Rust validator.
-                    throw new Error(`String size currently not supported: ${parentSize}`);
+                    throw new Error(`String size currently not supported: ${parentSize.format}`);
                 },
 
                 visitStructFieldType(structFieldType, { self }) {
@@ -349,10 +324,10 @@ export function getTypeManifestVisitor(options: {
                     const resolvedNestedType = resolveNestedTypeNode(structFieldType.type);
 
                     let derive = '';
-                    if (fieldManifest.type === 'Pubkey') {
+                    if (fieldManifest.type.content === 'Pubkey') {
                         derive =
                             '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]\n';
-                    } else if (fieldManifest.type === 'Vec<Pubkey>') {
+                    } else if (fieldManifest.type.content === 'Vec<Pubkey>') {
                         derive =
                             '#[cfg_attr(feature = "serde", serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>"))]\n';
                     } else if (
@@ -370,8 +345,8 @@ export function getTypeManifestVisitor(options: {
                     return {
                         ...fieldManifest,
                         type: inlineStruct
-                            ? `${docblock}${derive}${fieldName}: ${fieldManifest.type},`
-                            : `${docblock}${derive}pub ${fieldName}: ${fieldManifest.type},`,
+                            ? fragment`${docblock}${derive}${fieldName}: ${fieldManifest.type},`
+                            : fragment`${docblock}${derive}pub ${fieldName}: ${fieldManifest.type},`,
                     };
                 },
 
@@ -384,31 +359,29 @@ export function getTypeManifestVisitor(options: {
                     }
 
                     const fields = structType.fields.map(field => visit(field, self));
-                    const fieldTypes = fields.map(field => field.type).join('\n');
                     const mergedManifest = mergeManifests(fields);
 
                     if (nestedStruct) {
                         const nestedTraits = getTraitsFromNode(
                             definedTypeNode({ name: originalParentName, type: structType }),
                         );
-                        mergedManifest.imports.mergeWith(nestedTraits.imports);
                         return {
                             ...mergedManifest,
                             nestedStructs: [
                                 ...mergedManifest.nestedStructs,
-                                `${nestedTraits.render}pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
+                                fragment`${nestedTraits}pub struct ${pascalCase(originalParentName)} {\n${mergedManifest.type}\n}`,
                             ],
-                            type: pascalCase(originalParentName),
+                            type: fragment`${pascalCase(originalParentName)}`,
                         };
                     }
 
                     if (inlineStruct) {
-                        return { ...mergedManifest, type: `{\n${fieldTypes}\n}` };
+                        return { ...mergedManifest, type: fragment`{\n${mergedManifest.type}\n}` };
                     }
 
                     return {
                         ...mergedManifest,
-                        type: `pub struct ${pascalCase(originalParentName)} {\n${fieldTypes}\n}`,
+                        type: fragment`pub struct ${pascalCase(originalParentName)} {\n${mergedManifest.type}\n}`,
                     };
                 },
 
@@ -418,7 +391,10 @@ export function getTypeManifestVisitor(options: {
 
                     return {
                         ...mergedManifest,
-                        type: `(${items.map(item => item.type).join(', ')})`,
+                        type: mergeFragments(
+                            items.map(i => i.type),
+                            cs => `(${cs.join(', ')})`,
+                        ),
                     };
                 },
 
@@ -429,9 +405,12 @@ export function getTypeManifestVisitor(options: {
     );
 }
 
-function mergeManifests(manifests: TypeManifest[]): Pick<TypeManifest, 'imports' | 'nestedStructs'> {
+function mergeManifests(manifests: TypeManifest[]): TypeManifest {
     return {
-        imports: new ImportMap().mergeWith(...manifests.map(td => td.imports)),
         nestedStructs: manifests.flatMap(m => m.nestedStructs),
+        type: mergeFragments(
+            manifests.map(m => m.type),
+            cs => cs.join('\n'),
+        ),
     };
 }

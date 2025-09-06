@@ -1,6 +1,7 @@
 import { AccountNode, assertIsNode, camelCase, DefinedTypeNode, isNode, isScalarEnum } from '@codama/nodes';
 
 import { ImportMap } from '../ImportMap';
+import { Fragment, fragment, mergeFragmentImports } from './fragment';
 
 export type TraitOptions = {
     /** The default traits to implement for all types. */
@@ -51,24 +52,19 @@ export const DEFAULT_TRAIT_OPTIONS: Required<TraitOptions> = {
     useFullyQualifiedName: false,
 };
 
-export type GetTraitsFromNodeFunction = (node: AccountNode | DefinedTypeNode) => { imports: ImportMap; render: string };
+export type GetTraitsFromNodeFunction = (node: AccountNode | DefinedTypeNode) => Fragment;
 
 export function getTraitsFromNodeFactory(options: TraitOptions = {}): GetTraitsFromNodeFunction {
     return node => getTraitsFromNode(node, options);
 }
 
-export function getTraitsFromNode(
-    node: AccountNode | DefinedTypeNode,
-    userOptions: TraitOptions = {},
-): { imports: ImportMap; render: string } {
+export function getTraitsFromNode(node: AccountNode | DefinedTypeNode, userOptions: TraitOptions = {}): Fragment {
     assertIsNode(node, ['accountNode', 'definedTypeNode']);
     const options: Required<TraitOptions> = { ...DEFAULT_TRAIT_OPTIONS, ...userOptions };
 
     // Get the node type and return early if it's a type alias.
     const nodeType = getNodeType(node);
-    if (nodeType === 'alias') {
-        return { imports: new ImportMap(), render: '' };
-    }
+    if (nodeType === 'alias') return fragment``;
 
     // Find all the FQN traits for the node.
     const sanitizedOverrides = Object.fromEntries(
@@ -96,7 +92,7 @@ export function getTraitsFromNode(
         }),
     ];
 
-    return { imports, render: traitLines.join('') };
+    return mergeFragmentImports(fragment`${traitLines.join('')}`, [imports]);
 }
 
 function getNodeType(node: AccountNode | DefinedTypeNode): 'alias' | 'dataEnum' | 'scalarEnum' | 'struct' {

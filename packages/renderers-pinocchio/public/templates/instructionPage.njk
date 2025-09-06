@@ -1,10 +1,3 @@
-{% extends "layout.njk" %}
-{% import "macros.njk" as macros %}
-
-{% block main %}
-
-{{ imports }}
-
 /// `{{ instruction.name | snakeCase }}` CPI helper.
 pub struct {{ instruction.name | pascalCase }}{{ '<\'a>' if instruction.accounts.length > 0 }} {
   {# Accounts #}
@@ -54,5 +47,3 @@ impl{{ '<\'a>' if instruction.accounts.length > 0 }} {{ instruction.name | pasca
       Ok(())
     }
 }
-
-{% endblock %}
