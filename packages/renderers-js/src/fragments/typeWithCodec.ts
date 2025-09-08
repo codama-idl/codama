@@ -1,13 +1,11 @@
 import type { TypeNode } from '@codama/nodes';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { TypeManifest } from '../TypeManifest';
-import { Fragment, mergeFragments } from '../utils';
+import { Fragment, mergeFragments, RenderScope, TypeManifest } from '../utils';
 import { getTypeFragment } from './type';
 import { getTypeCodecFragment } from './typeCodec';
 
 export function getTypeWithCodecFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         codecDocs?: string[];
         decoderDocs?: string[];
         encoderDocs?: string[];

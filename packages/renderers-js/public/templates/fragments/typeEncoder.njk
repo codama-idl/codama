@@ -1,6 +1,0 @@
-{% import "macros.njk" as macros %}
-
-{{ macros.docblock(docs) }}
-export function {{ encoderFunction }}(): {{ encoderType }}<{{ looseName }}> {
-  return {{ manifest.encoder.content }}{% if useTypeCast %} as {{ encoderType }}<{{ looseName }}>{% endif %};
-}

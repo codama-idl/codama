@@ -1,29 +1,20 @@
 import { InstructionNode } from '@codama/nodes';
-import { getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
+import { mapFragmentContent } from '@codama/renderers-core';
+import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
-import { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { TypeManifest } from '../TypeManifest';
-import { Fragment, fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
+import { Fragment, RenderScope, TypeManifest } from '../utils';
 
 export function getInstructionExtraArgsFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         extraArgsManifest: TypeManifest;
         instructionPath: NodePath<InstructionNode>;
     },
-): Fragment {
+): Fragment | undefined {
     const { instructionPath, extraArgsManifest, nameApi } = scope;
     const instructionNode = getLastNodeFromPath(instructionPath);
-    if ((instructionNode.extraArguments ?? []).length === 0) {
-        return fragment('');
-    }
+    if ((instructionNode.extraArguments ?? []).length === 0) return;
 
     const instructionExtraName = nameApi.instructionExtraType(instructionNode.name);
-    return pipe(
-        fragmentFromTemplate('instructionExtraArgs.njk', {
-            looseName: nameApi.dataArgsType(instructionExtraName),
-            manifest: extraArgsManifest,
-            strictName: nameApi.dataType(instructionExtraName),
-        }),
-        f => mergeFragmentImports(f, [extraArgsManifest.looseType.imports]),
-    );
+    const looseName = nameApi.dataArgsType(instructionExtraName);
+    return mapFragmentContent(extraArgsManifest.looseType, c => `export type ${looseName} = ${c};`);
 }

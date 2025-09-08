@@ -5,15 +5,10 @@ import * as estreePlugin from 'prettier/plugins/estree';
 import * as typeScriptPlugin from 'prettier/plugins/typescript';
 import { format } from 'prettier/standalone';
 
-import { GetRenderMapOptions, getRenderMapVisitor } from './getRenderMapVisitor';
+import { RenderOptions } from '../utils';
+import { getRenderMapVisitor } from './getRenderMapVisitor';
 
 type PrettierOptions = Parameters<typeof format>[1];
-
-export type RenderOptions = GetRenderMapOptions & {
-    deleteFolderBeforeRendering?: boolean;
-    formatCode?: boolean;
-    prettierOptions?: PrettierOptions;
-};
 
 const DEFAULT_PRETTIER_OPTIONS: PrettierOptions = {
     arrowParens: 'always',

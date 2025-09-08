@@ -1,4 +1,4 @@
-import { Fragment, fragment, mergeFragments } from './utils';
+import { Fragment, fragment, mergeFragments } from './fragment';
 
 export type TypeManifest = Readonly<{
     decoder: Fragment;
@@ -11,12 +11,12 @@ export type TypeManifest = Readonly<{
 
 export function typeManifest(input: Partial<TypeManifest> = {}): TypeManifest {
     return Object.freeze({
-        decoder: fragment(''),
-        encoder: fragment(''),
+        decoder: fragment``,
+        encoder: fragment``,
         isEnum: false,
-        looseType: fragment(''),
-        strictType: fragment(''),
-        value: fragment(''),
+        looseType: fragment``,
+        strictType: fragment``,
+        value: fragment``,
         ...input,
     });
 }
@@ -31,7 +31,7 @@ export function mergeTypeManifests(
 ): TypeManifest {
     const { mergeTypes, mergeCodecs, mergeValues } = options;
     const merge = (fragmentFn: (m: TypeManifest) => Fragment, mergeFn?: (r: string[]) => string) =>
-        mergeFn ? mergeFragments(manifests.map(fragmentFn), mergeFn) : fragment('');
+        mergeFn ? mergeFragments(manifests.map(fragmentFn), mergeFn) : fragment``;
     return Object.freeze({
         decoder: merge(m => m.decoder, mergeCodecs),
         encoder: merge(m => m.encoder, mergeCodecs),

@@ -8,20 +8,19 @@ import {
     ResolvedInstructionInput,
 } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { NameApi } from '../nameTransformers';
-import { TypeManifest } from '../TypeManifest';
 import {
     addFragmentImports,
     Fragment,
     fragment,
-    fragmentFromTemplate,
     getInstructionDependencies,
     hasAsyncFunction,
     isAsyncDefaultValue,
-    mergeFragmentImports,
     mergeFragments,
+    RenderScope,
+    TypeManifest,
+    use,
 } from '../utils';
+import { NameApi } from '../utils/nameTransformers';
 import { getInstructionByteDeltaFragment } from './instructionByteDelta';
 import { getInstructionInputResolvedFragment } from './instructionInputResolved';
 import { getInstructionInputTypeFragment } from './instructionInputType';
@@ -29,7 +28,7 @@ import { getInstructionRemainingAccountsFragment } from './instructionRemainingA
 
 export function getInstructionFunctionFragment(
     scope: Pick<
-        GlobalFragmentScope,
+        RenderScope,
         'asyncResolvers' | 'customInstructionData' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'
     > & {
         dataArgsManifest: TypeManifest;
@@ -39,28 +38,15 @@ export function getInstructionFunctionFragment(
         resolvedInputs: ResolvedInstructionInput[];
         useAsync: boolean;
     },
-): Fragment {
-    const {
-        useAsync,
-        instructionPath,
-        resolvedInputs,
-        renamedArgs,
-        dataArgsManifest,
-        asyncResolvers,
-        nameApi,
-        customInstructionData,
-    } = scope;
+): Fragment | undefined {
+    const { useAsync, instructionPath, resolvedInputs, renamedArgs, asyncResolvers, nameApi, customInstructionData } =
+        scope;
     const instructionNode = getLastNodeFromPath(instructionPath);
     const programNode = findProgramNodeFromPath(instructionPath)!;
-    if (useAsync && !hasAsyncFunction(instructionNode, resolvedInputs, asyncResolvers)) {
-        return fragment('');
-    }
+    if (useAsync && !hasAsyncFunction(instructionNode, resolvedInputs, asyncResolvers)) return;
 
     const customData = customInstructionData.get(instructionNode.name);
     const hasAccounts = instructionNode.accounts.length > 0;
-    const hasLegacyOptionalAccounts =
-        instructionNode.optionalAccountStrategy === 'omitted' &&
-        instructionNode.accounts.some(account => account.isOptional);
     const instructionDependencies = getInstructionDependencies(instructionNode, asyncResolvers, useAsync);
     const argDependencies = instructionDependencies.filter(isNodeFilter('argumentValueNode')).map(node => node.name);
     const hasData = !!customData || instructionNode.arguments.length > 0;
@@ -81,134 +67,213 @@ export function getInstructionFunctionFragment(
         (instructionNode.remainingAccounts ?? []).filter(({ value }) => isNode(value, 'argumentValueNode')).length > 0;
     const hasAnyArgs = hasDataArgs || hasExtraArgs || hasRemainingAccountArgs;
     const hasInput = hasAccounts || hasAnyArgs;
-    const instructionDataName = nameApi.instructionDataType(instructionNode.name);
-    const programAddressConstant = nameApi.programAddressConstant(programNode.name);
-    const encoderFunction = customData
-        ? dataArgsManifest.encoder.content
-        : `${nameApi.encoderFunction(instructionDataName)}()`;
-    const argsTypeFragment = pipe(
-        fragment(customData ? dataArgsManifest.looseType.content : nameApi.dataArgsType(instructionDataName)),
-        customData
-            ? f => mergeFragmentImports(f, [dataArgsManifest.looseType.imports, dataArgsManifest.encoder.imports])
-            : f => f,
-    );
+    const programAddressConstant = use(nameApi.programAddressConstant(programNode.name), 'generatedPrograms');
 
     const functionName = useAsync
         ? nameApi.instructionAsyncFunction(instructionNode.name)
         : nameApi.instructionSyncFunction(instructionNode.name);
 
-    const typeParamsFragment = getTypeParams(instructionNode, programAddressConstant);
-    const instructionTypeFragment = getInstructionType(scope);
-
     // Input.
-    const inputTypeFragment = getInstructionInputTypeFragment(scope);
-    const inputTypeCallFragment = getInputTypeCall(scope);
-    const renamedArgsText = [...renamedArgs.entries()].map(([k, v]) => `${k}: input.${v}`).join(', ');
-
     const resolvedInputsFragment = getInstructionInputResolvedFragment(scope);
     const remainingAccountsFragment = getInstructionRemainingAccountsFragment(scope);
     const byteDeltaFragment = getInstructionByteDeltaFragment(scope);
-    const resolvedFragment = mergeFragments(
+    const resolvedInputFragment = mergeFragments(
         [resolvedInputsFragment, remainingAccountsFragment, byteDeltaFragment],
         content => content.join('\n\n'),
     );
-    const hasRemainingAccounts = remainingAccountsFragment.content !== '';
-    const hasByteDeltas = byteDeltaFragment.content !== '';
-    const hasResolver = resolvedFragment.features.has('instruction:resolverScopeVariable');
-    const getReturnType = (instructionType: string) => {
-        let returnType = instructionType;
-        if (hasByteDeltas) {
-            returnType = `${returnType} & InstructionWithByteDelta`;
-        }
-        return useAsync ? `Promise<${returnType}>` : returnType;
-    };
+    const hasRemainingAccounts = !!remainingAccountsFragment;
+    const hasByteDeltas = !!byteDeltaFragment;
+    const hasResolver = resolvedInputFragment.features.has('instruction:resolverScopeVariable');
+    const instructionTypeFragment = getInstructionTypeFragment(scope);
 
-    return pipe(
-        fragmentFromTemplate('instructionFunction.njk', {
-            argsTypeFragment: argsTypeFragment.content,
-            encoderFunction,
-            functionName,
-            getReturnType,
-            hasAccounts,
-            hasAnyArgs,
-            hasByteDeltas,
-            hasData,
-            hasDataArgs,
-            hasExtraArgs,
-            hasInput,
-            hasLegacyOptionalAccounts,
-            hasRemainingAccounts,
-            hasResolver,
-            inputTypeCallFragment: inputTypeCallFragment.content,
-            inputTypeFragment: inputTypeFragment.content,
-            instruction: instructionNode,
-            instructionTypeFragment: instructionTypeFragment.content,
-            programAddressConstant,
-            renamedArgs: renamedArgsText,
-            resolvedFragment: resolvedFragment.content,
-            typeParamsFragment: typeParamsFragment.content,
-            useAsync,
+    const typeParams = getTypeParamsFragment(instructionNode, programAddressConstant);
+    const returnType = getReturnTypeFragment(instructionTypeFragment, hasByteDeltas, useAsync);
+    const inputType = getInstructionInputTypeFragment(scope);
+    const inputArg = mapFragmentContent(getInputTypeCallFragment(scope), c => (hasInput ? `input: ${c}, ` : ''));
+    const functionBody = mergeFragments(
+        [
+            getProgramAddressInitializationFragment(programAddressConstant),
+            getAccountsInitializationFragment(instructionNode),
+            getArgumentsInitializationFragment(hasAnyArgs, renamedArgs),
+            getResolverScopeInitializationFragment(hasResolver, hasAccounts, hasAnyArgs),
+            resolvedInputFragment,
+            getReturnStatementFragment({
+                ...scope,
+                hasByteDeltas,
+                hasData,
+                hasDataArgs,
+                hasRemainingAccounts,
+                instructionNode,
+                syncReturnTypeFragment: getReturnTypeFragment(instructionTypeFragment, hasByteDeltas, false),
+            }),
+        ],
+        cs => cs.join('\n\n'),
+    );
+
+    return fragment`${inputType}\n\nexport ${useAsync ? 'async ' : ''}function ${functionName}${typeParams}(${inputArg}config?: { programAddress?: TProgramAddress } ): ${returnType} {
+  ${functionBody}
+}`;
+}
+
+function getProgramAddressInitializationFragment(programAddressConstant: Fragment): Fragment {
+    return fragment`// Program address.
+const programAddress = config?.programAddress ?? ${programAddressConstant};`;
+}
+
+function getAccountsInitializationFragment(instructionNode: InstructionNode): Fragment | undefined {
+    if (instructionNode.accounts.length === 0) return;
+
+    const accounts = mergeFragments(
+        instructionNode.accounts.map(account => {
+            const name = camelCase(account.name);
+            const isWritable = account.isWritable ? 'true' : 'false';
+            return fragment`${name}: { value: input.${name} ?? null, isWritable: ${isWritable} }`;
         }),
-        f =>
-            mergeFragmentImports(f, [
-                typeParamsFragment.imports,
-                instructionTypeFragment.imports,
-                inputTypeFragment.imports,
-                inputTypeCallFragment.imports,
-                resolvedFragment.imports,
-                argsTypeFragment.imports,
-            ]),
-        f => addFragmentImports(f, 'generatedPrograms', [programAddressConstant]),
-        f => addFragmentImports(f, 'solanaAddresses', ['type Address']),
-        f => (hasAccounts ? addFragmentImports(f, 'solanaInstructions', ['type AccountMeta']) : f),
-        f => (hasAccounts ? addFragmentImports(f, 'shared', ['getAccountMetaFactory', 'type ResolvedAccount']) : f),
-        f => (hasByteDeltas ? addFragmentImports(f, 'shared', ['type InstructionWithByteDelta']) : f),
+        cs => cs.join(', '),
     );
+
+    return fragment` // Original accounts.
+const originalAccounts = { ${accounts} }
+const accounts = originalAccounts as Record<keyof typeof originalAccounts, ${use('type ResolvedAccount', 'shared')}>;
+`;
 }
 
-function getTypeParams(instructionNode: InstructionNode, programAddressConstant: string): Fragment {
-    const typeParams = instructionNode.accounts.map(account => `TAccount${pascalCase(account.name)} extends string`);
-    // after all accounts, add an optional type for program address
-    typeParams.push(`TProgramAddress extends Address = typeof ${programAddressConstant}`);
+function getArgumentsInitializationFragment(
+    hasAnyArgs: boolean,
+    renamedArgs: Map<string, string>,
+): Fragment | undefined {
+    if (!hasAnyArgs) return;
+    const renamedArgsText = [...renamedArgs.entries()].map(([k, v]) => `${k}: input.${v}`).join(', ');
+
+    return fragment`// Original args.
+const args = { ...input, ${renamedArgsText} };
+`;
+}
+
+function getResolverScopeInitializationFragment(
+    hasResolver: boolean,
+    hasAccounts: boolean,
+    hasAnyArgs: boolean,
+): Fragment | undefined {
+    if (!hasResolver) return;
+
+    const resolverAttributes = [
+        'programAddress',
+        ...(hasAccounts ? ['accounts'] : []),
+        ...(hasAnyArgs ? ['args'] : []),
+    ].join(', ');
+
+    return fragment`// Resolver scope.
+const resolverScope = { ${resolverAttributes} };`;
+}
+
+function getReturnStatementFragment(
+    scope: Pick<RenderScope, 'customInstructionData' | 'nameApi'> & {
+        dataArgsManifest: TypeManifest;
+        hasByteDeltas: boolean;
+        hasData: boolean;
+        hasDataArgs: boolean;
+        hasRemainingAccounts: boolean;
+        instructionNode: InstructionNode;
+        syncReturnTypeFragment: Fragment;
+    },
+): Fragment {
+    const { instructionNode, hasByteDeltas, hasData, hasDataArgs, hasRemainingAccounts, nameApi } = scope;
+    const optionalAccountStrategy = instructionNode.optionalAccountStrategy ?? 'programId';
+    const hasAccounts = instructionNode.accounts.length > 0;
+    const hasLegacyOptionalAccounts =
+        instructionNode.optionalAccountStrategy === 'omitted' &&
+        instructionNode.accounts.some(account => account.isOptional);
+
+    // Account meta helper.
+    const getAccountMeta = hasAccounts
+        ? fragment`const getAccountMeta = ${use('getAccountMetaFactory', 'shared')}(programAddress, '${optionalAccountStrategy}');`
+        : '';
+
+    // Accounts.
+    const accountItems = [
+        ...instructionNode.accounts.map(account => `getAccountMeta(accounts.${camelCase(account.name)})`),
+        ...(hasRemainingAccounts ? ['...remainingAccounts'] : []),
+    ].join(', ');
+    let accounts: Fragment | undefined;
+    if (hasAccounts && hasLegacyOptionalAccounts) {
+        accounts = fragment`accounts: [${accountItems}].filter(<T>(x: T | undefined): x is T => x !== undefined)`;
+    } else if (hasAccounts) {
+        accounts = fragment`accounts: [${accountItems}]`;
+    } else if (hasRemainingAccounts) {
+        accounts = fragment`accounts: remainingAccounts`;
+    }
+
+    // Data.
+    const customData = scope.customInstructionData.get(instructionNode.name);
+    const instructionDataName = nameApi.instructionDataType(instructionNode.name);
+    const encoderFunctionFragment = customData
+        ? scope.dataArgsManifest.encoder
+        : `${nameApi.encoderFunction(instructionDataName)}()`;
+    const argsTypeFragment = customData ? scope.dataArgsManifest.looseType : nameApi.dataArgsType(instructionDataName);
+    let data: Fragment | undefined;
+    if (hasDataArgs) {
+        data = fragment`data: ${encoderFunctionFragment}.encode(args as ${argsTypeFragment})`;
+    } else if (hasData) {
+        data = fragment`data: ${encoderFunctionFragment}.encode({})`;
+    }
+
+    // Instruction.
+    const instructionAttributes = pipe(
+        [accounts, hasByteDeltas ? fragment`byteDelta` : undefined, data, fragment`programAddress`],
+        fs => mergeFragments(fs, cs => cs.join(', ')),
+    );
+
+    return fragment`${getAccountMeta}\nreturn Object.freeze({ ${instructionAttributes} } as ${scope.syncReturnTypeFragment});`;
+}
+
+function getReturnTypeFragment(instructionTypeFragment: Fragment, hasByteDeltas: boolean, useAsync: boolean): Fragment {
     return pipe(
-        fragment(typeParams.filter(x => !!x).join(', ')),
-        f => mapFragmentContent(f, c => `<${c}>`),
-        f => addFragmentImports(f, 'generatedPrograms', [programAddressConstant]),
+        instructionTypeFragment,
+        f => (hasByteDeltas ? fragment`${f} & ${use('type InstructionWithByteDelta', 'shared')}` : f),
+        f => (useAsync ? fragment`Promise<${f}>` : f),
     );
 }
 
-function getInstructionType(scope: { instructionPath: NodePath<InstructionNode>; nameApi: NameApi }): Fragment {
+function getTypeParamsFragment(instructionNode: InstructionNode, programAddressConstant: Fragment): Fragment {
+    return mergeFragments(
+        [
+            ...instructionNode.accounts.map(account => fragment`TAccount${pascalCase(account.name)} extends string`),
+            fragment`TProgramAddress extends ${use('type Address', 'solanaAddresses')} = typeof ${programAddressConstant}`,
+        ],
+        cs => `<${cs.join(', ')}>`,
+    );
+}
+
+function getInstructionTypeFragment(scope: { instructionPath: NodePath<InstructionNode>; nameApi: NameApi }): Fragment {
     const { instructionPath, nameApi } = scope;
     const instructionNode = getLastNodeFromPath(instructionPath);
     const instructionTypeName = nameApi.instructionType(instructionNode.name);
-    const programAddressFragment = fragment('TProgramAddress');
     const accountTypeParamsFragments = instructionNode.accounts.map(account => {
-        const typeParam = `TAccount${pascalCase(account.name)}`;
+        const typeParam = fragment`TAccount${pascalCase(account.name)}`;
         const camelName = camelCase(account.name);
 
         if (account.isSigner === 'either') {
-            const signerRole = account.isWritable ? 'WritableSignerAccount' : 'ReadonlySignerAccount';
+            const signerRole = use(
+                account.isWritable ? 'type WritableSignerAccount' : 'type ReadonlySignerAccount',
+                'solanaInstructions',
+            );
             return pipe(
-                fragment(
-                    `typeof input["${camelName}"] extends TransactionSigner<${typeParam}> ` +
-                        `? ${signerRole}<${typeParam}> & AccountSignerMeta<${typeParam}> ` +
-                        `: ${typeParam}`,
-                ),
-                f => addFragmentImports(f, 'solanaInstructions', [`type ${signerRole}`]),
-                f => addFragmentImports(f, 'solanaSigners', ['type AccountSignerMeta']),
+                fragment`typeof input["${camelName}"] extends TransactionSigner<${typeParam}> ? ${signerRole}<${typeParam}> & AccountSignerMeta<${typeParam}> : ${typeParam}`,
+                f => addFragmentImports(f, 'solanaSigners', ['type AccountSignerMeta', 'type TransactionSigner']),
             );
         }
 
-        return fragment(typeParam);
+        return typeParam;
     });
 
     return pipe(
-        mergeFragments([programAddressFragment, ...accountTypeParamsFragments], c => c.join(', ')),
+        mergeFragments([fragment`TProgramAddress`, ...accountTypeParamsFragments], c => c.join(', ')),
         f => mapFragmentContent(f, c => `${instructionTypeName}<${c}>`),
     );
 }
 
-function getInputTypeCall(scope: {
+function getInputTypeCallFragment(scope: {
     instructionPath: NodePath<InstructionNode>;
     nameApi: NameApi;
     useAsync: boolean;
@@ -218,8 +283,8 @@ function getInputTypeCall(scope: {
     const inputTypeName = useAsync
         ? nameApi.instructionAsyncInputType(instructionNode.name)
         : nameApi.instructionSyncInputType(instructionNode.name);
-    if (instructionNode.accounts.length === 0) return fragment(inputTypeName);
+    if (instructionNode.accounts.length === 0) return fragment`${inputTypeName}`;
     const accountTypeParams = instructionNode.accounts.map(account => `TAccount${pascalCase(account.name)}`).join(', ');
 
-    return fragment(`${inputTypeName}<${accountTypeParams}>`);
+    return fragment`${inputTypeName}<${accountTypeParams}>`;
 }

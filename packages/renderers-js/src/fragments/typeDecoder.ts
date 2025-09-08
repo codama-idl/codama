@@ -1,12 +1,9 @@
 import { isDataEnum, isNode, TypeNode } from '@codama/nodes';
-import { pipe } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { TypeManifest } from '../TypeManifest';
-import { addFragmentImports, Fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
+import { Fragment, fragment, getDocblockFragment, RenderScope, TypeManifest, use } from '../utils';
 
 export function getTypeDecoderFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & {
+    scope: Pick<RenderScope, 'nameApi'> & {
         docs?: string[];
         manifest: Pick<TypeManifest, 'decoder'>;
         name: string;
@@ -15,20 +12,18 @@ export function getTypeDecoderFragment(
     },
 ): Fragment {
     const { name, node, manifest, nameApi, docs = [] } = scope;
-    const decoderType = typeof scope.size === 'number' ? 'FixedSizeDecoder' : 'Decoder';
+    const decoderFunction = nameApi.decoderFunction(name);
+    const strictName = nameApi.dataType(name);
+
+    const docblock = getDocblockFragment(docs, true);
+    const decoderType = use(
+        typeof scope.size === 'number' ? 'type FixedSizeDecoder' : 'type Decoder',
+        'solanaCodecsCore',
+    );
     const useTypeCast = isNode(node, 'enumTypeNode') && isDataEnum(node) && typeof scope.size === 'number';
 
-    return pipe(
-        fragmentFromTemplate('typeDecoder.njk', {
-            decoderFunction: nameApi.decoderFunction(name),
-            decoderType,
-            docs,
-            looseName: nameApi.dataArgsType(name),
-            manifest,
-            strictName: nameApi.dataType(name),
-            useTypeCast,
-        }),
-        f => mergeFragmentImports(f, [manifest.decoder.imports]),
-        f => addFragmentImports(f, 'solanaCodecsCore', [`type ${decoderType}`]),
-    );
+    const typeCast = useTypeCast ? fragment` as ${decoderType}<${strictName}>` : '';
+    return fragment`${docblock}export function ${decoderFunction}(): ${decoderType}<${strictName}> {
+    return ${manifest.decoder}${typeCast};
+}`;
 }

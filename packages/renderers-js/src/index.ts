@@ -1,8 +1,6 @@
-export * from './ImportMap';
-export * from './TypeManifest';
-export * from './getRenderMapVisitor';
-export * from './getTypeManifestVisitor';
-export * from './nameTransformers';
-export * from './renderVisitor';
+export * from './utils/importMap';
+export * from './utils/nameTransformers';
+export * from './utils/typeManifest';
+export * from './visitors';
 
-export { renderVisitor as default } from './renderVisitor';
+export { renderVisitor as default } from './visitors';

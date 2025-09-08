@@ -3,7 +3,6 @@ import { camelCase, InstructionInputValueNode, isNode, OptionalAccountStrategy }
 import { mapFragmentContent, setFragmentContent } from '@codama/renderers-core';
 import { pipe, ResolvedInstructionInput, visit } from '@codama/visitors-core';
 
-import { GlobalFragmentScope } from '../getRenderMapVisitor';
 import {
     addFragmentFeatures,
     addFragmentImports,
@@ -12,10 +11,11 @@ import {
     isAsyncDefaultValue,
     mergeFragmentImports,
     mergeFragments,
+    RenderScope,
 } from '../utils';
 
 export function getInstructionInputDefaultFragment(
-    scope: Pick<GlobalFragmentScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'> & {
+    scope: Pick<RenderScope, 'asyncResolvers' | 'getImportFrom' | 'nameApi' | 'typeManifestVisitor'> & {
         input: ResolvedInstructionInput;
         optionalAccountStrategy: OptionalAccountStrategy;
         useAsync: boolean;
@@ -24,29 +24,26 @@ export function getInstructionInputDefaultFragment(
     const { input, optionalAccountStrategy, asyncResolvers, useAsync, nameApi, typeManifestVisitor, getImportFrom } =
         scope;
     if (!input.defaultValue) {
-        return fragment('');
+        return fragment``;
     }
 
     if (!useAsync && isAsyncDefaultValue(input.defaultValue, asyncResolvers)) {
-        return fragment('');
+        return fragment``;
     }
 
     const { defaultValue } = input;
     const defaultFragment = (renderedValue: string, isWritable?: boolean): Fragment => {
         const inputName = camelCase(input.name);
         if (input.kind === 'instructionAccountNode' && isNode(defaultValue, 'resolverValueNode')) {
-            return fragment(`accounts.${inputName} = { ...accounts.${inputName}, ...${renderedValue} };`);
+            return fragment`accounts.${inputName} = { ...accounts.${inputName}, ...${renderedValue} };`;
         }
         if (input.kind === 'instructionAccountNode' && isWritable === undefined) {
-            return fragment(`accounts.${inputName}.value = ${renderedValue};`);
+            return fragment`accounts.${inputName}.value = ${renderedValue};`;
         }
         if (input.kind === 'instructionAccountNode') {
-            return fragment(
-                `accounts.${inputName}.value = ${renderedValue};\n` +
-                    `accounts.${inputName}.isWritable = ${isWritable ? 'true' : 'false'}`,
-            );
+            return fragment`accounts.${inputName}.value = ${renderedValue};\naccounts.${inputName}.isWritable = ${isWritable ? 'true' : 'false'}`;
         }
-        return fragment(`args.${inputName} = ${renderedValue};`);
+        return fragment`args.${inputName} = ${renderedValue};`;
     };
 
     switch (defaultValue.kind) {
@@ -70,33 +67,22 @@ export function getInstructionInputDefaultFragment(
             // Inlined PDA value.
             if (isNode(defaultValue.pda, 'pdaNode')) {
                 const pdaProgram = defaultValue.pda.programId
-                    ? pipe(fragment(`'${defaultValue.pda.programId}' as Address<'${defaultValue.pda.programId}'>`), f =>
+                    ? pipe(fragment`'${defaultValue.pda.programId}' as Address<'${defaultValue.pda.programId}'>`, f =>
                           addFragmentImports(f, 'solanaAddresses', ['type Address']),
                       )
-                    : fragment('programAddress');
+                    : fragment`programAddress`;
                 const pdaSeeds = defaultValue.pda.seeds.flatMap((seed): Fragment[] => {
                     if (isNode(seed, 'constantPdaSeedNode') && isNode(seed.value, 'programIdValueNode')) {
                         return [
-                            pipe(
-                                fragment(`getAddressEncoder().encode(${pdaProgram.content})`),
-                                f => mergeFragmentImports(f, [pdaProgram.imports]),
-                                f => addFragmentImports(f, 'solanaAddresses', ['getAddressEncoder']),
+                            pipe(fragment`getAddressEncoder().encode(${pdaProgram})`, f =>
+                                addFragmentImports(f, 'solanaAddresses', ['getAddressEncoder']),
                             ),
                         ];
                     }
                     if (isNode(seed, 'constantPdaSeedNode') && !isNode(seed.value, 'programIdValueNode')) {
                         const typeManifest = visit(seed.type, typeManifestVisitor);
                         const valueManifest = visit(seed.value, typeManifestVisitor);
-                        return [
-                            pipe(
-                                fragment(`${typeManifest.encoder.content}.encode(${valueManifest.value.content})`),
-                                f =>
-                                    mergeFragmentImports(f, [
-                                        typeManifest.encoder.imports,
-                                        valueManifest.value.imports,
-                                    ]),
-                            ),
-                        ];
+                        return [fragment`${typeManifest.encoder}.encode(${valueManifest.value})`];
                     }
                     if (isNode(seed, 'variablePdaSeedNode')) {
                         const typeManifest = visit(seed.type, typeManifestVisitor);
@@ -105,10 +91,7 @@ export function getInstructionInputDefaultFragment(
                         if (isNode(valueSeed, 'accountValueNode')) {
                             return [
                                 pipe(
-                                    fragment(
-                                        `${typeManifest.encoder.content}.encode(expectAddress(accounts.${camelCase(valueSeed.name)}.value))`,
-                                    ),
-                                    f => mergeFragmentImports(f, [typeManifest.encoder.imports]),
+                                    fragment`${typeManifest.encoder}.encode(expectAddress(accounts.${camelCase(valueSeed.name)}.value))`,
                                     f => addFragmentImports(f, 'shared', ['expectAddress']),
                                 ),
                             ];
@@ -116,25 +99,13 @@ export function getInstructionInputDefaultFragment(
                         if (isNode(valueSeed, 'argumentValueNode')) {
                             return [
                                 pipe(
-                                    fragment(
-                                        `${typeManifest.encoder.content}.encode(expectSome(args.${camelCase(valueSeed.name)}))`,
-                                    ),
-                                    f => mergeFragmentImports(f, [typeManifest.encoder.imports]),
+                                    fragment`${typeManifest.encoder}.encode(expectSome(args.${camelCase(valueSeed.name)}))`,
                                     f => addFragmentImports(f, 'shared', ['expectSome']),
                                 ),
                             ];
                         }
                         const valueManifest = visit(valueSeed, typeManifestVisitor);
-                        return [
-                            pipe(
-                                fragment(`${typeManifest.encoder.content}.encode(${valueManifest.value.content})`),
-                                f =>
-                                    mergeFragmentImports(f, [
-                                        typeManifest.encoder.imports,
-                                        valueManifest.value.imports,
-                                    ]),
-                            ),
-                        ];
+                        return [fragment`${typeManifest.encoder}.encode(${valueManifest.value})`];
                     }
                     return [];
                 });
@@ -154,12 +125,12 @@ export function getInstructionInputDefaultFragment(
             const pdaSeeds = defaultValue.seeds.map((seed): Fragment => {
                 if (isNode(seed.value, 'accountValueNode')) {
                     return pipe(
-                        fragment(`${seed.name}: expectAddress(accounts.${camelCase(seed.value.name)}.value)`),
+                        fragment`${seed.name}: expectAddress(accounts.${camelCase(seed.value.name)}.value)`,
                         f => addFragmentImports(f, 'shared', ['expectAddress']),
                     );
                 }
                 if (isNode(seed.value, 'argumentValueNode')) {
-                    return pipe(fragment(`${seed.name}: expectSome(args.${camelCase(seed.value.name)})`), f =>
+                    return pipe(fragment`${seed.name}: expectSome(args.${camelCase(seed.value.name)})`, f =>
                         addFragmentImports(f, 'shared', ['expectSome']),
                     );
                 }
@@ -198,13 +169,13 @@ export function getInstructionInputDefaultFragment(
                 input.kind === 'instructionAccountNode' &&
                 input.isOptional
             ) {
-                return fragment('');
+                return fragment``;
             }
             return defaultFragment('programAddress', false);
 
         case 'identityValueNode':
         case 'payerValueNode':
-            return fragment('');
+            return fragment``;
 
         case 'accountBumpValueNode':
             return pipe(
@@ -236,9 +207,9 @@ export function getInstructionInputDefaultFragment(
                 defaultValue: defaultValue.ifFalse,
             });
             if (!ifTrueRenderer && !ifFalseRenderer) {
-                return fragment('');
+                return fragment``;
             }
-            let conditionalFragment = fragment('');
+            let conditionalFragment = fragment``;
             if (ifTrueRenderer) {
                 conditionalFragment = mergeFragments([conditionalFragment, ifTrueRenderer], c => c[0]);
             }

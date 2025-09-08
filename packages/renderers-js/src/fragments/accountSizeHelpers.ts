@@ -1,20 +1,17 @@
 import { AccountNode } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import { Fragment, fragment, fragmentFromTemplate } from '../utils';
+import { Fragment, fragment, RenderScope } from '../utils';
 
 export function getAccountSizeHelpersFragment(
-    scope: Pick<GlobalFragmentScope, 'nameApi'> & { accountPath: NodePath<AccountNode> },
-): Fragment {
+    scope: Pick<RenderScope, 'nameApi'> & { accountPath: NodePath<AccountNode> },
+): Fragment | undefined {
     const { accountPath, nameApi } = scope;
     const accountNode = getLastNodeFromPath(accountPath);
-    if (accountNode.size == null) {
-        return fragment('');
-    }
+    if (accountNode.size == null) return;
 
-    return fragmentFromTemplate('accountSizeHelpers.njk', {
-        account: accountNode,
-        getSizeFunction: nameApi.accountGetSizeFunction(accountNode.name),
-    });
+    const getSizeFunction = nameApi.accountGetSizeFunction(accountNode.name);
+    return fragment`export function ${getSizeFunction}(): number {
+  return ${accountNode.size};
+}`;
 }

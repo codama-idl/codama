@@ -1,27 +1,22 @@
 import { AccountNode, isNodeFilter } from '@codama/nodes';
-import { findProgramNodeFromPath, getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
+import { getLastNodeFromPath, NodePath, pipe } from '@codama/visitors-core';
 
-import type { GlobalFragmentScope } from '../getRenderMapVisitor';
-import type { TypeManifest } from '../TypeManifest';
-import { addFragmentImports, Fragment, fragment, fragmentFromTemplate, mergeFragmentImports } from '../utils';
+import { addFragmentImports, Fragment, fragment, RenderScope, TypeManifest } from '../utils';
 
 export function getAccountPdaHelpersFragment(
-    scope: Pick<GlobalFragmentScope, 'customAccountData' | 'linkables' | 'nameApi'> & {
+    scope: Pick<RenderScope, 'customAccountData' | 'linkables' | 'nameApi'> & {
         accountPath: NodePath<AccountNode>;
         typeManifest: TypeManifest;
     },
-): Fragment {
+): Fragment | undefined {
     const { accountPath, nameApi, linkables, customAccountData, typeManifest } = scope;
     const accountNode = getLastNodeFromPath(accountPath);
-    const programNode = findProgramNodeFromPath(accountPath)!;
     const pdaNode = accountNode.pda ? linkables.get([...accountPath, accountNode.pda]) : undefined;
-    if (!pdaNode) {
-        return fragment('');
-    }
+    if (!pdaNode) return;
 
-    const accountTypeFragment = customAccountData.has(accountNode.name)
+    const accountType = customAccountData.has(accountNode.name)
         ? typeManifest.strictType
-        : fragment(nameApi.dataType(accountNode.name));
+        : nameApi.dataType(accountNode.name);
 
     // Here we cannot use the `getImportFrom` function because
     // we need to know the seeds of the PDA in order to know
@@ -31,19 +26,30 @@ export function getAccountPdaHelpersFragment(
     const findPdaFunction = nameApi.pdaFindFunction(pdaNode.name);
     const hasVariableSeeds = pdaNode.seeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
 
+    const fetchFromSeedsFunction = nameApi.accountFetchFromSeedsFunction(accountNode.name);
+    const fetchMaybeFromSeedsFunction = nameApi.accountFetchMaybeFromSeedsFunction(accountNode.name);
+    const fetchMaybeFunction = nameApi.accountFetchMaybeFunction(accountNode.name);
+
     return pipe(
-        fragmentFromTemplate('accountPdaHelpers.njk', {
-            accountType: accountTypeFragment.content,
-            fetchFromSeedsFunction: nameApi.accountFetchFromSeedsFunction(accountNode.name),
-            fetchFunction: nameApi.accountFetchFunction(accountNode.name),
-            fetchMaybeFromSeedsFunction: nameApi.accountFetchMaybeFromSeedsFunction(accountNode.name),
-            fetchMaybeFunction: nameApi.accountFetchMaybeFunction(accountNode.name),
-            findPdaFunction,
-            hasVariableSeeds,
-            pdaSeedsType,
-            program: programNode,
-        }),
-        f => mergeFragmentImports(f, [accountTypeFragment.imports]),
+        fragment`export async function ${fetchFromSeedsFunction}(
+  rpc: Parameters<typeof fetchEncodedAccount>[0],
+  ${hasVariableSeeds ? `seeds: ${pdaSeedsType},` : ''}
+  config: FetchAccountConfig & { programAddress?: Address } = {},
+): Promise<Account<${accountType}>> {
+  const maybeAccount = await ${fetchMaybeFromSeedsFunction}(rpc, ${hasVariableSeeds ? 'seeds, ' : ''}config);
+  assertAccountExists(maybeAccount);
+  return maybeAccount;
+}
+
+export async function ${fetchMaybeFromSeedsFunction}(
+  rpc: Parameters<typeof fetchEncodedAccount>[0],
+  ${hasVariableSeeds ? `seeds: ${pdaSeedsType},` : ''}
+  config: FetchAccountConfig & { programAddress?: Address } = {},
+): Promise<MaybeAccount<${accountType}>> {
+  const { programAddress, ...fetchConfig } = config;
+  const [address] = await ${findPdaFunction}(${hasVariableSeeds ? 'seeds, ' : ''}{ programAddress });
+  return await ${fetchMaybeFunction}(rpc, address, fetchConfig);
+}`,
         f => addFragmentImports(f, importFrom, hasVariableSeeds ? [pdaSeedsType, findPdaFunction] : [findPdaFunction]),
         f => addFragmentImports(f, 'solanaAddresses', ['type Address']),
         f =>

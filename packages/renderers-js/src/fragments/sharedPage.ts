@@ -1,10 +1,9 @@
-{% extends "layout.njk" %}
-{% import "macros.njk" as macros %}
+import { pipe } from '@codama/visitors-core';
 
-{% block main %}
-{{ imports }}
+import { addFragmentImportAlias, addFragmentImports, Fragment, fragment } from '../utils';
 
-/**
+export function getSharedPageFragment(): Fragment {
+    const sharedPage = fragment`/**
  * Asserts that the given value is not null or undefined.
  * @internal
  */
@@ -102,5 +101,23 @@ export function getAccountMetaFactory(
 
 export function isTransactionSigner<TAddress extends string = string>(value: Address<TAddress> | ProgramDerivedAddress<TAddress> | TransactionSigner<TAddress>): value is TransactionSigner<TAddress> {
   return !!value && typeof value === 'object' && 'address' in value && kitIsTransactionSigner(value);
+}`;
+
+    return pipe(
+        sharedPage,
+        f =>
+            addFragmentImports(f, 'solanaAddresses', [
+                'type Address',
+                'isProgramDerivedAddress',
+                'type ProgramDerivedAddress',
+            ]),
+        f => addFragmentImports(f, 'solanaInstructions', ['AccountRole', 'type AccountMeta', 'upgradeRoleToSigner']),
+        f =>
+            addFragmentImports(f, 'solanaSigners', [
+                'type AccountSignerMeta',
+                'isTransactionSigner',
+                'type TransactionSigner',
+            ]),
+        f => addFragmentImportAlias(f, 'solanaSigners', 'isTransactionSigner', 'kitIsTransactionSigner'),
+    );
 }
-{% endblock %}
