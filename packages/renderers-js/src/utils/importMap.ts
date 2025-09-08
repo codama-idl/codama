@@ -42,109 +42,128 @@ const DEFAULT_INTERNAL_MODULE_MAP: Record<string, string> = {
     types: '../types',
 };
 
-export class ImportMap {
-    protected readonly _imports: Map<string, Set<string>> = new Map();
+type ImportInput = string;
+type Module = string;
+type UsedIdentifier = string;
+type ImportInfo = Readonly<{
+    importedIdentifier: string;
+    isType: boolean;
+    usedIdentifier: UsedIdentifier;
+}>;
 
-    protected readonly _aliases: Map<string, Record<string, string>> = new Map();
+export type ImportMap = ReadonlyMap<Module, ReadonlyMap<UsedIdentifier, ImportInfo>>;
 
-    add(module: string, imports: Set<string> | string[] | string): ImportMap {
-        const newImports = new Set(typeof imports === 'string' ? [imports] : imports);
-        if (newImports.size === 0) return this;
-        const currentImports = this._imports.get(module) ?? new Set();
-        newImports.forEach(i => currentImports.add(i));
-        this._imports.set(module, currentImports);
-        return this;
+export function createImportMap(): ImportMap {
+    return Object.freeze(new Map());
+}
+
+export function parseImportInput(input: ImportInput): ImportInfo {
+    const matches = input.match(/^(type )?([^ ]+)(?: as (.+))?$/);
+    if (!matches) return Object.freeze({ importedIdentifier: input, isType: false, usedIdentifier: input });
+
+    const [_, isType, name, alias] = matches;
+    return Object.freeze({
+        importedIdentifier: name,
+        isType: !!isType,
+        usedIdentifier: alias ?? name,
+    });
+}
+
+export function addToImportMap(importMap: ImportMap, module: Module, imports: ImportInput[]): ImportMap {
+    const parsedImports = imports.map(parseImportInput).map(i => [i.usedIdentifier, i] as const);
+    return mergeImportMaps([importMap, new Map([[module, new Map(parsedImports)]])]);
+}
+
+export function removeFromImportMap(
+    importMap: ImportMap,
+    module: Module,
+    usedIdentifiers: UsedIdentifier[],
+): ImportMap {
+    const newMap = new Map(importMap);
+    const newModuleMap = new Map(newMap.get(module));
+    usedIdentifiers.forEach(usedIdentifier => {
+        newModuleMap.delete(usedIdentifier);
+    });
+    if (newModuleMap.size === 0) {
+        newMap.delete(module);
+    } else {
+        newMap.set(module, newModuleMap);
     }
+    return Object.freeze(newMap);
+}
 
-    remove(module: string, imports: Set<string> | string[] | string): ImportMap {
-        const importsToRemove = new Set(typeof imports === 'string' ? [imports] : imports);
-        if (importsToRemove.size === 0) return this;
-        const currentImports = this._imports.get(module) ?? new Set();
-        importsToRemove.forEach(i => currentImports.delete(i));
-        if (currentImports.size === 0) {
-            this._imports.delete(module);
-        } else {
-            this._imports.set(module, currentImports);
+export function mergeImportMaps(importMaps: ImportMap[]): ImportMap {
+    if (importMaps.length === 0) return createImportMap();
+    if (importMaps.length === 1) return importMaps[0];
+    const mergedMap = new Map(importMaps[0]);
+    for (const map of importMaps.slice(1)) {
+        for (const [module, imports] of map) {
+            const mergedModuleMap = (mergedMap.get(module) ?? new Map()) as Map<UsedIdentifier, ImportInfo>;
+            for (const [usedIdentifier, importInfo] of imports) {
+                const existingImportInfo = mergedModuleMap.get(usedIdentifier);
+                // If two identical imports exist such that
+                // one is a type import and the other is not,
+                // then we must only keep the non-type import.
+                const shouldOverwriteTypeOnly =
+                    existingImportInfo &&
+                    existingImportInfo.importedIdentifier === importInfo.importedIdentifier &&
+                    existingImportInfo.isType &&
+                    !importInfo.isType;
+                if (!existingImportInfo || shouldOverwriteTypeOnly) {
+                    mergedModuleMap.set(usedIdentifier, importInfo);
+                }
+            }
+            mergedMap.set(module, mergedModuleMap);
         }
-        return this;
     }
+    return Object.freeze(mergedMap);
+}
 
-    mergeWith(...others: ImportMap[]): ImportMap {
-        others.forEach(other => {
-            other._imports.forEach((imports, module) => {
-                this.add(module, imports);
-            });
-            other._aliases.forEach((aliases, module) => {
-                Object.entries(aliases).forEach(([name, alias]) => {
-                    this.addAlias(module, name, alias);
-                });
-            });
-        });
-        return this;
-    }
+export function importMapToString(
+    importMap: ImportMap,
+    dependencyMap: Record<string, string> = {},
+    useGranularImports = false,
+): string {
+    const resolvedMap = resolveImportMapModules(importMap, dependencyMap, useGranularImports);
 
-    addAlias(module: string, name: string, alias: string): ImportMap {
-        const currentAliases = this._aliases.get(module) ?? {};
-        currentAliases[name] = alias;
-        this._aliases.set(module, currentAliases);
-        return this;
-    }
+    return [...resolvedMap.entries()]
+        .sort(([a], [b]) => {
+            const relative = Number(a.startsWith('.')) - Number(b.startsWith('.'));
+            // Relative imports go last.
+            if (relative !== 0) return relative;
+            // Otherwise, sort alphabetically.
+            return a.localeCompare(b);
+        })
+        .map(([module, imports]) => {
+            const innerImports = [...imports.values()]
+                .map(importInfoToString)
+                .sort((a, b) => a.localeCompare(b))
+                .join(', ');
+            return `import { ${innerImports} } from '${module}';`;
+        })
+        .join('\n');
+}
 
-    isEmpty(): boolean {
-        return this._imports.size === 0;
-    }
+function resolveImportMapModules(
+    importMap: ImportMap,
+    dependencyMap: Record<string, string>,
+    useGranularImports: boolean,
+): ImportMap {
+    const dependencyMapWithDefaults = {
+        ...(useGranularImports ? DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP : DEFAULT_EXTERNAL_MODULE_MAP),
+        ...DEFAULT_INTERNAL_MODULE_MAP,
+        ...dependencyMap,
+    };
 
-    resolve(dependencies: Record<string, string> = {}, useGranularImports = false): Map<string, Set<string>> {
-        // Resolve aliases.
-        const aliasedMap = new Map<string, Set<string>>(
-            [...this._imports.entries()].map(([module, imports]) => {
-                const aliasMap = this._aliases.get(module) ?? {};
-                const joinedImports = [...imports].map(i => (aliasMap[i] ? `${i} as ${aliasMap[i]}` : i));
-                return [module, new Set(joinedImports)];
-            }),
-        );
+    return mergeImportMaps(
+        [...importMap.entries()].map(([module, imports]) => {
+            const resolvedModule = dependencyMapWithDefaults[module] ?? module;
+            return new Map([[resolvedModule, imports]]);
+        }),
+    );
+}
 
-        // Resolve dependency mappings.
-        const dependencyMap = {
-            ...(useGranularImports ? DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP : DEFAULT_EXTERNAL_MODULE_MAP),
-            ...DEFAULT_INTERNAL_MODULE_MAP,
-            ...dependencies,
-        };
-        const resolvedMap = new Map<string, Set<string>>();
-        aliasedMap.forEach((imports, module) => {
-            const resolvedModule: string = dependencyMap[module] ?? module;
-            const currentImports = resolvedMap.get(resolvedModule) ?? new Set();
-            imports.forEach(i => currentImports.add(i));
-            resolvedMap.set(resolvedModule, currentImports);
-        });
-
-        return resolvedMap;
-    }
-
-    toString(dependencies: Record<string, string> = {}, useGranularImports = false): string {
-        return [...this.resolve(dependencies, useGranularImports).entries()]
-            .sort(([a], [b]) => {
-                const aIsRelative = a.startsWith('.');
-                const bIsRelative = b.startsWith('.');
-                if (aIsRelative && !bIsRelative) return 1;
-                if (!aIsRelative && bIsRelative) return -1;
-                return a.localeCompare(b);
-            })
-            .map(([module, imports]) => {
-                const joinedImports = [...imports]
-                    .sort()
-                    .filter(i => {
-                        // import of a type can either be '<Type>' or 'type <Type>', so
-                        // we filter out 'type <Type>' variation if there is a '<Type>'
-                        const name = i.split(' ');
-                        if (name.length > 1) {
-                            return !imports.has(name[1]);
-                        }
-                        return true;
-                    })
-                    .join(', ');
-                return `import { ${joinedImports} } from '${module}';`;
-            })
-            .join('\n');
-    }
+function importInfoToString({ importedIdentifier, isType, usedIdentifier }: ImportInfo): string {
+    const alias = importedIdentifier !== usedIdentifier ? ` as ${usedIdentifier}` : '';
+    return `${isType ? 'type ' : ''}${importedIdentifier}${alias}`;
 }
