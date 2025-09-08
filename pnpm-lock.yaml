@@ -18,14 +18,14 @@ importers:
         specifier: workspace:*
         version: link:packages/internals
       '@eslint/js':
-        specifier: ^9.34.0
-        version: 9.34.0
+        specifier: ^9.35.0
+        version: 9.35.0
       '@eslint/json':
         specifier: ^0.13.2
         version: 0.13.2
       '@solana/eslint-config-solana':
         specifier: ^5.0.0
-        version: 5.0.0(@eslint/js@9.34.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.35.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.35.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript-eslint@8.16.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)
+        version: 5.0.0(@eslint/js@9.35.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.35.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.35.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript-eslint@8.16.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)
       '@solana/prettier-config-solana':
         specifier: 0.0.5
         version: 0.0.5(prettier@3.6.2)
@@ -968,10 +968,6 @@ packages:
 
   '@eslint/eslintrc@3.3.1':
     resolution: {integrity: sha512-gtF186CXhIl1p4pJNGZw8Yc6RlshoePRvE0X91oPGb3vZ8pM3qOS9W9NGPat9LziaBV7XrJWGylNQXkGcnM3IQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/js@9.34.0':
-    resolution: {integrity: sha512-EoyvqQnBNsV1CWaEJ559rxXL4c8V92gxirbawSmVUOWXlsRxxQXl6LmCpdUblgxgSkDIqKnhzba2SjRTI/A5Rw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.35.0':
@@ -4159,8 +4155,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/js@9.34.0': {}
-
   '@eslint/js@9.35.0': {}
 
   '@eslint/json@0.13.2':
@@ -4642,9 +4636,9 @@ snapshots:
       commander: 14.0.0
       typescript: 5.9.2
 
-  '@solana/eslint-config-solana@5.0.0(@eslint/js@9.34.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.35.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.35.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript-eslint@8.16.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)':
+  '@solana/eslint-config-solana@5.0.0(@eslint/js@9.35.0)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2))(eslint-plugin-react-hooks@4.6.0(eslint@9.35.0))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.35.0))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript-eslint@8.16.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)':
     dependencies:
-      '@eslint/js': 9.34.0
+      '@eslint/js': 9.35.0
       '@types/eslint__js': 8.42.3
       eslint: 9.35.0
       eslint-plugin-jest: 27.9.0(@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(jest@30.0.0-alpha.6(@types/node@24.3.1))(typescript@5.9.2)
