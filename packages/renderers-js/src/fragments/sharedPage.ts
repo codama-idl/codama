@@ -1,6 +1,6 @@
 import { pipe } from '@codama/visitors-core';
 
-import { addFragmentImportAlias, addFragmentImports, Fragment, fragment } from '../utils';
+import { addFragmentImports, Fragment, fragment } from '../utils';
 
 export function getSharedPageFragment(): Fragment {
     const sharedPage = fragment`/**
@@ -115,9 +115,8 @@ export function isTransactionSigner<TAddress extends string = string>(value: Add
         f =>
             addFragmentImports(f, 'solanaSigners', [
                 'type AccountSignerMeta',
-                'isTransactionSigner',
+                'isTransactionSigner as kitIsTransactionSigner',
                 'type TransactionSigner',
             ]),
-        f => addFragmentImportAlias(f, 'solanaSigners', 'isTransactionSigner', 'kitIsTransactionSigner'),
     );
 }

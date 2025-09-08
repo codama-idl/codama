@@ -1,8 +1,15 @@
 import { Docs } from '@codama/nodes';
 import { BaseFragment, createFragmentTemplate } from '@codama/renderers-core';
-import { pipe } from '@codama/visitors-core';
 
-import { ImportMap } from './importMap';
+import {
+    addToImportMap,
+    createImportMap,
+    ImportMap,
+    importMapToString,
+    mergeImportMaps,
+    parseImportInput,
+    removeFromImportMap,
+} from './importMap';
 import { RenderScope } from './options';
 
 export type FragmentFeature = 'instruction:resolverScopeVariable';
@@ -14,11 +21,7 @@ export type Fragment = BaseFragment &
     }>;
 
 function createFragment(content: string): Fragment {
-    return Object.freeze({
-        content,
-        features: new Set<FragmentFeature>(),
-        imports: new ImportMap(),
-    });
+    return Object.freeze({ content, features: new Set<FragmentFeature>(), imports: createImportMap() });
 }
 
 function isFragment(value: unknown): value is Fragment {
@@ -34,57 +37,29 @@ export function mergeFragments(fragments: (Fragment | undefined)[], mergeContent
     return Object.freeze({
         content: mergeContent(filteredFragments.map(fragment => fragment.content)),
         features: new Set(filteredFragments.flatMap(f => [...f.features])),
-        imports: new ImportMap().mergeWith(...filteredFragments.map(f => f.imports)),
+        imports: mergeImportMaps(filteredFragments.map(f => f.imports)),
     });
 }
 
-export function use(pattern: string, module: string): Fragment {
-    const matches = pattern.match(/^(type )?([^ ]+)(?: as (.+))?$/);
-    if (!matches) return addFragmentImports(createFragment(pattern), module, [pattern]);
-
-    const [_, isType, name, alias] = matches;
-    const resolvedName = isType ? `type ${name}` : name;
-    const resolvedAlias = alias ? (isType ? `type ${alias}` : alias) : undefined;
-    return pipe(
-        createFragment(alias ? alias : name),
-        f => addFragmentImports(f, module, [resolvedName]),
-        f => (resolvedAlias ? addFragmentImportAlias(f, module, resolvedName, resolvedAlias) : f),
-    );
+export function use(importInput: string, module: string): Fragment {
+    const importInfo = parseImportInput(importInput);
+    return addFragmentImports(createFragment(importInfo.usedIdentifier), module, [importInput]);
 }
 
 export function mergeFragmentImports(fragment: Fragment, importMaps: ImportMap[]): Fragment {
-    return Object.freeze({
-        ...fragment,
-        imports: new ImportMap().mergeWith(fragment.imports, ...importMaps),
-    });
+    return Object.freeze({ ...fragment, imports: mergeImportMaps([fragment.imports, ...importMaps]) });
 }
 
-export function addFragmentImports(fragment: Fragment, module: string, imports: string[]): Fragment {
-    return Object.freeze({
-        ...fragment,
-        imports: new ImportMap().mergeWith(fragment.imports).add(module, imports),
-    });
+export function addFragmentImports(fragment: Fragment, module: string, importInputs: string[]): Fragment {
+    return Object.freeze({ ...fragment, imports: addToImportMap(fragment.imports, module, importInputs) });
 }
 
-export function removeFragmentImports(fragment: Fragment, module: string, imports: string[]): Fragment {
-    return Object.freeze({
-        ...fragment,
-        imports: new ImportMap().mergeWith(fragment.imports).remove(module, imports),
-    });
-}
-
-export function addFragmentImportAlias(fragment: Fragment, module: string, name: string, alias: string): Fragment {
-    return Object.freeze({
-        ...fragment,
-        imports: new ImportMap().mergeWith(fragment.imports).addAlias(module, name, alias),
-    });
+export function removeFragmentImports(fragment: Fragment, module: string, usedIdentifiers: string[]): Fragment {
+    return Object.freeze({ ...fragment, imports: removeFromImportMap(fragment.imports, module, usedIdentifiers) });
 }
 
 export function addFragmentFeatures(fragment: Fragment, features: FragmentFeature[]): Fragment {
-    return Object.freeze({
-        ...fragment,
-        features: new Set([...fragment.features, ...features]),
-    });
+    return Object.freeze({ ...fragment, features: new Set([...fragment.features, ...features]) });
 }
 
 export function getExportAllFragment(module: string): Fragment {
@@ -110,8 +85,9 @@ export function getPageFragment(
         '',
         '@see https://github.com/codama-idl/codama',
     ]);
-    const imports = page.imports.isEmpty()
-        ? undefined
-        : fragment`${page.imports.toString(scope.dependencyMap, scope.useGranularImports)}`;
+    const imports =
+        page.imports.size === 0
+            ? undefined
+            : fragment`${importMapToString(page.imports, scope.dependencyMap, scope.useGranularImports)}`;
     return mergeFragments([header, imports, page], cs => cs.join('\n\n'));
 }
