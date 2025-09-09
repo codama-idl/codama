@@ -22,10 +22,10 @@ export function getInstructionPageFragment(node: InstructionNode, typeVisitor: T
         [
             getFrontmatterFragment(title, `Overview of the ${title} instruction`),
             getTitleAndDescriptionFragment(title, node.docs),
-            fragment('## Instruction accounts'),
-            accountsFragment ? accountsFragment : fragment('_This instruction has no accounts._'),
-            fragment('## Instruction arguments'),
-            hasArguments ? getCodeBlockFragment(type, 'ts') : fragment('_This instruction has no arguments._'),
+            fragment`## Instruction accounts`,
+            accountsFragment ? accountsFragment : fragment`_This instruction has no accounts._`,
+            fragment`## Instruction arguments`,
+            hasArguments ? getCodeBlockFragment(type, 'ts') : fragment`_This instruction has no arguments._`,
         ],
         // Generated instructions are within the same directory.
         { generatedInstructions: '.' },

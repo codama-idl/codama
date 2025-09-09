@@ -19,7 +19,7 @@ export function getDefinedTypePageFragment(node: DefinedTypeNode, typeVisitor: T
         [
             getFrontmatterFragment(title, `Overview of the ${title} type`),
             getTitleAndDescriptionFragment(title, node.docs),
-            fragment('## Type definition'),
+            fragment`## Type definition`,
             getCodeBlockFragment(type, 'ts'),
         ],
         // Generated types are within the same directory.

@@ -28,7 +28,9 @@ import { addFragmentImports, Fragment, fragment } from '../../src/utils';
 import { getValueVisitor } from '../../src/visitors';
 
 function expectValue(node: ProgramIdValueNode | ValueNode, expected: Fragment | string): void {
-    expect(visit(node, getValueVisitor())).toStrictEqual(typeof expected === 'string' ? fragment(expected) : expected);
+    expect(visit(node, getValueVisitor())).toStrictEqual(
+        typeof expected === 'string' ? fragment`${expected}` : expected,
+    );
 }
 
 test('it renders array values', () => {
@@ -60,7 +62,7 @@ test('it renders constant values', () => {
 test('it renders enum values', () => {
     expectValue(
         enumValueNode('direction', 'left'),
-        addFragmentImports(fragment('Direction.Left'), 'generatedTypes', 'Direction'),
+        addFragmentImports(fragment`Direction.Left`, 'generatedTypes', 'Direction'),
     );
 });
 

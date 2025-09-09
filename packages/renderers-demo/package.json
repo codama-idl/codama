@@ -4,13 +4,23 @@
     "description": "Demo renderer to help creating new ones",
     "exports": {
         "types": "./dist/types/index.d.ts",
+        "react-native": "./dist/index.react-native.mjs",
+        "browser": {
+            "import": "./dist/index.browser.mjs",
+            "require": "./dist/index.browser.cjs"
+        },
         "node": {
             "import": "./dist/index.node.mjs",
             "require": "./dist/index.node.cjs"
         }
     },
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.mjs": "./dist/index.browser.mjs"
+    },
     "main": "./dist/index.node.cjs",
     "module": "./dist/index.node.mjs",
+    "react-native": "./dist/index.react-native.mjs",
     "types": "./dist/types/index.d.ts",
     "type": "commonjs",
     "files": [
@@ -27,15 +37,17 @@
     ],
     "scripts": {
         "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
+        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs package",
         "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
         "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
         "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
         "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e && pnpm test:exports",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:browser && pnpm test:node && pnpm test:react-native && pnpm test:e2e && pnpm test:exports",
+        "test:browser": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs browser",
         "test:e2e": "./test/e2e/test.sh",
         "test:exports": "node ./test/exports/module.mjs && node ./test/exports/commonjs.cjs",
         "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
+        "test:react-native": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs react-native",
         "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
         "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
     },

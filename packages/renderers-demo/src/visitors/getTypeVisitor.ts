@@ -11,7 +11,6 @@ import {
     structTypeNode,
     structTypeNodeFromInstructionArgumentNodes,
 } from '@codama/nodes';
-import { mapFragmentContent } from '@codama/renderers-core';
 import {
     extendVisitor,
     findLastNodeFromPath,
@@ -39,7 +38,7 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
     };
 
     return pipe(
-        staticVisitor(() => fragment(''), {
+        staticVisitor(() => fragment``, {
             keys: [
                 ...REGISTERED_TYPE_NODE_KINDS,
                 'definedTypeLinkNode',
@@ -60,15 +59,15 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                 },
 
                 visitArrayType(node, { self }) {
-                    return pipe(visit(node.item, self), f => mapFragmentContent(f, c => `Array<${c}>`));
+                    return fragment`Array<${visit(node.item, self)}>`;
                 },
 
                 visitBooleanType() {
-                    return fragment(`boolean`);
+                    return fragment`boolean`;
                 },
 
                 visitBytesType() {
-                    return fragment(`bytes`);
+                    return fragment`bytes`;
                 },
 
                 visitDateTimeType(node, { self }) {
@@ -78,15 +77,14 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
 
                 visitDefinedType(node, { self }) {
                     const type = visit(node.type, self);
-                    if (isNode(node.type, 'enumTypeNode') && isScalarEnum(node.type)) {
-                        return mapFragmentContent(type, c => `enum ${pascalCase(node.name)} ${c}`);
-                    }
-                    return mapFragmentContent(type, c => `type ${pascalCase(node.name)} = ${c}`);
+                    return isNode(node.type, 'enumTypeNode') && isScalarEnum(node.type)
+                        ? fragment`enum ${pascalCase(node.name)} ${type}`
+                        : fragment`type ${pascalCase(node.name)} = ${type}`;
                 },
 
                 visitDefinedTypeLink(node) {
                     const typeName = pascalCase(node.name);
-                    return pipe(fragment(typeName), f => addFragmentImports(f, 'generatedTypes', typeName));
+                    return addFragmentImports(fragment`${typeName}`, 'generatedTypes', typeName);
                 },
 
                 visitEnumEmptyVariantType(node) {
@@ -94,13 +92,13 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                     const enumParent = findLastNodeFromPath(nodePath, 'enumTypeNode');
                     if (!enumParent) throw new Error('Enum parent not found');
 
-                    if (isScalarEnum(enumParent)) return fragment(pascalCase(node.name));
-                    return fragment(`{ __kind: "${pascalCase(node.name)}" }`);
+                    if (isScalarEnum(enumParent)) return fragment`${pascalCase(node.name)}`;
+                    return fragment`{ __kind: "${pascalCase(node.name)}" }`;
                 },
 
                 visitEnumStructVariantType(node, { self }) {
                     const fields = resolveNestedTypeNode(node.struct).fields;
-                    const kindField = fragment(`__kind: "${pascalCase(node.name)}"`);
+                    const kindField = fragment`__kind: "${pascalCase(node.name)}"`;
 
                     const inlinedStruct = pipe(
                         fields.map(field => visit(field, self)),
@@ -116,7 +114,7 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                         fs => mergeFragments(fs, cs => cs.map(c => `${indent()}${c};\n`).join('')),
                     );
                     indentLevel--;
-                    return mapFragmentContent(result, c => `{\n${c}${indent()}}`);
+                    return fragment`{\n${result}${indent()}}`;
                 },
 
                 visitEnumTupleVariantType(node, { self }) {
@@ -142,7 +140,7 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                             fs => mergeFragments(fs, cs => cs.map(c => `${indent()}${c},\n`).join('')),
                         );
                         indentLevel--;
-                        return mapFragmentContent(variants, c => `{\n${c}${indent()}}`);
+                        return fragment`{\n${variants}${indent()}}`;
                     }
 
                     const inlinedEnum = pipe(
@@ -186,15 +184,15 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                 visitMapType(node, { self }) {
                     const key = visit(node.key, self);
                     const value = visit(node.value, self);
-                    return mergeFragments([key, value], ([k, v]) => `Map<${k}, ${v}>`);
+                    return fragment`Map<${key}, ${value}>`;
                 },
 
                 visitNumberType(node) {
-                    return fragment(`number /* ${node.format} */`);
+                    return fragment`number /* ${node.format} */`;
                 },
 
                 visitOptionType(node, { self }) {
-                    return pipe(visit(node.item, self), f => mapFragmentContent(f, c => `Option<${c}>`));
+                    return fragment`Option<${visit(node.item, self)}>`;
                 },
 
                 visitPostOffsetType(node, { self }) {
@@ -208,11 +206,11 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                 },
 
                 visitPublicKeyType() {
-                    return fragment(`Address`);
+                    return fragment`Address`;
                 },
 
                 visitRemainderOptionType(node, { self }) {
-                    return pipe(visit(node.item, self), f => mapFragmentContent(f, c => `Option<${c}>`));
+                    return fragment`Option<${visit(node.item, self)}>`;
                 },
 
                 visitSentinelType(node, { self }) {
@@ -221,7 +219,7 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                 },
 
                 visitSetType(node, { self }) {
-                    return pipe(visit(node.item, self), f => mapFragmentContent(f, c => `Set<${c}>`));
+                    return fragment`Set<${visit(node.item, self)}>`;
                 },
 
                 visitSizePrefixType(node, { self }) {
@@ -235,16 +233,15 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                 },
 
                 visitStringType() {
-                    return fragment(`string`);
+                    return fragment`string`;
                 },
 
                 visitStructFieldType(node, { self }) {
-                    const name = camelCase(node.name);
-                    return pipe(visit(node.type, self), f => mapFragmentContent(f, c => `${name}: ${c}`));
+                    return fragment`${camelCase(node.name)}: ${visit(node.type, self)}`;
                 },
 
                 visitStructType(node, { self }) {
-                    if (node.fields.length === 0) return fragment(`{}`);
+                    if (node.fields.length === 0) return fragment`{}`;
 
                     const inlinedStruct = pipe(
                         node.fields.map(field => visit(field, self)),
@@ -258,7 +255,7 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                         fs => mergeFragments(fs, cs => cs.map(c => `${indent()}${c};\n`).join('')),
                     );
                     indentLevel--;
-                    return mapFragmentContent(fields, c => `{\n${c}${indent()}}`);
+                    return fragment`{\n${fields}${indent()}}`;
                 },
 
                 visitTupleType(node, { self }) {
@@ -274,11 +271,11 @@ export function getTypeVisitor(input: { stack?: NodeStack; typeIndent?: string }
                         fs => mergeFragments(fs, cs => cs.map(c => `${indent()}${c},\n`).join('')),
                     );
                     indentLevel--;
-                    return mapFragmentContent(items, c => `[\n${c}${indent()}]`);
+                    return fragment`[\n${items}${indent()}]`;
                 },
 
                 visitZeroableOptionType(node, { self }) {
-                    return pipe(visit(node.item, self), f => mapFragmentContent(f, c => `Option<${c}>`));
+                    return fragment`Option<${visit(node.item, self)}>`;
                 },
             }),
         visitor => recordNodeStackVisitor(visitor, stack),

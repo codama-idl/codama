@@ -10,7 +10,7 @@ export function getPdaFunctionUsageFragment(node: PdaNode): Fragment {
             ? `{\n${variableSeedNames.join(',\n')},\n}`
             : `{ ${variableSeedNames.join(', ')} }`;
     return addFragmentImports(
-        fragment(`const [address, bump] = await ${functionName}(${seedObject});`),
+        fragment`const [address, bump] = await ${functionName}(${seedObject});`,
         'generatedPdas',
         pascalCase(node.name),
     );

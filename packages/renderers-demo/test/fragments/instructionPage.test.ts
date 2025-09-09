@@ -5,6 +5,7 @@ import {
     instructionNode,
     numberTypeNode,
 } from '@codama/nodes';
+import { pipe } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { getInstructionPageFragment } from '../../src/fragments';
@@ -39,7 +40,9 @@ test('it renders instruction pages', () => {
         name: 'createAccount',
     });
 
-    const expectedContent = `---
+    const result = getInstructionPageFragment(node, getTypeVisitor());
+
+    expect(result).toStrictEqual(fragment`---
 title: Create Account
 description: Overview of the Create Account instruction
 ---
@@ -61,15 +64,15 @@ It can use multiple lines.
 
 \`\`\`ts
 type CreateAccountInstruction = { lamports: number /* u64 */ }
-\`\`\``;
-
-    expect(getInstructionPageFragment(node, getTypeVisitor())).toStrictEqual(fragment(expectedContent));
+\`\`\``);
 });
 
 test('it renders a page with no accounts nor arguments', () => {
     const node = instructionNode({ name: 'createAccount' });
 
-    const expectedContent = `---
+    const result = getInstructionPageFragment(node, getTypeVisitor());
+
+    expect(result).toStrictEqual(fragment`---
 title: Create Account
 description: Overview of the Create Account instruction
 ---
@@ -82,9 +85,7 @@ _This instruction has no accounts._
 
 ## Instruction arguments
 
-_This instruction has no arguments._`;
-
-    expect(getInstructionPageFragment(node, getTypeVisitor())).toStrictEqual(fragment(expectedContent));
+_This instruction has no arguments._`);
 });
 
 test('it renders see also sections', () => {
@@ -93,7 +94,11 @@ test('it renders see also sections', () => {
         name: 'createAccount',
     });
 
-    const expectedContent = `---
+    const result = getInstructionPageFragment(node, getTypeVisitor());
+
+    expect(result).toStrictEqual(
+        pipe(
+            fragment`---
 title: Create Account
 description: Overview of the Create Account instruction
 ---
@@ -112,9 +117,8 @@ type CreateAccountInstruction = { lamports: SomeType }
 
 ## See also
 
-- [SomeType](../types/someType.md)`;
-
-    expect(getInstructionPageFragment(node, getTypeVisitor())).toStrictEqual(
-        addFragmentImports(fragment(expectedContent), 'generatedTypes', 'SomeType'),
+- [SomeType](../types/someType.md)`,
+            f => addFragmentImports(f, 'generatedTypes', 'SomeType'),
+        ),
     );
 });

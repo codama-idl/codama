@@ -13,8 +13,8 @@ export function getPdaPageFragment(node: PdaNode, typeVisitor: TypeVisitor, valu
         [
             getFrontmatterFragment(title, `Overview of the ${title}`),
             getTitleAndDescriptionFragment(title, node.docs),
-            fragment('## Seeds'),
-            seeds ? seeds : fragment('_This PDA has no seeds._'),
+            fragment`## Seeds`,
+            seeds ? seeds : fragment`_This PDA has no seeds._`,
         ],
         // Generated PDAs are within the same directory.
         { generatedPdas: '.' },
