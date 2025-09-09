@@ -7,6 +7,7 @@ import {
     publicKeyTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
+import { pipe } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { getPdaPageFragment } from '../../src/fragments';
@@ -24,7 +25,9 @@ test('it renders PDA pages', () => {
         ],
     });
 
-    const expectedContent = `---
+    const result = getPdaPageFragment(node, getTypeVisitor(), getValueVisitor());
+
+    expect(result).toStrictEqual(fragment`---
 title: Associated Token PDA
 description: Overview of the Associated Token PDA
 ---
@@ -40,15 +43,15 @@ It can use multiple lines.
 | ---------- | --------- | ----------------------------------------------- |
 | \`mint\`     | \`Address\` | The Mint account.                               |
 | \`owner\`    | \`Address\` | The Owner account.                              |
-| _constant_ | \`string\`  | \`"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"\` |`;
-
-    expect(getPdaPageFragment(node, getTypeVisitor(), getValueVisitor())).toStrictEqual(fragment(expectedContent));
+| _constant_ | \`string\`  | \`"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"\` |`);
 });
 
 test('it renders a page with no seeds', () => {
     const node = pdaNode({ name: 'counter', seeds: [] });
 
-    const expectedContent = `---
+    const result = getPdaPageFragment(node, getTypeVisitor(), getValueVisitor());
+
+    expect(result).toStrictEqual(fragment`---
 title: Counter PDA
 description: Overview of the Counter PDA
 ---
@@ -57,9 +60,7 @@ description: Overview of the Counter PDA
 
 ## Seeds
 
-_This PDA has no seeds._`;
-
-    expect(getPdaPageFragment(node, getTypeVisitor(), getValueVisitor())).toStrictEqual(fragment(expectedContent));
+_This PDA has no seeds._`);
 });
 
 test('it renders see also sections', () => {
@@ -71,7 +72,11 @@ test('it renders see also sections', () => {
         ],
     });
 
-    const expectedContent = `---
+    const result = getPdaPageFragment(node, getTypeVisitor(), getValueVisitor());
+
+    expect(result).toStrictEqual(
+        pipe(
+            fragment`---
 title: Counter PDA
 description: Overview of the Counter PDA
 ---
@@ -87,9 +92,8 @@ description: Overview of the Counter PDA
 
 ## See also
 
-- [CounterMode](../types/counterMode.md)`;
-
-    expect(getPdaPageFragment(node, getTypeVisitor(), getValueVisitor())).toStrictEqual(
-        addFragmentImports(fragment(expectedContent), 'generatedTypes', 'CounterMode'),
+- [CounterMode](../types/counterMode.md)`,
+            f => addFragmentImports(f, 'generatedTypes', 'CounterMode'),
+        ),
     );
 });

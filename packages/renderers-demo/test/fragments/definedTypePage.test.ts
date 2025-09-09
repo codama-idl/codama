@@ -5,6 +5,7 @@ import {
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
+import { pipe } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { getDefinedTypePageFragment } from '../../src/fragments';
@@ -18,7 +19,9 @@ test('it renders defined type pages', () => {
         type: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
     });
 
-    const expectedContent = `---
+    const result = getDefinedTypePageFragment(node, getTypeVisitor());
+
+    expect(result).toStrictEqual(fragment`---
 title: Counter
 description: Overview of the Counter type
 ---
@@ -32,9 +35,7 @@ It can use multiple lines.
 
 \`\`\`ts
 type Counter = { value: number /* u32 */ }
-\`\`\``;
-
-    expect(getDefinedTypePageFragment(node, getTypeVisitor())).toStrictEqual(fragment(expectedContent));
+\`\`\``);
 });
 
 test('it renders see also sections', () => {
@@ -43,7 +44,11 @@ test('it renders see also sections', () => {
         type: structTypeNode([structFieldTypeNode({ name: 'value', type: definedTypeLinkNode('someType') })]),
     });
 
-    const expectedContent = `---
+    const result = getDefinedTypePageFragment(node, getTypeVisitor());
+
+    expect(result).toStrictEqual(
+        pipe(
+            fragment`---
 title: Counter
 description: Overview of the Counter type
 ---
@@ -58,9 +63,8 @@ type Counter = { value: SomeType }
 
 ## See also
 
-- [SomeType](someType.md)`;
-
-    expect(getDefinedTypePageFragment(node, getTypeVisitor())).toStrictEqual(
-        addFragmentImports(fragment(expectedContent), 'generatedTypes', 'SomeType'),
+- [SomeType](someType.md)`,
+            f => addFragmentImports(f, 'generatedTypes', 'SomeType'),
+        ),
     );
 });

@@ -1,5 +1,4 @@
 import { pascalCase, REGISTERED_VALUE_NODE_KINDS } from '@codama/nodes';
-import { mapFragmentContent } from '@codama/renderers-core';
 import { extendVisitor, NodeStack, pipe, recordNodeStackVisitor, staticVisitor, visit } from '@codama/visitors-core';
 
 import { addFragmentImports, fragment, getStringValueAsHexadecimals, mergeFragments } from '../utils';
@@ -10,7 +9,7 @@ export function getValueVisitor(input: { stack?: NodeStack } = {}) {
     const stack = input.stack ?? new NodeStack();
 
     return pipe(
-        staticVisitor(() => fragment(''), {
+        staticVisitor(() => fragment``, {
             keys: [...REGISTERED_VALUE_NODE_KINDS, 'programIdValueNode'],
         }),
         visitor =>
@@ -23,11 +22,11 @@ export function getValueVisitor(input: { stack?: NodeStack } = {}) {
                 },
 
                 visitBooleanValue(node) {
-                    return fragment(node.boolean ? 'true' : 'false');
+                    return fragment`${node.boolean ? 'true' : 'false'}`;
                 },
 
                 visitBytesValue(node) {
-                    return fragment(getStringValueAsHexadecimals(node.encoding, node.data));
+                    return fragment`${getStringValueAsHexadecimals(node.encoding, node.data)}`;
                 },
 
                 visitConstantValue(node, { self }) {
@@ -35,15 +34,15 @@ export function getValueVisitor(input: { stack?: NodeStack } = {}) {
                 },
 
                 visitEnumValue(node) {
-                    return pipe(fragment(`${pascalCase(node.enum.name)}.${pascalCase(node.variant)}`), f =>
-                        addFragmentImports(f, 'generatedTypes', pascalCase(node.enum.name)),
-                    );
+                    const enumName = pascalCase(node.enum.name);
+                    const enumType = addFragmentImports(fragment`${enumName}`, 'generatedTypes', enumName);
+                    return fragment`${enumType}.${pascalCase(node.variant)}`;
                 },
 
                 visitMapEntryValue(node, { self }) {
                     const key = visit(node.key, self);
                     const value = visit(node.value, self);
-                    return mergeFragments([key, value], ([k, v]) => `[${k}, ${v}]`);
+                    return fragment`[${key}, ${value}]`;
                 },
 
                 visitMapValue(node, { self }) {
@@ -54,19 +53,19 @@ export function getValueVisitor(input: { stack?: NodeStack } = {}) {
                 },
 
                 visitNoneValue() {
-                    return fragment('null');
+                    return fragment`null`;
                 },
 
                 visitNumberValue(node) {
-                    return fragment(node.number.toString());
+                    return fragment`${node.number}`;
                 },
 
                 visitProgramIdValue() {
-                    return fragment('programId');
+                    return fragment`programId`;
                 },
 
                 visitPublicKeyValue(node) {
-                    return fragment(`"${node.publicKey}"`);
+                    return fragment`"${node.publicKey}"`;
                 },
 
                 visitSetValue(node, { self }) {
@@ -81,11 +80,11 @@ export function getValueVisitor(input: { stack?: NodeStack } = {}) {
                 },
 
                 visitStringValue(node) {
-                    return fragment(`"${node.string}"`);
+                    return fragment`"${node.string}"`;
                 },
 
                 visitStructFieldValue(node, { self }) {
-                    return mapFragmentContent(visit(node.value, self), c => `${node.name}: ${c}`);
+                    return fragment`${node.name}: ${visit(node.value, self)}`;
                 },
 
                 visitStructValue(node, { self }) {

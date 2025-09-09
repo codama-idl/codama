@@ -21,7 +21,7 @@ import {
     structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
 } from '@codama/nodes';
-import { addToRenderMap, mergeRenderMaps, RenderMap, renderMap } from '@codama/renderers-core';
+import { addToRenderMap, createRenderMap, mergeRenderMaps, RenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     getByteSizeVisitor,
@@ -128,7 +128,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
     }
 
     return pipe(
-        staticVisitor(() => renderMap()),
+        staticVisitor(() => createRenderMap()),
         v =>
             extendVisitor(v, {
                 visitAccount(node) {
@@ -229,8 +229,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                     }
                     const hasVariableSeeds = pdaSeeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
 
-                    return addToRenderMap(
-                        renderMap(),
+                    return createRenderMap(
                         `accounts/${camelCase(node.name)}.ts`,
                         render('accountsPage.njk', {
                             account: node,
@@ -258,8 +257,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                             `get${pascalCaseName}Serializer`,
                         ]);
 
-                    return addToRenderMap(
-                        renderMap(),
+                    return createRenderMap(
                         `types/${camelCase(node.name)}.ts`,
                         render('definedTypesPage.njk', {
                             definedType: node,
@@ -420,8 +418,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                         imports.add(getImportFrom(remainingAccounts.value), camelCase(remainingAccounts.value.name));
                     }
 
-                    return addToRenderMap(
-                        renderMap(),
+                    return createRenderMap(
                         `instructions/${camelCase(node.name)}.ts`,
                         render('instructionsPage.njk', {
                             accounts,
@@ -525,36 +522,23 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}): Visitor<
                         root: node,
                     };
 
-                    let renders = renderMap();
-                    if (hasAnythingToExport) {
-                        renders = addToRenderMap(renders, 'shared/index.ts', render('sharedPage.njk', ctx));
-                    }
-                    if (programsToExport.length > 0) {
-                        renders = pipe(
-                            renders,
-                            r => addToRenderMap(r, 'programs/index.ts', render('programsIndex.njk', ctx)),
-                            r => addToRenderMap(r, 'errors/index.ts', render('errorsIndex.njk', ctx)),
-                        );
-                    }
-                    if (accountsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'accounts/index.ts', render('accountsIndex.njk', ctx));
-                    }
-                    if (instructionsToExport.length > 0) {
-                        renders = addToRenderMap(
-                            renders,
-                            'instructions/index.ts',
-                            render('instructionsIndex.njk', ctx),
-                        );
-                    }
-                    if (definedTypesToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'types/index.ts', render('definedTypesIndex.njk', ctx));
-                    }
-
-                    return pipe(
-                        renders,
-                        r => addToRenderMap(r, 'index.ts', render('rootIndex.njk', ctx)),
-                        r => mergeRenderMaps([r, ...getAllPrograms(node).map(p => visit(p, self))]),
-                    );
+                    return mergeRenderMaps([
+                        createRenderMap({
+                            ['accounts/index.ts']:
+                                accountsToExport.length > 0 ? render('accountsIndex.njk', ctx) : undefined,
+                            ['errors/index.ts']:
+                                programsToExport.length > 0 ? render('errorsIndex.njk', ctx) : undefined,
+                            ['index.ts']: render('rootIndex.njk', ctx),
+                            ['instructions/index.ts']:
+                                instructionsToExport.length > 0 ? render('instructionsIndex.njk', ctx) : undefined,
+                            ['programs/index.ts']:
+                                programsToExport.length > 0 ? render('programsIndex.njk', ctx) : undefined,
+                            ['shared/index.ts']: hasAnythingToExport ? render('sharedPage.njk', ctx) : undefined,
+                            ['types/index.ts']:
+                                definedTypesToExport.length > 0 ? render('definedTypesIndex.njk', ctx) : undefined,
+                        }),
+                        ...getAllPrograms(node).map(p => visit(p, self)),
+                    ]);
                 },
             }),
         v => recordNodeStackVisitor(v, stack),

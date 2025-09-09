@@ -9,6 +9,7 @@ import {
     structTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
+import { pipe } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { getAccountPageFragment } from '../../src/fragments';
@@ -22,7 +23,9 @@ test('it renders account pages', () => {
         name: 'mint',
     });
 
-    const expectedContent = `---
+    const result = getAccountPageFragment(node, getTypeVisitor());
+
+    expect(result).toStrictEqual(fragment`---
 title: Mint
 description: Overview of the Mint account
 ---
@@ -36,15 +39,14 @@ It can use multiple lines.
 
 \`\`\`ts
 type Mint = { maxSupply: number /* u64 */ }
-\`\`\``;
-
-    expect(getAccountPageFragment(node, getTypeVisitor())).toStrictEqual(fragment(expectedContent));
+\`\`\``);
 });
 
 test('it renders a fixed size paragraph.', () => {
     const node = accountNode({ name: 'token' });
+    const result = getAccountPageFragment(node, getTypeVisitor(), 42);
 
-    const expectedContent = `---
+    expect(result).toStrictEqual(fragment`---
 title: Token
 description: Overview of the Token account
 ---
@@ -57,9 +59,7 @@ description: Overview of the Token account
 type Token = {}
 \`\`\`
 
-This account has a fixed size of 42 bytes.`;
-
-    expect(getAccountPageFragment(node, getTypeVisitor(), 42)).toStrictEqual(fragment(expectedContent));
+This account has a fixed size of 42 bytes.`);
 });
 
 test('it renders PDA sections', () => {
@@ -75,8 +75,11 @@ test('it renders PDA sections', () => {
             constantPdaSeedNodeFromString('base58', 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
         ],
     });
+    const result = getAccountPageFragment(node, getTypeVisitor(), undefined, pda);
 
-    const expectedContent = `---
+    expect(result).toStrictEqual(
+        pipe(
+            fragment`---
 title: Token
 description: Overview of the Token account
 ---
@@ -97,10 +100,9 @@ const [address, bump] = await findAssociatedTokenPda({ mint, owner });
 
 ## See also
 
-- [AssociatedToken](../pdas/associatedToken.md)`;
-
-    expect(getAccountPageFragment(node, getTypeVisitor(), undefined, pda)).toStrictEqual(
-        addFragmentImports(fragment(expectedContent), 'generatedPdas', 'AssociatedToken'),
+- [AssociatedToken](../pdas/associatedToken.md)`,
+            f => addFragmentImports(f, 'generatedPdas', 'AssociatedToken'),
+        ),
     );
 });
 
@@ -110,7 +112,11 @@ test('it renders see also sections', () => {
         name: 'mint',
     });
 
-    const expectedContent = `---
+    const result = getAccountPageFragment(node, getTypeVisitor());
+
+    expect(result).toStrictEqual(
+        pipe(
+            fragment`---
 title: Mint
 description: Overview of the Mint account
 ---
@@ -125,9 +131,8 @@ type Mint = { maxSupply: SomeType }
 
 ## See also
 
-- [SomeType](../types/someType.md)`;
-
-    expect(getAccountPageFragment(node, getTypeVisitor())).toStrictEqual(
-        addFragmentImports(fragment(expectedContent), 'generatedTypes', 'SomeType'),
+- [SomeType](../types/someType.md)`,
+            f => addFragmentImports(f, 'generatedTypes', 'SomeType'),
+        ),
     );
 });

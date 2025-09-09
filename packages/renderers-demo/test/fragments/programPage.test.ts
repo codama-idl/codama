@@ -41,7 +41,9 @@ test('it renders program pages', () => {
         version: '1.2.3',
     });
 
-    const expectedContent = `---
+    const result = getProgramPageFragment(node);
+
+    expect(result).toStrictEqual(fragment`---
 title: Token Program
 description: Overview of the Token Program
 ---
@@ -87,15 +89,15 @@ It can use multiple lines.
 | Insufficient Funds | \`1\`  | Insufficient funds                          |
 | Invalid Mint       | \`2\`  | Invalid Mint account                        |
 | Mint Mismatch      | \`3\`  | Account not associated with this Mint       |
-| Owner Mismatch     | \`4\`  | Owner does not match                        |`;
-
-    expect(getProgramPageFragment(node)).toStrictEqual(fragment(expectedContent));
+| Owner Mismatch     | \`4\`  | Owner does not match                        |`);
 });
 
 test('it renders pages for empty program', () => {
     const node = programNode({ name: 'token', publicKey: 'TokenKegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' });
 
-    const expectedContent = `---
+    const result = getProgramPageFragment(node);
+
+    expect(result).toStrictEqual(fragment`---
 title: Token Program
 description: Overview of the Token Program
 ---
@@ -125,7 +127,5 @@ _This program has no defined types._
 
 ## Errors
 
-_This program has no errors._`;
-
-    expect(getProgramPageFragment(node)).toStrictEqual(fragment(expectedContent));
+_This program has no errors._`);
 });

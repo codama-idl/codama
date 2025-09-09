@@ -14,7 +14,7 @@ import {
     structTypeNodeFromInstructionArgumentNodes,
     VALUE_NODES,
 } from '@codama/nodes';
-import { addToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
+import { addToRenderMap, createRenderMap, mergeRenderMaps } from '@codama/renderers-core';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -60,7 +60,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const anchorTraits = options.anchorTraits ?? true;
 
     return pipe(
-        staticVisitor(() => renderMap(), {
+        staticVisitor(() => createRenderMap(), {
             keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
         }),
         v =>
@@ -109,8 +109,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         imports.mergeWith(seedsImports);
                     }
 
-                    return addToRenderMap(
-                        renderMap(),
+                    return createRenderMap(
                         `accounts/${snakeCase(node.name)}.rs`,
                         render('accountsPage.njk', {
                             account: node,
@@ -134,8 +133,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const typeManifest = visit(node, typeManifestVisitor);
                     const imports = new ImportMap().mergeWithManifest(typeManifest);
 
-                    return addToRenderMap(
-                        renderMap(),
+                    return createRenderMap(
                         `types/${snakeCase(node.name)}.rs`,
                         render('definedTypesPage.njk', {
                             definedType: node,
@@ -233,8 +231,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const dataTraits = getTraitsFromNode(node);
                     imports.mergeWith(dataTraits.imports);
 
-                    return addToRenderMap(
-                        renderMap(),
+                    return createRenderMap(
                         `instructions/${snakeCase(node.name)}.rs`,
                         render('instructionsPage.njk', {
                             dataTraits: dataTraits.render,
@@ -302,32 +299,21 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                         root: node,
                     };
 
-                    let renders = renderMap();
-                    if (accountsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'shared.rs', render('sharedPage.njk', ctx));
-                    }
-                    if (programsToExport.length > 0) {
-                        renders = pipe(
-                            renders,
-                            r => addToRenderMap(r, 'programs.rs', render('programsMod.njk', ctx)),
-                            r => addToRenderMap(r, 'errors/mod.rs', render('errorsMod.njk', ctx)),
-                        );
-                    }
-                    if (accountsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'accounts/mod.rs', render('accountsMod.njk', ctx));
-                    }
-                    if (instructionsToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'instructions/mod.rs', render('instructionsMod.njk', ctx));
-                    }
-                    if (definedTypesToExport.length > 0) {
-                        renders = addToRenderMap(renders, 'types/mod.rs', render('definedTypesMod.njk', ctx));
-                    }
-
-                    return pipe(
-                        renders,
-                        r => addToRenderMap(r, 'mod.rs', render('rootMod.njk', ctx)),
-                        r => mergeRenderMaps([r, ...getAllPrograms(node).map(p => visit(p, self))]),
-                    );
+                    return mergeRenderMaps([
+                        createRenderMap({
+                            ['accounts/mod.rs']:
+                                accountsToExport.length > 0 ? render('accountsMod.njk', ctx) : undefined,
+                            ['errors/mod.rs']: programsToExport.length > 0 ? render('errorsMod.njk', ctx) : undefined,
+                            ['instructions/mod.rs']:
+                                instructionsToExport.length > 0 ? render('instructionsMod.njk', ctx) : undefined,
+                            ['mod.rs']: render('rootMod.njk', ctx),
+                            ['programs.rs']: programsToExport.length > 0 ? render('programsMod.njk', ctx) : undefined,
+                            ['shared.rs']: accountsToExport.length > 0 ? render('sharedPage.njk', ctx) : undefined,
+                            ['types/mod.rs']:
+                                definedTypesToExport.length > 0 ? render('definedTypesMod.njk', ctx) : undefined,
+                        }),
+                        ...getAllPrograms(node).map(p => visit(p, self)),
+                    ]);
                 },
             }),
         v => recordNodeStackVisitor(v, stack),
