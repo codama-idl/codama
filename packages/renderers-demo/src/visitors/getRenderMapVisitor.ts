@@ -1,5 +1,5 @@
 import { camelCase } from '@codama/nodes';
-import { addToRenderMap, fragmentToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
+import { createRenderMap, mergeRenderMaps } from '@codama/renderers-core';
 import {
     extendVisitor,
     getByteSizeVisitor,
@@ -34,7 +34,7 @@ export function getRenderMapVisitor(options: RenderMapOptions = {}) {
     const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
 
     return pipe(
-        staticVisitor(() => renderMap(), {
+        staticVisitor(() => createRenderMap(), {
             keys: ['rootNode', 'programNode', 'pdaNode', 'accountNode', 'definedTypeNode', 'instructionNode'],
         }),
         v =>
@@ -42,41 +42,41 @@ export function getRenderMapVisitor(options: RenderMapOptions = {}) {
                 visitAccount(node) {
                     const pda = node.pda ? linkables.get([...stack.getPath(), node.pda]) : undefined;
                     const size = visit(node, byteSizeVisitor);
-                    return fragmentToRenderMap(
-                        getAccountPageFragment(node, typeVisitor, size ?? undefined, pda),
+                    return createRenderMap(
                         `accounts/${camelCase(node.name)}.${extension}`,
+                        getAccountPageFragment(node, typeVisitor, size ?? undefined, pda),
                     );
                 },
 
                 visitDefinedType(node) {
-                    return fragmentToRenderMap(
-                        getDefinedTypePageFragment(node, typeVisitor),
+                    return createRenderMap(
                         `definedTypes/${camelCase(node.name)}.${extension}`,
+                        getDefinedTypePageFragment(node, typeVisitor),
                     );
                 },
 
                 visitInstruction(node) {
-                    return fragmentToRenderMap(
-                        getInstructionPageFragment(node, typeVisitor),
+                    return createRenderMap(
                         `instructions/${camelCase(node.name)}.${extension}`,
+                        getInstructionPageFragment(node, typeVisitor),
                     );
                 },
 
                 visitPda(node) {
-                    return fragmentToRenderMap(
-                        getPdaPageFragment(node, typeVisitor, valueVisitor),
+                    return createRenderMap(
                         `pdas/${camelCase(node.name)}.${extension}`,
+                        getPdaPageFragment(node, typeVisitor, valueVisitor),
                     );
                 },
 
                 visitProgram(node, { self }) {
-                    const children = mergeRenderMaps([
+                    return mergeRenderMaps([
+                        createRenderMap(`${indexFilename}.${extension}`, getProgramPageFragment(node)),
                         ...node.accounts.map(n => visit(n, self)),
                         ...node.definedTypes.map(n => visit(n, self)),
                         ...node.instructions.map(n => visit(n, self)),
                         ...node.pdas.map(n => visit(n, self)),
                     ]);
-                    return addToRenderMap(children, `${indexFilename}.${extension}`, getProgramPageFragment(node));
                 },
 
                 visitRoot(node, { self }) {

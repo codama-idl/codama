@@ -18,7 +18,7 @@ import {
     titleCase,
     TypeNode,
 } from '@codama/nodes';
-import { addToRenderMap, renderMap } from '@codama/renderers-core';
+import { addToRenderMap, createRenderMap } from '@codama/renderers-core';
 import {
     extendVisitor,
     LinkableDictionary,
@@ -446,7 +446,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
     const typeManifestVisitor = getProtoTypeManifestVisitor({ getImportFrom, getTraitsFromNode });
 
     return pipe(
-        staticVisitor(() => renderMap(), {
+        staticVisitor(() => createRenderMap(), {
             keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
         }),
         v =>
@@ -577,7 +577,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                     });
 
                     instructionParserImports.add(`crate::instructions::{${ixImports}}`);
-                    let renders = renderMap();
+                    let renderMap = createRenderMap();
 
                     const programStateOneOf: string[] = [];
 
@@ -718,8 +718,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
 
                         definedTypes.push(...matrixProtoTypes);
 
-                        renders = addToRenderMap(
-                            renders,
+                        renderMap = addToRenderMap(
+                            renderMap,
                             `proto/${protoProjectName}.proto`,
                             render('proto.njk', {
                                 accounts: protoAccounts,
@@ -742,8 +742,8 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
                                 });
                             };
 
-                            renders = addToRenderMap(
-                                renders,
+                            renderMap = addToRenderMap(
+                                renderMap,
                                 `src/generated_parser/proto_helpers.rs`,
                                 render('protoHelpersPage.njk', {
                                     normalizeAcronyms,
@@ -774,23 +774,23 @@ export function getRenderMapVisitor(options: GetRenderMapOptions) {
 
                     // only two files are generated as part of account and instruction parser
                     if (accCtx.accounts.length > 0) {
-                        renders = addToRenderMap(
-                            renders,
+                        renderMap = addToRenderMap(
+                            renderMap,
                             `src/generated_parser/accounts_parser.rs`,
                             render('accountsParserPage.njk', accCtx),
                         );
                     }
 
                     if (ixCtx.instructions.length > 0) {
-                        renders = addToRenderMap(
-                            renders,
+                        renderMap = addToRenderMap(
+                            renderMap,
                             `src/generated_parser/instructions_parser.rs`,
                             render('instructionsParserPage.njk', ixCtx),
                         );
                     }
 
                     return pipe(
-                        renders,
+                        renderMap,
                         r =>
                             addToRenderMap(
                                 r,
