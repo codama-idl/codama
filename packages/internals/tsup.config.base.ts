@@ -35,7 +35,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
                 };
             }
         },
-        external: ['node:fs', 'node:path', 'node:url'],
+        external: ['node:child_process', 'node:fs', 'node:path', 'node:url'],
         format,
         globalName: 'globalThis.codama',
         name: platform,

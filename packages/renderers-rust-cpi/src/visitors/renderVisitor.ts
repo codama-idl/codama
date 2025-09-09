@@ -1,7 +1,8 @@
+import { spawnSync } from 'node:child_process';
+
 import { logError, logWarn } from '@codama/errors';
 import { deleteDirectory, writeRenderMapVisitor } from '@codama/renderers-core';
 import { rootNodeVisitor, visit } from '@codama/visitors-core';
-import { spawnSync } from 'child_process';
 
 import { RenderOptions } from '../utils';
 import { getRenderMapVisitor } from './getRenderMapVisitor';
@@ -29,17 +30,21 @@ export function renderVisitor(path: string, options: RenderOptions = {}) {
 }
 
 function runFormatter(cmd: string, args: string[]) {
-    const { stdout, stderr, error } = spawnSync(cmd, args);
-    if (error?.message?.includes('ENOENT')) {
-        logWarn(`Could not find ${cmd}, skipping formatting.`);
-        return;
-    }
-    if (stdout.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        logWarn(`(cargo-fmt) ${stdout || error}`);
-    }
-    if (stderr.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        logError(`(cargo-fmt) ${stderr || error}`);
+    if (__NODEJS__) {
+        const { stdout, stderr, error } = spawnSync(cmd, args);
+        if (error?.message?.includes('ENOENT')) {
+            logWarn(`Could not find ${cmd}, skipping formatting.`);
+            return;
+        }
+        if (stdout.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            logWarn(`(cargo-fmt) ${stdout || error}`);
+        }
+        if (stderr.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            logError(`(cargo-fmt) ${stderr || error}`);
+        }
+    } else {
+        logWarn('Can only use cargo-fmt in Node environments, skipping formatting.');
     }
 }
