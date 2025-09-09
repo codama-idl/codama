@@ -19,9 +19,9 @@ import {
     mergeFragments,
     RenderScope,
 } from '../utils';
+import { getInstructionArgumentAssignmentVisitor } from '../visitors';
 import { getTypeManifestVisitor, TypeManifest } from '../visitors/getTypeManifestVisitor';
 import { renderValueNode } from '../visitors/renderValueNodeVisitor';
-import { getInstructionArgumentAssignmentVisitor } from '../visitors';
 
 /**
  * Get the instruction page fragment.
@@ -206,23 +206,23 @@ function getInstructionDataFragment(
     // no need to copy the data into a fixed-size array.
     if (
         instructionArguments.length === 1 &&
-        (instructionArguments[0].type.kind === 'bytesTypeNode' ||
-            instructionArguments[0].type.kind === 'stringTypeNode')
+        isNode(instructionArguments[0].type, ['bytesTypeNode', 'stringTypeNode'])
     ) {
         if (instructionArguments[0].defaultValue) {
             return fragment`let data = ${
-                instructionArguments[0].type.kind === 'stringTypeNode'
-                    ? `${instructionArguments[0].defaultValue}.as_bytes()`
-                    : `&${instructionArguments[0].defaultValue}`
+                isNode(instructionArguments[0].type, 'stringTypeNode')
+                    ? fragment`${instructionArguments[0].resolvedDefaultValue}.as_bytes()`
+                    : fragment`&${instructionArguments[0].resolvedDefaultValue}`
             };`;
         } else {
-            return fragment`let data = self.${instructionArguments[0].displayName}${instructionArguments[0].type.kind === 'stringTypeNode' ? '.as_bytes()' : ''};`;
+            const asBytes = isNode(instructionArguments[0].type, 'stringTypeNode') ? '.as_bytes()' : '';
+            return fragment`let data = self.${instructionArguments[0].displayName}${asBytes};`;
         }
     }
     // When there is a single byte argument, the instruction data is a single-element byte array.
     else if (
         instructionArguments.length === 1 &&
-        instructionArguments[0].type.kind === 'numberTypeNode' &&
+        isNode(instructionArguments[0].type, 'numberTypeNode') &&
         instructionArguments[0].type.format === 'u8'
     ) {
         if (instructionArguments[0].defaultValue) {
@@ -233,7 +233,7 @@ function getInstructionDataFragment(
     }
     // When there is a single number (e.g., `u16`, `u32`, `u64`) argument, the instruction data is the
     // little-endian representation of the number.
-    else if (instructionArguments.length === 1 && instructionArguments[0].type.kind === 'numberTypeNode') {
+    else if (instructionArguments.length === 1 && isNode(instructionArguments[0].type, 'numberTypeNode')) {
         if (instructionArguments[0].defaultValue) {
             return fragment`let data = &${instructionArguments[0].resolvedDefaultValue}${instructionArguments[0].type.format}.to_le_bytes();`;
         } else {
@@ -308,7 +308,7 @@ function getParsedInstructionArguments(
     });
 }
 
-function getLifetimeIterator(instructionNode: InstructionNode): Iterator<string> {
+function getLifetimeIterator(instructionNode: InstructionNode): Iterator<string, string> {
     // Start from 'b instead of 'a if we have accounts.
     let lifetime = instructionNode.accounts.length > 0 ? 1 : 0;
     return {
@@ -316,7 +316,7 @@ function getLifetimeIterator(instructionNode: InstructionNode): Iterator<string>
             if (lifetime >= 26) {
                 throw new Error('Exceeded maximum number of lifetimes (26)');
             }
-            return { value: String.fromCharCode(97 + lifetime++), done: false };
+            return { done: false, value: String.fromCharCode(97 + lifetime++) };
         },
     };
 }

@@ -1,5 +1,5 @@
 import { Docs } from '@codama/nodes';
-import { BaseFragment } from '@codama/renderers-core';
+import { BaseFragment, createFragmentTemplate } from '@codama/renderers-core';
 
 import { ImportMap } from './importMap';
 import { RenderScope } from './options';
@@ -62,21 +62,4 @@ export function getPageFragment(page: Fragment, scope: Pick<RenderScope, 'depend
     const header = getDocblockFragment(docs, false, true);
     const imports = page.imports.isEmpty() ? undefined : fragment`${page.imports.toString(scope.dependencyMap)}`;
     return mergeFragments([header, imports, page], cs => cs.join('\n\n'));
-}
-
-// TODO: Will be part of renderers-core soon.
-function createFragmentTemplate<TFragment extends BaseFragment>(
-    template: TemplateStringsArray,
-    items: unknown[],
-    isFragment: (value: unknown) => value is TFragment,
-    mergeFragments: (fragments: TFragment[], mergeContent: (contents: string[]) => string) => TFragment,
-): TFragment {
-    const fragments = items.filter(isFragment);
-    const zippedItems = items.map((item, i) => {
-        const itemPrefix = template[i];
-        if (typeof item === 'undefined') return itemPrefix;
-        if (isFragment(item)) return itemPrefix + item.content;
-        return itemPrefix + String(item);
-    });
-    return mergeFragments(fragments, () => zippedItems.join('') + template[template.length - 1]);
 }

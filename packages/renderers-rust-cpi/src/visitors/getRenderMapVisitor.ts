@@ -1,5 +1,5 @@
 import { getAllInstructionsWithSubs, getAllPrograms, snakeCase } from '@codama/nodes';
-import { fragmentToRenderMap, mergeRenderMaps, renderMap } from '@codama/renderers-core';
+import { createRenderMap, mergeRenderMaps } from '@codama/renderers-core';
 import {
     extendVisitor,
     getByteSizeVisitor,
@@ -12,14 +12,10 @@ import {
     visit,
 } from '@codama/visitors-core';
 
-import {
-    getInstructionPageFragment,
-    getProgramModPageFragment,
-    getRootModPageFragment,
-} from '../fragments';
+import { getInstructionPageFragment, getProgramModPageFragment, getRootModPageFragment } from '../fragments';
+import { getInstructionModPageFragment } from '../fragments/instructionModPage';
 import { getImportFromFactory, GetRenderMapOptions, getTraitsFromNodeFactory, RenderScope } from '../utils';
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
-import { getInstructionModPageFragment } from '../fragments/instructionModPage';
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
@@ -43,16 +39,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     };
 
     return pipe(
-        staticVisitor(() => renderMap(), {
+        staticVisitor(() => createRenderMap(), {
             keys: ['rootNode', 'programNode', 'instructionNode', 'accountNode', 'definedTypeNode'],
         }),
         v =>
             extendVisitor(v, {
                 visitInstruction(node) {
                     const instructionPath = stack.getPath('instructionNode');
-                    return fragmentToRenderMap(
-                        getInstructionPageFragment({ ...renderScope, instructionPath }),
+                    return createRenderMap(
                         `instructions/${snakeCase(node.name)}.rs`,
+                        getInstructionPageFragment({ ...renderScope, instructionPath }),
                     );
                 },
 
@@ -71,18 +67,15 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     });
                     const scope = { ...renderScope, instructionsToExport, programsToExport };
 
-                    const rootMod = getRootModPageFragment(scope);
-                    const programsMod = getProgramModPageFragment(scope);
-                    const instructionsMod = getInstructionModPageFragment({ ...renderScope, instructions: instructionsToExport });
-
                     return mergeRenderMaps([
-                        // mod.rs
-                        ...(rootMod ? [fragmentToRenderMap(rootMod, 'mod.rs')] : []),
-                        // programs/mod.rs
-                        ...(programsMod ? [fragmentToRenderMap(programsMod, 'programs/mod.rs')] : []),
-                        // instructions/mod.rs
-                        ...(instructionsMod ? [fragmentToRenderMap(instructionsMod, 'instructions/mod.rs')] : []),
-                        // Rest of the generated content.
+                        createRenderMap({
+                            ['instructions/mod.rs']: getInstructionModPageFragment({
+                                ...renderScope,
+                                instructions: instructionsToExport,
+                            }),
+                            ['mod.rs']: getRootModPageFragment(scope),
+                            ['programs/mod.rs']: getProgramModPageFragment(scope),
+                        }),
                         ...programsToExport.map(p => visit(p, self)),
                     ]);
                 },

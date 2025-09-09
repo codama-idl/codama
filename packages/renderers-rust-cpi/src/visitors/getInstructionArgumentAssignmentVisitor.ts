@@ -1,9 +1,9 @@
 import { CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE, CodamaError } from '@codama/errors';
-import { REGISTERED_TYPE_NODE_KINDS } from '@codama/nodes';
+import { isNode, REGISTERED_TYPE_NODE_KINDS } from '@codama/nodes';
 import { extendVisitor, pipe, staticVisitor, visit } from '@codama/visitors-core';
 
-import { addFragmentImports, Fragment, fragment } from '../utils';
 import type { ParsedInstructionArgument } from '../fragments';
+import { addFragmentImports, Fragment, fragment } from '../utils';
 
 export function getInstructionArgumentAssignmentVisitor(argument: ParsedInstructionArgument, offset: number) {
     return pipe(
@@ -12,10 +12,6 @@ export function getInstructionArgumentAssignmentVisitor(argument: ParsedInstruct
         }),
         v =>
             extendVisitor(v, {
-                visitDefinedTypeLink() {
-                    return [fragment``, 0];
-                },
-
                 visitArrayType() {
                     return [fragment``, 0];
                 },
@@ -25,6 +21,10 @@ export function getInstructionArgumentAssignmentVisitor(argument: ParsedInstruct
                 },
 
                 visitBytesType() {
+                    return [fragment``, 0];
+                },
+
+                visitDefinedTypeLink() {
                     return [fragment``, 0];
                 },
 
@@ -45,7 +45,7 @@ export function getInstructionArgumentAssignmentVisitor(argument: ParsedInstruct
                 },
 
                 visitFixedSizeType(fixedSizeType, { self }) {
-                    if (fixedSizeType.type.kind === 'bytesTypeNode') {
+                    if (isNode(fixedSizeType.type, 'stringTypeNode')) {
                         let value: Fragment;
                         if (argument.defaultValue) {
                             value = fragment`&${argument.resolvedDefaultValue}`;

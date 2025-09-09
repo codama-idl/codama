@@ -1,5 +1,6 @@
 import { InstructionNode } from '@codama/nodes';
-import { addFragmentImports, fragment, Fragment, getPageFragment, mergeFragments, RenderScope } from '../utils';
+
+import { addFragmentImports, Fragment, fragment, getPageFragment, mergeFragments, RenderScope } from '../utils';
 import { getModImportsFragment } from './modPage';
 
 /**
