@@ -8,7 +8,7 @@ const { rootNodeFromAnchor } = require('@codama/nodes-from-anchor');
 const { readJson } = require('@codama/renderers-core');
 const { visit } = require('@codama/visitors-core');
 
-const { renderVisitor } = require('../dist/index.node.cjs');
+const { renderVisitor } = require('../../dist/index.node.cjs');
 
 async function main() {
     const project = process.argv.slice(2)[0] ?? undefined;

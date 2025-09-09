@@ -3,5 +3,6 @@
     "compilerOptions": { "lib": [] },
     "display": "@codama/renderers-js",
     "extends": "../internals/tsconfig.base.json",
-    "include": ["src", "test"]
+    "include": ["src", "test"],
+    "exclude": ["test/e2e"]
 }
