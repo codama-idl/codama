@@ -208,7 +208,7 @@ function getInstructionDataFragment(
         instructionArguments.length === 1 &&
         isNode(instructionArguments[0].type, ['bytesTypeNode', 'stringTypeNode'])
     ) {
-        if (instructionArguments[0].defaultValue) {
+        if (instructionArguments[0].resolvedDefaultValue) {
             return fragment`let data = ${
                 isNode(instructionArguments[0].type, 'stringTypeNode')
                     ? fragment`${instructionArguments[0].resolvedDefaultValue}.as_bytes()`
@@ -225,8 +225,8 @@ function getInstructionDataFragment(
         isNode(instructionArguments[0].type, 'numberTypeNode') &&
         instructionArguments[0].type.format === 'u8'
     ) {
-        if (instructionArguments[0].defaultValue) {
-            return fragment`let data = &[${instructionArguments[0].defaultValue}${instructionArguments[0].type.format}];`;
+        if (instructionArguments[0].resolvedDefaultValue) {
+            return fragment`let data = &[${instructionArguments[0].resolvedDefaultValue}${instructionArguments[0].type.format}];`;
         } else {
             return fragment`let data = &[self.${instructionArguments[0].displayName}];`;
         }
@@ -234,7 +234,7 @@ function getInstructionDataFragment(
     // When there is a single number (e.g., `u16`, `u32`, `u64`) argument, the instruction data is the
     // little-endian representation of the number.
     else if (instructionArguments.length === 1 && isNode(instructionArguments[0].type, 'numberTypeNode')) {
-        if (instructionArguments[0].defaultValue) {
+        if (instructionArguments[0].resolvedDefaultValue) {
             return fragment`let data = &${instructionArguments[0].resolvedDefaultValue}${instructionArguments[0].type.format}.to_le_bytes();`;
         } else {
             return fragment`let data = &self.${instructionArguments[0].displayName}.to_le_bytes();`;
