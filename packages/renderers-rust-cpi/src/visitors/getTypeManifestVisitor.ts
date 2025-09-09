@@ -7,7 +7,6 @@ import {
     isNode,
     NumberTypeNode,
     numberTypeNode,
-    parseDocs,
     pascalCase,
     prefixedCountNode,
     REGISTERED_TYPE_NODE_KINDS,
@@ -21,10 +20,10 @@ import {
     addFragmentImports,
     Fragment,
     fragment,
+    getDocblockFragment,
     GetImportFromFunction,
     GetTraitsFromNodeFunction,
     mergeFragments,
-    rustDocblock,
 } from '../utils';
 
 export type TypeManifest = {
@@ -320,7 +319,7 @@ export function getTypeManifestVisitor(options: {
                     nestedStruct = originalNestedStruct;
 
                     const fieldName = snakeCase(structFieldType.name);
-                    const docblock = rustDocblock(parseDocs(structFieldType.docs));
+                    const docs = getDocblockFragment(structFieldType.docs ?? [], true);
                     const resolvedNestedType = resolveNestedTypeNode(structFieldType.type);
 
                     let derive = '';
@@ -345,8 +344,8 @@ export function getTypeManifestVisitor(options: {
                     return {
                         ...fieldManifest,
                         type: inlineStruct
-                            ? fragment`${docblock}${derive}${fieldName}: ${fieldManifest.type},`
-                            : fragment`${docblock}${derive}pub ${fieldName}: ${fieldManifest.type},`,
+                            ? fragment`${docs}${derive}${fieldName}: ${fieldManifest.type},`
+                            : fragment`${docs}${derive}pub ${fieldName}: ${fieldManifest.type},`,
                     };
                 },
 

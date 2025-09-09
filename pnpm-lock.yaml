@@ -352,13 +352,6 @@ importers:
       '@solana/codecs-strings':
         specifier: ^3.0.2
         version: 3.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)
-      nunjucks:
-        specifier: ^3.2.4
-        version: 3.2.4(chokidar@3.6.0)
-    devDependencies:
-      '@types/nunjucks':
-        specifier: ^3.2.6
-        version: 3.2.6
 
   packages/renderers-vixen-parser:
     dependencies:
