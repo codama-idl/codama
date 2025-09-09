@@ -10,7 +10,7 @@ use pinocchio::instruction::Instruction;
 use pinocchio::instruction::Signer;
 use pinocchio::ProgramResult;
 
-/// `instruction2` CPI helper.
+/// Helper for cross-program invocations of `instruction2` instruction.
 pub struct Instruction2 {}
 
 impl Instruction2 {

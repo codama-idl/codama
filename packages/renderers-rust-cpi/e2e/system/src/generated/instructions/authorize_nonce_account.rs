@@ -15,7 +15,7 @@ use pinocchio::instruction::Signer;
 use pinocchio::pubkey::Pubkey;
 use pinocchio::ProgramResult;
 
-/// `authorize_nonce_account` CPI helper.
+/// Helper for cross-program invocations of `authorize_nonce_account` instruction.
 pub struct AuthorizeNonceAccount<'a, 'b> {
     pub nonce_account: &'a AccountInfo,
     pub nonce_authority: &'a AccountInfo,

@@ -15,7 +15,7 @@ use pinocchio::instruction::Signer;
 use pinocchio::pubkey::Pubkey;
 use pinocchio::ProgramResult;
 
-/// `assign` CPI helper.
+/// Helper for cross-program invocations of `assign` instruction.
 pub struct Assign<'a, 'b> {
     pub account: &'a AccountInfo,
     pub program_address: &'b Pubkey,

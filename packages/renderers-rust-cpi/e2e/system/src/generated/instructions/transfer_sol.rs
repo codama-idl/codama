@@ -14,7 +14,7 @@ use pinocchio::instruction::Instruction;
 use pinocchio::instruction::Signer;
 use pinocchio::ProgramResult;
 
-/// `transfer_sol` CPI helper.
+/// Helper for cross-program invocations of `transfer_sol` instruction.
 pub struct TransferSol<'a> {
     pub source: &'a AccountInfo,
     pub destination: &'a AccountInfo,

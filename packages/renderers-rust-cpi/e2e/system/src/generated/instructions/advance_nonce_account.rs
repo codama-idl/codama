@@ -11,7 +11,7 @@ use pinocchio::instruction::Instruction;
 use pinocchio::instruction::Signer;
 use pinocchio::ProgramResult;
 
-/// `advance_nonce_account` CPI helper.
+/// Helper for cross-program invocations of `advance_nonce_account` instruction.
 pub struct AdvanceNonceAccount<'a> {
     pub nonce_account: &'a AccountInfo,
     pub recent_blockhashes_sysvar: &'a AccountInfo,

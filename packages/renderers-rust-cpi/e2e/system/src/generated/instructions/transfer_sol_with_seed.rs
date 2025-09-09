@@ -15,7 +15,7 @@ use pinocchio::instruction::Signer;
 use pinocchio::pubkey::Pubkey;
 use pinocchio::ProgramResult;
 
-/// `transfer_sol_with_seed` CPI helper.
+/// Helper for cross-program invocations of `transfer_sol_with_seed` instruction.
 pub struct TransferSolWithSeed<'a, 'b, 'c> {
     pub source: &'a AccountInfo,
     pub base_account: &'a AccountInfo,

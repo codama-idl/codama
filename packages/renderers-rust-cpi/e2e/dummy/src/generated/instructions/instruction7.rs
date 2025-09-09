@@ -11,7 +11,7 @@ use pinocchio::instruction::Instruction;
 use pinocchio::instruction::Signer;
 use pinocchio::ProgramResult;
 
-/// `instruction7` CPI helper.
+/// Helper for cross-program invocations of `instruction7` instruction.
 pub struct Instruction7<'a> {
     pub my_account: Option<&'a AccountInfo>,
 }

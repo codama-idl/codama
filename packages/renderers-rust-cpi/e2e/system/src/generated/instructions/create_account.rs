@@ -15,7 +15,7 @@ use pinocchio::instruction::Signer;
 use pinocchio::pubkey::Pubkey;
 use pinocchio::ProgramResult;
 
-/// `create_account` CPI helper.
+/// Helper for cross-program invocations of `create_account` instruction.
 pub struct CreateAccount<'a, 'b> {
     pub payer: &'a AccountInfo,
     pub new_account: &'a AccountInfo,

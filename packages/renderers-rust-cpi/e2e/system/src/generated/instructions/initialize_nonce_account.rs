@@ -15,7 +15,7 @@ use pinocchio::instruction::Signer;
 use pinocchio::pubkey::Pubkey;
 use pinocchio::ProgramResult;
 
-/// `initialize_nonce_account` CPI helper.
+/// Helper for cross-program invocations of `initialize_nonce_account` instruction.
 pub struct InitializeNonceAccount<'a, 'b> {
     pub nonce_account: &'a AccountInfo,
     pub recent_blockhashes_sysvar: &'a AccountInfo,

@@ -15,7 +15,7 @@ use pinocchio::instruction::Signer;
 use pinocchio::pubkey::Pubkey;
 use pinocchio::ProgramResult;
 
-/// `create_account_with_seed` CPI helper.
+/// Helper for cross-program invocations of `create_account_with_seed` instruction.
 pub struct CreateAccountWithSeed<'a, 'b, 'c, 'd> {
     pub payer: &'a AccountInfo,
     pub new_account: &'a AccountInfo,

@@ -14,7 +14,7 @@ use pinocchio::instruction::Instruction;
 use pinocchio::instruction::Signer;
 use pinocchio::ProgramResult;
 
-/// `withdraw_nonce_account` CPI helper.
+/// Helper for cross-program invocations of `withdraw_nonce_account` instruction.
 pub struct WithdrawNonceAccount<'a> {
     pub nonce_account: &'a AccountInfo,
     pub recipient_account: &'a AccountInfo,

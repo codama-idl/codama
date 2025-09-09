@@ -15,7 +15,7 @@ use pinocchio::instruction::Signer;
 use pinocchio::pubkey::Pubkey;
 use pinocchio::ProgramResult;
 
-/// `assign_with_seed` CPI helper.
+/// Helper for cross-program invocations of `assign_with_seed` instruction.
 pub struct AssignWithSeed<'a, 'b, 'c, 'd> {
     pub account: &'a AccountInfo,
     pub base_account: &'a AccountInfo,

@@ -10,7 +10,7 @@ use pinocchio::instruction::Instruction;
 use pinocchio::instruction::Signer;
 use pinocchio::ProgramResult;
 
-/// `add_memo` CPI helper.
+/// Helper for cross-program invocations of `add_memo` instruction.
 pub struct AddMemo<'a> {
     pub memo: &'a str,
 }

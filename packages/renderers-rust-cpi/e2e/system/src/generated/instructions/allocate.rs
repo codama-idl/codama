@@ -14,7 +14,7 @@ use pinocchio::instruction::Instruction;
 use pinocchio::instruction::Signer;
 use pinocchio::ProgramResult;
 
-/// `allocate` CPI helper.
+/// Helper for cross-program invocations of `allocate` instruction.
 pub struct Allocate<'a> {
     pub new_account: &'a AccountInfo,
     pub space: u64,
