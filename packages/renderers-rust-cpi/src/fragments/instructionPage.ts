@@ -202,65 +202,64 @@ function getInstructionDataFragment(
     instructionArguments: ParsedInstructionArgument[],
     instructionFixedSize: number | null,
 ): Fragment {
-    // When there is a single byte array or string (e.g., `&[u8]`, `&str`) argument, there is
-    // no need to copy the data into a fixed-size array.
-    if (
-        instructionArguments.length === 1 &&
-        isNode(instructionArguments[0].type, ['bytesTypeNode', 'stringTypeNode'])
-    ) {
-        if (instructionArguments[0].resolvedDefaultValue) {
-            return fragment`let data = ${
-                isNode(instructionArguments[0].type, 'stringTypeNode')
-                    ? fragment`${instructionArguments[0].resolvedDefaultValue}.as_bytes()`
-                    : fragment`&${instructionArguments[0].resolvedDefaultValue}`
-            };`;
-        } else {
-            const asBytes = isNode(instructionArguments[0].type, 'stringTypeNode') ? '.as_bytes()' : '';
-            return fragment`let data = self.${instructionArguments[0].displayName}${asBytes};`;
-        }
+    const singleArgumentFragment = getInstructionDataFromSingleArgumentFragment(instructionArguments);
+    if (singleArgumentFragment) return singleArgumentFragment;
+
+    const declareDataFragment = addFragmentImports(
+        fragment`let mut uninit_data = [UNINIT_BYTE; ${instructionFixedSize !== null ? instructionFixedSize : 0}];`,
+        ['super::UNINIT_BYTE', 'core::slice::from_raw_parts'],
+    );
+    let offset = 0;
+    const assignDataContentFragment = mergeFragments(
+        instructionArguments.map(argument => {
+            const [fragment, updated] = visit(argument.type, getInstructionArgumentAssignmentVisitor(argument, offset));
+            offset = updated;
+            return fragment;
+        }),
+        cs => cs.join('\n'),
+    );
+    const transmuteData = fragment`let data =  unsafe { from_raw_parts(uninit_data.as_ptr() as _, ${offset}) };`;
+
+    return mergeFragments([declareDataFragment, assignDataContentFragment, transmuteData], cs => cs.join('\n'));
+}
+
+// When there is a single byte array or string (e.g., `&[u8]`, `&str`) argument, there is
+// no need to copy the data into a fixed-size array.
+function getInstructionDataFromSingleArgumentFragment(
+    instructionArguments: ParsedInstructionArgument[],
+): Fragment | undefined {
+    if (instructionArguments.length !== 1) return;
+    const argument = instructionArguments[0];
+
+    if (isNode(argument.type, 'bytesTypeNode')) {
+        return argument.resolvedDefaultValue
+            ? fragment`let data = &${argument.resolvedDefaultValue};`
+            : fragment`let data = self.${argument.displayName};`;
     }
+
+    if (isNode(argument.type, 'stringTypeNode')) {
+        return argument.resolvedDefaultValue
+            ? fragment`let data = ${argument.resolvedDefaultValue}.as_bytes();`
+            : fragment`let data = self.${argument.displayName}.as_bytes();`;
+    }
+
     // When there is a single byte argument, the instruction data is a single-element byte array.
-    else if (
-        instructionArguments.length === 1 &&
-        isNode(instructionArguments[0].type, 'numberTypeNode') &&
-        instructionArguments[0].type.format === 'u8'
-    ) {
-        if (instructionArguments[0].resolvedDefaultValue) {
-            return fragment`let data = &[${instructionArguments[0].resolvedDefaultValue}${instructionArguments[0].type.format}];`;
-        } else {
-            return fragment`let data = &[self.${instructionArguments[0].displayName}];`;
-        }
+    if (isNode(argument.type, 'numberTypeNode') && argument.type.format === 'u8') {
+        return argument.resolvedDefaultValue
+            ? fragment`let data = &[${argument.resolvedDefaultValue}${argument.type.format}];`
+            : fragment`let data = &[self.${argument.displayName}];`;
     }
+
     // When there is a single number (e.g., `u16`, `u32`, `u64`) argument, the instruction data is the
     // little-endian representation of the number.
-    else if (instructionArguments.length === 1 && isNode(instructionArguments[0].type, 'numberTypeNode')) {
-        if (instructionArguments[0].resolvedDefaultValue) {
-            return fragment`let data = &${instructionArguments[0].resolvedDefaultValue}${instructionArguments[0].type.format}.to_le_bytes();`;
-        } else {
-            return fragment`let data = &self.${instructionArguments[0].displayName}.to_le_bytes();`;
-        }
-    }
-    // Handles any other case, which requires copying the data into a fixed-size array.
-    else {
-        const declareDataFragment = addFragmentImports(
-            fragment`let mut uninit_data = [UNINIT_BYTE; ${instructionFixedSize !== null ? instructionFixedSize : 0}];`,
-            ['super::UNINIT_BYTE', 'core::slice::from_raw_parts'],
-        );
-        let offset = 0;
-        const assignDataContentFragment = mergeFragments(
-            instructionArguments.map(argument => {
-                const [fragment, updated] = visit(
-                    argument.type,
-                    getInstructionArgumentAssignmentVisitor(argument, offset),
-                );
-                offset = updated;
-                return fragment;
-            }),
-            cs => cs.join('\n'),
-        );
-        const transmuteData = fragment`let data =  unsafe { from_raw_parts(uninit_data.as_ptr() as _, ${offset}) };`;
-
-        return mergeFragments([declareDataFragment, assignDataContentFragment, transmuteData], cs => cs.join('\n'));
+    if (
+        isNode(argument.type, 'numberTypeNode') &&
+        argument.type.format !== 'shortU16' &&
+        argument.type.endian === 'le'
+    ) {
+        return argument.resolvedDefaultValue
+            ? fragment`let data = &${argument.resolvedDefaultValue}${argument.type.format}.to_le_bytes();`
+            : fragment`let data = &self.${argument.displayName}.to_le_bytes();`;
     }
 }
 
