@@ -4,40 +4,49 @@ import { mapVisitor, Visitor } from '@codama/visitors-core';
 
 import { BaseFragment } from './fragment';
 import { writeFile } from './fs';
-import { Path } from './path';
+import { joinPath, Path } from './path';
 
 export type RenderMap = ReadonlyMap<Path, string>;
 
-export function renderMap(): RenderMap {
-    return new Map<Path, string>();
-}
-
-export function fragmentToRenderMap(fragment: BaseFragment, path: Path): RenderMap {
-    const newMap = new Map<Path, string>();
-    newMap.set(path, fragment.content);
-    return newMap;
+export function createRenderMap(): RenderMap;
+export function createRenderMap(path: Path, content: BaseFragment | string): RenderMap;
+export function createRenderMap(entries: Record<Path, BaseFragment | string | undefined>): RenderMap;
+export function createRenderMap(
+    pathOrEntries?: Path | Record<Path, BaseFragment | string | undefined>,
+    content?: BaseFragment | string,
+): RenderMap {
+    let entries: [Path, string][] = [];
+    if (typeof pathOrEntries === 'string' && pathOrEntries !== undefined && content !== undefined) {
+        entries = [[pathOrEntries, typeof content === 'string' ? content : content.content]];
+    } else if (typeof pathOrEntries === 'object' && pathOrEntries !== null) {
+        entries = Object.entries(pathOrEntries).flatMap(([key, value]) => {
+            if (value === undefined) return [];
+            return [[key, typeof value === 'string' ? value : value.content]] as const;
+        });
+    }
+    return Object.freeze(new Map<Path, string>(entries));
 }
 
 export function addToRenderMap(renderMap: RenderMap, path: Path, content: BaseFragment | string): RenderMap {
-    const newMap = new Map(renderMap);
-    newMap.set(path, typeof content === 'string' ? content : content.content);
-    return newMap;
+    return mergeRenderMaps([renderMap, createRenderMap(path, content)]);
 }
 
 export function removeFromRenderMap(renderMap: RenderMap, path: Path): RenderMap {
     const newMap = new Map(renderMap);
     newMap.delete(path);
-    return newMap;
+    return Object.freeze(newMap);
 }
 
 export function mergeRenderMaps(renderMaps: RenderMap[]): RenderMap {
+    if (renderMaps.length === 0) return createRenderMap();
+    if (renderMaps.length === 1) return renderMaps[0];
     const merged = new Map(renderMaps[0]);
     for (const map of renderMaps.slice(1)) {
         for (const [key, value] of map) {
             merged.set(key, value);
         }
     }
-    return merged;
+    return Object.freeze(merged);
 }
 
 export function mapRenderMapContent(renderMap: RenderMap, fn: (content: string) => string): RenderMap {
@@ -45,7 +54,7 @@ export function mapRenderMapContent(renderMap: RenderMap, fn: (content: string) 
     for (const [key, value] of renderMap) {
         newMap.set(key, fn(value));
     }
-    return newMap;
+    return Object.freeze(newMap);
 }
 
 export async function mapRenderMapContentAsync(
@@ -55,7 +64,7 @@ export async function mapRenderMapContentAsync(
     const entries = await Promise.all([
         ...[...renderMap.entries()].map(async ([key, value]) => [key, await fn(value)] as const),
     ]);
-    return new Map<Path, string>(entries);
+    return Object.freeze(new Map<Path, string>(entries));
 }
 
 export function getFromRenderMap(renderMap: RenderMap, path: Path): string {
@@ -71,9 +80,9 @@ export function renderMapContains(renderMap: RenderMap, path: Path, value: RegEx
     return typeof value === 'string' ? content.includes(value) : value.test(content);
 }
 
-export function writeRenderMap(renderMap: RenderMap, basePath: string): void {
+export function writeRenderMap(renderMap: RenderMap, basePath: Path): void {
     renderMap.forEach((content, relativePath) => {
-        writeFile(`${basePath}/${relativePath}`, content);
+        writeFile(joinPath(basePath, relativePath), content);
     });
 }
 

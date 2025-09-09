@@ -7,7 +7,7 @@ import {
     getAllPdas,
     getAllPrograms,
 } from '@codama/nodes';
-import { fragmentToRenderMap, mergeRenderMaps, Path, RenderMap, renderMap } from '@codama/renderers-core';
+import { createRenderMap, mergeRenderMaps } from '@codama/renderers-core';
 import {
     extendVisitor,
     getByteSizeVisitor,
@@ -70,53 +70,63 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const internalNodes = (options.internalNodes ?? []).map(camelCase);
     const resolvedInstructionInputVisitor = getResolvedInstructionInputsVisitor();
     const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
-    const pageFragmentToRenderMap = (f: Fragment, p: Path, dependencyMap: Record<string, string> = {}): RenderMap =>
-        fragmentToRenderMap(
-            getPageFragment(f, { ...renderScope, dependencyMap: { ...renderScope.dependencyMap, ...dependencyMap } }),
-            p,
-        );
+    const asPage = <TFragment extends Fragment | undefined>(
+        fragment: TFragment,
+        dependencyMap: Record<string, string> = {},
+    ): TFragment => {
+        if (!fragment) return undefined as TFragment;
+        return getPageFragment(fragment, {
+            ...renderScope,
+            dependencyMap: { ...renderScope.dependencyMap, ...dependencyMap },
+        }) as TFragment;
+    };
 
     return pipe(
-        staticVisitor(() => renderMap(), {
+        staticVisitor(() => createRenderMap(), {
             keys: ['rootNode', 'programNode', 'pdaNode', 'accountNode', 'definedTypeNode', 'instructionNode'],
         }),
         v =>
             extendVisitor(v, {
                 visitAccount(node) {
-                    return pageFragmentToRenderMap(
-                        getAccountPageFragment({
-                            ...renderScope,
-                            accountPath: stack.getPath('accountNode'),
-                            size: visit(node, byteSizeVisitor),
-                        }),
+                    return createRenderMap(
                         `accounts/${camelCase(node.name)}.ts`,
+                        asPage(
+                            getAccountPageFragment({
+                                ...renderScope,
+                                accountPath: stack.getPath('accountNode'),
+                                size: visit(node, byteSizeVisitor),
+                            }),
+                        ),
                     );
                 },
 
                 visitDefinedType(node) {
-                    return pageFragmentToRenderMap(
-                        getTypePageFragment({ ...renderScope, node, size: visit(node, byteSizeVisitor) }),
+                    return createRenderMap(
                         `types/${camelCase(node.name)}.ts`,
-                        { generatedTypes: '.' },
+                        asPage(getTypePageFragment({ ...renderScope, node, size: visit(node, byteSizeVisitor) }), {
+                            generatedTypes: '.',
+                        }),
                     );
                 },
 
                 visitInstruction(node) {
-                    return pageFragmentToRenderMap(
-                        getInstructionPageFragment({
-                            ...renderScope,
-                            instructionPath: stack.getPath('instructionNode'),
-                            resolvedInputs: visit(node, resolvedInstructionInputVisitor),
-                            size: visit(node, byteSizeVisitor),
-                        }),
+                    return createRenderMap(
                         `instructions/${camelCase(node.name)}.ts`,
+                        asPage(
+                            getInstructionPageFragment({
+                                ...renderScope,
+                                instructionPath: stack.getPath('instructionNode'),
+                                resolvedInputs: visit(node, resolvedInstructionInputVisitor),
+                                size: visit(node, byteSizeVisitor),
+                            }),
+                        ),
                     );
                 },
 
                 visitPda(node) {
-                    return pageFragmentToRenderMap(
-                        getPdaPageFragment({ ...renderScope, pdaPath: stack.getPath('pdaNode') }),
+                    return createRenderMap(
                         `pdas/${camelCase(node.name)}.ts`,
+                        asPage(getPdaPageFragment({ ...renderScope, pdaPath: stack.getPath('pdaNode') })),
                     );
                 },
 
@@ -128,15 +138,11 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     const scope = { ...renderScope, programNode: node };
 
                     return mergeRenderMaps([
-                        pageFragmentToRenderMap(getProgramPageFragment(scope), `programs/${camelCase(node.name)}.ts`),
-                        ...(node.errors.length > 0
-                            ? [
-                                  pageFragmentToRenderMap(
-                                      getErrorPageFragment(scope),
-                                      `errors/${camelCase(node.name)}.ts`,
-                                  ),
-                              ]
-                            : []),
+                        createRenderMap({
+                            [`programs/${camelCase(node.name)}.ts`]: asPage(getProgramPageFragment(scope)),
+                            [`errors/${camelCase(node.name)}.ts`]:
+                                node.errors.length > 0 ? asPage(getErrorPageFragment(scope)) : undefined,
+                        }),
                         ...node.pdas.map(p => visit(p, self)),
                         ...node.accounts.map(a => visit(a, self)),
                         ...node.definedTypes.map(t => visit(t, self)),
@@ -173,38 +179,16 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
                     };
 
                     return mergeRenderMaps([
-                        pageFragmentToRenderMap(getRootIndexPageFragment(scope), 'index.ts'),
-                        ...(accountsToExport.length > 0
-                            ? [pageFragmentToRenderMap(getIndexPageFragment(accountsToExport), 'accounts/index.ts')]
-                            : []),
-                        ...(programsWithErrorsToExport.length > 0
-                            ? [
-                                  pageFragmentToRenderMap(
-                                      getIndexPageFragment(programsWithErrorsToExport),
-                                      'errors/index.ts',
-                                  ),
-                              ]
-                            : []),
-                        ...(instructionsToExport.length > 0
-                            ? [
-                                  pageFragmentToRenderMap(
-                                      getIndexPageFragment(instructionsToExport),
-                                      'instructions/index.ts',
-                                  ),
-                              ]
-                            : []),
-                        ...(pdasToExport.length > 0
-                            ? [pageFragmentToRenderMap(getIndexPageFragment(pdasToExport), 'pdas/index.ts')]
-                            : []),
-                        ...(programsToExport.length > 0
-                            ? [pageFragmentToRenderMap(getIndexPageFragment(programsToExport), 'programs/index.ts')]
-                            : []),
-                        ...(hasAnythingToExport
-                            ? [pageFragmentToRenderMap(getSharedPageFragment(), 'shared/index.ts')]
-                            : []),
-                        ...(definedTypesToExport.length > 0
-                            ? [pageFragmentToRenderMap(getIndexPageFragment(definedTypesToExport), 'types/index.ts')]
-                            : []),
+                        createRenderMap({
+                            ['accounts/index.ts']: asPage(getIndexPageFragment(accountsToExport)),
+                            ['errors/index.ts']: asPage(getIndexPageFragment(programsWithErrorsToExport)),
+                            ['index.ts']: asPage(getRootIndexPageFragment(scope)),
+                            ['instructions/index.ts']: asPage(getIndexPageFragment(instructionsToExport)),
+                            ['pdas/index.ts']: asPage(getIndexPageFragment(pdasToExport)),
+                            ['programs/index.ts']: asPage(getIndexPageFragment(programsToExport)),
+                            ['shared/index.ts']: hasAnythingToExport ? asPage(getSharedPageFragment()) : undefined,
+                            ['types/index.ts']: asPage(getIndexPageFragment(definedTypesToExport)),
+                        }),
                         ...getAllPrograms(node).map(p => visit(p, self)),
                     ]);
                 },
