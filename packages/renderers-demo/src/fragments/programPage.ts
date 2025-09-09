@@ -1,7 +1,14 @@
 import { camelCase, ProgramNode, titleCase } from '@codama/nodes';
 import { joinPath } from '@codama/renderers-core';
 
-import { Fragment, fragment, getFrontmatterFragment, getPageFragment, getTitleAndDescriptionFragment } from '../utils';
+import {
+    Fragment,
+    fragment,
+    getFrontmatterFragment,
+    getPageFragment,
+    getTitleAndDescriptionFragment,
+    mergeFragments,
+} from '../utils';
 import { getProgramErrorsFragment } from './programErrors';
 
 export function getProgramPageFragment(node: ProgramNode): Fragment {
@@ -12,18 +19,18 @@ export function getProgramPageFragment(node: ProgramNode): Fragment {
         [
             getFrontmatterFragment(title, `Overview of the ${title}`),
             getTitleAndDescriptionFragment(title, node.docs),
-            fragment('## Information'),
-            fragment([`- Address: \`${node.publicKey}\``, `- Version: \`${node.version}\``].join('\n')),
-            fragment('## Accounts'),
+            fragment`## Information`,
+            fragment`- Address: \`${node.publicKey}\`\n- Version: \`${node.version}\``,
+            fragment`## Accounts`,
             getLinksFragment(node.accounts, 'accounts'),
-            fragment('## Instructions'),
+            fragment`## Instructions`,
             getLinksFragment(node.instructions, 'instructions'),
-            fragment('## PDAs'),
+            fragment`## PDAs`,
             getLinksFragment(node.pdas, 'pdas', 'PDAs'),
-            fragment('## Defined types'),
+            fragment`## Defined types`,
             getLinksFragment(node.definedTypes, 'definedTypes', 'defined types'),
-            fragment('## Errors'),
-            errors ? errors : fragment('_This program has no errors._'),
+            fragment`## Errors`,
+            errors ? errors : fragment`_This program has no errors._`,
         ],
         // Generated items are nested in sibling directories.
         {
@@ -36,10 +43,10 @@ export function getProgramPageFragment(node: ProgramNode): Fragment {
 }
 
 function getLinksFragment(items: { name: string }[], folder: string, identifier?: string): Fragment {
-    if (items.length === 0) return fragment(`_This program has no ${identifier ?? folder}._`);
+    if (items.length === 0) return fragment`_This program has no ${identifier ?? folder}._`;
     const links = items.map(item => {
         const link = joinPath(folder, `${camelCase(item.name)}.md`);
-        return `- [${titleCase(item.name)}](${link})`;
+        return fragment`- [${titleCase(item.name)}](${link})`;
     });
-    return fragment(links.join('\n'));
+    return mergeFragments(links, cs => cs.join('\n'));
 }

@@ -1,18 +1,37 @@
 import { Docs } from '@codama/nodes';
-import { BaseFragment, mapFragmentContent, Path } from '@codama/renderers-core';
+import { BaseFragment, createFragmentTemplate, mapFragmentContent, Path } from '@codama/renderers-core';
 
-import { addToImportMap, getImportMapLinks, ImportMap, importMap, mergeImportMaps, PathOverrides } from './importMap';
+import {
+    addToImportMap,
+    createImportMap,
+    getImportMapLinks,
+    ImportMap,
+    mergeImportMaps,
+    PathOverrides,
+} from './importMap';
 
 export type Fragment = BaseFragment & Readonly<{ imports: ImportMap }>;
 
-export function fragment(content: string): Fragment {
-    return Object.freeze({ content, imports: importMap() });
+function createFragment(content: string): Fragment {
+    return Object.freeze({ content, imports: createImportMap() });
 }
 
-export function mergeFragments(fragments: Fragment[], mergeContent: (contents: string[]) => string) {
+function isFragment(value: unknown): value is Fragment {
+    return typeof value === 'object' && value !== null && 'content' in value;
+}
+
+export function fragment(template: TemplateStringsArray, ...items: unknown[]): Fragment {
+    return createFragmentTemplate(template, items, isFragment, mergeFragments);
+}
+
+export function mergeFragments(
+    fragments: (Fragment | undefined)[],
+    mergeContent: (contents: string[]) => string,
+): Fragment {
+    const filteredFragments = fragments.filter((f): f is Fragment => f !== undefined);
     return Object.freeze({
-        content: mergeContent(fragments.map(fragment => fragment.content)),
-        imports: mergeImportMaps(fragments.map(fragment => fragment.imports)),
+        content: mergeContent(filteredFragments.map(fragment => fragment.content)),
+        imports: mergeImportMaps(filteredFragments.map(fragment => fragment.imports)),
     });
 }
 
@@ -21,12 +40,12 @@ export function addFragmentImports(fragment: Fragment, path: Path, names: string
 }
 
 export function getFrontmatterFragment(title: string, description: string): Fragment {
-    return fragment(`---\ntitle: ${title}\ndescription: ${description}\n---`);
+    return fragment`---\ntitle: ${title}\ndescription: ${description}\n---`;
 }
 
 export function getTitleAndDescriptionFragment(title: string, docs?: Docs): Fragment {
     return mergeFragments(
-        [fragment(`# ${title}`), ...(docs && docs.length > 0 ? [fragment(docs.join('\n'))] : [])],
+        [fragment`# ${title}`, docs && docs.length > 0 ? fragment`${docs.join('\n')}` : undefined],
         cs => cs.join('\n\n'),
     );
 }
@@ -36,7 +55,7 @@ export function getCodeBlockFragment(code: Fragment, language: string = ''): Fra
 }
 
 export function getTableFragment(headers: (Fragment | string)[], rows: (Fragment | string)[][]): Fragment {
-    const toFragment = (cell: Fragment | string) => (typeof cell === 'string' ? fragment(cell) : cell);
+    const toFragment = (cell: Fragment | string) => (typeof cell === 'string' ? createFragment(cell) : cell);
     const headerFragments = headers.map(toFragment);
     const rowFragments = rows.map(row => row.map(toFragment));
     const colWidths = headerFragments.map((header, colIndex) =>
@@ -46,7 +65,7 @@ export function getTableFragment(headers: (Fragment | string)[], rows: (Fragment
     const mergeCells = (fs: Fragment[]) => mergeFragments(fs, cs => cs.join(' | '));
     const lines = [
         mergeCells(headerFragments.map(padCells)),
-        mergeCells(headerFragments.map((_, colIndex) => fragment('-'.repeat(colWidths[colIndex])))),
+        mergeCells(headerFragments.map((_, colIndex) => createFragment('-'.repeat(colWidths[colIndex])))),
         ...rowFragments.map(row => mergeCells(row.map(padCells))),
     ];
     return mergeFragments(
@@ -56,12 +75,12 @@ export function getTableFragment(headers: (Fragment | string)[], rows: (Fragment
 }
 
 export function getCommentFragment(lines: string[]): Fragment {
-    return fragment(`<!--\n${lines.join('\n')}\n-->`);
+    return fragment`<!--\n${lines.join('\n')}\n-->`;
 }
 
 export function getPageFragment(fragments: Fragment[], pathOverrides: PathOverrides = {}): Fragment {
     const page = mergeFragments(fragments, cs => cs.join('\n\n'));
     const links = getImportMapLinks(page.imports, pathOverrides);
     if (links.length === 0) return page;
-    return mapFragmentContent(page, c => `${c}\n\n## See also\n\n${links.join('\n')}`);
+    return fragment`${page}\n\n## See also\n\n${links.join('\n')}`;
 }

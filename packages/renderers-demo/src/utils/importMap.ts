@@ -3,14 +3,14 @@ import { joinPath, Path } from '@codama/renderers-core';
 
 export type ImportMap = ReadonlyMap<Path, ReadonlySet<string>>;
 
-export function importMap(imports: [Path, string[] | string][] = []): ImportMap {
+export function createImportMap(imports: [Path, string[] | string][] = []): ImportMap {
     return Object.freeze(
         new Map(imports.map(([path, names]) => [path, new Set(typeof names === 'string' ? [names] : names)])),
     );
 }
 
 export function addToImportMap(map: ImportMap, path: Path, names: string[] | string): ImportMap {
-    return mergeImportMaps([map, importMap([[path, names]])]);
+    return mergeImportMaps([map, createImportMap([[path, names]])]);
 }
 
 export function mergeImportMaps(importMaps: ImportMap[]): ImportMap {

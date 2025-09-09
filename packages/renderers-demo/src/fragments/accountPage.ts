@@ -25,10 +25,10 @@ export function getAccountPageFragment(
         [
             getFrontmatterFragment(title, `Overview of the ${title} account`),
             getTitleAndDescriptionFragment(title, node.docs),
-            fragment('## Account data'),
+            fragment`## Account data`,
             getCodeBlockFragment(type, 'ts'),
-            ...(size ? [fragment(`This account has a fixed size of ${size} bytes.`)] : []),
-            ...(pda ? [fragment('## PDA'), getCodeBlockFragment(getPdaFunctionUsageFragment(pda), 'ts')] : []),
+            ...(size ? [fragment`This account has a fixed size of ${size} bytes.`] : []),
+            ...(pda ? [fragment`## PDA`, getCodeBlockFragment(getPdaFunctionUsageFragment(pda), 'ts')] : []),
         ],
         // Generated accounts are within the same directory.
         { generatedAccounts: '.' },

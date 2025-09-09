@@ -50,7 +50,9 @@ function expectType(
     node: AccountNode | DefinedTypeNode | InstructionNode | TypeNode,
     expected: Fragment | string,
 ): void {
-    expect(visit(node, getTypeVisitor())).toStrictEqual(typeof expected === 'string' ? fragment(expected) : expected);
+    expect(visit(node, getTypeVisitor())).toStrictEqual(
+        typeof expected === 'string' ? fragment`${expected}` : expected,
+    );
 }
 
 test('it renders accounts', () => {
@@ -97,7 +99,7 @@ test('it renders defined types', () => {
             ]),
         }),
         addFragmentImports(
-            fragment('type Person = { name: NameAlias; age: number /* u32 */ }'),
+            fragment`type Person = { name: NameAlias; age: number /* u32 */ }`,
             'generatedTypes',
             'NameAlias',
         ),
@@ -129,7 +131,7 @@ test('it renders defined types', () => {
 test('it renders defined type links', () => {
     expectType(
         definedTypeLinkNode('semverVersion'),
-        addFragmentImports(fragment('SemverVersion'), 'generatedTypes', 'SemverVersion'),
+        addFragmentImports(fragment`SemverVersion`, 'generatedTypes', 'SemverVersion'),
     );
 });
 
@@ -299,12 +301,12 @@ test('it renders tuple types', () => {
             tupleTypeNode([stringTypeNode('utf8'), numberTypeNode('u32')]),
         ]),
         addFragmentImports(
-            fragment(`[
+            fragment`[
     FirstItemInTheTupleWithALongName,
     SecondItemInTheTupleWithALongName,
     ThirdItemInTheTupleWithALongName,
     [string, number /* u32 */],
-]`),
+]`,
             'generatedTypes',
             [
                 'FirstItemInTheTupleWithALongName',
