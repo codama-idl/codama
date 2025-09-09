@@ -45,7 +45,7 @@
         "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:browser && pnpm test:node && pnpm test:react-native && pnpm test:e2e && pnpm test:exports",
         "test:browser": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs browser",
-        "test:e2e": "./e2e/test.sh",
+        "test:e2e": "./test/e2e/test.sh",
         "test:exports": "node ./test/exports/module.mjs && node ./test/exports/commonjs.cjs",
         "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
         "test:react-native": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs react-native",

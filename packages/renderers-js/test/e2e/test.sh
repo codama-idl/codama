@@ -9,10 +9,10 @@ function start_validator() {
 }
 
 function test_project() {
-    ./e2e/generate.cjs $1
-    cd e2e/$1
+    ./test/e2e/generate.cjs $1
+    cd test/e2e/$1
     pnpm install && pnpm build && pnpm test
-    cd ../..
+    cd ../../..
 }
 
 start_validator
