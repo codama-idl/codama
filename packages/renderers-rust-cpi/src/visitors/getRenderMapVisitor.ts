@@ -14,12 +14,12 @@ import {
 
 import {
     getInstructionPageFragment,
-    getModPageFragment,
     getProgramModPageFragment,
     getRootModPageFragment,
 } from '../fragments';
 import { getImportFromFactory, GetRenderMapOptions, getTraitsFromNodeFactory, RenderScope } from '../utils';
 import { getTypeManifestVisitor } from './getTypeManifestVisitor';
+import { getInstructionModPageFragment } from '../fragments/instructionModPage';
 
 export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
     const linkables = new LinkableDictionary();
@@ -73,7 +73,7 @@ export function getRenderMapVisitor(options: GetRenderMapOptions = {}) {
 
                     const rootMod = getRootModPageFragment(scope);
                     const programsMod = getProgramModPageFragment(scope);
-                    const instructionsMod = getModPageFragment({ ...renderScope, items: instructionsToExport });
+                    const instructionsMod = getInstructionModPageFragment({ ...renderScope, instructions: instructionsToExport });
 
                     return mergeRenderMaps([
                         // mod.rs

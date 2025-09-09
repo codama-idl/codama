@@ -21,7 +21,11 @@ import {
 } from '../utils';
 import { getTypeManifestVisitor, TypeManifest } from '../visitors/getTypeManifestVisitor';
 import { renderValueNode } from '../visitors/renderValueNodeVisitor';
+import { getInstructionArgumentAssignmentVisitor } from '../visitors';
 
+/**
+ * Get the instruction page fragment.
+ */
 export function getInstructionPageFragment(
     scope: Pick<RenderScope, 'byteSizeVisitor' | 'dependencyMap' | 'getImportFrom' | 'getTraitsFromNode'> & {
         instructionPath: NodePath<InstructionNode>;
@@ -42,20 +46,23 @@ export function getInstructionPageFragment(
 
     // Instruction arguments.
     const instructionArguments = getParsedInstructionArguments(instructionNode, accountsAndArgsConflicts, scope);
+
+    /*
     const hasArgs = instructionArguments.some(arg => arg.defaultValueStrategy !== 'omitted');
     const hasOptional = instructionArguments.some(
         arg => !arg.resolvedDefaultValue && arg.defaultValueStrategy !== 'omitted',
     );
+    */
 
-    // Helpers.
+    // Determines the size of the instruction data. The size is `null` if any of the arguments is
+    // variable-sized.
     const instructionFixedSize = visit(instructionNode, scope.byteSizeVisitor);
-    const lifetime = instructionNode.accounts.length > 0 ? "<'a>" : '';
 
     return getPageFragment(
         mergeFragments(
             [
-                getInstructionStructFragment(instructionNode, instructionArguments, lifetime),
-                getInstructionImplFragment(instructionNode, instructionArguments, lifetime),
+                getInstructionStructFragment(instructionNode, instructionArguments),
+                getInstructionImplFragment(instructionNode, instructionArguments, instructionFixedSize),
                 getInstructionNestedStructsFragment(instructionArguments),
             ],
             cs => cs.join('\n\n'),
@@ -64,10 +71,13 @@ export function getInstructionPageFragment(
     );
 }
 
+/**
+ * Get the instruction `struct` fragment. The fragment includes the accounts and arguments
+ * as fields.
+ */
 function getInstructionStructFragment(
     instructionNode: InstructionNode,
     instructionArguments: ParsedInstructionArgument[],
-    lifetime: string,
 ) {
     const accountsFragment = mergeFragments(
         instructionNode.accounts.map(account => {
@@ -84,29 +94,34 @@ function getInstructionStructFragment(
         cs => cs.join('\n'),
     );
 
+    const structLifetimes = getLifetimeDeclarations(instructionNode, instructionArguments);
     const argumentsFragment = mergeFragments(
         instructionArguments
             .filter(arg => !arg.resolvedDefaultValue)
             .map(arg => {
                 const docs = getDocblockFragment(arg.docs ?? [], true);
-                return fragment`${docs}pub ${arg.displayName}: ${arg.manifest.type},`;
+                const lifetime = arg.lifetime ? `&'${arg.lifetime} ` : '';
+                return fragment`${docs}pub ${arg.displayName}: ${lifetime}${arg.manifest.type},`;
             }),
         cs => cs.join('\n'),
     );
 
-    return fragment`/// \`${snakeCase(instructionNode.name)}\` CPI helper.
-pub struct ${pascalCase(instructionNode.name)}${lifetime} {
+    return fragment`/// Helper for cross-program invocations of \`${snakeCase(instructionNode.name)}\` instruction.
+pub struct ${pascalCase(instructionNode.name)}${structLifetimes} {
   ${accountsFragment}
   ${argumentsFragment}
 }`;
 }
 
+/**
+ * Get the instruction `impl` fragment. The fragment includes the `invoke` and `invoke_signed` methods.
+ */
 function getInstructionImplFragment(
     instructionNode: InstructionNode,
-    _instructionArguments: ParsedInstructionArgument[],
-    lifetime: string,
+    instructionArguments: ParsedInstructionArgument[],
+    instructionFixedSize: number | null,
 ) {
-    const accountsFragment = mergeFragments(
+    const accountMetasFragment = mergeFragments(
         instructionNode.accounts.map(account => {
             const name = snakeCase(account.name);
             const isWritable = account.isWritable ? 'true' : 'false';
@@ -114,29 +129,64 @@ function getInstructionImplFragment(
                 account.isSigner === 'either'
                     ? fragment`self.${name}.0.key(), ${isWritable}, self.${name}.1`
                     : fragment`self.${name}.key(), ${isWritable}, ${account.isSigner}`;
-            return fragment`pinocchio::instruction::AccountMeta::new(${accountMetaArguments}),`;
+            return fragment`AccountMeta::new(${accountMetaArguments}),`;
         }),
         cs => cs.join('\n'),
     );
 
-    return fragment`impl${lifetime} ${pascalCase(instructionNode.name)}${lifetime} {
+    const accountsFragment = mergeFragments(
+        instructionNode.accounts.map(account => {
+            const name = snakeCase(account.name);
+            return fragment`&self.${name},`;
+        }),
+        cs => cs.join('\n'),
+    );
+
+    const instructionDataFragment =
+        instructionArguments.length > 0
+            ? getInstructionDataFragment(instructionArguments, instructionFixedSize)
+            : fragment`let data = &[];`;
+
+    const structLifetimes = getLifetimeDeclarations(instructionNode, instructionArguments, true);
+
+    return addFragmentImports(
+        fragment`impl ${pascalCase(instructionNode.name)}${structLifetimes} {
     #[inline(always)]
-    pub fn invoke(&self) -> pinocchio::ProgramResult {
+    pub fn invoke(&self) -> ProgramResult {
         self.invoke_signed(&[])
     }
 
-    pub fn invoke_signed(&self, _signers: &[pinocchio::instruction::Signer]) -> pinocchio::ProgramResult {
+    pub fn invoke_signed(&self, signers: &[Signer]) -> ProgramResult {
 
-      // account metadata
-      let account_metas: [pinocchio::instruction::AccountMeta; {{ instruction.accounts.length }}] = [
-        ${accountsFragment}
+      // account metas
+      let account_metas: [AccountMeta; ${instructionNode.accounts.length}] = [
+        ${accountMetasFragment}
       ];
 
-      Ok(())
+      ${instructionDataFragment}
+
+      let instruction = Instruction {
+            program_id: &crate::ID,
+            accounts: &account_metas,
+            data,
+        };
+
+        invoke_signed(&instruction, &[${accountsFragment}], signers)
     }
-}`;
+}`,
+        [
+            'pinocchio::cpi::invoke_signed',
+            'pinocchio::instruction::Instruction',
+            'pinocchio::instruction::AccountMeta',
+            'pinocchio::ProgramResult',
+            'pinocchio::instruction::Signer',
+        ],
+    );
 }
 
+/**
+ * Get the fragment for any nested `struct`s used in the instruction arguments.
+ */
 function getInstructionNestedStructsFragment(instructionArguments: ParsedInstructionArgument[]): Fragment {
     return mergeFragments(
         instructionArguments.flatMap(arg => arg.manifest.nestedStructs),
@@ -144,9 +194,80 @@ function getInstructionNestedStructsFragment(instructionArguments: ParsedInstruc
     );
 }
 
-type ParsedInstructionArgument = InstructionArgumentNode & {
+/**
+ * Get the fragment that constructs the instruction data. There are several special cases
+ * to handle single argument instructions.
+ */
+function getInstructionDataFragment(
+    instructionArguments: ParsedInstructionArgument[],
+    instructionFixedSize: number | null,
+): Fragment {
+    // When there is a single byte array or string (e.g., `&[u8]`, `&str`) argument, there is
+    // no need to copy the data into a fixed-size array.
+    if (
+        instructionArguments.length === 1 &&
+        (instructionArguments[0].type.kind === 'bytesTypeNode' ||
+            instructionArguments[0].type.kind === 'stringTypeNode')
+    ) {
+        if (instructionArguments[0].defaultValue) {
+            return fragment`let data = ${
+                instructionArguments[0].type.kind === 'stringTypeNode'
+                    ? `${instructionArguments[0].defaultValue}.as_bytes()`
+                    : `&${instructionArguments[0].defaultValue}`
+            };`;
+        } else {
+            return fragment`let data = self.${instructionArguments[0].displayName}${instructionArguments[0].type.kind === 'stringTypeNode' ? '.as_bytes()' : ''};`;
+        }
+    }
+    // When there is a single byte argument, the instruction data is a single-element byte array.
+    else if (
+        instructionArguments.length === 1 &&
+        instructionArguments[0].type.kind === 'numberTypeNode' &&
+        instructionArguments[0].type.format === 'u8'
+    ) {
+        if (instructionArguments[0].defaultValue) {
+            return fragment`let data = &[${instructionArguments[0].defaultValue}${instructionArguments[0].type.format}];`;
+        } else {
+            return fragment`let data = &[self.${instructionArguments[0].displayName}];`;
+        }
+    }
+    // When there is a single number (e.g., `u16`, `u32`, `u64`) argument, the instruction data is the
+    // little-endian representation of the number.
+    else if (instructionArguments.length === 1 && instructionArguments[0].type.kind === 'numberTypeNode') {
+        if (instructionArguments[0].defaultValue) {
+            return fragment`let data = &${instructionArguments[0].resolvedDefaultValue}${instructionArguments[0].type.format}.to_le_bytes();`;
+        } else {
+            return fragment`let data = &self.${instructionArguments[0].displayName}.to_le_bytes();`;
+        }
+    }
+    // Handles any other case, which requires copying the data into a fixed-size array.
+    else {
+        const declareDataFragment = addFragmentImports(
+            fragment`let mut uninit_data = [UNINIT_BYTE; ${instructionFixedSize !== null ? instructionFixedSize : 0}];`,
+            ['super::UNINIT_BYTE', 'core::slice::from_raw_parts'],
+        );
+        let offset = 0;
+        const assignDataContentFragment = mergeFragments(
+            instructionArguments.map(argument => {
+                const [fragment, updated] = visit(
+                    argument.type,
+                    getInstructionArgumentAssignmentVisitor(argument, offset),
+                );
+                offset = updated;
+                return fragment;
+            }),
+            cs => cs.join('\n'),
+        );
+        const transmuteData = fragment`let data =  unsafe { from_raw_parts(uninit_data.as_ptr() as _, ${offset}) };`;
+
+        return mergeFragments([declareDataFragment, assignDataContentFragment, transmuteData], cs => cs.join('\n'));
+    }
+}
+
+export type ParsedInstructionArgument = InstructionArgumentNode & {
     displayName: SnakeCaseString;
     fixedSize: number | null;
+    lifetime: string | null;
     manifest: TypeManifest;
     resolvedDefaultValue: Fragment | null;
     resolvedInnerOptionType: Fragment | null;
@@ -157,6 +278,7 @@ function getParsedInstructionArguments(
     accountsAndArgsConflicts: string[],
     scope: Pick<RenderScope, 'byteSizeVisitor' | 'getImportFrom' | 'getTraitsFromNode'>,
 ): ParsedInstructionArgument[] {
+    const lifetimeIterator = getLifetimeIterator(instructionNode);
     const argumentVisitor = getTypeManifestVisitor({
         ...scope,
         nestedStruct: true,
@@ -164,12 +286,16 @@ function getParsedInstructionArguments(
     });
 
     return instructionNode.arguments.map(argument => {
+        const fixedSize = visit(argument.type, scope.byteSizeVisitor);
+        const shouldUseLifetime = fixedSize === null || fixedSize > 8;
+
         return {
             ...argument,
             displayName: accountsAndArgsConflicts.includes(argument.name)
                 ? (`${snakeCase(argument.name)}_arg` as SnakeCaseString)
                 : snakeCase(argument.name),
-            fixedSize: visit(argument.type, scope.byteSizeVisitor),
+            fixedSize,
+            lifetime: shouldUseLifetime ? lifetimeIterator.next().value : null,
             manifest: visit(argument.type, argumentVisitor),
             resolvedDefaultValue:
                 !!argument.defaultValue && isNode(argument.defaultValue, VALUE_NODES)
@@ -180,6 +306,31 @@ function getParsedInstructionArguments(
                 : null,
         };
     });
+}
+
+function getLifetimeIterator(instructionNode: InstructionNode): Iterator<string> {
+    // Start from 'b instead of 'a if we have accounts.
+    let lifetime = instructionNode.accounts.length > 0 ? 1 : 0;
+    return {
+        next: () => {
+            if (lifetime >= 26) {
+                throw new Error('Exceeded maximum number of lifetimes (26)');
+            }
+            return { value: String.fromCharCode(97 + lifetime++), done: false };
+        },
+    };
+}
+
+function getLifetimeDeclarations(
+    instructionNode: InstructionNode,
+    instructionArguments: ParsedInstructionArgument[],
+    useUnderscore = false,
+): string {
+    const lifetimes = [
+        ...(instructionNode.accounts.length > 0 ? [useUnderscore ? `'_` : `'a`] : []),
+        ...instructionArguments.flatMap(arg => (arg.lifetime ? [useUnderscore ? `'_` : `'${arg.lifetime}`] : [])),
+    ];
+    return lifetimes.length > 0 ? `<${lifetimes.join(', ')}>` : '';
 }
 
 function getConflictsBetweenAccountsAndArguments(instructionNode: InstructionNode): string[] {

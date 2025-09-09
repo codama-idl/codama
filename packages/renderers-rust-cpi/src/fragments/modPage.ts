@@ -5,7 +5,15 @@ import { Fragment, fragment, getPageFragment, mergeFragments, RenderScope } from
 export function getModPageFragment(
     scope: Pick<RenderScope, 'dependencyMap'> & { items: { name: CamelCaseString }[] },
 ): Fragment | undefined {
-    const { items } = scope;
+    const imports = getModImportsFragment(scope.items);
+    if (!imports) return;
+
+    return getPageFragment(imports, scope);
+}
+
+export function getModImportsFragment(
+    items: { name: CamelCaseString }[],
+): Fragment | undefined {
     if (items.length === 0) return;
 
     const sortedItems = items.slice().sort((a, b) => a.name.localeCompare(b.name));
@@ -18,8 +26,6 @@ export function getModPageFragment(
         cs => cs.join('\n'),
     );
 
-    return getPageFragment(
-        mergeFragments([modStatements, useStatements], cs => cs.join('\n\n')),
-        scope,
-    );
+    return mergeFragments([modStatements, useStatements], cs => cs.join('\n\n'))
+
 }

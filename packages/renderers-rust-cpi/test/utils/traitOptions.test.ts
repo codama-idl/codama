@@ -27,10 +27,10 @@ describe('default values', () => {
         });
 
         // When we get the traits from the node using the default options.
-        const { render, imports } = getTraitsFromNode(node);
+        const { content, imports } = getTraitsFromNode(node);
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(
+        expect(content).toBe(
             `#[derive(Clone, Debug, Eq, PartialEq)]\n` +
             `#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]\n` +
                 `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
@@ -48,10 +48,10 @@ describe('default values', () => {
         });
 
         // When we get the traits from the node using the default options.
-        const { render, imports } = getTraitsFromNode(node);
+        const { content, imports } = getTraitsFromNode(node);
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(
+        expect(content).toBe(
             `#[derive(Clone, Debug, Eq, PartialEq, Copy, PartialOrd, Hash, FromPrimitive)]\n` +
                 `#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]\n` +
                 `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
@@ -72,10 +72,10 @@ describe('default values', () => {
         });
 
         // When we get the traits from the node using the default options.
-        const { render, imports } = getTraitsFromNode(node);
+        const { content, imports } = getTraitsFromNode(node);
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(
+        expect(content).toBe(
             `#[derive(Clone, Debug, Eq, PartialEq)]\n` +
                 `#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]\n` +
                 `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
@@ -97,12 +97,12 @@ describe('default values', () => {
 
         // When we get the traits from the node using the
         // default options with the overrides attribute.
-        const { render, imports } = getTraitsFromNode(node, {
+        const { content, imports } = getTraitsFromNode(node, {
             overrides: { coordinates: ['My', 'special::Traits'] },
         });
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(My, Traits)]\n`);
+        expect(content).toBe(`#[derive(My, Traits)]\n`);
 
         // And the following imports to be used.
         expect([...imports.imports]).toStrictEqual(['special::Traits']);
@@ -120,12 +120,12 @@ describe('default values', () => {
 
         // When we get the traits from the node using custom traits
         // such that some are part of the feature flag defaults.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             overrides: { coordinates: ['My', 'special::Traits', 'serde::Serialize'] },
         });
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(`#[derive(My, Traits)]\n#[cfg_attr(feature = "serde", derive(serde::Serialize))]\n`);
+        expect(content).toBe(`#[derive(My, Traits)]\n#[cfg_attr(feature = "serde", derive(serde::Serialize))]\n`);
     });
 });
 
@@ -154,14 +154,14 @@ describe('base traits', () => {
         });
 
         // When we get the traits from the node using custom base and data enum defaults.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
             dataEnumDefaults: ['MyDataEnumTrait'],
         });
 
         // Then we expect both the base and data enum traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyDataEnumTrait)]\n`);
+        expect(content).toBe(`#[derive(MyBaseTrait, MyDataEnumTrait)]\n`);
     });
 
     test('it uses both the base and scalar enum traits', () => {
@@ -172,14 +172,14 @@ describe('base traits', () => {
         });
 
         // When we get the traits from the node using custom base and scalar enum defaults.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
             scalarEnumDefaults: ['MyScalarEnumTrait'],
         });
 
         // Then we expect both the base and scalar enum traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyScalarEnumTrait)]\n`);
+        expect(content).toBe(`#[derive(MyBaseTrait, MyScalarEnumTrait)]\n`);
     });
 
     test('it uses both the base and struct traits', () => {
@@ -193,14 +193,14 @@ describe('base traits', () => {
         });
 
         // When we get the traits from the node using custom base and struct defaults.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
             structDefaults: ['MyStructTrait'],
         });
 
         // Then we expect both the base and struct traits to be rendered.
-        expect(render).toBe(`#[derive(MyBaseTrait, MyStructTrait)]\n`);
+        expect(content).toBe(`#[derive(MyBaseTrait, MyStructTrait)]\n`);
     });
 
     test('it never uses traits for type aliases', () => {
@@ -211,13 +211,13 @@ describe('base traits', () => {
         });
 
         // When we get the traits from the node such that we have base defaults.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
         });
 
         // Then we expect no traits to be rendered.
-        expect(render).toBe('');
+        expect(content).toBe('');
     });
 
     test('it identifies feature flags under all default traits', () => {
@@ -230,7 +230,7 @@ describe('base traits', () => {
         // When we get the traits from the node such that:
         // - We provide custom base and scalar enum defaults.
         // - We provide custom feature flags for traits in both categories.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait', 'MyNonFeatureTrait'],
             featureFlags: {
@@ -241,7 +241,7 @@ describe('base traits', () => {
         });
 
         // Then we expect both the base and enum traits to be rendered as separate feature flags.
-        expect(render).toBe(
+        expect(content).toBe(
             `#[derive(MyNonFeatureTrait)]\n` +
                 `#[cfg_attr(feature = "base", derive(MyBaseTrait))]\n` +
                 `#[cfg_attr(feature = "enum", derive(MyScalarEnumTrait))]\n`,
@@ -257,7 +257,7 @@ describe('base traits', () => {
 
         // When we get the traits from the node such that
         // all traits are under feature flags.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
             featureFlags: {
@@ -268,7 +268,7 @@ describe('base traits', () => {
         });
 
         // Then we expect the following traits to be rendered.
-        expect(render).toBe(
+        expect(content).toBe(
             `#[cfg_attr(feature = "base", derive(MyBaseTrait))]\n#[cfg_attr(feature = "enum", derive(MyScalarEnumTrait))]\n`,
         );
     });
@@ -285,7 +285,7 @@ describe('overridden traits', () => {
         // When we get the traits from the node such that:
         // - We provide custom base and enum defaults.
         // - We override the feedback type with custom traits.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['MyBaseTrait'],
             overrides: { feedback: ['MyFeedbackTrait'] },
@@ -293,7 +293,7 @@ describe('overridden traits', () => {
         });
 
         // Then we expect only the feedback traits to be rendered.
-        expect(render).toBe(`#[derive(MyFeedbackTrait)]\n`);
+        expect(content).toBe(`#[derive(MyFeedbackTrait)]\n`);
     });
 
     test('it finds traits to override when using pascal case', () => {
@@ -305,13 +305,13 @@ describe('overridden traits', () => {
 
         // When we get the traits from the node such that
         // we use PascalCase for the type name.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             overrides: { Feedback: ['MyFeedbackTrait'] },
         });
 
         // Then we still expect the custom feedback traits to be rendered.
-        expect(render).toBe(`#[derive(MyFeedbackTrait)]\n`);
+        expect(content).toBe(`#[derive(MyFeedbackTrait)]\n`);
     });
 
     test('it identifies feature flags under all overridden traits', () => {
@@ -324,14 +324,14 @@ describe('overridden traits', () => {
         // When we get the traits from the node such that:
         // - We override the feedback type with custom traits.
         // - We provide custom feature flags for these some of these custom traits.
-        const { render } = getTraitsFromNode(node, {
+        const { content } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             featureFlags: { custom: ['MyFeedbackTrait'] },
             overrides: { feedback: ['MyFeedbackTrait', 'MyNonFeatureTrait'] },
         });
 
         // Then we expect some of the overridden traits to be rendered under feature flags.
-        expect(render).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg_attr(feature = "custom", derive(MyFeedbackTrait))]\n`);
+        expect(content).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg_attr(feature = "custom", derive(MyFeedbackTrait))]\n`);
     });
 });
 
@@ -344,14 +344,14 @@ describe('fully qualified name traits', () => {
         });
 
         // When we get the traits from the node such that we use fully qualified names.
-        const { render, imports } = getTraitsFromNode(node, {
+        const { content, imports } = getTraitsFromNode(node, {
             ...RESET_OPTIONS,
             baseDefaults: ['fruits::Apple', 'fruits::Banana', 'vegetables::Carrot'],
             useFullyQualifiedName: true,
         });
 
         // Then we expect the fully qualified names to be used for the traits.
-        expect(render).toBe(`#[derive(fruits::Apple, fruits::Banana, vegetables::Carrot)]\n`);
+        expect(content).toBe(`#[derive(fruits::Apple, fruits::Banana, vegetables::Carrot)]\n`);
 
         // And no imports should be used.
         expect([...imports.imports]).toStrictEqual([]);
