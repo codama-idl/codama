@@ -1,4 +1,4 @@
-import { isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@codama/nodes';
+import { CountNode, isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@codama/nodes';
 
 import { extendVisitor } from './extendVisitor';
 import { LinkableDictionary } from './LinkableDictionary';
@@ -12,6 +12,7 @@ import { visit, Visitor } from './visitor';
 export type ByteSizeVisitorKeys =
     | RegisteredTypeNode['kind']
     | 'accountNode'
+    | 'constantValueNode'
     | 'definedTypeLinkNode'
     | 'definedTypeNode'
     | 'instructionArgumentNode'
@@ -35,11 +36,12 @@ export function getByteSizeVisitor(
         {
             keys: [
                 ...REGISTERED_TYPE_NODE_KINDS,
+                'accountNode',
+                'constantValueNode',
                 'definedTypeLinkNode',
                 'definedTypeNode',
-                'accountNode',
-                'instructionNode',
                 'instructionArgumentNode',
+                'instructionNode',
             ],
         },
     );
@@ -53,11 +55,25 @@ export function getByteSizeVisitor(
                 },
 
                 visitArrayType(node, { self }) {
-                    if (!isNode(node.count, 'fixedCountNode')) return null;
-                    const count = node.count.value;
-                    if (count === 0) return 0;
-                    const itemSize = visit(node.item, self);
-                    return itemSize !== null ? itemSize * count : null;
+                    return getArrayLikeSize(node.count, visit(node.item, self), self);
+                },
+
+                visitConstantValue(node, { self }) {
+                    const typeSize = visit(node.type, self);
+                    if (typeSize !== null) return typeSize;
+                    if (isNode(node.value, 'bytesValueNode') && node.value.encoding === 'base16') {
+                        return Math.ceil(node.value.data.length / 2);
+                    }
+                    if (
+                        isNode(node.type, 'stringTypeNode') &&
+                        node.type.encoding === 'base16' &&
+                        isNode(node.value, 'stringValueNode')
+                    ) {
+                        return Math.ceil(node.value.string.length / 2);
+                    }
+                    // Technically, we could still identify other fixed-size constants
+                    // but we'd need to import @solana/codecs to compute them.
+                    return null;
                 },
 
                 visitDefinedType(node, { self }) {
@@ -117,12 +133,8 @@ export function getByteSizeVisitor(
                 },
 
                 visitMapType(node, { self }) {
-                    if (!isNode(node.count, 'fixedCountNode')) return null;
-                    const count = node.count.value;
-                    if (count === 0) return 0;
-                    const keySize = visit(node.key, self);
-                    const valueSize = visit(node.value, self);
-                    return keySize !== null && valueSize !== null ? (keySize + valueSize) * count : null;
+                    const innerSize = sumSizes([visit(node.key, self), visit(node.value, self)]);
+                    return getArrayLikeSize(node.count, innerSize, self);
                 },
 
                 visitNumberType(node) {
@@ -132,9 +144,17 @@ export function getByteSizeVisitor(
 
                 visitOptionType(node, { self }) {
                     if (!node.fixed) return null;
-                    const prefixSize = visit(node.prefix, self) as number;
-                    const itemSize = visit(node.item, self);
-                    return itemSize !== null ? itemSize + prefixSize : null;
+                    return sumSizes([visit(node.prefix, self), visit(node.item, self)]);
+                },
+
+                visitPostOffsetType(node, { self }) {
+                    const typeSize = visit(node.type, self);
+                    return node.strategy === 'padded' ? sumSizes([typeSize, node.offset]) : typeSize;
+                },
+
+                visitPreOffsetType(node, { self }) {
+                    const typeSize = visit(node.type, self);
+                    return node.strategy === 'padded' ? sumSizes([typeSize, node.offset]) : typeSize;
                 },
 
                 visitPublicKeyType() {
@@ -147,13 +167,28 @@ export function getByteSizeVisitor(
                 },
 
                 visitSetType(node, { self }) {
-                    if (!isNode(node.count, 'fixedCountNode')) return null;
-                    const count = node.count.value;
-                    if (count === 0) return 0;
+                    return getArrayLikeSize(node.count, visit(node.item, self), self);
+                },
+
+                visitZeroableOptionType(node, { self }) {
                     const itemSize = visit(node.item, self);
-                    return itemSize !== null ? itemSize * count : null;
+                    if (!node.zeroValue) return itemSize;
+                    const zeroSize = visit(node.zeroValue, self);
+                    return zeroSize === itemSize ? itemSize : null;
                 },
             }),
         v => recordNodeStackVisitor(v, stack),
     );
+}
+
+function getArrayLikeSize(
+    count: CountNode,
+    innerSize: number | null,
+    self: Visitor<number | null, ByteSizeVisitorKeys>,
+): number | null {
+    if (innerSize === 0 && isNode(count, 'prefixedCountNode')) return visit(count.prefix, self);
+    if (innerSize === 0) return 0;
+    if (!isNode(count, 'fixedCountNode')) return null;
+    if (count.value === 0) return 0;
+    return innerSize !== null ? innerSize * count.value : null;
 }
