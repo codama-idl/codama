@@ -1,6 +1,7 @@
-import { CountNode, isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@codama/nodes';
+import { CountNode, isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS } from '@codama/nodes';
 
 import { extendVisitor } from './extendVisitor';
+import { ByteSizeVisitorKeys } from './getByteSizeVisitor';
 import { LinkableDictionary } from './LinkableDictionary';
 import { mergeVisitor } from './mergeVisitor';
 import { getLastNodeFromPath } from './NodePath';
@@ -9,16 +10,7 @@ import { pipe } from './pipe';
 import { recordNodeStackVisitor } from './recordNodeStackVisitor';
 import { visit, Visitor } from './visitor';
 
-export type ByteSizeVisitorKeys =
-    | RegisteredTypeNode['kind']
-    | 'accountNode'
-    | 'constantValueNode'
-    | 'definedTypeLinkNode'
-    | 'definedTypeNode'
-    | 'instructionArgumentNode'
-    | 'instructionNode';
-
-export function getByteSizeVisitor(
+export function getMaxByteSizeVisitor(
     linkables: LinkableDictionary,
     options: { stack?: NodeStack } = {},
 ): Visitor<number | null, ByteSizeVisitorKeys> {
@@ -111,10 +103,9 @@ export function getByteSizeVisitor(
                     if (prefix === null) return null;
                     if (isScalarEnum(node)) return prefix;
                     const variantSizes = node.variants.map(v => visit(v, self));
-                    const allVariantHaveTheSameFixedSize = variantSizes.every((one, _, all) => one === all[0]);
-                    return allVariantHaveTheSameFixedSize && variantSizes.length > 0 && variantSizes[0] !== null
-                        ? variantSizes[0] + prefix
-                        : null;
+                    if (variantSizes.includes(null)) return null;
+                    const maxVariantSize = Math.max(...(variantSizes as number[]));
+                    return prefix + maxVariantSize;
                 },
 
                 visitFixedSizeType(node) {
@@ -135,12 +126,11 @@ export function getByteSizeVisitor(
                 },
 
                 visitNumberType(node) {
-                    if (node.format === 'shortU16') return null;
+                    if (node.format === 'shortU16') return 3;
                     return parseInt(node.format.slice(1), 10) / 8;
                 },
 
                 visitOptionType(node, { self }) {
-                    if (!node.fixed) return null;
                     return sumSizes([visit(node.prefix, self), visit(node.item, self)]);
                 },
 
@@ -171,7 +161,8 @@ export function getByteSizeVisitor(
                     const itemSize = visit(node.item, self);
                     if (!node.zeroValue) return itemSize;
                     const zeroSize = visit(node.zeroValue, self);
-                    return zeroSize === itemSize ? itemSize : null;
+                    if (itemSize === null || zeroSize === null) return null;
+                    return Math.max(itemSize, zeroSize);
                 },
             }),
         v => recordNodeStackVisitor(v, stack),
