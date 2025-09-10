@@ -1,5 +1,21 @@
 # @codama/renderers-js
 
+## 1.4.0
+
+### Minor Changes
+
+- [#825](https://github.com/codama-idl/codama/pull/825) [`412e143`](https://github.com/codama-idl/codama/commit/412e1439f3043eaa1224fa173519216c05368625) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove nunjucks templating library and enable browser support
+
+- [#829](https://github.com/codama-idl/codama/pull/829) [`dcf9dd9`](https://github.com/codama-idl/codama/commit/dcf9dd9bc37ac2922a69ff46f8be09e2275fdcdb) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Reimplement `ImportMap` as a functional immutable type
+
+### Patch Changes
+
+- Updated dependencies [[`e5e9077`](https://github.com/codama-idl/codama/commit/e5e90779ebec786cf35932d06110c75ef71137eb), [`e5e9077`](https://github.com/codama-idl/codama/commit/e5e90779ebec786cf35932d06110c75ef71137eb), [`8638fa7`](https://github.com/codama-idl/codama/commit/8638fa7b9b81ca4fb2ad895ec52221a1804649fe), [`5282efe`](https://github.com/codama-idl/codama/commit/5282efe3ad56083e0210d3e76e5834690335fa42), [`0bb08e6`](https://github.com/codama-idl/codama/commit/0bb08e64855ec4671b263dd6c145bb8567eefb94), [`412e143`](https://github.com/codama-idl/codama/commit/412e1439f3043eaa1224fa173519216c05368625)]:
+    - @codama/renderers-core@1.2.0
+    - @codama/visitors-core@1.3.5
+    - @codama/errors@1.3.5
+    - @codama/nodes@1.3.5
+
 ## 1.3.5
 
 ### Patch Changes
