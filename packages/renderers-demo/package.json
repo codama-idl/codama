@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-demo",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Demo renderer to help creating new ones",
     "exports": {
         "types": "./dist/types/index.d.ts",
