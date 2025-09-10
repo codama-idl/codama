@@ -401,6 +401,9 @@ describe('numberTypeNode', () => {
     ])('it returns the size of %s numbers', (format, expectedSize) => {
         expectSize(numberTypeNode(format as NumberFormat), expectedSize);
     });
+    test('it returns null if the format is shortU16', () => {
+        expectSize(numberTypeNode('shortU16'), null);
+    });
 });
 
 describe('optionTypeNode', () => {
