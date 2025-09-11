@@ -56,7 +56,7 @@
         "@codama/nodes": "workspace:*",
         "@codama/renderers-core": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/codecs": "^3.0.2"
+        "@solana/codecs": "^3.0.3"
     },
     "devDependencies": {
         "@codama/cli": "workspace:*"
