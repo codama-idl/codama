@@ -3,8 +3,8 @@
  * @see https://github.com/anza-xyz/kit/blob/main/packages/errors
  */
 
-import chalk from 'chalk';
 import { Command, InvalidArgumentError } from 'commander';
+import pico from 'picocolors';
 
 import { version } from '../../package.json';
 import { CodamaErrorCode } from '../codes';
@@ -37,29 +37,21 @@ program
         }
     })
     .action((code: number, context: object | undefined) => {
+        const header = codamaColor(pico.bold('[Decoded]') + ` Codama error code #${code}`);
         const message = getHumanReadableErrorMessage(code as CodamaErrorCode, context);
-        console.log(`
-${
-    chalk.bold(
-        chalk.rgb(154, 71, 255)('[') +
-            chalk.rgb(144, 108, 244)('D') +
-            chalk.rgb(134, 135, 233)('e') +
-            chalk.rgb(122, 158, 221)('c') +
-            chalk.rgb(110, 178, 209)('o') +
-            chalk.rgb(95, 195, 196)('d') +
-            chalk.rgb(79, 212, 181)('e') +
-            chalk.rgb(57, 227, 166)('d') +
-            chalk.rgb(19, 241, 149)(']'),
-    ) + chalk.rgb(19, 241, 149)(' Codama error code #' + code)
-}
-    - ${message}`);
+        console.log(`\n${header}\n    ${message}`);
         if (context) {
-            console.log(`
-${chalk.yellowBright(chalk.bold('[Context]'))}
-    ${JSON.stringify(context, null, 4).split('\n').join('\n    ')}`);
+            const contextHeader = pico.blue(pico.bold('[Context]'));
+            const contextString = JSON.stringify(context, null, 4).split('\n').join('\n    ');
+            console.log(`\n${contextHeader}\n    ${contextString}`);
         }
     });
 
 export function run(argv: readonly string[]) {
     program.parse(argv);
+}
+
+function codamaColor(text: string): string {
+    if (!pico.isColorSupported) return text;
+    return `\x1b[38;2;231;171;97m${text}\x1b[0m`;
 }
