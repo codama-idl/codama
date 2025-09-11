@@ -1,5 +1,14 @@
 # @codama/errors
 
+## 1.3.6
+
+### Patch Changes
+
+- [#846](https://github.com/codama-idl/codama/pull/846) [`a62b4c5`](https://github.com/codama-idl/codama/commit/a62b4c5701b92642b8e4069953969f1f9c3dd20c) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Replace chalk with picocolors in CLI
+
+- Updated dependencies []:
+    - @codama/node-types@1.3.6
+
 ## 1.3.5
 
 ### Patch Changes
