@@ -17,6 +17,7 @@ export function getVitestConfig(platform: Platform) {
         test: {
             environment: platform === 'browser' ? 'happy-dom' : 'node',
             exclude: [...configDefaults.exclude, '**/e2e/**'],
+            name: platform,
         },
     });
 }

@@ -29,13 +29,11 @@
         "parser"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
-        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
-        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "dev": "vitest --project node",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "vitest run",
         "test:e2e": "./e2e/test.sh"
     },
     "dependencies": {

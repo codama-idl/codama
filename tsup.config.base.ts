@@ -64,3 +64,23 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         treeshake: false,
     };
 }
+
+export function getPackageBuildConfigs(): TsupConfig[] {
+    return [
+        getBuildConfig({ format: 'cjs', platform: 'node' }),
+        getBuildConfig({ format: 'esm', platform: 'node' }),
+        getBuildConfig({ format: 'cjs', platform: 'browser' }),
+        getBuildConfig({ format: 'esm', platform: 'browser' }),
+        getBuildConfig({ format: 'esm', platform: 'react-native' }),
+    ];
+}
+
+export function getCliBuildConfig(): TsupConfig {
+    return {
+        ...getBuildConfig({ format: 'cjs', platform: 'node' }),
+        entry: { cli: './src/cli/index.ts' },
+        outExtension() {
+            return { js: `.cjs` };
+        },
+    };
+}

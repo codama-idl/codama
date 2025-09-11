@@ -35,14 +35,12 @@
         "specifications"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs package",
-        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
-        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
         "test": "pnpm test:types && pnpm test:treeshakability",
-        "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
-        "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
+        "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
+        "test:types": "tsc --noEmit"
     },
     "license": "MIT",
     "repository": {
