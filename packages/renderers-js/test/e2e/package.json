@@ -19,7 +19,7 @@
         "typescript": "^5.9.2"
     },
     "engines": {
-        "node": ">=20.0.0"
+        "node": ">=20.18.0"
     },
     "packageManager": "pnpm@9.1.0",
     "prettier": "@solana/prettier-config-solana"

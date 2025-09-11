@@ -22,7 +22,7 @@ export function createFragmentTemplate<TFragment extends BaseFragment>(
         const itemPrefix = template[i];
         if (typeof item === 'undefined') return itemPrefix;
         if (isFragment(item)) return itemPrefix + item.content;
-        return itemPrefix + String(item);
+        return itemPrefix + String(item as string);
     });
     return mergeFragments(fragments, () => zippedItems.join('') + template[template.length - 1]);
 }
