@@ -32,7 +32,7 @@ describe('default values', () => {
         // Then we expect the following traits to be rendered.
         expect(content).toBe(
             `#[derive(Clone, Debug, Eq, PartialEq)]\n` +
-            `#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]\n` +
+                `#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]\n` +
                 `#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]\n`,
         );
 
@@ -331,7 +331,9 @@ describe('overridden traits', () => {
         });
 
         // Then we expect some of the overridden traits to be rendered under feature flags.
-        expect(content).toBe(`#[derive(MyNonFeatureTrait)]\n#[cfg_attr(feature = "custom", derive(MyFeedbackTrait))]\n`);
+        expect(content).toBe(
+            `#[derive(MyNonFeatureTrait)]\n#[cfg_attr(feature = "custom", derive(MyFeedbackTrait))]\n`,
+        );
     });
 });
 

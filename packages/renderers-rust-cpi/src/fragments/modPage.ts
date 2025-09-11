@@ -11,9 +11,7 @@ export function getModPageFragment(
     return getPageFragment(imports, scope);
 }
 
-export function getModImportsFragment(
-    items: { name: CamelCaseString }[],
-): Fragment | undefined {
+export function getModImportsFragment(items: { name: CamelCaseString }[]): Fragment | undefined {
     if (items.length === 0) return;
 
     const sortedItems = items.slice().sort((a, b) => a.name.localeCompare(b.name));
@@ -26,6 +24,5 @@ export function getModImportsFragment(
         cs => cs.join('\n'),
     );
 
-    return mergeFragments([modStatements, useStatements], cs => cs.join('\n\n'))
-
+    return mergeFragments([modStatements, useStatements], cs => cs.join('\n\n'));
 }
