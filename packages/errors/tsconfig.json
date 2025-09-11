@@ -5,6 +5,6 @@
         "resolveJsonModule": true
     },
     "display": "@codama/errors",
-    "extends": "../internals/tsconfig.base.json",
+    "extends": "../../tsconfig.json",
     "include": ["src", "test"]
 }

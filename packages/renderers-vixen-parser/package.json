@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-vixen-parser",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "description": "Renders Yellowstone Account and Instruction Parsers",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -29,13 +29,11 @@
         "parser"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
-        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
-        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "dev": "vitest --project node",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "vitest run",
         "test:e2e": "./e2e/test.sh"
     },
     "dependencies": {
@@ -44,7 +42,7 @@
         "@codama/renderers-core": "workspace:*",
         "@codama/visitors-core": "workspace:*",
         "@codama/renderers-rust": "workspace:*",
-        "@solana/codecs-strings": "^3.0.2",
+        "@solana/codecs-strings": "^3.0.3",
         "nunjucks": "^3.2.4"
     },
     "devDependencies": {

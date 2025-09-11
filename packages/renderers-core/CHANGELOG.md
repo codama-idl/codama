@@ -1,5 +1,24 @@
 # @codama/renderers-core
 
+## 1.2.0
+
+### Minor Changes
+
+- [#833](https://github.com/codama-idl/codama/pull/833) [`e5e9077`](https://github.com/codama-idl/codama/commit/e5e90779ebec786cf35932d06110c75ef71137eb) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add fragment support to `createRenderMap` and remove `fragmentToRenderMap` helper
+
+- [#833](https://github.com/codama-idl/codama/pull/833) [`e5e9077`](https://github.com/codama-idl/codama/commit/e5e90779ebec786cf35932d06110c75ef71137eb) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Rename `renderMap` helper to `createRenderMap` and return frozen objects in all render map helpers
+
+### Patch Changes
+
+- [#807](https://github.com/codama-idl/codama/pull/807) [`5282efe`](https://github.com/codama-idl/codama/commit/5282efe3ad56083e0210d3e76e5834690335fa42) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add `fragmentToRenderMap` helper
+
+- [#825](https://github.com/codama-idl/codama/pull/825) [`412e143`](https://github.com/codama-idl/codama/commit/412e1439f3043eaa1224fa173519216c05368625) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add `createFragmentTemplate` helper
+
+- Updated dependencies [[`8638fa7`](https://github.com/codama-idl/codama/commit/8638fa7b9b81ca4fb2ad895ec52221a1804649fe), [`0bb08e6`](https://github.com/codama-idl/codama/commit/0bb08e64855ec4671b263dd6c145bb8567eefb94)]:
+    - @codama/visitors-core@1.3.5
+    - @codama/errors@1.3.5
+    - @codama/nodes@1.3.5
+
 ## 1.1.0
 
 ### Minor Changes

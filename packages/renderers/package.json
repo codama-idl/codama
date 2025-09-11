@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers",
-    "version": "1.0.32",
+    "version": "1.0.33",
     "description": "Exports all Codama renderers",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -26,16 +26,14 @@
         "renderers"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
-        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
-        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node",
-        "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
-        "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
-        "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "dev": "vitest --project node",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
+        "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
+        "test:types": "tsc --noEmit",
+        "test:unit": "vitest run"
     },
     "dependencies": {
         "@codama/renderers-js": "workspace:*",

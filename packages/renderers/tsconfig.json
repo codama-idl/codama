@@ -2,6 +2,6 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": { "lib": [] },
     "display": "@codama/renderers",
-    "extends": "../internals/tsconfig.base.json",
+    "extends": "../../tsconfig.json",
     "include": ["src", "test"]
 }

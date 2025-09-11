@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-js-umi",
-    "version": "1.1.20",
+    "version": "1.1.21",
     "description": "JavaScript renderer compatible with the Umi framework",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -29,18 +29,16 @@
         "client"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:types",
-        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs node",
-        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
-        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:node && pnpm test:e2e && pnpm test:exports",
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "dev": "vitest --project node",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit && pnpm test:e2e && pnpm test:exports",
         "test:e2e": "./e2e/test.sh",
         "test:exports": "node ./test/exports/module.mjs && node ./test/exports/commonjs.cjs",
-        "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
-        "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
-        "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
+        "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
+        "test:types": "tsc --noEmit",
+        "test:unit": "vitest run"
     },
     "dependencies": {
         "@codama/errors": "workspace:*",
@@ -48,7 +46,7 @@
         "@codama/renderers-core": "workspace:*",
         "@codama/validators": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/codecs-strings": "^3.0.2",
+        "@solana/codecs-strings": "^3.0.3",
         "nunjucks": "^3.2.4",
         "prettier": "^3.6.2"
     },

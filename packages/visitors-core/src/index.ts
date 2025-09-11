@@ -4,6 +4,7 @@ export * from './deleteNodesVisitor';
 export * from './extendVisitor';
 export * from './getByteSizeVisitor';
 export * from './getDebugStringVisitor';
+export * from './getMaxByteSizeVisitor';
 export * from './getResolvedInstructionInputsVisitor';
 export * from './getUniqueHashStringVisitor';
 export * from './identityVisitor';

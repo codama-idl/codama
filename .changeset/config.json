@@ -16,7 +16,6 @@
         ]
     ],
   "linked": [],
-  "ignore": ["@codama/internals"],
   "access": "public",
   "baseBranch": "main",
   "privatePackages": {
