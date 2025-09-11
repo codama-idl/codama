@@ -4,6 +4,6 @@
         "module": "ESNext"
     },
     "display": "codama",
-    "extends": "../internals/tsconfig.base.json",
+    "extends": "../../tsconfig.json",
     "include": ["src", "test"]
 }

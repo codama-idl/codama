@@ -4,14 +4,13 @@
     "scripts": {
         "build": "turbo run build --log-order grouped",
         "lint": "turbo run lint --log-order grouped",
-        "lint:fix": "turbo lint:fix --log-order grouped && pnpm prettier --log-level warn --ignore-unknown --write '{.,!packages}/*'",
+        "lint:fix": "turbo lint:fix --log-order grouped && pnpm prettier --ignore-unknown --write '{.,!packages}/*'",
         "test": "turbo run test --log-order grouped",
         "publish-packages": "pnpm build && changeset publish"
     },
     "devDependencies": {
         "@changesets/changelog-github": "^0.5.1",
         "@changesets/cli": "^2.29.7",
-        "@codama/internals": "workspace:*",
         "@eslint/js": "^9.35.0",
         "@eslint/json": "^0.13.2",
         "@solana/eslint-config-solana": "^5.0.0",
@@ -20,6 +19,7 @@
         "@typescript-eslint/eslint-plugin": "^8.43.0",
         "@typescript-eslint/parser": "^8.43.0",
         "agadoo": "^3.0.0",
+        "browserslist-to-esbuild": "^2.1.1",
         "eslint": "^9.35.0",
         "eslint-plugin-simple-import-sort": "^12.1.1",
         "eslint-plugin-sort-keys-fix": "^1.1.2",
@@ -30,8 +30,7 @@
         "turbo": "^2.5.6",
         "tsup": "^8.5.0",
         "typescript": "^5.9.2",
-        "vitest": "^3.2.4",
-        "zx": "^8.8.1"
+        "vitest": "^3.2.4"
     },
     "engines": {
         "node": ">=20.0.0"

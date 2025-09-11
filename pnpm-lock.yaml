@@ -14,9 +14,6 @@ importers:
       '@changesets/cli':
         specifier: ^2.29.7
         version: 2.29.7(@types/node@24.3.1)
-      '@codama/internals':
-        specifier: workspace:*
-        version: link:packages/internals
       '@eslint/js':
         specifier: ^9.35.0
         version: 9.35.0
@@ -41,6 +38,9 @@ importers:
       agadoo:
         specifier: ^3.0.0
         version: 3.0.0
+      browserslist-to-esbuild:
+        specifier: ^2.1.1
+        version: 2.1.1(browserslist@4.25.4)
       eslint:
         specifier: ^9.35.0
         version: 9.35.0
@@ -74,9 +74,6 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.3.1)(happy-dom@18.0.1)
-      zx:
-        specifier: ^8.8.1
-        version: 8.8.1
 
   packages/cli:
     dependencies:
@@ -151,12 +148,6 @@ importers:
       commander:
         specifier: ^14.0.0
         version: 14.0.0
-
-  packages/internals:
-    devDependencies:
-      browserslist-to-esbuild:
-        specifier: ^2.1.1
-        version: 2.1.1(browserslist@4.25.4)
 
   packages/library:
     dependencies:
@@ -3619,11 +3610,6 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  zx@8.8.1:
-    resolution: {integrity: sha512-qvsKBnvWHstHKCluKPlEgI/D3+mdiQyMoSSeFR8IX/aXzWIas5A297KxKgPJhuPXdrR6ma0Jzx43+GQ/8sqbrw==}
-    engines: {node: '>= 12.17.0'}
-    hasBin: true
 
 snapshots:
 
@@ -7095,5 +7081,3 @@ snapshots:
       yargs-parser: 21.1.1
 
   yocto-queue@0.1.0: {}
-
-  zx@8.8.1: {}

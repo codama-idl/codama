@@ -42,19 +42,14 @@
         "code generation"
     ],
     "scripts": {
-        "build": "rimraf dist && pnpm build:src && pnpm build:cli && pnpm build:types",
-        "build:src": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs library",
-        "build:cli": "zx ../../node_modules/@codama/internals/scripts/build-src.mjs cli",
-        "build:types": "zx ../../node_modules/@codama/internals/scripts/build-types.mjs",
-        "dev": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node --watch",
-        "lint": "zx ../../node_modules/@codama/internals/scripts/lint.mjs",
-        "lint:fix": "zx ../../node_modules/@codama/internals/scripts/lint.mjs --fix",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:browser && pnpm test:node && pnpm test:react-native",
-        "test:browser": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs browser",
-        "test:node": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs node",
-        "test:react-native": "zx ../../node_modules/@codama/internals/scripts/test-unit.mjs react-native",
-        "test:treeshakability": "zx ../../node_modules/@codama/internals/scripts/test-treeshakability.mjs",
-        "test:types": "zx ../../node_modules/@codama/internals/scripts/test-types.mjs"
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "dev": "vitest --project node",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
+        "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
+        "test:types": "tsc --noEmit",
+        "test:unit": "vitest run"
     },
     "dependencies": {
         "@codama/cli": "workspace:*",

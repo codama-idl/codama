@@ -3,8 +3,10 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config([
     {
-        files: ['**/*.ts', '**/*.(c|m)?js'],
         ignores: ['**/dist/**', '**/e2e/**'],
+    },
+    {
+        files: ['**/*.ts', '**/*.(c|m)?js'],
         extends: [solanaConfig],
     },
     {
