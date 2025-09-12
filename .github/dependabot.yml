@@ -7,10 +7,3 @@ updates:
       time: '01:00'
       timezone: America/Los_Angeles
     open-pull-requests-limit: 10
-  - package-ecosystem: 'npm'
-    directory: 'packages/renderers-js/e2e'
-    schedule:
-      interval: daily
-      time: '01:00'
-      timezone: America/Los_Angeles
-    open-pull-requests-limit: 10
