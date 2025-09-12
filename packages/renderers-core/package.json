@@ -1,6 +1,6 @@
 {
     "name": "@codama/renderers-core",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Core types and helpers for Codama renderers to use",
     "exports": {
         "types": "./dist/types/index.d.ts",

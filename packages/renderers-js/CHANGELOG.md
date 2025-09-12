@@ -1,5 +1,17 @@
 # @codama/renderers-js
 
+## 1.4.1
+
+### Patch Changes
+
+- [#791](https://github.com/codama-idl/codama/pull/791) [`9ea1200`](https://github.com/codama-idl/codama/commit/9ea12001a0c752f393bc05785cc3f714e48fcda3) Thanks [@macalinao](https://github.com/macalinao)! - Remove redundant semicolon from generation of discriminator condition fragments
+
+- Updated dependencies [[`a62b4c5`](https://github.com/codama-idl/codama/commit/a62b4c5701b92642b8e4069953969f1f9c3dd20c)]:
+    - @codama/errors@1.3.6
+    - @codama/nodes@1.3.6
+    - @codama/renderers-core@1.2.1
+    - @codama/visitors-core@1.3.6
+
 ## 1.4.0
 
 ### Minor Changes
