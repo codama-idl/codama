@@ -1,5 +1,12 @@
 # @codama/errors
 
+## 1.3.7
+
+### Patch Changes
+
+- Updated dependencies [[`55122fd`](https://github.com/codama-idl/codama/commit/55122fda70f5a832fd791cda17172e41cbe55c1b)]:
+    - @codama/node-types@1.3.7
+
 ## 1.3.6
 
 ### Patch Changes
