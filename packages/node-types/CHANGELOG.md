@@ -1,5 +1,11 @@
 # @codama/node-types
 
+## 1.3.7
+
+### Patch Changes
+
+- [#853](https://github.com/codama-idl/codama/pull/853) [`55122fd`](https://github.com/codama-idl/codama/commit/55122fda70f5a832fd791cda17172e41cbe55c1b) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Branded types now use exact values instead of TypeScript's more restictive `unique symbol`. This will allow multiple versions of the library to coexist.
+
 ## 1.3.6
 
 ## 1.3.5
