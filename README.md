@@ -10,102 +10,152 @@
 [ci-image]: https://img.shields.io/github/actions/workflow/status/codama-idl/codama/main.yml?logo=GitHub
 [ci-url]: https://github.com/codama-idl/codama/actions/workflows/main.yml
 
-> [!NOTE]  
-> Wait, wasn't this project called Kinobi before? We've [renamed this project to **Codama**](https://github.com/codama-idl/codama/pull/234).
-
-Codama is a tool that describes any Solana program in a standardised format called a **Codama IDL**.
+Codama is a tool that describes any Solana program in a standardised format called a **Codama IDL**.
 
 A Codama IDL can be used to:
 
-- Create clients for your programs in various languages/frameworks
-- Make CLIs
-- Provide additional information to explorers
+- ✨ Generate **program clients** in various languages and frameworks.
+- 📚 Generate **documentation and tooling** for your programs.
+- 🗃️ **Register your IDL** for others to discover and index.
+- 🔭 Provide valuable information to **explorers and wallets**.
 
-![Codama header: A small double-sided mind-map with the Codama logo in the middle. On the left, we see the various ways to get a Codama IDL from your Solana programs such as "Anchor Program" and "Shank macros". On the right, we see the various utility tools that are offered for the IDL such as "Rendering client code" or "Rendering documentation".](https://github.com/user-attachments/assets/029af336-ea71-4e7f-9612-ef5bb187e3a0)
+![Codama header: A small double-sided mind-map with the Codama logo in the middle. On the left, we see the various ways to get a Codama IDL from your Solana programs such as "Codama Macros" and "Anchor Program". On the right, we see the various utility tools that are offered for the IDL such as "Generate clients" or "Register IDL".](https://github.com/user-attachments/assets/7a2ef5fa-049e-45a8-a5fc-7c11ff46a54b)
 
-## I'm a busy Anchor developer. How do I use Codama?
+## Table of contents
 
-If you're using [Anchor](https://www.anchor-lang.com/), Codama can be used to create a TypeScript client that works with [Solana Kit](https://github.com/anza-xyz/kit). This combination replaces the traditional `@coral-xyz/anchor` and `@solana/web3.js` packages, and can be used in both TypeScript tests, and the browser.
+- [Getting started](#getting-started). Install and use Codama in your project.
+- [Coming from Anchor](#coming-from-anchor). Have an Anchor IDL instead? Let’s make that work.
+- [Codama scripts](#codama-scripts). Enrich your Codama config file with more scripts.
+- [Available visitors](#available-visitors). See what’s available for you to use.
+- [Getting a Codama IDL](#getting-a-codama-idl). Extract Codama IDLs from any program.
+- [Codama’s architecture](#codamas-architecture). A bit more on the node/visitor design.
+- [Other resources](#other-resources).
 
-- The `programClient` created by Codama will be used to create instructions for your Anchor program, and decode your Anchor program's data accounts.
-- [`@solana/kit`](https://github.com/anza-xyz/kit) will be used to connect to the network, send transactions, and do most tasks that aren't specific to your program.
-- [`@solana/react`](https://github.com/anza-xyz/kit/tree/main/packages/react) will be used to connect to Solana wallet apps like Phantom, Solflare, etc. in React.
+## Getting started
 
-This Codama README shows you how to create the TypeScript client for your Anchor program, but if you're interested in the bigger picture, see QuickNode's video on [Anchor and Solana Kit](https://www.youtube.com/watch?v=2T3DOMv7iR4).
+### Installation
 
-### Example Anchor Projects Using Codama
+To get started with Codama, simply install `codama` to your project and run the `init` command like so:
 
-[Anchor Election app](https://github.com/quiknode-labs/anchor-election-2025)
-
-[Anchor Swap/Escrow app](https://github.com/quiknode-labs/you-will-build-a-solana-program)
-
-## Using Codama
-
-### Creating a Codama IDL for your Solana Program
-
-There are various ways to get a Codama IDL from your Solana program:
-
-- **From an Anchor IDL**. If you are using [Anchor programs](https://github.com/coral-xyz/anchor) or [Shank macros](https://github.com/metaplex-foundation/shank), then you can get an Anchor IDL from them. You can then use the `@codama/nodes-from-anchor` package to convert that IDL into a Codama IDL as shown in the code snippet below. Note that the Anchor IDL might not offer all the information that Codama can hold, and therefore, you may want to transform your Codama IDL to provide additional information. You can learn more about this in the next section.
-
-    ```ts
-    import { createFromRoot } from 'codama';
-    import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
-    import anchorIdl from 'anchor-idl.json';
-
-    const codama = createFromRoot(rootNodeFromAnchor(anchorIdl));
-    ```
-
-- **Using Codama macros**. This is not yet available, but you will soon have access to a set of Rust macros that help attach IDL information directly within your Rust code. These macros enable Codama IDLs to be generated whenever you build your programs.
-
-- **By hand**. If your Solana program cannot be updated to use Codama macros and you don't have an Anchor IDL, you can design your Codama IDL manually. We may provide tools such as a Codama Playground to help with that in the future.
-
-### Using the Codama IDL
-
-Now that you have the perfect Codama IDL for your Solana program, you can benefit from all the existing Codama tooling for tasks like such as making clients in various languages, making CLIs, and registering your IDL onchain so explorers can dynamically display relevant information for your program.
-
-> [!NOTE]  
-> Some features, such as rendering CLIs, are not yet available. However, because of Codama's design, these features are only [a visitor away](#codama-architecture) from being ready. Feel free to reach out if you'd like to contribute to the Codama ecosystem!
-
-#### Making clients for your program
-
-Want people to start interacting with your Solana program? You can generate clients that you can then publish for your end-users. Currently, we have the following renderers available:
-
-- `@codama/renderers-js`: Renders a JavaScript client compatible with [`@solana/kit`](https://github.com/anza-xyz/kit).
-- `@codama/renderers-js-umi`: Renders a JavaScript client compatible with Metaplex's [Umi](https://github.com/metaplex-foundation/umi) framework.
-- `@codama/renderers-rust`: Renders a Rust client that removes the need for publishing the program crate and offers a better developer experience.
-- _And more to come._
-
-Here's an example of how to generate JavaScript and Rust client code for your program.
-
-```ts
-import { renderJavaScriptVisitor, renderRustVisitor } from '@codama/renderers';
-
-codama.accept(renderJavaScriptVisitor('clients/js/src/generated', { ... }));
-codama.accept(renderRustVisitor('clients/rust/src/generated', { ... }));
+```sh
+pnpm install codama
+codama init
 ```
 
-### Registering your Codama IDL onchain (_Coming soon_)
+You will be prompted for the path of your IDL and asked to select any script presets you would like to use. This will create a Codama configuration file at the root of your project.
 
-Perhaps the most significant benefit of having a Codama IDL from your program is that you can share it onchain with the rest of the ecosystem. This means explorers may now use this information to provide a better experience for users of your programs. Additionally, anyone can now grab your Codama IDL, select the portion they are interested in and benefit from the same ecosystem of Codama visitors to iterate over it. For instance, an app could decide to grab the IDLs of all programs it depends on, filter out the accounts and instructions the app doesn't need, and generate a bespoke client for their app that only contains the functions the app needs.
+### Usage
 
-#### Creating CLIs (_Not yet available_)
+You may then use the `codama run` command to execute any script defined in your configuration file.
 
-Whilst not available yet, we can imagine a set of CLI commands that can be generated from our Codama IDL (much like our clients) so that end-users can fetch decoded accounts and send instructions directly from their terminal.
+```sh
+codama run --all # Run all Codama scripts.
+codama run js    # Generates a JavaScript client.
+codama run rust  # Generates a Rust client.
+```
 
-#### Creating documentation (_Not yet available_)
+## Coming from Anchor
 
-Similarly to CLIs, we may easily generate documentation in various formats from the information held by our Codama IDL.
+If you are using [Anchor](https://www.anchor-lang.com/docs) or [Shank macros](https://github.com/metaplex-foundation/shank), then you should already have an **Anchor IDL**. To make it work with Codama, you simply need to provide the path to your Anchor IDL in your Codama configuration file. Codama will automatically identify this as an Anchor IDL and will convert it to a Codama IDL before executing your scripts.
 
-## Codama Architecture
+```json
+{
+    "idl": "path/to/my/anchor/idl.json"
+}
+```
 
-The Codama IDL is designed as a tree of nodes starting with the `RootNode,` which contains a `ProgramNode` and additional data such as the Codama version used when the IDL was created. Codama provides over 60 different types of nodes that help describe nearly every aspect of your Solana programs. [You can read more about the Codama nodes here](./packages/nodes).
+## Codama scripts
+
+You can use your Codama configuration file to define any script you want by using one or more visitors that will be invoked when the script is ran.
+
+**Visitors** are objects that will visit your Codama IDL and either perform some operation — like generating a program client — or update the IDL further — like renaming accounts. You can either use visitors from external packages or from a local file, and — in both cases — you can provide any argument the visitor may require.
+
+For instance, the example script below will invoke three visitors:
+
+- The first will use the `default` import from the `my-external-visitor` package and pass `42` as the first argument.
+- The second will use the `withDefaults` import from the `my-external-visitor` package.
+- The third will use a local visitor located next to the configuration file.
+
+```json
+{
+    "scripts": {
+        "my-script": [
+            { "from": "my-external-visitor", "args": [42] },
+            "my-external-visitor#withDefaults",
+            "./my-local-visitor.js"
+        ]
+    }
+}
+```
+
+Note that if an external visitor in your script isn’t installed locally, you will be asked to install it next time you try to run that script.
+
+```sh
+❯ codama run my-script
+
+▲ Your script requires additional dependencies.
+▲ Install command: pnpm install my-external-visitor
+? Install dependencies? › (Y/n)
+```
+
+You can [learn more about the Codama CLI here](/packages/cli/README.md).
+
+## Available visitors
+
+The tables below aim to help you discover visitors from the Codama ecosystem that you can use in your scripts.
+
+Feel free to PR your own visitor here for others to discover. Note that they are ordered alphabetically.
+
+### Generates documentation
+
+| Visitor                                                                         | Description                                                                      | Maintainer |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------- |
+| `@codama/renderers-demo` ([docs](https://github.com/codama-idl/renderers-demo)) | Generates simple documentation as a template to help others create new visitors. | Codama     |
+
+### Generates program clients
+
+| Visitor                                                                                         | Description                                                                                             | Maintainer                            |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `@codama/renderers-js` ([docs](https://github.com/codama-idl/renderers-js))                     | Generates a JavaScript client compatible with [Solana Kit](https://www.solanakit.com/).                 | [Anza](https://www.anza.xyz/)         |
+| `@codama/renderers-js-umi` ([docs](https://github.com/codama-idl/renderers-js-umi))             | Generates a JavaScript client compatible with [the Umi framework](https://developers.metaplex.com/umi). | [Metaplex](https://www.metaplex.com/) |
+| `@codama/renderers-rust` ([docs](https://github.com/codama-idl/renderers-rust))                 | Generates a Rust client compatible with [the Solana SDK](https://github.com/anza-xyz/solana-sdk).       | [Anza](https://www.anza.xyz/)         |
+| `@codama/renderers-vixen-parser` ([docs](https://github.com/codama-idl/renderers-vixen-parser)) | Generates [Yellowstone](https://github.com/rpcpool/yellowstone-grpc) account and instruction parsers.   | [Triton One](https://triton.one/)     |
+| `codama-py` ([docs](https://github.com/Solana-ZH/codama-py))                                    | Generates a Python client.                                                                              | [Solar](https://github.com/Solana-ZH) |
+
+### Provides utility
+
+| Visitor                                                                                                             | Description                                                                                                                                                                                                                                                                                                   | Maintainer |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| `@codama/visitors#*` ([docs](https://github.com/codama-idl/codama/blob/main/packages/visitors/README.md))           | Provides a big library of utility visitors that can be used to manipulate Codama IDLs. For instance, `updateErrorsVisitor` can be used to update error messages in your IDL . [Check out the docs](https://github.com/codama-idl/codama/blob/main/packages/visitors/README.md) to see all available visitors. | Codama     |
+| `@codama/visitors-core#*` ([docs](https://github.com/codama-idl/codama/blob/main/packages/visitors-core/README.md)) | Everything included in `visitors-core` is also included in `visitors`. The helpers offered in this package are slightly more advanced and can be used to help you [build your own visitors](https://github.com/codama-idl/codama/blob/main/packages/visitors-core/README.md#writing-your-own-visitor).        | Codama     |
+
+## Getting a Codama IDL
+
+We are currently working on a set of transparent macros that can be added to any program in order to extract a Codama IDL from it. There are still a lot more macros and scenarios for us to support but most programs can already benefit from these macros. You can then extract an IDL from the provided crate path using the Codama API like so:
+
+```rust
+use codama::Codama;
+
+let codama = Codama::load(crate_path)?;
+let idl_json = codama.get_json_idl()?;
+```
+
+We will add documentation on Codama macros when they are fully implemented but feel free to check this example that extract a Codama IDL from the [System program interface](https://github.com/lorisleiva/codama-demo-2025-08/tree/main/3-from-macros/program/src) using a [build script](https://github.com/lorisleiva/codama-demo-2025-08/blob/main/3-from-macros/program/build.rs).
+
+## Codama's architecture
+
+The Codama IDL is designed as a tree of nodes starting with the `RootNode` which contains a `ProgramNode` and additional data such as the Codama version used when the IDL was created. Codama provides over 60 different types of nodes that help describe nearly every aspect of your Solana programs. [You can read more about the Codama nodes here](./packages/nodes).
 
 ![A small example of a Codama IDL as a tree of nodes. It starts with a RootNode and goes down to ProgramNode, AccountNode, InstructionNode, etc.](https://github.com/codama-idl/codama/assets/3642397/9d53485d-a4f6-459a-b7eb-58faab716bc1)
 
-Because everything is designed as a `Node`, we can transform the IDL, aggregate information, and output various utility tools using special objects that can traverse node trees known as visitors. [See this documentation to learn more about Codama visitors](./packages/visitors).
+Because everything is designed as a `Node`, we can transform the IDL, aggregate information, and output various utility tools using special objects that can traverse node trees known as visitors. [See this documentation to learn more about Codama visitors](./packages/visitors-core).
 
 ![A small example of how a visitor can transform a Codama IDL into another Codama IDL. This example illustrates the "deleteNodesVisitor" which recursively removes NumberTypeNodes from a tree of nested TypleTypeNodes.](https://github.com/codama-idl/codama/assets/3642397/f54e83d1-eade-4674-80dc-7ddc360f5f66)
 
-## Other Resources
+## Other resources
 
-['Codama' tag on Solana Stack Exchange](https://solana.stackexchange.com/questions/tagged/codama)
+- [Solana Stack Exchange](https://solana.stackexchange.com/questions/tagged/codama).
+- Working with Anchor
+    - [Anchor and Solana Kit tutorial](https://www.youtube.com/watch?v=2T3DOMv7iR4).
+    - [Anchor Election app](https://github.com/quiknode-labs/anchor-election-2025).
+    - [Anchor Swap/Escrow app](https://github.com/quiknode-labs/you-will-build-a-solana-program).
