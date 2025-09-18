@@ -20,96 +20,227 @@ pnpm install @codama/renderers-core
 
 ## Filesystem wrappers
 
-This package offers several helper functions that delegate to the native Filesystem API — i.e. `node:fs` — when using the Node.js runtime. However, in any other environment — such as the browser — these functions will throw a `CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error as a Filesystem API is not available. This enables us to write renderers regardless of the runtime environment.
+This package offers several helper functions that delegate to the native Filesystem API — i.e. `node:fs` — when using the Node.js runtime. However, in any other environment — such as the browser — these functions will throw a `CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error as a Filesystem API is not available. This enables us to import renderers regardless of the runtime environment.
+
+### `createDirectory`
+
+Creates a directory at the given path, recursively.
 
 ```ts
-// Reads the UTF-8 content of a file as a JSON object.
-const json = readJson<MyJsonDefinition>(filePath);
-
-// Creates a directory at the given path, recursively.
 createDirectory(newDirectoryPath);
+```
 
-// Deletes a directory, recursively, if it exists.
+### `deleteDirectory`
+
+Deletes a directory, recursively, if it exists.
+
+```ts
 deleteDirectory(directoryPath);
+```
 
-// Creates a new file at the given path with the given content.
-// Creates its parent directory, recursively, if it does not exist.
+### `writeFile`
+
+Creates a new file at the given path with the given content. Creates its parent directory, recursively, if it does not exist.
+
+```ts
 writeFile(filePath, content);
+```
+
+### `readFile`
+
+Reads the UTF-8 content of a file as a string.
+
+```ts
+const content = readFile(filePath);
+```
+
+### `readJson`
+
+Reads the UTF-8 content of a file as a JSON object.
+
+```ts
+const json = readJson<MyJsonDefinition>(filePath);
+```
+
+## Path wrappers
+
+This package also offers several `path` helpers that delegate to the native `node:path` module when using the Node.js runtime but provide a fallback implementation when using any other runtime.
+
+### `joinPath`
+
+Joins multiple path segments into a single path.
+
+```ts
+const path = joinPath('path', 'to', 'my', 'file.ts');
+```
+
+### `pathDirectory`
+
+Returns the parent directory of a given path.
+
+```ts
+const parentPath = pathDirectory(path);
+```
+
+## Fragments
+
+The concept of fragments is commonly used in Codama renderers as a way to combine a piece of code with any context that is relevant to that piece of code. For instance, a fragment may include a dependency map that lists all the module imports required by that piece of code.
+
+Since fragments vary from one renderer to another, this package cannot provide a one-size-fits-all `Fragment` type. Instead, it provides some base types and utility functions that can be used to build more specific fragment types.
+
+### `BaseFragment`
+
+The `BaseFragment` type is an object that includes a `content` string. Renderers may extend this type to include any additional context they need.
+
+```ts
+type Fragment = BaseFragment & Readonly<{ importMap: ImportMap }>;
+```
+
+### `mapFragmentContent`
+
+The `mapFragmentContent` helper can be used to transform the `content` of a fragment while preserving the rest of its context.
+
+```ts
+const updatedFragment = mapFragmentContent(fragment, c => `/** This is a fragment. */\n${c}`);
+```
+
+### `setFragmentContent`
+
+The `setFragmentContent` helper can be used to replace the `content` of a fragment while preserving the rest of its context.
+
+```ts
+const updatedFragment = setFragmentContent(fragment, '[redacted]');
+```
+
+### `createFragmentTemplate`
+
+The `createFragmentTemplate` helper can be used to create [tagged template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) functions. For this, you need to provide a function that can merge multiple fragments together and a function that can identify fragments from other values.
+
+```ts
+function fragment(template: TemplateStringsArray, ...items: unknown[]): Fragment {
+    return createFragmentTemplate(template, items, isFragment, mergeFragments);
+}
+const apple = fragment`apple`;
+const banana = fragment`banana`;
+const fruits = fragment`${apple}, ${banana}`;
 ```
 
 ## Render maps
 
-The `RenderMap` class is a utility class that helps manage a collection of files to be rendered. It acts as a middleman between the logic that generates the content and the logic that writes the content to the filesystem. As such, it provides a way to access the generated content outside an environment that supports the Filesystem API — such as the browser. It also helps us write tests about the generated code without having to write it to the filesystem.
+This package also provides a `RenderMap` type and a handful of helpers to work with it.
+
+A `RenderMap` is a utility type that helps manage a collection of files to be rendered. It acts as a middleman between the logic that generates the content and the logic that writes the content to the filesystem. As such, it provides a way to access the generated content outside an environment that supports the Filesystem API — such as the browser. It also helps us write tests about the generated code without having to write it to the filesystem.
+
+### Creating new `RenderMaps`
+
+You can use the `createRenderMap` function with no arguments to create a new empty `RenderMap`.
+
+```ts
+const renderMap = createRenderMap();
+```
+
+You may provide the path and content of a file to create a `RenderMap` with a single file.
+
+```ts
+const renderMap = createRenderMap('path/to/file.ts', 'file content');
+```
+
+You may also provide an object mapping file paths to their content to create a `RenderMap` with multiple files.
+
+```ts
+const renderMap = createRenderMap({
+    'path/to/file.ts': 'file content',
+    'path/to/another/file.ts': 'another file content',
+});
+```
+
+Finally, note that any time a `string` is expected as the content of a file, you may also provide a `BaseFragment` instead. In that case, only the `content` field of the fragment will be used.
+
+```ts
+const myFragment: BaseFragment = { content: 'file content' };
+
+// From a single file.
+createRenderMap('path/to/file.ts', myFragment);
+
+// From multiple files.
+createRenderMap({
+    'path/to/file.ts': myFragment,
+    'path/to/another/file.ts': 'another file content',
+});
+```
+
+Note that when setting paths inside a `RenderMap`, they should be relative to the base directory that will be provided when writing the `RenderMap` to the filesystem. For instance, if we decide to use `src/generated` as the base directory when writing the `RenderMap`, then using a path such as `accounts/mint.ts` will result in the file being written to `src/generated/accounts/mint.ts`.
 
 ### Adding content to a `RenderMap`
 
-The add content to a `RenderMap`, you can use the `add` method by providing a path and the content to be written to that path.
-
-Note that the path should be **relative to the base directory** that will be provided when writing the `RenderMap` to the filesystem.
+To add content to a `RenderMap`, you may use the `addToRenderMap` function by providing the path and the content of the file to be added. Note that, here as well, the path should be relative to the base directory that will be provided when writing the `RenderMap` to the filesystem.
 
 ```ts
-const renderMap = new RenderMap()
-    .add('programs/token.ts', 'export type TokenProgram = { /* ... */ }')
-    .add('accounts/mint.ts', 'export type MintAccount = { /* ... */ }')
-    .add('instructions/transfer.ts', 'export function getTransferInstruction = { /* ... */ }');
+const updatedRenderMap = addToRenderMap(renderMap, 'path/to/file.ts', 'file content');
 ```
 
-Additionally, you can use the `mergeWith` method to merge multiple `RenderMap` instances together.
+Since `RenderMaps` are immutable, you may want to use the `pipe` function from `@codama/visitors-core` — also available in `codama` — to chain multiple updates together.
 
 ```ts
-const renderMapA = new RenderMap().add('programs/programA.ts', 'export type ProgramA = { /* ... */ }');
-const renderMapB = new RenderMap().add('programs/programB.ts', 'export type ProgramB = { /* ... */ }');
-const renderMapC = new RenderMap().mergeWith(renderMapA, renderMapB);
+const renderMap = pipe(
+    createRenderMap(),
+    m => addToRenderMap(m, 'programs/token.ts', 'export type TokenProgram = { /* ... */ }'),
+    m => addToRenderMap(m, 'accounts/mint.ts', 'export type MintAccount = { /* ... */ }'),
+    m => addToRenderMap(m, 'instructions/transfer.ts', 'export function getTransferInstruction = { /* ... */ }'),
+);
+```
+
+### Merging multiple `RenderMaps`
+
+You may use the `mergeRenderMaps` helper to combine multiple `RenderMap` instances into a single one. If two `RenderMap` instances contain the same file path, the content from the latter will overwrite the content from the former.
+
+```ts
+const renderMapA = createRenderMap('programs/programA.ts', 'export type ProgramA = { /* ... */ }');
+const renderMapB = createRenderMap('programs/programB.ts', 'export type ProgramB = { /* ... */ }');
+const mergedRenderMap = mergeRenderMaps(renderMapA, renderMapB);
 ```
 
 ### Removing content from a `RenderMap`
 
-To remove files from a `RenderMap`, simply use the `remove` method by providing the relative path of the file to be removed.
+To remove files from a `RenderMap`, simply use the `removeFromRenderMap` function by providing the relative path of the file to be removed.
 
 ```ts
-renderMap.remove('programs/token.ts');
+const updatedRenderMap = removeFromRenderMap(renderMap, 'programs/token.ts');
 ```
 
 ### Accessing content from a `RenderMap`
 
-The `RenderMap` class provides several methods to access the content of the files it manages. The `get` method returns the content of a file from its relative path. If the file does not exist on the `RenderMap`, a `CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND` error will be thrown.
+The `RenderMap` type is essentially a JavaScript `Map` so you can use all the methods available on the `Map` prototype. Therefore, you may use the `get` method to access the content of a file from its relative path.
 
 ```ts
-const content: string = renderMap.get('programs/token.ts');
+const content: string | undefined = renderMap.get('programs/token.ts');
 ```
 
-To safely access the content of a file without throwing an error, you can use the `safeGet` method. This method returns the content of a file from its relative path, or `undefined` if the file does not exist.
+However, this may return `undefined` if the file does not exist on the `RenderMap`. If you want to access the content of a file and throw an error if it does not exist, you can use the `getFromRenderMap` helper instead.
 
 ```ts
-const content: string | undefined = renderMap.safeGet('programs/token.ts');
+const content: string = getFromRenderMap(renderMap, 'programs/token.ts');
 ```
 
-The `has` and `isEmpty` methods can also be used to verify the existence of files in the `RenderMap`.
+You may also use the `renderMapContains` helper to check if the provided file content exists in the `RenderMap` at the given path. The expected file content can be a string or a regular expression.
 
 ```ts
-const hasTokenProgram = renderMap.has('programs/token.ts');
-const hasNoFiles = renderMap.isEmpty();
+const hasTokenProgram = renderMapContains(renderMap, 'programs/token.ts', 'export type TokenProgram = { /* ... */ }');
+const hasMintAccount = renderMapContains(renderMap, 'programs/token.ts', /MintAccount/);
 ```
 
-Finally, the `contains` method can be used to check if a file contains a specific string or matches a regular expression.
+### Transforming content from a `RenderMap`
+
+To map the content of all files inside a `RenderMap`, you can use the `mapRenderMapContent` function. This method accepts a function that takes the content of a file and returns a new content.
 
 ```ts
-const hasTokenProgram = renderMap.contains('programs/token.ts', 'export type TokenProgram = { /* ... */ }');
-const hasMintAccount = renderMap.contains('programs/token.ts', /MintAccount/);
+const updatedRenderMap = mapRenderMapContent(renderMap, c => `/** Prefix for all files */\n\n${c}`);
 ```
 
-### Tranforming content from a `RenderMap`
-
-To map the content of files inside a `RenderMap`, you can use the `mapContent` method. This method accepts a function that takes the content of a file and returns a new content.
+An asynchronous version of this function called `mapRenderMapContentAsync` is also available in case the transformation function needs to be asynchronous.
 
 ```ts
-renderMap.mapContent(content => `/** Prefix for all files */\n\n${content}`);
-```
-
-An asynchronous version of this method called `mapContentAsync` is also available in case the transformation function needs to be asynchronous.
-
-```ts
-await renderMap.mapContentAsync(async content => {
+const updatedRenderMap = await mapRenderMapContentAsync(renderMap, async content => {
     const transformedContent = await someAsyncFunction(content);
     return `/** Prefix for all files */\n\n${transformedContent}`;
 });
@@ -117,14 +248,15 @@ await renderMap.mapContentAsync(async content => {
 
 ### Writing a `RenderMap` to the filesystem
 
-When the `RenderMap` is ready to be written to the filesystem, you can use the `write` method by providing the base directory where all files should be written. Any relative path provided by the `add` method will be appended to this base directory.
+When the `RenderMap` is ready to be written to the filesystem, you can use the `writeRenderMap` helper by providing the base directory where all files should be written. All paths inside the `RenderMap` will be appended to this base directory.
 
 ```ts
-const renderMap = new RenderMap()
-    .add('programs/token.ts', 'export type TokenProgram = { /* ... */ }')
-    .add('accounts/mint.ts', 'export type MintAccount = { /* ... */ }');
+const renderMap = createRenderMap({
+    'programs/token.ts': 'export type TokenProgram = { /* ... */ }',
+    'accounts/mint.ts': 'export type MintAccount = { /* ... */ }',
+});
 
-renderMap.write('src/generated');
+writeRenderMap(renderMap, 'src/generated');
 // In this example, files will be written to:
 // - src/generated/programs/token.ts
 // - src/generated/accounts/mint.ts.
@@ -132,7 +264,7 @@ renderMap.write('src/generated');
 
 ### Using visitors
 
-When building renderers, you will most likely create a visitor that traverses the Codama IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](../renderers-js) package exports a `getRenderMapVisitor` function that does just that.
+When building renderers, you will most likely create a visitor that traverses the Codama IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](https://github.com/codama-idl/renderers-js) package exports a `getRenderMapVisitor` function that does just that.
 
 ```ts
 import { getRenderMapVisitor } from '@codama/renderers-js';
@@ -150,10 +282,10 @@ codama.accept(writeRenderMapVisitor(getRenderMapVisitor(), 'src/generated'));
 
 Note however that, if you are writing your own renderer, you should probably offer a higher-level visitor that includes this logic and also does some additional work such as deleting the base directory before writing the new content if it already exists.
 
-For instance, the recommended way of using the `@codama/renderers-js` package is to use the following `renderVisitor` function.
+For instance, the recommended way of using the `@codama/renderers-js` package is to use its default exported visitor which does exactly that.
 
 ```ts
-import { renderVisitor } from '@codama/renderers-js';
+import renderVisitor from '@codama/renderers-js';
 
 codama.accept(renderVisitor('src/generated'));
 ```
