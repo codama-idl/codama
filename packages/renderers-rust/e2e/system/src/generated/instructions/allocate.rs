@@ -30,8 +30,8 @@ impl Allocate {
         let mut accounts = Vec::with_capacity(1 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new(self.new_account, true));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&AllocateInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = AllocateInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
@@ -52,6 +52,10 @@ impl AllocateInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 8 }
     }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for AllocateInstructionData {
@@ -64,6 +68,12 @@ impl Default for AllocateInstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AllocateInstructionArgs {
     pub space: u64,
+}
+
+impl AllocateInstructionArgs {
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `Allocate`.
@@ -185,8 +195,8 @@ impl<'a, 'b> AllocateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&AllocateInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = AllocateInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {

@@ -32,7 +32,9 @@ impl UpgradeNonceAccount {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = borsh::to_vec(&UpgradeNonceAccountInstructionData::new()).unwrap();
+        let data = UpgradeNonceAccountInstructionData::new()
+            .try_to_vec()
+            .unwrap();
 
         solana_instruction::Instruction {
             program_id: crate::SYSTEM_ID,
@@ -51,6 +53,10 @@ pub struct UpgradeNonceAccountInstructionData {
 impl UpgradeNonceAccountInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 12 }
+    }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
     }
 }
 
@@ -166,7 +172,9 @@ impl<'a, 'b> UpgradeNonceAccountCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = borsh::to_vec(&UpgradeNonceAccountInstructionData::new()).unwrap();
+        let data = UpgradeNonceAccountInstructionData::new()
+            .try_to_vec()
+            .unwrap();
 
         let instruction = solana_instruction::Instruction {
             program_id: crate::SYSTEM_ID,

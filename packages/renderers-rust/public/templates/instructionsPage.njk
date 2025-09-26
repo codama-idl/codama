@@ -97,9 +97,9 @@ impl {{ instruction.name | pascalCase }} {
       {% endif %}
     {% endfor %}
     accounts.extend_from_slice(remaining_accounts);
-    let {{ 'mut ' if hasArgs }}data = borsh::to_vec(&{{ instruction.name | pascalCase }}InstructionData::new()).unwrap();
+    let {{ 'mut ' if hasArgs }}data = {{ instruction.name | pascalCase }}InstructionData::new().try_to_vec().unwrap();
     {% if hasArgs %}
-      let mut args = borsh::to_vec(&args).unwrap();
+      let mut args = args.try_to_vec().unwrap();
       data.append(&mut args);
     {% endif %}
 
@@ -129,6 +129,12 @@ impl {{ instruction.name | pascalCase }}InstructionData {
       {% endfor %}
     }
   }
+
+  {% if dataTraits | hasTrait('BorshSerialize', 'borsh::BorshSerialize') %}
+  pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+    borsh::to_vec(self)
+  }
+  {% endif %}
 }
 
 impl Default for {{ instruction.name | pascalCase }}InstructionData {
@@ -145,6 +151,14 @@ impl Default for {{ instruction.name | pascalCase }}InstructionData {
     {% endif %}
   {% endfor %}
 }
+
+{% if dataTraits | hasTrait('BorshSerialize', 'borsh::BorshSerialize') %}
+impl {{ instruction.name | pascalCase }}InstructionArgs {
+  pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+    borsh::to_vec(self)
+  }
+}
+{% endif %}
 {% endif %}
 
 {% for nestedStruct in typeManifest.nestedStructs %}

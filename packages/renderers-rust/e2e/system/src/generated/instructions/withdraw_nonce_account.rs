@@ -60,8 +60,10 @@ impl WithdrawNonceAccount {
             true,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&WithdrawNonceAccountInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = WithdrawNonceAccountInstructionData::new()
+            .try_to_vec()
+            .unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
@@ -82,6 +84,10 @@ impl WithdrawNonceAccountInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 5 }
     }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for WithdrawNonceAccountInstructionData {
@@ -94,6 +100,12 @@ impl Default for WithdrawNonceAccountInstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct WithdrawNonceAccountInstructionArgs {
     pub withdraw_amount: u64,
+}
+
+impl WithdrawNonceAccountInstructionArgs {
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `WithdrawNonceAccount`.
@@ -297,8 +309,10 @@ impl<'a, 'b> WithdrawNonceAccountCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&WithdrawNonceAccountInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = WithdrawNonceAccountInstructionData::new()
+            .try_to_vec()
+            .unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {

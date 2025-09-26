@@ -28,8 +28,8 @@ impl Instruction4 {
     ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(remaining_accounts.len());
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&Instruction4InstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = Instruction4InstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
@@ -48,6 +48,10 @@ impl Instruction4InstructionData {
     pub fn new() -> Self {
         Self {}
     }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for Instruction4InstructionData {
@@ -60,6 +64,12 @@ impl Default for Instruction4InstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Instruction4InstructionArgs {
     pub my_argument: u64,
+}
+
+impl Instruction4InstructionArgs {
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `Instruction4`.
@@ -159,8 +169,8 @@ impl<'a, 'b> Instruction4Cpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&Instruction4InstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = Instruction4InstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {

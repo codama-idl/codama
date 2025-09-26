@@ -37,8 +37,8 @@ impl CreateAccount {
         accounts.push(solana_instruction::AccountMeta::new(self.payer, true));
         accounts.push(solana_instruction::AccountMeta::new(self.new_account, true));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&CreateAccountInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = CreateAccountInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
@@ -59,6 +59,10 @@ impl CreateAccountInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 0 }
     }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for CreateAccountInstructionData {
@@ -73,6 +77,12 @@ pub struct CreateAccountInstructionArgs {
     pub lamports: u64,
     pub space: u64,
     pub program_address: Pubkey,
+}
+
+impl CreateAccountInstructionArgs {
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `CreateAccount`.
@@ -225,8 +235,8 @@ impl<'a, 'b> CreateAccountCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&CreateAccountInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = CreateAccountInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {

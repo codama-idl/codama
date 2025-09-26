@@ -46,8 +46,10 @@ impl TransferSolWithSeed {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&TransferSolWithSeedInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = TransferSolWithSeedInstructionData::new()
+            .try_to_vec()
+            .unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
@@ -68,6 +70,10 @@ impl TransferSolWithSeedInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 11 }
     }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for TransferSolWithSeedInstructionData {
@@ -82,6 +88,12 @@ pub struct TransferSolWithSeedInstructionArgs {
     pub amount: u64,
     pub from_seed: String,
     pub from_owner: Pubkey,
+}
+
+impl TransferSolWithSeedInstructionArgs {
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `TransferSolWithSeed`.
@@ -251,8 +263,10 @@ impl<'a, 'b> TransferSolWithSeedCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&TransferSolWithSeedInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = TransferSolWithSeedInstructionData::new()
+            .try_to_vec()
+            .unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {

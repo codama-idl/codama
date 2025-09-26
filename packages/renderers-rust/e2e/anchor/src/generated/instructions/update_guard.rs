@@ -62,8 +62,8 @@ impl UpdateGuard {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&UpdateGuardInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = UpdateGuardInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
@@ -86,6 +86,10 @@ impl UpdateGuardInstructionData {
             discriminator: [51, 38, 175, 180, 25, 249, 39, 24],
         }
     }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for UpdateGuardInstructionData {
@@ -100,6 +104,12 @@ pub struct UpdateGuardInstructionArgs {
     pub cpi_rule: Option<CpiRule>,
     pub transfer_amount_rule: Option<TransferAmountRule>,
     pub additional_fields_rule: Vec<MetadataAdditionalFieldRule>,
+}
+
+impl UpdateGuardInstructionArgs {
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `UpdateGuard`.
@@ -331,8 +341,8 @@ impl<'a, 'b> UpdateGuardCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&UpdateGuardInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = UpdateGuardInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {

@@ -21,5 +21,12 @@ export const render = (template: string, context?: object, options?: NunJucksOpt
     env.addFilter('kebabCase', kebabCase);
     env.addFilter('titleCase', titleCase);
     env.addFilter('rustDocblock', rustDocblock);
+
+    // Returns whether or not the provided traits are implemented on the type.
+    env.addFilter('hasTrait', (traits: string, ...traitNames: string[]) => {
+        if (typeof traits !== 'string') return false;
+        return traitNames.some(traitName => traits.includes(traitName));
+    });
+
     return env.render(template, context);
 };

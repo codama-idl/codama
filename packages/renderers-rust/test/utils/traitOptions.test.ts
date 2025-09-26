@@ -4,12 +4,18 @@ import {
     enumEmptyVariantTypeNode,
     enumStructVariantTypeNode,
     enumTypeNode,
+    instructionNode,
     numberTypeNode,
+    programNode,
+    rootNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
+import { RenderMap } from '@codama/renderers-core';
+import { visit } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
 
+import { getRenderMapVisitor } from '../../src';
 import { getTraitsFromNode, TraitOptions } from '../../src/utils';
 
 describe('default values', () => {
@@ -356,5 +362,120 @@ describe('fully qualified name traits', () => {
 
         // And no imports should be used.
         expect([...imports.imports]).toStrictEqual([]);
+    });
+});
+
+describe('conditional try_to_vec generation', () => {
+    test('it generates try_to_vec method when BorshSerialize is present', () => {
+        // Given an instruction node.
+        const node = instructionNode({ name: 'transfer' });
+
+        // When we render the instruction with default traits (which include BorshSerialize).
+        const renderMap = visit(
+            rootNode(programNode({ instructions: [node], name: 'myProgram', publicKey: '1111' })),
+            getRenderMapVisitor(),
+        ) as RenderMap;
+
+        // Then we expect the try_to_vec method to be included with borsh::to_vec implementation.
+        const instruction = renderMap.get('instructions/transfer.rs') as string;
+        expect(instruction).toContain('pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error>');
+        expect(instruction).toContain('borsh::to_vec(self)');
+
+        // And the instruction functions should use try_to_vec.
+        expect(instruction).toContain('data = TransferInstructionData::new().try_to_vec().unwrap()');
+    });
+
+    test('it does not generate try_to_vec method when BorshSerialize is removed', () => {
+        // Given an instruction node.
+        const node = instructionNode({ name: 'transfer' });
+
+        // When we render the instruction without BorshSerialize trait.
+        const renderMap = visit(
+            rootNode(programNode({ instructions: [node], name: 'myProgram', publicKey: '1111' })),
+            getRenderMapVisitor({
+                traitOptions: {
+                    baseDefaults: ['Clone', 'Debug'], // No BorshSerialize
+                },
+            }),
+        ) as RenderMap;
+
+        // Then we expect no try_to_vec method and no borsh::to_vec calls.
+        const instruction = renderMap.get('instructions/transfer.rs') as string;
+        expect(instruction).not.toContain('pub(crate) fn try_to_vec(&self)');
+        expect(instruction).not.toContain('borsh::to_vec');
+
+        // But it should still have the try_to_vec().unwrap() call (user must implement).
+        expect(instruction).toContain('data = TransferInstructionData::new().try_to_vec().unwrap()');
+    });
+
+    test('it generates try_to_vec for instruction args when BorshSerialize is present', () => {
+        // Given an instruction node with arguments.
+        const node = instructionNode({
+            arguments: [
+                { name: 'amount', type: numberTypeNode('u64') },
+                { name: 'memo', type: numberTypeNode('u8') },
+            ],
+            name: 'transfer',
+        });
+
+        // When we render the instruction with default traits.
+        const renderMap = visit(
+            rootNode(programNode({ instructions: [node], name: 'myProgram', publicKey: '1111' })),
+            getRenderMapVisitor(),
+        ) as RenderMap;
+
+        // Then we expect try_to_vec to be included for both InstructionData and InstructionArgs.
+        const instruction = renderMap.get('instructions/transfer.rs') as string;
+        expect(instruction).toMatch(/impl TransferInstructionData \{[\s\S]*?pub\(crate\) fn try_to_vec/);
+        expect(instruction).toMatch(/impl TransferInstructionArgs \{[\s\S]*?pub\(crate\) fn try_to_vec/);
+        
+        // And both should use borsh::to_vec internally.
+        expect(instruction.match(/borsh::to_vec/g)?.length).toBe(2);
+    });
+
+    test('it handles fully qualified BorshSerialize in templates', () => {
+        // Given an instruction node.
+        const node = instructionNode({ name: 'transfer' });
+
+        // When we render with fully qualified BorshSerialize trait.
+        const renderMap = visit(
+            rootNode(programNode({ instructions: [node], name: 'myProgram', publicKey: '1111' })),
+            getRenderMapVisitor({
+                traitOptions: {
+                    baseDefaults: ['borsh::BorshSerialize', 'borsh::BorshDeserialize'],
+                    useFullyQualifiedName: true,
+                },
+            }),
+        ) as RenderMap;
+
+        // Then we expect try_to_vec to be generated even with fully qualified trait name.
+        const instruction = renderMap.get('instructions/transfer.rs') as string;
+        expect(instruction).toContain('pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error>');
+        expect(instruction).toContain('borsh::to_vec(self)');
+        expect(instruction).toContain('#[derive(borsh::BorshSerialize');
+    });
+
+    test('it respects overrides that exclude BorshSerialize', () => {
+        // Given an instruction node.
+        const node = instructionNode({ name: 'transfer' });
+
+        // When we render the instruction with overrides that exclude BorshSerialize.
+        const renderMap = visit(
+            rootNode(programNode({ instructions: [node], name: 'myProgram', publicKey: '1111' })),
+            getRenderMapVisitor({
+                traitOptions: {
+                    baseDefaults: ['BorshSerialize', 'BorshDeserialize'],
+                    overrides: {
+                        transfer: ['Clone', 'Debug'], // Override removes BorshSerialize
+                    },
+                },
+            }),
+        ) as RenderMap;
+
+        // Then we expect the try_to_vec method to be omitted and no borsh::to_vec calls.
+        const instruction = renderMap.get('instructions/transfer.rs') as string;
+        expect(instruction).not.toContain('pub(crate) fn try_to_vec(&self)');
+        expect(instruction).not.toContain('borsh::to_vec');
+        expect(instruction).toContain('#[derive(Clone, Debug)]');
     });
 });

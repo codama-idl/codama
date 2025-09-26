@@ -40,8 +40,8 @@ impl AssignWithSeed {
             true,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&AssignWithSeedInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = AssignWithSeedInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
@@ -62,6 +62,10 @@ impl AssignWithSeedInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 10 }
     }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for AssignWithSeedInstructionData {
@@ -76,6 +80,12 @@ pub struct AssignWithSeedInstructionArgs {
     pub base: Pubkey,
     pub seed: String,
     pub program_address: Pubkey,
+}
+
+impl AssignWithSeedInstructionArgs {
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `AssignWithSeed`.
@@ -231,8 +241,8 @@ impl<'a, 'b> AssignWithSeedCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&AssignWithSeedInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = AssignWithSeedInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {

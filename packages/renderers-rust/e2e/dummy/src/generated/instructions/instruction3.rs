@@ -26,7 +26,7 @@ impl Instruction3 {
     ) -> solana_instruction::Instruction {
         let mut accounts = Vec::with_capacity(remaining_accounts.len());
         accounts.extend_from_slice(remaining_accounts);
-        let data = borsh::to_vec(&Instruction3InstructionData::new()).unwrap();
+        let data = Instruction3InstructionData::new().try_to_vec().unwrap();
 
         solana_instruction::Instruction {
             program_id: crate::DUMMY_ID,
@@ -45,6 +45,10 @@ pub struct Instruction3InstructionData {
 impl Instruction3InstructionData {
     pub fn new() -> Self {
         Self { discriminator: 42 }
+    }
+
+    pub fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
     }
 }
 
@@ -134,7 +138,7 @@ impl<'a, 'b> Instruction3Cpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = borsh::to_vec(&Instruction3InstructionData::new()).unwrap();
+        let data = Instruction3InstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_instruction::Instruction {
             program_id: crate::DUMMY_ID,
