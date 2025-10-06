@@ -16,7 +16,7 @@
         "@types/node": "^24",
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",
-        "eslint": "^9.36.0",
+        "eslint": "^9.37.0",
         "happy-dom": "^19.0.2",
         "prettier": "^3.6.2",
         "rimraf": "6.0.1",
