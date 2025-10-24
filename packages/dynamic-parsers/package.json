@@ -50,7 +50,7 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/instructions": "^4.0.0"
+        "@solana/instructions": "^5.0.0"
     },
     "devDependencies": {
         "@solana/codecs": "^5.0.0"
