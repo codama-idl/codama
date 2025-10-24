@@ -49,7 +49,7 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/codecs": "^4.0.0"
+        "@solana/codecs": "^5.0.0"
     },
     "license": "MIT",
     "repository": {
