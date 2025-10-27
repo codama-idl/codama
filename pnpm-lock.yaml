@@ -66,8 +66,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       commander:
-        specifier: ^14.0.1
-        version: 14.0.1
+        specifier: ^14.0.2
+        version: 14.0.2
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -122,8 +122,8 @@ importers:
         specifier: workspace:*
         version: link:../node-types
       commander:
-        specifier: ^14.0.1
-        version: 14.0.1
+        specifier: ^14.0.2
+        version: 14.0.2
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -1711,6 +1711,10 @@ packages:
 
   commander@14.0.1:
     resolution: {integrity: sha512-2JkV3gUZUVrbNA+1sjBOYLsMZ5cEEl8GTFP2a4AVz5hvasAMCQ1D2l2le/cX+pV4N6ZU17zjUahLpIXRrnWL8A==}
+    engines: {node: '>=20'}
+
+  commander@14.0.2:
+    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
     engines: {node: '>=20'}
 
   commander@4.1.1:
@@ -4869,6 +4873,8 @@ snapshots:
   color-name@1.1.4: {}
 
   commander@14.0.1: {}
+
+  commander@14.0.2: {}
 
   commander@4.1.1: {}
 
