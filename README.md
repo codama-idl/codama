@@ -120,7 +120,9 @@ Feel free to PR your own visitor here for others to discover. Note that they are
 | `@codama/renderers-js-umi` ([docs](https://github.com/codama-idl/renderers-js-umi))             | Generates a JavaScript client compatible with [the Umi framework](https://developers.metaplex.com/umi). | [Metaplex](https://www.metaplex.com/) |
 | `@codama/renderers-rust` ([docs](https://github.com/codama-idl/renderers-rust))                 | Generates a Rust client compatible with [the Solana SDK](https://github.com/anza-xyz/solana-sdk).       | [Anza](https://www.anza.xyz/)         |
 | `@codama/renderers-vixen-parser` ([docs](https://github.com/codama-idl/renderers-vixen-parser)) | Generates [Yellowstone](https://github.com/rpcpool/yellowstone-grpc) account and instruction parsers.   | [Triton One](https://triton.one/)     |
+| `@limechain/codama-dart` ([docs](https://github.com/limechain/codama-dart))| Generates a Dart client. | [LimeChain](https://github.com/limechain/)|
 | `codama-py` ([docs](https://github.com/Solana-ZH/codama-py))                                    | Generates a Python client.                                                                              | [Solar](https://github.com/Solana-ZH) |
+
 
 ### Provides utility
 
