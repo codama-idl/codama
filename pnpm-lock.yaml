@@ -33,8 +33,8 @@ importers:
         specifier: ^9.38.0
         version: 9.38.0
       happy-dom:
-        specifier: ^20.0.8
-        version: 20.0.8
+        specifier: ^20.0.10
+        version: 20.0.10
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -52,7 +52,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.4
-        version: 4.0.4(@types/node@24.9.2)(happy-dom@20.0.8)
+        version: 4.0.4(@types/node@24.9.2)(happy-dom@20.0.10)
 
   packages/cli:
     dependencies:
@@ -2146,8 +2146,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  happy-dom@20.0.8:
-    resolution: {integrity: sha512-TlYaNQNtzsZ97rNMBAm8U+e2cUQXNithgfCizkDgc11lgmN4j9CKMhO3FPGKWQYPwwkFcPpoXYF/CqEPLgzfOg==}
+  happy-dom@20.0.10:
+    resolution: {integrity: sha512-6umCCHcjQrhP5oXhrHQQvLB0bwb1UzHAHdsXy+FjtKoYjUhmNZsQL8NivwM1vDvNEChJabVrUYxUnp/ZdYmy2g==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -5361,7 +5361,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  happy-dom@20.0.8:
+  happy-dom@20.0.10:
     dependencies:
       '@types/node': 20.19.24
       '@types/whatwg-mimetype': 3.0.2
@@ -6497,7 +6497,7 @@ snapshots:
       '@types/node': 24.9.2
       fsevents: 2.3.3
 
-  vitest@4.0.4(@types/node@24.9.2)(happy-dom@20.0.8):
+  vitest@4.0.4(@types/node@24.9.2)(happy-dom@20.0.10):
     dependencies:
       '@vitest/expect': 4.0.4
       '@vitest/mocker': 4.0.4(vite@7.1.12(@types/node@24.9.2))
@@ -6521,7 +6521,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.9.2
-      happy-dom: 20.0.8
+      happy-dom: 20.0.10
     transitivePeerDependencies:
       - jiti
       - less
