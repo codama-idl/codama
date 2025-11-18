@@ -10,7 +10,7 @@ import {
     TypeNode,
 } from '@codama/nodes';
 
-import {
+import type {
     IdlV01DefinedFields,
     IdlV01DefinedFieldsNamed,
     IdlV01DefinedFieldsTuple,
@@ -18,6 +18,7 @@ import {
     IdlV01Type,
     IdlV01TypeDefTy,
 } from '../idl';
+import { type GenericsV01, unwrapGenericTypeFromAnchorV01 } from '../unwrapGenerics';
 import { arrayTypeNodeFromAnchorV01 } from './ArrayTypeNode';
 import { enumTypeNodeFromAnchorV01 } from './EnumTypeNode';
 import { optionTypeNodeFromAnchorV01 } from './OptionTypeNode';
@@ -44,7 +45,7 @@ const IDL_V01_TYPE_LEAVES = [
     'shortU16',
 ] as const;
 
-export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): TypeNode => {
+export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy, generics: GenericsV01): TypeNode => {
     // Leaf.
     if (typeof idlType === 'string' && IDL_V01_TYPE_LEAVES.includes(idlType)) {
         if (idlType === 'bool') return booleanTypeNode();
@@ -63,47 +64,53 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy): Ty
 
     // Array.
     if ('array' in idlType && isArrayOfSize(idlType.array, 2)) {
-        return arrayTypeNodeFromAnchorV01(idlType);
+        return arrayTypeNodeFromAnchorV01(idlType, generics);
     }
 
     // Vec.
     if ('vec' in idlType) {
-        return arrayTypeNodeFromAnchorV01(idlType);
+        return arrayTypeNodeFromAnchorV01(idlType, generics);
     }
 
     // Defined link.
-    // TODO: Support generics.
     if ('defined' in idlType && typeof idlType.defined === 'object') {
-        return definedTypeLinkNode(idlType.defined.name);
+        return 'generics' in idlType.defined
+            ? unwrapGenericTypeFromAnchorV01(idlType, generics)
+            : definedTypeLinkNode(idlType.defined.name);
+    }
+
+    // Generic reference.
+    if ('generic' in idlType) {
+        return typeNodeFromAnchorV01(generics.typeArgs[idlType.generic].type, generics);
     }
 
     // Enum.
     if ('kind' in idlType && idlType.kind === 'enum' && 'variants' in idlType) {
-        return enumTypeNodeFromAnchorV01(idlType);
+        return enumTypeNodeFromAnchorV01(idlType, generics);
     }
 
     // Alias.
     if ('kind' in idlType && idlType.kind === 'alias' && 'value' in idlType) {
-        return typeNodeFromAnchorV01(idlType.value);
+        return typeNodeFromAnchorV01(idlType.value, generics);
     }
 
     // Option.
     if ('option' in idlType) {
-        return optionTypeNodeFromAnchorV01(idlType);
+        return optionTypeNodeFromAnchorV01(idlType, generics);
     }
 
     if ('coption' in idlType) {
-        return optionTypeNodeFromAnchorV01(idlType);
+        return optionTypeNodeFromAnchorV01(idlType, generics);
     }
 
     // Struct and Tuple.
     if ('kind' in idlType && idlType.kind === 'struct') {
         const fields = idlType.fields ?? [];
         if (isStructFieldArray(fields)) {
-            return structTypeNodeFromAnchorV01(idlType);
+            return structTypeNodeFromAnchorV01(idlType, generics);
         }
         if (isTupleFieldArray(fields)) {
-            return tupleTypeNodeFromAnchorV01(fields);
+            return tupleTypeNodeFromAnchorV01(fields, generics);
         }
     }
 

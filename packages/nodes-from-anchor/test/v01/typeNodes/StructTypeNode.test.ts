@@ -12,17 +12,22 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV01 } from '../../../src';
+import { GenericsV01, typeNodeFromAnchorV01 } from '../../../src';
+
+const generics = {} as GenericsV01;
 
 test('it creates struct type nodes', () => {
-    const node = typeNodeFromAnchorV01({
-        fields: [
-            { name: 'name', type: 'string' },
-            { name: 'age', type: 'u8' },
-            { name: 'created_at', type: 'u8' },
-        ],
-        kind: 'struct',
-    });
+    const node = typeNodeFromAnchorV01(
+        {
+            fields: [
+                { name: 'name', type: 'string' },
+                { name: 'age', type: 'u8' },
+                { name: 'created_at', type: 'u8' },
+            ],
+            kind: 'struct',
+        },
+        generics,
+    );
 
     expect(node).toEqual(
         structTypeNode([
@@ -37,10 +42,13 @@ test('it creates struct type nodes', () => {
 });
 
 test('it creates tuple type nodes when unnamed fields are provided', () => {
-    const node = typeNodeFromAnchorV01({
-        fields: ['u8', { vec: 'pubkey' }],
-        kind: 'struct',
-    });
+    const node = typeNodeFromAnchorV01(
+        {
+            fields: ['u8', { vec: 'pubkey' }],
+            kind: 'struct',
+        },
+        generics,
+    );
 
     expect(node).toEqual(
         tupleTypeNode([

@@ -13,7 +13,9 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getAnchorDiscriminatorV01, instructionNodeFromAnchorV01 } from '../../src';
+import { GenericsV01, getAnchorDiscriminatorV01, instructionNodeFromAnchorV01 } from '../../src';
+
+const generics = {} as GenericsV01;
 
 test('it creates instruction nodes', () => {
     const node = instructionNodeFromAnchorV01(
@@ -50,6 +52,7 @@ test('it creates instruction nodes', () => {
             discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
             name: 'mintTokens',
         },
+        generics,
     );
 
     expect(node).toEqual(
@@ -88,12 +91,16 @@ test('it creates instruction nodes', () => {
 });
 
 test('it creates instruction nodes with anchor discriminators', () => {
-    const node = instructionNodeFromAnchorV01([], {
-        accounts: [],
-        args: [],
-        discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
-        name: 'myInstruction',
-    });
+    const node = instructionNodeFromAnchorV01(
+        [],
+        {
+            accounts: [],
+            args: [],
+            discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+            name: 'myInstruction',
+        },
+        generics,
+    );
 
     expect(node).toEqual(
         instructionNode({

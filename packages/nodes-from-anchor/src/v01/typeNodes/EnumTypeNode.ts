@@ -1,22 +1,30 @@
 import { EnumTypeNode, enumTypeNode, EnumVariantTypeNode, NumberTypeNode } from '@codama/nodes';
 
-import { IdlV01DefinedFieldsNamed, IdlV01DefinedFieldsTuple, IdlV01EnumVariant, IdlV01TypeDefTyEnum } from '../idl';
+import type {
+    IdlV01DefinedFieldsNamed,
+    IdlV01DefinedFieldsTuple,
+    IdlV01EnumVariant,
+    IdlV01TypeDefTyEnum,
+} from '../idl';
+import type { GenericsV01 } from '../unwrapGenerics';
 import { enumEmptyVariantTypeNodeFromAnchorV01 } from './EnumEmptyVariantTypeNode';
 import { enumStructVariantTypeNodeFromAnchorV01 } from './EnumStructVariantTypeNode';
 import { enumTupleVariantTypeNodeFromAnchorV01 } from './EnumTupleVariantTypeNode';
 
 export function enumTypeNodeFromAnchorV01(
     idl: IdlV01TypeDefTyEnum,
+    generics: GenericsV01,
 ): EnumTypeNode<EnumVariantTypeNode[], NumberTypeNode> {
     const variants = idl.variants.map((variant): EnumVariantTypeNode => {
         if (!variant.fields || variant.fields.length <= 0) {
             return enumEmptyVariantTypeNodeFromAnchorV01(variant);
         }
         if (isStructVariant(variant)) {
-            return enumStructVariantTypeNodeFromAnchorV01(variant);
+            return enumStructVariantTypeNodeFromAnchorV01(variant, generics);
         }
         return enumTupleVariantTypeNodeFromAnchorV01(
             variant as IdlV01EnumVariant & { fields: IdlV01DefinedFieldsTuple },
+            generics,
         );
     });
     return enumTypeNode(variants);
