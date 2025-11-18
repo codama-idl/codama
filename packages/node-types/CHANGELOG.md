@@ -1,5 +1,7 @@
 # @codama/node-types
 
+## 1.3.8
+
 ## 1.3.7
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @codama/errors
 
+## 1.3.8
+
+### Patch Changes
+
+- [#913](https://github.com/codama-idl/codama/pull/913) [`07825de`](https://github.com/codama-idl/codama/commit/07825dec4cbd9d773f3197a46964dfb38d63d80e) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Unwrap generic types and constants from Anchor IDLs when converting them to Codama IDLs.
+
+- Updated dependencies []:
+    - @codama/node-types@1.3.8
+
 ## 1.3.7
 
 ### Patch Changes
