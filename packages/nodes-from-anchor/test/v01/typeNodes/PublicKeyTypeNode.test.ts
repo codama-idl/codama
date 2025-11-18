@@ -1,8 +1,10 @@
 import { publicKeyTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV01 } from '../../../src';
+import { GenericsV01, typeNodeFromAnchorV01 } from '../../../src';
+
+const generics = {} as GenericsV01;
 
 test('it creates public key type nodes', () => {
-    expect(typeNodeFromAnchorV01('pubkey')).toEqual(publicKeyTypeNode());
+    expect(typeNodeFromAnchorV01('pubkey', generics)).toEqual(publicKeyTypeNode());
 });

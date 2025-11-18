@@ -1,5 +1,5 @@
 import { BytesValueNode, bytesValueNode, pascalCase, snakeCase } from '@codama/nodes';
-import { sha256 } from '@noble/hashes/sha256';
+import { sha256 } from '@noble/hashes/sha2';
 
 import { hex } from './utils';
 

@@ -9,7 +9,9 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { accountNodeFromAnchorV01, getAnchorDiscriminatorV01 } from '../../src';
+import { accountNodeFromAnchorV01, GenericsV01, getAnchorDiscriminatorV01 } from '../../src';
+
+const generics = {} as GenericsV01;
 
 test('it creates account nodes with anchor discriminators', () => {
     const node = accountNodeFromAnchorV01(
@@ -32,6 +34,7 @@ test('it creates account nodes with anchor discriminators', () => {
                 },
             },
         ],
+        generics,
     );
 
     expect(node).toEqual(

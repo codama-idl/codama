@@ -11,17 +11,22 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV01 } from '../../../src';
+import { GenericsV01, typeNodeFromAnchorV01 } from '../../../src';
+
+const generics = {} as GenericsV01;
 
 test('it creates enum type nodes', () => {
-    const node = typeNodeFromAnchorV01({
-        kind: 'enum',
-        variants: [
-            { name: 'variantA' }, // Empty variant.
-            { fields: ['u16', 'bool'], name: 'variantB' }, // Tuple variant.
-            { fields: [{ name: 'age', type: 'u8' }], name: 'variantC' }, // Struct variant.
-        ],
-    });
+    const node = typeNodeFromAnchorV01(
+        {
+            kind: 'enum',
+            variants: [
+                { name: 'variantA' }, // Empty variant.
+                { fields: ['u16', 'bool'], name: 'variantB' }, // Tuple variant.
+                { fields: [{ name: 'age', type: 'u8' }], name: 'variantC' }, // Struct variant.
+            ],
+        },
+        generics,
+    );
 
     expect(node).toEqual(
         enumTypeNode([

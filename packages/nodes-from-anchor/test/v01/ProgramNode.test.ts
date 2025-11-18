@@ -2,10 +2,17 @@ import {
     accountNode,
     accountValueNode,
     argumentValueNode,
+    arrayTypeNode,
     bytesTypeNode,
     constantPdaSeedNodeFromBytes,
+    definedTypeLinkNode,
+    definedTypeNode,
+    enumEmptyVariantTypeNode,
+    enumTupleVariantTypeNode,
+    enumTypeNode,
     errorNode,
     fieldDiscriminatorNode,
+    fixedCountNode,
     fixedSizeTypeNode,
     instructionAccountNode,
     instructionArgumentNode,
@@ -18,6 +25,7 @@ import {
     publicKeyTypeNode,
     structFieldTypeNode,
     structTypeNode,
+    tupleTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -136,6 +144,159 @@ test('it creates program nodes', () => {
                     ],
                     discriminators: [fieldDiscriminatorNode('discriminator')],
                     name: 'myInstruction',
+                }),
+            ],
+            name: 'myProgram',
+            origin: 'anchor',
+            pdas: [],
+            publicKey: '1111',
+            version: '1.2.3',
+        }),
+    );
+});
+
+test('it unwraps and removes generic types', () => {
+    const node = programNodeFromAnchorV01({
+        address: '1111',
+        instructions: [],
+        metadata: { name: 'my_program', spec: '0.1.0', version: '1.2.3' },
+        types: [
+            {
+                generics: [
+                    { kind: 'const', name: 'N', type: 'usize' },
+                    { kind: 'type', name: 'T' },
+                ],
+                name: 'SimpleAllocator',
+                type: {
+                    fields: [
+                        {
+                            name: 'state',
+                            type: { array: [{ defined: { name: 'ItemState' } }, { generic: 'N' }] },
+                        },
+                        {
+                            name: 'data',
+                            type: { array: [{ generic: 'T' }, { generic: 'N' }] },
+                        },
+                    ],
+                    kind: 'struct',
+                },
+            },
+            {
+                name: 'AccountData',
+                type: {
+                    kind: 'enum',
+                    variants: [
+                        { name: 'Unknown' },
+                        {
+                            fields: [
+                                {
+                                    defined: {
+                                        generics: [
+                                            { kind: 'const', value: '1000' },
+                                            { kind: 'type', type: { defined: { name: 'VirtualTimelockAccount' } } },
+                                        ],
+                                        name: 'SimpleAllocator',
+                                    },
+                                },
+                            ],
+                            name: 'Timelock',
+                        },
+                        {
+                            fields: [
+                                {
+                                    defined: {
+                                        generics: [
+                                            { kind: 'const', value: '500' },
+                                            { kind: 'type', type: { defined: { name: 'VirtualDurableNonce' } } },
+                                        ],
+                                        name: 'SimpleAllocator',
+                                    },
+                                },
+                            ],
+                            name: 'Nonce',
+                        },
+                        {
+                            fields: [
+                                {
+                                    defined: {
+                                        generics: [
+                                            { kind: 'const', value: '250' },
+                                            { kind: 'type', type: { defined: { name: 'VirtualRelayAccount' } } },
+                                        ],
+                                        name: 'SimpleAllocator',
+                                    },
+                                },
+                            ],
+                            name: 'Relay',
+                        },
+                    ],
+                },
+            },
+        ],
+    });
+
+    expect(node).toEqual(
+        programNode({
+            definedTypes: [
+                definedTypeNode({
+                    name: 'AccountData',
+                    type: enumTypeNode([
+                        enumEmptyVariantTypeNode('unknown'),
+                        enumTupleVariantTypeNode(
+                            'timelock',
+                            tupleTypeNode([
+                                structTypeNode([
+                                    structFieldTypeNode({
+                                        name: 'state',
+                                        type: arrayTypeNode(definedTypeLinkNode('itemState'), fixedCountNode(1000)),
+                                    }),
+                                    structFieldTypeNode({
+                                        name: 'data',
+                                        type: arrayTypeNode(
+                                            definedTypeLinkNode('virtualTimelockAccount'),
+                                            fixedCountNode(1000),
+                                        ),
+                                    }),
+                                ]),
+                            ]),
+                        ),
+                        enumTupleVariantTypeNode(
+                            'nonce',
+                            tupleTypeNode([
+                                structTypeNode([
+                                    structFieldTypeNode({
+                                        name: 'state',
+                                        type: arrayTypeNode(definedTypeLinkNode('itemState'), fixedCountNode(500)),
+                                    }),
+                                    structFieldTypeNode({
+                                        name: 'data',
+                                        type: arrayTypeNode(
+                                            definedTypeLinkNode('virtualDurableNonce'),
+                                            fixedCountNode(500),
+                                        ),
+                                    }),
+                                ]),
+                            ]),
+                        ),
+                        enumTupleVariantTypeNode(
+                            'relay',
+                            tupleTypeNode([
+                                structTypeNode([
+                                    structFieldTypeNode({
+                                        name: 'state',
+                                        type: arrayTypeNode(definedTypeLinkNode('itemState'), fixedCountNode(250)),
+                                    }),
+                                    structFieldTypeNode({
+                                        name: 'data',
+                                        type: arrayTypeNode(
+                                            definedTypeLinkNode('virtualRelayAccount'),
+                                            fixedCountNode(250),
+                                        ),
+                                    }),
+                                ]),
+                            ]),
+                        ),
+                    ]),
                 }),
             ],
             name: 'myProgram',
