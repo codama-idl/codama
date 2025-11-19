@@ -1,5 +1,6 @@
 import { BytesValueNode, bytesValueNode, pascalCase, snakeCase } from '@codama/nodes';
-import { sha256 } from '@noble/hashes/sha2';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { getUtf8Codec } from '@solana/codecs';
 
 import { hex } from './utils';
 
@@ -8,11 +9,13 @@ export const getAnchorDiscriminatorV01 = (discriminator: number[]): BytesValueNo
 };
 
 export const getAnchorInstructionDiscriminatorV00 = (idlName: string): BytesValueNode => {
-    const hash = sha256(`global:${snakeCase(idlName)}`).slice(0, 8);
+    const bytes = getUtf8Codec().encode(`global:${snakeCase(idlName)}`);
+    const hash = sha256(bytes as Uint8Array).slice(0, 8);
     return bytesValueNode('base16', hex(hash));
 };
 
 export const getAnchorAccountDiscriminatorV00 = (idlName: string): BytesValueNode => {
-    const hash = sha256(`account:${pascalCase(idlName)}`).slice(0, 8);
+    const bytes = getUtf8Codec().encode(`account:${pascalCase(idlName)}`);
+    const hash = sha256(bytes as Uint8Array).slice(0, 8);
     return bytesValueNode('base16', hex(hash));
 };
