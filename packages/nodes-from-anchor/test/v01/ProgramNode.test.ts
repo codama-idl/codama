@@ -108,7 +108,7 @@ test('it creates program nodes', () => {
                                 pdaNode({
                                     name: 'authority',
                                     seeds: [
-                                        constantPdaSeedNodeFromBytes('base16', '2a1f1d'),
+                                        constantPdaSeedNodeFromBytes('base58', 'F9bS'),
                                         variablePdaSeedNode('owner', publicKeyTypeNode()),
                                         variablePdaSeedNode('amount', numberTypeNode('u8')),
                                     ],

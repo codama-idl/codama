@@ -1,5 +1,4 @@
 import {
-    AccountNode,
     bytesTypeNode,
     camelCase,
     fieldDiscriminatorNode,
@@ -15,11 +14,7 @@ import { instructionAccountNodesFromAnchorV01 } from './InstructionAccountNode';
 import { instructionArgumentNodeFromAnchorV01 } from './InstructionArgumentNode';
 import type { GenericsV01 } from './unwrapGenerics';
 
-export function instructionNodeFromAnchorV01(
-    allAccounts: AccountNode[],
-    idl: IdlV01Instruction,
-    generics: GenericsV01,
-): InstructionNode {
+export function instructionNodeFromAnchorV01(idl: IdlV01Instruction, generics: GenericsV01): InstructionNode {
     const name = idl.name;
     let dataArguments = idl.args.map(arg => instructionArgumentNodeFromAnchorV01(arg, generics));
 
@@ -33,7 +28,7 @@ export function instructionNodeFromAnchorV01(
     const discriminators = [fieldDiscriminatorNode('discriminator')];
 
     return instructionNode({
-        accounts: instructionAccountNodesFromAnchorV01(allAccounts, dataArguments, idl.accounts ?? []),
+        accounts: instructionAccountNodesFromAnchorV01(idl.accounts ?? [], dataArguments),
         arguments: dataArguments,
         discriminators,
         docs: idl.docs ?? [],

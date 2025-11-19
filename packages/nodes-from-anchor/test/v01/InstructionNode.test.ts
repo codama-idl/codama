@@ -1,5 +1,4 @@
 import {
-    accountNode,
     bytesTypeNode,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
@@ -7,9 +6,6 @@ import {
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
-    publicKeyTypeNode,
-    structFieldTypeNode,
-    structTypeNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
@@ -19,21 +15,6 @@ const generics = {} as GenericsV01;
 
 test('it creates instruction nodes', () => {
     const node = instructionNodeFromAnchorV01(
-        [
-            accountNode({
-                data: structTypeNode([
-                    structFieldTypeNode({
-                        name: 'groupMint',
-                        type: publicKeyTypeNode(),
-                    }),
-                    structFieldTypeNode({
-                        name: 'paymentMint',
-                        type: publicKeyTypeNode(),
-                    }),
-                ]),
-                name: 'distribution',
-            }),
-        ],
         {
             accounts: [
                 {
@@ -59,16 +40,16 @@ test('it creates instruction nodes', () => {
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    // TODO: Handle seeds with nested paths.
+                    // TODO: Handle seeds with nested paths. (Needs a path in the IDL but should we?)
                     // defaultValue: pdaValueNode(
                     //     pdaNode({
                     //         name: 'distribution',
                     //         seeds: [
-                    //             constantPdaSeedNodeFromBytes('base16', '2a1f1d'),
+                    //             constantPdaSeedNodeFromBytes('base58', 'F9bS'),
                     //             variablePdaSeedNode('distributionGroupMint', publicKeyTypeNode()),
                     //         ],
                     //     }),
-                    //     [],
+                    //     [pdaSeedValueNode("distributionGroupMint", accountValueNode('distribution', 'group_mint'))],
                     // ),
                     isSigner: false,
                     isWritable: true,
@@ -92,7 +73,6 @@ test('it creates instruction nodes', () => {
 
 test('it creates instruction nodes with anchor discriminators', () => {
     const node = instructionNodeFromAnchorV01(
-        [],
         {
             accounts: [],
             args: [],

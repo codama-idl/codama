@@ -1,5 +1,4 @@
 import {
-    accountNode,
     accountValueNode,
     argumentValueNode,
     constantPdaSeedNodeFromBytes,
@@ -11,9 +10,6 @@ import {
     pdaValueNode,
     publicKeyTypeNode,
     publicKeyValueNode,
-    sizePrefixTypeNode,
-    structFieldTypeNode,
-    structTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -22,8 +18,6 @@ import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV
 
 test('it creates instruction account nodes', () => {
     const node = instructionAccountNodeFromAnchorV01(
-        [],
-        [],
         {
             docs: ['my docs'],
             name: 'MyInstructionAccount',
@@ -47,13 +41,6 @@ test('it creates instruction account nodes', () => {
 
 test('it flattens nested instruction accounts', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
-        [],
-        [
-            instructionArgumentNode({
-                name: 'amount',
-                type: numberTypeNode('u8'),
-            }),
-        ],
         [
             { name: 'accountA', signer: false, writable: false },
             {
@@ -93,6 +80,7 @@ test('it flattens nested instruction accounts', () => {
             },
             { name: 'account_d', signer: true, writable: true },
         ],
+        [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
     );
 
     expect(nodes).toEqual([
@@ -103,7 +91,7 @@ test('it flattens nested instruction accounts', () => {
                 pdaNode({
                     name: 'accountC',
                     seeds: [
-                        constantPdaSeedNodeFromBytes('base16', '00010203'),
+                        constantPdaSeedNodeFromBytes('base58', '1Ldp'),
                         variablePdaSeedNode('accountB', publicKeyTypeNode()),
                         variablePdaSeedNode('amount', numberTypeNode('u8')),
                     ],
@@ -129,16 +117,15 @@ test('it flattens nested instruction accounts', () => {
 
 test('it ignores PDA default values if at least one seed as a path of length greater than 1', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
-        [
-            accountNode({
-                data: sizePrefixTypeNode(
-                    structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
-                    numberTypeNode('u32'),
-                ),
-                name: 'mint',
-            }),
-        ],
-        [],
+        // [
+        //     accountNode({
+        //         data: sizePrefixTypeNode(
+        //             structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
+        //             numberTypeNode('u32'),
+        //         ),
+        //         name: 'mint',
+        //     }),
+        // ],
         [
             {
                 name: 'somePdaAccount',
@@ -155,6 +142,7 @@ test('it ignores PDA default values if at least one seed as a path of length gre
                 writable: false,
             },
         ],
+        [],
     );
 
     expect(nodes).toEqual([
@@ -168,8 +156,6 @@ test('it ignores PDA default values if at least one seed as a path of length gre
 
 test('it handles PDAs with a constant program id', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
-        [],
-        [],
         [
             {
                 name: 'program_data',
@@ -193,6 +179,7 @@ test('it handles PDAs with a constant program id', () => {
                 },
             },
         ],
+        [],
     );
 
     expect(nodes).toEqual([
@@ -201,12 +188,7 @@ test('it handles PDAs with a constant program id', () => {
                 pdaNode({
                     name: 'programData',
                     programId: 'BPFLoaderUpgradeab1e11111111111111111111111',
-                    seeds: [
-                        constantPdaSeedNodeFromBytes(
-                            'base16',
-                            'a6af97eea643579472d10d58bae4cec5b64781c3ceece5dfb83c61f93f5ccb1b',
-                        ),
-                    ],
+                    seeds: [constantPdaSeedNodeFromBytes('base58', 'CDfyUBS8ZuL1L3kEy6mHVyAx1s9E97KNAwTfMfvhCriN')],
                 }),
                 [],
             ),
@@ -217,18 +199,48 @@ test('it handles PDAs with a constant program id', () => {
     ]);
 });
 
-test.skip('it handles account data paths of length 2', () => {
+test('it handles PDAs with a program id that points to another account', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
         [
-            accountNode({
-                data: sizePrefixTypeNode(
-                    structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
-                    numberTypeNode('u32'),
-                ),
-                name: 'mint',
-            }),
+            {
+                name: 'my_pda',
+                pda: {
+                    program: { kind: 'account', path: 'my_program' },
+                    seeds: [],
+                },
+            },
         ],
         [],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'myPda',
+                    seeds: [],
+                }),
+                [],
+                accountValueNode('myProgram'),
+            ),
+            isSigner: false,
+            isWritable: false,
+            name: 'myPda',
+        }),
+    ]);
+});
+
+test.skip('it handles account data paths of length 2', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        // [
+        //     accountNode({
+        //         data: sizePrefixTypeNode(
+        //             structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
+        //             numberTypeNode('u32'),
+        //         ),
+        //         name: 'mint',
+        //     }),
+        // ],
         [
             {
                 name: 'somePdaAccount',
@@ -245,6 +257,7 @@ test.skip('it handles account data paths of length 2', () => {
                 writable: false,
             },
         ],
+        [],
     );
 
     expect(nodes).toEqual([
