@@ -279,7 +279,10 @@ export function getInstructionDependencies(input: InstructionInput | Instruction
                 dependencies.set(seed.value.name, { ...seed.value });
             }
         });
-        return [...dependencies.values()];
+        return <InstructionDependency[]>[
+            ...dependencies.values(),
+            ...(input.defaultValue.programId ? ([input.defaultValue.programId] as const) : []),
+        ];
     }
 
     if (isNode(input.defaultValue, 'resolverValueNode')) {
