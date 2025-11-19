@@ -5,6 +5,7 @@ export * from './idl';
 export * from './InstructionAccountNode';
 export * from './InstructionArgumentNode';
 export * from './InstructionNode';
+export * from './PdaSeedNode';
 export * from './ProgramNode';
 export * from './RootNode';
 export * from './typeNodes';
