@@ -1,5 +1,5 @@
 ---
-'@codama/node-from-anchor': minor
+'@codama/nodes-from-anchor': minor
 '@codama/node-types': minor
 '@codama/nodes': minor
 ---
