@@ -1,5 +1,18 @@
 # @codama/nodes-from-anchor
 
+## 1.3.0
+
+### Minor Changes
+
+- [#915](https://github.com/codama-idl/codama/pull/915) [`5c3fb46`](https://github.com/codama-idl/codama/commit/5c3fb46cf5898ec9130d1f29bd7a876fcef19128) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add optional programId field to PdaValueNode to allow using a provided account as the program of the PDA
+
+### Patch Changes
+
+- Updated dependencies [[`5c3fb46`](https://github.com/codama-idl/codama/commit/5c3fb46cf5898ec9130d1f29bd7a876fcef19128)]:
+    - @codama/nodes@1.4.0
+    - @codama/errors@1.4.0
+    - @codama/visitors@1.4.0
+
 ## 1.2.10
 
 ### Patch Changes
