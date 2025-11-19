@@ -4,6 +4,8 @@ import {
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
+    pdaSeedValueNode,
+    pdaValueNode,
     publicKeyTypeNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -220,4 +222,86 @@ test('it returns an empty array for empty instructions', () => {
 
     // Then we expect an empty array.
     expect(result).toEqual([]);
+});
+
+test('it resolves the seeds of a PdaValueNode first', () => {
+    // Given the following instruction node with an account that defaults to another account.
+    const node = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                defaultValue: pdaValueNode('counter', [pdaSeedValueNode('authority', accountValueNode('payer'))]),
+                isSigner: false,
+                isWritable: false,
+                name: 'counter',
+            }),
+            instructionAccountNode({
+                isSigner: true,
+                isWritable: false,
+                name: 'payer',
+            }),
+        ],
+        name: 'myInstruction',
+    });
+
+    // When we get its resolved inputs.
+    const result = visit(node, getResolvedInstructionInputsVisitor());
+
+    // Then we expect the accounts to be in order of resolution.
+    expect(result).toEqual([
+        {
+            ...node.accounts[1],
+            dependsOn: [],
+            isPda: false,
+            resolvedIsOptional: false,
+            resolvedIsSigner: true,
+        },
+        {
+            ...node.accounts[0],
+            dependsOn: [accountValueNode('payer')],
+            isPda: false,
+            resolvedIsOptional: false,
+            resolvedIsSigner: false,
+        },
+    ]);
+});
+
+test('it resolves the program id of a PdaValueNode first', () => {
+    // Given the following instruction node with an account that defaults to another account.
+    const node = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                defaultValue: pdaValueNode('counter', [], accountValueNode('counterProgram')),
+                isSigner: false,
+                isWritable: false,
+                name: 'counter',
+            }),
+            instructionAccountNode({
+                isSigner: false,
+                isWritable: false,
+                name: 'counterProgram',
+            }),
+        ],
+        name: 'myInstruction',
+    });
+
+    // When we get its resolved inputs.
+    const result = visit(node, getResolvedInstructionInputsVisitor());
+
+    // Then we expect the accounts to be in order of resolution.
+    expect(result).toEqual([
+        {
+            ...node.accounts[1],
+            dependsOn: [],
+            isPda: false,
+            resolvedIsOptional: false,
+            resolvedIsSigner: false,
+        },
+        {
+            ...node.accounts[0],
+            dependsOn: [accountValueNode('counterProgram')],
+            isPda: false,
+            resolvedIsOptional: false,
+            resolvedIsSigner: false,
+        },
+    ]);
 });
