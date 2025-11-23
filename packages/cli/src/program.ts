@@ -1,7 +1,7 @@
 import { Command, createCommand, ParseOptions } from 'commander';
 import pico from 'picocolors';
 
-import { setInitCommand, setRunCommand } from './commands';
+import { setConvertCommand, setInitCommand, setRunCommand } from './commands';
 import { setProgramOptions } from './programOptions';
 import { logDebug, logError } from './utils';
 
@@ -36,6 +36,7 @@ export function createProgram(internalOptions?: { exitOverride?: boolean; suppre
     setProgramOptions(program);
     setInitCommand(program);
     setRunCommand(program);
+    setConvertCommand(program);
 
     // Internal options.
     if (internalOptions?.exitOverride) {
