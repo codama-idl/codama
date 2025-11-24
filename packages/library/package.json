@@ -1,6 +1,6 @@
 {
     "name": "codama",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "A Solana framework for building standardised programs",
     "exports": {
         "types": "./dist/types/index.d.ts",
