@@ -6,6 +6,7 @@ import {
 import {
     accountValueNode,
     argumentValueNode,
+    camelCase,
     constantPdaSeedNodeFromBytes,
     InstructionArgumentNode,
     isNode,
@@ -41,10 +42,11 @@ export function pdaSeedNodeFromAnchorV01(
         }
         case 'arg': {
             // Ignore nested paths.
-            const [argumentName] = seed.path.split('.');
+            const [originalArgumentName] = seed.path.split('.');
+            const argumentName = camelCase(originalArgumentName);
             const argumentNode = instructionArguments.find(({ name }) => name === argumentName);
             if (!argumentNode) {
-                throw new CodamaError(CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: argumentName });
+                throw new CodamaError(CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: originalArgumentName });
             }
 
             // Anchor uses unprefixed strings for PDA seeds even though the
@@ -59,8 +61,8 @@ export function pdaSeedNodeFromAnchorV01(
             const argumentType = isBorshString ? stringTypeNode('utf8') : argumentNode.type;
 
             return {
-                definition: variablePdaSeedNode(argumentName, argumentType),
-                value: pdaSeedValueNode(argumentName, argumentValueNode(argumentName)),
+                definition: variablePdaSeedNode(argumentNode.name, argumentType),
+                value: pdaSeedValueNode(argumentNode.name, argumentValueNode(argumentNode.name)),
             };
         }
         default:
