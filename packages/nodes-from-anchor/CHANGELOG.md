@@ -1,5 +1,11 @@
 # @codama/nodes-from-anchor
 
+## 1.3.3
+
+### Patch Changes
+
+- [#929](https://github.com/codama-idl/codama/pull/929) [`ead8796`](https://github.com/codama-idl/codama/commit/ead879695c33a60a24f83805704e6d29bc7e77d4) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix a casing bug that was missing valid seed arguments
+
 ## 1.3.2
 
 ### Patch Changes
