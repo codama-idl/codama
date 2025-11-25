@@ -1,5 +1,11 @@
 # @codama/renderers-core
 
+## 1.3.0
+
+### Minor Changes
+
+- [#927](https://github.com/codama-idl/codama/pull/927) [`23b9b2d`](https://github.com/codama-idl/codama/commit/23b9b2d3e39659d3cfe013d8612f246a7f801b8d) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Make RenderMaps store fragments instead of strings. This introduces a small breaking change for renderers but allows them to aggregate all fragment pages — e.g. to figure out dependencies for the whole generated library.
+
 ## 1.2.5
 
 ### Patch Changes
