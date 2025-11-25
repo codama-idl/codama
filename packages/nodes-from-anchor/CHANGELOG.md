@@ -1,5 +1,11 @@
 # @codama/nodes-from-anchor
 
+## 1.3.2
+
+### Patch Changes
+
+- [#924](https://github.com/codama-idl/codama/pull/924) [`23fa670`](https://github.com/codama-idl/codama/commit/23fa670a6a9dfce16eeb23c67e0a796b50226cea) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove string prefix from Anchor seeds
+
 ## 1.3.1
 
 ### Patch Changes
