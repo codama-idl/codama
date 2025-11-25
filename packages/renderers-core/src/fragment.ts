@@ -7,6 +7,13 @@ export function mapFragmentContent<TFragment extends BaseFragment>(
     return setFragmentContent(fragment, mapContent(fragment.content));
 }
 
+export async function mapFragmentContentAsync<TFragment extends BaseFragment>(
+    fragment: TFragment,
+    mapContent: (content: string) => Promise<string>,
+): Promise<TFragment> {
+    return setFragmentContent(fragment, await mapContent(fragment.content));
+}
+
 export function setFragmentContent<TFragment extends BaseFragment>(fragment: TFragment, content: string): TFragment {
     return Object.freeze({ ...fragment, content });
 }

@@ -2,42 +2,52 @@ import { CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, CodamaError } from '@
 import { NodeKind } from '@codama/nodes';
 import { mapVisitor, Visitor } from '@codama/visitors-core';
 
-import { BaseFragment } from './fragment';
+import { BaseFragment, mapFragmentContent, mapFragmentContentAsync } from './fragment';
 import { writeFile } from './fs';
 import { joinPath, Path } from './path';
 
-export type RenderMap = ReadonlyMap<Path, string>;
+export type RenderMap<TFragment extends BaseFragment> = ReadonlyMap<Path, TFragment>;
 
-export function createRenderMap(): RenderMap;
-export function createRenderMap(path: Path, content: BaseFragment | string): RenderMap;
-export function createRenderMap(entries: Record<Path, BaseFragment | string | undefined>): RenderMap;
-export function createRenderMap(
-    pathOrEntries?: Path | Record<Path, BaseFragment | string | undefined>,
-    content?: BaseFragment | string,
-): RenderMap {
-    let entries: [Path, string][] = [];
+export function createRenderMap<TFragment extends BaseFragment = BaseFragment>(): RenderMap<TFragment>;
+export function createRenderMap<TFragment extends BaseFragment>(path: Path, content: TFragment): RenderMap<TFragment>;
+export function createRenderMap<TFragment extends BaseFragment>(
+    entries: Record<Path, TFragment | undefined>,
+): RenderMap<TFragment>;
+export function createRenderMap<TFragment extends BaseFragment>(
+    pathOrEntries?: Path | Record<Path, TFragment | undefined>,
+    content?: TFragment,
+): RenderMap<TFragment> {
+    let entries: [Path, TFragment][] = [];
     if (typeof pathOrEntries === 'string' && pathOrEntries !== undefined && content !== undefined) {
-        entries = [[pathOrEntries, typeof content === 'string' ? content : content.content]];
+        entries = [[pathOrEntries, content]];
     } else if (typeof pathOrEntries === 'object' && pathOrEntries !== null) {
-        entries = Object.entries(pathOrEntries).flatMap(([key, value]) => {
-            if (value === undefined) return [];
-            return [[key, typeof value === 'string' ? value : value.content]] as const;
-        });
+        entries = Object.entries(pathOrEntries).flatMap(([key, value]) =>
+            value === undefined ? [] : ([[key, value]] as const),
+        );
     }
-    return Object.freeze(new Map<Path, string>(entries));
+    return Object.freeze(new Map(entries));
 }
 
-export function addToRenderMap(renderMap: RenderMap, path: Path, content: BaseFragment | string): RenderMap {
+export function addToRenderMap<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
+    path: Path,
+    content: TFragment,
+): RenderMap<TFragment> {
     return mergeRenderMaps([renderMap, createRenderMap(path, content)]);
 }
 
-export function removeFromRenderMap(renderMap: RenderMap, path: Path): RenderMap {
+export function removeFromRenderMap<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
+    path: Path,
+): RenderMap<TFragment> {
     const newMap = new Map(renderMap);
     newMap.delete(path);
     return Object.freeze(newMap);
 }
 
-export function mergeRenderMaps(renderMaps: RenderMap[]): RenderMap {
+export function mergeRenderMaps<TFragment extends BaseFragment>(
+    renderMaps: RenderMap<TFragment>[],
+): RenderMap<TFragment> {
     if (renderMaps.length === 0) return createRenderMap();
     if (renderMaps.length === 1) return renderMaps[0];
     const merged = new Map(renderMaps[0]);
@@ -49,25 +59,44 @@ export function mergeRenderMaps(renderMaps: RenderMap[]): RenderMap {
     return Object.freeze(merged);
 }
 
-export function mapRenderMapContent(renderMap: RenderMap, fn: (content: string) => string): RenderMap {
-    const newMap = new Map<Path, string>();
-    for (const [key, value] of renderMap) {
-        newMap.set(key, fn(value));
-    }
-    return Object.freeze(newMap);
+export function mapRenderMapFragment<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
+    fn: (fragment: TFragment) => TFragment,
+): RenderMap<TFragment> {
+    return Object.freeze(new Map([...[...renderMap.entries()].map(([key, value]) => [key, fn(value)] as const)]));
 }
 
-export async function mapRenderMapContentAsync(
-    renderMap: RenderMap,
+export async function mapRenderMapFragmentAsync<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
+    fn: (fragment: TFragment) => Promise<TFragment>,
+): Promise<RenderMap<TFragment>> {
+    return Object.freeze(
+        new Map(
+            await Promise.all([
+                ...[...renderMap.entries()].map(async ([key, value]) => [key, await fn(value)] as const),
+            ]),
+        ),
+    );
+}
+
+export function mapRenderMapContent<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
+    fn: (content: string) => string,
+): RenderMap<TFragment> {
+    return mapRenderMapFragment(renderMap, fragment => mapFragmentContent(fragment, fn));
+}
+
+export async function mapRenderMapContentAsync<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
     fn: (content: string) => Promise<string>,
-): Promise<RenderMap> {
-    const entries = await Promise.all([
-        ...[...renderMap.entries()].map(async ([key, value]) => [key, await fn(value)] as const),
-    ]);
-    return Object.freeze(new Map<Path, string>(entries));
+): Promise<RenderMap<TFragment>> {
+    return await mapRenderMapFragmentAsync(renderMap, fragment => mapFragmentContentAsync(fragment, fn));
 }
 
-export function getFromRenderMap(renderMap: RenderMap, path: Path): string {
+export function getFromRenderMap<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
+    path: Path,
+): TFragment {
     const value = renderMap.get(path);
     if (value === undefined) {
         throw new CodamaError(CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND, { key: path });
@@ -75,20 +104,24 @@ export function getFromRenderMap(renderMap: RenderMap, path: Path): string {
     return value;
 }
 
-export function renderMapContains(renderMap: RenderMap, path: Path, value: RegExp | string): boolean {
-    const content = getFromRenderMap(renderMap, path);
+export function renderMapContains<TFragment extends BaseFragment>(
+    renderMap: RenderMap<TFragment>,
+    path: Path,
+    value: RegExp | string,
+): boolean {
+    const { content } = getFromRenderMap(renderMap, path);
     return typeof value === 'string' ? content.includes(value) : value.test(content);
 }
 
-export function writeRenderMap(renderMap: RenderMap, basePath: Path): void {
-    renderMap.forEach((content, relativePath) => {
+export function writeRenderMap<TFragment extends BaseFragment>(renderMap: RenderMap<TFragment>, basePath: Path): void {
+    renderMap.forEach(({ content }, relativePath) => {
         writeFile(joinPath(basePath, relativePath), content);
     });
 }
 
-export function writeRenderMapVisitor<TNodeKind extends NodeKind = NodeKind>(
-    visitor: Visitor<RenderMap, TNodeKind>,
-    basePath: Path,
-): Visitor<void, TNodeKind> {
+export function writeRenderMapVisitor<
+    TFragment extends BaseFragment = BaseFragment,
+    TNodeKind extends NodeKind = NodeKind,
+>(visitor: Visitor<RenderMap<TFragment>, TNodeKind>, basePath: Path): Visitor<void, TNodeKind> {
     return mapVisitor(visitor, renderMap => writeRenderMap(renderMap, basePath));
 }
