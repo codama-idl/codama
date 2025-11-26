@@ -16,6 +16,7 @@ import {
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
+    CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS,
     CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE,
     CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
@@ -61,6 +62,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not find linked node [$name] from [$kind].',
     [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
         'Node.js filesystem function [$fsFunction] is not available in your environment.',
+    [CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS]:
+        'No version specified for the following dependencies: [$dependencies]. $message',
     [CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE]: 'Cannot render the encountered node of kind [$kind].',
     [CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND]: 'Expected nested node of kind [$expectedKinds], got [$kind]',
     [CODAMA_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got [$kind].',
