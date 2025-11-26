@@ -4,15 +4,15 @@ import { CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, CodamaError } from 
 
 import { Path, pathDirectory } from './path';
 
-export const createDirectory = (path: Path): void => {
+export function createDirectory(path: Path): void {
     if (!__NODEJS__) {
         throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'mkdirSync' });
     }
 
     mkdirSync(path, { recursive: true });
-};
+}
 
-export const deleteDirectory = (path: Path): void => {
+export function deleteDirectory(path: Path): void {
     if (!__NODEJS__) {
         throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'rmSync' });
     }
@@ -20,9 +20,9 @@ export const deleteDirectory = (path: Path): void => {
     if (existsSync(path)) {
         rmSync(path, { recursive: true });
     }
-};
+}
 
-export const writeFile = (path: Path, content: string): void => {
+export function writeFile(path: Path, content: string): void {
     if (!__NODEJS__) {
         throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'writeFileSync' });
     }
@@ -32,7 +32,15 @@ export const writeFile = (path: Path, content: string): void => {
         createDirectory(directory);
     }
     writeFileSync(path, content);
-};
+}
+
+export function fileExists(path: Path): boolean {
+    if (!__NODEJS__) {
+        throw new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'existsSync' });
+    }
+
+    return existsSync(path);
+}
 
 export function readFile(path: Path): string {
     if (!__NODEJS__) {
