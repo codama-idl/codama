@@ -1,5 +1,16 @@
 # @codama/renderers-core
 
+## 1.3.1
+
+### Patch Changes
+
+- [#932](https://github.com/codama-idl/codama/pull/932) [`df1cb99`](https://github.com/codama-idl/codama/commit/df1cb991be504ca53bcc4557790f331f64598a71) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add `fileExists` helper function
+
+- Updated dependencies [[`5ec491f`](https://github.com/codama-idl/codama/commit/5ec491f446e37cbb98407dc16b608fd2a649be00)]:
+    - @codama/errors@1.4.2
+    - @codama/nodes@1.4.2
+    - @codama/visitors-core@1.4.2
+
 ## 1.3.0
 
 ### Minor Changes

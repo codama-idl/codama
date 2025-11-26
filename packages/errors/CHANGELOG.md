@@ -1,5 +1,14 @@
 # @codama/errors
 
+## 1.4.2
+
+### Patch Changes
+
+- [#934](https://github.com/codama-idl/codama/pull/934) [`5ec491f`](https://github.com/codama-idl/codama/commit/5ec491f446e37cbb98407dc16b608fd2a649be00) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add Codama error for missing dependency versions
+
+- Updated dependencies []:
+    - @codama/node-types@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes
