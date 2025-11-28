@@ -16,7 +16,7 @@ This node represents the status of an instruction along with an optional message
 
 ### `instructionStatus(status, options)`
 
-Helper function that creates an `InstructionStatusModeNode` object.
+Helper function that creates an `InstructionStatusNode` object.
 
 ```ts
 const statusNode = instructionStatus('deprecated', { message: 'Use the newInstruction instead' });
