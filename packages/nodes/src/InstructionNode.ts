@@ -79,7 +79,6 @@ export function instructionNode<
         docs: parseDocs(input.docs),
         optionalAccountStrategy: parseOptionalAccountStrategy(input.optionalAccountStrategy),
         ...(input.status !== undefined && { status: input.status }),
-        ...(input.statusMessage !== undefined && { statusMessage: input.statusMessage }),
 
         // Children.
         accounts: (input.accounts ?? []) as TAccounts,

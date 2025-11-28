@@ -9,6 +9,7 @@ import type { InstructionArgumentNode } from './InstructionArgumentNode';
 import type { InstructionByteDeltaNode } from './InstructionByteDeltaNode';
 import type { InstructionNode } from './InstructionNode';
 import type { InstructionRemainingAccountsNode } from './InstructionRemainingAccountsNode';
+import type { InstructionStatusNode } from './InstructionStatusNode';
 import type { RegisteredLinkNode } from './linkNodes/LinkNode';
 import type { PdaNode } from './PdaNode';
 import type { RegisteredPdaSeedNode } from './pdaSeedNodes/PdaSeedNode';
@@ -28,6 +29,7 @@ export type Node =
     | InstructionByteDeltaNode
     | InstructionNode
     | InstructionRemainingAccountsNode
+    | InstructionStatusNode
     | PdaNode
     | ProgramNode
     | RegisteredContextualValueNode

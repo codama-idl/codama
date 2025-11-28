@@ -18,6 +18,7 @@ export * from './InstructionArgumentNode';
 export * from './InstructionByteDeltaNode';
 export * from './InstructionNode';
 export * from './InstructionRemainingAccountsNode';
+export * from './InstructionStatusNode';
 export * from './Node';
 export * from './PdaNode';
 export * from './ProgramNode';

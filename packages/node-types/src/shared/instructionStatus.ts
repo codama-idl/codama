@@ -7,8 +7,6 @@
  *   than simply removing the instruction from the Codama IDL as explorers would
  *   still need to parse old instructions for the program.
  * - `draft`: The instruction is accessible but not fully implemented yet.
- * - `unaudited`: The instruction is accessible and fully implemented but no audit
- *   was performed for it yet.
  */
-export type InstructionStatus = 'archived' | 'deprecated' | 'draft' | 'live' | 'unaudited';
+export type InstructionStatus = 'archived' | 'deprecated' | 'draft' | 'live';
 

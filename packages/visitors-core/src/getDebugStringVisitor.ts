@@ -61,6 +61,8 @@ function getNodeDetails(node: Node): string[] {
             ];
         case 'instructionByteDeltaNode':
             return [...(node.subtract ? ['subtract'] : []), ...(node.withHeader ? ['withHeader'] : [])];
+        case 'instructionStatusNode':
+            return [node.status, ...(node.message ? [node.message] : [])];
         case 'errorNode':
             return [node.code.toString(), node.name];
         case 'accountLinkNode':

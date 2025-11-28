@@ -3,7 +3,8 @@ import type { InstructionAccountNode } from './InstructionAccountNode';
 import type { InstructionArgumentNode } from './InstructionArgumentNode';
 import type { InstructionByteDeltaNode } from './InstructionByteDeltaNode';
 import type { InstructionRemainingAccountsNode } from './InstructionRemainingAccountsNode';
-import type { CamelCaseString, Docs, InstructionStatus } from './shared';
+import type { InstructionStatusNode } from './InstructionStatusNode';
+import type { CamelCaseString, Docs } from './shared';
 
 type SubInstructionNode = InstructionNode;
 
@@ -26,8 +27,6 @@ export interface InstructionNode<
     readonly name: CamelCaseString;
     readonly docs?: Docs;
     readonly optionalAccountStrategy?: OptionalAccountStrategy;
-    readonly status?: InstructionStatus;
-    readonly statusMessage?: string;
 
     // Children.
     readonly accounts: TAccounts;
@@ -36,5 +35,6 @@ export interface InstructionNode<
     readonly remainingAccounts?: TRemainingAccounts;
     readonly byteDeltas?: TByteDeltas;
     readonly discriminators?: TDiscriminators;
+    readonly status?: InstructionStatusNode;
     readonly subInstructions?: TSubInstructions;
 }
