@@ -52,6 +52,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('instructionNode')) {
         visitor.visitInstruction = function visitInstruction(node) {
             return merge(node, [
+                ...(node.status ? visit(this)(node.status) : []),
                 ...node.accounts.flatMap(visit(this)),
                 ...node.arguments.flatMap(visit(this)),
                 ...(node.extraArguments ?? []).flatMap(visit(this)),
@@ -87,6 +88,12 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('instructionByteDeltaNode')) {
         visitor.visitInstructionByteDelta = function visitInstructionByteDelta(node) {
             return merge(node, visit(this)(node.value));
+        };
+    }
+
+    if (keys.includes('instructionStatusNode')) {
+        visitor.visitInstructionStatus = function visitInstructionStatus(node) {
+            return merge(node, []);
         };
     }
 
