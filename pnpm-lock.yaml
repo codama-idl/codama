@@ -19,7 +19,7 @@ importers:
         version: 5.0.0(@eslint/js@9.39.1)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(eslint@9.39.1)(jest@30.0.0-alpha.6(@types/node@24.10.1))(typescript@5.9.3))(eslint-plugin-react-hooks@4.6.0(eslint@9.39.1))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.1))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.43.0(eslint@9.39.1)(typescript@5.9.3))(eslint@9.39.1)(typescript@5.9.3))(eslint@9.39.1)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.10.1))(typescript-eslint@8.43.0(eslint@9.39.1)(typescript@5.9.3))(typescript@5.9.3)
       '@solana/prettier-config-solana':
         specifier: 0.0.5
-        version: 0.0.5(prettier@3.7.0)
+        version: 0.0.5(prettier@3.7.1)
       '@types/node':
         specifier: ^24
         version: 24.10.1
@@ -36,8 +36,8 @@ importers:
         specifier: ^20.0.11
         version: 20.0.11
       prettier:
-        specifier: ^3.7.0
-        version: 3.7.0
+        specifier: ^3.7.1
+        version: 3.7.1
       rimraf:
         specifier: 6.1.2
         version: 6.1.2
@@ -2742,8 +2742,8 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
-  prettier@3.7.0:
-    resolution: {integrity: sha512-pBiBj/gjRY9Qpk1b7cDda6Rbwvkaggos779AHQ0Ek/odwDx6xG6DRBxtnp1QmxbuD7pAO8/SQ8vuhtGv9LoLWA==}
+  prettier@3.7.1:
+    resolution: {integrity: sha512-RWKXE4qB3u5Z6yz7omJkjWwmTfLdcbv44jUVHC5NpfXwFGzvpQM798FGv/6WNK879tc+Cn0AAyherCl1KjbyZQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -4323,9 +4323,9 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/prettier-config-solana@0.0.5(prettier@3.7.0)':
+  '@solana/prettier-config-solana@0.0.5(prettier@3.7.1)':
     dependencies:
-      prettier: 3.7.0
+      prettier: 3.7.1
 
   '@standard-schema/spec@1.0.0': {}
 
@@ -6018,7 +6018,7 @@ snapshots:
 
   prettier@2.8.8: {}
 
-  prettier@3.7.0: {}
+  prettier@3.7.1: {}
 
   pretty-format@30.0.0-alpha.6:
     dependencies:
