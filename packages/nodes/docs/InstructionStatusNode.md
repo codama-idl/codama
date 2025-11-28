@@ -14,12 +14,12 @@ This node represents the status of an instruction along with an optional message
 
 ## Functions
 
-### `instructionStatus(status, options)`
+### `instructionStatusNode(status, options)`
 
 Helper function that creates an `InstructionStatusNode` object.
 
 ```ts
-const statusNode = instructionStatus('deprecated', { message: 'Use the newInstruction instead' });
+const statusNode = instructionStatusNode('deprecated', { message: 'Use the newInstruction instead' });
 ```
 
 ## Examples
@@ -41,7 +41,7 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'oldTransfer',
-    status: instructionStatus('deprecated', { message: 'Use the `transfer` instruction instead. This will be removed in v3.0.0.' }),
+    status: instructionStatusNode('deprecated', { message: 'Use the `transfer` instruction instead. This will be removed in v3.0.0.' }),
     accounts: [...],
     arguments: [...],
 });
@@ -52,7 +52,7 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'legacyTransfer',
-    status: instructionStatus('archived', { message: 'This instruction was removed in v2.0.0. It is kept here for historical parsing.' }),
+    status: instructionStatusNode('archived', { message: 'This instruction was removed in v2.0.0. It is kept here for historical parsing.' }),
     accounts: [...],
     arguments: [...],
 });
@@ -63,7 +63,7 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'experimentalFeature',
-    status: instructionStatus('draft', { message: 'This instruction is under development and may change.' }),
+    status: instructionStatusNode('draft', { message: 'This instruction is under development and may change.' }),
     accounts: [...],
     arguments: [...],
 });
@@ -73,8 +73,8 @@ instructionNode({
 
 ```ts
 instructionNode({
-    name: 'somedInstruction',
-    status: instructionStatus('deprecated'),
+    name: 'someInstruction',
+    status: instructionStatusNode('deprecated'),
     accounts: [...],
     arguments: [...],
 });

@@ -5,7 +5,7 @@ import {
     instructionByteDeltaNode,
     instructionNode,
     instructionRemainingAccountsNode,
-    instructionStatus,
+    instructionStatusNode,
     numberTypeNode,
     numberValueNode,
     publicKeyTypeNode,
@@ -128,7 +128,7 @@ test('sub instructions', () => {
 test('status mode', () => {
     const nodeWithStatus = instructionNode({
         name: 'deprecatedInstruction',
-        status: instructionStatus('deprecated', { message: 'Use newInstruction instead' }),
+        status: instructionStatusNode('deprecated', { message: 'Use newInstruction instead' }),
     });
 
     expectMergeVisitorCount(nodeWithStatus, 2);

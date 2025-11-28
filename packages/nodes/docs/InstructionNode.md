@@ -174,7 +174,7 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'oldIncrement',
-    status: instructionStatus('deprecated', { message: 'Use the `increment` instruction instead. This will be removed in v3.0.0.' }),
+    status: instructionStatusNode('deprecated', { message: 'Use the `increment` instruction instead. This will be removed in v3.0.0.' }),
     accounts: [instructionAccountNode({ name: 'counter', isWritable: true, isSigner: false })],
     arguments: [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
 });
@@ -185,7 +185,7 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'legacyTransfer',
-    status: instructionStatus('archived', { message: 'This instruction was removed in v2.0.0. It is kept here for historical parsing.' }),
+    status: instructionStatusNode('archived', { message: 'This instruction was removed in v2.0.0. It is kept here for historical parsing.' }),
     accounts: [
         instructionAccountNode({ name: 'source', isWritable: true, isSigner: true }),
         instructionAccountNode({ name: 'destination', isWritable: true, isSigner: false }),
@@ -199,7 +199,7 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'experimentalFeature',
-    status: instructionStatus('draft', { message: 'This instruction is under development and may change.' }),
+    status: instructionStatusNode('draft', { message: 'This instruction is under development and may change.' }),
     accounts: [instructionAccountNode({ name: 'config', isWritable: true, isSigner: true })],
     arguments: [],
 });
