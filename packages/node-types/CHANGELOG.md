@@ -1,5 +1,11 @@
 # @codama/node-types
 
+## 1.4.3
+
+### Patch Changes
+
+- [#942](https://github.com/codama-idl/codama/pull/942) [`ef5d104`](https://github.com/codama-idl/codama/commit/ef5d104af0746d46a41a2733f1cd5600c538aad9) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove treeshake workaround for Rollup's deprecated assert syntax
+
 ## 1.4.2
 
 ## 1.4.1
