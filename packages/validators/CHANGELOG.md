@@ -1,5 +1,16 @@
 # @codama/validators
 
+## 1.4.4
+
+### Patch Changes
+
+- [#944](https://github.com/codama-idl/codama/pull/944) [`6ad73e4`](https://github.com/codama-idl/codama/commit/6ad73e44a8c866706483a0da3280479324903307) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Enable Rollup treeshaking pass by default, disable only for CLI builds
+
+- Updated dependencies [[`6ad73e4`](https://github.com/codama-idl/codama/commit/6ad73e44a8c866706483a0da3280479324903307)]:
+    - @codama/errors@1.4.4
+    - @codama/nodes@1.4.4
+    - @codama/visitors-core@1.4.4
+
 ## 1.4.3
 
 ### Patch Changes

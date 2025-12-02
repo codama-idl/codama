@@ -1,6 +1,6 @@
 {
     "name": "@codama/node-types",
-    "version": "1.4.3",
+    "version": "1.4.4",
     "description": "Node specifications for the Codama standard",
     "exports": {
         "types": "./dist/types/index.d.ts",
