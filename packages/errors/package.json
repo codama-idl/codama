@@ -1,6 +1,6 @@
 {
     "name": "@codama/errors",
-    "version": "1.4.2",
+    "version": "1.4.3",
     "description": "Error management for Codama",
     "exports": {
         "types": "./dist/types/index.d.ts",

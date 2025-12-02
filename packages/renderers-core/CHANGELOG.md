@@ -1,5 +1,16 @@
 # @codama/renderers-core
 
+## 1.3.2
+
+### Patch Changes
+
+- [#942](https://github.com/codama-idl/codama/pull/942) [`ef5d104`](https://github.com/codama-idl/codama/commit/ef5d104af0746d46a41a2733f1cd5600c538aad9) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove treeshake workaround for Rollup's deprecated assert syntax
+
+- Updated dependencies [[`ef5d104`](https://github.com/codama-idl/codama/commit/ef5d104af0746d46a41a2733f1cd5600c538aad9)]:
+    - @codama/errors@1.4.3
+    - @codama/nodes@1.4.3
+    - @codama/visitors-core@1.4.3
+
 ## 1.3.1
 
 ### Patch Changes
