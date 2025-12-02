@@ -54,6 +54,7 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         publicDir: true,
         pure: ['process'],
         sourcemap: format !== 'iife',
+        treeshake: true,
     };
 }
 
