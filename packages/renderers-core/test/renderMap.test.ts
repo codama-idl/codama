@@ -152,13 +152,33 @@ describe('mapRenderMapContent', () => {
     test('it maps the content of all entries inside a render map', () => {
         expect(
             mapRenderMapContent(
-                createRenderMap({ pathA: { content: 'ContentA' }, pathB: { content: 'ContentB' } }),
+                createRenderMap({
+                    pathA: { content: 'ContentA' },
+                    pathB: { content: 'ContentB' },
+                }),
                 content => `Mapped: ${content}`,
             ),
         ).toStrictEqual(
             new Map([
                 ['pathA', { content: 'Mapped: ContentA' }],
                 ['pathB', { content: 'Mapped: ContentB' }],
+            ]),
+        );
+    });
+
+    test('it provides the path of the content being mapped', () => {
+        expect(
+            mapRenderMapContent(
+                createRenderMap({
+                    pathA: { content: 'Content' },
+                    pathB: { content: 'Content' },
+                }),
+                (content, path) => `${content} from ${path}`,
+            ),
+        ).toStrictEqual(
+            new Map([
+                ['pathA', { content: 'Content from pathA' }],
+                ['pathB', { content: 'Content from pathB' }],
             ]),
         );
     });
@@ -182,6 +202,23 @@ describe('mapRenderMapContentAsync', () => {
             new Map([
                 ['pathA', { content: 'Mapped: ContentA' }],
                 ['pathB', { content: 'Mapped: ContentB' }],
+            ]),
+        );
+    });
+
+    test('it provides the path of the content being mapped', async () => {
+        expect(
+            await mapRenderMapContentAsync(
+                createRenderMap({
+                    pathA: { content: 'Content' },
+                    pathB: { content: 'Content' },
+                }),
+                (content, path) => Promise.resolve(`${content} from ${path}`),
+            ),
+        ).toStrictEqual(
+            new Map([
+                ['pathA', { content: 'Content from pathA' }],
+                ['pathB', { content: 'Content from pathB' }],
             ]),
         );
     });
