@@ -19,7 +19,7 @@ importers:
         version: 5.0.0(@eslint/js@9.39.1)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(eslint@9.39.1)(jest@30.0.0-alpha.6(@types/node@24.10.1))(typescript@5.9.3))(eslint-plugin-react-hooks@4.6.0(eslint@9.39.1))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.1))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.43.0(eslint@9.39.1)(typescript@5.9.3))(eslint@9.39.1)(typescript@5.9.3))(eslint@9.39.1)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@24.10.1))(typescript-eslint@8.43.0(eslint@9.39.1)(typescript@5.9.3))(typescript@5.9.3)
       '@solana/prettier-config-solana':
         specifier: 0.0.5
-        version: 0.0.5(prettier@3.7.3)
+        version: 0.0.5(prettier@3.7.4)
       '@types/node':
         specifier: ^24
         version: 24.10.1
@@ -36,8 +36,8 @@ importers:
         specifier: ^20.0.11
         version: 20.0.11
       prettier:
-        specifier: ^3.7.3
-        version: 3.7.3
+        specifier: ^3.7.4
+        version: 3.7.4
       rimraf:
         specifier: 6.1.2
         version: 6.1.2
@@ -1657,8 +1657,8 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  caniuse-lite@1.0.30001757:
-    resolution: {integrity: sha512-r0nnL/I28Zi/yjk1el6ilj27tKcdjLsNqAOZr0yVjWPrSQyHgKI2INaEWw21bAQSv2LXRt1XuCS/GomNpWOxsQ==}
+  caniuse-lite@1.0.30001759:
+    resolution: {integrity: sha512-Pzfx9fOKoKvevQf8oCXoyNRQ5QyxJj+3O0Rqx2V5oxT61KGx8+n6hV/IUyJeifUci2clnmmKVpvtiqRzgiWjSw==}
 
   chai@6.2.1:
     resolution: {integrity: sha512-p4Z49OGG5W/WBCPSS/dH3jQ73kD6tiMmUM+bckNK6Jr5JHMG3k9bg/BvKR8lKmtVBKmOiuVaV2ws8s9oSbwysg==}
@@ -2742,8 +2742,8 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
-  prettier@3.7.3:
-    resolution: {integrity: sha512-QgODejq9K3OzoBbuyobZlUhznP5SKwPqp+6Q6xw6o8gnhr4O85L2U915iM2IDcfF2NPXVaM9zlo9tdwipnYwzg==}
+  prettier@3.7.4:
+    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -4318,9 +4318,9 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/prettier-config-solana@0.0.5(prettier@3.7.3)':
+  '@solana/prettier-config-solana@0.0.5(prettier@3.7.4)':
     dependencies:
-      prettier: 3.7.3
+      prettier: 3.7.4
 
   '@standard-schema/spec@1.0.0': {}
 
@@ -4735,7 +4735,7 @@ snapshots:
 
   browserslist@4.25.4:
     dependencies:
-      caniuse-lite: 1.0.30001757
+      caniuse-lite: 1.0.30001759
       electron-to-chromium: 1.5.263
       node-releases: 2.0.27
       update-browserslist-db: 1.1.4(browserslist@4.25.4)
@@ -4781,7 +4781,7 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  caniuse-lite@1.0.30001757: {}
+  caniuse-lite@1.0.30001759: {}
 
   chai@6.2.1: {}
 
@@ -6012,7 +6012,7 @@ snapshots:
 
   prettier@2.8.8: {}
 
-  prettier@3.7.3: {}
+  prettier@3.7.4: {}
 
   pretty-format@30.0.0-alpha.6:
     dependencies:
