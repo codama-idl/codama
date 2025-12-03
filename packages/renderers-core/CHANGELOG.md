@@ -1,5 +1,11 @@
 # @codama/renderers-core
 
+## 1.3.4
+
+### Patch Changes
+
+- [#948](https://github.com/codama-idl/codama/pull/948) [`ba879fd`](https://github.com/codama-idl/codama/commit/ba879fd4528341cb5d738917026ecafe999ebe2e) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add filepath as second argument of RenderMap transform helpers
+
 ## 1.3.3
 
 ### Patch Changes
