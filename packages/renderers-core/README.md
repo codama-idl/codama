@@ -246,6 +246,12 @@ const updatedRenderMap = await mapRenderMapContentAsync(renderMap, async content
 });
 ```
 
+Note that in both cases, a second argument is available in the mapping function that provides the relative path of the file being transformed.
+
+```ts
+const updatedRenderMap = mapRenderMapContent(renderMap, (content, path) => `/** File: ${path} */\n\n${content}`);
+```
+
 ### Writing a `RenderMap` to the filesystem
 
 When the `RenderMap` is ready to be written to the filesystem, you can use the `writeRenderMap` helper by providing the base directory where all files should be written. All paths inside the `RenderMap` will be appended to this base directory.

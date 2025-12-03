@@ -61,19 +61,19 @@ export function mergeRenderMaps<TFragment extends BaseFragment>(
 
 export function mapRenderMapFragment<TFragment extends BaseFragment>(
     renderMap: RenderMap<TFragment>,
-    fn: (fragment: TFragment) => TFragment,
+    fn: (fragment: TFragment, path: Path) => TFragment,
 ): RenderMap<TFragment> {
-    return Object.freeze(new Map([...[...renderMap.entries()].map(([key, value]) => [key, fn(value)] as const)]));
+    return Object.freeze(new Map([...[...renderMap.entries()].map(([key, value]) => [key, fn(value, key)] as const)]));
 }
 
 export async function mapRenderMapFragmentAsync<TFragment extends BaseFragment>(
     renderMap: RenderMap<TFragment>,
-    fn: (fragment: TFragment) => Promise<TFragment>,
+    fn: (fragment: TFragment, path: Path) => Promise<TFragment>,
 ): Promise<RenderMap<TFragment>> {
     return Object.freeze(
         new Map(
             await Promise.all([
-                ...[...renderMap.entries()].map(async ([key, value]) => [key, await fn(value)] as const),
+                ...[...renderMap.entries()].map(async ([key, value]) => [key, await fn(value, key)] as const),
             ]),
         ),
     );
@@ -81,16 +81,20 @@ export async function mapRenderMapFragmentAsync<TFragment extends BaseFragment>(
 
 export function mapRenderMapContent<TFragment extends BaseFragment>(
     renderMap: RenderMap<TFragment>,
-    fn: (content: string) => string,
+    fn: (content: string, path: Path) => string,
 ): RenderMap<TFragment> {
-    return mapRenderMapFragment(renderMap, fragment => mapFragmentContent(fragment, fn));
+    return mapRenderMapFragment(renderMap, (fragment, path) =>
+        mapFragmentContent(fragment, content => fn(content, path)),
+    );
 }
 
 export async function mapRenderMapContentAsync<TFragment extends BaseFragment>(
     renderMap: RenderMap<TFragment>,
-    fn: (content: string) => Promise<string>,
+    fn: (content: string, path: Path) => Promise<string>,
 ): Promise<RenderMap<TFragment>> {
-    return await mapRenderMapFragmentAsync(renderMap, fragment => mapFragmentContentAsync(fragment, fn));
+    return await mapRenderMapFragmentAsync(renderMap, (fragment, path) =>
+        mapFragmentContentAsync(fragment, content => fn(content, path)),
+    );
 }
 
 export function getFromRenderMap<TFragment extends BaseFragment>(
