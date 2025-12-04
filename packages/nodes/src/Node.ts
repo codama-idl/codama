@@ -27,6 +27,7 @@ export const REGISTERED_NODE_KINDS = [
     'instructionByteDeltaNode' as const,
     'instructionNode' as const,
     'instructionRemainingAccountsNode' as const,
+    'instructionStatusNode' as const,
     'errorNode' as const,
     'definedTypeNode' as const,
 ];
