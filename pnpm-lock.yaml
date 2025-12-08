@@ -45,8 +45,8 @@ importers:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.6)(typescript@5.9.3)
       turbo:
-        specifier: ^2.6.2
-        version: 2.6.2
+        specifier: ^2.6.3
+        version: 2.6.3
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1799,8 +1799,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron-to-chromium@1.5.264:
-    resolution: {integrity: sha512-1tEf0nLgltC3iy9wtlYDlQDc5Rg9lEKVjEmIHJ21rI9OcqkvD45K1oyNIRA4rR1z3LgJ7KeGzEBojVcV6m4qjA==}
+  electron-to-chromium@1.5.266:
+    resolution: {integrity: sha512-kgWEglXvkEfMH7rxP5OSZZwnaDWT7J9EoZCujhnpLbfi0bbNtRkgdX2E3gt0Uer11c61qCYktB3hwkAS325sJg==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -3051,38 +3051,38 @@ packages:
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
 
-  turbo-darwin-64@2.6.2:
-    resolution: {integrity: sha512-nF9d/YAyrNkyXn9lp3ZtgXPb7fZsik3cUNe/sBvUO0G5YezUS/kDYYw77IdjizDzairz8pL2ITCTUreG2d5iZQ==}
+  turbo-darwin-64@2.6.3:
+    resolution: {integrity: sha512-BlJJDc1CQ7SK5Y5qnl7AzpkvKSnpkfPmnA+HeU/sgny3oHZckPV2776ebO2M33CYDSor7+8HQwaodY++IINhYg==}
     cpu: [x64]
     os: [darwin]
 
-  turbo-darwin-arm64@2.6.2:
-    resolution: {integrity: sha512-mmm0jFaVramST26XE1Lk2qjkjvLJHOe9f3TFjqY+aByjMK/ZmKE5WFPuCWo4L3xhwx+16T37rdPP//76loB3oA==}
+  turbo-darwin-arm64@2.6.3:
+    resolution: {integrity: sha512-MwVt7rBKiOK7zdYerenfCRTypefw4kZCue35IJga9CH1+S50+KTiCkT6LBqo0hHeoH2iKuI0ldTF2a0aB72z3w==}
     cpu: [arm64]
     os: [darwin]
 
-  turbo-linux-64@2.6.2:
-    resolution: {integrity: sha512-IUMHjkVRJDUABGpi+iS1Le59aOl5DX88U5UT/mKaE7nNEjG465+a8UtYno56cZnLP+C6BkX4I93LFgYf9syjGQ==}
+  turbo-linux-64@2.6.3:
+    resolution: {integrity: sha512-cqpcw+dXxbnPtNnzeeSyWprjmuFVpHJqKcs7Jym5oXlu/ZcovEASUIUZVN3OGEM6Y/OTyyw0z09tOHNt5yBAVg==}
     cpu: [x64]
     os: [linux]
 
-  turbo-linux-arm64@2.6.2:
-    resolution: {integrity: sha512-0qQdZiimMUZj2Gfq87thYu0E02NaNcsB3lcEK/TD70Zzi7AxQoxye664Gis0Uao2j2L9/+05wC2btZ7SoFX3Gw==}
+  turbo-linux-arm64@2.6.3:
+    resolution: {integrity: sha512-MterpZQmjXyr4uM7zOgFSFL3oRdNKeflY7nsjxJb2TklsYqiu3Z9pQ4zRVFFH8n0mLGna7MbQMZuKoWqqHb45w==}
     cpu: [arm64]
     os: [linux]
 
-  turbo-windows-64@2.6.2:
-    resolution: {integrity: sha512-BmMfFmt0VaoZL4NbtDq/dzGfjHsPoGU2+vFiZtkiYsttHY3fd/Dmgnu9PuRyJN1pv2M22q88rXO+dqYRHztLMw==}
+  turbo-windows-64@2.6.3:
+    resolution: {integrity: sha512-biDU70v9dLwnBdLf+daoDlNJVvqOOP8YEjqNipBHzgclbQlXbsi6Gqqelp5er81Qo3BiRgmTNx79oaZQTPb07Q==}
     cpu: [x64]
     os: [win32]
 
-  turbo-windows-arm64@2.6.2:
-    resolution: {integrity: sha512-0r4s4M/FgLxfjrdLPdqQUur8vZAtaWEi4jhkQ6wCIN2xzA9aee9IKwM53w7CQcjaLvWhT0AU7LTQHjFaHwxiKw==}
+  turbo-windows-arm64@2.6.3:
+    resolution: {integrity: sha512-dDHVKpSeukah3VsI/xMEKeTnV9V9cjlpFSUs4bmsUiLu3Yv2ENlgVEZv65wxbeE0bh0jjpmElDT+P1KaCxArQQ==}
     cpu: [arm64]
     os: [win32]
 
-  turbo@2.6.2:
-    resolution: {integrity: sha512-LiQAFS6iWvnY8ViGtoPgduWBeuGH9B32XR4p8H8jxU5PudwyHiiyf1jQW0fCC8gCCTz9itkIbqZLIyUu5AG33w==}
+  turbo@2.6.3:
+    resolution: {integrity: sha512-bf6YKUv11l5Xfcmg76PyWoy/e2vbkkxFNBGJSnfdSXQC33ZiUfutYh6IXidc5MhsnrFkWfdNNLyaRk+kHMLlwA==}
     hasBin: true
 
   type-check@0.4.0:
@@ -3125,8 +3125,8 @@ packages:
     resolution: {integrity: sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==}
     engines: {node: '>= 4.0.0'}
 
-  update-browserslist-db@1.2.1:
-    resolution: {integrity: sha512-R9NcHbbZ45RoWfTdhn1J9SS7zxNvlddv4YRrHTUaFdtjbmfncfedB45EC9IaqJQ97iAR1GZgOfyRQO+ExIF6EQ==}
+  update-browserslist-db@1.2.2:
+    resolution: {integrity: sha512-E85pfNzMQ9jpKkA7+TJAi4TJN+tBCuWh5rUcS/sv6cFi+1q9LYDwDI5dpUL0u/73EElyQ8d3TEaeW4sPedBqYA==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
@@ -4740,9 +4740,9 @@ snapshots:
   browserslist@4.25.4:
     dependencies:
       caniuse-lite: 1.0.30001759
-      electron-to-chromium: 1.5.264
+      electron-to-chromium: 1.5.266
       node-releases: 2.0.27
-      update-browserslist-db: 1.2.1(browserslist@4.25.4)
+      update-browserslist-db: 1.2.2(browserslist@4.25.4)
 
   bser@2.1.1:
     dependencies:
@@ -4884,7 +4884,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron-to-chromium@1.5.264: {}
+  electron-to-chromium@1.5.266: {}
 
   emittery@0.13.1: {}
 
@@ -6336,32 +6336,32 @@ snapshots:
       tslib: 1.14.1
       typescript: 5.9.3
 
-  turbo-darwin-64@2.6.2:
+  turbo-darwin-64@2.6.3:
     optional: true
 
-  turbo-darwin-arm64@2.6.2:
+  turbo-darwin-arm64@2.6.3:
     optional: true
 
-  turbo-linux-64@2.6.2:
+  turbo-linux-64@2.6.3:
     optional: true
 
-  turbo-linux-arm64@2.6.2:
+  turbo-linux-arm64@2.6.3:
     optional: true
 
-  turbo-windows-64@2.6.2:
+  turbo-windows-64@2.6.3:
     optional: true
 
-  turbo-windows-arm64@2.6.2:
+  turbo-windows-arm64@2.6.3:
     optional: true
 
-  turbo@2.6.2:
+  turbo@2.6.3:
     optionalDependencies:
-      turbo-darwin-64: 2.6.2
-      turbo-darwin-arm64: 2.6.2
-      turbo-linux-64: 2.6.2
-      turbo-linux-arm64: 2.6.2
-      turbo-windows-64: 2.6.2
-      turbo-windows-arm64: 2.6.2
+      turbo-darwin-64: 2.6.3
+      turbo-darwin-arm64: 2.6.3
+      turbo-linux-64: 2.6.3
+      turbo-linux-arm64: 2.6.3
+      turbo-windows-64: 2.6.3
+      turbo-windows-arm64: 2.6.3
 
   type-check@0.4.0:
     dependencies:
@@ -6394,7 +6394,7 @@ snapshots:
 
   universalify@0.1.2: {}
 
-  update-browserslist-db@1.2.1(browserslist@4.25.4):
+  update-browserslist-db@1.2.2(browserslist@4.25.4):
     dependencies:
       browserslist: 4.25.4
       escalade: 3.2.0
