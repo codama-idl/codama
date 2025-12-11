@@ -1,9 +1,6 @@
-import type { InstructionStatusNode, InstructionLifecycle } from '@codama/node-types';
+import type { InstructionLifecycle, InstructionStatusNode } from '@codama/node-types';
 
-export function instructionStatusNode(
-    lifecycle: InstructionLifecycle,
-    message?: string,
-): InstructionStatusNode {
+export function instructionStatusNode(lifecycle: InstructionLifecycle, message?: string): InstructionStatusNode {
     return Object.freeze({
         kind: 'instructionStatusNode',
 

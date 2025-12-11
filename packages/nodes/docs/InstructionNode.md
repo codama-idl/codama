@@ -9,11 +9,11 @@ This node represents an instruction in a program.
 ### Data
 
 | Attribute                 | Type                         | Description                                                                                                                                                                                                                                                                                                             |
-| ------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `kind`                    | `"instructionNode"`                                       | The node discriminator.                                                                                                                                                                                                                                                                                                 |
-| `name`                    | `CamelCaseString`                                         | The name of the instruction.                                                                                                                                                                                                                                                                                            |
-| `docs`                    | `string[]`                                                | Markdown documentation for the instruction.                                                                                                                                                                                                                                                                             |
-| `optionalAccountStrategy` | `"omitted"` \| `"programId"`                              | (Optional) Determines how to handle optional accounts. `"omitted"` means optional accounts that are not provided will be omitted from the list of accounts, `"programId"` means they will be replaced by the address of the program to ensure account ordering with only 1 byte of overhead. Defaults to `"programId"`. |
+| ------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kind`                    | `"instructionNode"`          | The node discriminator.                                                                                                                                                                                                                                                                                                 |
+| `name`                    | `CamelCaseString`            | The name of the instruction.                                                                                                                                                                                                                                                                                            |
+| `docs`                    | `string[]`                   | Markdown documentation for the instruction.                                                                                                                                                                                                                                                                             |
+| `optionalAccountStrategy` | `"omitted"` \| `"programId"` | (Optional) Determines how to handle optional accounts. `"omitted"` means optional accounts that are not provided will be omitted from the list of accounts, `"programId"` means they will be replaced by the address of the program to ensure account ordering with only 1 byte of overhead. Defaults to `"programId"`. |
 
 ### Children
 
@@ -25,7 +25,7 @@ This node represents an instruction in a program.
 | `remainingAccounts` | [`InstructionRemainingAccountsNode`](./InstructionRemainingAccountsNode.md)[] | (Optional) The list of dynamic remaining accounts requirements for the instruction. For instance, an instruction may have a variable number of signers at the end of the accounts list. |
 | `byteDeltas`        | [`InstructionByteDeltaNode`](./InstructionByteDeltaNode.md)[]                 | (Optional) The list of byte variations that the instruction causes. They should all be added together unless the `subtract` attribute is used.                                          |
 | `discriminators`    | [`DiscriminatorNode`](./DiscriminatorNode.md)[]                               | (Optional) The nodes that distinguish this instruction from others in the program. If multiple discriminators are provided, they are combined using a logical AND operation.            |
-| `status`            | [`InstructionStatusNode`](./InstructionStatusNode.md)                 | (Optional) The status of the instruction and an optional message about that status.                                                                                                   |
+| `status`            | [`InstructionStatusNode`](./InstructionStatusNode.md)                         | (Optional) The status of the instruction and an optional message about that status.                                                                                                     |
 | `subInstructions`   | [`InstructionNode`](./InstructionNode.md)[]                                   | (Optional) A list of nested instructions should this instruction be split into multiple sub-instructions to define distinct scenarios.                                                  |
 
 ## Functions
@@ -174,7 +174,10 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'oldIncrement',
-    status: instructionStatusNode('deprecated', 'Use the `increment` instruction instead. This will be removed in v3.0.0.'),
+    status: instructionStatusNode(
+        'deprecated',
+        'Use the `increment` instruction instead. This will be removed in v3.0.0.',
+    ),
     accounts: [instructionAccountNode({ name: 'counter', isWritable: true, isSigner: false })],
     arguments: [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
 });
@@ -185,7 +188,10 @@ instructionNode({
 ```ts
 instructionNode({
     name: 'legacyTransfer',
-    status: instructionStatusNode('archived', 'This instruction was removed in v2.0.0. It is kept here for historical parsing.'),
+    status: instructionStatusNode(
+        'archived',
+        'This instruction was removed in v2.0.0. It is kept here for historical parsing.',
+    ),
     accounts: [
         instructionAccountNode({ name: 'source', isWritable: true, isSigner: true }),
         instructionAccountNode({ name: 'destination', isWritable: true, isSigner: false }),

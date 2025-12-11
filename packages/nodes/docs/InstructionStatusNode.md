@@ -6,11 +6,11 @@ This node represents the status of an instruction along with an optional message
 
 ### Data
 
-| Attribute   | Type                                         | Description                                                                                                                           |
-| ----------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `kind`      | `"instructionStatusNode"`                | The node discriminator.                                                                                                               |
+| Attribute   | Type                                                    | Description                                                                                                                                                                                                                                      |
+| ----------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `kind`      | `"instructionStatusNode"`                               | The node discriminator.                                                                                                                                                                                                                          |
 | `lifecycle` | `"live"` \| `"deprecated"` \| `"archived"` \| `"draft"` | The lifecycle status of the instruction. `"live"` means accessible (the default), `"deprecated"` means about to be archived, `"archived"` means no longer accessible but kept for historical parsing, `"draft"` means not fully implemented yet. |
-| `message`   | `string`                                     | (Optional) Additional information about the current status for program consumers.                                                     |
+| `message`   | `string`                                                | (Optional) Additional information about the current status for program consumers.                                                                                                                                                                |
 
 ## Functions
 
