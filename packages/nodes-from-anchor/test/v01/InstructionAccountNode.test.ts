@@ -144,6 +144,98 @@ test('it prevents duplicate names by prefixing nested accounts with different pa
     ]);
 });
 
+test('it handles nested accounts with more complex duplicate scenarios', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            { name: 'authority', signer: true, writable: false },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    { name: 'vault', signer: false, writable: true },
+                    { name: 'authority', signer: false, writable: false },
+                ],
+                name: 'sourceProgram',
+            },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    { name: 'escrow', signer: false, writable: true },
+                    { name: 'metadata', signer: false, writable: true },
+                ],
+                name: 'destinationProgram',
+            },
+        ],
+        [],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({ isSigner: true, isWritable: false, name: 'authority' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'sourceProgramVault' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramAuthority' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'destinationProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramEscrow' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramMetadata' }),
+    ]);
+});
+
+test('it correctly prefixes PDA seed account references in nested groups', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    {
+                        name: 'vault',
+                        pda: {
+                            seeds: [
+                                {
+                                    kind: 'account',
+                                    path: 'mint',
+                                },
+                            ],
+                        },
+                        signer: false,
+                        writable: true,
+                    },
+                ],
+                name: 'tokenProgram',
+            },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    {
+                        name: 'escrow',
+                        pda: {
+                            seeds: [
+                                {
+                                    kind: 'account',
+                                    path: 'mint',
+                                },
+                            ],
+                        },
+                        signer: false,
+                        writable: true,
+                    },
+                ],
+                name: 'nftProgram',
+            },
+        ],
+        [],
+    );
+
+    expect(nodes).toHaveLength(4);
+    expect(nodes[0].name).toBe('tokenProgramMint');
+    expect(nodes[1].name).toBe('tokenProgramVault');
+    expect(nodes[2].name).toBe('nftProgramMint');
+    expect(nodes[3].name).toBe('nftProgramEscrow');
+
+    expect(nodes[1].defaultValue).toBeDefined();
+    expect(nodes[1].defaultValue?.kind).toBe('pdaValueNode');
+    expect(nodes[3].defaultValue).toBeDefined();
+    expect(nodes[3].defaultValue?.kind).toBe('pdaValueNode');
+});
+
 test('it ignores PDA default values if at least one seed as a path of length greater than 1', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
         // [

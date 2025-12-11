@@ -46,8 +46,7 @@ export function instructionAccountNodesFromAnchorV01(
     instructionArguments: InstructionArgumentNode[],
     prefix?: string,
 ): InstructionAccountNode[] {
-    const hasDuplicates = hasDuplicateAccountNames(idl);
-    const shouldPrefix = prefix !== undefined || hasDuplicates;
+    const shouldPrefix = prefix !== undefined || hasDuplicateAccountNames(idl);
 
     return idl.flatMap(account =>
         'accounts' in account
