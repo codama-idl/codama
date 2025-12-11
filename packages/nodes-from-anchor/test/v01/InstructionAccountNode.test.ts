@@ -39,7 +39,7 @@ test('it creates instruction account nodes', () => {
     );
 });
 
-test('it flattens nested instruction accounts', () => {
+test('it flattens nested instruction accounts without prefixing when no duplicates exist', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
         [
             { name: 'accountA', signer: false, writable: false },
@@ -112,6 +112,35 @@ test('it flattens nested instruction accounts', () => {
             name: 'systemProgram',
         }),
         instructionAccountNode({ isSigner: true, isWritable: true, name: 'accountD' }),
+    ]);
+});
+
+test('it prevents duplicate names by prefixing nested accounts with different parent names', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    { name: 'authority', signer: true, writable: false },
+                ],
+                name: 'tokenProgram',
+            },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: true },
+                    { name: 'metadata', signer: false, writable: true },
+                ],
+                name: 'nftProgram',
+            },
+        ],
+        [],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgramMint' }),
+        instructionAccountNode({ isSigner: true, isWritable: false, name: 'tokenProgramAuthority' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMetadata' }),
     ]);
 });
 
