@@ -1,5 +1,17 @@
 # @codama/nodes
 
+## 1.5.0
+
+### Minor Changes
+
+- [#936](https://github.com/codama-idl/codama/pull/936) [`e537ed3`](https://github.com/codama-idl/codama/commit/e537ed3a08e0fc0c57251ac2109f8499ad8e3803) Thanks [@TanmayDhobale](https://github.com/TanmayDhobale)! - Add a new InstructionStatusNode to instructions
+
+### Patch Changes
+
+- Updated dependencies [[`e537ed3`](https://github.com/codama-idl/codama/commit/e537ed3a08e0fc0c57251ac2109f8499ad8e3803)]:
+    - @codama/node-types@1.5.0
+    - @codama/errors@1.5.0
+
 ## 1.4.4
 
 ### Patch Changes
