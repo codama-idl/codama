@@ -1,5 +1,5 @@
 export * from './bytesEncoding';
 export * from './docs';
-export * from './instructionStatus';
+export * from './instructionLifecycle';
 export * from './stringCases';
 export * from './version';
