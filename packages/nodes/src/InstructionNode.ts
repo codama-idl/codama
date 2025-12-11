@@ -78,6 +78,7 @@ export function instructionNode<
         name: camelCase(input.name),
         docs: parseDocs(input.docs),
         optionalAccountStrategy: parseOptionalAccountStrategy(input.optionalAccountStrategy),
+        ...(input.status !== undefined && { status: input.status }),
 
         // Children.
         accounts: (input.accounts ?? []) as TAccounts,

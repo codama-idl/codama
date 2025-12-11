@@ -34,6 +34,7 @@ import {
     instructionLinkNode,
     instructionNode,
     instructionRemainingAccountsNode,
+    instructionStatusNode,
     mapEntryValueNode,
     mapTypeNode,
     mapValueNode,
@@ -136,6 +137,8 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
 
     if (keys.includes('instructionNode')) {
         visitor.visitInstruction = function visitInstruction(node) {
+            const status = node.status ? (visit(this)(node.status) ?? undefined) : undefined;
+            if (status) assertIsNode(status, 'instructionStatusNode');
             return instructionNode({
                 ...node,
                 accounts: node.accounts
@@ -162,6 +165,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                           .map(visit(this))
                           .filter(removeNullAndAssertIsNodeFilter('instructionRemainingAccountsNode'))
                     : undefined,
+                status,
                 subInstructions: node.subInstructions
                     ? node.subInstructions.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('instructionNode'))
                     : undefined,
@@ -203,6 +207,12 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             if (value === null) return null;
             assertIsNode(value, ['numberValueNode', 'accountLinkNode', 'argumentValueNode', 'resolverValueNode']);
             return instructionByteDeltaNode(value, { ...node });
+        };
+    }
+
+    if (keys.includes('instructionStatusNode')) {
+        visitor.visitInstructionStatus = function visitInstructionStatus(node) {
+            return instructionStatusNode(node.lifecycle, node.message);
         };
     }
 

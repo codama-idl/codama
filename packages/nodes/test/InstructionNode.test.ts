@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { instructionNode } from '../src';
+import { instructionNode, instructionStatusNode } from '../src';
 
 test('it returns the right node kind', () => {
     const node = instructionNode({ name: 'foo' });
@@ -10,4 +10,56 @@ test('it returns the right node kind', () => {
 test('it returns a frozen object', () => {
     const node = instructionNode({ name: 'foo' });
     expect(Object.isFrozen(node)).toBe(true);
+});
+
+test('it defaults to no status', () => {
+    const node = instructionNode({ name: 'foo' });
+    expect(node.status).toBeUndefined();
+});
+
+test('it can have a live status', () => {
+    const statusMode = instructionStatusNode('live');
+    const node = instructionNode({ name: 'foo', status: statusMode });
+    expect(node.status).toBe(statusMode);
+    expect(node.status?.lifecycle).toBe('live');
+});
+
+test('it can have a deprecated status with message', () => {
+    const statusMode = instructionStatusNode('deprecated', 'Use the newFoo instruction instead.');
+    const node = instructionNode({ name: 'foo', status: statusMode });
+    expect(node.status).toBe(statusMode);
+    expect(node.status?.lifecycle).toBe('deprecated');
+    expect(node.status?.message).toBe('Use the newFoo instruction instead.');
+});
+
+test('it can have an archived status with message', () => {
+    const statusMode = instructionStatusNode('archived', 'This instruction was removed in v2.0.0.');
+    const node = instructionNode({ name: 'foo', status: statusMode });
+    expect(node.status).toBe(statusMode);
+    expect(node.status?.lifecycle).toBe('archived');
+    expect(node.status?.message).toBe('This instruction was removed in v2.0.0.');
+});
+
+test('it can have a draft status with message', () => {
+    const statusMode = instructionStatusNode('draft', 'This instruction is under development.');
+    const node = instructionNode({ name: 'foo', status: statusMode });
+    expect(node.status).toBe(statusMode);
+    expect(node.status?.lifecycle).toBe('draft');
+    expect(node.status?.message).toBe('This instruction is under development.');
+});
+
+test('it can have a status without a message', () => {
+    const statusMode = instructionStatusNode('deprecated');
+    const node = instructionNode({ name: 'foo', status: statusMode });
+    expect(node.status).toBe(statusMode);
+    expect(node.status?.lifecycle).toBe('deprecated');
+    expect(node.status?.message).toBeUndefined();
+});
+
+test('it can have an empty message', () => {
+    const statusMode = instructionStatusNode('deprecated', '');
+    const node = instructionNode({ name: 'foo', status: statusMode });
+    expect(node.status).toBe(statusMode);
+    expect(node.status?.lifecycle).toBe('deprecated');
+    expect(node.status?.message).toBe('');
 });
