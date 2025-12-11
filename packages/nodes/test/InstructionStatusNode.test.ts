@@ -13,13 +13,13 @@ test('it returns a frozen object', () => {
 });
 
 test('it can have a status with message', () => {
-    const node = instructionStatusNode('deprecated', { message: 'Use newInstruction' });
-    expect(node.status).toBe('deprecated');
+    const node = instructionStatusNode('deprecated', 'Use newInstruction');
+    expect(node.lifecycle).toBe('deprecated');
     expect(node.message).toBe('Use newInstruction');
 });
 
 test('it can have a status without message', () => {
     const node = instructionStatusNode('archived');
-    expect(node.status).toBe('archived');
+    expect(node.lifecycle).toBe('archived');
     expect(node.message).toBeUndefined();
 });

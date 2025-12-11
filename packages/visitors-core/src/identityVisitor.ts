@@ -212,9 +212,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
 
     if (keys.includes('instructionStatusNode')) {
         visitor.visitInstructionStatus = function visitInstructionStatus(node) {
-            return instructionStatusNode(node.status, {
-                ...(node.message !== undefined && { message: node.message }),
-            });
+            return instructionStatusNode(node.lifecycle, node.message);
         };
     }
 

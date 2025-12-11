@@ -21,30 +21,30 @@ test('it can have a live status', () => {
     const statusMode = instructionStatusNode('live');
     const node = instructionNode({ name: 'foo', status: statusMode });
     expect(node.status).toBe(statusMode);
-    expect(node.status?.status).toBe('live');
+    expect(node.status?.lifecycle).toBe('live');
 });
 
 test('it can have a deprecated status with message', () => {
-    const statusMode = instructionStatusNode('deprecated', { message: 'Use the newFoo instruction instead.' });
+    const statusMode = instructionStatusNode('deprecated', 'Use the newFoo instruction instead.');
     const node = instructionNode({ name: 'foo', status: statusMode });
     expect(node.status).toBe(statusMode);
-    expect(node.status?.status).toBe('deprecated');
+    expect(node.status?.lifecycle).toBe('deprecated');
     expect(node.status?.message).toBe('Use the newFoo instruction instead.');
 });
 
 test('it can have an archived status with message', () => {
-    const statusMode = instructionStatusNode('archived', { message: 'This instruction was removed in v2.0.0.' });
+    const statusMode = instructionStatusNode('archived', 'This instruction was removed in v2.0.0.');
     const node = instructionNode({ name: 'foo', status: statusMode });
     expect(node.status).toBe(statusMode);
-    expect(node.status?.status).toBe('archived');
+    expect(node.status?.lifecycle).toBe('archived');
     expect(node.status?.message).toBe('This instruction was removed in v2.0.0.');
 });
 
 test('it can have a draft status with message', () => {
-    const statusMode = instructionStatusNode('draft', { message: 'This instruction is under development.' });
+    const statusMode = instructionStatusNode('draft', 'This instruction is under development.');
     const node = instructionNode({ name: 'foo', status: statusMode });
     expect(node.status).toBe(statusMode);
-    expect(node.status?.status).toBe('draft');
+    expect(node.status?.lifecycle).toBe('draft');
     expect(node.status?.message).toBe('This instruction is under development.');
 });
 
@@ -52,14 +52,14 @@ test('it can have a status without a message', () => {
     const statusMode = instructionStatusNode('deprecated');
     const node = instructionNode({ name: 'foo', status: statusMode });
     expect(node.status).toBe(statusMode);
-    expect(node.status?.status).toBe('deprecated');
+    expect(node.status?.lifecycle).toBe('deprecated');
     expect(node.status?.message).toBeUndefined();
 });
 
 test('it can have an empty message', () => {
-    const statusMode = instructionStatusNode('deprecated', { message: '' });
+    const statusMode = instructionStatusNode('deprecated', '');
     const node = instructionNode({ name: 'foo', status: statusMode });
     expect(node.status).toBe(statusMode);
-    expect(node.status?.status).toBe('deprecated');
+    expect(node.status?.lifecycle).toBe('deprecated');
     expect(node.status?.message).toBe('');
 });

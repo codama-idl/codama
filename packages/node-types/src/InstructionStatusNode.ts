@@ -4,6 +4,6 @@ export interface InstructionStatusNode {
     readonly kind: 'instructionStatusNode';
 
     // Data.
-    readonly status: InstructionStatus;
+    readonly lifecycle: InstructionStatus;
     readonly message?: string;
 }

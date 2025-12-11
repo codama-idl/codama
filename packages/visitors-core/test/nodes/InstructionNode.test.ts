@@ -128,7 +128,7 @@ test('sub instructions', () => {
 test('status mode', () => {
     const nodeWithStatus = instructionNode({
         name: 'deprecatedInstruction',
-        status: instructionStatusNode('deprecated', { message: 'Use newInstruction instead' }),
+        status: instructionStatusNode('deprecated', 'Use newInstruction instead'),
     });
 
     expectMergeVisitorCount(nodeWithStatus, 2);
