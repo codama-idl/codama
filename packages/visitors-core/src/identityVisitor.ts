@@ -9,6 +9,7 @@ import {
     booleanTypeNode,
     conditionalValueNode,
     constantDiscriminatorNode,
+    constantNode,
     constantPdaSeedNode,
     constantValueNode,
     COUNT_NODES,
@@ -103,6 +104,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             return programNode({
                 ...node,
                 accounts: node.accounts.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('accountNode')),
+                constants: node.constants.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('constantNode')),
                 definedTypes: node.definedTypes
                     .map(visit(this))
                     .filter(removeNullAndAssertIsNodeFilter('definedTypeNode')),
@@ -213,6 +215,18 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('instructionStatusNode')) {
         visitor.visitInstructionStatus = function visitInstructionStatus(node) {
             return instructionStatusNode(node.lifecycle, node.message);
+        };
+    }
+
+    if (keys.includes('constantNode')) {
+        visitor.visitConstant = function visitConstant(node) {
+            const type = visit(this)(node.type);
+            if (type === null) return null;
+            assertIsNode(type, TYPE_NODES);
+            const value = visit(this)(node.value);
+            if (value === null) return null;
+            assertIsNode(value, VALUE_NODES);
+            return constantNode(node.name, type, value, node.docs);
         };
     }
 
