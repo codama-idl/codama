@@ -24,6 +24,7 @@ import { IdlV01Seed } from './idl';
 export function pdaSeedNodeFromAnchorV01(
     seed: IdlV01Seed,
     instructionArguments: InstructionArgumentNode[],
+    prefix?: string,
 ): Readonly<{ definition: PdaSeedNode; value?: PdaSeedValueNode }> {
     const kind = seed.kind;
 
@@ -35,9 +36,10 @@ export function pdaSeedNodeFromAnchorV01(
         case 'account': {
             // Ignore nested paths.
             const [accountName] = seed.path.split('.');
+            const prefixedAccountName = prefix ? `${prefix}_${accountName}` : accountName;
             return {
-                definition: variablePdaSeedNode(accountName, publicKeyTypeNode()),
-                value: pdaSeedValueNode(accountName, accountValueNode(accountName)),
+                definition: variablePdaSeedNode(prefixedAccountName, publicKeyTypeNode()),
+                value: pdaSeedValueNode(prefixedAccountName, accountValueNode(prefixedAccountName)),
             };
         }
         case 'arg': {
