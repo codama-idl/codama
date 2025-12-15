@@ -40,7 +40,7 @@ test('it creates account nodes with anchor discriminators', () => {
             name: 'myAccount',
             type: { fields: [], kind: 'struct' },
         },
-        'anchor',
+        true,
     );
 
     expect(node).toEqual(

@@ -197,9 +197,6 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     if (!node.version) {
                         items.push(validationItem('warn', 'Program has no version.', node, stack));
                     }
-                    if (!node.origin) {
-                        items.push(validationItem('info', 'Program has no origin.', node, stack));
-                    }
                     return [...items, ...next(node)];
                 },
 

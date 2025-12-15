@@ -12,18 +12,19 @@ import {
     pdaLinkNode,
     pdaNode,
     programNode,
+    structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { programNodeFromAnchorV00 } from '../../src';
+import { getAnchorInstructionDiscriminatorV00, programNodeFromAnchorV00 } from '../../src';
 
 test('it creates program nodes', () => {
     const node = programNodeFromAnchorV00({
         accounts: [{ name: 'myAccount', seeds: [{ kind: 'programId' }], type: { fields: [], kind: 'struct' } }],
         errors: [{ code: 42, msg: 'my error message', name: 'myError' }],
         instructions: [{ accounts: [], args: [], name: 'myInstruction' }],
-        metadata: { address: '1111', origin: 'shank' },
+        metadata: { address: '1111' },
         name: 'myProgram',
         types: [{ name: 'myType', type: { fields: [], kind: 'struct' } }],
         version: '1.2.3',
@@ -31,7 +32,21 @@ test('it creates program nodes', () => {
 
     expect(node).toEqual(
         programNode({
-            accounts: [accountNode({ name: 'myAccount', pda: pdaLinkNode('myAccount') })],
+            accounts: [
+                accountNode({
+                    data: structTypeNode([
+                        structFieldTypeNode({
+                            defaultValue: bytesValueNode('base16', 'f61c0657fb2d322a'),
+                            defaultValueStrategy: 'omitted',
+                            name: 'discriminator',
+                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
+                        }),
+                    ]),
+                    discriminators: [fieldDiscriminatorNode('discriminator')],
+                    name: 'myAccount',
+                    pda: pdaLinkNode('myAccount'),
+                }),
+            ],
             definedTypes: [definedTypeNode({ name: 'myType', type: structTypeNode([]) })],
             errors: [
                 errorNode({
@@ -45,10 +60,10 @@ test('it creates program nodes', () => {
                 instructionNode({
                     arguments: [
                         instructionArgumentNode({
-                            defaultValue: bytesValueNode('base16', (0).toString(16)),
+                            defaultValue: getAnchorInstructionDiscriminatorV00('myInstruction'),
                             defaultValueStrategy: 'omitted',
                             name: 'discriminator',
-                            type: fixedSizeTypeNode(bytesTypeNode(), 1),
+                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
                         }),
                     ],
                     discriminators: [fieldDiscriminatorNode('discriminator')],
@@ -56,7 +71,6 @@ test('it creates program nodes', () => {
                 }),
             ],
             name: 'myProgram',
-            origin: 'shank',
             pdas: [pdaNode({ name: 'myAccount', seeds: [constantPdaSeedNodeFromProgramId()] })],
             publicKey: '1111',
             version: '1.2.3',

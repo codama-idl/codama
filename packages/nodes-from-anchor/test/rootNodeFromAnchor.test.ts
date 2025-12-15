@@ -15,7 +15,6 @@ test('it creates root nodes from IDL version 0.0', () => {
         rootNode(
             programNode({
                 name: 'myProgram',
-                origin: 'anchor',
                 publicKey: '1111',
                 version: '1.2.3',
             }),

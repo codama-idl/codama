@@ -15,7 +15,6 @@ test('it creates root nodes', () => {
         rootNode(
             programNode({
                 name: 'myProgram',
-                origin: 'anchor',
                 publicKey: '1111',
                 version: '1.2.3',
             }),

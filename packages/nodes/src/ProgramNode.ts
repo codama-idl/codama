@@ -41,7 +41,6 @@ export function programNode<
         name: camelCase(input.name),
         publicKey: input.publicKey,
         version: input.version ?? '0.0.0',
-        ...(input.origin !== undefined && { origin: input.origin }),
         docs: parseDocs(input.docs),
 
         // Children.

@@ -18,7 +18,6 @@ export interface ProgramNode<
     readonly name: CamelCaseString;
     readonly publicKey: string;
     readonly version: ProgramVersion;
-    readonly origin?: 'anchor' | 'shank';
     readonly docs?: Docs;
 
     // Children.

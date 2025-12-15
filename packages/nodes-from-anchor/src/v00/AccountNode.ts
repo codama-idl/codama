@@ -17,10 +17,7 @@ import { getAnchorAccountDiscriminatorV00 } from '../discriminators';
 import { IdlV00AccountDef } from './idl';
 import { structTypeNodeFromAnchorV00 } from './typeNodes';
 
-export function accountNodeFromAnchorV00(
-    idl: IdlV00AccountDef,
-    origin?: 'anchor' | 'shank',
-): AccountNode<StructTypeNode> {
+export function accountNodeFromAnchorV00(idl: IdlV00AccountDef, addDiscriminator = false): AccountNode<StructTypeNode> {
     const idlName = idl.name ?? '';
     const name = camelCase(idlName);
     const idlStruct = idl.type ?? { fields: [], kind: 'struct' };
@@ -30,7 +27,7 @@ export function accountNodeFromAnchorV00(
 
     // Account discriminator.
     let discriminators: DiscriminatorNode[] | undefined;
-    if (origin === 'anchor') {
+    if (addDiscriminator) {
         const discriminator = structFieldTypeNode({
             defaultValue: getAnchorAccountDiscriminatorV00(idlName),
             defaultValueStrategy: 'omitted',

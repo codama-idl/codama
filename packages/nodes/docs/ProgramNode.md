@@ -8,14 +8,13 @@ This node represents an entire program deployed on-chain. It defines all element
 
 ### Data
 
-| Attribute   | Type                    | Description                                                                  |
-| ----------- | ----------------------- | ---------------------------------------------------------------------------- |
-| `kind`      | `"programNode"`         | The node discriminator.                                                      |
-| `name`      | `CamelCaseString`       | The name of the program.                                                     |
-| `publicKey` | `string`                | The 32-bytes address of the program base58 encoded.                          |
-| `version`   | `\d.\d.\d`              | The semantic version of the program being defined.                           |
-| `docs`      | `string[]`              | Markdown documentation for the program.                                      |
-| `origin`    | `"anchor"` \| `"shank"` | (Optional) An optional attribute tells us how this program node was created. |
+| Attribute   | Type              | Description                                         |
+| ----------- | ----------------- | --------------------------------------------------- |
+| `kind`      | `"programNode"`   | The node discriminator.                             |
+| `name`      | `CamelCaseString` | The name of the program.                            |
+| `publicKey` | `string`          | The 32-bytes address of the program base58 encoded. |
+| `version`   | `\d.\d.\d`        | The semantic version of the program being defined.  |
+| `docs`      | `string[]`        | Markdown documentation for the program.             |
 
 ### Children
 

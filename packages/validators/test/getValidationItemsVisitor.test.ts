@@ -12,7 +12,6 @@ test('it validates program nodes', () => {
         errors: [],
         instructions: [],
         name: '',
-        origin: undefined,
         publicKey: '',
         // @ts-expect-error Empty string does not match ProgramVersion.
         version: '',
@@ -26,7 +25,6 @@ test('it validates program nodes', () => {
         validationItem('error', 'Program has no name.', node, []),
         validationItem('error', 'Program has no public key.', node, []),
         validationItem('warn', 'Program has no version.', node, []),
-        validationItem('info', 'Program has no origin.', node, []),
     ]);
 });
 

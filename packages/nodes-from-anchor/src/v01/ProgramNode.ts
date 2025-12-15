@@ -23,7 +23,6 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
         errors: errors.map(errorNodeFromAnchorV01),
         instructions: instructions.map(instruction => instructionNodeFromAnchorV01(instruction, generics)),
         name: idl.metadata.name,
-        origin: 'anchor',
         publicKey: idl.address,
         version: idl.metadata.version as ProgramVersion,
     });

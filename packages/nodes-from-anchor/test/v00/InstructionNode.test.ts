@@ -13,14 +13,11 @@ import { expect, test } from 'vitest';
 import { instructionNodeFromAnchorV00 } from '../../src';
 
 test('it creates instruction nodes', () => {
-    const node = instructionNodeFromAnchorV00(
-        {
-            accounts: [{ isMut: true, isSigner: false, name: 'mint' }],
-            args: [{ name: 'amount', type: 'u8' }],
-            name: 'mintTokens',
-        },
-        0,
-    );
+    const node = instructionNodeFromAnchorV00({
+        accounts: [{ isMut: true, isSigner: false, name: 'mint' }],
+        args: [{ name: 'amount', type: 'u8' }],
+        name: 'mintTokens',
+    });
 
     expect(node).toEqual(
         instructionNode({
@@ -38,8 +35,7 @@ test('it creates instruction nodes with anchor discriminators', () => {
             args: [],
             name: 'myInstruction',
         },
-        0,
-        'anchor',
+        true,
     );
 
     expect(node).toEqual(
