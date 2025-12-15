@@ -1,5 +1,11 @@
 # @codama/nodes-from-anchor
 
+## 1.3.8
+
+### Patch Changes
+
+- [#953](https://github.com/codama-idl/codama/pull/953) [`5bad9f1`](https://github.com/codama-idl/codama/commit/5bad9f193afffbc079d650dac67db68fbdde4e51) Thanks [@AvhiMaz](https://github.com/AvhiMaz)! - Prevent duplicate account names in nested groups by applying conditional prefixing
+
 ## 1.3.7
 
 ### Patch Changes
