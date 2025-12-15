@@ -53,7 +53,7 @@
         "@solana/instructions": "^5.1.0"
     },
     "devDependencies": {
-        "@solana/codecs": "^5.0.0"
+        "@solana/codecs": "^5.1.0"
     },
     "license": "MIT",
     "repository": {
