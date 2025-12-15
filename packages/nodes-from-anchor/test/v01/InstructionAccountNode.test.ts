@@ -14,7 +14,11 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { instructionAccountNodeFromAnchorV01, instructionAccountNodesFromAnchorV01 } from '../../src';
+import {
+    IdlV01InstructionAccountItem,
+    instructionAccountNodeFromAnchorV01,
+    instructionAccountNodesFromAnchorV01,
+} from '../../src';
 
 test('it creates instruction account nodes', () => {
     const node = instructionAccountNodeFromAnchorV01(
@@ -39,7 +43,7 @@ test('it creates instruction account nodes', () => {
     );
 });
 
-test('it flattens nested instruction accounts', () => {
+test('it flattens nested instruction accounts without prefixing when no duplicates exist', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
         [
             { name: 'accountA', signer: false, writable: false },
@@ -112,6 +116,178 @@ test('it flattens nested instruction accounts', () => {
             name: 'systemProgram',
         }),
         instructionAccountNode({ isSigner: true, isWritable: true, name: 'accountD' }),
+    ]);
+});
+
+test('it prevents duplicate names by prefixing nested accounts with different parent names', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    { name: 'authority', signer: true, writable: false },
+                ],
+                name: 'tokenProgram',
+            },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: true },
+                    { name: 'metadata', signer: false, writable: true },
+                ],
+                name: 'nftProgram',
+            },
+        ],
+        [],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgramMint' }),
+        instructionAccountNode({ isSigner: true, isWritable: false, name: 'tokenProgramAuthority' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMetadata' }),
+    ]);
+});
+
+test('it handles nested accounts with more complex duplicate scenarios', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            { name: 'authority', signer: true, writable: false },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    { name: 'vault', signer: false, writable: true },
+                    { name: 'authority', signer: false, writable: false },
+                ],
+                name: 'sourceProgram',
+            },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    { name: 'escrow', signer: false, writable: true },
+                    { name: 'metadata', signer: false, writable: true },
+                ],
+                name: 'destinationProgram',
+            },
+        ],
+        [],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({ isSigner: true, isWritable: false, name: 'authority' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'sourceProgramVault' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramAuthority' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'destinationProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramEscrow' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramMetadata' }),
+    ]);
+});
+
+test('it handles depth-2 nested accounts with naming conflicts', () => {
+    const items = [
+        { name: 'authority', signer: true, writable: false },
+        {
+            accounts: [
+                { name: 'mint', signer: false, writable: false },
+                { name: 'vault', signer: false, writable: true },
+                { name: 'authority', signer: false, writable: false },
+                {
+                    accounts: [
+                        { name: 'authority', signer: false, writable: true },
+                        { name: 'mint', signer: false, writable: false },
+                    ],
+                    name: 'deepProgram',
+                },
+            ],
+            name: 'sourceProgram',
+        },
+        {
+            accounts: [
+                { name: 'mint', signer: false, writable: false },
+                { name: 'escrow', signer: false, writable: true },
+                { name: 'metadata', signer: false, writable: true },
+            ],
+            name: 'destinationProgram',
+        },
+    ] as unknown as IdlV01InstructionAccountItem[];
+
+    const nodes = instructionAccountNodesFromAnchorV01(items, []);
+
+    expect(nodes).toEqual([
+        instructionAccountNode({ isSigner: true, isWritable: false, name: 'authority' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'sourceProgramVault' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramAuthority' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'sourceProgramDeepProgramAuthority' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramDeepProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'destinationProgramMint' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramEscrow' }),
+        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramMetadata' }),
+    ]);
+});
+
+test('it correctly prefixes PDA seed account references in nested groups', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    {
+                        name: 'vault',
+                        pda: {
+                            seeds: [{ kind: 'account', path: 'mint' }],
+                        },
+                        signer: false,
+                        writable: true,
+                    },
+                ],
+                name: 'tokenProgram',
+            },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    {
+                        name: 'escrow',
+                        pda: {
+                            seeds: [{ kind: 'account', path: 'mint' }],
+                        },
+                        signer: false,
+                        writable: true,
+                    },
+                ],
+                name: 'nftProgram',
+            },
+        ],
+        [],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgramMint' }),
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'tokenProgramVault',
+                    seeds: [variablePdaSeedNode('tokenProgramMint', publicKeyTypeNode())],
+                }),
+                [pdaSeedValueNode('tokenProgramMint', accountValueNode('tokenProgramMint'))],
+            ),
+            isSigner: false,
+            isWritable: true,
+            name: 'tokenProgramVault',
+        }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'nftProgramMint' }),
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'nftProgramEscrow',
+                    seeds: [variablePdaSeedNode('nftProgramMint', publicKeyTypeNode())],
+                }),
+                [pdaSeedValueNode('nftProgramMint', accountValueNode('nftProgramMint'))],
+            ),
+            isSigner: false,
+            isWritable: true,
+            name: 'nftProgramEscrow',
+        }),
     ]);
 });
 

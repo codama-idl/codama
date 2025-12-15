@@ -1,6 +1,7 @@
 import {
     AccountValueNode,
     ArgumentValueNode,
+    camelCase,
     InstructionAccountNode,
     instructionAccountNode,
     InstructionArgumentNode,
@@ -17,26 +18,57 @@ import {
 import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
 import { pdaSeedNodeFromAnchorV01 } from './PdaSeedNode';
 
+function hasDuplicateAccountNames(idl: IdlV01InstructionAccountItem[]): boolean {
+    const seenNames = new Set<string>();
+
+    function checkDuplicates(items: IdlV01InstructionAccountItem[]): boolean {
+        for (const item of items) {
+            if ('accounts' in item) {
+                if (checkDuplicates(item.accounts)) {
+                    return true;
+                }
+            } else {
+                const name = camelCase(item.name ?? '');
+                if (seenNames.has(name)) {
+                    return true;
+                }
+                seenNames.add(name);
+            }
+        }
+        return false;
+    }
+
+    return checkDuplicates(idl);
+}
+
 export function instructionAccountNodesFromAnchorV01(
     idl: IdlV01InstructionAccountItem[],
     instructionArguments: InstructionArgumentNode[],
+    prefix?: string,
 ): InstructionAccountNode[] {
+    const shouldPrefix = prefix !== undefined || hasDuplicateAccountNames(idl);
+
     return idl.flatMap(account =>
         'accounts' in account
-            ? instructionAccountNodesFromAnchorV01(account.accounts, instructionArguments)
-            : [instructionAccountNodeFromAnchorV01(account, instructionArguments)],
+            ? instructionAccountNodesFromAnchorV01(
+                  account.accounts,
+                  instructionArguments,
+                  shouldPrefix ? (prefix ? `${prefix}_${account.name}` : account.name) : undefined,
+              )
+            : [instructionAccountNodeFromAnchorV01(account, instructionArguments, shouldPrefix ? prefix : undefined)],
     );
 }
 
 export function instructionAccountNodeFromAnchorV01(
     idl: IdlV01InstructionAccount,
     instructionArguments: InstructionArgumentNode[],
+    prefix?: string,
 ): InstructionAccountNode {
     const isOptional = idl.optional ?? false;
     const docs = idl.docs ?? [];
     const isSigner = idl.signer ?? false;
     const isWritable = idl.writable ?? false;
-    const name = idl.name ?? '';
+    const name = prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? '');
     let defaultValue: PdaValueNode | PublicKeyValueNode | undefined;
 
     if (idl.address) {
@@ -48,7 +80,7 @@ export function instructionAccountNodeFromAnchorV01(
         if (!seedsWithNestedPaths) {
             const [seedDefinitions, seedValues] = idl.pda.seeds.reduce(
                 ([seeds, lookups], seed: IdlV01Seed) => {
-                    const { definition, value } = pdaSeedNodeFromAnchorV01(seed, instructionArguments);
+                    const { definition, value } = pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix);
                     return [[...seeds, definition], value ? [...lookups, value] : lookups];
                 },
                 <[PdaSeedNode[], PdaSeedValueNode[]]>[[], []],
@@ -57,7 +89,7 @@ export function instructionAccountNodeFromAnchorV01(
             let programId: string | undefined;
             let programIdValue: AccountValueNode | ArgumentValueNode | undefined;
             if (idl.pda.program !== undefined) {
-                const { definition, value } = pdaSeedNodeFromAnchorV01(idl.pda.program, instructionArguments);
+                const { definition, value } = pdaSeedNodeFromAnchorV01(idl.pda.program, instructionArguments, prefix);
                 if (
                     isNode(definition, 'constantPdaSeedNode') &&
                     isNode(definition.value, 'bytesValueNode') &&
