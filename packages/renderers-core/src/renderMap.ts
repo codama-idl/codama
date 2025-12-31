@@ -3,8 +3,8 @@ import { NodeKind } from '@codama/nodes';
 import { mapVisitor, Visitor } from '@codama/visitors-core';
 
 import { BaseFragment, mapFragmentContent, mapFragmentContentAsync } from './fragment';
-import { writeFile } from './fs';
-import { joinPath, Path } from './path';
+import { writeFile } from '@codama/runtime-utils';
+import { joinPath, Path } from '@codama/runtime-utils';
 
 export type RenderMap<TFragment extends BaseFragment> = ReadonlyMap<Path, TFragment>;
 
