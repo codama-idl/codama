@@ -48,7 +48,7 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@codama/fs-path": "workspace:*"
+        "@codama/runtime-utils": "workspace:*"
     },
     "license": "MIT",
     "repository": {

@@ -183,6 +183,21 @@ importers:
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
+      '@codama/runtime-utils':
+        specifier: workspace:*
+        version: link:../runtime-utils
+      '@codama/visitors-core':
+        specifier: workspace:*
+        version: link:../visitors-core
+
+  packages/runtime-utils:
+    dependencies:
+      '@codama/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@codama/nodes':
+        specifier: workspace:*
+        version: link:../nodes
       '@codama/visitors-core':
         specifier: workspace:*
         version: link:../visitors-core
