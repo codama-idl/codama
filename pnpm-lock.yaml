@@ -109,8 +109,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/instructions':
-        specifier: ^5.1.0
-        version: 5.1.0(typescript@5.9.3)
+        specifier: ^5.3.0
+        version: 5.3.0(typescript@5.9.3)
     devDependencies:
       '@solana/codecs':
         specifier: ^5.3.0
@@ -1218,12 +1218,6 @@ packages:
   '@sinonjs/fake-timers@11.3.1':
     resolution: {integrity: sha512-EVJO7nW5M/F5Tur0Rf2z/QoMo+1Ia963RiMtapiQrEWvY0iBUvADo8Beegwjpnle5BHkyHuoxSTW3jF43H1XRA==}
 
-  '@solana/codecs-core@5.1.0':
-    resolution: {integrity: sha512-vDwi03mxWeWCS5Il6BCdNdifYdOoHVz97YOmbWGIt45b77Ivu5NUYeSD2+ccl6fSw8eYQ6QaqqKXMjbSfsXv4g==}
-    engines: {node: '>=20.18.0'}
-    peerDependencies:
-      typescript: '>=5.3.3'
-
   '@solana/codecs-core@5.3.0':
     resolution: {integrity: sha512-wqpiKtej8GePdraHk3YnoJY1N/Hutn4w0CD/45hNKiXPG5F3mlasaBWq8m86K7WUdjQVAsGTgiSgoZo64Aw17w==}
     engines: {node: '>=20.18.0'}
@@ -1258,13 +1252,6 @@ packages:
     peerDependencies:
       typescript: '>=5.9.3'
 
-  '@solana/errors@5.1.0':
-    resolution: {integrity: sha512-JlTyekErWa6Fdcwu1Hrh+jZxjM4YxyorGCFDRVZlmHZFkp5N00DWKcYnSGZrTF8E6ZZEP9pfS2XwM8y7p7HPww==}
-    engines: {node: '>=20.18.0'}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=5.3.3'
-
   '@solana/errors@5.3.0':
     resolution: {integrity: sha512-oeTwCQG4JBNI6dd1XxA04sX18HPiiWts10FokXrdjaMH2sCJRxecpUTzCvCsPlb8FAVswRu1bi4HuN9uVHTBNQ==}
     engines: {node: '>=20.18.0'}
@@ -1288,11 +1275,11 @@ packages:
       typescript: ^5.6
       typescript-eslint: ^8.11.0
 
-  '@solana/instructions@5.1.0':
-    resolution: {integrity: sha512-fkwpUwwqk5K14T/kZDnCrfeR0kww49HBx+BK8xdSeJx+bt4QTwAHa9YeOkGhGrHEFVEJEUf8FKoxxTzZzJZtKQ==}
+  '@solana/instructions@5.3.0':
+    resolution: {integrity: sha512-jYA+fdi9h3wF/CQLoa6LooXAsvBriyc51ySXzXDDC/0aIzT9hUo9gMvqIxmTRQSTmy9O7ay2tfPYeAopaFfubg==}
     engines: {node: '>=20.18.0'}
     peerDependencies:
-      typescript: '>=5.3.3'
+      typescript: '>=5.9.3'
 
   '@solana/options@5.3.0':
     resolution: {integrity: sha512-vByKXs7jgEvyHGkj30sskxHhfXAzVZC/vDoW8EyJW+95VeydGJXoxgfzLgnDlEeFt66d8i/+wxiD/8napMdgZg==}
@@ -4281,11 +4268,6 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@solana/codecs-core@5.1.0(typescript@5.9.3)':
-    dependencies:
-      '@solana/errors': 5.1.0(typescript@5.9.3)
-      typescript: 5.9.3
-
   '@solana/codecs-core@5.3.0(typescript@5.9.3)':
     dependencies:
       '@solana/errors': 5.3.0(typescript@5.9.3)
@@ -4324,12 +4306,6 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/errors@5.1.0(typescript@5.9.3)':
-    dependencies:
-      chalk: 5.6.2
-      commander: 14.0.2
-      typescript: 5.9.3
-
   '@solana/errors@5.3.0(typescript@5.9.3)':
     dependencies:
       chalk: 5.6.2
@@ -4351,10 +4327,10 @@ snapshots:
       typescript: 5.9.3
       typescript-eslint: 8.43.0(eslint@9.39.2)(typescript@5.9.3)
 
-  '@solana/instructions@5.1.0(typescript@5.9.3)':
+  '@solana/instructions@5.3.0(typescript@5.9.3)':
     dependencies:
-      '@solana/codecs-core': 5.1.0(typescript@5.9.3)
-      '@solana/errors': 5.1.0(typescript@5.9.3)
+      '@solana/codecs-core': 5.3.0(typescript@5.9.3)
+      '@solana/errors': 5.3.0(typescript@5.9.3)
       typescript: 5.9.3
 
   '@solana/options@5.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)':
