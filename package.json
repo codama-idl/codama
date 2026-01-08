@@ -17,7 +17,7 @@
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",
         "eslint": "^9.39.2",
-        "happy-dom": "^20.0.11",
+        "happy-dom": "^20.1.0",
         "prettier": "^3.7.4",
         "rimraf": "6.1.2",
         "tsup": "^8.5.1",
