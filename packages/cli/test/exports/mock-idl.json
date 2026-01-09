@@ -9,7 +9,8 @@
         "instructions": [],
         "definedTypes": [],
         "errors": [],
-        "pdas": []
+        "pdas": [],
+        "constants": []
     },
     "additionalPrograms": []
 }

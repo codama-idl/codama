@@ -1,4 +1,5 @@
 import type { AccountNode } from './AccountNode';
+import type { ConstantNode } from './ConstantNode';
 import type { RegisteredContextualValueNode } from './contextualValueNodes/ContextualValueNode';
 import type { RegisteredCountNode } from './countNodes/CountNode';
 import type { DefinedTypeNode } from './DefinedTypeNode';
@@ -22,6 +23,7 @@ import type { RegisteredValueNode } from './valueNodes/ValueNode';
 export type NodeKind = Node['kind'];
 export type Node =
     | AccountNode
+    | ConstantNode
     | DefinedTypeNode
     | ErrorNode
     | InstructionAccountNode

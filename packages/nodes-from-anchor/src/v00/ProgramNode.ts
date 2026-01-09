@@ -1,6 +1,7 @@
 import { ProgramNode, programNode, ProgramVersion } from '@codama/nodes';
 
 import { accountNodeFromAnchorV00 } from './AccountNode';
+import { constantNodeFromAnchorV00 } from './ConstantNode';
 import { definedTypeNodeFromAnchorV00 } from './DefinedTypeNode';
 import { errorNodeFromAnchorV00 } from './ErrorNode';
 import { IdlV00 } from './idl';
@@ -16,6 +17,7 @@ export function programNodeFromAnchorV00(idl: IdlV00): ProgramNode {
     );
     return programNode({
         accounts,
+        constants: (idl?.constants ?? []).map(constantNodeFromAnchorV00),
         definedTypes: (idl?.types ?? []).map(definedTypeNodeFromAnchorV00),
         errors: (idl?.errors ?? []).map(errorNodeFromAnchorV00),
         instructions,
