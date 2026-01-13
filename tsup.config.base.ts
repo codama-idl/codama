@@ -75,5 +75,6 @@ export function getCliBuildConfig(): TsupConfig {
         outExtension() {
             return { js: `.cjs` };
         },
+        treeshake: false,
     };
 }
