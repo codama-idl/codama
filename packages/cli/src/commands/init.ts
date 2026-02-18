@@ -71,7 +71,6 @@ function getOutputPath(explicitOutput: string | undefined, options: Pick<InitOpt
 type PromptResult = {
     idlPath: string;
     jsPath?: string;
-    rustCrate?: string;
     rustPath?: string;
     scripts: string[];
 };
@@ -117,19 +116,13 @@ async function getPromptResult(
             },
             {
                 initial: defaults.jsPath,
-                message: '[js] Where should the JavaScript code be generated?',
+                message: '[js] Where is the JavaScript client package located?',
                 name: 'jsPath',
                 type: hasScript('js'),
             },
             {
-                initial: defaults.rustCrate,
+                initial: defaults.rustPath,
                 message: '[rust] Where is the Rust client crate located?',
-                name: 'rustCrate',
-                type: hasScript('rust'),
-            },
-            {
-                initial: (prev: string) => `${prev}/src/generated`,
-                message: '[rust] Where should the Rust code be generated?',
                 name: 'rustPath',
                 type: hasScript('rust'),
             },
@@ -141,9 +134,8 @@ async function getPromptResult(
 function getDefaultPromptResult(): PromptResult {
     return {
         idlPath: 'program/idl.json',
-        jsPath: 'clients/js/src/generated',
-        rustCrate: 'clients/rust',
-        rustPath: 'clients/rust/src/generated',
+        jsPath: 'clients/js',
+        rustPath: 'clients/rust',
         scripts: ['js', 'rust'],
     };
 }
@@ -185,7 +177,7 @@ function getConfigFromPromptResult(result: PromptResult): Config {
     if (result.scripts.includes('rust')) {
         scripts.rust = {
             from: '@codama/renderers-rust',
-            args: [result.rustPath, { crateFolder: result.rustCrate, formatCode: true }],
+            args: [result.rustPath, { formatCode: true }],
         };
     }
     return { idl: result.idlPath, before: [], scripts };
