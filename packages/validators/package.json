@@ -1,6 +1,6 @@
 {
     "name": "@codama/validators",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "description": "Validator visitors for the Codama framework",
     "exports": {
         "types": "./dist/types/index.d.ts",
