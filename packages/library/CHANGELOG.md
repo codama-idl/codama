@@ -1,5 +1,16 @@
 # codama
 
+## 1.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`af76a71`](https://github.com/codama-idl/codama/commit/af76a7110d982f7888eeb993c39230dc28d6714c)]:
+    - @codama/cli@1.5.0
+    - @codama/errors@1.5.1
+    - @codama/nodes@1.5.1
+    - @codama/validators@1.5.1
+    - @codama/visitors@1.5.1
+
 ## 1.5.0
 
 ### Patch Changes
