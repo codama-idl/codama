@@ -1,5 +1,6 @@
 import type {
     AccountNode,
+    ConstantNode,
     DefinedTypeNode,
     ErrorNode,
     InstructionNode,
@@ -16,8 +17,9 @@ export type ProgramNodeInput<
     TInstructions extends InstructionNode[] = InstructionNode[],
     TDefinedTypes extends DefinedTypeNode[] = DefinedTypeNode[],
     TErrors extends ErrorNode[] = ErrorNode[],
+    TConstants extends ConstantNode[] = ConstantNode[],
 > = Omit<
-    Partial<ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors>>,
+    Partial<ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TConstants>>,
     'docs' | 'kind' | 'name' | 'publicKey'
 > & {
     readonly docs?: DocsInput;
@@ -31,9 +33,10 @@ export function programNode<
     const TInstructions extends InstructionNode[] = [],
     const TDefinedTypes extends DefinedTypeNode[] = [],
     const TErrors extends ErrorNode[] = [],
+    const TConstants extends ConstantNode[] = [],
 >(
-    input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors>,
-): ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors> {
+    input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TConstants>,
+): ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TConstants> {
     return Object.freeze({
         kind: 'programNode',
 
@@ -50,6 +53,7 @@ export function programNode<
         definedTypes: (input.definedTypes ?? []) as TDefinedTypes,
         pdas: (input.pdas ?? []) as TPdas,
         errors: (input.errors ?? []) as TErrors,
+        constants: (input.constants ?? []) as TConstants,
     });
 }
 
@@ -77,4 +81,8 @@ export function getAllInstructions(node: ProgramNode | ProgramNode[] | RootNode)
 
 export function getAllErrors(node: ProgramNode | ProgramNode[] | RootNode): ErrorNode[] {
     return getAllPrograms(node).flatMap(program => program.errors);
+}
+
+export function getAllConstants(node: ProgramNode | ProgramNode[] | RootNode): ConstantNode[] {
+    return getAllPrograms(node).flatMap(program => program.constants);
 }

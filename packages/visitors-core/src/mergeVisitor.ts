@@ -29,6 +29,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...node.instructions.flatMap(visit(this)),
                 ...node.definedTypes.flatMap(visit(this)),
                 ...node.errors.flatMap(visit(this)),
+                ...node.constants.flatMap(visit(this)),
             ]);
         };
     }
@@ -94,6 +95,12 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('instructionStatusNode')) {
         visitor.visitInstructionStatus = function visitInstructionStatus(node) {
             return merge(node, []);
+        };
+    }
+
+    if (keys.includes('constantNode')) {
+        visitor.visitConstant = function visitConstant(node) {
+            return merge(node, [...visit(this)(node.type), ...visit(this)(node.value)]);
         };
     }
 

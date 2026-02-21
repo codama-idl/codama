@@ -1,4 +1,5 @@
 export * from './AccountNode';
+export * from './ConstantNode';
 export * from './DefinedTypeNode';
 export * from './ErrorNode';
 export * from './InstructionAccountNode';
