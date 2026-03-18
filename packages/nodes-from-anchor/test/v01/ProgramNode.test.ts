@@ -18,6 +18,7 @@ import {
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
+    pdaLinkNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
@@ -104,20 +105,10 @@ test('it creates program nodes', () => {
                 instructionNode({
                     accounts: [
                         instructionAccountNode({
-                            defaultValue: pdaValueNode(
-                                pdaNode({
-                                    name: 'authority',
-                                    seeds: [
-                                        constantPdaSeedNodeFromBytes('base58', 'F9bS'),
-                                        variablePdaSeedNode('owner', publicKeyTypeNode()),
-                                        variablePdaSeedNode('amount', numberTypeNode('u8')),
-                                    ],
-                                }),
-                                [
-                                    pdaSeedValueNode('owner', accountValueNode('owner')),
-                                    pdaSeedValueNode('amount', argumentValueNode('amount')),
-                                ],
-                            ),
+                            defaultValue: pdaValueNode(pdaLinkNode('authority'), [
+                                pdaSeedValueNode('owner', accountValueNode('owner')),
+                                pdaSeedValueNode('amount', argumentValueNode('amount')),
+                            ]),
                             isSigner: false,
                             isWritable: false,
                             name: 'authority',
@@ -148,11 +139,49 @@ test('it creates program nodes', () => {
             ],
             name: 'myProgram',
             origin: 'anchor',
-            pdas: [],
+            pdas: [
+                pdaNode({
+                    name: 'authority',
+                    seeds: [
+                        constantPdaSeedNodeFromBytes('base58', 'F9bS'),
+                        variablePdaSeedNode('owner', publicKeyTypeNode()),
+                        variablePdaSeedNode('amount', numberTypeNode('u8')),
+                    ],
+                }),
+            ],
             publicKey: '1111',
             version: '1.2.3',
         }),
     );
+});
+
+test('it preserves inline pdaNodes when extractPdas is false', () => {
+    const node = programNodeFromAnchorV01(
+        {
+            address: '1111',
+            instructions: [
+                {
+                    accounts: [
+                        {
+                            name: 'authority',
+                            pda: { seeds: [{ kind: 'const', value: [42, 31, 29] }] },
+                        },
+                    ],
+                    args: [],
+                    discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+                    name: 'my_instruction',
+                },
+            ],
+            metadata: { name: 'my_program', spec: '0.1.0', version: '1.2.3' },
+        },
+        { extractPdas: false },
+    );
+
+    expect(node.pdas).toEqual([]);
+    const defaultValue = node.instructions[0].accounts[0].defaultValue;
+    expect(defaultValue).toBeDefined();
+    expect(defaultValue!.kind).toBe('pdaValueNode');
+    expect('pda' in defaultValue! && defaultValue.pda.kind).toBe('pdaNode');
 });
 
 test('it unwraps and removes generic types', () => {

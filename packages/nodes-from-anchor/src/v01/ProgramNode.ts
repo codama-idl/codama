@@ -3,11 +3,17 @@ import { ProgramNode, programNode, ProgramVersion } from '@codama/nodes';
 import { accountNodeFromAnchorV01 } from './AccountNode';
 import { definedTypeNodeFromAnchorV01 } from './DefinedTypeNode';
 import { errorNodeFromAnchorV01 } from './ErrorNode';
+import { extractPdasFromProgram } from './extractPdas';
 import { IdlV01 } from './idl';
 import { instructionNodeFromAnchorV01 } from './InstructionNode';
 import { extractGenerics } from './unwrapGenerics';
 
-export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
+export type ProgramNodeFromAnchorV01Options = {
+    extractPdas?: boolean;
+};
+
+export function programNodeFromAnchorV01(idl: IdlV01, options: ProgramNodeFromAnchorV01Options = {}): ProgramNode {
+    const { extractPdas = true } = options;
     const [types, generics] = extractGenerics(idl.types ?? []);
     const accounts = idl.accounts ?? [];
     const instructions = idl.instructions ?? [];
@@ -17,7 +23,7 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
     const definedTypes = filteredTypes.map(type => definedTypeNodeFromAnchorV01(type, generics));
     const accountNodes = accounts.map(account => accountNodeFromAnchorV01(account, types, generics));
 
-    return programNode({
+    const program = programNode({
         accounts: accountNodes,
         definedTypes,
         errors: errors.map(errorNodeFromAnchorV01),
@@ -27,4 +33,6 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
         publicKey: idl.address,
         version: idl.metadata.version as ProgramVersion,
     });
+
+    return extractPdas ? extractPdasFromProgram(program) : program;
 }
