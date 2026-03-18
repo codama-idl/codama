@@ -1,4 +1,5 @@
 import {
+    assertIsNode,
     camelCase,
     type CamelCaseString,
     instructionAccountNode,
@@ -11,14 +12,29 @@ import {
     type ProgramNode,
     programNode,
 } from '@codama/nodes';
+import { bottomUpTransformerVisitor, getUniqueHashStringVisitor, visit, type Visitor } from '@codama/visitors';
 
 const ATA_PROGRAM_ID = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 
-function pdaFingerprint(pda: PdaNode): string {
-    return JSON.stringify({ programId: pda.programId, seeds: pda.seeds });
+function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): string {
+    const seedHashes = pda.seeds.map(seed => visit(seed, hashVisitor));
+    return JSON.stringify({ programId: pda.programId, seeds: seedHashes });
+}
+
+export function extractPdasVisitor() {
+    return bottomUpTransformerVisitor([
+        {
+            select: '[programNode]',
+            transform: node => {
+                assertIsNode(node, 'programNode');
+                return extractPdasFromProgram(node);
+            },
+        },
+    ]);
 }
 
 export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
+    const hashVisitor = getUniqueHashStringVisitor();
     const pdaMap = new Map<string, { name: CamelCaseString; pdaNode: PdaNode }>();
     const nameToFingerprint = new Map<CamelCaseString, string>();
 
@@ -36,7 +52,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
             const pda = account.defaultValue.pda;
             if (pda.programId === ATA_PROGRAM_ID) continue;
 
-            const fingerprint = pdaFingerprint(pda);
+            const fingerprint = pdaFingerprint(pda, hashVisitor);
             if (pdaMap.has(fingerprint)) continue;
 
             let resolvedName = pda.name;
@@ -71,7 +87,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
 
             if (account.defaultValue.pda.programId === ATA_PROGRAM_ID) return account;
 
-            const entry = pdaMap.get(pdaFingerprint(account.defaultValue.pda));
+            const entry = pdaMap.get(pdaFingerprint(account.defaultValue.pda, hashVisitor));
             if (!entry) return account;
 
             const defaultValue = { ...account.defaultValue, pda: pdaLinkNode(entry.name) };
