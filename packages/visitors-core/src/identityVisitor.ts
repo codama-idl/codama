@@ -22,6 +22,7 @@ import {
     enumTupleVariantTypeNode,
     enumTypeNode,
     enumValueNode,
+    eventNode,
     fixedSizeTypeNode,
     hiddenPrefixTypeNode,
     hiddenSuffixTypeNode,
@@ -107,6 +108,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                     .map(visit(this))
                     .filter(removeNullAndAssertIsNodeFilter('definedTypeNode')),
                 errors: node.errors.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('errorNode')),
+                events: (node.events ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter('eventNode')),
                 instructions: node.instructions
                     .map(visit(this))
                     .filter(removeNullAndAssertIsNodeFilter('instructionNode')),
@@ -132,6 +134,17 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const pda = node.pda ? (visit(this)(node.pda) ?? undefined) : undefined;
             if (pda) assertIsNode(pda, 'pdaLinkNode');
             return accountNode({ ...node, data, pda });
+        };
+    }
+
+    if (keys.includes('eventNode')) {
+        visitor.visitEvent = function visitEvent(node) {
+            const data = visit(this)(node.data);
+            if (data === null) return null;
+            assertIsNode(data, 'structTypeNode');
+            const pda = node.pda ? (visit(this)(node.pda) ?? undefined) : undefined;
+            if (pda) assertIsNode(pda, 'pdaLinkNode');
+            return eventNode({ ...node, data, pda });
         };
     }
 

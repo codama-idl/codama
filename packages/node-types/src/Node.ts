@@ -4,6 +4,7 @@ import type { RegisteredCountNode } from './countNodes/CountNode';
 import type { DefinedTypeNode } from './DefinedTypeNode';
 import type { RegisteredDiscriminatorNode } from './discriminatorNodes/DiscriminatorNode';
 import type { ErrorNode } from './ErrorNode';
+import type { EventNode } from './EventNode';
 import type { InstructionAccountNode } from './InstructionAccountNode';
 import type { InstructionArgumentNode } from './InstructionArgumentNode';
 import type { InstructionByteDeltaNode } from './InstructionByteDeltaNode';
@@ -24,6 +25,7 @@ export type Node =
     | AccountNode
     | DefinedTypeNode
     | ErrorNode
+    | EventNode
     | InstructionAccountNode
     | InstructionArgumentNode
     | InstructionByteDeltaNode

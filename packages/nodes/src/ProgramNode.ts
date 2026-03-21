@@ -2,6 +2,7 @@ import type {
     AccountNode,
     DefinedTypeNode,
     ErrorNode,
+    EventNode,
     InstructionNode,
     PdaNode,
     ProgramNode,
@@ -16,8 +17,9 @@ export type ProgramNodeInput<
     TInstructions extends InstructionNode[] = InstructionNode[],
     TDefinedTypes extends DefinedTypeNode[] = DefinedTypeNode[],
     TErrors extends ErrorNode[] = ErrorNode[],
+    TEvents extends EventNode[] = EventNode[],
 > = Omit<
-    Partial<ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors>>,
+    Partial<ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents>>,
     'docs' | 'kind' | 'name' | 'publicKey'
 > & {
     readonly docs?: DocsInput;
@@ -31,9 +33,10 @@ export function programNode<
     const TInstructions extends InstructionNode[] = [],
     const TDefinedTypes extends DefinedTypeNode[] = [],
     const TErrors extends ErrorNode[] = [],
+    const TEvents extends EventNode[] = [],
 >(
-    input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors>,
-): ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors> {
+    input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents>,
+): ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents> {
     return Object.freeze({
         kind: 'programNode',
 
@@ -46,6 +49,7 @@ export function programNode<
 
         // Children.
         accounts: (input.accounts ?? []) as TAccounts,
+        events: (input.events ?? []) as TEvents,
         instructions: (input.instructions ?? []) as TInstructions,
         definedTypes: (input.definedTypes ?? []) as TDefinedTypes,
         pdas: (input.pdas ?? []) as TPdas,
@@ -65,6 +69,10 @@ export function getAllPdas(node: ProgramNode | ProgramNode[] | RootNode): PdaNod
 
 export function getAllAccounts(node: ProgramNode | ProgramNode[] | RootNode): AccountNode[] {
     return getAllPrograms(node).flatMap(program => program.accounts);
+}
+
+export function getAllEvents(node: ProgramNode | ProgramNode[] | RootNode): EventNode[] {
+    return getAllPrograms(node).flatMap(program => program.events ?? []);
 }
 
 export function getAllDefinedTypes(node: ProgramNode | ProgramNode[] | RootNode): DefinedTypeNode[] {
