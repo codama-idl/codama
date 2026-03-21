@@ -11,6 +11,7 @@ import {
     enumTupleVariantTypeNode,
     enumTypeNode,
     errorNode,
+    eventNode,
     fieldDiscriminatorNode,
     fixedCountNode,
     fixedSizeTypeNode,
@@ -37,6 +38,7 @@ test('it creates program nodes', () => {
         accounts: [{ discriminator: [246, 28, 6, 87, 251, 45, 50, 42], name: 'MyAccount' }],
         address: '1111',
         errors: [{ code: 42, msg: 'my error message', name: 'myError' }],
+        events: [{ discriminator: [1, 2, 3, 4, 5, 6, 7, 8], name: 'MyEvent' }],
         instructions: [
             {
                 accounts: [
@@ -68,7 +70,10 @@ test('it creates program nodes', () => {
             },
         ],
         metadata: { name: 'my_program', spec: '0.1.0', version: '1.2.3' },
-        types: [{ name: 'MyAccount', type: { fields: [{ name: 'delegate', type: 'pubkey' }], kind: 'struct' } }],
+        types: [
+            { name: 'MyAccount', type: { fields: [{ name: 'delegate', type: 'pubkey' }], kind: 'struct' } },
+            { name: 'MyEvent', type: { fields: [{ name: 'amount', type: 'u64' }], kind: 'struct' } },
+        ],
     });
 
     expect(node).toEqual(
@@ -98,6 +103,24 @@ test('it creates program nodes', () => {
                     docs: ['myError: my error message'],
                     message: 'my error message',
                     name: 'myError',
+                }),
+            ],
+            events: [
+                eventNode({
+                    data: structTypeNode([
+                        structFieldTypeNode({
+                            defaultValue: getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
+                            defaultValueStrategy: 'omitted',
+                            name: 'discriminator',
+                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
+                        }),
+                        structFieldTypeNode({
+                            name: 'amount',
+                            type: numberTypeNode('u64'),
+                        }),
+                    ]),
+                    discriminators: [fieldDiscriminatorNode('discriminator')],
+                    name: 'myEvent',
                 }),
             ],
             instructions: [

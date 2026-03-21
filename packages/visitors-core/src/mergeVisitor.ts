@@ -26,6 +26,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
             return merge(node, [
                 ...node.pdas.flatMap(visit(this)),
                 ...node.accounts.flatMap(visit(this)),
+                ...(node.events ?? []).flatMap(visit(this)),
                 ...node.instructions.flatMap(visit(this)),
                 ...node.definedTypes.flatMap(visit(this)),
                 ...node.errors.flatMap(visit(this)),
@@ -41,6 +42,16 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
 
     if (keys.includes('accountNode')) {
         visitor.visitAccount = function visitAccount(node) {
+            return merge(node, [
+                ...visit(this)(node.data),
+                ...(node.pda ? visit(this)(node.pda) : []),
+                ...(node.discriminators ?? []).flatMap(visit(this)),
+            ]);
+        };
+    }
+
+    if (keys.includes('eventNode')) {
+        visitor.visitEvent = function visitEvent(node) {
             return merge(node, [
                 ...visit(this)(node.data),
                 ...(node.pda ? visit(this)(node.pda) : []),

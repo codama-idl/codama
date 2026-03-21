@@ -3,6 +3,7 @@ import {
     definedTypeNode,
     enumTypeNode,
     errorNode,
+    eventNode,
     instructionNode,
     pdaNode,
     programNode,
@@ -27,6 +28,7 @@ const node = programNode({
         errorNode({ code: 1, message: 'Invalid mint', name: 'invalidMint' }),
         errorNode({ code: 2, message: 'Invalid token', name: 'invalidToken' }),
     ],
+    events: [eventNode({ data: structTypeNode([]), name: 'transferEvent' })],
     instructions: [instructionNode({ name: 'mintTokens' }), instructionNode({ name: 'transferTokens' })],
     name: 'splToken',
     pdas: [pdaNode({ name: 'associatedToken', seeds: [] })],
@@ -35,7 +37,7 @@ const node = programNode({
 });
 
 test('mergeVisitor', () => {
-    expectMergeVisitorCount(node, 13);
+    expectMergeVisitorCount(node, 15);
 });
 
 test('identityVisitor', () => {
@@ -46,6 +48,7 @@ test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[programNode]', null);
     expectDeleteNodesVisitor(node, '[pdaNode]', { ...node, pdas: [] });
     expectDeleteNodesVisitor(node, '[accountNode]', { ...node, accounts: [] });
+    expectDeleteNodesVisitor(node, '[eventNode]', { ...node, events: [] });
     expectDeleteNodesVisitor(node, '[instructionNode]', { ...node, instructions: [] });
     expectDeleteNodesVisitor(node, '[definedTypeNode]', { ...node, definedTypes: [] });
     expectDeleteNodesVisitor(node, '[errorNode]', { ...node, errors: [] });
@@ -60,6 +63,8 @@ programNode [splToken.TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA]
 |   accountNode [mint]
 |   |   structTypeNode
 |   accountNode [token]
+|   |   structTypeNode
+|   eventNode [transferEvent]
 |   |   structTypeNode
 |   instructionNode [mintTokens]
 |   instructionNode [transferTokens]
