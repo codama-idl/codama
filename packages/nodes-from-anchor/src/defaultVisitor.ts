@@ -12,6 +12,8 @@ import {
     Visitor,
 } from '@codama/visitors';
 
+import { extractPdasVisitor } from './v01/extractPdas';
+
 export function defaultVisitor() {
     return rootNodeVisitor(currentRoot => {
         let root: RootNode = currentRoot;
@@ -20,6 +22,9 @@ export function defaultVisitor() {
             assertIsNode(newRoot, 'rootNode');
             root = newRoot;
         };
+
+        // PDAs.
+        updateRoot(extractPdasVisitor());
 
         // Defined types.
         updateRoot(deduplicateIdenticalDefinedTypesVisitor());

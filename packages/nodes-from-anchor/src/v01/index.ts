@@ -1,6 +1,7 @@
 export * from './AccountNode';
 export * from './DefinedTypeNode';
 export * from './ErrorNode';
+export * from './extractPdas';
 export * from './idl';
 export * from './InstructionAccountNode';
 export * from './InstructionArgumentNode';
