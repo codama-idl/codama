@@ -311,6 +311,74 @@ test('it deduplicates same seeds with different account names using first name',
     );
 });
 
+test('it preserves existing program-level PDAs', () => {
+    const existingPda = pdaNode({
+        name: 'existingPda',
+        seeds: [constantPdaSeedNodeFromBytes('base58', 'ZZZZ')],
+    });
+    const program = programNode({
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({
+                        defaultValue: pdaValueNode(
+                            pdaNode({ name: 'newPda', seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')] }),
+                            [],
+                        ),
+                        isSigner: false,
+                        isWritable: false,
+                        name: 'newPda',
+                    }),
+                ],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'testProgram',
+        pdas: [existingPda],
+        publicKey: '1111',
+    });
+
+    const result = extractPdasFromProgram(program);
+
+    expect(result.pdas).toHaveLength(2);
+    expect(result.pdas[0]).toEqual(existingPda);
+    expect(result.pdas[1].name).toBe('newPda');
+});
+
+test('it avoids collisions with existing program-level PDA names', () => {
+    const existingPda = pdaNode({
+        name: 'authority',
+        seeds: [constantPdaSeedNodeFromBytes('base58', 'ZZZZ')],
+    });
+    const program = programNode({
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({
+                        defaultValue: pdaValueNode(
+                            pdaNode({ name: 'authority', seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')] }),
+                            [],
+                        ),
+                        isSigner: false,
+                        isWritable: false,
+                        name: 'authority',
+                    }),
+                ],
+                name: 'myInstruction',
+            }),
+        ],
+        name: 'testProgram',
+        pdas: [existingPda],
+        publicKey: '1111',
+    });
+
+    const result = extractPdasFromProgram(program);
+
+    expect(result.pdas).toHaveLength(2);
+    expect(result.pdas[0]).toEqual(existingPda);
+    expect(result.pdas[1].name).toBe('authority2');
+});
+
 test('it returns empty pdas when no PDA accounts exist', () => {
     const program = makeProgram([
         instructionNode({

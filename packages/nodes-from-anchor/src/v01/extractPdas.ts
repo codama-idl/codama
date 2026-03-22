@@ -36,6 +36,7 @@ export function extractPdasVisitor() {
 export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     const hashVisitor = getUniqueHashStringVisitor();
     const pdaMap = new Map<string, { name: CamelCaseString; pdaNode: PdaNode }>();
+    const usedNames = new Set<CamelCaseString>(program.pdas.map(p => p.name));
     const nameToFingerprint = new Map<CamelCaseString, string>();
 
     // Collect inline PDAs from all instruction accounts.
@@ -66,6 +67,15 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
                 );
             }
 
+            // Ensure the resolved name doesn't collide with existing or previously extracted PDAs.
+            let suffix = 2;
+            const baseName = resolvedName;
+            while (usedNames.has(resolvedName)) {
+                resolvedName = camelCase(`${baseName}${suffix}`);
+                suffix++;
+            }
+
+            usedNames.add(resolvedName);
             nameToFingerprint.set(resolvedName, fingerprint);
             pdaMap.set(fingerprint, {
                 name: resolvedName,
@@ -103,6 +113,6 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     return programNode({
         ...program,
         instructions: rewrittenInstructions,
-        pdas: [...pdaMap.values()].map(entry => entry.pdaNode),
+        pdas: [...program.pdas, ...[...pdaMap.values()].map(entry => entry.pdaNode)],
     });
 }
