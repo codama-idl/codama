@@ -59,7 +59,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
             const existingFingerprint = nameToFingerprint.get(resolvedName);
 
             if (existingFingerprint !== undefined && existingFingerprint !== fingerprint) {
-                resolvedName = camelCase(`${pda.name}_${instruction.name}`);
+                resolvedName = camelCase(`${instruction.name}_${pda.name}`);
                 console.warn(
                     `PDA name collision: "${pda.name}" has different seeds across instructions. ` +
                         `Renaming to "${resolvedName}".`,

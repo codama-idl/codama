@@ -147,13 +147,13 @@ test('it handles name collisions with different seeds by suffixing', () => {
 
     expect(result.pdas).toHaveLength(2);
     expect(result.pdas[0].name).toBe('authority');
-    expect(result.pdas[1].name).toBe('authorityInstructionB');
+    expect(result.pdas[1].name).toBe('instructionBAuthority');
     expect(warnSpy).toHaveBeenCalledOnce();
 
     warnSpy.mockRestore();
 });
 
-test('it excludes ATA program PDAs', () => {
+test('it excludes foreign-program PDAs', () => {
     const program = makeProgram([
         instructionNode({
             accounts: [
