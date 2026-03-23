@@ -20,6 +20,17 @@ function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): Fingerprint
     return visit(pdaNode({ ...pda, name: '' as CamelCaseString }), hashVisitor);
 }
 
+function getUniquePdaName(name: CamelCaseString, usedNames: Set<CamelCaseString>): CamelCaseString {
+    if (!usedNames.has(name)) return name;
+    let suffix = 2;
+    let candidate = camelCase(`${name}${suffix}`);
+    while (usedNames.has(candidate)) {
+        suffix++;
+        candidate = camelCase(`${name}${suffix}`);
+    }
+    return candidate;
+}
+
 export function extractPdasVisitor() {
     return bottomUpTransformerVisitor([
         {
@@ -66,13 +77,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
                 );
             }
 
-            // Ensure the resolved name doesn't collide with existing or previously extracted PDAs.
-            let suffix = 2;
-            const baseName = resolvedName;
-            while (usedNames.has(resolvedName)) {
-                resolvedName = camelCase(`${baseName}${suffix}`);
-                suffix++;
-            }
+            resolvedName = getUniquePdaName(resolvedName, usedNames);
 
             usedNames.add(resolvedName);
             nameToFingerprint.set(resolvedName, fingerprint);
