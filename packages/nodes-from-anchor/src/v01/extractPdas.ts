@@ -17,8 +17,7 @@ import { bottomUpTransformerVisitor, getUniqueHashStringVisitor, visit, type Vis
 const ATA_PROGRAM_ID = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 
 function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): string {
-    const seedHashes = pda.seeds.map(seed => visit(seed, hashVisitor));
-    return JSON.stringify({ programId: pda.programId, seeds: seedHashes });
+    return visit(pdaNode({ ...pda, name: '' as CamelCaseString }), hashVisitor);
 }
 
 export function extractPdasVisitor() {
