@@ -17,7 +17,7 @@ import { bottomUpTransformerVisitor, getUniqueHashStringVisitor, visit, type Vis
 type Fingerprint = string;
 
 function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): Fingerprint {
-    return visit(pdaNode({ ...pda, name: '' as CamelCaseString }), hashVisitor);
+    return visit(pdaNode({ ...pda, name: '' }), hashVisitor);
 }
 
 function getUniquePdaName(name: CamelCaseString, usedNames: Set<CamelCaseString>): CamelCaseString {
