@@ -14,9 +14,11 @@ import {
 } from '@codama/nodes';
 import { bottomUpTransformerVisitor, getUniqueHashStringVisitor, visit, type Visitor } from '@codama/visitors';
 
+type Fingerprint = string;
+
 const ATA_PROGRAM_ID = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 
-function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): string {
+function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): Fingerprint {
     return visit(pdaNode({ ...pda, name: '' as CamelCaseString }), hashVisitor);
 }
 
@@ -34,9 +36,9 @@ export function extractPdasVisitor() {
 
 export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     const hashVisitor = getUniqueHashStringVisitor();
-    const pdaMap = new Map<string, { name: CamelCaseString; pdaNode: PdaNode }>();
+    const pdaMap = new Map<Fingerprint, PdaNode>();
     const usedNames = new Set<CamelCaseString>(program.pdas.map(p => p.name));
-    const nameToFingerprint = new Map<CamelCaseString, string>();
+    const nameToFingerprint = new Map<CamelCaseString, Fingerprint>();
 
     // Collect inline PDAs from all instruction accounts.
     for (const instruction of program.instructions) {
@@ -76,10 +78,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
 
             usedNames.add(resolvedName);
             nameToFingerprint.set(resolvedName, fingerprint);
-            pdaMap.set(fingerprint, {
-                name: resolvedName,
-                pdaNode: pdaNode({ ...pda, name: resolvedName }),
-            });
+            pdaMap.set(fingerprint, pdaNode({ ...pda, name: resolvedName }));
         }
     }
 
@@ -96,10 +95,10 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
 
             if (account.defaultValue.pda.programId === ATA_PROGRAM_ID) return account;
 
-            const entry = pdaMap.get(pdaFingerprint(account.defaultValue.pda, hashVisitor));
-            if (!entry) return account;
+            const extractedPda = pdaMap.get(pdaFingerprint(account.defaultValue.pda, hashVisitor));
+            if (!extractedPda) return account;
 
-            const defaultValue = { ...account.defaultValue, pda: pdaLinkNode(entry.name) };
+            const defaultValue = { ...account.defaultValue, pda: pdaLinkNode(extractedPda.name) };
             return instructionAccountNode({ ...account, defaultValue });
         });
 
@@ -112,6 +111,6 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     return programNode({
         ...program,
         instructions: rewrittenInstructions,
-        pdas: [...program.pdas, ...[...pdaMap.values()].map(entry => entry.pdaNode)],
+        pdas: [...program.pdas, ...pdaMap.values()],
     });
 }
