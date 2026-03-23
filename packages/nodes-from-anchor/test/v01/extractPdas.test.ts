@@ -191,7 +191,7 @@ test('it excludes ATA program PDAs', () => {
     );
 });
 
-test('it preserves static programId on cross-program PDAs', () => {
+test('it skips cross-program PDAs with a foreign programId', () => {
     const program = makeProgram([
         instructionNode({
             accounts: [
@@ -215,12 +215,16 @@ test('it preserves static programId on cross-program PDAs', () => {
 
     const result = extractPdasFromProgram(program);
 
-    expect(result.pdas[0]).toEqual(
-        pdaNode({
-            name: 'crossPda',
-            programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-            seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
-        }),
+    expect(result.pdas).toHaveLength(0);
+    expect(result.instructions[0].accounts[0].defaultValue).toEqual(
+        pdaValueNode(
+            pdaNode({
+                name: 'crossPda',
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+                seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
+            }),
+            [],
+        ),
     );
 });
 

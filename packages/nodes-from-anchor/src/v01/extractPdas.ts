@@ -16,8 +16,6 @@ import { bottomUpTransformerVisitor, getUniqueHashStringVisitor, visit, type Vis
 
 type Fingerprint = string;
 
-const ATA_PROGRAM_ID = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
-
 function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): Fingerprint {
     return visit(pdaNode({ ...pda, name: '' as CamelCaseString }), hashVisitor);
 }
@@ -52,7 +50,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
             }
 
             const pda = account.defaultValue.pda;
-            if (pda.programId === ATA_PROGRAM_ID) continue;
+            if (pda.programId && pda.programId !== program.publicKey) continue;
 
             const fingerprint = pdaFingerprint(pda, hashVisitor);
             if (pdaMap.has(fingerprint)) continue;
@@ -93,7 +91,8 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
                 return account;
             }
 
-            if (account.defaultValue.pda.programId === ATA_PROGRAM_ID) return account;
+            if (account.defaultValue.pda.programId && account.defaultValue.pda.programId !== program.publicKey)
+                return account;
 
             const extractedPda = pdaMap.get(pdaFingerprint(account.defaultValue.pda, hashVisitor));
             if (!extractedPda) return account;
