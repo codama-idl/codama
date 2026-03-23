@@ -13,7 +13,7 @@ import {
 } from '@codama/nodes';
 import { expect, test, vi } from 'vitest';
 
-import { extractPdasFromProgram } from '../../src/v01/extractPdas';
+import { extractPdasFromProgram } from '../../src/extractPdasVisitor';
 
 function makeProgram(instructions: ReturnType<typeof instructionNode>[]) {
     return programNode({

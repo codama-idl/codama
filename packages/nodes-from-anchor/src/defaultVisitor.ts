@@ -12,7 +12,7 @@ import {
     Visitor,
 } from '@codama/visitors';
 
-import { extractPdasVisitor } from './v01/extractPdas';
+import { extractPdasVisitor } from './extractPdasVisitor';
 
 export function defaultVisitor() {
     return rootNodeVisitor(currentRoot => {
