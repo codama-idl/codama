@@ -1,6 +1,6 @@
-import { structTypeNode } from '../src';
 import { expect, test } from 'vitest';
 
+import { structTypeNode } from '../src';
 import { eventNode } from '../src';
 
 test('it returns the right node kind', () => {
