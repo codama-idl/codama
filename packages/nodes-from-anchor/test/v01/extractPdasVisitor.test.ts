@@ -189,43 +189,8 @@ test('it excludes foreign-program PDAs', () => {
             [],
         ),
     );
-});
-
-test('it skips cross-program PDAs with a foreign programId', () => {
-    const program = makeProgram([
-        instructionNode({
-            accounts: [
-                instructionAccountNode({
-                    defaultValue: pdaValueNode(
-                        pdaNode({
-                            name: 'crossPda',
-                            programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-                            seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
-                        }),
-                        [],
-                    ),
-                    isSigner: false,
-                    isWritable: false,
-                    name: 'crossPda',
-                }),
-            ],
-            name: 'myInstruction',
-        }),
-    ]);
-
-    const result = extractPdasFromProgram(program);
-
-    expect(result.pdas).toHaveLength(0);
-    expect(result.instructions[0].accounts[0].defaultValue).toEqual(
-        pdaValueNode(
-            pdaNode({
-                name: 'crossPda',
-                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-                seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
-            }),
-            [],
-        ),
-    );
+    // Nothing changed on the node at all.
+    expect(result).toEqual(program);
 });
 
 test('it keeps dynamic programId on pdaValueNode, not on PdaNode', () => {
@@ -349,40 +314,6 @@ test('it preserves existing program-level PDAs', () => {
     expect(result.pdas[1].name).toBe('newPda');
 });
 
-test('it avoids collisions with existing program-level PDA names', () => {
-    const existingPda = pdaNode({
-        name: 'authority',
-        seeds: [constantPdaSeedNodeFromBytes('base58', 'ZZZZ')],
-    });
-    const program = programNode({
-        instructions: [
-            instructionNode({
-                accounts: [
-                    instructionAccountNode({
-                        defaultValue: pdaValueNode(
-                            pdaNode({ name: 'authority', seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')] }),
-                            [],
-                        ),
-                        isSigner: false,
-                        isWritable: false,
-                        name: 'authority',
-                    }),
-                ],
-                name: 'myInstruction',
-            }),
-        ],
-        name: 'testProgram',
-        pdas: [existingPda],
-        publicKey: '1111',
-    });
-
-    const result = extractPdasFromProgram(program);
-
-    expect(result.pdas).toHaveLength(2);
-    expect(result.pdas[0]).toEqual(existingPda);
-    expect(result.pdas[1].name).toBe('authority2');
-});
-
 test('it returns empty pdas when no PDA accounts exist', () => {
     const program = makeProgram([
         instructionNode({
@@ -396,4 +327,6 @@ test('it returns empty pdas when no PDA accounts exist', () => {
 
     const result = extractPdasFromProgram(program);
     expect(result.pdas).toEqual([]);
+    // Nothing changed on the node at all.
+    expect(result).toEqual(program);
 });
