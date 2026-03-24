@@ -1,5 +1,11 @@
 # @codama/nodes-from-anchor
 
+## 1.4.0
+
+### Minor Changes
+
+- [#984](https://github.com/codama-idl/codama/pull/984) [`a644f59`](https://github.com/codama-idl/codama/commit/a644f59589906be63d89e79795ab1477cc993709) Thanks [@amilz](https://github.com/amilz)! - Auto-extract inline PDAs from v01 Anchor instruction accounts into program-level PdaNodes
+
 ## 1.3.9
 
 ### Patch Changes
