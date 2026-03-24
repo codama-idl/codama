@@ -4,6 +4,8 @@ import {
     argumentValueNode,
     arrayTypeNode,
     bytesTypeNode,
+    constantDiscriminatorNode,
+    constantValueNode,
     constantPdaSeedNodeFromBytes,
     definedTypeLinkNode,
     definedTypeNode,
@@ -15,6 +17,7 @@ import {
     fieldDiscriminatorNode,
     fixedCountNode,
     fixedSizeTypeNode,
+    hiddenPrefixTypeNode,
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
@@ -107,19 +110,25 @@ test('it creates program nodes', () => {
             ],
             events: [
                 eventNode({
-                    data: structTypeNode([
-                        structFieldTypeNode({
-                            defaultValue: getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
-                            defaultValueStrategy: 'omitted',
-                            name: 'discriminator',
-                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
-                        }),
+                    data: hiddenPrefixTypeNode(structTypeNode([
                         structFieldTypeNode({
                             name: 'amount',
                             type: numberTypeNode('u64'),
                         }),
+                    ]), [
+                        constantValueNode(
+                            fixedSizeTypeNode(bytesTypeNode(), 8),
+                            getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
+                        ),
                     ]),
-                    discriminators: [fieldDiscriminatorNode('discriminator')],
+                    discriminators: [
+                        constantDiscriminatorNode(
+                            constantValueNode(
+                                fixedSizeTypeNode(bytesTypeNode(), 8),
+                                getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
+                            ),
+                        ),
+                    ],
                     name: 'myEvent',
                 }),
             ],

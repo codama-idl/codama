@@ -142,7 +142,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const data = visit(this)(node.data);
             if (data === null) return null;
             assertIsNode(data, TYPE_NODES);
-            return eventNode({ ...node, data });
+            return eventNode({
+                ...node,
+                data,
+                discriminators: node.discriminators
+                    ? node.discriminators.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(DISCRIMINATOR_NODES))
+                    : undefined,
+            });
         };
     }
 

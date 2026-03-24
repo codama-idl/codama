@@ -6,8 +6,7 @@ import { structTypeNode } from './typeNodes';
 export type EventNodeInput<
     TData extends TypeNode = TypeNode,
     TDiscriminators extends DiscriminatorNode[] | undefined = DiscriminatorNode[] | undefined,
-> = Omit<EventNode<TData, TDiscriminators>, 'data' | 'docs' | 'kind' | 'name'> & {
-    readonly data: TData;
+> = Omit<EventNode<TData, TDiscriminators>, 'docs' | 'kind' | 'name'> & {
     readonly docs?: DocsInput;
     readonly name: string;
 };
@@ -21,7 +20,6 @@ export function eventNode<
 
         // Data.
         name: camelCase(input.name),
-        ...(input.size === undefined ? {} : { size: input.size }),
         docs: parseDocs(input.docs),
 
         // Children.

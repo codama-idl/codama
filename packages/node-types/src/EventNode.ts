@@ -10,7 +10,6 @@ export interface EventNode<
 
     // Data.
     readonly name: CamelCaseString;
-    readonly size?: number | null;
     readonly docs?: Docs;
 
     // Children.

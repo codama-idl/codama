@@ -25,9 +25,9 @@ export interface ProgramNode<
 
     // Children.
     readonly accounts: TAccounts;
-    readonly events: TEvents;
     readonly instructions: TInstructions;
     readonly definedTypes: TDefinedTypes;
     readonly pdas: TPdas;
+    readonly events: TEvents;
     readonly errors: TErrors;
 }

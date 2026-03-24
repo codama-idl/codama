@@ -22,7 +22,6 @@ const node = eventNode({
     ]),
     discriminators: [sizeDiscriminatorNode(40)],
     name: 'transferEvent',
-    size: 40,
 });
 
 test('mergeVisitor', () => {

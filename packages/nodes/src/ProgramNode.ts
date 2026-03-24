@@ -49,10 +49,10 @@ export function programNode<
 
         // Children.
         accounts: (input.accounts ?? []) as TAccounts,
-        events: (input.events ?? []) as TEvents,
         instructions: (input.instructions ?? []) as TInstructions,
         definedTypes: (input.definedTypes ?? []) as TDefinedTypes,
         pdas: (input.pdas ?? []) as TPdas,
+        events: (input.events ?? []) as TEvents,
         errors: (input.errors ?? []) as TErrors,
     });
 }
@@ -72,7 +72,7 @@ export function getAllAccounts(node: ProgramNode | ProgramNode[] | RootNode): Ac
 }
 
 export function getAllEvents(node: ProgramNode | ProgramNode[] | RootNode): EventNode[] {
-    return getAllPrograms(node).flatMap(program => program.events ?? []);
+    return getAllPrograms(node).flatMap(program => program.events);
 }
 
 export function getAllDefinedTypes(node: ProgramNode | ProgramNode[] | RootNode): DefinedTypeNode[] {

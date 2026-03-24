@@ -1,14 +1,13 @@
 import { CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, CodamaError } from '@codama/errors';
 import {
-    assertIsNode,
     bytesTypeNode,
     camelCase,
+    constantDiscriminatorNode,
+    constantValueNode,
     EventNode,
     eventNode,
-    fieldDiscriminatorNode,
     fixedSizeTypeNode,
-    structFieldTypeNode,
-    structTypeNode,
+    hiddenPrefixTypeNode,
 } from '@codama/nodes';
 
 import { getAnchorDiscriminatorV01 } from './../discriminators';
@@ -25,24 +24,15 @@ export function eventNodeFromAnchorV01(idl: IdlV01Event, types: IdlV01TypeDef[],
     }
 
     const data = typeNodeFromAnchorV01(type.type, generics);
-    assertIsNode(data, 'structTypeNode');
-
-    const discriminator = structFieldTypeNode({
-        defaultValue: getAnchorDiscriminatorV01(idl.discriminator),
-        defaultValueStrategy: 'omitted',
-        name: 'discriminator',
-        type: fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
-    });
+    const discriminator = getAnchorDiscriminatorV01(idl.discriminator);
+    const discriminatorConstant = constantValueNode(
+        fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
+        discriminator,
+    );
 
     return eventNode({
-        data: structTypeNode([discriminator, ...data.fields]),
-        discriminators: [fieldDiscriminatorNode('discriminator')],
+        data: hiddenPrefixTypeNode(data, [discriminatorConstant]),
+        discriminators: [constantDiscriminatorNode(discriminatorConstant)],
         name,
     });
-}
-
-export function eventNodeFromAnchorV01WithTypeDefinition(types: IdlV01TypeDef[], generics: GenericsV01) {
-    return function (idl: IdlV01Event): EventNode {
-        return eventNodeFromAnchorV01(idl, types, generics);
-    };
 }

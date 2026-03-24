@@ -1,12 +1,13 @@
-import { CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, isCodamaError } from '@codama/errors';
+import { constantDiscriminatorNode, constantValueNode } from '@codama/nodes';
 import {
     bytesTypeNode,
     eventNode,
-    fieldDiscriminatorNode,
     fixedSizeTypeNode,
+    hiddenPrefixTypeNode,
     numberTypeNode,
     structFieldTypeNode,
     structTypeNode,
+    tupleTypeNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
@@ -40,26 +41,70 @@ test('it creates event nodes with anchor discriminators', () => {
 
     expect(node).toEqual(
         eventNode({
-            data: structTypeNode([
-                structFieldTypeNode({
-                    defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
-                    defaultValueStrategy: 'omitted',
-                    name: 'discriminator',
-                    type: fixedSizeTypeNode(bytesTypeNode(), 8),
-                }),
-                structFieldTypeNode({
-                    name: 'amount',
-                    type: numberTypeNode('u32'),
-                }),
-            ]),
-            discriminators: [fieldDiscriminatorNode('discriminator')],
+            data: hiddenPrefixTypeNode(
+                structTypeNode([structFieldTypeNode({ name: 'amount', type: numberTypeNode('u32') })]),
+                [
+                    constantValueNode(
+                        fixedSizeTypeNode(bytesTypeNode(), 8),
+                        getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+                    ),
+                ],
+            ),
+            discriminators: [
+                constantDiscriminatorNode(
+                    constantValueNode(
+                        fixedSizeTypeNode(bytesTypeNode(), 8),
+                        getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+                    ),
+                ),
+            ],
             name: 'myEvent',
         }),
     );
 });
 
+test('it creates tuple event nodes with anchor discriminators', () => {
+    const node = eventNodeFromAnchorV01(
+        {
+            discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+            name: 'TupleEvent',
+        },
+        [
+            {
+                docs: [],
+                name: 'TupleEvent',
+                type: {
+                    fields: ['u32', 'u64'],
+                    kind: 'struct',
+                },
+            },
+        ],
+        generics,
+    );
+
+    expect(node).toEqual(
+        eventNode({
+            data: hiddenPrefixTypeNode(tupleTypeNode([numberTypeNode('u32'), numberTypeNode('u64')]), [
+                constantValueNode(
+                    fixedSizeTypeNode(bytesTypeNode(), 8),
+                    getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+                ),
+            ]),
+            discriminators: [
+                constantDiscriminatorNode(
+                    constantValueNode(
+                        fixedSizeTypeNode(bytesTypeNode(), 8),
+                        getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+                    ),
+                ),
+            ],
+            name: 'tupleEvent',
+        }),
+    );
+});
+
 test('it throws when the backing event type is missing', () => {
-    try {
+    expect(() =>
         eventNodeFromAnchorV01(
             {
                 discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
@@ -67,9 +112,6 @@ test('it throws when the backing event type is missing', () => {
             },
             [],
             generics,
-        );
-        expect.unreachable('Expected eventNodeFromAnchorV01 to throw');
-    } catch (error) {
-        expect(isCodamaError(error, CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING)).toBe(true);
-    }
+        ),
+    ).toThrow('Event type [MissingEvent] is missing from the IDL types.');
 });
