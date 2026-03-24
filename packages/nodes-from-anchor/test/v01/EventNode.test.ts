@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, isCodamaError } from '@codama/errors';
 import {
     bytesTypeNode,
     eventNode,
@@ -55,4 +56,20 @@ test('it creates event nodes with anchor discriminators', () => {
             name: 'myEvent',
         }),
     );
+});
+
+test('it throws when the backing event type is missing', () => {
+    try {
+        eventNodeFromAnchorV01(
+            {
+                discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+                name: 'MissingEvent',
+            },
+            [],
+            generics,
+        );
+        expect.unreachable('Expected eventNodeFromAnchorV01 to throw');
+    } catch (error) {
+        expect(isCodamaError(error, CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING)).toBe(true);
+    }
 });

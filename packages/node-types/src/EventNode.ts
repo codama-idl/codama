@@ -1,11 +1,9 @@
 import type { DiscriminatorNode } from './discriminatorNodes';
-import type { PdaLinkNode } from './linkNodes';
 import type { CamelCaseString, Docs } from './shared';
-import type { NestedTypeNode, StructTypeNode } from './typeNodes';
+import type { TypeNode } from './typeNodes';
 
 export interface EventNode<
-    TData extends NestedTypeNode<StructTypeNode> = NestedTypeNode<StructTypeNode>,
-    TPda extends PdaLinkNode | undefined = PdaLinkNode | undefined,
+    TData extends TypeNode = TypeNode,
     TDiscriminators extends DiscriminatorNode[] | undefined = DiscriminatorNode[] | undefined,
 > {
     readonly kind: 'eventNode';
@@ -17,6 +15,5 @@ export interface EventNode<
 
     // Children.
     readonly data: TData;
-    readonly pda?: TPda;
     readonly discriminators?: TDiscriminators;
 }

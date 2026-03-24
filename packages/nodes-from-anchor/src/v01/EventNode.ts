@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, CodamaError } from '@codama/errors';
+import { CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, CodamaError } from '@codama/errors';
 import {
     assertIsNode,
     bytesTypeNode,
@@ -21,7 +21,7 @@ export function eventNodeFromAnchorV01(idl: IdlV01Event, types: IdlV01TypeDef[],
     const type = types.find(candidate => candidate.name === idl.name);
 
     if (!type) {
-        throw new CodamaError(CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, { name: idl.name });
+        throw new CodamaError(CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, { name: idl.name });
     }
 
     const data = typeNodeFromAnchorV01(type.type, generics);

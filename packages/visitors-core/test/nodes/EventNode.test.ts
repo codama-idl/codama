@@ -1,7 +1,6 @@
 import {
     eventNode,
     numberTypeNode,
-    pdaLinkNode,
     publicKeyTypeNode,
     sizeDiscriminatorNode,
     structFieldTypeNode,
@@ -23,12 +22,11 @@ const node = eventNode({
     ]),
     discriminators: [sizeDiscriminatorNode(40)],
     name: 'transferEvent',
-    pda: pdaLinkNode('eventAuthority'),
     size: 40,
 });
 
 test('mergeVisitor', () => {
-    expectMergeVisitorCount(node, 8);
+    expectMergeVisitorCount(node, 7);
 });
 
 test('identityVisitor', () => {
@@ -37,7 +35,6 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[eventNode]', null);
-    expectDeleteNodesVisitor(node, '[pdaLinkNode]', eventNode({ ...node, pda: undefined }));
 });
 
 test('debugStringVisitor', () => {
@@ -50,7 +47,6 @@ eventNode [transferEvent]
 |   |   |   publicKeyTypeNode
 |   |   structFieldTypeNode [amount]
 |   |   |   numberTypeNode [u64]
-|   pdaLinkNode [eventAuthority]
 |   sizeDiscriminatorNode [40]`,
     );
 });

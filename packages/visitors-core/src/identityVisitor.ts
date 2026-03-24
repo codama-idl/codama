@@ -141,10 +141,8 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitEvent = function visitEvent(node) {
             const data = visit(this)(node.data);
             if (data === null) return null;
-            assertIsNode(data, 'structTypeNode');
-            const pda = node.pda ? (visit(this)(node.pda) ?? undefined) : undefined;
-            if (pda) assertIsNode(pda, 'pdaLinkNode');
-            return eventNode({ ...node, data, pda });
+            assertIsNode(data, TYPE_NODES);
+            return eventNode({ ...node, data });
         };
     }
 

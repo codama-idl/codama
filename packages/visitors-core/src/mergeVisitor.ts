@@ -52,11 +52,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
 
     if (keys.includes('eventNode')) {
         visitor.visitEvent = function visitEvent(node) {
-            return merge(node, [
-                ...visit(this)(node.data),
-                ...(node.pda ? visit(this)(node.pda) : []),
-                ...(node.discriminators ?? []).flatMap(visit(this)),
-            ]);
+            return merge(node, [...visit(this)(node.data), ...(node.discriminators ?? []).flatMap(visit(this))]);
         };
     }
 

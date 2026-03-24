@@ -1,23 +1,21 @@
-import type { DiscriminatorNode, EventNode, NestedTypeNode, PdaLinkNode, StructTypeNode } from '@codama/node-types';
+import type { DiscriminatorNode, EventNode, TypeNode } from '@codama/node-types';
 
 import { camelCase, DocsInput, parseDocs } from './shared';
 import { structTypeNode } from './typeNodes';
 
 export type EventNodeInput<
-    TData extends NestedTypeNode<StructTypeNode> = NestedTypeNode<StructTypeNode>,
-    TPda extends PdaLinkNode | undefined = PdaLinkNode | undefined,
+    TData extends TypeNode = TypeNode,
     TDiscriminators extends DiscriminatorNode[] | undefined = DiscriminatorNode[] | undefined,
-> = Omit<EventNode<TData, TPda, TDiscriminators>, 'data' | 'docs' | 'kind' | 'name'> & {
-    readonly data?: TData;
+> = Omit<EventNode<TData, TDiscriminators>, 'data' | 'docs' | 'kind' | 'name'> & {
+    readonly data: TData;
     readonly docs?: DocsInput;
     readonly name: string;
 };
 
 export function eventNode<
-    TData extends NestedTypeNode<StructTypeNode> = StructTypeNode<[]>,
-    TPda extends PdaLinkNode | undefined = undefined,
+    TData extends TypeNode = ReturnType<typeof structTypeNode>,
     const TDiscriminators extends DiscriminatorNode[] | undefined = undefined,
->(input: EventNodeInput<TData, TPda, TDiscriminators>): EventNode<TData, TPda, TDiscriminators> {
+>(input: EventNodeInput<TData, TDiscriminators>): EventNode<TData, TDiscriminators> {
     return Object.freeze({
         kind: 'eventNode',
 
@@ -27,8 +25,7 @@ export function eventNode<
         docs: parseDocs(input.docs),
 
         // Children.
-        data: (input.data ?? structTypeNode([])) as TData,
-        ...(input.pda !== undefined && { pda: input.pda }),
+        data: input.data,
         ...(input.discriminators !== undefined && { discriminators: input.discriminators }),
     });
 }
