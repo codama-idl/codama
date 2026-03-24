@@ -7,6 +7,7 @@ import { IdlV01, rootNodeFromAnchorV01 } from './v01';
 
 export * from './defaultVisitor';
 export * from './discriminators';
+export * from './extractPdasVisitor';
 export * from './v00';
 export * from './v01';
 
