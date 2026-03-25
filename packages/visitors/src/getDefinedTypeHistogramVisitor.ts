@@ -18,6 +18,7 @@ export type DefinedTypeHistogram = {
         directlyAsInstructionArgs: number;
         inAccounts: number;
         inDefinedTypes: number;
+        inEvents: number;
         inInstructionArgs: number;
         total: number;
     };
@@ -35,6 +36,7 @@ function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogr
                 result[mainCaseKey].total += histogram[mainCaseKey].total;
                 result[mainCaseKey].inAccounts += histogram[mainCaseKey].inAccounts;
                 result[mainCaseKey].inDefinedTypes += histogram[mainCaseKey].inDefinedTypes;
+                result[mainCaseKey].inEvents += histogram[mainCaseKey].inEvents;
                 result[mainCaseKey].inInstructionArgs += histogram[mainCaseKey].inInstructionArgs;
                 result[mainCaseKey].directlyAsInstructionArgs += histogram[mainCaseKey].directlyAsInstructionArgs;
             }
@@ -46,7 +48,7 @@ function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogr
 
 export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> {
     const stack = new NodeStack();
-    let mode: 'account' | 'definedType' | 'instruction' | null = null;
+    let mode: 'account' | 'definedType' | 'event' | 'instruction' | null = null;
     let stackLevel = 0;
 
     return pipe(
@@ -79,6 +81,14 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                     return histogram;
                 },
 
+                visitEvent(node, { self }) {
+                    mode = 'event';
+                    stackLevel = 0;
+                    const histogram = visit(node.data, self);
+                    mode = null;
+                    return histogram;
+                },
+
                 visitDefinedTypeLink(node) {
                     const program = findProgramNodeFromPath(stack.getPath());
                     const key = program ? `${program.name}.${node.name}` : node.name;
@@ -87,6 +97,7 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                             directlyAsInstructionArgs: Number(mode === 'instruction' && stackLevel <= 1),
                             inAccounts: Number(mode === 'account'),
                             inDefinedTypes: Number(mode === 'definedType'),
+                            inEvents: Number(mode === 'event'),
                             inInstructionArgs: Number(mode === 'instruction'),
                             total: 1,
                         },

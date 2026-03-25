@@ -31,6 +31,7 @@ Below are all of the available nodes and their documentation. Also note that you
 - [`AccountNode`](./docs/AccountNode.md)
 - [`DefinedTypeNode`](./docs/DefinedTypeNode.md)
 - [`ErrorNode`](./docs/ErrorNode.md)
+- [`EventNode`](./docs/EventNode.md)
 - [`InstructionAccountNode`](./docs/InstructionAccountNode.md)
 - [`InstructionArgumentNode`](./docs/InstructionArgumentNode.md)
 - [`InstructionByteDeltaNode`](./docs/InstructionByteDeltaNode.md)

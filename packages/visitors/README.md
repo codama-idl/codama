@@ -143,13 +143,15 @@ The returned histogram is an object such that the keys are the names of visited 
 
 ```ts
 export type DefinedTypeHistogram = {
-    [key: CamelCaseString]: {
+    [key: CamelCaseString | `${CamelCaseString}.${CamelCaseString}`]: {
         // The number of times the type is used as a direct instruction argument.
         directlyAsInstructionArgs: number;
         // The number of times the type is used in account data.
         inAccounts: number;
         // The number of times the type is used in other defined types.
         inDefinedTypes: number;
+        // The number of times the type is used in event payloads.
+        inEvents: number;
         // The number of times the type is used in instruction arguments.
         inInstructionArgs: number;
         // The number of times the type is used in total.

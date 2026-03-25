@@ -1,6 +1,6 @@
 # `ProgramNode`
 
-This node represents an entire program deployed on-chain. It defines all elements of a program such as accounts, instructions, PDAs, errors, etc.
+This node represents an entire program deployed on-chain. It defines all elements of a program such as accounts, instructions, PDAs, events, errors, etc.
 
 ![Diagram](https://github.com/codama-idl/codama/assets/3642397/37ec38ea-66df-4c08-81c3-822ef4388580)
 
@@ -25,6 +25,7 @@ This node represents an entire program deployed on-chain. It defines all element
 | `instructions` | [`InstructionNode`](./InstructionNode.md)[] | The instructions that allows us to interact with the program. |
 | `definedTypes` | [`DefinedTypeNode`](./DefinedTypeNode.md)[] | Some reusable types defined by the program.                   |
 | `pdas`         | [`PdaNode`](./PdaNode.md)[]                 | The Program-Derived Addresses (PDAs) used by the program.     |
+| `events`       | [`EventNode`](./EventNode.md)[]             | The events that can be emitted by the program.                |
 | `errors`       | [`ErrorNode`](./ErrorNode.md)[]             | The errors that can be thrown by the program.                 |
 
 ## Functions
@@ -42,6 +43,7 @@ const node = programNode({
     instructions: [],
     definedTypes: [],
     pdas: [],
+    events: [],
     errors: [],
 });
 ```
@@ -68,6 +70,14 @@ Helper function that returns all `AccountNodes` under a given node. This can be 
 
 ```ts
 const allAccounts = getAllAccounts(rootNode);
+```
+
+### `getAllEvents(node)`
+
+Helper function that returns all `EventNodes` under a given node. This can be a `RootNode`, a `ProgramNode` or an array of `ProgramNode`.
+
+```ts
+const allEvents = getAllEvents(rootNode);
 ```
 
 ### `getAllDefinedTypes(node)`
