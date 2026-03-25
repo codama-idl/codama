@@ -14,9 +14,9 @@ This node represents an event emitted by a program.
 
 ### Children
 
-| Attribute        | Type                                                     | Description                                                                                                                                                              |
-| ---------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `data`           | [`TypeNode`](./typeNodes/README.md)                      | The type node that describes the event payload.                                                                                                                          |
+| Attribute        | Type                                                    | Description                                                                                                                                                            |
+| ---------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data`           | [`TypeNode`](./typeNodes/README.md)                     | The type node that describes the event payload.                                                                                                                        |
 | `discriminators` | [`DiscriminatorNode`](./discriminatorNodes/README.md)[] | (Optional) The nodes that distinguish this event from others in the program. If multiple discriminators are provided, they are combined using a logical AND operation. |
 
 ## Functions
@@ -54,10 +54,9 @@ eventNode({
 ```ts
 eventNode({
     name: 'transferEvent',
-    data: hiddenPrefixTypeNode(
-        structTypeNode([structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') })]),
-        [constantValueNode(fixedSizeTypeNode(bytesTypeNode(), 8), bytesValueNode('base16', '0102030405060708'))],
-    ),
+    data: hiddenPrefixTypeNode(structTypeNode([structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') })]), [
+        constantValueNode(fixedSizeTypeNode(bytesTypeNode(), 8), bytesValueNode('base16', '0102030405060708')),
+    ]),
     discriminators: [
         constantDiscriminatorNode(
             constantValueNode(fixedSizeTypeNode(bytesTypeNode(), 8), bytesValueNode('base16', '0102030405060708')),

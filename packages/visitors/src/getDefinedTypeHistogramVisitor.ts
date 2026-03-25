@@ -81,14 +81,6 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                     return histogram;
                 },
 
-                visitEvent(node, { self }) {
-                    mode = 'event';
-                    stackLevel = 0;
-                    const histogram = visit(node.data, self);
-                    mode = null;
-                    return histogram;
-                },
-
                 visitDefinedTypeLink(node) {
                     const program = findProgramNodeFromPath(stack.getPath());
                     const key = program ? `${program.name}.${node.name}` : node.name;
@@ -102,6 +94,14 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                             total: 1,
                         },
                     };
+                },
+
+                visitEvent(node, { self }) {
+                    mode = 'event';
+                    stackLevel = 0;
+                    const histogram = visit(node.data, self);
+                    mode = null;
+                    return histogram;
                 },
 
                 visitInstruction(node, { self }) {
