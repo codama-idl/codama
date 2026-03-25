@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, CodamaError } from '@codama/errors';
 import { constantDiscriminatorNode, constantValueNode } from '@codama/nodes';
 import {
     bytesTypeNode,
@@ -113,5 +114,5 @@ test('it throws when the backing event type is missing', () => {
             [],
             generics,
         ),
-    ).toThrow('Event type [MissingEvent] is missing from the IDL types.');
+    ).toThrow(new CodamaError(CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, { name: 'MissingEvent' }));
 });

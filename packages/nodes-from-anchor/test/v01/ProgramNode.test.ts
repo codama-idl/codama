@@ -5,8 +5,8 @@ import {
     arrayTypeNode,
     bytesTypeNode,
     constantDiscriminatorNode,
-    constantValueNode,
     constantPdaSeedNodeFromBytes,
+    constantValueNode,
     definedTypeLinkNode,
     definedTypeNode,
     enumEmptyVariantTypeNode,
@@ -110,17 +110,20 @@ test('it creates program nodes', () => {
             ],
             events: [
                 eventNode({
-                    data: hiddenPrefixTypeNode(structTypeNode([
-                        structFieldTypeNode({
-                            name: 'amount',
-                            type: numberTypeNode('u64'),
-                        }),
-                    ]), [
-                        constantValueNode(
-                            fixedSizeTypeNode(bytesTypeNode(), 8),
-                            getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
-                        ),
-                    ]),
+                    data: hiddenPrefixTypeNode(
+                        structTypeNode([
+                            structFieldTypeNode({
+                                name: 'amount',
+                                type: numberTypeNode('u64'),
+                            }),
+                        ]),
+                        [
+                            constantValueNode(
+                                fixedSizeTypeNode(bytesTypeNode(), 8),
+                                getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
+                            ),
+                        ],
+                    ),
                     discriminators: [
                         constantDiscriminatorNode(
                             constantValueNode(
