@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/dynamic-parsers.svg?style=flat&label=%40codama%2Fdynamic-parsers
 [npm-url]: https://www.npmjs.com/package/@codama/dynamic-parsers
 
-This package provides a set of helpers that, given any Codama IDL, dynamically identifies and parses any byte array into deserialized accounts and instructions.
+This package provides a set of helpers that, given any Codama IDL, dynamically identifies and parses any byte array into deserialized accounts, events, and instructions.
 
 ## Installation
 
@@ -25,7 +25,7 @@ pnpm install @codama/dynamic-parsers
 This type represents the result of identifying and parsing a byte array from a given root node. It provides us with the full `NodePath` of the identified node, as well as the data deserialized from the provided bytes.
 
 ```ts
-type ParsedData<TNode extends AccountNode | InstructionNode> = {
+type ParsedData<TNode extends AccountNode | EventNode | InstructionNode> = {
     data: unknown;
     path: NodePath<TNode>;
 };
@@ -43,6 +43,20 @@ const parsedData = parseAccountData(rootNode, bytes);
 
 if (parsedData) {
     const accountNode: AccountNode = getLastNodeFromPath(parsedData.path);
+    const decodedData: unknown = parsedData.data;
+}
+```
+
+### `parseEventData(rootNode, bytes)`
+
+Similarly to `parseAccountData`, this function will match the provided bytes to an event node and deserialize them accordingly. It returns a `ParsedData<EventNode>` object if the parsing was successful, or `undefined` otherwise.
+
+```ts
+const parsedData = parseEventData(rootNode, bytes);
+// ^ ParsedData<EventNode> | undefined
+
+if (parsedData) {
+    const eventNode: EventNode = getLastNodeFromPath(parsedData.path);
     const decodedData: unknown = parsedData.data;
 }
 ```
@@ -74,6 +88,15 @@ if (parsedData) {
 }
 ```
 
+### `parseDataByName(rootNode, bytes, name, kind?)`
+
+This function bypasses discriminator-based identification and decodes the provided bytes using a node selected by name from the root program. It can target accounts, events, instructions, or any combination of those kinds.
+
+```ts
+const parsedData = parseDataByName(rootNode, bytes, 'myEvent', 'eventNode');
+// ^ ParsedData<EventNode> | undefined
+```
+
 ### `identifyAccountData`
 
 This function tries to match the provided bytes to an account node, returning a `NodePath<AccountNode>` object if the identification was successful, or `undefined` otherwise. It is used by the `parseAccountData` function under the hood.
@@ -97,5 +120,18 @@ const path = identifyInstructionData(root, bytes);
 
 if (path) {
     const instructionNode: InstructionNode = getLastNodeFromPath(path);
+}
+```
+
+### `identifyEventData`
+
+This function tries to match the provided bytes to an event node, returning a `NodePath<EventNode>` object if the identification was successful, or `undefined` otherwise. It is used by the `parseEventData` function under the hood.
+
+```ts
+const path = identifyEventData(root, bytes);
+// ^ NodePath<EventNode> | undefined
+
+if (path) {
+    const eventNode: EventNode = getLastNodeFromPath(path);
 }
 ```
