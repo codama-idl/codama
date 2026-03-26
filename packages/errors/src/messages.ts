@@ -6,6 +6,7 @@
 import {
     CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
     CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING,
     CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING,
     CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
@@ -51,6 +52,7 @@ export const CodamaErrorMessages: Readonly<{
 }> = {
     [CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: 'Account type [$name] is missing from the IDL types.',
     [CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING]: 'Argument name [$name] is missing from the instruction definition.',
+    [CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING]: 'Event type [$name] is missing from the IDL types.',
     [CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING]: 'Generic type [$name] is missing from the IDL types.',
     [CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED]: 'Program ID kind [$kind] is not implemented.',
     [CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]: 'Seed kind [$kind] is not implemented.',

@@ -1,6 +1,7 @@
 import type { AccountNode } from './AccountNode';
 import type { DefinedTypeNode } from './DefinedTypeNode';
 import type { ErrorNode } from './ErrorNode';
+import type { EventNode } from './EventNode';
 import type { InstructionNode } from './InstructionNode';
 import type { PdaNode } from './PdaNode';
 import type { CamelCaseString, Docs, ProgramVersion } from './shared';
@@ -11,6 +12,7 @@ export interface ProgramNode<
     TInstructions extends InstructionNode[] = InstructionNode[],
     TDefinedTypes extends DefinedTypeNode[] = DefinedTypeNode[],
     TErrors extends ErrorNode[] = ErrorNode[],
+    TEvents extends EventNode[] = EventNode[],
 > {
     readonly kind: 'programNode';
 
@@ -26,5 +28,6 @@ export interface ProgramNode<
     readonly instructions: TInstructions;
     readonly definedTypes: TDefinedTypes;
     readonly pdas: TPdas;
+    readonly events: TEvents;
     readonly errors: TErrors;
 }

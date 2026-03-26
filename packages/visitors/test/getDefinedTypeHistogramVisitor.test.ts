@@ -3,6 +3,7 @@ import {
     definedTypeLinkNode,
     definedTypeNode,
     enumTypeNode,
+    eventNode,
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
@@ -71,6 +72,7 @@ test('it counts the amount of times defined types are used within the tree', () 
             directlyAsInstructionArgs: 0,
             inAccounts: 1,
             inDefinedTypes: 0,
+            inEvents: 0,
             inInstructionArgs: 0,
             total: 1,
         },
@@ -78,8 +80,41 @@ test('it counts the amount of times defined types are used within the tree', () 
             directlyAsInstructionArgs: 1,
             inAccounts: 1,
             inDefinedTypes: 0,
+            inEvents: 0,
             inInstructionArgs: 1,
             total: 2,
+        },
+    });
+});
+
+test('it counts defined types used inside event payloads', () => {
+    const node = programNode({
+        definedTypes: [definedTypeNode({ name: 'eventPayload', type: structTypeNode([]) })],
+        events: [
+            eventNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        name: 'payload',
+                        type: definedTypeLinkNode('eventPayload'),
+                    }),
+                ]),
+                name: 'payloadCreated',
+            }),
+        ],
+        name: 'customProgram',
+        publicKey: '1111',
+    });
+
+    const histogram = visit(node, getDefinedTypeHistogramVisitor());
+
+    expect(histogram).toEqual({
+        'customProgram.eventPayload': {
+            directlyAsInstructionArgs: 0,
+            inAccounts: 0,
+            inDefinedTypes: 0,
+            inEvents: 1,
+            inInstructionArgs: 0,
+            total: 1,
         },
     });
 });
@@ -115,6 +150,7 @@ test('it counts links from different programs separately', () => {
             directlyAsInstructionArgs: 0,
             inAccounts: 0,
             inDefinedTypes: 1,
+            inEvents: 0,
             inInstructionArgs: 0,
             total: 1,
         },
@@ -122,6 +158,7 @@ test('it counts links from different programs separately', () => {
             directlyAsInstructionArgs: 0,
             inAccounts: 0,
             inDefinedTypes: 1,
+            inEvents: 0,
             inInstructionArgs: 0,
             total: 1,
         },
