@@ -11,7 +11,6 @@ import {
     DefinedTypeLinkNode,
     DefinedTypeNode,
     EventNode,
-    getAllPrograms,
     InstructionArgumentLinkNode,
     InstructionArgumentNode,
     InstructionLinkNode,
@@ -103,11 +102,7 @@ export function getNodeCodec<TNode extends EncodableNodes>(
     options: CodecVisitorOptions = {},
 ): Codec<unknown> {
     const linkables = new LinkableDictionary();
-    if (isNode(path[0], 'rootNode')) {
-        getAllPrograms(path[0]).forEach(program => visit(program, getRecordLinkablesVisitor(linkables)));
-    } else {
-        visit(path[0], getRecordLinkablesVisitor(linkables));
-    }
+    visit(path[0], getRecordLinkablesVisitor(linkables));
 
     return visit(
         getLastNodeFromPath(path),
