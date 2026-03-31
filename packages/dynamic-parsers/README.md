@@ -88,15 +88,6 @@ if (parsedData) {
 }
 ```
 
-### `parseDataByName(rootNode, bytes, name, kind?)`
-
-This function bypasses discriminator-based identification and decodes the provided bytes using a node selected by name from the root program. It can target accounts, events, instructions, or any combination of those kinds.
-
-```ts
-const parsedData = parseDataByName(rootNode, bytes, 'myEvent', 'eventNode');
-// ^ ParsedData<EventNode> | undefined
-```
-
 ### `identifyAccountData`
 
 This function tries to match the provided bytes to an account node, returning a `NodePath<AccountNode>` object if the identification was successful, or `undefined` otherwise. It is used by the `parseAccountData` function under the hood.
