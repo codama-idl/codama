@@ -97,10 +97,7 @@ export type CodecVisitorOptions = {
     bytesEncoding?: BytesEncoding;
 };
 
-export function getNodeCodec<TNode extends EncodableNodes>(
-    path: NodePath<TNode>,
-    options: CodecVisitorOptions = {},
-): Codec<unknown> {
+export function getNodeCodec(path: NodePath<EncodableNodes>, options: CodecVisitorOptions = {}): Codec<unknown> {
     const linkables = new LinkableDictionary();
     visit(path[0], getRecordLinkablesVisitor(linkables));
 
