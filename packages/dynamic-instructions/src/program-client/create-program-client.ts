@@ -52,18 +52,18 @@ export function createProgramClient<TClient = ProgramClient>(
 ): TClient {
     const json = typeof idl === 'string' ? idl : JSON.stringify(idl);
     const codama = createFromJson(json);
-    let root = codama.getRoot();
 
     if (options.programId) {
         codama.update(
             updateProgramsVisitor({
-                [root.program.name]: {
+                [codama.getRoot().program.name]: {
                     publicKey: toAddress(options.programId),
                 },
             }),
         );
-        root = codama.getRoot();
     }
+
+    const root = codama.getRoot();
     const programAddress = address(root.program.publicKey);
 
     const instructions = new Map<string, InstructionNode>();
