@@ -1,4 +1,3 @@
-import type { ReadonlyUint8Array } from '@solana/codecs';
 import type { BytesEncoding } from 'codama';
 
 import { getMemoizedBase16Codec, getMemoizedBase58Codec, getMemoizedBase64Codec, getMemoizedUtf8Codec } from './codecs';
@@ -34,19 +33,4 @@ export function getCodecFromBytesEncoding(encoding: BytesEncoding) {
  */
 export function isUint8Array(value: unknown): value is Uint8Array {
     return value instanceof Uint8Array;
-}
-
-/**
- * Concatenates multiple byte arrays into a single Uint8Array.
- */
-export function concatBytes(chunks: ReadonlyUint8Array[]): Uint8Array {
-    let totalLength = 0;
-    for (const chunk of chunks) totalLength += chunk.length;
-    const out = new Uint8Array(totalLength);
-    let offset = 0;
-    for (const chunk of chunks) {
-        out.set(chunk as Uint8Array, offset);
-        offset += chunk.length;
-    }
-    return out;
 }

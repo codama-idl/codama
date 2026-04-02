@@ -1,9 +1,8 @@
 import { getNodeCodec, type ReadonlyUint8Array } from '@codama/dynamic-codecs';
-import { Codec } from '@solana/codecs';
+import { Codec, mergeBytes } from '@solana/codecs';
 import type { InstructionNode, RootNode } from 'codama';
 import { visitOrElse } from 'codama';
 
-import { concatBytes } from '../../shared/bytes-encoding';
 import { ArgumentError } from '../../shared/errors';
 import type { ArgumentsInput } from '../../shared/types';
 import { createDefaultValueEncoderVisitor, createInputValueTransformer } from '../visitors';
@@ -34,7 +33,7 @@ export function encodeInstructionArguments(
         }
     });
 
-    return concatBytes(chunks);
+    return mergeBytes(chunks as Uint8Array[]);
 }
 
 function encodeOmittedArgument(

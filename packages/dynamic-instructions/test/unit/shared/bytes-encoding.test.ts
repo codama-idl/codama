@@ -1,11 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    concatBytes,
-    getCodecFromBytesEncoding,
-    isUint8Array,
-    uint8ArrayToEncodedString,
-} from '../../../src/shared/bytes-encoding';
+import { getCodecFromBytesEncoding, isUint8Array, uint8ArrayToEncodedString } from '../../../src/shared/bytes-encoding';
 
 describe('uint8ArrayToEncodedString', () => {
     const helloBytes = new Uint8Array([72, 101, 108, 108, 111]);
@@ -82,32 +77,5 @@ describe('isUint8Array', () => {
     test('should return false for other typed arrays', () => {
         expect(isUint8Array(new Uint16Array([1, 2]))).toBe(false);
         expect(isUint8Array(new Int8Array([1, 2]))).toBe(false);
-    });
-});
-
-describe('concatBytes', () => {
-    test('should concatenate multiple byte arrays', () => {
-        const a = new Uint8Array([1, 2]);
-        const b = new Uint8Array([3, 4]);
-        const c = new Uint8Array([5]);
-        expect(concatBytes([a, b, c])).toEqual(new Uint8Array([1, 2, 3, 4, 5]));
-    });
-
-    test('should return empty array for empty input', () => {
-        expect(concatBytes([])).toEqual(new Uint8Array());
-    });
-
-    test('should return copy of single chunk', () => {
-        const single = new Uint8Array([1, 2, 3]);
-        const result = concatBytes([single]);
-        expect(result).toEqual(single);
-        expect(result).not.toBe(single);
-    });
-
-    test('should handle empty chunks', () => {
-        const a = new Uint8Array([1]);
-        const empty = new Uint8Array();
-        const b = new Uint8Array([2]);
-        expect(concatBytes([a, empty, b])).toEqual(new Uint8Array([1, 2]));
     });
 });
