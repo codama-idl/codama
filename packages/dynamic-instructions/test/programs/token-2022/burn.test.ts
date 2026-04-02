@@ -7,9 +7,9 @@ import { createMint, createTokenAccount, mintTokens, token2022Client } from './t
 describe('Token 2022 Program: burn', () => {
     test('should burn tokens from a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mintAccount, payer);
@@ -19,7 +19,7 @@ describe('Token 2022 Program: burn', () => {
             .burn({ amount: 400_000 })
             .accounts({ account: tokenAccount, authority: payer, mint: mintAccount })
             .instruction();
-        ctx.sendInstruction(burnIx, [payer]);
+        await ctx.sendInstruction(burnIx, [payer]);
 
         const tokenData = getTokenDecoder().decode(ctx.requireEncodedAccount(tokenAccount).data);
         expect(tokenData.amount).toBe(600_000n);

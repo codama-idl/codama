@@ -15,8 +15,8 @@ describe('SAS: changeAuthorizedSigners', () => {
 
     test('should replace authorized signers with a new set', async () => {
         const { authority, credentialPda } = await createCredential(ctx);
-        const newSigner1 = ctx.createAccount();
-        const newSigner2 = ctx.createAccount();
+        const newSigner1 = await ctx.createAccount();
+        const newSigner2 = await ctx.createAccount();
 
         const expectedAccounts = [authority, authority, credentialPda, ctx.SYSTEM_PROGRAM_ADDRESS];
         const ix = await programClient.methods
@@ -28,7 +28,7 @@ describe('SAS: changeAuthorizedSigners', () => {
         expectedAccounts.forEach((expected, i) => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(credentialPda);
         const credential = getCredentialDecoder().decode(account.data);

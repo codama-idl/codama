@@ -7,8 +7,8 @@ import { SPL_TOKEN_MINT_SIZE, systemClient, tokenClient } from './token-test-uti
 describe('Token Program: initializeMint', () => {
     test('should initialize a mint with default freeze authority (None)', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
 
         const mintRent = ctx.getMinimumBalanceForRentExemption(BigInt(SPL_TOKEN_MINT_SIZE));
 
@@ -29,7 +29,7 @@ describe('Token Program: initializeMint', () => {
             .accounts({ mint: mintAccount })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initMintIx], [payer, mintAccount]);
+        await ctx.sendInstructions([createAccountIx, initMintIx], [payer, mintAccount]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mintAccount).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });

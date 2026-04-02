@@ -27,7 +27,7 @@ describe('Program Metadata: setAuthority', () => {
         expect(metadataBefore.canonical).toBe(true);
 
         // Set new authority
-        const newAuthority = ctx.createAccount();
+        const newAuthority = await ctx.createAccount();
         const expectedAccounts = [metadataPda, authority, programAddress, programDataAddress];
         const setAuthorityIx = await programClient.methods
             .setAuthority({ newAuthority })
@@ -44,7 +44,7 @@ describe('Program Metadata: setAuthority', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(setAuthorityIx, [authority]);
+        await ctx.sendInstruction(setAuthorityIx, [authority]);
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
         const metadataAfter = decodeMetadataAccount(accountAfter.data);
         expect((metadataAfter.authority as Some<Address>).value).toBe(newAuthority);
@@ -59,7 +59,7 @@ describe('Program Metadata: setAuthority', () => {
         } = await initializeCanonicalMetadata(ctx);
 
         // Set authority
-        const someAuthority = ctx.createAccount();
+        const someAuthority = await ctx.createAccount();
         const setAuthorityIx = await programClient.methods
             .setAuthority({ newAuthority: someAuthority })
             .accounts({
@@ -70,7 +70,7 @@ describe('Program Metadata: setAuthority', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(setAuthorityIx, [authority]);
+        await ctx.sendInstruction(setAuthorityIx, [authority]);
         const accountWithAuthority = ctx.requireEncodedAccount(metadataPda);
         const metadataWithAuthority = decodeMetadataAccount(accountWithAuthority.data);
         expect((metadataWithAuthority.authority as Some<Address>).value).toBe(someAuthority);
@@ -92,7 +92,7 @@ describe('Program Metadata: setAuthority', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(removeAuthorityIx, [authority]);
+        await ctx.sendInstruction(removeAuthorityIx, [authority]);
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
         const metadataAfter = decodeMetadataAccount(accountAfter.data);
         expect(metadataAfter.authority).toEqual({ __option: 'None' });

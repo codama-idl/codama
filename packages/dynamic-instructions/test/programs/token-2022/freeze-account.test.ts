@@ -7,10 +7,10 @@ import { createMint, createTokenAccount, token2022Client } from './token-2022-te
 describe('Token 2022 Program: freezeAccount', () => {
     test('should freeze a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
-        const freezeAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
+        const freezeAuthority = await ctx.createFundedAccount();
 
         await createMint(ctx, payer, mintAccount, payer, freezeAuthority);
         await createTokenAccount(ctx, payer, tokenAccount, mintAccount, payer);
@@ -20,7 +20,7 @@ describe('Token 2022 Program: freezeAccount', () => {
             .accounts({ account: tokenAccount, mint: mintAccount, owner: freezeAuthority })
             .instruction();
 
-        ctx.sendInstruction(freezeIx, [freezeAuthority]);
+        await ctx.sendInstruction(freezeIx, [freezeAuthority]);
 
         const account = ctx.requireEncodedAccount(tokenAccount);
         const tokenData = getTokenDecoder().decode(account.data);

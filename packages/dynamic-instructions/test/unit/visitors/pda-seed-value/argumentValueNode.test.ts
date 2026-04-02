@@ -112,7 +112,7 @@ describe('pda-seed-value: visitArgumentValue', () => {
         });
 
         test('should encode value when argument is provided', async () => {
-            const authority = SvmTestContext.generateAddress();
+            const authority = await SvmTestContext.generateAddress();
             const visitor = makeVisitor({
                 argumentsInput: { authority },
                 ixNode: ixNodeWithOptionalSeed,

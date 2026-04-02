@@ -21,9 +21,9 @@ describe('MPL Token Metadata: create', () => {
     });
 
     test('should construct a valid create instruction', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
 
         const [metadataPda] = await findMetadataPda({ mint });
@@ -78,7 +78,7 @@ describe('MPL Token Metadata: create', () => {
             expect(expected, `Account mismatch at index ${i}`).toBe(ix.accounts?.[i].address);
         });
 
-        ctx.sendInstruction(ix, [payer, mintAuthority]);
+        await ctx.sendInstruction(ix, [payer, mintAuthority]);
 
         const metadataAccountInfo = ctx.requireEncodedAccount(metadataPda);
         const metadata = getMetadataDecoder().decode(metadataAccountInfo.data);
@@ -97,9 +97,9 @@ describe('MPL Token Metadata: create', () => {
     });
 
     test('should throw ValidationError for invalid sellerFeeBasisPoints [amountValueNode]', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
         const [masterEditionPda] = await findMasterEditionPda({ mint });
 
@@ -138,9 +138,9 @@ describe('MPL Token Metadata: create', () => {
     });
 
     test('should construct a create instruction with mint as signer and provided TokenProgram', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
 
         const [metadataPda] = await findMetadataPda({ mint });
@@ -195,7 +195,7 @@ describe('MPL Token Metadata: create', () => {
             expect(expected, `Account mismatch at index ${i}`).toBe(ix.accounts?.[i].address);
         });
 
-        ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
+        await ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
 
         const metadataAccountInfo = ctx.requireEncodedAccount(metadataPda);
         const metadata = getMetadataDecoder().decode(metadataAccountInfo.data);

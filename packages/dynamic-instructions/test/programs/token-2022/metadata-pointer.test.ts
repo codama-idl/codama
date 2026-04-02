@@ -13,9 +13,9 @@ const METADATA_POINTER_EXT = (authority: Address, metadataAddress: Address): Ext
 describe('Token 2022 Program: metadataPointer', () => {
     test('should initialize metadata pointer extension [initializeMetadataPointer]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const metadataPointerAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const metadataPointerAuthority = await ctx.createFundedAccount();
 
         // MetadataPointer points to the mint itself
         const size = getMintSize(METADATA_POINTER_EXT(metadataPointerAuthority, mint));
@@ -36,7 +36,7 @@ describe('Token 2022 Program: metadataPointer', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initMetadataPointerIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initMetadataPointerIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });
@@ -53,10 +53,10 @@ describe('Token 2022 Program: metadataPointer', () => {
 
     test('should update metadata pointer address [updateMetadataPointer]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const metadataPointerAuthority = ctx.createFundedAccount();
-        const newMetadataAddress = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const metadataPointerAuthority = await ctx.createFundedAccount();
+        const newMetadataAddress = await ctx.createAccount();
 
         const size = getMintSize(METADATA_POINTER_EXT(metadataPointerAuthority, mint));
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -76,7 +76,7 @@ describe('Token 2022 Program: metadataPointer', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initMetadataPointerIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initMetadataPointerIx, initMintIx], [payer, mint]);
 
         // Update metadata pointer to a new address
         const updateIx = await token2022Client.methods
@@ -84,7 +84,7 @@ describe('Token 2022 Program: metadataPointer', () => {
             .accounts({ metadataPointerAuthority, mint })
             .signers(['metadataPointerAuthority'])
             .instruction();
-        ctx.sendInstruction(updateIx, [payer, metadataPointerAuthority]);
+        await ctx.sendInstruction(updateIx, [payer, metadataPointerAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(

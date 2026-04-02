@@ -19,7 +19,7 @@ describe('Program Metadata: extend', () => {
     });
 
     test('should extend buffer capacity', async () => {
-        const feePayer = ctx.createFundedAccount();
+        const feePayer = await ctx.createFundedAccount();
         const { bufferAccount } = await allocateBufferAccount(ctx);
 
         const accountBefore = ctx.requireEncodedAccount(bufferAccount);
@@ -36,7 +36,7 @@ describe('Program Metadata: extend', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(extendIx, [feePayer, bufferAccount]);
+        await ctx.sendInstruction(extendIx, [feePayer, bufferAccount]);
 
         const accountAfter = ctx.requireEncodedAccount(bufferAccount);
         expect(accountAfter.data.length).toBe(sizeBefore + extendLength);
@@ -64,7 +64,7 @@ describe('Program Metadata: extend', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(extendIx, [authority]);
+        await ctx.sendInstruction(extendIx, [authority]);
 
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
         expect(accountAfter.data.length).toBe(sizeBefore + extendLength);
@@ -74,7 +74,7 @@ describe('Program Metadata: extend', () => {
     });
 
     test('should throw ArgumentError when length argument is missing', async () => {
-        const authority = ctx.createFundedAccount();
+        const authority = await ctx.createFundedAccount();
 
         await expect(
             programClient.methods

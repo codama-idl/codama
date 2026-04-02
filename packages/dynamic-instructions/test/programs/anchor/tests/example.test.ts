@@ -13,8 +13,8 @@ describe('anchor-example: commonIxs', () => {
     let ctx: SvmTestContext;
     let payer: Address;
 
-    beforeEach(() => {
-        ({ ctx, payer } = createTestContext());
+    beforeEach(async () => {
+        ({ ctx, payer } = await createTestContext());
     });
 
     describe('pubkeySeedIx', () => {
@@ -24,24 +24,24 @@ describe('anchor-example: commonIxs', () => {
                 .accounts({ signer: payer })
                 .instruction();
 
-            ctx.sendInstruction(ix, [payer]);
+            await ctx.sendInstruction(ix, [payer]);
         });
     });
 
     describe('updateOptionalInput', () => {
         test('should update optional input field with and without value', async () => {
-            const signer = ctx.createFundedAccount();
+            const signer = await ctx.createFundedAccount();
 
             const ix0 = await programClient.methods.pubkeySeedIx({ input: 42 }).accounts({ signer }).instruction();
 
-            ctx.sendInstruction(ix0, [signer]);
+            await ctx.sendInstruction(ix0, [signer]);
 
             const [pda] = await getProgramDerivedAddress({
                 programAddress: programClient.programAddress,
                 seeds: ['seed', getAddressEncoder().encode(signer)],
             });
 
-            const optionalAddress = ctx.createAccount();
+            const optionalAddress = await ctx.createAccount();
             const ix1 = await programClient.methods
                 .updateOptionalInput({
                     input: 44,
@@ -50,7 +50,7 @@ describe('anchor-example: commonIxs', () => {
                 .accounts({ signer })
                 .instruction();
 
-            ctx.sendInstruction(ix1, [signer]);
+            await ctx.sendInstruction(ix1, [signer]);
 
             const account1 = ctx.requireEncodedAccount(pda);
             const decoded1 = decodeDataAccount1(programClient.root, account1.data);
@@ -61,7 +61,7 @@ describe('anchor-example: commonIxs', () => {
                 .accounts({ signer })
                 .instruction();
 
-            ctx.sendInstruction(ix2, [signer]);
+            await ctx.sendInstruction(ix2, [signer]);
 
             const account2 = ctx.requireEncodedAccount(pda);
             const decoded2 = decodeDataAccount1(programClient.root, account2.data);
@@ -71,7 +71,7 @@ describe('anchor-example: commonIxs', () => {
 
     describe('updateOptionalAccount', () => {
         test('should handle optional accounts', async () => {
-            const optionalAccount = ctx.createAccount();
+            const optionalAccount = await ctx.createAccount();
             const ix1 = await programClient.methods
                 .updateOptionalAccount({ id: 1 })
                 .accounts({
@@ -80,7 +80,7 @@ describe('anchor-example: commonIxs', () => {
                 })
                 .instruction();
 
-            ctx.sendInstruction(ix1, [payer]);
+            await ctx.sendInstruction(ix1, [payer]);
 
             const ix2 = await programClient.methods
                 .updateOptionalAccount({ id: 2 })
@@ -90,13 +90,13 @@ describe('anchor-example: commonIxs', () => {
                 })
                 .instruction();
 
-            ctx.sendInstruction(ix2, [payer]);
+            await ctx.sendInstruction(ix2, [payer]);
         });
     });
 
     describe('noArguments', () => {
         test('should execute instruction with no arguments', async () => {
-            const account = ctx.createAccount();
+            const account = await ctx.createAccount();
 
             const ix = await programClient.methods
                 .noArguments()
@@ -106,12 +106,12 @@ describe('anchor-example: commonIxs', () => {
                 })
                 .instruction();
 
-            ctx.sendInstruction(ix, [payer, account]);
+            await ctx.sendInstruction(ix, [payer, account]);
         });
     });
 
     test('ExternalProgramsWithPdaIx: should resolve dependent pda and external program addresses', async () => {
-        const mint = ctx.createAccount();
+        const mint = await ctx.createAccount();
         const addressEncoder = getAddressEncoder();
         const [expectedAta] = await getProgramDerivedAddress({
             programAddress: ctx.ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
@@ -159,7 +159,7 @@ describe('anchor-example: commonIxs', () => {
         });
 
         // Send transaction to verify it executes on-chain
-        ctx.sendInstruction(ix, [payer, mint]);
+        await ctx.sendInstruction(ix, [payer, mint]);
     });
 
     test('FourLevelPdaIx: should resolve four-level dependent PDA', async () => {
@@ -212,7 +212,7 @@ describe('anchor-example: commonIxs', () => {
             expect(ix.accounts[i].address, expected[1]).eq(expected[0]);
         });
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
     });
 
     describe('stringSeedPda', () => {
@@ -225,7 +225,7 @@ describe('anchor-example: commonIxs', () => {
                 .accounts({ signer: payer })
                 .instruction();
 
-            ctx.sendInstruction(ix, [payer]);
+            await ctx.sendInstruction(ix, [payer]);
 
             const [expectedPda] = await getProgramDerivedAddress({
                 programAddress: programClient.programAddress,
@@ -258,8 +258,8 @@ describe('anchor-example: commonIxs', () => {
         const addressEncoder = getAddressEncoder();
 
         test('should derive cross-program PDA using pdaNode.programId, not root program', async () => {
-            const signer = SvmTestContext.generateAddress();
-            const mint = SvmTestContext.generateAddress();
+            const signer = await SvmTestContext.generateAddress();
+            const mint = await SvmTestContext.generateAddress();
 
             const [actualPda] = await programClient.pdas.tokenAccount({ mint, signer });
 
@@ -275,10 +275,10 @@ describe('anchor-example: commonIxs', () => {
         });
 
         test('should not be affected by programId option override and still use pdaNode.programId', async () => {
-            const signer = SvmTestContext.generateAddress();
-            const mint = SvmTestContext.generateAddress();
+            const signer = await SvmTestContext.generateAddress();
+            const mint = await SvmTestContext.generateAddress();
 
-            const overrideProgramId = SvmTestContext.generateAddress();
+            const overrideProgramId = await SvmTestContext.generateAddress();
             const overrideClient = createProgramClient<ExampleProgramClient>(idl, { programId: overrideProgramId });
             // double-check that the override took effect
             expect(overrideClient.programAddress).toBe(overrideProgramId);
@@ -290,7 +290,7 @@ describe('anchor-example: commonIxs', () => {
         });
 
         test('should fall back to root program when pdaNode has no programId', async () => {
-            const signer = SvmTestContext.generateAddress();
+            const signer = await SvmTestContext.generateAddress();
 
             const [actualPda] = await programClient.pdas.level1({ signer });
 

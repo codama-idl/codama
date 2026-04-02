@@ -12,7 +12,7 @@ describe('Program Metadata: trim', () => {
     });
 
     test('should trim metadata to reduced size', async () => {
-        const destination = ctx.createAccount();
+        const destination = await ctx.createAccount();
         const {
             authority,
             programAddress,
@@ -37,7 +37,7 @@ describe('Program Metadata: trim', () => {
                 programData: programDataAddress,
             })
             .instruction();
-        ctx.sendInstruction(setDataIx, [authority]);
+        await ctx.sendInstruction(setDataIx, [authority]);
 
         const balanceBefore = ctx.getBalanceOrZero(destination);
         expect(balanceBefore).toBe(0n);
@@ -65,7 +65,7 @@ describe('Program Metadata: trim', () => {
         trimIx.accounts?.forEach((ixAccount, i) => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
-        ctx.sendInstruction(trimIx, [authority]);
+        await ctx.sendInstruction(trimIx, [authority]);
 
         const account = ctx.requireEncodedAccount(metadataPda);
         const metadata = decodeMetadataAccount(account.data);

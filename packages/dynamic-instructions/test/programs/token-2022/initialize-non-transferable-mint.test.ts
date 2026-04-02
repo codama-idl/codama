@@ -8,8 +8,8 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: initializeNonTransferableMint', () => {
     test('should initialize non-transferable mint extension', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
 
         const size = getMintSize([{ __kind: 'NonTransferable' }]);
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -28,7 +28,7 @@ describe('Token 2022 Program: initializeNonTransferableMint', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initNonTransferableIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initNonTransferableIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });

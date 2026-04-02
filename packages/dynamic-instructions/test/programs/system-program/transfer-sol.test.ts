@@ -13,8 +13,8 @@ describe('System Program: transferSol', () => {
 
     test('should transfer SOL from one account to another', async () => {
         const initialSourceBalance = 3_000_000_000;
-        const source = ctx.createFundedAccount(BigInt(initialSourceBalance));
-        const destination = ctx.createAccount();
+        const source = await ctx.createFundedAccount(BigInt(initialSourceBalance));
+        const destination = await ctx.createAccount();
         const transferAmount = 1_000_000_000;
 
         expect(ctx.fetchEncodedAccount(source)).toMatchObject({
@@ -27,7 +27,7 @@ describe('System Program: transferSol', () => {
             .accounts({ destination, source })
             .instruction();
 
-        ctx.sendInstruction(instruction, [source]);
+        await ctx.sendInstruction(instruction, [source]);
 
         const sourceAccount = ctx.requireEncodedAccount(source);
         expect(sourceAccount.lamports).toBeLessThan(BigInt(initialSourceBalance) - BigInt(transferAmount));

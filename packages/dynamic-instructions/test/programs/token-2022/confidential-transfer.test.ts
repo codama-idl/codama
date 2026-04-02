@@ -18,9 +18,9 @@ const getConfidentialTransferMintExt = (authority: Address): ExtensionArgs[] => 
 describe('Token 2022 Program: confidentialTransfer', () => {
     test('should initialize confidential transfer mint extension [initializeConfidentialTransferMint]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const confidentialTransferAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const confidentialTransferAuthority = await ctx.createFundedAccount();
 
         const size = getMintSize(getConfidentialTransferMintExt(confidentialTransferAuthority));
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -44,7 +44,7 @@ describe('Token 2022 Program: confidentialTransfer', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initConfidentialTransferIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initConfidentialTransferIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });
@@ -62,10 +62,10 @@ describe('Token 2022 Program: confidentialTransfer', () => {
 
     test('should update confidential transfer mint config [updateConfidentialTransferMint]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const confidentialTransferAuthority = ctx.createFundedAccount();
-        const auditorElgamalPubkey = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const confidentialTransferAuthority = await ctx.createFundedAccount();
+        const auditorElgamalPubkey = await ctx.createFundedAccount();
 
         const size = getMintSize(getConfidentialTransferMintExt(confidentialTransferAuthority));
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -89,13 +89,13 @@ describe('Token 2022 Program: confidentialTransfer', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initConfidentialTransferIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initConfidentialTransferIx, initMintIx], [payer, mint]);
 
         const updateIx = await token2022Client.methods
             .updateConfidentialTransferMint({ auditorElgamalPubkey: null, autoApproveNewAccounts: false })
             .accounts({ authority: confidentialTransferAuthority, mint })
             .instruction();
-        ctx.sendInstruction(updateIx, [payer, confidentialTransferAuthority]);
+        await ctx.sendInstruction(updateIx, [payer, confidentialTransferAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toEqual(

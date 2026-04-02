@@ -36,8 +36,8 @@ describe('SAS: createTokenizedAttestation', () => {
         const attestationData = serializeAttestationData(schema, { field1: 'test' });
         const { sasPda, schemaMintPda } = await tokenizeSchema(ctx, authority, credentialPda, schemaPda);
 
-        const nonce = ctx.createAccount();
-        const recipient = ctx.createFundedAccount();
+        const nonce = await ctx.createAccount();
+        const recipient = await ctx.createFundedAccount();
         const [attestationPda] = await deriveAttestationPda({ credential: credentialPda, nonce, schema: schemaPda });
         const [attestationMintPda] = await deriveAttestationMintPda({ attestation: attestationPda });
 
@@ -104,7 +104,7 @@ describe('SAS: createTokenizedAttestation', () => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
 
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(attestationPda);
         const attestation = getAttestationDecoder().decode(account.data);
@@ -122,8 +122,8 @@ describe('SAS: createTokenizedAttestation', () => {
         const { schemaPda } = await createSchema(ctx, authority, credentialPda);
         const { sasPda } = await tokenizeSchema(ctx, authority, credentialPda, schemaPda);
 
-        const nonce = ctx.createAccount();
-        const recipient = ctx.createFundedAccount();
+        const nonce = await ctx.createAccount();
+        const recipient = await ctx.createFundedAccount();
         const [attestationPda] = await deriveAttestationPda({ credential: credentialPda, nonce, schema: schemaPda });
         const [attestationMintPda] = await deriveAttestationMintPda({ attestation: attestationPda });
 
@@ -167,8 +167,8 @@ describe('SAS: createTokenizedAttestation', () => {
         const { schemaPda } = await createSchema(ctx, authority, credentialPda);
         const { sasPda } = await tokenizeSchema(ctx, authority, credentialPda, schemaPda);
 
-        const nonce = ctx.createAccount();
-        const recipient = ctx.createFundedAccount();
+        const nonce = await ctx.createAccount();
+        const recipient = await ctx.createFundedAccount();
         const [attestationPda] = await deriveAttestationPda({ credential: credentialPda, nonce, schema: schemaPda });
         const [attestationMintPda] = await deriveAttestationMintPda({ attestation: attestationPda });
 

@@ -16,10 +16,10 @@ const TRANSFER_FEE_AMOUNT_EXT = [{ __kind: 'TransferFeeAmount' as const, withhel
 describe('Token 2022 Program: transferFee', () => {
     test('should initialize transfer fee config extension [initializeTransferFeeConfig]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const feeAuthority = ctx.createFundedAccount();
-        const withdrawAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const feeAuthority = await ctx.createFundedAccount();
+        const withdrawAuthority = await ctx.createFundedAccount();
 
         const size = getMintSize([
             {
@@ -52,7 +52,7 @@ describe('Token 2022 Program: transferFee', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initFeeConfigIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initFeeConfigIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });
@@ -69,9 +69,9 @@ describe('Token 2022 Program: transferFee', () => {
 
     test('should transfer tokens with fee [transferCheckedWithFee]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const feeAuthority = ctx.createFundedAccount();
-        const withdrawAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const feeAuthority = await ctx.createFundedAccount();
+        const withdrawAuthority = await ctx.createFundedAccount();
 
         // Prepare mint and accounts with Transfer fee
         const mint = await createTransferFeeMint(ctx, payer, feeAuthority, withdrawAuthority);
@@ -87,7 +87,7 @@ describe('Token 2022 Program: transferFee', () => {
             .transferCheckedWithFee({ amount, decimals: 9, fee })
             .accounts({ authority: payer, destination, mint, source })
             .instruction();
-        ctx.sendInstruction(transferIx, [payer]);
+        await ctx.sendInstruction(transferIx, [payer]);
 
         const decoder = getTokenDecoder();
         const sourceData = decoder.decode(ctx.requireEncodedAccount(source).data);
@@ -98,9 +98,9 @@ describe('Token 2022 Program: transferFee', () => {
 
     test('should set new transfer fee [setTransferFee]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const feeAuthority = ctx.createFundedAccount();
-        const withdrawAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const feeAuthority = await ctx.createFundedAccount();
+        const withdrawAuthority = await ctx.createFundedAccount();
 
         // Prepare mint with Transfer fee
         const mint = await createTransferFeeMint(ctx, payer, feeAuthority, withdrawAuthority);
@@ -110,7 +110,7 @@ describe('Token 2022 Program: transferFee', () => {
             .accounts({ mint, transferFeeConfigAuthority: feeAuthority })
             .signers(['transferFeeConfigAuthority'])
             .instruction();
-        ctx.sendInstruction(setFeeIx, [payer, feeAuthority]);
+        await ctx.sendInstruction(setFeeIx, [payer, feeAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(

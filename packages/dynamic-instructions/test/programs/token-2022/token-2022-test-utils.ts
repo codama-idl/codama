@@ -26,13 +26,13 @@ export async function createMint(
         .createAccount({ lamports, programAddress: ctx.TOKEN_2022_PROGRAM_ADDRESS, space })
         .accounts({ newAccount: mint, payer })
         .instruction();
-    ctx.sendInstruction(createMintAccountIx, [payer, mint]);
+    await ctx.sendInstruction(createMintAccountIx, [payer, mint]);
 
     const initializeMintIx = await token2022Client.methods
         .initializeMint({ decimals: 9, freezeAuthority: freezeAuthority ?? null, mintAuthority })
         .accounts({ mint })
         .instruction();
-    ctx.sendInstruction(initializeMintIx, [payer]);
+    await ctx.sendInstruction(initializeMintIx, [payer]);
 }
 
 // Creates basic token account without extensions.
@@ -55,7 +55,7 @@ export async function createTokenAccount(
         .accounts({ account, mint, owner })
         .instruction();
 
-    ctx.sendInstructions([createAccountIx, initAccountIx], [payer, account]);
+    await ctx.sendInstructions([createAccountIx, initAccountIx], [payer, account]);
 }
 
 // Creates a mint with TransferFeeConfig extension.
@@ -70,7 +70,7 @@ export async function createTransferFeeMint(
     },
 ): Promise<Address> {
     const { maximumFee, transferFeeBasisPoints } = options;
-    const mint = ctx.createAccount();
+    const mint = await ctx.createAccount();
     const size = getMintSize([
         {
             __kind: 'TransferFeeConfig',
@@ -103,7 +103,7 @@ export async function createTransferFeeMint(
         .accounts({ mint })
         .instruction();
 
-    ctx.sendInstructions([createAccountIx, initFeeConfigIx, initMintIx], [payer, mint]);
+    await ctx.sendInstructions([createAccountIx, initFeeConfigIx, initMintIx], [payer, mint]);
     return mint;
 }
 
@@ -115,7 +115,7 @@ export async function createTokenAccountWithExtensions(
     owner: Address,
     extensions: NonNullable<Parameters<typeof getTokenSize>[0]>,
 ): Promise<Address> {
-    const account = ctx.createAccount();
+    const account = await ctx.createAccount();
     const size = getTokenSize(extensions);
     const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
 
@@ -128,7 +128,7 @@ export async function createTokenAccountWithExtensions(
         .accounts({ account, mint })
         .instruction();
 
-    ctx.sendInstructions([createAccountIx, initAccountIx], [payer, account]);
+    await ctx.sendInstructions([createAccountIx, initAccountIx], [payer, account]);
 
     return account;
 }
@@ -145,5 +145,5 @@ export async function mintTokens(
         .mintTo({ amount })
         .accounts({ mint, mintAuthority, token: destination })
         .instruction();
-    ctx.sendInstruction(mintIx, [payer, mintAuthority]);
+    await ctx.sendInstruction(mintIx, [payer, mintAuthority]);
 }

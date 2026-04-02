@@ -12,7 +12,7 @@ describe('System Program: allocate', () => {
     });
 
     test('should allocate space for an account', async () => {
-        const account = ctx.createFundedAccount();
+        const account = await ctx.createFundedAccount();
         const space = 100;
 
         const accountBefore = ctx.requireEncodedAccount(account);
@@ -23,7 +23,7 @@ describe('System Program: allocate', () => {
             .accounts({ newAccount: account })
             .instruction();
 
-        ctx.sendInstruction(instruction, [account]);
+        await ctx.sendInstruction(instruction, [account]);
 
         const accountAfter = ctx.requireEncodedAccount(account);
 

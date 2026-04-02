@@ -20,7 +20,7 @@ describe('Program Metadata: close', () => {
     });
 
     test('should close canonical PDA buffer', async () => {
-        const destination = ctx.createFundedAccount();
+        const destination = await ctx.createFundedAccount();
         const { authority, programAddress, programDataAddress, pda: bufferPda } = await setupCanonicalPda(ctx);
 
         const allocateIx = await programClient.methods
@@ -33,7 +33,7 @@ describe('Program Metadata: close', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(allocateIx, [authority]);
+        await ctx.sendInstruction(allocateIx, [authority]);
 
         const bufferAccount = ctx.requireEncodedAccount(bufferPda);
         expect(bufferAccount).not.toBeNull();
@@ -51,7 +51,7 @@ describe('Program Metadata: close', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(closeIx, [authority]);
+        await ctx.sendInstruction(closeIx, [authority]);
 
         const closedAccount = ctx.fetchEncodedAccount(bufferPda);
         expect(closedAccount).toBeNull();
@@ -61,7 +61,7 @@ describe('Program Metadata: close', () => {
     });
 
     test('should close mutable metadata', async () => {
-        const destination = ctx.createFundedAccount();
+        const destination = await ctx.createFundedAccount();
         const {
             authority,
             programAddress,
@@ -82,7 +82,7 @@ describe('Program Metadata: close', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(closeIx, [authority]);
+        await ctx.sendInstruction(closeIx, [authority]);
 
         const closedAccount = ctx.fetchEncodedAccount(metadataPda);
         expect(closedAccount).toBeNull();
@@ -92,8 +92,8 @@ describe('Program Metadata: close', () => {
     });
 
     test('should close buffer account', async () => {
-        const feePayer = ctx.createFundedAccount();
-        const destination = ctx.createFundedAccount();
+        const feePayer = await ctx.createFundedAccount();
+        const destination = await ctx.createFundedAccount();
         const { bufferAccount } = await allocateBufferAccount(ctx);
 
         const buffer = ctx.requireEncodedAccount(bufferAccount);
@@ -113,7 +113,7 @@ describe('Program Metadata: close', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(closeIx, [feePayer, bufferAccount]);
+        await ctx.sendInstruction(closeIx, [feePayer, bufferAccount]);
 
         const destinationBalanceAfter = ctx.getBalanceOrZero(destination);
         expect(destinationBalanceAfter).toBeGreaterThan(destinationBalanceBefore);
@@ -123,7 +123,7 @@ describe('Program Metadata: close', () => {
     });
 
     test('should throw AccountError when destination is missing', async () => {
-        const authority = ctx.createFundedAccount();
+        const authority = await ctx.createFundedAccount();
 
         await expect(
             programClient.methods

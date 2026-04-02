@@ -13,7 +13,7 @@ describe('Program Metadata: write', () => {
     });
 
     test('should write inline data to buffer', async () => {
-        const feePayer = ctx.createFundedAccount();
+        const feePayer = await ctx.createFundedAccount();
         const { bufferAccount } = await allocateBufferAccount(ctx);
 
         const testData = new TextEncoder().encode('Hello, PMP!');
@@ -26,7 +26,7 @@ describe('Program Metadata: write', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(writeIx, [feePayer, bufferAccount]);
+        await ctx.sendInstruction(writeIx, [feePayer, bufferAccount]);
 
         const account = ctx.requireEncodedAccount(bufferAccount);
         const buffer = decodeBufferAccount(account.data);
@@ -39,7 +39,7 @@ describe('Program Metadata: write', () => {
     });
 
     test('should write data at offset', async () => {
-        const feePayer = ctx.createFundedAccount();
+        const feePayer = await ctx.createFundedAccount();
         const { bufferAccount } = await allocateBufferAccount(ctx);
 
         const dataA = new TextEncoder().encode('AAAA');
@@ -63,7 +63,7 @@ describe('Program Metadata: write', () => {
             })
             .instruction();
 
-        ctx.sendInstructions([writeIxA, writeIxB], [feePayer, bufferAccount]);
+        await ctx.sendInstructions([writeIxA, writeIxB], [feePayer, bufferAccount]);
 
         const account = ctx.requireEncodedAccount(bufferAccount);
         const buffer = decodeBufferAccount(account.data);
@@ -81,7 +81,7 @@ describe('Program Metadata: write', () => {
     });
 
     test('should write data in chunks', async () => {
-        const feePayer = ctx.createFundedAccount();
+        const feePayer = await ctx.createFundedAccount();
         const { bufferAccount } = await allocateBufferAccount(ctx);
 
         const chunk1 = new TextEncoder().encode('Hello');
@@ -105,7 +105,7 @@ describe('Program Metadata: write', () => {
             })
             .instruction();
 
-        ctx.sendInstructions([writeIx1, writeIx2], [feePayer, bufferAccount]);
+        await ctx.sendInstructions([writeIx1, writeIx2], [feePayer, bufferAccount]);
 
         const account = ctx.requireEncodedAccount(bufferAccount);
         const buffer = decodeBufferAccount(account.data);

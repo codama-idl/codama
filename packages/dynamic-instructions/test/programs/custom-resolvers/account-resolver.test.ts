@@ -8,14 +8,14 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
     let authority: Address;
     let ctx: SvmTestContext;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         ctx = new SvmTestContext();
-        authority = ctx.createFundedAccount();
+        authority = await ctx.createFundedAccount();
     });
 
     test('should resolve accounts addresses via resolver', async () => {
-        const destination = ctx.createFundedAccount();
-        const treasury = ctx.createFundedAccount();
+        const destination = await ctx.createFundedAccount();
+        const treasury = await ctx.createFundedAccount();
 
         const expectedAccounts = [authority, destination, treasury];
         const ix = await programClient.methods
@@ -40,7 +40,7 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
     });
 
     test('should throw AccountError when resolver returns null/undefined for required account', async () => {
-        const treasury = ctx.createAccount();
+        const treasury = await ctx.createAccount();
         await expect(
             programClient.methods
                 .transferWithResolver({ amount: 100 })
@@ -76,7 +76,7 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
     });
 
     test('should throw when resolver missing for optional undefined account with direct resolverValueNode', async () => {
-        const destination = ctx.createFundedAccount();
+        const destination = await ctx.createFundedAccount();
 
         await expect(
             programClient.methods
@@ -100,8 +100,8 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
     });
 
     test('should bypass resolver when account is explicitly provided', async () => {
-        const destination = ctx.createAccount();
-        const treasury = ctx.createAccount();
+        const destination = await ctx.createAccount();
+        const treasury = await ctx.createAccount();
 
         const ix = await programClient.methods
             .transferWithResolver({ amount: 42 })

@@ -12,10 +12,10 @@ describe('Associated Token Account: createIdempotent', () => {
     });
 
     test('should create an associated token account idempotently', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const wallet = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const wallet = await ctx.createFundedAccount();
 
         await createMint(ctx, payer, mint, mintAuthority);
 
@@ -35,7 +35,7 @@ describe('Associated Token Account: createIdempotent', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const ataAccount = ctx.requireEncodedAccount(ataAddress);
         const tokenData = getTokenDecoder().decode(ataAccount.data);
@@ -45,7 +45,7 @@ describe('Associated Token Account: createIdempotent', () => {
 
         // Call again — should succeed without error
         ctx.advanceSlots();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const ataAccountAfter = ctx.requireEncodedAccount(ataAddress);
         const tokenDataAfter = getTokenDecoder().decode(ataAccountAfter.data);

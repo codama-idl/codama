@@ -14,9 +14,9 @@ const TRANSFER_FEE_AMOUNT_EXT = [{ __kind: 'TransferFeeAmount' as const, withhel
 describe('Token 2022 Program: withdrawWithheldTokens', () => {
     test('should withdraw withheld tokens from mint', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const feeAuthority = ctx.createFundedAccount();
-        const withdrawAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const feeAuthority = await ctx.createFundedAccount();
+        const withdrawAuthority = await ctx.createFundedAccount();
 
         // Prepare mint with Transfer fee
         const mint = await createTransferFeeMint(ctx, payer, feeAuthority, withdrawAuthority);
@@ -31,14 +31,14 @@ describe('Token 2022 Program: withdrawWithheldTokens', () => {
             .transferCheckedWithFee({ amount: 1_000_000, decimals: 9, fee: 10_000 })
             .accounts({ authority: payer, destination, mint, source })
             .instruction();
-        ctx.sendInstruction(transferIx, [payer]);
+        await ctx.sendInstruction(transferIx, [payer]);
 
         // Harvest fees from destination to mint
         const harvestIx = await token2022Client.methods
             .harvestWithheldTokensToMint({ sources: [destination] })
             .accounts({ mint })
             .instruction();
-        ctx.sendInstruction(harvestIx, [payer]);
+        await ctx.sendInstruction(harvestIx, [payer]);
 
         // Withdraw from mint to feeReceiver
         const withdrawIx = await token2022Client.methods
@@ -46,7 +46,7 @@ describe('Token 2022 Program: withdrawWithheldTokens', () => {
             .accounts({ feeReceiver, mint, withdrawWithheldAuthority: withdrawAuthority })
             .signers(['withdrawWithheldAuthority'])
             .instruction();
-        ctx.sendInstruction(withdrawIx, [payer, withdrawAuthority]);
+        await ctx.sendInstruction(withdrawIx, [payer, withdrawAuthority]);
 
         const feeReceiverData = getTokenDecoder().decode(ctx.requireEncodedAccount(feeReceiver).data);
         expect(feeReceiverData.amount).toBe(10_000n);
@@ -54,9 +54,9 @@ describe('Token 2022 Program: withdrawWithheldTokens', () => {
 
     test('should withdraw withheld tokens from accounts', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const feeAuthority = ctx.createFundedAccount();
-        const withdrawAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const feeAuthority = await ctx.createFundedAccount();
+        const withdrawAuthority = await ctx.createFundedAccount();
 
         // Prepare mint and accounts with Transfer fee
         const mint = await createTransferFeeMint(ctx, payer, feeAuthority, withdrawAuthority);
@@ -71,7 +71,7 @@ describe('Token 2022 Program: withdrawWithheldTokens', () => {
             .transferCheckedWithFee({ amount: 1_000_000, decimals: 9, fee: 10_000 })
             .accounts({ authority: payer, destination, mint, source })
             .instruction();
-        ctx.sendInstruction(transferIx, [payer]);
+        await ctx.sendInstruction(transferIx, [payer]);
 
         // Withdraw directly from accounts
         const withdrawIx = await token2022Client.methods
@@ -79,7 +79,7 @@ describe('Token 2022 Program: withdrawWithheldTokens', () => {
             .accounts({ feeReceiver, mint, withdrawWithheldAuthority: withdrawAuthority })
             .signers(['withdrawWithheldAuthority'])
             .instruction();
-        ctx.sendInstruction(withdrawIx, [payer, withdrawAuthority]);
+        await ctx.sendInstruction(withdrawIx, [payer, withdrawAuthority]);
 
         const feeReceiverData = getTokenDecoder().decode(ctx.requireEncodedAccount(feeReceiver).data);
         expect(feeReceiverData.amount).toBe(10_000n);

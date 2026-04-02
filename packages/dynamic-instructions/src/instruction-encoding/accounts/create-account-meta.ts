@@ -30,6 +30,7 @@ export async function createAccountMeta(
     signers: EitherSigners = [],
     resolversInput: ResolversInput = {},
 ): Promise<AccountMeta[]> {
+    const programAddress = toAddress(root.program.publicKey);
     const resolvedAccounts = await Promise.all(
         ixNode.accounts.map<Promise<ResolvedAccount>>(async ixAccountNode => {
             const accountAddressInput = accountsInput?.[ixAccountNode.name];
@@ -54,10 +55,19 @@ export async function createAccountMeta(
                 });
             }
 
+            const finalAddress = isAccountProvided ? toAddress(accountAddressInput) : resolvedAccountAddress;
+
+            // Optional accounts with "programId" strategy: e.g. PMP's setData instruction `buffer` account. (isWritable, isOptional and "programId" strategy).
+            // But when buffer is null it resolves to the program address which cannot be writable, hence must be downgraded to readonly.
+            const isProgramAddress = finalAddress !== null && finalAddress === programAddress;
+            const role = isProgramAddress
+                ? getReadonlyAccountRole(ixAccountNode, signers)
+                : getAccountRole(ixAccountNode, signers);
+
             return {
-                address: isAccountProvided ? toAddress(accountAddressInput) : resolvedAccountAddress,
+                address: finalAddress,
                 optional: Boolean(ixAccountNode.isOptional),
-                role: getAccountRole(ixAccountNode, signers),
+                role,
             };
         }),
     );
@@ -132,6 +142,11 @@ function getAccountRole(acc: InstructionAccountNode, signers: string[] | undefin
         return AccountRole.READONLY_SIGNER;
     }
     return AccountRole.READONLY;
+}
+
+function getReadonlyAccountRole(acc: InstructionAccountNode, signers: string[] | undefined): AccountRole {
+    const isSigner = isSignerAccount(acc, signers ?? []);
+    return isSigner ? AccountRole.READONLY_SIGNER : AccountRole.READONLY;
 }
 
 function isSignerAccount(acc: InstructionAccountNode, signers: string[]) {

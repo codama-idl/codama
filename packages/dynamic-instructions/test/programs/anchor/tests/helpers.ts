@@ -8,10 +8,10 @@ export const idl = loadIdl('example-idl.json');
 export const programClient = createProgramClient<ExampleProgramClient>(idl);
 export const programSoPath = path.resolve(__dirname, '..', 'target', 'deploy', 'example.so');
 
-export function createTestContext() {
+export async function createTestContext() {
     const ctx = new SvmTestContext({ defaultPrograms: true });
     ctx.loadProgram(programClient.programAddress, programSoPath);
-    const payer = ctx.createFundedAccount();
+    const payer = await ctx.createFundedAccount();
 
     return { ctx, payer };
 }

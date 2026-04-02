@@ -6,8 +6,8 @@ import { createMint, tokenClient } from './token-test-utils';
 describe('Token Program: amountToUiAmount', () => {
     test('should convert a token amount to its UI representation', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
 
@@ -16,7 +16,7 @@ describe('Token Program: amountToUiAmount', () => {
             .accounts({ mint: mintAccount })
             .instruction();
 
-        const meta = ctx.sendInstruction(ix, [payer]);
+        const meta = await ctx.sendInstruction(ix, [payer]);
         const returnData = meta.returnData();
         const uiAmount = new TextDecoder().decode(returnData.data());
         expect(uiAmount).toBe('1');

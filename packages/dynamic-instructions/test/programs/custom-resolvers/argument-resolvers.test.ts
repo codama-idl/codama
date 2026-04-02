@@ -43,9 +43,9 @@ describe('Custom resolvers: arguments ResolverValueNode', () => {
     let authority: Address;
     let ctx: SvmTestContext;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         ctx = new SvmTestContext();
-        authority = ctx.createFundedAccount();
+        authority = await ctx.createFundedAccount();
     });
 
     test('should resolve omitted argument via resolver', async () => {

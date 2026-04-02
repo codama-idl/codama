@@ -20,9 +20,9 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
     let signer: Address;
     const programClient = createTestProgramClient<CollectionTypesProgramClient>('collection-types-idl.json');
 
-    beforeEach(() => {
+    beforeEach(async () => {
         ctx = new SvmTestContext({ defaultPrograms: true, sysvars: true });
-        signer = ctx.createFundedAccount();
+        signer = await ctx.createFundedAccount();
     });
 
     describe('tupleTypeNode', () => {

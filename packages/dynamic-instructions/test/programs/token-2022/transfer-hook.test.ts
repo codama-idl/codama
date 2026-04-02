@@ -13,10 +13,10 @@ const getTransferHookExt = (authority: Address, programId: Address): ExtensionAr
 describe('Token 2022 Program: transferHook', () => {
     test('should initialize transfer hook extension [initializeTransferHook]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const transferHookAuthority = ctx.createFundedAccount();
-        const hookProgramId = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const transferHookAuthority = await ctx.createFundedAccount();
+        const hookProgramId = await ctx.createAccount();
 
         const size = getMintSize(getTransferHookExt(transferHookAuthority, hookProgramId));
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -36,7 +36,7 @@ describe('Token 2022 Program: transferHook', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initTransferHookIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initTransferHookIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });
@@ -53,11 +53,11 @@ describe('Token 2022 Program: transferHook', () => {
 
     test('should update transfer hook program id [updateTransferHook]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const transferHookAuthority = ctx.createFundedAccount();
-        const hookProgramId = ctx.createAccount();
-        const newHookProgramId = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const transferHookAuthority = await ctx.createFundedAccount();
+        const hookProgramId = await ctx.createAccount();
+        const newHookProgramId = await ctx.createAccount();
 
         const size = getMintSize(getTransferHookExt(transferHookAuthority, hookProgramId));
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -77,7 +77,7 @@ describe('Token 2022 Program: transferHook', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initTransferHookIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initTransferHookIx, initMintIx], [payer, mint]);
 
         // Update transfer hook to a new program id
         const updateIx = await token2022Client.methods
@@ -85,7 +85,7 @@ describe('Token 2022 Program: transferHook', () => {
             .accounts({ authority: transferHookAuthority, mint })
             .signers(['authority'])
             .instruction();
-        ctx.sendInstruction(updateIx, [payer, transferHookAuthority]);
+        await ctx.sendInstruction(updateIx, [payer, transferHookAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toEqual(

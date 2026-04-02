@@ -8,9 +8,9 @@ import { createMint, createTokenAccount, token2022Client } from './token-2022-te
 describe('Token 2022 Program: disableMemoTransfers', () => {
     test('should enable/disable memo transfers on a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mint, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mint, payer);
@@ -30,14 +30,14 @@ describe('Token 2022 Program: disableMemoTransfers', () => {
             .accounts({ owner: payer, token: tokenAccount })
             .instruction();
 
-        ctx.sendInstructions([reallocateIx, enableIx], [payer]);
+        await ctx.sendInstructions([reallocateIx, enableIx], [payer]);
 
         const tokenDataEnabledMemo = getTokenDecoder().decode(ctx.requireEncodedAccount(tokenAccount).data);
         expect(tokenDataEnabledMemo.extensions).toMatchObject(
             some([{ __kind: 'MemoTransfer', requireIncomingTransferMemos: true }]),
         );
 
-        ctx.sendInstructions([reallocateIx, disableIx], [payer]);
+        await ctx.sendInstructions([reallocateIx, disableIx], [payer]);
         const tokenDataDisabledMemo = getTokenDecoder().decode(ctx.requireEncodedAccount(tokenAccount).data);
         expect(tokenDataDisabledMemo.extensions).toMatchObject(
             some([{ __kind: 'MemoTransfer', requireIncomingTransferMemos: false }]),

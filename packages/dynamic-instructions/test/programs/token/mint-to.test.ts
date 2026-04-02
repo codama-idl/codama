@@ -7,9 +7,9 @@ import { createMint, createTokenAccount, tokenClient } from './token-test-utils'
 describe('Token Program: mintTo', () => {
     test('should mint tokens to a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mintAccount, payer);
@@ -19,7 +19,7 @@ describe('Token Program: mintTo', () => {
             .accounts({ mint: mintAccount, mintAuthority: payer, token: tokenAccount })
             .instruction();
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const account = ctx.requireEncodedAccount(tokenAccount);
         const tokenData = getTokenDecoder().decode(account.data);

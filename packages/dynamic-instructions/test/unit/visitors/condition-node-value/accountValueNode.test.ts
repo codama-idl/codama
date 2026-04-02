@@ -27,7 +27,7 @@ describe('condition-node-value: visitAccountValue', () => {
     });
 
     test('should return address when user provides address', async () => {
-        const accAddress = SvmTestContext.generateAddress();
+        const accAddress = await SvmTestContext.generateAddress();
         const visitor = makeVisitor({
             accountsInput: { myAccount: accAddress },
             ixNode: ixNodeWithAccount,

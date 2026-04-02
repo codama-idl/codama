@@ -10,8 +10,8 @@ const NATIVE_MINT = address('So11111111111111111111111111111111111111112');
 describe('Token Program: syncNative', () => {
     test('should sync a wrapped SOL account amount with its lamport balance', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const wrappedSolAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const wrappedSolAccount = await ctx.createAccount();
 
         // Create and initialize a wrapped SOL token account.
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(SPL_TOKEN_ACCOUNT_SIZE));
@@ -29,7 +29,7 @@ describe('Token Program: syncNative', () => {
             .accounts({ account: wrappedSolAccount, mint: NATIVE_MINT, owner: payer })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initAccountIx], [payer, wrappedSolAccount]);
+        await ctx.sendInstructions([createAccountIx, initAccountIx], [payer, wrappedSolAccount]);
 
         // Transfer additional SOL to the wrapped account via system program.
         const transferAmount = 1_000_000_000n;
@@ -37,7 +37,7 @@ describe('Token Program: syncNative', () => {
             .transferSol({ amount: transferAmount })
             .accounts({ destination: wrappedSolAccount, source: payer })
             .instruction();
-        ctx.sendInstruction(transferIx, [payer]);
+        await ctx.sendInstruction(transferIx, [payer]);
 
         // Token amount is still 0 before sync.
         const decoder = getTokenDecoder();
@@ -46,7 +46,7 @@ describe('Token Program: syncNative', () => {
 
         // Sync native to update the token amount.
         const syncIx = await tokenClient.methods.syncNative().accounts({ account: wrappedSolAccount }).instruction();
-        ctx.sendInstruction(syncIx, [payer]);
+        await ctx.sendInstruction(syncIx, [payer]);
 
         const afterSync = decoder.decode(ctx.requireEncodedAccount(wrappedSolAccount).data);
         expect(afterSync.amount).toBe(transferAmount);

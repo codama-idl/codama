@@ -7,10 +7,10 @@ import { createMint, createTokenAccount, tokenClient } from './token-test-utils'
 describe('Token Program: transfer', () => {
     test('should transfer tokens between accounts', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const sourceAccount = ctx.createAccount();
-        const destinationAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const sourceAccount = await ctx.createAccount();
+        const destinationAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, sourceAccount, mintAccount, payer);
@@ -20,13 +20,13 @@ describe('Token Program: transfer', () => {
             .mintTo({ amount: 1_000_000 })
             .accounts({ mint: mintAccount, mintAuthority: payer, token: sourceAccount })
             .instruction();
-        ctx.sendInstruction(mintIx, [payer]);
+        await ctx.sendInstruction(mintIx, [payer]);
 
         const ix = await tokenClient.methods
             .transfer({ amount: 400_000 })
             .accounts({ authority: payer, destination: destinationAccount, source: sourceAccount })
             .instruction();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const decoder = getTokenDecoder();
         const sourceData = decoder.decode(ctx.requireEncodedAccount(sourceAccount).data);

@@ -13,7 +13,7 @@ async function createMintWithMetadata(
     updateAuthority: Address,
     metadata: { name: string; symbol: string; uri: string },
 ) {
-    const mint = ctx.createAccount();
+    const mint = await ctx.createAccount();
 
     // Allocate only MetadataPointer space
     // initializeTokenMetadata will realloc the account internally to fit the metadata.
@@ -54,7 +54,10 @@ async function createMintWithMetadata(
         .accounts({ metadata: mint, mint, mintAuthority: payer, updateAuthority })
         .instruction();
 
-    ctx.sendInstructions([createAccountIx, initMetadataPointerIx, initMintIx, initTokenMetadataIx], [payer, mint]);
+    await ctx.sendInstructions(
+        [createAccountIx, initMetadataPointerIx, initMintIx, initTokenMetadataIx],
+        [payer, mint],
+    );
 
     return mint;
 }
@@ -62,8 +65,8 @@ async function createMintWithMetadata(
 describe('Token 2022 Program: tokenMetadata', () => {
     test('should initialize token metadata [initializeTokenMetadata]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const updateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const updateAuthority = await ctx.createFundedAccount();
 
         const mint = await createMintWithMetadata(ctx, payer, updateAuthority, {
             name: 'Test Token',
@@ -88,8 +91,8 @@ describe('Token 2022 Program: tokenMetadata', () => {
 
     test('should update token metadata field [updateTokenMetadataField]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const updateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const updateAuthority = await ctx.createFundedAccount();
 
         const mint = await createMintWithMetadata(ctx, payer, updateAuthority, {
             name: 'Test Token',
@@ -110,7 +113,7 @@ describe('Token 2022 Program: tokenMetadata', () => {
             .accounts({ metadata: mint, updateAuthority })
             .instruction();
 
-        ctx.sendInstructions([updateNameIx, updateSymbolIx, addKeyIx], [payer, updateAuthority]);
+        await ctx.sendInstructions([updateNameIx, updateSymbolIx, addKeyIx], [payer, updateAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toEqual(
@@ -131,8 +134,8 @@ describe('Token 2022 Program: tokenMetadata', () => {
 
     test('should add and remove custom metadata key [updateTokenMetadataField + removeTokenMetadataKey]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const updateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const updateAuthority = await ctx.createFundedAccount();
 
         // Use shorter metadata so there's room for additionalMetadata in the allocated space
         const mint = await createMintWithMetadata(ctx, payer, updateAuthority, {
@@ -146,7 +149,7 @@ describe('Token 2022 Program: tokenMetadata', () => {
             .updateTokenMetadataField({ field: { __kind: 'key', fields: ['color'] }, value: 'blue' })
             .accounts({ metadata: mint, updateAuthority })
             .instruction();
-        ctx.sendInstruction(addKeyIx, [payer, updateAuthority]);
+        await ctx.sendInstruction(addKeyIx, [payer, updateAuthority]);
 
         let mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toEqual(
@@ -169,7 +172,7 @@ describe('Token 2022 Program: tokenMetadata', () => {
             .removeTokenMetadataKey({ idempotent: false, key: 'color' })
             .accounts({ metadata: mint, updateAuthority })
             .instruction();
-        ctx.sendInstruction(removeKeyIx, [payer, updateAuthority]);
+        await ctx.sendInstruction(removeKeyIx, [payer, updateAuthority]);
 
         mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toEqual(
@@ -190,9 +193,9 @@ describe('Token 2022 Program: tokenMetadata', () => {
 
     test('should update token metadata update authority [updateTokenMetadataUpdateAuthority]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const updateAuthority = ctx.createFundedAccount();
-        const newUpdateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const updateAuthority = await ctx.createFundedAccount();
+        const newUpdateAuthority = await ctx.createFundedAccount();
 
         const mint = await createMintWithMetadata(ctx, payer, updateAuthority, {
             name: 'Test Token',
@@ -204,7 +207,7 @@ describe('Token 2022 Program: tokenMetadata', () => {
             .updateTokenMetadataUpdateAuthority({ newUpdateAuthority })
             .accounts({ metadata: mint, updateAuthority })
             .instruction();
-        ctx.sendInstruction(updateAuthorityIx, [payer, updateAuthority]);
+        await ctx.sendInstruction(updateAuthorityIx, [payer, updateAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(
@@ -220,8 +223,8 @@ describe('Token 2022 Program: tokenMetadata', () => {
 
     test('should emit token metadata [emitTokenMetadata]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const updateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const updateAuthority = await ctx.createFundedAccount();
 
         const mint = await createMintWithMetadata(ctx, payer, updateAuthority, {
             name: 'Test Token',
@@ -232,7 +235,7 @@ describe('Token 2022 Program: tokenMetadata', () => {
         // emitTokenMetadata emits serialized TokenMetadata as return data
         // We just ensure that tx was not failed
         const emitIx = await token2022Client.methods.emitTokenMetadata().accounts({ metadata: mint }).instruction();
-        const result = ctx.sendInstruction(emitIx, [payer]);
+        const result = await ctx.sendInstruction(emitIx, [payer]);
         expect(result.returnData().data()).toBeDefined();
 
         // And verify metadata is unchanged after emit

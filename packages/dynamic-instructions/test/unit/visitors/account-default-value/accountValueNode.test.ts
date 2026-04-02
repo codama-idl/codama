@@ -4,8 +4,8 @@ import { describe, expect, test } from 'vitest';
 import { SvmTestContext } from '../../../svm-test-context';
 import { makeVisitor } from './account-default-value-test-utils';
 
-describe('account-default-value: visitAccountValue', () => {
-    const refAddress = SvmTestContext.generateAddress();
+describe('account-default-value: visitAccountValue', async () => {
+    const refAddress = await SvmTestContext.generateAddress();
     const ixNodeWithAccount = instructionNode({
         accounts: [
             instructionAccountNode({
@@ -49,7 +49,7 @@ describe('account-default-value: visitAccountValue', () => {
     });
 
     test('should resolve referenced account defaultValue', async () => {
-        const expectedDefaultAddress = SvmTestContext.generateAddress();
+        const expectedDefaultAddress = await SvmTestContext.generateAddress();
         const ixNodeWithDefault = instructionNode({
             accounts: [
                 instructionAccountNode({

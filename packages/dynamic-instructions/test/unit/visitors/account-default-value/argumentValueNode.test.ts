@@ -6,7 +6,7 @@ import { makeVisitor } from './account-default-value-test-utils';
 
 describe('account-default-value: visitArgumentValue', () => {
     test('should return address from argument value', async () => {
-        const addr = SvmTestContext.generateAddress();
+        const addr = await SvmTestContext.generateAddress();
         const visitor = makeVisitor({ argumentsInput: { myArg: addr } });
         const result = await visitor.visitArgumentValue(argumentValueNode('myArg'));
         expect(result).toBe(addr);

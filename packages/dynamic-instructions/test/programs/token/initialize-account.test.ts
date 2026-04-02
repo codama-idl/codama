@@ -7,10 +7,10 @@ import { createMint, createTokenAccount } from './token-test-utils';
 describe('Token Program: initializeAccount', () => {
     test('should initialize a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
-        const owner = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
+        const owner = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mintAccount, owner);

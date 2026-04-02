@@ -14,9 +14,9 @@ describe('SAS: createCredential', () => {
     });
 
     test('should create a credential with multiple signers', async () => {
-        const authority = ctx.createFundedAccount();
-        const signer2 = ctx.createAccount();
-        const signer3 = ctx.createAccount();
+        const authority = await ctx.createFundedAccount();
+        const signer2 = await ctx.createAccount();
+        const signer3 = await ctx.createAccount();
         const name = 'MultiSignerCredential';
 
         const [credentialPda] = await deriveCredentialPda({ authority, name });
@@ -31,7 +31,7 @@ describe('SAS: createCredential', () => {
         expectedAccounts.forEach((expected, i) => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(credentialPda);
         const credential = getCredentialDecoder().decode(account.data);
@@ -44,7 +44,7 @@ describe('SAS: createCredential', () => {
     });
 
     test('should throw AccountError when credential is missing', async () => {
-        const authority = ctx.createFundedAccount();
+        const authority = await ctx.createFundedAccount();
 
         await expect(
             programClient.methods
@@ -55,7 +55,7 @@ describe('SAS: createCredential', () => {
     });
 
     test('should throw ArgumentError when name is missing', async () => {
-        const authority = ctx.createFundedAccount();
+        const authority = await ctx.createFundedAccount();
         const [credentialPda] = await deriveCredentialPda({ authority, name: 'dummy' });
 
         await expect(

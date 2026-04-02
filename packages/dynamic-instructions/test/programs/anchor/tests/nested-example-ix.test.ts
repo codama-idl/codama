@@ -12,12 +12,12 @@ describe('anchor-example: nestedExampleIx', () => {
     let ctx: SvmTestContext;
     let payer: Address;
 
-    beforeEach(() => {
-        ({ ctx, payer } = createTestContext());
+    beforeEach(async () => {
+        ({ ctx, payer } = await createTestContext());
     });
 
     test('should encode nested struct with scalar enums, bytes, fixed array, and none inner enum', async () => {
-        const pubkeyArg = ctx.createAccount();
+        const pubkeyArg = await ctx.createAccount();
         const nestedExampleAccount = await deriveNestedExamplePda(
             programClient.programAddress,
             pubkeyArg,
@@ -45,7 +45,7 @@ describe('anchor-example: nestedExampleIx', () => {
             .accounts({ nestedExampleAccount, signer: payer })
             .instruction();
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         expect(ix.data?.length).toBeGreaterThan(0);
         const exampleAccountData = ctx.requireEncodedAccount(nestedExampleAccount).data;
@@ -68,7 +68,7 @@ describe('anchor-example: nestedExampleIx', () => {
     });
 
     test('should encode Command::Continue with reason string [enumStructVariantTypeNode]', async () => {
-        const pubkeyArg = ctx.createAccount();
+        const pubkeyArg = await ctx.createAccount();
         const nestedExampleAccount = await deriveNestedExamplePda(
             programClient.programAddress,
             pubkeyArg,
@@ -96,7 +96,7 @@ describe('anchor-example: nestedExampleIx', () => {
             .accounts({ nestedExampleAccount, signer: payer })
             .instruction();
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
         expect(ix.data?.length).toBeGreaterThan(0);
         const exampleAccountData = ctx.requireEncodedAccount(nestedExampleAccount).data;
         const exampleAccount = decodeNestedExampleAccount(programClient.root, exampleAccountData);
@@ -124,7 +124,7 @@ describe('anchor-example: nestedExampleIx', () => {
     });
 
     test('should encode InnerEnum::TokenTransfer [enumStructVariantTypeNode->enumEmptyVariantTypeNode]', async () => {
-        const pubkeyArg = ctx.createAccount();
+        const pubkeyArg = await ctx.createAccount();
         const nestedExampleAccount = await deriveNestedExamplePda(
             programClient.programAddress,
             pubkeyArg,
@@ -152,7 +152,7 @@ describe('anchor-example: nestedExampleIx', () => {
             .accounts({ nestedExampleAccount, signer: payer })
             .instruction();
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
         expect(ix.data?.length).toBeGreaterThan(0);
         const exampleAccountData = ctx.requireEncodedAccount(nestedExampleAccount).data;
         const exampleAccount = decodeNestedExampleAccount(programClient.root, exampleAccountData);
@@ -183,7 +183,7 @@ describe('anchor-example: nestedExampleIx', () => {
     });
 
     test('should encode InnerEnum::TokenTransfer enum (3 levels deep)', async () => {
-        const pubkeyArg = ctx.createAccount();
+        const pubkeyArg = await ctx.createAccount();
         const nestedExampleAccount = await deriveNestedExamplePda(
             programClient.programAddress,
             pubkeyArg,
@@ -215,7 +215,7 @@ describe('anchor-example: nestedExampleIx', () => {
             .accounts({ nestedExampleAccount, signer: payer })
             .instruction();
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
         expect(ix.data?.length).toBeGreaterThan(0);
         const exampleAccountData = ctx.requireEncodedAccount(nestedExampleAccount).data;
         const exampleAccount = decodeNestedExampleAccount(programClient.root, exampleAccountData);
@@ -247,8 +247,8 @@ describe('anchor-example: nestedExampleIx', () => {
     });
 
     test('should encode Stake inner enum and optional pubkey (Some)', async () => {
-        const pubkeyArg = ctx.createAccount();
-        const optionalPubkey = ctx.createAccount();
+        const pubkeyArg = await ctx.createAccount();
+        const optionalPubkey = await ctx.createAccount();
         const nestedExampleAccount = await deriveNestedExamplePda(
             programClient.programAddress,
             pubkeyArg,
@@ -276,7 +276,7 @@ describe('anchor-example: nestedExampleIx', () => {
             .accounts({ nestedExampleAccount, signer: payer })
             .instruction();
 
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
         expect(ix.data?.length).toBeGreaterThan(0);
         const exampleAccountData = ctx.requireEncodedAccount(nestedExampleAccount).data;
         const exampleAccount = decodeNestedExampleAccount(programClient.root, exampleAccountData);
@@ -311,7 +311,7 @@ describe('anchor-example: nestedExampleIx', () => {
         let nestedExampleAccount: Address;
 
         beforeEach(async () => {
-            pubkeyArg = ctx.createAccount();
+            pubkeyArg = await ctx.createAccount();
             nestedExampleAccount = await deriveNestedExamplePda(programClient.programAddress, pubkeyArg, 'arm', 'bar');
         });
 

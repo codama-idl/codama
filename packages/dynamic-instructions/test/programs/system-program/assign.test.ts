@@ -12,9 +12,9 @@ describe('System Program: assign', () => {
     });
 
     test('should assign a new owner to an account', async () => {
-        const payer = ctx.createFundedAccount();
-        const accountToAssign = ctx.createAccount();
-        const newOwner = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const accountToAssign = await ctx.createAccount();
+        const newOwner = await ctx.createAccount();
         const amount = 1_000_000;
 
         const transferInstruction = await programClient.methods
@@ -30,7 +30,7 @@ describe('System Program: assign', () => {
             .accounts({ account: accountToAssign })
             .instruction();
 
-        ctx.sendInstructions([transferInstruction, assignInstruction], [payer, accountToAssign]);
+        await ctx.sendInstructions([transferInstruction, assignInstruction], [payer, accountToAssign]);
 
         expect(ctx.requireEncodedAccount(accountToAssign)).toMatchObject({
             lamports: BigInt(amount),
@@ -39,14 +39,14 @@ describe('System Program: assign', () => {
     });
 
     test('should assign account to system program', async () => {
-        const account = ctx.createFundedAccount();
+        const account = await ctx.createFundedAccount();
 
         const instruction = await programClient.methods
             .assign({ programAddress: programClient.programAddress })
             .accounts({ account: account })
             .instruction();
 
-        ctx.sendInstruction(instruction, [account]);
+        await ctx.sendInstruction(instruction, [account]);
 
         const encodedAccount = ctx.requireEncodedAccount(account);
         expect(encodedAccount).toMatchObject({

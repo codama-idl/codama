@@ -21,8 +21,8 @@ import { describe, expect, test } from 'vitest';
 import { SvmTestContext } from '../../../svm-test-context';
 import { ixNodeStub, makeVisitor } from './account-default-value-test-utils';
 
-describe('account-default-value: visitPdaValue', () => {
-    const testProgramAddress = SvmTestContext.generateAddress();
+describe('account-default-value: visitPdaValue', async () => {
+    const testProgramAddress = await SvmTestContext.generateAddress();
 
     test('should derive PDA with constant seed', async () => {
         const pda = pdaNode({
@@ -43,7 +43,7 @@ describe('account-default-value: visitPdaValue', () => {
     });
 
     test('should derive PDA with variable seed from argument', async () => {
-        const ownerAddress = SvmTestContext.generateAddress();
+        const ownerAddress = await SvmTestContext.generateAddress();
         const pda = pdaNode({
             name: 'testPda',
             seeds: [variablePdaSeedNode('owner', publicKeyTypeNode())],

@@ -44,7 +44,7 @@ describe('SAS: closeAttestation', () => {
         expectedAccounts.forEach((expected, i) => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.fetchEncodedAccount(attestationPda);
         expect(account).toBeNull();

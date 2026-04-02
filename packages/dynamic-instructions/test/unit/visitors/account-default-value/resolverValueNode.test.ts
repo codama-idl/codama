@@ -6,7 +6,7 @@ import { makeVisitor } from './account-default-value-test-utils';
 
 describe('account-default-value: visitResolverValue', () => {
     test('should call resolver and return address', async () => {
-        const addr = SvmTestContext.generateAddress();
+        const addr = await SvmTestContext.generateAddress();
         const visitor = makeVisitor({
             resolversInput: { myResolver: () => Promise.resolve(addr) },
         });
@@ -40,7 +40,7 @@ describe('account-default-value: visitResolverValue', () => {
     });
 
     test('should pass arguments and accounts to resolver', async () => {
-        const addr = SvmTestContext.generateAddress();
+        const addr = await SvmTestContext.generateAddress();
         const resolverSpy = vi.fn().mockResolvedValue(addr);
         const argumentsInput = { amount: 100 };
         const accountsInput = { treasury: addr };

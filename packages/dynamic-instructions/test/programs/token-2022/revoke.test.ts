@@ -7,10 +7,10 @@ import { createMint, createTokenAccount, mintTokens, token2022Client } from './t
 describe('Token 2022 Program: revoke', () => {
     test('should revoke a delegate from a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const sourceAccount = ctx.createAccount();
-        const delegate = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const sourceAccount = await ctx.createAccount();
+        const delegate = await ctx.createAccount();
         const decoder = getTokenDecoder();
 
         await createMint(ctx, payer, mintAccount, payer);
@@ -21,7 +21,7 @@ describe('Token 2022 Program: revoke', () => {
             .approve({ amount: 500_000 })
             .accounts({ delegate, owner: payer, source: sourceAccount })
             .instruction();
-        ctx.sendInstruction(approveIx, [payer]);
+        await ctx.sendInstruction(approveIx, [payer]);
 
         const sourceDataBefore = decoder.decode(ctx.requireEncodedAccount(sourceAccount).data);
         expect(sourceDataBefore.delegate).toStrictEqual({ __option: 'Some', value: delegate });
@@ -31,7 +31,7 @@ describe('Token 2022 Program: revoke', () => {
             .revoke()
             .accounts({ owner: payer, source: sourceAccount })
             .instruction();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const sourceDataAfter = decoder.decode(ctx.requireEncodedAccount(sourceAccount).data);
         expect(sourceDataAfter.delegate).toStrictEqual({ __option: 'None' });

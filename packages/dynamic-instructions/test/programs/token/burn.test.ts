@@ -7,9 +7,9 @@ import { createMint, createTokenAccount, tokenClient } from './token-test-utils'
 describe('Token Program: burn', () => {
     test('should burn tokens from a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mintAccount, payer);
@@ -19,14 +19,14 @@ describe('Token Program: burn', () => {
             .mintTo({ amount: 1_000_000 })
             .accounts({ mint: mintAccount, mintAuthority: payer, token: tokenAccount })
             .instruction();
-        ctx.sendInstruction(mintIx, [payer]);
+        await ctx.sendInstruction(mintIx, [payer]);
 
         // Burn tokens.
         const burnIx = await tokenClient.methods
             .burn({ amount: 400_000 })
             .accounts({ account: tokenAccount, authority: payer, mint: mintAccount })
             .instruction();
-        ctx.sendInstruction(burnIx, [payer]);
+        await ctx.sendInstruction(burnIx, [payer]);
 
         // Verify token account balance decreased.
         const tokenData = getTokenDecoder().decode(ctx.requireEncodedAccount(tokenAccount).data);

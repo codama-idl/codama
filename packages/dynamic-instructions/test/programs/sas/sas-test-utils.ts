@@ -74,7 +74,7 @@ export function getAttestationMintSize({
 }
 
 export async function createCredential(ctx: SvmTestContext, opts?: { name?: string; signers?: Address[] }) {
-    const authority = ctx.createFundedAccount();
+    const authority = await ctx.createFundedAccount();
     const name = opts?.name ?? 'TestCredential';
     const signers = opts?.signers ?? [authority];
 
@@ -85,7 +85,7 @@ export async function createCredential(ctx: SvmTestContext, opts?: { name?: stri
         .accounts({ authority, credential: credentialPda, payer: authority })
         .instruction();
 
-    ctx.sendInstruction(ix, [authority]);
+    await ctx.sendInstruction(ix, [authority]);
 
     return { authority, credentialPda, name };
 }
@@ -117,7 +117,7 @@ export async function createSchema(
         .createSchema({ description, fieldNames, layout, name })
         .accounts({ authority, credential: credentialPda, payer: authority, schema: schemaPda })
         .instruction();
-    ctx.sendInstruction(ix, [authority]);
+    await ctx.sendInstruction(ix, [authority]);
 
     const schemaData = ctx.requireEncodedAccount(schemaPda).data;
     const schema = getSchemaDecoder().decode(schemaData);
@@ -134,7 +134,7 @@ export async function createAttestation(
 ) {
     const data = opts?.data ?? new Uint8Array([0, 0, 0, 0]);
     const expiry = opts?.expiry ?? 0n;
-    const nonce = ctx.createAccount();
+    const nonce = await ctx.createAccount();
 
     const [attestationPda] = await deriveAttestationPda({ credential: credentialPda, nonce, schema: schemaPda });
 
@@ -149,7 +149,7 @@ export async function createAttestation(
         })
         .instruction();
 
-    ctx.sendInstruction(ix, [authority]);
+    await ctx.sendInstruction(ix, [authority]);
 
     return { attestationPda, nonce };
 }
@@ -177,7 +177,7 @@ export async function tokenizeSchema(
         })
         .instruction();
 
-    ctx.sendInstruction(ix, [authority]);
+    await ctx.sendInstruction(ix, [authority]);
 
     return { sasPda, schemaMintPda };
 }

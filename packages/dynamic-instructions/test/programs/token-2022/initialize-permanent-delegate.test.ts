@@ -8,9 +8,9 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: initializePermanentDelegate', () => {
     test('should initialize permanent delegate extension', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const delegate = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const delegate = await ctx.createAccount();
 
         const size = getMintSize([{ __kind: 'PermanentDelegate', delegate }]);
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -29,7 +29,7 @@ describe('Token 2022 Program: initializePermanentDelegate', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initPermanentDelegateIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initPermanentDelegateIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });

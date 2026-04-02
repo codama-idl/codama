@@ -23,13 +23,13 @@ export async function createMint(
         .createAccount({ lamports, programAddress: tokenClient.programAddress, space: SPL_TOKEN_MINT_SIZE })
         .accounts({ newAccount: mint, payer })
         .instruction();
-    ctx.sendInstruction(createMintAccountIx, [payer, mint]);
+    await ctx.sendInstruction(createMintAccountIx, [payer, mint]);
 
     const initializeMintIx = await tokenClient.methods
         .initializeMint({ decimals: 9, freezeAuthority: freezeAuthority ?? null, mintAuthority })
         .accounts({ mint })
         .instruction();
-    ctx.sendInstruction(initializeMintIx, [payer]);
+    await ctx.sendInstruction(initializeMintIx, [payer]);
 }
 
 export async function createTokenAccount(
@@ -50,5 +50,5 @@ export async function createTokenAccount(
         .accounts({ account, mint, owner })
         .instruction();
 
-    ctx.sendInstructions([createAccountIx, initAccountIx], [payer, account]);
+    await ctx.sendInstructions([createAccountIx, initAccountIx], [payer, account]);
 }

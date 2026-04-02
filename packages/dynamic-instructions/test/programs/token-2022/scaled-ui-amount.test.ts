@@ -8,8 +8,8 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: scaledUiAmount', () => {
     test('should update multiplier for scaled UI amount [initializeScaledUiAmountMint + updateMultiplierScaledUiMint]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
 
         const size = getMintSize([
             {
@@ -36,13 +36,13 @@ describe('Token 2022 Program: scaledUiAmount', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initScaledIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initScaledIx, initMintIx], [payer, mint]);
 
         const updateIx = await token2022Client.methods
             .updateMultiplierScaledUiMint({ effectiveTimestamp: 0, multiplier: 2.5 })
             .accounts({ authority: payer, mint })
             .instruction();
-        ctx.sendInstruction(updateIx, [payer]);
+        await ctx.sendInstruction(updateIx, [payer]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(some([{ __kind: 'ScaledUiAmountConfig', newMultiplier: 2.5 }]));

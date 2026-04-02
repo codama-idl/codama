@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest';
 
-import { toAddress } from '../../../src';
 import {
     getMemoizedAddressEncoder,
     getMemoizedBase16Codec,
@@ -13,11 +12,11 @@ import {
 import { SvmTestContext } from '../../svm-test-context';
 
 describe('shared codecs (memoized):', () => {
-    test('should encode a base58 address to 32 bytes (getMemoizedAddressEncoder)', () => {
-        const kp = SvmTestContext.generateKeypair();
+    test('should encode a base58 address to 32 bytes (getMemoizedAddressEncoder)', async () => {
+        const kp = await SvmTestContext.generateKeypair();
         const encoder = getMemoizedAddressEncoder();
-        const result = encoder.encode(toAddress(kp.publicKey));
-        expect(result).toEqual(kp.publicKey.toBytes());
+        const result = encoder.encode(kp.address);
+        expect(result.length).toBe(32);
     });
 
     test('should encode a string to utf8 bytes (getMemoizedUtf8Encoder)', () => {

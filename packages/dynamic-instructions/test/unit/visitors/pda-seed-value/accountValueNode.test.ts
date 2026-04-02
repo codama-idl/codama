@@ -18,7 +18,7 @@ describe('pda-seed-value: visitAccountValue', () => {
     });
 
     test('should encode provided account address', async () => {
-        const randomAddress = new SvmTestContext().createAccount();
+        const randomAddress = await new SvmTestContext().createAccount();
         const visitor = makeVisitor({
             accountsInput: { authority: randomAddress },
             ixNode: ixNodeWithAccount,

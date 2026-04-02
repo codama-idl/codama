@@ -7,9 +7,9 @@ import { createMint, SPL_TOKEN_ACCOUNT_SIZE, systemClient, tokenClient } from '.
 describe('Token Program: initializeImmutableOwner', () => {
     test('should initialize immutable owner on a token account before initializeAccount', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
 
@@ -34,7 +34,7 @@ describe('Token Program: initializeImmutableOwner', () => {
             .accounts({ account: tokenAccount, mint: mintAccount, owner: payer })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initImmutableOwnerIx, initAccountIx], [payer, tokenAccount]);
+        await ctx.sendInstructions([createAccountIx, initImmutableOwnerIx, initAccountIx], [payer, tokenAccount]);
 
         const account = ctx.requireEncodedAccount(tokenAccount);
         const tokenData = getTokenDecoder().decode(account.data);

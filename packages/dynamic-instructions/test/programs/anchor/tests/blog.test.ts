@@ -16,10 +16,10 @@ describe('blog', () => {
     let ctx: SvmTestContext;
     let payer: Address;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         ctx = new SvmTestContext({ defaultPrograms: true });
         ctx.loadProgram(programClient.programAddress, programSoPath);
-        payer = ctx.createFundedAccount();
+        payer = await ctx.createFundedAccount();
     });
 
     describe('category PDA — string seed', () => {
@@ -29,7 +29,7 @@ describe('blog', () => {
                 .accounts({ creator: payer })
                 .instruction();
 
-            ctx.sendInstruction(ix, [payer]);
+            await ctx.sendInstruction(ix, [payer]);
 
             const [categoryPda] = await programClient.pdas.category({ name: 'solana' });
             const decoded = decodeAccount('category', categoryPda);
@@ -43,7 +43,7 @@ describe('blog', () => {
                     .createCategory({ name })
                     .accounts({ creator: payer })
                     .instruction();
-                ctx.sendInstruction(ix, [payer]);
+                await ctx.sendInstruction(ix, [payer]);
             }
 
             const [techPda] = await programClient.pdas.category({ name: 'tech' });
@@ -59,11 +59,11 @@ describe('blog', () => {
     describe('subscription PDA — two pubkey seeds', () => {
         test('should create a subscription and read it back via pdas helper', async () => {
             const author = payer;
-            const follower = ctx.createFundedAccount();
+            const follower = await ctx.createFundedAccount();
 
             const ix = await programClient.methods.subscribe().accounts({ author, follower }).instruction();
 
-            ctx.sendInstruction(ix, [follower]);
+            await ctx.sendInstruction(ix, [follower]);
 
             const [subPda] = await programClient.pdas.subscription({ author, follower });
             const decoded = decodeAccount('subscription', subPda);
@@ -72,22 +72,22 @@ describe('blog', () => {
         });
 
         test('should derive distinct PDAs when follower/author are swapped', async () => {
-            const alice = ctx.createFundedAccount();
-            const bob = ctx.createFundedAccount();
+            const alice = await ctx.createFundedAccount();
+            const bob = await ctx.createFundedAccount();
 
             // Alice follows Bob
             const ix1 = await programClient.methods
                 .subscribe()
                 .accounts({ author: bob, follower: alice })
                 .instruction();
-            ctx.sendInstruction(ix1, [alice]);
+            await ctx.sendInstruction(ix1, [alice]);
 
             // Bob follows Alice
             const ix2 = await programClient.methods
                 .subscribe()
                 .accounts({ author: alice, follower: bob })
                 .instruction();
-            ctx.sendInstruction(ix2, [bob]);
+            await ctx.sendInstruction(ix2, [bob]);
 
             const [sub1] = await programClient.pdas.subscription({ author: bob, follower: alice });
             const [sub2] = await programClient.pdas.subscription({ author: alice, follower: bob });
@@ -104,7 +104,7 @@ describe('blog', () => {
                 .createProfile({ username: 'writer' })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(createProfileIx, [payer]);
+            await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
 
@@ -114,14 +114,14 @@ describe('blog', () => {
                 .createPost({ content: 'Original content', title: 'Original' })
                 .accounts({ authority: payer, post: postPda })
                 .instruction();
-            ctx.sendInstruction(createPostIx, [payer]);
+            await ctx.sendInstruction(createPostIx, [payer]);
 
             // Update post — post account should auto-derive from postId arg + profile account
             const updatePostIx = await programClient.methods
                 .updatePost({ content: 'Updated content', postId: 0, title: 'Updated' })
                 .accounts({ author: profilePda, authority: payer })
                 .instruction();
-            ctx.sendInstruction(updatePostIx, [payer]);
+            await ctx.sendInstruction(updatePostIx, [payer]);
 
             const decoded = decodeAccount('post', postPda);
             expect(decoded.title).toBe('Updated');
@@ -136,7 +136,7 @@ describe('blog', () => {
                 .createProfile({ username: 'alice' })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(createProfileIx, [payer]);
+            await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
             const [postPda] = await programClient.pdas.post({ postId: 0, profile: profilePda });
@@ -145,15 +145,15 @@ describe('blog', () => {
                 .createPost({ content: 'World', title: 'Hello' })
                 .accounts({ authority: payer, post: postPda })
                 .instruction();
-            ctx.sendInstruction(createPostIx, [payer]);
+            await ctx.sendInstruction(createPostIx, [payer]);
 
             // React with kind=1 (like)
-            const reactor = ctx.createFundedAccount();
+            const reactor = await ctx.createFundedAccount();
             const ix = await programClient.methods
                 .react({ kind: 1 })
                 .accounts({ post: postPda, user: reactor })
                 .instruction();
-            ctx.sendInstruction(ix, [reactor]);
+            await ctx.sendInstruction(ix, [reactor]);
 
             const [reactionPda] = await programClient.pdas.reaction({
                 kind: 1,
@@ -172,7 +172,7 @@ describe('blog', () => {
                 .createProfile({ username: 'bob' })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(createProfileIx, [payer]);
+            await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
             const [postPda] = await programClient.pdas.post({ postId: 0, profile: profilePda });
@@ -181,16 +181,16 @@ describe('blog', () => {
                 .createPost({ content: 'There', title: 'Hi' })
                 .accounts({ authority: payer, post: postPda })
                 .instruction();
-            ctx.sendInstruction(createPostIx, [payer]);
+            await ctx.sendInstruction(createPostIx, [payer]);
 
             // Same user, two reaction kinds
-            const reactor = ctx.createFundedAccount();
+            const reactor = await ctx.createFundedAccount();
             for (const kind of [0, 1]) {
                 const ix = await programClient.methods
                     .react({ kind })
                     .accounts({ post: postPda, user: reactor })
                     .instruction();
-                ctx.sendInstruction(ix, [reactor]);
+                await ctx.sendInstruction(ix, [reactor]);
             }
 
             const [likePda] = await programClient.pdas.reaction({ kind: 0, post: postPda, user: reactor });
@@ -207,7 +207,7 @@ describe('blog', () => {
                 .createProfile({ username: 'charlie' })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(createProfileIx, [payer]);
+            await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
 
@@ -215,7 +215,7 @@ describe('blog', () => {
                 .createDailyDigest({ day: 25, month: 2, year: 2026 })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(ix, [payer]);
+            await ctx.sendInstruction(ix, [payer]);
 
             const [digestPda] = await programClient.pdas.dailyDigest({
                 day: 25,
@@ -236,7 +236,7 @@ describe('blog', () => {
                 .createProfile({ username: 'dave' })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(createProfileIx, [payer]);
+            await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
 
@@ -251,7 +251,7 @@ describe('blog', () => {
                     .createDailyDigest(date)
                     .accounts({ authority: payer })
                     .instruction();
-                ctx.sendInstruction(ix, [payer]);
+                await ctx.sendInstruction(ix, [payer]);
             }
 
             for (const date of dates) {
@@ -270,7 +270,7 @@ describe('blog', () => {
                 .createProfile({ username: 'eve' })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(createProfileIx, [payer]);
+            await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
             const permissions = new Uint8Array([1, 0, 1, 0]); // read, no-write, execute, no-admin
@@ -279,7 +279,7 @@ describe('blog', () => {
                 .createAccessGrant({ permissions })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(ix, [payer]);
+            await ctx.sendInstruction(ix, [payer]);
 
             const [grantPda] = await programClient.pdas.accessGrant({
                 permissions,
@@ -295,7 +295,7 @@ describe('blog', () => {
                 .createProfile({ username: 'frank' })
                 .accounts({ authority: payer })
                 .instruction();
-            ctx.sendInstruction(createProfileIx, [payer]);
+            await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
             const readOnly = new Uint8Array([1, 0, 0, 0]);
@@ -306,7 +306,7 @@ describe('blog', () => {
                     .createAccessGrant({ permissions })
                     .accounts({ authority: payer })
                     .instruction();
-                ctx.sendInstruction(ix, [payer]);
+                await ctx.sendInstruction(ix, [payer]);
             }
 
             const [readPda] = await programClient.pdas.accessGrant({ permissions: readOnly, profile: profilePda });
@@ -319,15 +319,15 @@ describe('blog', () => {
 
     describe('bookmarkList PDA — pubkey seed with Vec<Pubkey> arg', () => {
         test('should create a bookmark list with vec arg and read it back via pdas helper', async () => {
-            const bookmark1 = ctx.createAccount();
-            const bookmark2 = ctx.createAccount();
-            const bookmark3 = ctx.createAccount();
+            const bookmark1 = await ctx.createAccount();
+            const bookmark2 = await ctx.createAccount();
+            const bookmark3 = await ctx.createAccount();
 
             const ix = await programClient.methods
                 .createBookmarkList({ bookmarks: [bookmark1, bookmark2, bookmark3] })
                 .accounts({ owner: payer })
                 .instruction();
-            ctx.sendInstruction(ix, [payer]);
+            await ctx.sendInstruction(ix, [payer]);
 
             const [listPda] = await programClient.pdas.bookmarkList({ owner: payer });
             const decoded = decodeAccount('bookmarkList', listPda);
@@ -340,7 +340,7 @@ describe('blog', () => {
                 .createBookmarkList({ bookmarks: [] })
                 .accounts({ owner: payer })
                 .instruction();
-            ctx.sendInstruction(ix, [payer]);
+            await ctx.sendInstruction(ix, [payer]);
 
             const [listPda] = await programClient.pdas.bookmarkList({ owner: payer });
             const decoded = decodeAccount('bookmarkList', listPda);

@@ -7,10 +7,10 @@ import { createMint, createTokenAccount, mintTokens, token2022Client } from './t
 describe('Token 2022 Program: approveChecked', () => {
     test('should approve_checked a delegate', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const sourceAccount = ctx.createAccount();
-        const delegate = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const sourceAccount = await ctx.createAccount();
+        const delegate = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, sourceAccount, mintAccount, payer);
@@ -20,7 +20,7 @@ describe('Token 2022 Program: approveChecked', () => {
             .approveChecked({ amount: 500_000, decimals: 9 })
             .accounts({ delegate, mint: mintAccount, owner: payer, source: sourceAccount })
             .instruction();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const decoder = getTokenDecoder();
         const sourceData = decoder.decode(ctx.requireEncodedAccount(sourceAccount).data);

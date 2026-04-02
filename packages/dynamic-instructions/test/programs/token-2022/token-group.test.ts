@@ -8,7 +8,7 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 
 // Create a mint with GroupPointer + TokenGroup extensions
 async function createGroupMint(ctx: SvmTestContext, payer: Address, groupUpdateAuthority: Address, maxSize: number) {
-    const mint = ctx.createAccount();
+    const mint = await ctx.createAccount();
 
     // Allocate only GroupPointer space (initializeMint2 rejects extra uninitialized TLV bytes)
     // initializeTokenGroup will realloc the account internally.
@@ -39,7 +39,7 @@ async function createGroupMint(ctx: SvmTestContext, payer: Address, groupUpdateA
         .accounts({ group: mint, mint, mintAuthority: payer })
         .instruction();
 
-    ctx.sendInstructions([createAccountIx, initGroupPointerIx, initMintIx, initTokenGroupIx], [payer, mint]);
+    await ctx.sendInstructions([createAccountIx, initGroupPointerIx, initMintIx, initTokenGroupIx], [payer, mint]);
 
     return mint;
 }
@@ -47,8 +47,8 @@ async function createGroupMint(ctx: SvmTestContext, payer: Address, groupUpdateA
 describe('Token 2022 Program: tokenGroup', () => {
     test('should initialize token group [initializeTokenGroup]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const groupUpdateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const groupUpdateAuthority = await ctx.createFundedAccount();
         const maxSize = 10;
         const mint = await createGroupMint(ctx, payer, groupUpdateAuthority, maxSize);
 
@@ -68,8 +68,8 @@ describe('Token 2022 Program: tokenGroup', () => {
 
     test('should update token group max size [updateTokenGroupMaxSize]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const groupUpdateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const groupUpdateAuthority = await ctx.createFundedAccount();
         const maxSize = 10;
         const newMaxSize = 20;
         const mint = await createGroupMint(ctx, payer, groupUpdateAuthority, maxSize);
@@ -78,7 +78,7 @@ describe('Token 2022 Program: tokenGroup', () => {
             .updateTokenGroupMaxSize({ maxSize: newMaxSize })
             .accounts({ group: mint, updateAuthority: groupUpdateAuthority })
             .instruction();
-        ctx.sendInstruction(updateMaxSizeIx, [payer, groupUpdateAuthority]);
+        await ctx.sendInstruction(updateMaxSizeIx, [payer, groupUpdateAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(
@@ -88,9 +88,9 @@ describe('Token 2022 Program: tokenGroup', () => {
 
     test('should update token group update authority [updateTokenGroupUpdateAuthority]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const groupUpdateAuthority = ctx.createFundedAccount();
-        const newUpdateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const groupUpdateAuthority = await ctx.createFundedAccount();
+        const newUpdateAuthority = await ctx.createFundedAccount();
         const maxSize = 10;
         const mint = await createGroupMint(ctx, payer, groupUpdateAuthority, maxSize);
 
@@ -98,7 +98,7 @@ describe('Token 2022 Program: tokenGroup', () => {
             .updateTokenGroupUpdateAuthority({ newUpdateAuthority })
             .accounts({ group: mint, updateAuthority: groupUpdateAuthority })
             .instruction();
-        ctx.sendInstruction(updateAuthorityIx, [payer, groupUpdateAuthority]);
+        await ctx.sendInstruction(updateAuthorityIx, [payer, groupUpdateAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(
@@ -114,14 +114,14 @@ describe('Token 2022 Program: tokenGroup', () => {
 
     test('should initialize token group member [initializeTokenGroupMember]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const groupUpdateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const groupUpdateAuthority = await ctx.createFundedAccount();
 
         const groupMint = await createGroupMint(ctx, payer, groupUpdateAuthority, 10);
         // const memberMint = await createMemberMint(ctx, payer, groupMint, groupUpdateAuthority);
 
         // Create a member mint with GroupMemberPointer + TokenGroupMember
-        const memberMint = ctx.createAccount();
+        const memberMint = await ctx.createAccount();
         // Allocate only GroupMemberPointer space; initializeTokenGroupMember will realloc.
         const pointerSize = getMintSize([
             { __kind: 'GroupMemberPointer', authority: payer, memberAddress: memberMint },
@@ -158,7 +158,7 @@ describe('Token 2022 Program: tokenGroup', () => {
             })
             .instruction();
 
-        ctx.sendInstructions(
+        await ctx.sendInstructions(
             [createAccountIx, initMemberPointerIx, initMintIx, initTokenGroupMemberIx],
             [payer, memberMint, groupUpdateAuthority],
         );

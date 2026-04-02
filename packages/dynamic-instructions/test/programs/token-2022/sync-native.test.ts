@@ -10,15 +10,15 @@ const TOKEN_2022_NATIVE_MINT = address('9pan9bMn5HatX4EJdBwg9VgCa7Uz5HL8N1m5D3Nd
 describe('Token 2022 Program: syncNative', () => {
     test('should sync a wrapped SOL account amount with its lamport balance', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const wrappedSolAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const wrappedSolAccount = await ctx.createAccount();
 
         // Ensure the Token 2022 native mint exists.
         const createNativeMintIx = await token2022Client.methods
             .createNativeMint()
             .accounts({ nativeMint: TOKEN_2022_NATIVE_MINT, payer, systemProgram: ctx.SYSTEM_PROGRAM_ADDRESS })
             .instruction();
-        ctx.sendInstruction(createNativeMintIx, [payer]);
+        await ctx.sendInstruction(createNativeMintIx, [payer]);
 
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(TOKEN_2022_ACCOUNT_SIZE));
         const createAccountIx = await systemClient.methods
@@ -35,14 +35,14 @@ describe('Token 2022 Program: syncNative', () => {
             .accounts({ account: wrappedSolAccount, mint: TOKEN_2022_NATIVE_MINT, owner: payer })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initAccountIx], [payer, wrappedSolAccount]);
+        await ctx.sendInstructions([createAccountIx, initAccountIx], [payer, wrappedSolAccount]);
 
         const transferAmount = 1_000_000_000n;
         const transferIx = await systemClient.methods
             .transferSol({ amount: transferAmount })
             .accounts({ destination: wrappedSolAccount, source: payer })
             .instruction();
-        ctx.sendInstruction(transferIx, [payer]);
+        await ctx.sendInstruction(transferIx, [payer]);
 
         const decoder = getTokenDecoder();
         const beforeSync = decoder.decode(ctx.requireEncodedAccount(wrappedSolAccount).data);
@@ -52,7 +52,7 @@ describe('Token 2022 Program: syncNative', () => {
             .syncNative()
             .accounts({ account: wrappedSolAccount })
             .instruction();
-        ctx.sendInstruction(syncIx, [payer]);
+        await ctx.sendInstruction(syncIx, [payer]);
 
         const afterSync = decoder.decode(ctx.requireEncodedAccount(wrappedSolAccount).data);
         expect(afterSync.amount).toBe(transferAmount);

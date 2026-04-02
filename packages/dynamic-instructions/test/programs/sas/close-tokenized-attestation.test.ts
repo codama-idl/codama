@@ -28,8 +28,8 @@ async function createTokenizedAttestationSetup(ctx: SvmTestContext) {
     const attestationData = serializeAttestationData(schema, { field1: 'test' });
     const { sasPda, schemaMintPda } = await tokenizeSchema(ctx, authority, credentialPda, schemaPda);
 
-    const nonce = ctx.createAccount();
-    const recipient = ctx.createFundedAccount();
+    const nonce = await ctx.createAccount();
+    const recipient = await ctx.createFundedAccount();
     const [attestationPda] = await deriveAttestationPda({ credential: credentialPda, nonce, schema: schemaPda });
     const [attestationMintPda] = await deriveAttestationMintPda({ attestation: attestationPda });
 
@@ -76,7 +76,7 @@ async function createTokenizedAttestationSetup(ctx: SvmTestContext) {
         })
         .instruction();
 
-    ctx.sendInstruction(createIx, [authority]);
+    await ctx.sendInstruction(createIx, [authority]);
 
     return { attestationMintPda, attestationPda, authority, credentialPda, recipientTokenAccount, sasPda };
 }
@@ -128,7 +128,7 @@ describe('SAS: closeTokenizedAttestation', () => {
         expectedAccounts.forEach((expected, i) => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.fetchEncodedAccount(attestationPda);
         expect(account).toBeNull();

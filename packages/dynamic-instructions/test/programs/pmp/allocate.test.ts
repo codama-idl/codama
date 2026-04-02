@@ -15,7 +15,7 @@ describe('Program Metadata: allocate', () => {
     });
 
     test('should allocate with seed null', async () => {
-        const bufferAndAuthority = ctx.createFundedAccount();
+        const bufferAndAuthority = await ctx.createFundedAccount();
 
         const ix = await programClient.methods
             .allocate({ seed: null })
@@ -27,7 +27,7 @@ describe('Program Metadata: allocate', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(ix, [bufferAndAuthority]);
+        await ctx.sendInstruction(ix, [bufferAndAuthority]);
 
         const account = ctx.requireEncodedAccount(bufferAndAuthority);
 
@@ -52,7 +52,7 @@ describe('Program Metadata: allocate', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(bufferPda);
         expect(account.owner).toBe(programClient.programAddress);
@@ -80,7 +80,7 @@ describe('Program Metadata: allocate', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(bufferPda);
         expect(account.owner).toBe(programClient.programAddress);

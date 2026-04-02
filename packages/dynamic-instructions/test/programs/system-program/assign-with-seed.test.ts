@@ -12,8 +12,8 @@ describe('System Program: assignWithSeed', () => {
     });
 
     test('should assign seed-derived account to system program', async () => {
-        const payerAccount = ctx.createFundedAccount();
-        const baseAccount = ctx.createFundedAccount();
+        const payerAccount = await ctx.createFundedAccount();
+        const baseAccount = await ctx.createFundedAccount();
 
         const seed = 'wallet';
         const account = await ctx.createAccountWithSeed(baseAccount, seed, programClient.programAddress);
@@ -33,7 +33,7 @@ describe('System Program: assignWithSeed', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createIx, [payerAccount, baseAccount]);
+        await ctx.sendInstruction(createIx, [payerAccount, baseAccount]);
 
         const assignIx = await programClient.methods
             .assignWithSeed({
@@ -47,7 +47,7 @@ describe('System Program: assignWithSeed', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(assignIx, [baseAccount]);
+        await ctx.sendInstruction(assignIx, [baseAccount]);
 
         expect(ctx.requireEncodedAccount(account)).toMatchObject({
             owner: programClient.programAddress,

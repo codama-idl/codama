@@ -8,7 +8,7 @@ import { makeVisitor } from './pda-seed-value-test-utils';
 describe('pda-seed-value: visitProgramIdValue', () => {
     test('should encode the context programId as 32-byte address', async () => {
         const svm = new SvmTestContext();
-        const randomAddress = svm.createAccount();
+        const randomAddress = await svm.createAccount();
         const result = await makeVisitor({
             programId: randomAddress,
         }).visitProgramIdValue(programIdValueNode());

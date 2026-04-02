@@ -8,7 +8,7 @@ import { makeVisitor } from './pda-seed-value-test-utils';
 describe('pda-seed-value: visitPublicKeyValue', () => {
     test('should encode the provided public key as 32-byte address', async () => {
         const svm = new SvmTestContext();
-        const randomAddress = svm.createAccount();
+        const randomAddress = await svm.createAccount();
         const result = await makeVisitor().visitPublicKeyValue(publicKeyValueNode(randomAddress));
         expect(result).toEqual(getAddressEncoder().encode(address(randomAddress)));
     });

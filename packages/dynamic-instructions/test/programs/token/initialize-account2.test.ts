@@ -7,10 +7,10 @@ import { createMint, SPL_TOKEN_ACCOUNT_SIZE, systemClient, tokenClient } from '.
 describe('Token Program: initializeAccount2', () => {
     test('should initialize a token account with owner passed as instruction data', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
-        const owner = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
+        const owner = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
 
@@ -29,7 +29,7 @@ describe('Token Program: initializeAccount2', () => {
             .accounts({ account: tokenAccount, mint: mintAccount })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initAccountIx], [payer, tokenAccount]);
+        await ctx.sendInstructions([createAccountIx, initAccountIx], [payer, tokenAccount]);
 
         const decoder = getTokenDecoder();
         const tokenData = decoder.decode(ctx.requireEncodedAccount(tokenAccount).data);

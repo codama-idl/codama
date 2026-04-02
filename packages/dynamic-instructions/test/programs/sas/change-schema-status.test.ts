@@ -27,7 +27,7 @@ describe('SAS: changeSchemaStatus', () => {
         expectedAccounts.forEach((expected, i) => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(schemaPda);
         const schema = getSchemaDecoder().decode(account.data);
@@ -43,14 +43,14 @@ describe('SAS: changeSchemaStatus', () => {
             .accounts({ authority, credential: credentialPda, schema: schemaPda })
             .instruction();
 
-        ctx.sendInstruction(pauseIx, [authority]);
+        await ctx.sendInstruction(pauseIx, [authority]);
 
         const unpauseIx = await programClient.methods
             .changeSchemaStatus({ isPaused: false })
             .accounts({ authority, credential: credentialPda, schema: schemaPda })
             .instruction();
 
-        ctx.sendInstruction(unpauseIx, [authority]);
+        await ctx.sendInstruction(unpauseIx, [authority]);
 
         const account = ctx.requireEncodedAccount(schemaPda);
         const schema = getSchemaDecoder().decode(account.data);

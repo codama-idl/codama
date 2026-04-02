@@ -7,10 +7,10 @@ import { createMint, createTokenAccount, SPL_TOKEN_MULTISIG_SIZE, systemClient, 
 describe('Token Program: approve', () => {
     test('should approve a delegate for a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const sourceAccount = ctx.createAccount();
-        const delegate = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const sourceAccount = await ctx.createAccount();
+        const delegate = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, sourceAccount, mintAccount, payer);
@@ -19,13 +19,13 @@ describe('Token Program: approve', () => {
             .mintTo({ amount: 1_000_000 })
             .accounts({ mint: mintAccount, mintAuthority: payer, token: sourceAccount })
             .instruction();
-        ctx.sendInstruction(mintIx, [payer]);
+        await ctx.sendInstruction(mintIx, [payer]);
 
         const ix = await tokenClient.methods
             .approve({ amount: 500_000 })
             .accounts({ delegate, owner: payer, source: sourceAccount })
             .instruction();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const decoder = getTokenDecoder();
         const sourceData = decoder.decode(ctx.requireEncodedAccount(sourceAccount).data);
@@ -35,11 +35,11 @@ describe('Token Program: approve', () => {
 
     test('should approve with multisig', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const sourceAccount = ctx.createAccount();
-        const delegate = ctx.createAccount();
-        const multisigOwner = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const sourceAccount = await ctx.createAccount();
+        const delegate = await ctx.createAccount();
+        const multisigOwner = await ctx.createAccount();
 
         // Create mints
         await createMint(ctx, payer, mintAccount, payer);
@@ -49,12 +49,12 @@ describe('Token Program: approve', () => {
             .mintTo({ amount: 1_000_000 })
             .accounts({ mint: mintAccount, mintAuthority: payer, token: sourceAccount })
             .instruction();
-        ctx.sendInstruction(mintIx, [payer]);
+        await ctx.sendInstruction(mintIx, [payer]);
 
         // Create multisignature owner
-        const signer1 = ctx.createAccount();
-        const signer2 = ctx.createAccount();
-        const signer3 = ctx.createAccount();
+        const signer1 = await ctx.createAccount();
+        const signer2 = await ctx.createAccount();
+        const signer3 = await ctx.createAccount();
 
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(SPL_TOKEN_MULTISIG_SIZE));
         const createAccountIx = await systemClient.methods
@@ -71,7 +71,7 @@ describe('Token Program: approve', () => {
             .accounts({ multisig: multisigOwner })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initMultisigIx], [payer, multisigOwner]);
+        await ctx.sendInstructions([createAccountIx, initMultisigIx], [payer, multisigOwner]);
 
         // Approve delegate with multisig owner,
         // providing signer1 and signer2 without signing by multisigOwner
@@ -79,7 +79,7 @@ describe('Token Program: approve', () => {
             .approve({ amount: 500_000, multiSigners: [signer1, signer2] })
             .accounts({ delegate, owner: multisigOwner, source: sourceAccount })
             .instruction();
-        ctx.sendInstruction(ix, [payer, signer1, signer2]);
+        await ctx.sendInstruction(ix, [payer, signer1, signer2]);
 
         const decoder = getTokenDecoder();
         const sourceData = decoder.decode(ctx.requireEncodedAccount(sourceAccount).data);

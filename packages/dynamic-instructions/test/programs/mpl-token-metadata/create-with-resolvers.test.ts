@@ -44,9 +44,9 @@ describe('MPL Token Metadata: create with resolvers', () => {
     });
 
     test('should auto-resolve splTokenProgram when resolveIsNonFungibleOrIsMintSigner returns true', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
 
         const [metadataPda] = await findMetadataPda({ mint });
@@ -85,7 +85,7 @@ describe('MPL Token Metadata: create with resolvers', () => {
             expect(expected, `Account mismatch at index ${i}`).toBe(ix.accounts?.[i].address);
         });
 
-        ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
+        await ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
 
         const metadataAccountInfo = ctx.requireEncodedAccount(metadataPda);
         const metadata = getMetadataDecoder().decode(metadataAccountInfo.data);
@@ -93,9 +93,9 @@ describe('MPL Token Metadata: create with resolvers', () => {
     });
 
     test('should resolve splTokenProgram to programId when resolver returns false (optionalAccountStrategy=programId)', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
 
         const [masterEditionPda] = await findMasterEditionPda({ mint });
@@ -119,7 +119,7 @@ describe('MPL Token Metadata: create with resolvers', () => {
         expect(ix.accounts?.length).toBe(9);
         expect(ix.accounts?.[ix.accounts.length - 1].address).toBe(programClient.programAddress);
 
-        ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
+        await ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
         const [metadataPda] = await findMetadataPda({ mint });
         const metadataAccountInfo = ctx.requireEncodedAccount(metadataPda);
         const metadata = getMetadataDecoder().decode(metadataAccountInfo.data);
@@ -127,10 +127,10 @@ describe('MPL Token Metadata: create with resolvers', () => {
     });
 
     test('should use user-provided account and bypass resolver', async () => {
-        const payer = ctx.createFundedAccount();
-        const splTokenProgramMock = ctx.createAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const splTokenProgramMock = await ctx.createAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
 
         const [masterEditionPda] = await findMasterEditionPda({ mint });
@@ -157,7 +157,7 @@ describe('MPL Token Metadata: create with resolvers', () => {
 
         expect(ix.accounts?.[ix.accounts.length - 1].address).toBe(splTokenProgramMock);
 
-        ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
+        await ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
         const [metadataPda] = await findMetadataPda({ mint });
         const metadataAccountInfo = ctx.requireEncodedAccount(metadataPda);
         const metadata = getMetadataDecoder().decode(metadataAccountInfo.data);
@@ -165,9 +165,9 @@ describe('MPL Token Metadata: create with resolvers', () => {
     });
 
     test('should work without calling .resolvers()', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
 
         const [masterEditionPda] = await findMasterEditionPda({ mint });
@@ -188,7 +188,7 @@ describe('MPL Token Metadata: create with resolvers', () => {
         expect(ix.accounts?.length).toBe(9);
         expect(ix.accounts?.[ix.accounts.length - 1].address).toBe(programClient.programAddress);
 
-        ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
+        await ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
         const [metadataPda] = await findMetadataPda({ mint });
         const metadataAccountInfo = ctx.requireEncodedAccount(metadataPda);
         const metadata = getMetadataDecoder().decode(metadataAccountInfo.data);
@@ -196,9 +196,9 @@ describe('MPL Token Metadata: create with resolvers', () => {
     });
 
     test('should fallback to optionalAccountStrategy when no resolver and no account provided', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
         await createMint(ctx, payer, mint, mintAuthority);
 
         const [masterEditionPda] = await findMasterEditionPda({ mint });
@@ -221,7 +221,7 @@ describe('MPL Token Metadata: create with resolvers', () => {
         expect(ix.accounts?.length).toBe(9);
         expect(ix.accounts?.[ix.accounts.length - 1].address).toBe(programClient.programAddress);
 
-        ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
+        await ctx.sendInstruction(ix, [payer, mintAuthority, mint]);
         const [metadataPda] = await findMetadataPda({ mint });
         const metadataAccountInfo = ctx.requireEncodedAccount(metadataPda);
         const metadata = getMetadataDecoder().decode(metadataAccountInfo.data);

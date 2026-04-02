@@ -12,8 +12,8 @@ describe('System Program: createAccount', () => {
     });
 
     test('should create a new account with specified space and lamports', async () => {
-        const payerAccount = ctx.createFundedAccount();
-        const newAccountAddress = ctx.createAccount();
+        const payerAccount = await ctx.createFundedAccount();
+        const newAccountAddress = await ctx.createAccount();
 
         const accountSpace = 165;
         const fundingLamports = 10_000_000;
@@ -30,7 +30,7 @@ describe('System Program: createAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payerAccount, newAccountAddress]);
+        await ctx.sendInstruction(createAccountInstruction, [payerAccount, newAccountAddress]);
 
         const createdAccount = ctx.requireEncodedAccount(newAccountAddress);
 

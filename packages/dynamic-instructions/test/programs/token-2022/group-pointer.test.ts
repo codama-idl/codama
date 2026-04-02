@@ -14,9 +14,9 @@ const GROUP_POINTER_EXT = (
 describe('Token 2022 Program: groupPointer', () => {
     test('should initialize group pointer extension [initializeGroupPointer]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const groupPointerAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const groupPointerAuthority = await ctx.createFundedAccount();
 
         // GroupPointer points to the mint itself (common pattern)
         const size = getMintSize(GROUP_POINTER_EXT(groupPointerAuthority, mint));
@@ -37,7 +37,7 @@ describe('Token 2022 Program: groupPointer', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initGroupPointerIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initGroupPointerIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });
@@ -54,10 +54,10 @@ describe('Token 2022 Program: groupPointer', () => {
 
     test('should update group pointer address [updateGroupPointer]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const groupPointerAuthority = ctx.createFundedAccount();
-        const newGroupAddress = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const groupPointerAuthority = await ctx.createFundedAccount();
+        const newGroupAddress = await ctx.createAccount();
 
         const size = getMintSize(GROUP_POINTER_EXT(groupPointerAuthority, mint));
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -77,7 +77,7 @@ describe('Token 2022 Program: groupPointer', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initGroupPointerIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initGroupPointerIx, initMintIx], [payer, mint]);
 
         // Update group pointer to a new address
         const updateIx = await token2022Client.methods
@@ -85,7 +85,7 @@ describe('Token 2022 Program: groupPointer', () => {
             .accounts({ groupPointerAuthority, mint })
             .signers(['groupPointerAuthority'])
             .instruction();
-        ctx.sendInstruction(updateIx, [payer, groupPointerAuthority]);
+        await ctx.sendInstruction(updateIx, [payer, groupPointerAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toEqual(

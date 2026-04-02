@@ -40,7 +40,7 @@ describe('SAS: createSchema', () => {
         expectedAccounts.forEach((acc, idx) => {
             expect(ix.accounts?.[idx].address).toBe(acc);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const textEncoder = new TextEncoder();
         const account = ctx.requireEncodedAccount(schemaPda);
@@ -64,7 +64,7 @@ describe('SAS: createSchema', () => {
     });
 
     test('should throw AccountError when credential is missing', async () => {
-        const authority = ctx.createFundedAccount();
+        const authority = await ctx.createFundedAccount();
         const [schemaPda] = await deriveSchemaPda({ credential: authority, name: 'dummy', version: 1 });
 
         await expect(

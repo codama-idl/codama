@@ -12,8 +12,8 @@ describe('System Program: transferSolWithSeed', () => {
     });
 
     test('should transfer SOL from a seed-derived account to a destination', async () => {
-        const payerAccount = ctx.createFundedAccount();
-        const baseAccount = ctx.createFundedAccount();
+        const payerAccount = await ctx.createFundedAccount();
+        const baseAccount = await ctx.createFundedAccount();
 
         const seed = 'vault';
         const source = await ctx.createAccountWithSeed(baseAccount, seed, programClient.programAddress);
@@ -34,9 +34,9 @@ describe('System Program: transferSolWithSeed', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createIx, [payerAccount, baseAccount]);
+        await ctx.sendInstruction(createIx, [payerAccount, baseAccount]);
 
-        const destination = ctx.createAccount();
+        const destination = await ctx.createAccount();
         const transferAmount = 3_000_000;
 
         expect(ctx.requireEncodedAccount(source).lamports).toBe(BigInt(fundingLamports));
@@ -55,7 +55,7 @@ describe('System Program: transferSolWithSeed', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(transferIx, [baseAccount]);
+        await ctx.sendInstruction(transferIx, [baseAccount]);
 
         const sourceAfter = ctx.requireEncodedAccount(source);
         const destinationAfter = ctx.requireEncodedAccount(destination);

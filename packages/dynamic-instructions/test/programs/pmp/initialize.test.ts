@@ -57,7 +57,7 @@ describe('Program Metadata: initialize', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(metadataPda);
         expect(account.owner).toBe(PMP_PROGRAM_ID);
@@ -108,7 +108,7 @@ describe('Program Metadata: initialize', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(metadataPda);
         expect(account.owner).toBe(PMP_PROGRAM_ID);
@@ -187,7 +187,7 @@ describe('Program Metadata: initialize', () => {
             })
             .instruction();
 
-        ctx.sendInstructions([allocateIx, writeIx], [authority]);
+        await ctx.sendInstructions([allocateIx, writeIx], [authority]);
 
         // Verify the buffer was written at the metadata PDA
         const bufferAccount = ctx.requireEncodedAccount(metadataPda);
@@ -211,7 +211,7 @@ describe('Program Metadata: initialize', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeIx, [authority]);
+        await ctx.sendInstruction(initializeIx, [authority]);
 
         const account = ctx.requireEncodedAccount(metadataPda);
         expect(account.owner).toBe(PMP_PROGRAM_ID);
@@ -247,7 +247,7 @@ describe('Program Metadata: initialize', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(metadataPda);
         expect(account.owner).toBe(PMP_PROGRAM_ID);
@@ -265,7 +265,7 @@ describe('Program Metadata: initialize', () => {
     });
 
     test('should throw AccountError when authority is missing for non-canonical metadata', async () => {
-        const testProgramAddress = ctx.createAccount();
+        const testProgramAddress = await ctx.createAccount();
         await expect(
             programClient.methods
                 .initialize({
@@ -287,7 +287,7 @@ describe('Program Metadata: initialize', () => {
     });
 
     test('should throw AccountError when required program account is missing', async () => {
-        const authority = ctx.createFundedAccount();
+        const authority = await ctx.createFundedAccount();
 
         await expect(
             programClient.methods
@@ -310,8 +310,8 @@ describe('Program Metadata: initialize', () => {
     });
 
     test('should throw ArgumentError when missing required seed argument', async () => {
-        const authority = ctx.createFundedAccount();
-        const testProgramAddress = ctx.createAccount();
+        const authority = await ctx.createFundedAccount();
+        const testProgramAddress = await ctx.createAccount();
 
         await expect(
             programClient.methods

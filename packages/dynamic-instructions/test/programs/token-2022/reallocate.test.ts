@@ -6,9 +6,9 @@ import { createMint, createTokenAccount, token2022Client } from './token-2022-te
 describe('Token 2022 Program: reallocate', () => {
     test('should reallocate a token account to accommodate new extensions', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mint, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mint, payer);
@@ -19,7 +19,7 @@ describe('Token 2022 Program: reallocate', () => {
             .reallocate({ newExtensionTypes: ['memoTransfer'] })
             .accounts({ owner: payer, payer, token: tokenAccount })
             .instruction();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const balanceAfter = ctx.getBalanceOrZero(tokenAccount);
         expect(balanceAfter).toBeGreaterThan(balanceBefore);

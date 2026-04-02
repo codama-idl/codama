@@ -12,8 +12,8 @@ describe('System Program: createAccountWithSeed', () => {
     });
 
     test('should create a new account at a seed-derived address', async () => {
-        const payerAccount = ctx.createFundedAccount();
-        const baseAccount = ctx.createFundedAccount();
+        const payerAccount = await ctx.createFundedAccount();
+        const baseAccount = await ctx.createFundedAccount();
 
         const seed = 'vault';
         const newAccount = await ctx.createAccountWithSeed(baseAccount, seed, programClient.programAddress);
@@ -36,7 +36,7 @@ describe('System Program: createAccountWithSeed', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountWithSeedInstruction, [payerAccount, baseAccount]);
+        await ctx.sendInstruction(createAccountWithSeedInstruction, [payerAccount, baseAccount]);
 
         const createdAccount = ctx.requireEncodedAccount(newAccount);
 

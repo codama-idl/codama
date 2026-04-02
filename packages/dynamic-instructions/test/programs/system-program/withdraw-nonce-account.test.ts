@@ -12,10 +12,10 @@ describe('System Program: withdrawNonceAccount', () => {
     });
 
     test('should withdraw lamports from nonce account to recipient', async () => {
-        const payer = ctx.createFundedAccount();
-        const nonceAccount = ctx.createAccount();
-        const nonceAuthority = ctx.createFundedAccount();
-        const recipient = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const nonceAccount = await ctx.createAccount();
+        const nonceAuthority = await ctx.createFundedAccount();
+        const recipient = await ctx.createAccount();
 
         const nonceAccountSpace = 80;
         const fundingLamports = 10_000_000;
@@ -33,7 +33,7 @@ describe('System Program: withdrawNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
+        await ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
 
         const initializeNonceInstruction = await programClient.methods
             .initializeNonceAccount({
@@ -44,7 +44,7 @@ describe('System Program: withdrawNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeNonceInstruction, [payer]);
+        await ctx.sendInstruction(initializeNonceInstruction, [payer]);
 
         const beforeWithdraw = ctx.requireEncodedAccount(nonceAccount);
         expect(beforeWithdraw.lamports).toBe(BigInt(fundingLamports));
@@ -60,7 +60,7 @@ describe('System Program: withdrawNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(withdrawInstruction, [nonceAuthority]);
+        await ctx.sendInstruction(withdrawInstruction, [nonceAuthority]);
 
         const afterWithdrawNonce = ctx.requireEncodedAccount(nonceAccount);
         expect(afterWithdrawNonce.lamports).toBe(BigInt(fundingLamports - withdrawAmount));

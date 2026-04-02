@@ -62,7 +62,7 @@ describe('Program Metadata: setData', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(setDataIx, [authority]);
+        await ctx.sendInstruction(setDataIx, [authority]);
 
         // Verify metadata updated
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
@@ -84,7 +84,7 @@ describe('Program Metadata: setData', () => {
     });
 
     test('should update canonical metadata from buffer', async () => {
-        const feePayer = ctx.createFundedAccount();
+        const feePayer = await ctx.createFundedAccount();
         const {
             authority,
             programAddress,
@@ -104,7 +104,7 @@ describe('Program Metadata: setData', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(writeBufferIx, [feePayer, bufferAccount]);
+        await ctx.sendInstruction(writeBufferIx, [feePayer, bufferAccount]);
 
         // Update metadata from buffer
         const expectedAccounts = [metadataPda, authority, bufferAccount, programAddress, programDataAddress];
@@ -131,7 +131,7 @@ describe('Program Metadata: setData', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(setDataIx, [authority]);
+        await ctx.sendInstruction(setDataIx, [authority]);
 
         // Verify metadata data matches buffer
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
@@ -182,7 +182,7 @@ describe('Program Metadata: setData', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(setDataIx, [authority]);
+        await ctx.sendInstruction(setDataIx, [authority]);
 
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
         const metadataAfter = decodeMetadataAccount(accountAfter.data);

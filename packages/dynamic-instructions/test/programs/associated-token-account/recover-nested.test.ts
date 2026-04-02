@@ -12,11 +12,11 @@ describe('Associated Token Account: recoverNested', () => {
     });
 
     test('should recover tokens from a nested associated token account', async () => {
-        const payer = ctx.createFundedAccount();
-        const mintAuthority = ctx.createFundedAccount();
-        const ownerMint = ctx.createAccount();
-        const nestedMint = ctx.createAccount();
-        const wallet = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAuthority = await ctx.createFundedAccount();
+        const ownerMint = await ctx.createAccount();
+        const nestedMint = await ctx.createAccount();
+        const wallet = await ctx.createFundedAccount();
 
         await createMint(ctx, payer, ownerMint, mintAuthority);
         await createMint(ctx, payer, nestedMint, mintAuthority);
@@ -36,7 +36,7 @@ describe('Associated Token Account: recoverNested', () => {
                 walletAddress: wallet,
             })
             .instruction();
-        ctx.sendInstruction(createOwnerAtaIx, [payer]);
+        await ctx.sendInstruction(createOwnerAtaIx, [payer]);
 
         // Create nested ATA (ownerAta → nestedMint) — tokens sent here accidentally
         const [nestedAta] = await findAssociatedTokenPda({
@@ -53,7 +53,7 @@ describe('Associated Token Account: recoverNested', () => {
                 walletAddress: ownerAta,
             })
             .instruction();
-        ctx.sendInstruction(createNestedAtaIx, [payer]);
+        await ctx.sendInstruction(createNestedAtaIx, [payer]);
 
         // Mint tokens to nested ATA
         const amount = BigInt(1_000_000);
@@ -62,7 +62,7 @@ describe('Associated Token Account: recoverNested', () => {
             .accounts({ mint: nestedMint, mintAuthority, token: nestedAta })
             .signers(['mintAuthority'])
             .instruction();
-        ctx.sendInstruction(mintToIx, [payer, mintAuthority]);
+        await ctx.sendInstruction(mintToIx, [payer, mintAuthority]);
 
         // Create destination ATA (wallet → nestedMint)
         const [destinationAta] = await findAssociatedTokenPda({
@@ -79,7 +79,7 @@ describe('Associated Token Account: recoverNested', () => {
                 walletAddress: wallet,
             })
             .instruction();
-        ctx.sendInstruction(createDestAtaIx, [payer]);
+        await ctx.sendInstruction(createDestAtaIx, [payer]);
 
         // Recover nested tokens
         const recoverIx = await ataClient.methods
@@ -94,7 +94,7 @@ describe('Associated Token Account: recoverNested', () => {
             })
             .signers(['walletAddress'])
             .instruction();
-        ctx.sendInstruction(recoverIx, [payer, wallet]);
+        await ctx.sendInstruction(recoverIx, [payer, wallet]);
 
         // Verify tokens moved to destination
         const destAccount = ctx.requireEncodedAccount(destinationAta);

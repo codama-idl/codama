@@ -79,9 +79,8 @@
         "@solana-program/program-metadata": "^0.5.1",
         "@solana-program/token": "0.10.0",
         "@solana-program/token-2022": "^0.9.0",
-        "@solana/web3.js": "1.98.4",
-        "@types/bn.js": "5.2.0",
-        "litesvm": "0.6.0",
+        "@solana/kit": "6.5.0",
+        "litesvm": "1.0.0",
         "sas-lib": "^1.0.10"
     },
     "browserslist": [

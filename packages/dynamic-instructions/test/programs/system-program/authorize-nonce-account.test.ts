@@ -12,10 +12,10 @@ describe('System Program: authorizeNonceAccount', () => {
     });
 
     test('should change nonce account authority to a new authority', async () => {
-        const payer = ctx.createFundedAccount();
-        const nonceAccount = ctx.createAccount();
-        const originalAuthority = ctx.createFundedAccount();
-        const newAuthority = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const nonceAccount = await ctx.createAccount();
+        const originalAuthority = await ctx.createFundedAccount();
+        const newAuthority = await ctx.createAccount();
 
         const nonceAccountSpace = 80;
         const fundingLamports = 10_000_000;
@@ -32,7 +32,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
+        await ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
 
         const initializeNonceInstruction = await programClient.methods
             .initializeNonceAccount({
@@ -43,7 +43,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeNonceInstruction, [payer]);
+        await ctx.sendInstruction(initializeNonceInstruction, [payer]);
 
         const initializedAccount = ctx.requireEncodedAccount(nonceAccount);
         expect(initializedAccount).toMatchObject({
@@ -62,7 +62,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(authorizeNonceInstruction, [originalAuthority]);
+        await ctx.sendInstruction(authorizeNonceInstruction, [originalAuthority]);
 
         const authorizedAccount = ctx.requireEncodedAccount(nonceAccount);
         expect(authorizedAccount).toMatchObject({
@@ -74,11 +74,11 @@ describe('System Program: authorizeNonceAccount', () => {
     });
 
     test('should allow changing authority multiple times', async () => {
-        const payer = ctx.createFundedAccount();
-        const nonceAccount = ctx.createAccount();
-        const firstAuthority = ctx.createFundedAccount();
-        const secondAuthority = ctx.createFundedAccount();
-        const thirdAuthority = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const nonceAccount = await ctx.createAccount();
+        const firstAuthority = await ctx.createFundedAccount();
+        const secondAuthority = await ctx.createFundedAccount();
+        const thirdAuthority = await ctx.createAccount();
 
         const nonceAccountSpace = 80;
         const fundingLamports = 10_000_000;
@@ -95,7 +95,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
+        await ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
 
         const initializeNonceInstruction = await programClient.methods
             .initializeNonceAccount({
@@ -106,7 +106,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeNonceInstruction, [payer]);
+        await ctx.sendInstruction(initializeNonceInstruction, [payer]);
 
         const authorizeToSecondInstruction = await programClient.methods
             .authorizeNonceAccount({
@@ -118,7 +118,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(authorizeToSecondInstruction, [firstAuthority]);
+        await ctx.sendInstruction(authorizeToSecondInstruction, [firstAuthority]);
 
         const authorizeToThirdInstruction = await programClient.methods
             .authorizeNonceAccount({
@@ -130,7 +130,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(authorizeToThirdInstruction, [secondAuthority]);
+        await ctx.sendInstruction(authorizeToThirdInstruction, [secondAuthority]);
 
         const finalAccount = ctx.requireEncodedAccount(nonceAccount);
         expect(finalAccount).toMatchObject({
@@ -142,9 +142,9 @@ describe('System Program: authorizeNonceAccount', () => {
     });
 
     test('should work when authority transfers to itself (no-op transfer)', async () => {
-        const payer = ctx.createFundedAccount();
-        const nonceAccount = ctx.createAccount();
-        const authority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const nonceAccount = await ctx.createAccount();
+        const authority = await ctx.createFundedAccount();
 
         const nonceAccountSpace = 80;
         const fundingLamports = 10_000_000;
@@ -161,7 +161,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
+        await ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
 
         const initializeNonceInstruction = await programClient.methods
             .initializeNonceAccount({
@@ -172,7 +172,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeNonceInstruction, [payer]);
+        await ctx.sendInstruction(initializeNonceInstruction, [payer]);
 
         const authorizeInstruction = await programClient.methods
             .authorizeNonceAccount({
@@ -184,7 +184,7 @@ describe('System Program: authorizeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(authorizeInstruction, [authority]);
+        await ctx.sendInstruction(authorizeInstruction, [authority]);
 
         const finalAccount = ctx.requireEncodedAccount(nonceAccount);
         expect(finalAccount).toMatchObject({

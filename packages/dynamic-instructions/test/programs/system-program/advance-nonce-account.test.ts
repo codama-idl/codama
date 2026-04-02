@@ -12,10 +12,10 @@ describe('System Program: advanceNonceAccount', () => {
     });
 
     test('should advance nonce multiple times and work after authority change', async () => {
-        const payer = ctx.createFundedAccount();
-        const nonceAccount = ctx.createAccount();
-        const originalAuthority = ctx.createFundedAccount();
-        const newAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const nonceAccount = await ctx.createAccount();
+        const originalAuthority = await ctx.createFundedAccount();
+        const newAuthority = await ctx.createFundedAccount();
 
         const nonceAccountSpace = 80;
         const fundingLamports = 10_000_000;
@@ -32,7 +32,7 @@ describe('System Program: advanceNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
+        await ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
 
         const initializeNonceInstruction = await programClient.methods
             .initializeNonceAccount({
@@ -43,7 +43,7 @@ describe('System Program: advanceNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeNonceInstruction, [payer]);
+        await ctx.sendInstruction(initializeNonceInstruction, [payer]);
 
         const initialData = ctx.requireEncodedAccount(nonceAccount).data;
 
@@ -56,7 +56,7 @@ describe('System Program: advanceNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(advanceNonceInstruction1, [originalAuthority]);
+        await ctx.sendInstruction(advanceNonceInstruction1, [originalAuthority]);
 
         const dataAfterFirstAdvance = ctx.requireEncodedAccount(nonceAccount).data;
         expect(dataAfterFirstAdvance).not.toEqual(initialData);
@@ -70,7 +70,7 @@ describe('System Program: advanceNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(advanceNonceInstruction2, [originalAuthority]);
+        await ctx.sendInstruction(advanceNonceInstruction2, [originalAuthority]);
 
         const dataAfterSecondAdvance = ctx.requireEncodedAccount(nonceAccount).data;
         expect(dataAfterSecondAdvance).not.toEqual(dataAfterFirstAdvance);
@@ -85,7 +85,7 @@ describe('System Program: advanceNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(authorizeNonceInstruction, [originalAuthority]);
+        await ctx.sendInstruction(authorizeNonceInstruction, [originalAuthority]);
 
         ctx.advanceSlots();
         const advanceWithNewAuthority = await programClient.methods
@@ -96,7 +96,7 @@ describe('System Program: advanceNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(advanceWithNewAuthority, [newAuthority]);
+        await ctx.sendInstruction(advanceWithNewAuthority, [newAuthority]);
 
         const finalAccount = ctx.requireEncodedAccount(nonceAccount);
         expect(finalAccount).toMatchObject({

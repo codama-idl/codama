@@ -73,7 +73,7 @@ export async function initializeCanonicalMetadata(ctx: SvmTestContext, options?:
             programData: result.programDataAddress,
         })
         .instruction();
-    ctx.sendInstruction(initIx, [result.authority]);
+    await ctx.sendInstruction(initIx, [result.authority]);
 
     return result;
 }
@@ -102,7 +102,7 @@ export async function initializeNonCanonicalMetadata(
             programData: null,
         })
         .instruction();
-    ctx.sendInstruction(initIx, [result.authority]);
+    await ctx.sendInstruction(initIx, [result.authority]);
 
     return result;
 }
@@ -113,8 +113,8 @@ export async function initializeNonCanonicalMetadata(
  * - Creates a canonical PDA (program upgradeAuthority), i.e [programAddress, seed].
  */
 export async function setupCanonicalPda(ctx: SvmTestContext, seed = 'idl') {
-    const authority = ctx.createFundedAccount();
-    const testProgramAddress = ctx.createAccount();
+    const authority = await ctx.createFundedAccount();
+    const testProgramAddress = await ctx.createAccount();
 
     const { programAddress, programDataAddress } = await setUpgradeableProgramAccounts(
         ctx,
@@ -135,9 +135,9 @@ export async function setupCanonicalPda(ctx: SvmTestContext, seed = 'idl') {
  * - Creates a non-canonical PDA (arbitrary authority), i.e [programAddress, authority, seed].
  */
 export async function setupNonCanonicalPda(ctx: SvmTestContext, seed = 'idl') {
-    const authority = ctx.createFundedAccount();
-    const programDataAuthority = ctx.createFundedAccount();
-    const testProgramAddress = ctx.createAccount();
+    const authority = await ctx.createFundedAccount();
+    const programDataAuthority = await ctx.createFundedAccount();
+    const testProgramAddress = await ctx.createAccount();
 
     const { programAddress, programDataAddress } = await setUpgradeableProgramAccounts(
         ctx,
@@ -238,7 +238,7 @@ function encodeProgramAccount(programDataAddress: Address) {
 
 /** Helper for allocating Buffer. Used for extending, closing or adding data */
 export async function allocateBufferAccount(ctx: SvmTestContext) {
-    const bufferAccount = ctx.createFundedAccount();
+    const bufferAccount = await ctx.createFundedAccount();
 
     const allocateIx = await programClient.methods
         .allocate({ seed: null })
@@ -249,7 +249,7 @@ export async function allocateBufferAccount(ctx: SvmTestContext) {
             programData: null,
         })
         .instruction();
-    ctx.sendInstruction(allocateIx, [bufferAccount]);
+    await ctx.sendInstruction(allocateIx, [bufferAccount]);
 
     return { bufferAccount };
 }

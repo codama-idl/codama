@@ -1,3 +1,4 @@
+import { address } from '@solana/addresses';
 import { describe, expect, test } from 'vitest';
 
 import { createProgramClient } from '../../../src';
@@ -148,7 +149,7 @@ describe('createProgramClient', () => {
     });
 
     describe('programId override', () => {
-        const OVERRIDE_ADDRESS = SvmTestContext.generateAddress();
+        const OVERRIDE_ADDRESS = address('7EqQdEULxWcraVx3mXKFjc84LhCkMGZCkRuDrdXkTfBR');
 
         test('should reflect the override in programAddress', () => {
             const idl = loadIdl('system-program-idl.json');
@@ -160,7 +161,7 @@ describe('createProgramClient', () => {
             const idl = loadIdl('system-program-idl.json');
             const client = createProgramClient<SystemProgramClient>(idl, { programId: OVERRIDE_ADDRESS });
 
-            const sourceAndDest = SvmTestContext.generateAddress();
+            const sourceAndDest = await SvmTestContext.generateAddress();
             const ix = await client.methods
                 .transferSol({ amount: 1000 })
                 .accounts({ destination: sourceAndDest, source: sourceAndDest })

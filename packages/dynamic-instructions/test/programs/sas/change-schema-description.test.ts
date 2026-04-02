@@ -27,7 +27,7 @@ describe('SAS: changeSchemaDescription', () => {
         expectedAccounts.forEach((expected, i) => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(schemaPda);
         const schema = getSchemaDecoder().decode(account.data);

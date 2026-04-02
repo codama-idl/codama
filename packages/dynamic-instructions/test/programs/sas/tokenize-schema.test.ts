@@ -52,7 +52,7 @@ describe('SAS: tokenizeSchema', () => {
             expect(ix.accounts[i].address).eq(expected);
         });
 
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(schemaMintPda);
         expect(account).not.toBeNull();

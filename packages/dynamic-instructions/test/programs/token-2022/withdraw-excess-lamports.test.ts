@@ -7,9 +7,9 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: withdrawExcessLamports', () => {
     test('should withdraw excess lamports from a mint account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const destination = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const destination = await ctx.createFundedAccount();
 
         // Create mint WITH MintCloseAuthority (required for withdrawExcessLamports).
         const size = getMintSize([{ __kind: 'MintCloseAuthority', closeAuthority: payer }]);
@@ -29,7 +29,7 @@ describe('Token 2022 Program: withdrawExcessLamports', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initCloseAuthIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initCloseAuthIx, initMintIx], [payer, mint]);
 
         // Airdrop excess lamports to the mint account.
         ctx.airdropToAddress(mint, 1_000_000n);
@@ -39,7 +39,7 @@ describe('Token 2022 Program: withdrawExcessLamports', () => {
             .withdrawExcessLamports()
             .accounts({ authority: payer, destinationAccount: destination, sourceAccount: mint })
             .instruction();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         expect(ctx.getBalanceOrZero(destination)).toBeGreaterThan(destBefore);
     });

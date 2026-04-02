@@ -23,7 +23,7 @@ describe('System Program: upgradeNonceAccount', () => {
     });
 
     test('smoke: should build upgrade nonce account instruction correctly', async () => {
-        const nonceAccount = ctx.createAccount();
+        const nonceAccount = await ctx.createAccount();
 
         const upgradeNonceInstruction = await programClient.methods
             .upgradeNonceAccount()

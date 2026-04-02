@@ -1,10 +1,10 @@
+import { address } from '@solana/addresses';
 import type { InstructionAccountNode } from 'codama';
 import { instructionAccountNode, instructionNode, programNode, rootNode } from 'codama';
 
 import { createAccountDefaultValueVisitor } from '../../../../src/instruction-encoding/visitors/account-default-value';
-import { SvmTestContext } from '../../../svm-test-context';
 
-export const programAddress = SvmTestContext.generateAddress();
+export const programAddress = address('11111111111111111111111111111111');
 export const rootNodeMock = rootNode(programNode({ name: 'test', publicKey: programAddress }));
 
 export const ixNodeStub = instructionNode({ name: 'testInstruction' });

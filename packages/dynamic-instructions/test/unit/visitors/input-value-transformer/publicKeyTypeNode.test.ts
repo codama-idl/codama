@@ -6,9 +6,9 @@ import { SvmTestContext } from '../../../svm-test-context';
 import { rootNodeMock } from './input-value-transformer-test-utils';
 
 describe('publicKeyTypeNode', () => {
-    test('should pass through public key string', () => {
+    test('should pass through public key string', async () => {
         const transformer = createInputValueTransformer(publicKeyTypeNode(), rootNodeMock);
-        const pubkey = SvmTestContext.generateAddress();
+        const pubkey = await SvmTestContext.generateAddress();
         expect(transformer(pubkey)).toBe(pubkey);
     });
 

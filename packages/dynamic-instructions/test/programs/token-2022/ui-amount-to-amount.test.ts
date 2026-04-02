@@ -7,8 +7,8 @@ import { createMint, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: uiAmountToAmount', () => {
     test('should convert a UI amount string to a raw token amount', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         const amount = 1_000_000_000;
@@ -19,7 +19,7 @@ describe('Token 2022 Program: uiAmountToAmount', () => {
             .accounts({ mint: mintAccount })
             .instruction();
 
-        const meta = ctx.sendInstruction(ix, [payer]);
+        const meta = await ctx.sendInstruction(ix, [payer]);
         const rawAmount = getU64Decoder().decode(meta.returnData().data());
         expect(rawAmount).toBe(BigInt(amount));
     });

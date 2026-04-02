@@ -8,9 +8,9 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: updateDefaultAccountState', () => {
     test('should update default account state extension', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const freezeAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const freezeAuthority = await ctx.createFundedAccount();
 
         const size = getMintSize([{ __kind: 'DefaultAccountState', state: AccountState.Frozen }]);
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -29,7 +29,7 @@ describe('Token 2022 Program: updateDefaultAccountState', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initDefaultStateIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initDefaultStateIx, initMintIx], [payer, mint]);
 
         const mintDataBefore = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintDataBefore.extensions).toMatchObject(
@@ -41,7 +41,7 @@ describe('Token 2022 Program: updateDefaultAccountState', () => {
             .accounts({ freezeAuthority, mint })
             .signers(['freezeAuthority'])
             .instruction();
-        ctx.sendInstruction(updateIx, [payer, freezeAuthority]);
+        await ctx.sendInstruction(updateIx, [payer, freezeAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(

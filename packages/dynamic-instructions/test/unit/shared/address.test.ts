@@ -79,13 +79,13 @@ describe('toAddress', () => {
 });
 
 describe('isConvertibleAddress', () => {
-    test('should return true for Address', () => {
-        const address = SvmTestContext.generateAddress();
+    test('should return true for Address', async () => {
+        const address = await SvmTestContext.generateAddress();
         expect(isConvertibleAddress(address)).toBe(true);
     });
 
     test('should return true for PublicKeyLike', () => {
-        const publicKey = { toBase58: () => SvmTestContext.generateAddress() };
+        const publicKey = { toBase58: () => '11111111111111111111111111111111' };
         const result = toAddress(publicKey);
         expect(isConvertibleAddress(result)).toBe(true);
     });

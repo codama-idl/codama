@@ -39,13 +39,13 @@ const getConfidentialTransferFeeExts = (
 describe('Token 2022 Program: confidentialTransferFee', () => {
     test('should initialize confidential transfer fee extension [initializeConfidentialTransferFee]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const feeAuthority = ctx.createFundedAccount();
-        const withdrawAuthority = ctx.createFundedAccount();
-        const confidentialFeeAuthority = ctx.createFundedAccount();
-        const confidentialTransferAuthority = ctx.createFundedAccount();
-        const elgamalPubkey = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const feeAuthority = await ctx.createFundedAccount();
+        const withdrawAuthority = await ctx.createFundedAccount();
+        const confidentialFeeAuthority = await ctx.createFundedAccount();
+        const confidentialTransferAuthority = await ctx.createFundedAccount();
+        const elgamalPubkey = await ctx.createFundedAccount();
 
         const size = getMintSize(
             getConfidentialTransferFeeExts(
@@ -95,7 +95,7 @@ describe('Token 2022 Program: confidentialTransferFee', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions(
+        await ctx.sendInstructions(
             [createAccountIx, initFeeConfigIx, initConfidentialTransferIx, initConfidentialFeeIx, initMintIx],
             [payer, mint],
         );

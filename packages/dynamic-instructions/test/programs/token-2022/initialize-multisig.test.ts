@@ -7,12 +7,12 @@ import { systemClient, TOKEN_2022_MULTISIG_SIZE, token2022Client } from './token
 describe('Token 2022 Program: initializeMultisig', () => {
     test('should initialize a multisig account with signers', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const multisigAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const multisigAccount = await ctx.createAccount();
 
-        const signer1 = ctx.createAccount();
-        const signer2 = ctx.createAccount();
-        const signer3 = ctx.createAccount();
+        const signer1 = await ctx.createAccount();
+        const signer2 = await ctx.createAccount();
+        const signer3 = await ctx.createAccount();
 
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(TOKEN_2022_MULTISIG_SIZE));
         const createAccountIx = await systemClient.methods
@@ -29,7 +29,7 @@ describe('Token 2022 Program: initializeMultisig', () => {
             .accounts({ multisig: multisigAccount })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initMultisigIx], [payer, multisigAccount]);
+        await ctx.sendInstructions([createAccountIx, initMultisigIx], [payer, multisigAccount]);
 
         const decoder = getMultisigDecoder();
         const multisigData = decoder.decode(ctx.requireEncodedAccount(multisigAccount).data);

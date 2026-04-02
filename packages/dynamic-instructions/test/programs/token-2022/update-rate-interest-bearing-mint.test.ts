@@ -8,9 +8,9 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: updateRateInterestBearingMint', () => {
     test('should update interest bearing mint rate', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const rateAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const rateAuthority = await ctx.createFundedAccount();
 
         const size = getMintSize([
             {
@@ -38,7 +38,7 @@ describe('Token 2022 Program: updateRateInterestBearingMint', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initInterestBearingIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initInterestBearingIx, initMintIx], [payer, mint]);
 
         const updateIx = await token2022Client.methods
             .updateRateInterestBearingMint({ rate: 1000 })
@@ -46,7 +46,7 @@ describe('Token 2022 Program: updateRateInterestBearingMint', () => {
             .signers(['rateAuthority'])
             .instruction();
 
-        ctx.sendInstruction(updateIx, [payer, rateAuthority]);
+        await ctx.sendInstruction(updateIx, [payer, rateAuthority]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.extensions).toMatchObject(

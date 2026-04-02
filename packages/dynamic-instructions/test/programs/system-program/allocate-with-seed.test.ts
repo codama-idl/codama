@@ -12,8 +12,8 @@ describe('System Program: allocateWithSeed', () => {
     });
 
     test('should allocate space for a seed-derived account', async () => {
-        const payerAccount = ctx.createFundedAccount();
-        const baseAccount = ctx.createFundedAccount();
+        const payerAccount = await ctx.createFundedAccount();
+        const baseAccount = await ctx.createFundedAccount();
 
         const seed = 'storage';
         const newAccount = await ctx.createAccountWithSeed(baseAccount, seed, programClient.programAddress);
@@ -34,7 +34,7 @@ describe('System Program: allocateWithSeed', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createIx, [payerAccount, baseAccount]);
+        await ctx.sendInstruction(createIx, [payerAccount, baseAccount]);
 
         const space = 96;
         const allocateIx = await programClient.methods
@@ -50,7 +50,7 @@ describe('System Program: allocateWithSeed', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(allocateIx, [baseAccount]);
+        await ctx.sendInstruction(allocateIx, [baseAccount]);
 
         const accountAfter = ctx.requireEncodedAccount(newAccount);
 

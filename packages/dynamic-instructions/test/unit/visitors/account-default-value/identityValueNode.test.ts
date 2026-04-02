@@ -6,7 +6,7 @@ import { makeVisitor } from './account-default-value-test-utils';
 
 describe('account-default-value: visitIdentityValue', () => {
     test('should return provided address', async () => {
-        const addr = SvmTestContext.generateAddress();
+        const addr = await SvmTestContext.generateAddress();
         const visitor = makeVisitor({ accountAddressInput: addr });
         const result = await visitor.visitIdentityValue(identityValueNode());
         expect(result).toBe(addr);

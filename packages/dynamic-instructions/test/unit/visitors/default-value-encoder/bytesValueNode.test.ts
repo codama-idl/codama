@@ -12,8 +12,8 @@ describe('default-value-encoder: visitBytesValue', () => {
         expect(result).toEqual(getBase16Codec().encode('deadbeef'));
     });
 
-    test('should encode base58 bytes', () => {
-        const bs58 = SvmTestContext.generateAddress();
+    test('should encode base58 bytes', async () => {
+        const bs58 = await SvmTestContext.generateAddress();
         const visitor = makeVisitor(fixedSizeTypeNode(bytesTypeNode(), 32));
         const result = visitor.visitBytesValue(bytesValueNode('base58', bs58));
         expect(result).toEqual(getBase58Codec().encode(bs58));

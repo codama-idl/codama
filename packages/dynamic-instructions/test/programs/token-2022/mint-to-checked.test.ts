@@ -7,9 +7,9 @@ import { createMint, createTokenAccount, token2022Client } from './token-2022-te
 describe('Token 2022 Program: mintToChecked', () => {
     test('should mint_to_checked tokens', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mintAccount, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mintAccount, payer);
@@ -18,7 +18,7 @@ describe('Token 2022 Program: mintToChecked', () => {
             .mintToChecked({ amount: 1_000_000, decimals: 9 })
             .accounts({ mint: mintAccount, mintAuthority: payer, token: tokenAccount })
             .instruction();
-        ctx.sendInstruction(ix, [payer]);
+        await ctx.sendInstruction(ix, [payer]);
 
         const decoder = getTokenDecoder();
         const tokenData = decoder.decode(ctx.requireEncodedAccount(tokenAccount).data);

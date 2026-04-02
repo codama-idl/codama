@@ -11,9 +11,9 @@ import { describe, expect, test } from 'vitest';
 import { SvmTestContext } from '../../../svm-test-context';
 import { ixAccountNodeStub, makeVisitor } from './account-default-value-test-utils';
 
-describe('account-default-value: visitConditionalValue', () => {
-    const ifTrueAddress = SvmTestContext.generateAddress();
-    const ifFalseAddress = SvmTestContext.generateAddress();
+describe('account-default-value: visitConditionalValue', async () => {
+    const ifTrueAddress = await SvmTestContext.generateAddress();
+    const ifFalseAddress = await SvmTestContext.generateAddress();
 
     test('should resolve ifTrue branch when argument condition is truthy', async () => {
         const node = conditionalValueNode({

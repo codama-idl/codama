@@ -51,7 +51,7 @@ describe('Program Metadata: setImmutable', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(setImmutableIx, [authority]);
+        await ctx.sendInstruction(setImmutableIx, [authority]);
 
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
         const metadataAfter = decodeMetadataAccount(accountAfter.data);
@@ -86,7 +86,7 @@ describe('Program Metadata: setImmutable', () => {
             expect(expectedAccounts[i], `Invalid account: [${i}]`).toBe(ixAccount.address);
         });
 
-        ctx.sendInstruction(setImmutableIx, [authority]);
+        await ctx.sendInstruction(setImmutableIx, [authority]);
 
         const accountAfter = ctx.requireEncodedAccount(metadataPda);
         const metadataAfter = decodeMetadataAccount(accountAfter.data);

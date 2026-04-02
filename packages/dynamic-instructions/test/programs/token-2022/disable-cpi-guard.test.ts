@@ -8,9 +8,9 @@ import { createMint, createTokenAccount, token2022Client } from './token-2022-te
 describe('Token 2022 Program: disableCpiGuard', () => {
     test('should enable/disable CPI guard on a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
 
         await createMint(ctx, payer, mint, payer);
         await createTokenAccount(ctx, payer, tokenAccount, mint, payer);
@@ -30,13 +30,13 @@ describe('Token 2022 Program: disableCpiGuard', () => {
             .accounts({ owner: payer, token: tokenAccount })
             .instruction();
 
-        ctx.sendInstructions([reallocateIx, enableIx], [payer]);
+        await ctx.sendInstructions([reallocateIx, enableIx], [payer]);
 
         const decoder = getTokenDecoder();
         const tokenDataCpiEnabled = decoder.decode(ctx.requireEncodedAccount(tokenAccount).data);
         expect(tokenDataCpiEnabled.extensions).toMatchObject(some([{ __kind: 'CpiGuard', lockCpi: true }]));
 
-        ctx.sendInstructions([reallocateIx, disableIx], [payer]);
+        await ctx.sendInstructions([reallocateIx, disableIx], [payer]);
         const tokenDataCpiDisabled = decoder.decode(ctx.requireEncodedAccount(tokenAccount).data);
         expect(tokenDataCpiDisabled.extensions).toMatchObject(some([{ __kind: 'CpiGuard', lockCpi: false }]));
     });

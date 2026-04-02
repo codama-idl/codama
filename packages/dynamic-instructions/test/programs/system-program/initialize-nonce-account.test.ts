@@ -12,9 +12,9 @@ describe('System Program: initializeNonceAccount', () => {
     });
 
     test('should initialize a nonce account with specified authority', async () => {
-        const payer = ctx.createFundedAccount();
-        const nonceAccount = ctx.createAccount();
-        const nonceAuthority = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const nonceAccount = await ctx.createAccount();
+        const nonceAuthority = await ctx.createAccount();
 
         const nonceAccountSpace = 80;
         const fundingLamports = 10_000_000;
@@ -31,7 +31,7 @@ describe('System Program: initializeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
+        await ctx.sendInstruction(createAccountInstruction, [payer, nonceAccount]);
 
         const createdAccount = ctx.requireEncodedAccount(nonceAccount);
         expect(createdAccount.data.length).toBe(nonceAccountSpace);
@@ -45,7 +45,7 @@ describe('System Program: initializeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeNonceInstruction, [payer]);
+        await ctx.sendInstruction(initializeNonceInstruction, [payer]);
 
         const initializedAccount = ctx.requireEncodedAccount(nonceAccount);
 
@@ -59,8 +59,8 @@ describe('System Program: initializeNonceAccount', () => {
     });
 
     test('should initialize a nonce account where authority is also the payer', async () => {
-        const payerAndAuthority = ctx.createFundedAccount();
-        const nonceAccount = ctx.createAccount();
+        const payerAndAuthority = await ctx.createFundedAccount();
+        const nonceAccount = await ctx.createAccount();
 
         const nonceAccountSpace = 80;
         const fundingLamports = 5_000_000;
@@ -77,7 +77,7 @@ describe('System Program: initializeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(createAccountInstruction, [payerAndAuthority, nonceAccount]);
+        await ctx.sendInstruction(createAccountInstruction, [payerAndAuthority, nonceAccount]);
 
         const initializeNonceInstruction = await programClient.methods
             .initializeNonceAccount({
@@ -88,7 +88,7 @@ describe('System Program: initializeNonceAccount', () => {
             })
             .instruction();
 
-        ctx.sendInstruction(initializeNonceInstruction, [payerAndAuthority]);
+        await ctx.sendInstruction(initializeNonceInstruction, [payerAndAuthority]);
 
         const initializedAccount = ctx.requireEncodedAccount(nonceAccount);
 

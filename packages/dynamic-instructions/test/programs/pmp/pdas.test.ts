@@ -20,7 +20,7 @@ describe('Program Metadata: pdas', () => {
 
     describe('canonical', () => {
         test('should derive canonical PDA matching manual derivation', async () => {
-            const programAddress = ctx.createAccount();
+            const programAddress = await ctx.createAccount();
             const seed = 'idl';
 
             const [pdaFromHelper] = await programClient.pdas.canonical({ program: programAddress, seed });
@@ -30,7 +30,7 @@ describe('Program Metadata: pdas', () => {
         });
 
         test('should derive different PDAs for different seeds', async () => {
-            const programAddress = ctx.createAccount();
+            const programAddress = await ctx.createAccount();
 
             const [pda1] = await programClient.pdas.canonical({ program: programAddress, seed: 'idl' });
             const [pda2] = await programClient.pdas.canonical({ program: programAddress, seed: 'config' });
@@ -39,8 +39,8 @@ describe('Program Metadata: pdas', () => {
         });
 
         test('should derive different PDAs for different programs', async () => {
-            const program1 = ctx.createAccount();
-            const program2 = ctx.createAccount();
+            const program1 = await ctx.createAccount();
+            const program2 = await ctx.createAccount();
 
             const [pda1] = await programClient.pdas.canonical({ program: program1, seed: 'idl' });
             const [pda2] = await programClient.pdas.canonical({ program: program2, seed: 'idl' });
@@ -78,8 +78,8 @@ describe('Program Metadata: pdas', () => {
 
     describe('nonCanonical', () => {
         test('should derive non-canonical PDA matching manual derivation', async () => {
-            const programAddress = ctx.createAccount();
-            const authority = ctx.createAccount();
+            const programAddress = await ctx.createAccount();
+            const authority = await ctx.createAccount();
             const seed = 'idl';
 
             const [pdaFromHelper] = await programClient.pdas.nonCanonical({ authority, program: programAddress, seed });
@@ -89,9 +89,9 @@ describe('Program Metadata: pdas', () => {
         });
 
         test('should derive different PDAs for different authorities', async () => {
-            const programAddress = ctx.createAccount();
-            const authority1 = ctx.createAccount();
-            const authority2 = ctx.createAccount();
+            const programAddress = await ctx.createAccount();
+            const authority1 = await ctx.createAccount();
+            const authority2 = await ctx.createAccount();
 
             const [pda1] = await programClient.pdas.nonCanonical({
                 authority: authority1,
@@ -136,7 +136,7 @@ describe('Program Metadata: pdas', () => {
 
     describe('metadata', () => {
         test('should derive canonical PDA when authority is null', async () => {
-            const programAddress = ctx.createAccount();
+            const programAddress = await ctx.createAccount();
             const seed = 'idl';
 
             const [metadataPda] = await programClient.pdas.metadata({ authority: null, program: programAddress, seed });
@@ -146,8 +146,8 @@ describe('Program Metadata: pdas', () => {
         });
 
         test('should derive non-canonical PDA when authority is provided', async () => {
-            const programAddress = ctx.createAccount();
-            const authority = ctx.createAccount();
+            const programAddress = await ctx.createAccount();
+            const authority = await ctx.createAccount();
             const seed = 'idl';
 
             const [metadataPda] = await programClient.pdas.metadata({ authority, program: programAddress, seed });

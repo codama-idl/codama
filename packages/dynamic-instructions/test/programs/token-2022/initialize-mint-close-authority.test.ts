@@ -7,9 +7,9 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: initializeMintCloseAuthority', () => {
     test('should initialize mint close authority extension', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const closeAuthority = ctx.createAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const closeAuthority = await ctx.createAccount();
 
         const size = getMintSize([{ __kind: 'MintCloseAuthority', closeAuthority }]);
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -28,7 +28,7 @@ describe('Token 2022 Program: initializeMintCloseAuthority', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initCloseAuthIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initCloseAuthIx, initMintIx], [payer, mint]);
 
         const mintData = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintData.mintAuthority).toEqual({ __option: 'Some', value: payer });

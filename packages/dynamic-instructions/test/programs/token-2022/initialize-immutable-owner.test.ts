@@ -8,10 +8,10 @@ import { createMint, systemClient, token2022Client } from './token-2022-test-uti
 describe('Token 2022 Program: initializeImmutableOwner', () => {
     test('should initialize immutable owner extension on a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
-        const owner = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
+        const owner = await ctx.createFundedAccount();
 
         await createMint(ctx, payer, mint, payer);
 
@@ -32,7 +32,7 @@ describe('Token 2022 Program: initializeImmutableOwner', () => {
             .accounts({ account: tokenAccount, mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initImmutableOwnerIx, initAccountIx], [payer, tokenAccount]);
+        await ctx.sendInstructions([createAccountIx, initImmutableOwnerIx, initAccountIx], [payer, tokenAccount]);
 
         const tokenData = getTokenDecoder().decode(ctx.requireEncodedAccount(tokenAccount).data);
         expect(tokenData.mint).toBe(mint);

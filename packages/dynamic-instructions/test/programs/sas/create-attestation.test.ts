@@ -16,7 +16,7 @@ describe('SAS: createAttestation', () => {
     test('should create an attestation with no expiry', async () => {
         const { authority, credentialPda } = await createCredential(ctx);
         const { schemaPda } = await createSchema(ctx, authority, credentialPda);
-        const nonce = ctx.createAccount();
+        const nonce = await ctx.createAccount();
 
         const [attestationPda] = await deriveAttestationPda({ credential: credentialPda, nonce, schema: schemaPda });
 
@@ -43,7 +43,7 @@ describe('SAS: createAttestation', () => {
         expectedAccounts.forEach((expected, i) => {
             expect(ix.accounts?.[i].address).eq(expected);
         });
-        ctx.sendInstruction(ix, [authority]);
+        await ctx.sendInstruction(ix, [authority]);
 
         const account = ctx.requireEncodedAccount(attestationPda);
         const attestation = getAttestationDecoder().decode(account.data);
@@ -69,7 +69,7 @@ describe('SAS: createAttestation', () => {
     test('should throw AccountError when attestation is missing', async () => {
         const { authority, credentialPda } = await createCredential(ctx);
         const { schemaPda } = await createSchema(ctx, authority, credentialPda);
-        const nonce = ctx.createAccount();
+        const nonce = await ctx.createAccount();
 
         await expect(
             programClient.methods
@@ -88,7 +88,7 @@ describe('SAS: createAttestation', () => {
     test('should throw ArgumentError when nonce is invalid', async () => {
         const { authority, credentialPda } = await createCredential(ctx);
         const { schemaPda } = await createSchema(ctx, authority, credentialPda);
-        const nonce = ctx.createAccount();
+        const nonce = await ctx.createAccount();
         const [attestationPda] = await deriveAttestationPda({ credential: credentialPda, nonce, schema: schemaPda });
 
         await expect(

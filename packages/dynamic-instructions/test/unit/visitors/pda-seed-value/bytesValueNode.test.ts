@@ -14,7 +14,7 @@ describe('pda-seed-value: visitBytesValue', () => {
     });
 
     test('should encode base58 data', async () => {
-        const b58 = new SvmTestContext().createAccount();
+        const b58 = await new SvmTestContext().createAccount();
         const result = await makeVisitor().visitBytesValue(bytesValueNode('base58', b58));
         expect(result).toEqual(getBase58Codec().encode(b58));
     });

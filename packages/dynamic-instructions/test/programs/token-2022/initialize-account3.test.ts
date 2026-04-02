@@ -8,10 +8,10 @@ import { createMint, systemClient, token2022Client } from './token-2022-test-uti
 describe('Token 2022 Program: initializeAccount3', () => {
     test('should initialize3 a token account', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mintAccount = ctx.createAccount();
-        const tokenAccount = ctx.createAccount();
-        const owner = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mintAccount = await ctx.createAccount();
+        const tokenAccount = await ctx.createAccount();
+        const owner = await ctx.createFundedAccount();
 
         await createMint(ctx, payer, mintAccount, payer, undefined);
         const space = getTokenSize([{ __kind: 'MemoTransfer', requireIncomingTransferMemos: true }]);
@@ -38,7 +38,7 @@ describe('Token 2022 Program: initializeAccount3', () => {
             .signers(['owner'])
             .instruction();
 
-        ctx.sendInstructions(
+        await ctx.sendInstructions(
             [createAccountIx, initAccountIx, reallocateIx, enableMemoTransfersIx],
             [payer, tokenAccount, owner],
         );

@@ -8,9 +8,9 @@ import { systemClient, token2022Client } from './token-2022-test-utils';
 describe('Token 2022 Program: pausable', () => {
     test('should pause the mint [initializePausableConfig + pause]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const pauseAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const pauseAuthority = await ctx.createFundedAccount();
 
         const size = getMintSize([{ __kind: 'PausableConfig', authority: pauseAuthority, paused: false }]);
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -29,7 +29,7 @@ describe('Token 2022 Program: pausable', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initPausableIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initPausableIx, initMintIx], [payer, mint]);
 
         const mintUnpaused = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintUnpaused.extensions).toMatchObject(
@@ -41,7 +41,7 @@ describe('Token 2022 Program: pausable', () => {
             .accounts({ authority: pauseAuthority, mint })
             .signers(['authority'])
             .instruction();
-        ctx.sendInstruction(pauseIx, [payer, pauseAuthority]);
+        await ctx.sendInstruction(pauseIx, [payer, pauseAuthority]);
 
         const mintPaused = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintPaused.extensions).toMatchObject(
@@ -51,9 +51,9 @@ describe('Token 2022 Program: pausable', () => {
 
     test('should resume the mint [initializePausableConfig + pause + resume]', async () => {
         const ctx = new SvmTestContext({ defaultPrograms: true });
-        const payer = ctx.createFundedAccount();
-        const mint = ctx.createAccount();
-        const pauseAuthority = ctx.createFundedAccount();
+        const payer = await ctx.createFundedAccount();
+        const mint = await ctx.createAccount();
+        const pauseAuthority = await ctx.createFundedAccount();
 
         const size = getMintSize([{ __kind: 'PausableConfig', authority: pauseAuthority, paused: false }]);
         const lamports = ctx.getMinimumBalanceForRentExemption(BigInt(size));
@@ -72,14 +72,14 @@ describe('Token 2022 Program: pausable', () => {
             .accounts({ mint })
             .instruction();
 
-        ctx.sendInstructions([createAccountIx, initPausableIx, initMintIx], [payer, mint]);
+        await ctx.sendInstructions([createAccountIx, initPausableIx, initMintIx], [payer, mint]);
 
         const pauseIx = await token2022Client.methods
             .pause()
             .accounts({ authority: pauseAuthority, mint })
             .signers(['authority'])
             .instruction();
-        ctx.sendInstruction(pauseIx, [payer, pauseAuthority]);
+        await ctx.sendInstruction(pauseIx, [payer, pauseAuthority]);
 
         const mintDataPaused = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintDataPaused.extensions).toMatchObject(
@@ -91,7 +91,7 @@ describe('Token 2022 Program: pausable', () => {
             .accounts({ authority: pauseAuthority, mint })
             .signers(['authority'])
             .instruction();
-        ctx.sendInstruction(resumeIx, [payer, pauseAuthority]);
+        await ctx.sendInstruction(resumeIx, [payer, pauseAuthority]);
 
         const mintDataResumed = getMintDecoder().decode(ctx.requireEncodedAccount(mint).data);
         expect(mintDataResumed.extensions).toMatchObject(
