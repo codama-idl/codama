@@ -52,9 +52,3 @@ export function getMemoizedBase64Codec() {
     if (!base64Codec) base64Codec = getBase64Codec();
     return base64Codec;
 }
-
-let textEncoder: TextEncoder | undefined;
-export function getMemoizedTextEncoder() {
-    if (!textEncoder) textEncoder = new TextEncoder();
-    return textEncoder;
-}

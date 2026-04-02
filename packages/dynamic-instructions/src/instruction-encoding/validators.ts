@@ -24,7 +24,7 @@ import {
 } from 'superstruct';
 
 import { isPublicKeyLike } from '../shared/address';
-import { getMemoizedTextEncoder } from '../shared/codecs';
+import { getMemoizedUtf8Encoder } from '../shared/codecs';
 import { formatValueType, safeStringify } from '../shared/util';
 
 type StructUnknown = Struct<unknown, unknown>;
@@ -232,7 +232,7 @@ function StringValidatorForFixedSize(maxSize: number): StructUnknown {
         if (typeof value !== 'string') {
             return `Expected a string, received: ${formatValueType(value)}`;
         }
-        const encoder = getMemoizedTextEncoder();
+        const encoder = getMemoizedUtf8Encoder();
         const bytes = encoder.encode(value);
         return (
             bytes.length <= maxSize ||
