@@ -34,23 +34,13 @@ test('it creates instruction nodes', () => {
             name: 'mintTokens',
         },
         generics,
+        [{ name: 'Distribution', type: { fields: [{ name: 'group_mint', type: 'pubkey' }], kind: 'struct' } }],
     );
 
     expect(node).toEqual(
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    // TODO: Handle seeds with nested paths. (Needs a path in the IDL but should we?)
-                    // defaultValue: pdaValueNode(
-                    //     pdaNode({
-                    //         name: 'distribution',
-                    //         seeds: [
-                    //             constantPdaSeedNodeFromBytes('base58', 'F9bS'),
-                    //             variablePdaSeedNode('distributionGroupMint', publicKeyTypeNode()),
-                    //         ],
-                    //     }),
-                    //     [pdaSeedValueNode("distributionGroupMint", accountValueNode('distribution', 'group_mint'))],
-                    // ),
                     isSigner: false,
                     isWritable: true,
                     name: 'distribution',

@@ -9,12 +9,16 @@ import {
 } from '@codama/nodes';
 
 import { getAnchorDiscriminatorV01 } from '../discriminators';
-import type { IdlV01Instruction } from './idl';
+import type { IdlV01Instruction, IdlV01TypeDef } from './idl';
 import { instructionAccountNodesFromAnchorV01 } from './InstructionAccountNode';
 import { instructionArgumentNodeFromAnchorV01 } from './InstructionArgumentNode';
 import type { GenericsV01 } from './unwrapGenerics';
 
-export function instructionNodeFromAnchorV01(idl: IdlV01Instruction, generics: GenericsV01): InstructionNode {
+export function instructionNodeFromAnchorV01(
+    idl: IdlV01Instruction,
+    generics: GenericsV01,
+    idlTypes: IdlV01TypeDef[] = [],
+): InstructionNode {
     const name = idl.name;
     let dataArguments = idl.args.map(arg => instructionArgumentNodeFromAnchorV01(arg, generics));
 
@@ -28,7 +32,13 @@ export function instructionNodeFromAnchorV01(idl: IdlV01Instruction, generics: G
     const discriminators = [fieldDiscriminatorNode('discriminator')];
 
     return instructionNode({
-        accounts: instructionAccountNodesFromAnchorV01(idl.accounts ?? [], dataArguments),
+        accounts: instructionAccountNodesFromAnchorV01(
+            idl.accounts ?? [],
+            dataArguments,
+            undefined,
+            idlTypes,
+            generics,
+        ),
         arguments: dataArguments,
         discriminators,
         docs: idl.docs ?? [],

@@ -2,6 +2,7 @@ import {
     accountValueNode,
     argumentValueNode,
     constantPdaSeedNodeFromBytes,
+    definedTypeLinkNode,
     instructionAccountNode,
     instructionArgumentNode,
     numberTypeNode,
@@ -10,6 +11,8 @@ import {
     pdaValueNode,
     publicKeyTypeNode,
     publicKeyValueNode,
+    structFieldTypeNode,
+    structTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -291,17 +294,75 @@ test('it correctly prefixes PDA seed account references in nested groups', () =>
     ]);
 });
 
-test('it ignores PDA default values if at least one seed as a path of length greater than 1', () => {
+test('it correctly prefixes nested account seed paths in nested groups', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
-        // [
-        //     accountNode({
-        //         data: sizePrefixTypeNode(
-        //             structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
-        //             numberTypeNode('u32'),
-        //         ),
-        //         name: 'mint',
-        //     }),
-        // ],
+        [
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    {
+                        name: 'vault',
+                        pda: {
+                            seeds: [{ account: 'mint', kind: 'account', path: 'mint.authority' }],
+                        },
+                        signer: false,
+                        writable: true,
+                    },
+                ],
+                name: 'tokenProgram',
+            },
+            {
+                accounts: [
+                    { name: 'mint', signer: false, writable: false },
+                    {
+                        name: 'escrow',
+                        pda: {
+                            seeds: [{ account: 'mint', kind: 'account', path: 'mint.authority' }],
+                        },
+                        signer: false,
+                        writable: true,
+                    },
+                ],
+                name: 'nftProgram',
+            },
+        ],
+        [],
+        undefined,
+        [{ name: 'mint', type: { fields: [{ name: 'authority', type: 'pubkey' }], kind: 'struct' } }],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgramMint' }),
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'tokenProgramVault',
+                    seeds: [variablePdaSeedNode('tokenProgramMintAuthority', publicKeyTypeNode())],
+                }),
+                [pdaSeedValueNode('tokenProgramMintAuthority', accountValueNode('tokenProgramMint'))],
+            ),
+            isSigner: false,
+            isWritable: true,
+            name: 'tokenProgramVault',
+        }),
+        instructionAccountNode({ isSigner: false, isWritable: false, name: 'nftProgramMint' }),
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'nftProgramEscrow',
+                    seeds: [variablePdaSeedNode('nftProgramMintAuthority', publicKeyTypeNode())],
+                }),
+                [pdaSeedValueNode('nftProgramMintAuthority', accountValueNode('nftProgramMint'))],
+            ),
+            isSigner: false,
+            isWritable: true,
+            name: 'nftProgramEscrow',
+        }),
+    ]);
+});
+
+test('it skips PDA when nested account type cannot be resolved from idlTypes', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
         [
             {
                 name: 'somePdaAccount',
@@ -319,6 +380,135 @@ test('it ignores PDA default values if at least one seed as a path of length gre
             },
         ],
         [],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            isSigner: false,
+            isWritable: false,
+            name: 'somePdaAccount',
+        }),
+    ]);
+});
+
+test('it resolves PDA seeds with nested arg paths', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                name: 'my_pda',
+                pda: {
+                    seeds: [
+                        { kind: 'const', value: [0, 1, 2, 3] },
+                        { kind: 'arg', path: 'args.owner' },
+                        { kind: 'arg', path: 'args.amount' },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+        ],
+        [
+            instructionArgumentNode({
+                name: 'args',
+                type: structTypeNode([
+                    structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() }),
+                    structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') }),
+                ]),
+            }),
+        ],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'myPda',
+                    seeds: [
+                        constantPdaSeedNodeFromBytes('base58', '1Ldp'),
+                        variablePdaSeedNode('owner', publicKeyTypeNode()),
+                        variablePdaSeedNode('amount', numberTypeNode('u64')),
+                    ],
+                }),
+                [
+                    pdaSeedValueNode('owner', argumentValueNode('owner')),
+                    pdaSeedValueNode('amount', argumentValueNode('amount')),
+                ],
+            ),
+            isSigner: false,
+            isWritable: false,
+            name: 'myPda',
+        }),
+    ]);
+});
+
+test('it resolves PDA default values when account seeds have nested paths', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                name: 'somePdaAccount',
+                pda: {
+                    seeds: [
+                        { kind: 'arg', path: 'args.owner' },
+                        { account: 'mint', kind: 'account', path: 'mint.authority' },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+        ],
+        [
+            instructionArgumentNode({
+                name: 'args',
+                type: structTypeNode([structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() })]),
+            }),
+        ],
+        undefined,
+        [{ name: 'mint', type: { fields: [{ name: 'authority', type: 'pubkey' }], kind: 'struct' } }],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'somePdaAccount',
+                    seeds: [
+                        variablePdaSeedNode('owner', publicKeyTypeNode()),
+                        variablePdaSeedNode('mintAuthority', publicKeyTypeNode()),
+                    ],
+                }),
+                [
+                    pdaSeedValueNode('owner', argumentValueNode('owner')),
+                    pdaSeedValueNode('mintAuthority', accountValueNode('mint')),
+                ],
+            ),
+            isSigner: false,
+            isWritable: false,
+            name: 'somePdaAccount',
+        }),
+    ]);
+});
+
+test('it ignores PDA default values when nested arg paths are unresolvable', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                name: 'somePdaAccount',
+                pda: {
+                    seeds: [
+                        { kind: 'const', value: [0, 1, 2, 3] },
+                        { kind: 'arg', path: 'args.owner' },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+        ],
+        [
+            instructionArgumentNode({
+                name: 'args',
+                type: definedTypeLinkNode('UnknownType'),
+            }),
+        ],
     );
 
     expect(nodes).toEqual([
@@ -406,17 +596,99 @@ test('it handles PDAs with a program id that points to another account', () => {
     ]);
 });
 
-test.skip('it handles account data paths of length 2', () => {
+test('it ignores PDA default values when program seed has a nested path', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
-        // [
-        //     accountNode({
-        //         data: sizePrefixTypeNode(
-        //             structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
-        //             numberTypeNode('u32'),
-        //         ),
-        //         name: 'mint',
-        //     }),
-        // ],
+        [
+            {
+                name: 'my_pda',
+                pda: {
+                    program: { kind: 'arg', path: 'config.programId' },
+                    seeds: [{ kind: 'const', value: [0, 1, 2, 3] }],
+                },
+                signer: false,
+                writable: false,
+            },
+        ],
+        [
+            instructionArgumentNode({
+                name: 'config',
+                type: structTypeNode([structFieldTypeNode({ name: 'programId', type: publicKeyTypeNode() })]),
+            }),
+        ],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            isSigner: false,
+            isWritable: false,
+            name: 'myPda',
+        }),
+    ]);
+});
+
+test('it skips PDA default when a seed references the account itself', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
+        [
+            {
+                name: 'vault',
+                pda: {
+                    seeds: [
+                        { kind: 'const', value: [1, 2, 3] },
+                        { kind: 'account', path: 'vault' },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+            {
+                name: 'guard',
+                pda: {
+                    seeds: [
+                        { kind: 'const', value: [1, 2, 3] },
+                        { account: 'GuardV1', kind: 'account', path: 'guard.mint' },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+            {
+                name: 'my_guard',
+                pda: {
+                    seeds: [
+                        { kind: 'const', value: [1, 2, 3] },
+                        { account: 'GuardV1', kind: 'account', path: 'my_guard.mint' },
+                    ],
+                },
+                signer: false,
+                writable: false,
+            },
+        ],
+        [],
+        undefined,
+        [{ name: 'GuardV1', type: { fields: [{ name: 'mint', type: 'pubkey' }], kind: 'struct' } }],
+    );
+
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            isSigner: false,
+            isWritable: false,
+            name: 'vault',
+        }),
+        instructionAccountNode({
+            isSigner: false,
+            isWritable: false,
+            name: 'guard',
+        }),
+        instructionAccountNode({
+            isSigner: false,
+            isWritable: false,
+            name: 'myGuard',
+        }),
+    ]);
+});
+
+test('it handles account data paths of length 2', () => {
+    const nodes = instructionAccountNodesFromAnchorV01(
         [
             {
                 name: 'somePdaAccount',
@@ -434,6 +706,8 @@ test.skip('it handles account data paths of length 2', () => {
             },
         ],
         [],
+        undefined,
+        [{ name: 'mint', type: { fields: [{ name: 'authority', type: 'pubkey' }], kind: 'struct' } }],
     );
 
     expect(nodes).toEqual([
@@ -443,7 +717,7 @@ test.skip('it handles account data paths of length 2', () => {
                     name: 'somePdaAccount',
                     seeds: [variablePdaSeedNode('mintAuthority', publicKeyTypeNode())],
                 }),
-                [],
+                [pdaSeedValueNode('mintAuthority', accountValueNode('mint'))],
             ),
             isSigner: false,
             isWritable: false,
