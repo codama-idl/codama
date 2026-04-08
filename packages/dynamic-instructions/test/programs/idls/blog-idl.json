@@ -652,30 +652,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "profile",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "5G9odWBzmA",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "authority",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "profile"
                             },
                             "seeds": [
                                 {
@@ -699,42 +677,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "accessGrant",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "CfvKowZ",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "profile",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "permissions",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "fixedSizeTypeNode",
-                                            "size": 4,
-                                            "type": {
-                                                "kind": "bytesTypeNode"
-                                            }
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "accessGrant"
                             },
                             "seeds": [
                                 {
@@ -834,30 +778,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "bookmarkList",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "2Ffw66YXmcbBp",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "owner",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "bookmarkList"
                             },
                             "seeds": [
                                 {
@@ -956,31 +878,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "category",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "Hd7nx8Jz9DA",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "name",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "stringTypeNode",
-                                            "encoding": "utf8"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "category"
                             },
                             "seeds": [
                                 {
@@ -1080,30 +979,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "profile",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "5G9odWBzmA",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "authority",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "profile"
                             },
                             "seeds": [
                                 {
@@ -1127,60 +1004,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "dailyDigest",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "s186r9EB",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "profile",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "year",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "numberTypeNode",
-                                            "format": "u16",
-                                            "endian": "le"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "month",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "numberTypeNode",
-                                            "format": "u8",
-                                            "endian": "le"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "day",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "numberTypeNode",
-                                            "format": "u8",
-                                            "endian": "le"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "dailyDigest"
                             },
                             "seeds": [
                                 {
@@ -1317,30 +1142,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "profile",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "5G9odWBzmA",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "authority",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "profile"
                             },
                             "seeds": [
                                 {
@@ -1465,30 +1268,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "profile",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "5G9odWBzmA",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "authority",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "profile"
                             },
                             "seeds": [
                                 {
@@ -1593,48 +1374,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "reaction",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "L8nWcjTPk4d",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "post",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "user",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "kind",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "numberTypeNode",
-                                            "format": "u8",
-                                            "endian": "le"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "reaction"
                             },
                             "seeds": [
                                 {
@@ -1748,38 +1489,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "subscription",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "fnKB",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "follower",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "author",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "subscription"
                             },
                             "seeds": [
                                 {
@@ -1870,30 +1581,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "profile",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "5G9odWBzmA",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "authority",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "profile"
                             },
                             "seeds": [
                                 {
@@ -1917,40 +1606,8 @@
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
-                                "kind": "pdaNode",
-                                "name": "post",
-                                "docs": [],
-                                "seeds": [
-                                    {
-                                        "kind": "constantPdaSeedNode",
-                                        "type": {
-                                            "kind": "bytesTypeNode"
-                                        },
-                                        "value": {
-                                            "kind": "bytesValueNode",
-                                            "data": "3sh3oZ",
-                                            "encoding": "base58"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "profile",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "publicKeyTypeNode"
-                                        }
-                                    },
-                                    {
-                                        "kind": "variablePdaSeedNode",
-                                        "name": "postId",
-                                        "docs": [],
-                                        "type": {
-                                            "kind": "numberTypeNode",
-                                            "format": "u64",
-                                            "endian": "le"
-                                        }
-                                    }
-                                ]
+                                "kind": "pdaLinkNode",
+                                "name": "post"
                             },
                             "seeds": [
                                 {
@@ -2055,7 +1712,296 @@
             }
         ],
         "definedTypes": [],
-        "pdas": [],
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "name": "profile",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "5G9odWBzmA",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "authority",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "accessGrant",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "CfvKowZ",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "profile",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "permissions",
+                        "docs": [],
+                        "type": {
+                            "kind": "fixedSizeTypeNode",
+                            "size": 4,
+                            "type": {
+                                "kind": "bytesTypeNode"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "bookmarkList",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "2Ffw66YXmcbBp",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "owner",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "category",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "Hd7nx8Jz9DA",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "name",
+                        "docs": [],
+                        "type": {
+                            "kind": "stringTypeNode",
+                            "encoding": "utf8"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "dailyDigest",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "s186r9EB",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "profile",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "year",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u16",
+                            "endian": "le"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "month",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "day",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "reaction",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "L8nWcjTPk4d",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "post",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "user",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "kind",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "subscription",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "fnKB",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "follower",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "author",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "post",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "3sh3oZ",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "profile",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "postId",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u64",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            }
+        ],
+        "events": [],
         "errors": []
     },
     "additionalPrograms": []
