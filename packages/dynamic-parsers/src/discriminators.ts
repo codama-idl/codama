@@ -14,32 +14,33 @@ import {
     isNode,
     SizeDiscriminatorNode,
     StructTypeNode,
+    TypeNode,
 } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
 
 export function matchDiscriminators(
     bytes: ReadonlyUint8Array,
     discriminators: DiscriminatorNode[],
-    struct: StructTypeNode,
+    typeNode: TypeNode,
     visitors: CodecAndValueVisitors,
 ): boolean {
     return (
         discriminators.length > 0 &&
-        discriminators.every(discriminator => matchDiscriminator(bytes, discriminator, struct, visitors))
+        discriminators.every(discriminator => matchDiscriminator(bytes, discriminator, typeNode, visitors))
     );
 }
 
 function matchDiscriminator(
     bytes: ReadonlyUint8Array,
     discriminator: DiscriminatorNode,
-    struct: StructTypeNode,
+    typeNode: TypeNode,
     visitors: CodecAndValueVisitors,
 ): boolean {
     if (isNode(discriminator, 'constantDiscriminatorNode')) {
         return matchConstantDiscriminator(bytes, discriminator, visitors);
     }
     if (isNode(discriminator, 'fieldDiscriminatorNode')) {
-        return matchFieldDiscriminator(bytes, discriminator, struct, visitors);
+        return matchFieldDiscriminator(bytes, discriminator, typeNode, visitors);
     }
     assertIsNode(discriminator, 'sizeDiscriminatorNode');
     return matchSizeDiscriminator(bytes, discriminator);
@@ -59,9 +60,15 @@ function matchConstantDiscriminator(
 function matchFieldDiscriminator(
     bytes: ReadonlyUint8Array,
     discriminator: FieldDiscriminatorNode,
-    struct: StructTypeNode,
+    typeNode: TypeNode,
     visitors: CodecAndValueVisitors,
 ): boolean {
+    if (!isNode(typeNode, 'structTypeNode')) {
+        throw new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+            field: discriminator.name,
+        });
+    }
+    const struct = typeNode as StructTypeNode;
     const field = struct.fields.find(field => field.name === discriminator.name);
     if (!field) {
         throw new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {

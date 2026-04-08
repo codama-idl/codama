@@ -10,6 +10,7 @@ import {
     CountNode,
     DefinedTypeLinkNode,
     DefinedTypeNode,
+    EventNode,
     InstructionArgumentLinkNode,
     InstructionArgumentNode,
     InstructionLinkNode,
@@ -85,6 +86,7 @@ export type EncodableNodes =
     | AccountNode
     | DefinedTypeLinkNode
     | DefinedTypeNode
+    | EventNode
     | InstructionArgumentLinkNode
     | InstructionArgumentNode
     | InstructionLinkNode
@@ -198,6 +200,9 @@ export function getNodeCodecVisitor(
             // Data enums are decoded as discriminated unions, e.g. `{ __kind: 'Move', x: 10, y: 20 }`.
             const variants = node.variants.map(variant => [pascalCase(variant.name), visit(variant, this)] as const);
             return getDiscriminatedUnionCodec(variants, { size }) as unknown as Codec<unknown>;
+        },
+        visitEvent(node) {
+            return visit(node.data, this);
         },
         visitFixedSizeType(node) {
             const type = visit(node.type, this);

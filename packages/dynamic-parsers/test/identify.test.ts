@@ -1,15 +1,23 @@
 import {
     accountNode,
+    bytesTypeNode,
     constantDiscriminatorNode,
+    constantValueNode,
     constantValueNodeFromBytes,
+    eventNode,
+    fixedSizeTypeNode,
+    hiddenPrefixTypeNode,
     instructionNode,
+    numberTypeNode,
     programNode,
     rootNode,
     sizeDiscriminatorNode,
+    structTypeNode,
+    tupleTypeNode,
 } from '@codama/nodes';
 import { describe, expect, test } from 'vitest';
 
-import { identifyAccountData, identifyInstructionData } from '../src';
+import { identifyAccountData, identifyEventData, identifyInstructionData } from '../src';
 import { hex } from './_setup';
 
 describe('identifyAccountData', () => {
@@ -163,5 +171,93 @@ describe('identifyInstructionData', () => {
         ]);
         const result = identifyInstructionData(root, hex('01020304'));
         expect(result).toBeUndefined();
+    });
+});
+
+describe('identifyEventData', () => {
+    test('it identifies an event using its discriminator nodes', () => {
+        const root = rootNode(
+            programNode({
+                events: [
+                    eventNode({
+                        data: structTypeNode([]),
+                        discriminators: [sizeDiscriminatorNode(4)],
+                        name: 'myEvent',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = identifyEventData(root, hex('01020304'));
+        expect(result).toStrictEqual([root, root.program, root.program.events[0]]);
+    });
+    test('it fails to identify events whose discriminator nodes do not match the given data', () => {
+        const root = rootNode(
+            programNode({
+                events: [
+                    eventNode({
+                        data: structTypeNode([]),
+                        discriminators: [sizeDiscriminatorNode(999)],
+                        name: 'myEvent',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = identifyEventData(root, hex('01020304'));
+        expect(result).toBeUndefined();
+    });
+    test('it fails to identify events with no discriminator nodes', () => {
+        const root = rootNode(
+            programNode({
+                events: [eventNode({ data: structTypeNode([]), name: 'myEvent' })],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = identifyEventData(root, hex('01020304'));
+        expect(result).toBeUndefined();
+    });
+    test('it does not identify events using instruction discriminators', () => {
+        const root = rootNode(
+            programNode({
+                instructions: [instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myInstruction' })],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = identifyEventData(root, hex('01020304'));
+        expect(result).toBeUndefined();
+    });
+    test('it identifies tuple events using constant discriminators', () => {
+        const root = rootNode(
+            programNode({
+                events: [
+                    eventNode({
+                        data: hiddenPrefixTypeNode(tupleTypeNode([numberTypeNode('u32')]), [
+                            constantValueNode(
+                                fixedSizeTypeNode(bytesTypeNode(), 2),
+                                constantValueNodeFromBytes('base16', '0102'),
+                            ),
+                        ]),
+                        discriminators: [
+                            constantDiscriminatorNode(
+                                constantValueNode(
+                                    fixedSizeTypeNode(bytesTypeNode(), 2),
+                                    constantValueNodeFromBytes('base16', '0102'),
+                                ),
+                            ),
+                        ],
+                        name: 'tupleEvent',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = identifyEventData(root, hex('01022a000000'));
+        expect(result).toStrictEqual([root, root.program, root.program.events[0]]);
     });
 });

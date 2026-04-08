@@ -1,5 +1,5 @@
 import { getNodeCodec, ReadonlyUint8Array } from '@codama/dynamic-codecs';
-import { AccountNode, CamelCaseString, GetNodeFromKind, InstructionNode, RootNode } from '@codama/nodes';
+import { AccountNode, CamelCaseString, EventNode, GetNodeFromKind, InstructionNode, RootNode } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 import type {
     AccountLookupMeta,
@@ -11,7 +11,10 @@ import type {
 
 import { identifyData } from './identify';
 
-export type ParsedData<TNode extends AccountNode | InstructionNode> = {
+type ParsableNode = AccountNode | EventNode | InstructionNode;
+type ParsableNodeKind = ParsableNode['kind'];
+
+export type ParsedData<TNode extends ParsableNode> = {
     data: unknown;
     path: NodePath<TNode>;
 };
@@ -23,6 +26,13 @@ export function parseAccountData(
     return parseData(root, bytes, 'accountNode');
 }
 
+export function parseEventData(
+    root: RootNode,
+    bytes: ReadonlyUint8Array | Uint8Array,
+): ParsedData<EventNode> | undefined {
+    return parseData(root, bytes, 'eventNode');
+}
+
 export function parseInstructionData(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
@@ -30,14 +40,14 @@ export function parseInstructionData(
     return parseData(root, bytes, 'instructionNode');
 }
 
-export function parseData<TKind extends 'accountNode' | 'instructionNode'>(
+export function parseData<TKind extends ParsableNodeKind>(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
     kind?: TKind | TKind[],
 ): ParsedData<GetNodeFromKind<TKind>> | undefined {
-    const path = identifyData<TKind>(root, bytes, kind ?? (['accountNode', 'instructionNode'] as TKind[]));
+    const path = identifyData<TKind>(root, bytes, kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]));
     if (!path) return undefined;
-    const codec = getNodeCodec(path as NodePath<AccountNode | InstructionNode>);
+    const codec = getNodeCodec(path as NodePath<ParsableNode>);
     const data = codec.decode(bytes);
     return { data, path };
 }

@@ -1,6 +1,7 @@
 import { CodecAndValueVisitors, getCodecAndValueVisitors, ReadonlyUint8Array } from '@codama/dynamic-codecs';
 import {
     AccountNode,
+    EventNode,
     GetNodeFromKind,
     InstructionNode,
     isNodeFilter,
@@ -28,6 +29,13 @@ export function identifyAccountData(
     return identifyData(root, bytes, 'accountNode');
 }
 
+export function identifyEventData(
+    root: RootNode,
+    bytes: ReadonlyUint8Array | Uint8Array,
+): NodePath<EventNode> | undefined {
+    return identifyData(root, bytes, 'eventNode');
+}
+
 export function identifyInstructionData(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
@@ -35,7 +43,7 @@ export function identifyInstructionData(
     return identifyData(root, bytes, 'instructionNode');
 }
 
-export function identifyData<TKind extends 'accountNode' | 'instructionNode'>(
+export function identifyData<TKind extends 'accountNode' | 'eventNode' | 'instructionNode'>(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
     kind?: TKind | TKind[],
@@ -46,7 +54,7 @@ export function identifyData<TKind extends 'accountNode' | 'instructionNode'>(
 
     const codecAndValueVisitors = getCodecAndValueVisitors(linkables, { stack });
     const visitor = getByteIdentificationVisitor(
-        kind ?? (['accountNode', 'instructionNode'] as TKind[]),
+        kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]),
         bytes,
         codecAndValueVisitors,
         { stack },
@@ -55,7 +63,7 @@ export function identifyData<TKind extends 'accountNode' | 'instructionNode'>(
     return visit(root, visitor);
 }
 
-export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'instructionNode'>(
+export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'eventNode' | 'instructionNode'>(
     kind: TKind | TKind[],
     bytes: ReadonlyUint8Array | Uint8Array,
     codecAndValueVisitors: CodecAndValueVisitors,
@@ -71,6 +79,16 @@ export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'inst
                 const match = matchDiscriminators(bytes, node.discriminators, struct, codecAndValueVisitors);
                 return match ? stack.getPath(node.kind) : undefined;
             },
+            visitEvent(node) {
+                if (!node.discriminators) return;
+                const match = matchDiscriminators(
+                    bytes,
+                    node.discriminators,
+                    resolveNestedTypeNode(node.data),
+                    codecAndValueVisitors,
+                );
+                return match ? stack.getPath(node.kind) : undefined;
+            },
             visitInstruction(node) {
                 if (!node.discriminators) return;
                 const struct = structTypeNodeFromInstructionArgumentNodes(node.arguments);
@@ -78,7 +96,7 @@ export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'inst
                 return match ? stack.getPath(node.kind) : undefined;
             },
             visitProgram(node) {
-                const candidates = [...node.accounts, ...node.instructions].filter(isNodeFilter(kind));
+                const candidates = [...node.accounts, ...node.events, ...node.instructions].filter(isNodeFilter(kind));
                 for (const candidate of candidates) {
                     const result = visit(candidate, this);
                     if (result) return result;
@@ -89,7 +107,7 @@ export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'inst
             },
         } as Visitor<
             NodePath<GetNodeFromKind<TKind>> | undefined,
-            'accountNode' | 'instructionNode' | 'programNode' | 'rootNode'
+            'accountNode' | 'eventNode' | 'instructionNode' | 'programNode' | 'rootNode'
         >,
         v => recordNodeStackVisitor(v, stack),
     );
