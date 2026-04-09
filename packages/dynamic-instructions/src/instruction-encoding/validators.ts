@@ -25,7 +25,7 @@ import {
 
 import { isPublicKeyLike } from '../shared/address';
 import { getMemoizedUtf8Encoder } from '../shared/codecs';
-import { formatValueType, safeStringify } from '../shared/util';
+import { formatValueType, getMaybeNodeKind, safeStringify } from '../shared/util';
 
 type StructUnknown = Struct<unknown, unknown>;
 
@@ -200,9 +200,7 @@ function createValidatorForTypeNode(nodeName: string, node: TypeNode, definedTyp
         }
         default: {
             node['kind'] satisfies never;
-            throw new Error(
-                `Validator for TypeNode "${nodeName}" kind: ${(node as { kind: string })?.kind} is not implemented!`,
-            );
+            throw new Error(`Validator for TypeNode "${nodeName}" kind: ${getMaybeNodeKind(node)} is not implemented!`);
         }
     }
 }
@@ -457,7 +455,7 @@ function MapCountValidator(node: CountNode): StructUnknown | null {
         case 'prefixedCountNode':
             return null; // the number of items is unknown or arbitrary, like vec![]
         default:
-            throw new Error(`Unsupported map count type: ${(node as { kind: string })?.kind}`);
+            throw new Error(`Unsupported map count type: ${getMaybeNodeKind(node)}`);
     }
 }
 

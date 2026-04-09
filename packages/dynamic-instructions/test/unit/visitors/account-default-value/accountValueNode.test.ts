@@ -70,7 +70,7 @@ describe('account-default-value: visitAccountValue', async () => {
     test('should throw for unknown account reference', async () => {
         const visitor = makeVisitor();
         await expect(visitor.visitAccountValue(accountValueNode('unknown'))).rejects.toThrow(
-            /Referenced account "unknown" not found in instruction "testInstruction"/,
+            /Referenced node \[unknown\] not found in \[testInstruction\]/,
         );
     });
 
@@ -80,7 +80,7 @@ describe('account-default-value: visitAccountValue', async () => {
             resolutionPath: ['refAccount'],
         });
         await expect(visitor.visitAccountValue(accountValueNode('refAccount'))).rejects.toThrow(
-            /Circular dependency detected/,
+            /Circular dependency detected: \[/,
         );
     });
 });

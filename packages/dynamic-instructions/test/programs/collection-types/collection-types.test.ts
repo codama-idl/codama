@@ -129,7 +129,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     .storeMap({ data: [1, 2, 3] })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Expected a plain object for mapTypeNode, but received: array/);
+            ).rejects.toThrow(/Expected \[object\] for \[mapTypeNode\]/);
         });
 
         test('should reject wrong value type', async () => {

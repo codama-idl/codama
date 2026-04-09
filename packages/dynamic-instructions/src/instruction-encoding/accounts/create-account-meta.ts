@@ -1,12 +1,19 @@
+import {
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ACCOUNT_MISSING,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ARGUMENT_MISSING,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__INVALID_ARGUMENT_INPUT,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ADDRESS_TYPE,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CodamaError,
+} from '@codama/errors';
 import type { Address } from '@solana/addresses';
 import type { AccountMeta } from '@solana/instructions';
 import { AccountRole } from '@solana/instructions';
-import type { InstructionAccountNode, InstructionNode, RootNode } from 'codama';
+import { type InstructionAccountNode, type InstructionNode, isNode, type RootNode } from 'codama';
 
 import { isConvertibleAddress, toAddress } from '../../shared/address';
-import { AccountError } from '../../shared/errors';
 import type { AccountsInput, ArgumentsInput, EitherSigners, ResolversInput } from '../../shared/types';
-import { formatValueType } from '../../shared/util';
+import { formatValueType, safeStringify } from '../../shared/util';
 import { resolveAccountAddress } from '../resolvers/resolve-account-address';
 
 type ResolvedAccount = {
@@ -38,7 +45,10 @@ export async function createAccountMeta(
             const isAccountProvided = accountAddressInput !== undefined && accountAddressInput !== null;
             // Accounts with default values can be omitted, as they can be resolved from default value
             if (!isAccountProvided && !ixAccountNode.isOptional && !ixAccountNode.defaultValue) {
-                throw new AccountError(`Missing required account: ${ixAccountNode.name}`);
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ACCOUNT_MISSING, {
+                    accountName: ixAccountNode.name,
+                    instructionName: ixNode.name,
+                });
             }
 
             let resolvedAccountAddress: Address | null = null;
@@ -83,34 +93,43 @@ export async function createAccountMeta(
     // Resolve remaining accounts from argument values
     // https://github.com/codama-idl/codama/blob/main/packages/nodes/docs/InstructionRemainingAccountsNode.md
     for (const remainingNode of ixNode.remainingAccounts ?? []) {
-        if (remainingNode.value.kind !== 'argumentValueNode') {
-            throw new AccountError(`Unsupported remaining accounts value kind: "${remainingNode.value.kind}"`);
+        if (!isNode(remainingNode.value, 'argumentValueNode')) {
+            throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+                expectedKinds: ['argumentValueNode'],
+                kind: remainingNode.value.kind,
+                node: remainingNode.value,
+            });
         }
         const addresses = argumentsInput[remainingNode.value.name];
 
         if (addresses === undefined) {
             // Required remaining accounts must be provided.
             if (!remainingNode.isOptional) {
-                throw new AccountError(
-                    `Remaining account argument "${remainingNode.value.name}" is required but was not provided`,
-                );
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ARGUMENT_MISSING, {
+                    argumentName: remainingNode.value.name,
+                    instructionName: ixNode.name,
+                });
             }
             // Optional remaining accounts can be safely omitted.
             continue;
         }
 
         if (!Array.isArray(addresses)) {
-            throw new AccountError(
-                `Remaining account argument "${remainingNode.value.name}" must be an array of addresses`,
-            );
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__INVALID_ARGUMENT_INPUT, {
+                argumentName: remainingNode.value.name,
+                expectedType: 'Address[]',
+                value: safeStringify(addresses),
+            });
         }
         const role = getRemainingAccountRole(remainingNode.isSigner, remainingNode.isWritable);
         for (let i = 0; i < addresses.length; i++) {
             const addr: unknown = addresses[i];
             if (!isConvertibleAddress(addr)) {
-                throw new AccountError(
-                    `Remaining account argument "${remainingNode.value.name}[${i}]" must be an address string or PublicKey, got ${formatValueType(addr)}`,
-                );
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ADDRESS_TYPE, {
+                    accountName: `${remainingNode.value.name}[${i}]`,
+                    actualType: formatValueType(addr),
+                    expectedType: 'Address | PublicKey',
+                });
             }
             accountMetas.push({ address: toAddress(addr), role });
         }

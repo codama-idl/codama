@@ -15,14 +15,14 @@ describe('account-default-value: visitArgumentValue', () => {
     test('should throw when argument is missing', async () => {
         const visitor = makeVisitor({ argumentsInput: {} });
         await expect(visitor.visitArgumentValue(argumentValueNode('myArg'))).rejects.toThrow(
-            /Missing required argument for account default: myArg/,
+            /Missing argument \[myArg\] in \[testInstruction\]/,
         );
     });
 
     test('should throw when argument is null', async () => {
         const visitor = makeVisitor({ argumentsInput: { myArg: null } });
         await expect(visitor.visitArgumentValue(argumentValueNode('myArg'))).rejects.toThrow(
-            /Missing required argument for account default: myArg/,
+            /Missing argument \[myArg\] in \[testInstruction\]/,
         );
     });
 
@@ -33,7 +33,7 @@ describe('account-default-value: visitArgumentValue', () => {
         ];
         for (const visitor of visitors) {
             await expect(visitor.visitArgumentValue(argumentValueNode('myArg'))).rejects.toThrow(
-                /Argument myArg is not a valid Address/,
+                /Expected \[Address \| PublicKey\] for account \[testAccount\]/,
             );
         }
     });

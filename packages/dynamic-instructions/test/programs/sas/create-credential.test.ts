@@ -51,7 +51,7 @@ describe('SAS: createCredential', () => {
                 .createCredential({ name: 'Test', signers: [authority] })
                 .accounts({ authority, credential: undefined as unknown as Address, payer: authority })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: credential/);
+        ).rejects.toThrow(/Missing account \[credential\]/);
     });
 
     test('should throw ArgumentError when name is missing', async () => {

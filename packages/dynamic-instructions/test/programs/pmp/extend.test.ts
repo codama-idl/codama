@@ -86,7 +86,7 @@ describe('Program Metadata: extend', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "length", value: undefined/);
+        ).rejects.toThrow(/Invalid argument "length"/);
     });
 
     test('should throw AccountError when required account is missing', async () => {
@@ -100,6 +100,6 @@ describe('Program Metadata: extend', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: account/);
+        ).rejects.toThrow(/Missing account \[account\]/);
     });
 });

@@ -21,7 +21,7 @@ describe('pda-seed-value: visitProgramIdValue', () => {
             // @ts-expect-error testing invalid programId value
             const visitor = makeVisitor({ programId: value });
             await expect(visitor.visitProgramIdValue(programIdValueNode())).rejects.toThrow(
-                /Expected base58-encoded Address/,
+                `Cannot convert value to Address: [${JSON.stringify(value)}].`,
             );
         }
     });
@@ -32,7 +32,7 @@ describe('pda-seed-value: visitProgramIdValue', () => {
             // @ts-expect-error testing invalid programId value
             const visitor = makeVisitor({ programId: value });
             await expect(visitor.visitProgramIdValue(programIdValueNode())).rejects.toThrow(
-                /Expected base58-encoded Address/,
+                `Cannot convert value to Address: [${JSON.stringify(value)}].`,
             );
         }
     });

@@ -182,22 +182,20 @@ Arguments with `defaultValueStrategy: 'omitted'` (e.g., discriminators) are auto
 
 ## Error Handling
 
-All errors extend `DynamicInstructionsError`:
-
-| Error             | When                                                                |
-| ----------------- | ------------------------------------------------------------------- |
-| `ValidationError` | Invalid argument type or missing required argument                  |
-| `AccountError`    | Missing required account, circular dependency in account resolution |
-| `ArgumentError`   | Argument encoding failure                                           |
+All errors are instances of `CodamaError` from `@codama/errors`:
 
 ```ts
-import { DynamicInstructionsError, AccountError } from '@codama/dynamic-instructions';
+import {
+    CodamaError,
+    isCodamaError,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ACCOUNT_MISSING,
+} from '@codama/dynamic-instructions';
 
 try {
     const ix = await client.methods.transferSol({ amount: 100 }).accounts({}).instruction();
 } catch (err) {
-    if (err instanceof AccountError) {
-        console.error('Account resolution failed:', err.message);
+    if (isCodamaError(err, CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ACCOUNT_MISSING)) {
+        console.error(`Missing account: ${err.context.accountName}`);
     }
 }
 ```

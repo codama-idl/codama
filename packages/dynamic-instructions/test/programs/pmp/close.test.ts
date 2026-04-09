@@ -136,6 +136,6 @@ describe('Program Metadata: close', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: destination/);
+        ).rejects.toThrow(/Missing account \[destination\]/);
     });
 });

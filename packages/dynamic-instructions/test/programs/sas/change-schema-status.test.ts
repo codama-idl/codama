@@ -78,7 +78,7 @@ describe('SAS: changeSchemaStatus', () => {
                 .changeSchemaStatus({ isPaused: true })
                 .accounts({ authority, credential: undefined as unknown as Address, schema: schemaPda })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: credential/);
+        ).rejects.toThrow(/Missing account \[credential\]/);
     });
 
     test('should throw ArgumentError when isPaused is invalid', async () => {

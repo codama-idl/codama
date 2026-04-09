@@ -2,6 +2,7 @@ import { getUtf8Codec } from '@solana/codecs';
 import { constantValueNode, mapValueNode, numberTypeNode, stringTypeNode, stringValueNode } from 'codama';
 import { describe, expect, test } from 'vitest';
 
+import { PDA_SEED_VALUE_SUPPORTED_NODE_KINDS } from '../../../../src/instruction-encoding/visitors/pda-seed-value';
 import { makeVisitor } from './pda-seed-value-test-utils';
 
 describe('pda-seed-value: visitConstantValue', () => {
@@ -22,6 +23,8 @@ describe('pda-seed-value: visitConstantValue', () => {
 
     test('should throw for unsupported inner node kind', async () => {
         const node = constantValueNode(numberTypeNode('u8'), mapValueNode([]));
-        await expect(makeVisitor().visitConstantValue(node)).rejects.toThrow(/Unsupported constant PDA seed value/);
+        await expect(makeVisitor().visitConstantValue(node)).rejects.toThrow(
+            `Expected node of kind [${PDA_SEED_VALUE_SUPPORTED_NODE_KINDS.join(',')}], got [mapValueNode]`,
+        );
     });
 });

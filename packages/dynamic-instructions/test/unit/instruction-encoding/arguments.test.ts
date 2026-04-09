@@ -1,3 +1,4 @@
+import { CodamaError } from '@codama/errors';
 import { address } from '@solana/addresses';
 import { getU32Encoder, getU64Encoder, mergeBytes } from '@solana/codecs';
 import { getInitializeInstructionDataDecoder } from '@solana-program/program-metadata';
@@ -6,7 +7,6 @@ import { describe, expect, test } from 'vitest';
 
 import { createArgumentsInputValidator, encodeInstructionArguments } from '../../../src/instruction-encoding/arguments';
 import { getCodecFromBytesEncoding } from '../../../src/shared/bytes-encoding';
-import { ArgumentError, ValidationError } from '../../../src/shared/errors';
 import { loadRoot } from '../../programs/test-utils';
 
 function getInstruction(root: RootNode, name: string): InstructionNode {
@@ -91,21 +91,28 @@ describe('Instruction encoding: encodeInstructionArguments', () => {
         expect(expected.dataSource).toBe(1);
     });
 
-    test('should throw ArgumentError for missing required argument', () => {
+    test('should throw ARGUMENT_MISSING for missing required argument', () => {
         const root = loadRoot('pmp-idl.json');
         const ix = getInstruction(root, 'write');
 
-        expect(() =>
-            encodeInstructionArguments(root, ix, {
-                data: null,
-            }),
-        ).toThrow(ArgumentError);
+        expect(() => encodeInstructionArguments(root, ix, {})).toThrow('Missing argument [offset] in [write].');
+    });
 
-        expect(() =>
-            encodeInstructionArguments(root, ix, {
-                data: null,
-            }),
-        ).toThrow('Missing required argument: offset');
+    test('should throw DEFAULT_VALUE_MISSING when omitted argument has no defaultValue', () => {
+        const root = loadRoot('pmp-idl.json');
+        const ix = getInstruction(root, 'write');
+
+        // Create a modified instruction where the omitted discriminator has no defaultValue.
+        const modifiedIx: InstructionNode = {
+            ...ix,
+            arguments: ix.arguments.map(arg =>
+                arg.name === 'discriminator' ? { ...arg, defaultValue: undefined } : arg,
+            ),
+        };
+
+        expect(() => encodeInstructionArguments(root, modifiedIx, { data: null, offset: 0 })).toThrow(
+            'Default value is missing for argument [discriminator] in [write].',
+        );
     });
 
     test('should throw ValidationError when omitted argument is provided', () => {
@@ -120,7 +127,7 @@ describe('Instruction encoding: encodeInstructionArguments', () => {
                 discriminator: 99,
                 offset: 0,
             }),
-        ).toThrow(ValidationError);
+        ).toThrow(CodamaError);
     });
 
     test('should encode instruction with only omitted discriminator (no user args)', () => {
@@ -153,7 +160,7 @@ describe('Instruction validation: remaining account arguments', () => {
 
         // m is a required number argument — passing a string should fail validation
         const validate = createArgumentsInputValidator(root, ix);
-        expect(() => validate({ m: 'invalid', signers: [ADDR_1] })).toThrow(ValidationError);
+        expect(() => validate({ m: 'invalid', signers: [ADDR_1] })).toThrow('Invalid argument "m"');
     });
 
     test('should not reject optional remaining account args when omitted', () => {

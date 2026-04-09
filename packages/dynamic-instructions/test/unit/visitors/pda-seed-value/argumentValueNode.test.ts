@@ -56,7 +56,7 @@ describe('pda-seed-value: visitArgumentValue', () => {
     test('should throw for unknown argument name', async () => {
         const visitor = makeVisitor({ ixNode: ixNodeWithArg });
         await expect(visitor.visitArgumentValue(argumentValueNode('unknown'))).rejects.toThrow(
-            /Missing instruction argument node/,
+            /Referenced node \[unknown\] not found in \[testInstruction\]/,
         );
     });
 
@@ -66,7 +66,7 @@ describe('pda-seed-value: visitArgumentValue', () => {
             ixNode: ixNodeWithArg,
         });
         await expect(visitor.visitArgumentValue(argumentValueNode('title'))).rejects.toThrow(
-            /Missing argument for PDA seed/,
+            /Missing argument \[title\]/,
         );
     });
 
@@ -76,7 +76,7 @@ describe('pda-seed-value: visitArgumentValue', () => {
             ixNode: ixNodeWithArg,
         });
         await expect(visitor.visitArgumentValue(argumentValueNode('title'))).rejects.toThrow(
-            /Missing argument for PDA seed/,
+            /Missing argument \[title\]/,
         );
     });
 

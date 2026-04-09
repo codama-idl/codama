@@ -21,7 +21,7 @@ describe('bytesTypeNode', () => {
 
     test('should throw error for non-Uint8Array input', () => {
         const transformer = createInputValueTransformer(bytesTypeNode(), rootNodeMock, { bytesEncoding: 'base16' });
-        const expectedMessage = 'Expected bytes input (Uint8Array or number[]) for bytesTypeNode';
+        const expectedMessage = /Expected \[Uint8Array \| number\[\]\] for \[bytesTypeNode\]/;
         expect(() => transformer(null)).toThrow(expectedMessage);
         expect(() => transformer(undefined)).toThrow(expectedMessage);
         expect(() => transformer('not a Uint8Array')).toThrow(expectedMessage);

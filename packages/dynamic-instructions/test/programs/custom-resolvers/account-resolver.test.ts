@@ -36,7 +36,7 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
     test('should throw AccountError when resolver missing for required account', async () => {
         await expect(
             programClient.methods.transferWithResolver({ amount: 100 }).accounts({ authority }).instruction(),
-        ).rejects.toThrow(/Resolver "resolveDestination" not provided for account "destination"/);
+        ).rejects.toThrow(/Resolver \[resolveDestination\] not provided for account \[destination\]/);
     });
 
     test('should throw AccountError when resolver returns null/undefined for required account', async () => {
@@ -49,7 +49,7 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
                     resolveDestination: () => Promise.resolve(null),
                 })
                 .instruction(),
-        ).rejects.toThrow(/Resolver "resolveDestination" returned invalid address null for account "destination"/);
+        ).rejects.toThrow(/Invalid account address \[destination\]: \[null\]/);
 
         await expect(
             programClient.methods
@@ -59,7 +59,7 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
                     resolveDestination: () => Promise.resolve(undefined),
                 })
                 .instruction(),
-        ).rejects.toThrow(/Resolver "resolveDestination" returned invalid address undefined for account "destination"/);
+        ).rejects.toThrow(/Invalid account address \[destination\]: \[undefined\]/);
     });
 
     test('should propagate error when account resolver rejects', async () => {
@@ -72,7 +72,9 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
                     resolveTreasury: () => Promise.resolve(ctx.SYSTEM_PROGRAM_ADDRESS),
                 })
                 .instruction(),
-        ).rejects.toThrow(/Resolver "resolveDestination" threw an error while resolving account "destination"/);
+        ).rejects.toThrow(
+            /Resolver \[resolveDestination\] threw an error while resolving \[instructionAccountNode\] \[destination\]/,
+        );
     });
 
     test('should throw when resolver missing for optional undefined account with direct resolverValueNode', async () => {
@@ -86,7 +88,7 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
                     resolveDestination: () => Promise.resolve(destination),
                 })
                 .instruction(),
-        ).rejects.toThrow(/Resolver "resolveTreasury" not provided for account "treasury"/);
+        ).rejects.toThrow(/Resolver \[resolveTreasury\] not provided for account \[treasury\]/);
 
         // double-check: when we provide null, treasury will be resolved into programId even without resolveTreasury resolver.
         const ix = await programClient.methods
@@ -143,8 +145,6 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
                     resolveIncludeTarget: () => Promise.resolve(true),
                 })
                 .instruction(),
-        ).rejects.toThrow(
-            /Conditional branch resolved to undefined in account "requiredTarget" of "conditionalTransfer" instruction/,
-        );
+        ).rejects.toThrow(/Missing account \[requiredTarget\] in \[conditionalTransfer\] instruction/);
     });
 });

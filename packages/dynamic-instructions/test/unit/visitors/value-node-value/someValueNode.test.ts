@@ -1,6 +1,7 @@
 import { accountValueNode, numberValueNode, someValueNode } from 'codama';
 import { describe, expect, test } from 'vitest';
 
+import { VALUE_NODE_SUPPORTED_NODE_KINDS } from '../../../../src/instruction-encoding/visitors/value-node-value';
 import { makeVisitor } from './value-node-value-test-utils';
 
 describe('value-node-value: visitSomeValue', () => {
@@ -15,6 +16,6 @@ describe('value-node-value: visitSomeValue', () => {
                 // @ts-expect-error - accountValueNode is invalid
                 someValueNode(accountValueNode('test')),
             ),
-        ).toThrow(/Cannot resolve someValueNode/);
+        ).toThrow(`Expected node of kind [${VALUE_NODE_SUPPORTED_NODE_KINDS.join(',')}], got [accountValueNode]`);
     });
 });

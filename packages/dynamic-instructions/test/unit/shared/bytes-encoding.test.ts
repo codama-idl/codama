@@ -51,7 +51,7 @@ describe('getCodecFromBytesEncoding', () => {
 
     test('should throw for unsupported encoding', () => {
         // @ts-expect-error testing invalid input
-        expect(() => getCodecFromBytesEncoding('rot13')).toThrow('Unsupported bytes encoding: rot13');
+        expect(() => getCodecFromBytesEncoding('rot13')).toThrow(/Unrecognized bytes encoding \[.*rot13.*\]/);
     });
 });
 

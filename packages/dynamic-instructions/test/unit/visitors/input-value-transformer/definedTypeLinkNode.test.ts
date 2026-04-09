@@ -24,7 +24,7 @@ describe('definedTypeLinkNode', () => {
             }),
         );
         expect(() => createInputValueTransformer(definedTypeLinkNode('nonExistent'), root)).toThrow(
-            'Cannot resolve defined type link: nonExistent',
+            /Could not find linked node \[nonExistent\] from \[definedTypeLinkNode\]/,
         );
     });
 });

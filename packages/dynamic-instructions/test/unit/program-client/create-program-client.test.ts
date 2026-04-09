@@ -1,8 +1,8 @@
+import { CodamaError } from '@codama/errors';
 import { address } from '@solana/addresses';
 import { describe, expect, test } from 'vitest';
 
 import { createProgramClient } from '../../../src';
-import { DynamicInstructionsError } from '../../../src/shared/errors';
 import type { MplTokenMetadataProgramClient } from '../../programs/generated/mpl-token-metadata-idl-types';
 import type { SystemProgramClient } from '../../programs/generated/system-program-idl-types';
 import { createTestProgramClient, loadIdl, SvmTestContext } from '../../programs/test-utils';
@@ -12,9 +12,9 @@ describe('createProgramClient', () => {
         const programClient = createTestProgramClient('system-program-idl.json');
 
         test('should throw when accessing a non-existent instruction', () => {
-            expect(() => programClient.methods.nonExistentMethod).toThrow(DynamicInstructionsError);
+            expect(() => programClient.methods.nonExistentMethod).toThrow(CodamaError);
             expect(() => programClient.methods.nonExistentMethod).toThrow(
-                /Instruction "nonExistentMethod" not found in IDL/,
+                /Instruction \[nonExistentMethod\] not found in IDL/,
             );
         });
 
@@ -25,7 +25,7 @@ describe('createProgramClient', () => {
                 expect.unreachable('should have thrown');
             } catch (error) {
                 const message = (error as Error).message;
-                expect(message).toContain('Available instructions:');
+                expect(message).toContain('Available:');
 
                 const allInstructions = [
                     'createAccount',
@@ -95,16 +95,16 @@ describe('createProgramClient', () => {
         test('should throw when accessing a non-existent PDA', () => {
             // @ts-expect-error - testing error message for non-existent PDA
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            expect(() => pdaClient.pdas.nonExistentPda).toThrow(DynamicInstructionsError);
+            expect(() => pdaClient.pdas.nonExistentPda).toThrow(CodamaError);
             // @ts-expect-error - testing error message for non-existent PDA
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            expect(() => pdaClient.pdas.nonExistentPda).toThrow(/PDA "nonExistentPda" not found in IDL/);
+            expect(() => pdaClient.pdas.nonExistentPda).toThrow(/PDA \[nonExistentPda\] not found in IDL/);
         });
 
         test('should list available PDAs in error message', () => {
             // @ts-expect-error - testing error message for non-existent PDA
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            expect(() => pdaClient.pdas.nonExistentPda).toThrow(/Available PDAs:/);
+            expect(() => pdaClient.pdas.nonExistentPda).toThrow(/Available:/);
         });
 
         test('should support "in" operator for existing PDAs', () => {

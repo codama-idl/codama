@@ -115,7 +115,7 @@ describe('enumTypeNode', () => {
         const transformer = createInputValueTransformer(enumWithVariants, rootNodeMock);
 
         const input = { __kind: 'unknownVariant', someData: 123 };
-        expect(() => transformer(input)).toThrow(/Available variants: \[known1, known2\]/);
+        expect(() => transformer(input)).toThrow(/Expected \[one of \[known1, known2\]\] for \[enumTypeNode\]/);
     });
 
     test('should pass through non-object input for enumTypeNode', () => {
@@ -211,7 +211,7 @@ describe('enumTypeNode', () => {
         const transformer = createInputValueTransformer(enumWithTuple, rootNodeMock, { bytesEncoding: 'base16' });
 
         const input = { __kind: 'tuple', someOtherProp: 123 };
-        expect(() => transformer(input)).toThrow(/Expected "fields" array for enum tuple variant/);
+        expect(() => transformer(input)).toThrow(/Expected \[array \(fields\)\] for \[enumTupleVariantTypeNode\]/);
     });
 
     test('should handle deeply nested enum variants', () => {

@@ -1,3 +1,8 @@
+import {
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__INSTRUCTION_NOT_FOUND,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__PDA_NOT_FOUND,
+    CodamaError,
+} from '@codama/errors';
 import { type Address, address, type ProgramDerivedAddress } from '@solana/addresses';
 import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
@@ -5,7 +10,6 @@ import { createFromJson, updateProgramsVisitor } from 'codama';
 
 import type { AddressInput } from '../shared/address';
 import { toAddress } from '../shared/address';
-import { DynamicInstructionsError } from '../shared/errors';
 import type { AccountsInput, ArgumentsInput, ResolversInput } from '../shared/types';
 import { collectPdaNodes } from './collect-pdas';
 import { deriveStandalonePDA } from './derive-standalone-pda';
@@ -80,10 +84,10 @@ export function createProgramClient<TClient = ProgramClient>(
                 const ixNode = instructions.get(prop);
                 if (!ixNode) {
                     if (prop in Object.prototype) return undefined;
-                    const available = [...instructions.keys()].join(', ');
-                    throw new DynamicInstructionsError(
-                        `Instruction "${prop}" not found in IDL. Available instructions: ${available}`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__INSTRUCTION_NOT_FOUND, {
+                        availableIxs: [...instructions.keys()],
+                        instructionName: prop,
+                    });
                 }
 
                 return (args?: ArgumentsInput) => new MethodsBuilder(root, ixNode, args) as ProgramMethodBuilder;
@@ -109,9 +113,10 @@ export function createProgramClient<TClient = ProgramClient>(
                           if (!pdaNode) {
                               if (prop in Object.prototype) return undefined;
                               const available = [...pdaNodes.keys()].join(', ');
-                              throw new DynamicInstructionsError(
-                                  `PDA "${prop}" not found in IDL. Available PDAs: ${available}`,
-                              );
+                              throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__PDA_NOT_FOUND, {
+                                  available,
+                                  pdaName: prop,
+                              });
                           }
 
                           return (seeds?: Record<string, unknown>) => deriveStandalonePDA(root, pdaNode, seeds);

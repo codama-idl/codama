@@ -31,7 +31,7 @@ describe('arrayTypeNode', () => {
             arrayTypeNode(numberTypeNode('u8'), prefixedCountNode(numberTypeNode('u32'))),
             rootNodeMock,
         );
-        expect(() => transformer('not an array')).toThrow('Expected an array for arrayTypeNode');
-        expect(() => transformer(42)).toThrow('Expected an array for arrayTypeNode');
+        expect(() => transformer('not an array')).toThrow(/Expected \[array\] for \[arrayTypeNode\]/);
+        expect(() => transformer(42)).toThrow(/Expected \[array\] for \[arrayTypeNode\]/);
     });
 });

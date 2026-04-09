@@ -1,22 +1,22 @@
+import {
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__INVARIANT_VIOLATION,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__NODE_REFERENCE_NOT_FOUND,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
+    CodamaError,
+} from '@codama/errors';
 import type { Address, ProgramDerivedAddress } from '@solana/addresses';
 import { address, getProgramDerivedAddress } from '@solana/addresses';
 import type { ReadonlyUint8Array } from '@solana/codecs';
-import type {
-    InstructionAccountNode,
-    PdaNode,
-    PdaSeedValueNode,
-    PdaValueNode,
-    RegisteredPdaSeedNode,
-    VariablePdaSeedNode,
-} from 'codama';
+import type { Node, PdaNode, PdaSeedValueNode, PdaValueNode, RegisteredPdaSeedNode, VariablePdaSeedNode } from 'codama';
 import { isNode, visitOrElse } from 'codama';
 
-import { AccountError } from '../../shared/errors';
-import { createPdaSeedValueVisitor } from '../visitors/pda-seed-value';
+import { getMaybeNodeKind } from '../../shared/util';
+import { createPdaSeedValueVisitor, PDA_SEED_VALUE_SUPPORTED_NODE_KINDS } from '../visitors/pda-seed-value';
 import type { BaseResolutionContext } from './types';
 
 export type ResolvePDAAddressContext = BaseResolutionContext & {
-    ixAccountNode: InstructionAccountNode;
     pdaValueNode: PdaValueNode;
 };
 
@@ -27,7 +27,6 @@ export type ResolvePDAAddressContext = BaseResolutionContext & {
 export async function resolvePDAAddress({
     root,
     ixNode,
-    ixAccountNode,
     argumentsInput = {},
     accountsInput = {},
     pdaValueNode,
@@ -35,7 +34,11 @@ export async function resolvePDAAddress({
     resolversInput,
 }: ResolvePDAAddressContext): Promise<ProgramDerivedAddress | null> {
     if (!isNode(pdaValueNode, 'pdaValueNode')) {
-        throw new AccountError(`Account node ${ixAccountNode.name} is not a PDA`);
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: ['pdaValueNode'],
+            kind: getMaybeNodeKind(pdaValueNode),
+            node: pdaValueNode,
+        });
     }
 
     const pdaNode = resolvePdaNode(pdaValueNode, root.program.pdas);
@@ -62,9 +65,10 @@ export async function resolvePDAAddress({
                 const variableSeedValueNode = variableSeedValueNodes.find(node => node.name === seedName);
 
                 if (!variableSeedValueNode) {
-                    throw new AccountError(
-                        `PDA Node ${pdaNode.name}. Variable PDA SeedValueNode ${seedName} was not found for ${ixAccountNode.name} account`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__NODE_REFERENCE_NOT_FOUND, {
+                        instructionName: ixNode.name,
+                        referencedName: seedName,
+                    });
                 }
 
                 return await resolveVariablePdaSeed({
@@ -80,9 +84,9 @@ export async function resolvePDAAddress({
                 });
             }
 
-            throw new AccountError(
-                `PDA node: ${pdaNode.name}. Unsupported seed kind ${(seedNode as { kind?: string }).kind}`,
-            );
+            throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, {
+                kind: getMaybeNodeKind(seedNode) ?? 'unknown',
+            });
         }),
     );
 
@@ -96,7 +100,12 @@ function resolvePdaNode(pdaDefaultValue: PdaValueNode, pdas: PdaNode[]): PdaNode
     if (isNode(pdaDefaultValue.pda, 'pdaLinkNode')) {
         const linkedPda = pdas.find(p => p.name === pdaDefaultValue.pda.name);
         if (!linkedPda) {
-            throw new AccountError(`Linked PDA node not found: ${pdaDefaultValue.pda.name}`);
+            throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
+                kind: 'pdaLinkNode',
+                linkNode: pdaDefaultValue.pda,
+                name: pdaDefaultValue.pda.name,
+                path: [],
+            });
         }
         return linkedPda;
     }
@@ -105,7 +114,11 @@ function resolvePdaNode(pdaDefaultValue: PdaValueNode, pdas: PdaNode[]): PdaNode
         return pdaDefaultValue.pda;
     }
 
-    throw new AccountError(`Unsupported PDA node kind: ${(pdaDefaultValue.pda as { kind: string }).kind}`);
+    throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+        expectedKinds: ['pdaLinkNode', 'pdaNode'],
+        kind: getMaybeNodeKind(pdaDefaultValue.pda),
+        node: pdaDefaultValue.pda,
+    });
 }
 
 type ResolvePdaSeedContext = BaseResolutionContext & {
@@ -125,11 +138,18 @@ function resolveVariablePdaSeed({
     variableSeedValueNode,
 }: ResolvePdaSeedContext): Promise<ReadonlyUint8Array> {
     if (!isNode(variableSeedValueNode, 'pdaSeedValueNode')) {
-        throw new AccountError(`Not a PDA seed value node: ${(variableSeedValueNode as { kind?: string }).kind}`);
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: ['pdaSeedValueNode'],
+            kind: getMaybeNodeKind(variableSeedValueNode),
+            node: variableSeedValueNode as Node,
+        });
     }
 
     if (seedNode.name !== variableSeedValueNode.name) {
-        throw new AccountError(`Mismatched PDA seed: ${seedNode.name} vs ${variableSeedValueNode.name}`);
+        // Sanity check: this should not happen.
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__INVARIANT_VIOLATION, {
+            message: `Mismatched PDA seed names: expected [${seedNode.name}], got [${variableSeedValueNode.name}]`,
+        });
     }
 
     const visitor = createPdaSeedValueVisitor({
@@ -144,7 +164,11 @@ function resolveVariablePdaSeed({
     });
 
     return visitOrElse(variableSeedValueNode.value, visitor, node => {
-        throw new AccountError(`Unsupported variable PDA seed value node: ${node.kind}`);
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: [...PDA_SEED_VALUE_SUPPORTED_NODE_KINDS],
+            kind: node.kind,
+            node,
+        });
     });
 }
 
@@ -163,7 +187,11 @@ function resolveConstantPdaSeed({
     seedNode,
 }: ResolveConstantPdaSeedContext): Promise<ReadonlyUint8Array> {
     if (!isNode(seedNode, 'constantPdaSeedNode')) {
-        throw new AccountError(`Not a constant PDA seed node: ${seedNode.kind}`);
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: ['constantPdaSeedNode'],
+            kind: seedNode.kind,
+            node: seedNode,
+        });
     }
 
     const visitor = createPdaSeedValueVisitor({
@@ -174,8 +202,13 @@ function resolveConstantPdaSeed({
         resolutionPath,
         resolversInput,
         root,
+        seedTypeNode: seedNode.type,
     });
     return visitOrElse(seedNode.value, visitor, node => {
-        throw new AccountError(`Unsupported constant PDA seed value node: ${node.kind}`);
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: [...PDA_SEED_VALUE_SUPPORTED_NODE_KINDS],
+            kind: node.kind,
+            node,
+        });
     });
 }

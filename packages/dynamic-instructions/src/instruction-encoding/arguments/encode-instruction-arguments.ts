@@ -1,11 +1,21 @@
 import { getNodeCodec, type ReadonlyUint8Array } from '@codama/dynamic-codecs';
+import {
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ARGUMENT_MISSING,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__DEFAULT_VALUE_MISSING,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_ENCODE_ARGUMENT,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CodamaError,
+} from '@codama/errors';
 import { Codec, mergeBytes } from '@solana/codecs';
 import type { InstructionNode, RootNode } from 'codama';
 import { visitOrElse } from 'codama';
 
-import { ArgumentError } from '../../shared/errors';
 import type { ArgumentsInput } from '../../shared/types';
-import { createDefaultValueEncoderVisitor, createInputValueTransformer } from '../visitors';
+import {
+    createDefaultValueEncoderVisitor,
+    createInputValueTransformer,
+    DEFAULT_VALUE_ENCODER_SUPPORTED_NODE_KINDS,
+} from '../visitors';
 import { isOmittedArgument, isOptionalArgument } from './shared';
 
 /**
@@ -25,7 +35,7 @@ export function encodeInstructionArguments(
         const input = argumentsInput?.[ixArgumentNode.name];
         const nodeCodec = getNodeCodec([root, root.program, ix, ixArgumentNode]);
         if (isOmittedArgument(ixArgumentNode)) {
-            return encodeOmittedArgument(ixArgumentNode, nodeCodec);
+            return encodeOmittedArgument(ix, ixArgumentNode, nodeCodec);
         } else if (isOptionalArgument(ixArgumentNode, input)) {
             return encodeOptionalArgument(ix, ixArgumentNode, nodeCodec);
         } else {
@@ -37,19 +47,25 @@ export function encodeInstructionArguments(
 }
 
 function encodeOmittedArgument(
+    ix: InstructionNode,
     ixArgumentNode: InstructionNode['arguments'][number],
     nodeCodec: Codec<unknown>,
 ): ReadonlyUint8Array {
     const defaultValue = ixArgumentNode.defaultValue;
     if (defaultValue === undefined) {
-        throw new ArgumentError(`Omitted argument ${ixArgumentNode.name} has no default value`);
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__DEFAULT_VALUE_MISSING, {
+            argumentName: ixArgumentNode.name,
+            instructionName: ix.name,
+        });
     }
 
     const visitor = createDefaultValueEncoderVisitor(nodeCodec);
     return visitOrElse(defaultValue, visitor, node => {
-        throw new ArgumentError(
-            `Not supported encoding for ${ixArgumentNode.name} argument of "${ixArgumentNode.type.kind}" kind (defaultValue: ${node.kind})`,
-        );
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: [...DEFAULT_VALUE_ENCODER_SUPPORTED_NODE_KINDS],
+            kind: node.kind,
+            node,
+        });
     });
 }
 
@@ -61,10 +77,11 @@ function encodeOptionalArgument(
     try {
         return nodeCodec.encode(null);
     } catch (error) {
-        throw new ArgumentError(
-            `Failed to encode optional argument "${ixArgumentNode.name}" of "${ix.name}" instruction`,
-            { cause: error },
-        );
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_ENCODE_ARGUMENT, {
+            argumentName: ixArgumentNode.name,
+            cause: error,
+            instructionName: ix.name,
+        });
     }
 }
 
@@ -76,7 +93,10 @@ function encodeRequiredArgument(
     nodeCodec: Codec<unknown>,
 ): ReadonlyUint8Array {
     if (input === undefined) {
-        throw new ArgumentError(`Missing required argument: ${ixArgumentNode.name}`);
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__ARGUMENT_MISSING, {
+            argumentName: ixArgumentNode.name,
+            instructionName: ix.name,
+        });
     }
 
     const transformer = createInputValueTransformer(ixArgumentNode.type, root, {
@@ -86,11 +106,10 @@ function encodeRequiredArgument(
     try {
         return nodeCodec.encode(transformedInput);
     } catch (error) {
-        throw new ArgumentError(
-            `Failed to encode required argument "${ixArgumentNode.name}" of "${ix.name}" instruction`,
-            {
-                cause: error,
-            },
-        );
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_ENCODE_ARGUMENT, {
+            argumentName: ixArgumentNode.name,
+            cause: error,
+            instructionName: ix.name,
+        });
     }
 }

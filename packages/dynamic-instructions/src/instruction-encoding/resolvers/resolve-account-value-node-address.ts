@@ -1,8 +1,12 @@
+import {
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__CIRCULAR_ACCOUNT_DEPENDENCY,
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__NODE_REFERENCE_NOT_FOUND,
+    CodamaError,
+} from '@codama/errors';
 import type { Address } from '@solana/addresses';
 import type { AccountValueNode } from 'codama';
 
 import { toAddress } from '../../shared/address';
-import { AccountError } from '../../shared/errors';
 import { resolveAccountAddress } from './resolve-account-address';
 import type { BaseResolutionContext, ResolutionPath } from './types';
 
@@ -29,7 +33,10 @@ export async function resolveAccountValueNodeAddress(
     // Find the referenced account in the instruction.
     const referencedIxAccountNode = ixNode.accounts.find(acc => acc.name === node.name);
     if (!referencedIxAccountNode) {
-        throw new AccountError(`Referenced account "${node.name}" not found in instruction "${ixNode.name}"`);
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__NODE_REFERENCE_NOT_FOUND, {
+            instructionName: ixNode.name,
+            referencedName: node.name,
+        });
     }
 
     // Detect circular dependencies before recursing.
@@ -49,6 +56,8 @@ export async function resolveAccountValueNodeAddress(
 
 export function detectCircularDependency(nodeName: string, resolutionPath: ResolutionPath) {
     if (resolutionPath.includes(nodeName)) {
-        throw new AccountError(`Circular dependency detected: ${[...resolutionPath, nodeName].join(' -> ')}`);
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__CIRCULAR_ACCOUNT_DEPENDENCY, {
+            chain: [...resolutionPath, nodeName].join(' -> '),
+        });
     }
 }

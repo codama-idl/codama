@@ -65,6 +65,7 @@
     },
     "dependencies": {
         "@codama/dynamic-codecs": "workspace:*",
+        "@codama/errors": "workspace:*",
         "@solana/addresses": "^5.3.0",
         "@solana/codecs": "^5.3.0",
         "@solana/instructions": "^5.3.0",

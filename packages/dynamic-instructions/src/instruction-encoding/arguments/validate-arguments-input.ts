@@ -1,8 +1,8 @@
+import { CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_VALIDATE_INPUT, CodamaError } from '@codama/errors';
 import type { InstructionNode, RootNode } from 'codama';
 import type { Failure } from 'superstruct';
 import { assert, StructError } from 'superstruct';
 
-import { ValidationError } from '../../shared/errors';
 import type { ArgumentsInput } from '../../shared/types';
 import { safeStringify } from '../../shared/util';
 import { createIxArgumentsValidator } from '../validators';
@@ -33,14 +33,20 @@ export function createArgumentsInputValidator(root: RootNode, ixNode: Instructio
             assert(filteredInput, validator);
         } catch (error) {
             if (!(error instanceof StructError)) {
-                throw new ValidationError('Unexpected validation error', { cause: error });
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_VALIDATE_INPUT, {
+                    cause: error,
+                    message: 'Unexpected validation error',
+                });
             }
-            const message = error.failures().map(failure => {
+            const formattedMessage = error.failures().map(failure => {
                 const fieldPath = formatFailurePath(failure);
                 const value = formatFailureValue(failure.value);
                 return `Invalid argument "${fieldPath}", value: ${value}. ${failure.message}\n`;
             });
-            throw new ValidationError(message.join(''));
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_VALIDATE_INPUT, {
+                cause: error,
+                message: formattedMessage.join(''),
+            });
         }
     };
 }
@@ -76,7 +82,9 @@ function formatFailureValue(value: unknown): string {
 function validateOmittedArguments(ixNode: InstructionNode, argumentsInput: ArgumentsInput = {}) {
     ixNode.arguments.filter(isOmittedArgument).forEach(ixArgumentNode => {
         if (Object.hasOwn(argumentsInput, ixArgumentNode.name)) {
-            throw new ValidationError(`Argument ${ixArgumentNode.name} cannot be provided`);
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_VALIDATE_INPUT, {
+                message: 'Omitted argument must not be provided',
+            });
         }
     });
 }

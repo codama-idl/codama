@@ -127,7 +127,9 @@ describe('Custom resolvers: arguments ResolverValueNode', () => {
                     },
                 })
                 .instruction(),
-        ).rejects.toThrow(/Resolver "resolveDescription" threw an error while resolving argument "description"/);
+        ).rejects.toThrow(
+            /Resolver \[resolveDescription\] threw an error while resolving \[instructionArgumentNode\] \[description\]/,
+        );
 
         await expect(
             programClient.methods
@@ -137,7 +139,9 @@ describe('Custom resolvers: arguments ResolverValueNode', () => {
                     resolveDescription: () => Promise.reject(new Error('Async error from resolver')),
                 })
                 .instruction(),
-        ).rejects.toThrow(/Resolver "resolveDescription" threw an error while resolving argument "description"/);
+        ).rejects.toThrow(
+            /Resolver \[resolveDescription\] threw an error while resolving \[instructionArgumentNode\] \[description\]/,
+        );
     });
 
     test('should encode optional argument as none when resolver returns undefined or null', async () => {

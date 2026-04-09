@@ -1,8 +1,16 @@
+import type { NodeKind } from 'codama';
+
 /**
  * Checks if a value is a plain object record (struct-like).
  */
 export function isObjectRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
+}
+
+/** Returns the `NodeKind` of a node or `null`. */
+export function getMaybeNodeKind(node: unknown): NodeKind | null {
+    if (!isObjectRecord(node)) return null;
+    return (node as { kind: NodeKind }).kind ?? null;
 }
 
 export function formatValueType(value: unknown): string {

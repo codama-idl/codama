@@ -33,7 +33,7 @@ describe('condition-node-value: visitResolverValue', () => {
             },
         });
         await expect(visitor.visitResolverValue(resolverValueNode('myResolver'))).rejects.toThrow(
-            /Resolver "myResolver" threw an error while evaluating condition/,
+            /Resolver \[myResolver\] threw an error while resolving \[conditionalValueNode\] \[myResolver\]/,
         );
     });
 

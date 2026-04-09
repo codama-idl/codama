@@ -17,7 +17,7 @@ describe('account-default-value: visitResolverValue', () => {
     test('should throw when resolver is not provided', async () => {
         const visitor = makeVisitor();
         await expect(visitor.visitResolverValue(resolverValueNode('myResolver'))).rejects.toThrow(
-            /Resolver "myResolver" not provided for account "testAccount"/,
+            /Resolver \[myResolver\] not provided for account \[testAccount\]/,
         );
     });
 
@@ -26,7 +26,7 @@ describe('account-default-value: visitResolverValue', () => {
             resolversInput: { myResolver: () => Promise.resolve(null) },
         });
         await expect(visitor.visitResolverValue(resolverValueNode('myResolver'))).rejects.toThrow(
-            /Resolver "myResolver" returned invalid address null for account "testAccount"/,
+            /Invalid account address \[testAccount\]: \[null\]/,
         );
     });
 
@@ -35,7 +35,7 @@ describe('account-default-value: visitResolverValue', () => {
             resolversInput: { myResolver: () => Promise.resolve(undefined) },
         });
         await expect(visitor.visitResolverValue(resolverValueNode('myResolver'))).rejects.toThrow(
-            /Resolver "myResolver" returned invalid address undefined for account "testAccount"/,
+            /Invalid account address \[testAccount\]: \[undefined\]/,
         );
     });
 

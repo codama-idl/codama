@@ -68,7 +68,7 @@ describe('SAS: closeAttestation', () => {
                     payer: authority,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: eventAuthority/);
+        ).rejects.toThrow(/Missing account \[eventAuthority\]/);
 
         await expect(
             programClient.methods
@@ -82,7 +82,7 @@ describe('SAS: closeAttestation', () => {
                     payer: authority,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: credential/);
+        ).rejects.toThrow(/Missing account \[credential\]/);
 
         await expect(
             programClient.methods
@@ -96,6 +96,6 @@ describe('SAS: closeAttestation', () => {
                     payer: authority,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: attestationProgram/);
+        ).rejects.toThrow(/Missing account \[attestationProgram\]/);
     });
 });

@@ -80,7 +80,7 @@ describe('SAS: tokenizeSchema', () => {
                     tokenProgram: ctx.TOKEN_2022_PROGRAM_ADDRESS,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: mint/);
+        ).rejects.toThrow(/Missing account \[mint\]/);
     });
 
     test('should throw AccountError when maxSize arg is missing', async () => {

@@ -99,6 +99,9 @@ importers:
       '@codama/dynamic-codecs':
         specifier: workspace:*
         version: link:../dynamic-codecs
+      '@codama/errors':
+        specifier: workspace:*
+        version: link:../errors
       '@solana/addresses':
         specifier: ^5.3.0
         version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)

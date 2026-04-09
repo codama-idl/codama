@@ -20,7 +20,7 @@ describe('pda-seed-value: visitPublicKeyValue', () => {
         for (const invalidPublicKey of invalidPublicKeys) {
             // @ts-expect-error testing invalid inputs
             await expect(visitor.visitPublicKeyValue(publicKeyValueNode(invalidPublicKey))).rejects.toThrow(
-                /Expected base58-encoded Address/,
+                `Cannot convert value to Address: [${JSON.stringify(invalidPublicKey)}].`,
             );
         }
     });

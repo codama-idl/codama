@@ -244,13 +244,13 @@ describe('anchor-example: commonIxs', () => {
         test('SelfReferencePdaIx: should throw AccountError for A->A cycle', async () => {
             await expect(
                 programClient.methods.selfReferencePda().accounts({ signer: payer }).instruction(),
-            ).rejects.toThrow(/Circular dependency detected: recursive -> recursive/);
+            ).rejects.toThrow(/Circular dependency detected: \[recursive -> recursive\]/);
         });
 
         test('TwoNodeCyclePdaIx: should throw AccountError for A->B->A pattern in two-node cycle', async () => {
             await expect(
                 programClient.methods.twoNodeCyclePda().accounts({ signer: payer }).instruction(),
-            ).rejects.toThrow(/Circular dependency detected: pda[AB] -> pda[AB] -> pda[AB]/);
+            ).rejects.toThrow(/Circular dependency detected: \[pda[AB] -> pda[AB] -> pda[AB]\]/);
         });
     });
 

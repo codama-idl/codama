@@ -1,6 +1,8 @@
+import { CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING, CodamaError } from '@codama/errors';
 import type { BytesEncoding } from 'codama';
 
 import { getMemoizedBase16Codec, getMemoizedBase58Codec, getMemoizedBase64Codec, getMemoizedUtf8Codec } from './codecs';
+import { safeStringify } from './util';
 
 /**
  * Converts Uint8Array to encoded string based on encoding type.
@@ -25,7 +27,9 @@ export function getCodecFromBytesEncoding(encoding: BytesEncoding) {
         case 'utf8':
             return getMemoizedUtf8Codec();
         default:
-            throw new Error(`Unsupported bytes encoding: ${String(encoding as unknown)}`);
+            throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING, {
+                encoding: safeStringify(encoding as unknown),
+            });
     }
 }
 /**

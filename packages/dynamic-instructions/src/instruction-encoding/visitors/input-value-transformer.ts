@@ -1,41 +1,49 @@
-import type { BytesEncoding, RootNode, TypeNode, Visitor } from 'codama';
+import {
+    CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CodamaError,
+} from '@codama/errors';
+import type { BytesEncoding, Node, RootNode, TypeNode, Visitor } from 'codama';
 import { isNode, pascalCase, visitOrElse } from 'codama';
 
 import { isUint8Array, uint8ArrayToEncodedString } from '../../shared/bytes-encoding';
-import { ArgumentError } from '../../shared/errors';
-import { formatValueType, isObjectRecord, safeStringify } from '../../shared/util';
+import { formatValueType, isObjectRecord } from '../../shared/util';
 
 /**
  * Type nodes that the input value transformer can process.
  * Includes all StandaloneTypeNode kinds plus definedTypeLinkNode.
  */
-export type TransformableTypeNodeKind =
-    | 'amountTypeNode'
-    | 'arrayTypeNode'
-    | 'booleanTypeNode'
-    | 'bytesTypeNode'
-    | 'dateTimeTypeNode'
-    | 'definedTypeLinkNode'
-    | 'enumTypeNode'
-    | 'fixedSizeTypeNode'
-    | 'hiddenPrefixTypeNode'
-    | 'hiddenSuffixTypeNode'
-    | 'mapTypeNode'
-    | 'numberTypeNode'
-    | 'optionTypeNode'
-    | 'postOffsetTypeNode'
-    | 'preOffsetTypeNode'
-    | 'publicKeyTypeNode'
-    | 'remainderOptionTypeNode'
-    | 'sentinelTypeNode'
-    | 'setTypeNode'
-    | 'sizePrefixTypeNode'
-    | 'solAmountTypeNode'
-    | 'stringTypeNode'
-    | 'structFieldTypeNode'
-    | 'structTypeNode'
-    | 'tupleTypeNode'
-    | 'zeroableOptionTypeNode';
+export const INPUT_VALUE_TRANSFORMER_SUPPORTED_NODE_KINDS = [
+    'amountTypeNode',
+    'arrayTypeNode',
+    'booleanTypeNode',
+    'bytesTypeNode',
+    'dateTimeTypeNode',
+    'definedTypeLinkNode',
+    'enumTypeNode',
+    'fixedSizeTypeNode',
+    'hiddenPrefixTypeNode',
+    'hiddenSuffixTypeNode',
+    'mapTypeNode',
+    'numberTypeNode',
+    'optionTypeNode',
+    'postOffsetTypeNode',
+    'preOffsetTypeNode',
+    'publicKeyTypeNode',
+    'remainderOptionTypeNode',
+    'sentinelTypeNode',
+    'setTypeNode',
+    'sizePrefixTypeNode',
+    'solAmountTypeNode',
+    'stringTypeNode',
+    'structFieldTypeNode',
+    'structTypeNode',
+    'tupleTypeNode',
+    'zeroableOptionTypeNode',
+] as const;
+
+export type TransformableTypeNodeKind = (typeof INPUT_VALUE_TRANSFORMER_SUPPORTED_NODE_KINDS)[number];
 
 export type InputValueTransformerOptions = {
     bytesEncoding?: BytesEncoding;
@@ -46,10 +54,14 @@ export type InputValueTransformerOptions = {
  */
 export type InputTransformer = (input: unknown) => unknown;
 
-/**
- * Creates a visitor that returns transformer functions for each type node kind.
- * Returns transformer function to convert user input to the format expected by @codama/dynamic-codecs.
- */
+function unexpectedNodeFallback(node: Node): never {
+    throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+        expectedKinds: [...INPUT_VALUE_TRANSFORMER_SUPPORTED_NODE_KINDS],
+        kind: node.kind,
+        node,
+    });
+}
+
 export function createInputValueTransformerVisitor(
     root: RootNode,
     options: InputValueTransformerOptions = {},
@@ -58,21 +70,18 @@ export function createInputValueTransformerVisitor(
 
     const visitor: Visitor<InputTransformer, TransformableTypeNodeKind> = {
         visitAmountType(node) {
-            return visitOrElse(node.number, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in amountTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.number, visitor, unexpectedNodeFallback);
         },
 
         visitArrayType(node) {
-            const itemTransform = visitOrElse(node.item, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in arrayTypeNode: ${innerNode.kind}`);
-            });
+            const itemTransform = visitOrElse(node.item, visitor, unexpectedNodeFallback);
             return (input: unknown) => {
                 if (!Array.isArray(input)) {
-                    throw new ArgumentError(
-                        `Expected an array for arrayTypeNode, but received: ${formatValueType(input)}. ` +
-                            `Received value: ${safeStringify(input)}`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                        actualType: formatValueType(input),
+                        expectedType: 'array',
+                        nodeKind: 'arrayTypeNode',
+                    });
                 }
                 return input.map(itemTransform);
             };
@@ -91,27 +100,29 @@ export function createInputValueTransformerVisitor(
                 if (Array.isArray(input) && input.every(item => typeof item === 'number')) {
                     return [bytesEncoding, uint8ArrayToEncodedString(new Uint8Array(input), bytesEncoding)];
                 }
-                throw new ArgumentError(
-                    `Expected bytes input (Uint8Array or number[]) for bytesTypeNode, but received: ${formatValueType(input)}. ` +
-                        `Received value: ${safeStringify(input)}`,
-                );
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                    actualType: formatValueType(input),
+                    expectedType: 'Uint8Array | number[]',
+                    nodeKind: 'bytesTypeNode',
+                });
             };
         },
 
         visitDateTimeType(node) {
-            return visitOrElse(node.number, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in dateTimeTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.number, visitor, unexpectedNodeFallback);
         },
 
         visitDefinedTypeLink(node) {
             const definedType = root.program.definedTypes.find(dt => dt.name === node.name);
             if (!definedType) {
-                throw new ArgumentError(`Cannot resolve defined type link: ${node.name}`);
+                throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
+                    kind: 'definedTypeLinkNode',
+                    linkNode: node,
+                    name: node.name,
+                    path: [],
+                });
             }
-            return visitOrElse(definedType.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in definedTypeLink: ${innerNode.kind}`);
-            });
+            return visitOrElse(definedType.type, visitor, unexpectedNodeFallback);
         },
 
         visitEnumType(node) {
@@ -138,9 +149,11 @@ export function createInputValueTransformerVisitor(
 
                 if (!variantNode) {
                     const availableVariants = node.variants.map(v => v.name).join(', ');
-                    throw new ArgumentError(
-                        `Unknown enum variant ${safeStringify(__kind)} for enumTypeNode. Available variants: [${availableVariants}]`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                        actualType: `variant '${String(__kind)}'`,
+                        expectedType: `one of [${availableVariants}]`,
+                        nodeKind: 'enumTypeNode',
+                    });
                 }
 
                 if (isNode(variantNode, 'enumEmptyVariantTypeNode')) {
@@ -148,30 +161,26 @@ export function createInputValueTransformerVisitor(
                 }
 
                 if (isNode(variantNode, 'enumStructVariantTypeNode')) {
-                    const structTransform = visitOrElse(variantNode.struct, visitor, innerNode => {
-                        throw new ArgumentError(
-                            `Unsupported type node in enumStructVariantTypeNode: ${innerNode.kind}`,
-                        );
-                    });
+                    const structTransform = visitOrElse(variantNode.struct, visitor, unexpectedNodeFallback);
                     const transformedFields = structTransform(rest);
                     if (!isObjectRecord(transformedFields)) {
-                        throw new ArgumentError(
-                            `Expected transformed fields to be an object for enumStructVariantTypeNode, got: ${formatValueType(transformedFields)}`,
-                        );
+                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                            actualType: formatValueType(transformedFields),
+                            expectedType: 'object',
+                            nodeKind: 'enumStructVariantTypeNode',
+                        });
                     }
                     return { ...kindObj, ...transformedFields };
                 }
 
                 if (isNode(variantNode, 'enumTupleVariantTypeNode')) {
-                    const tupleTransform = visitOrElse(variantNode.tuple, visitor, innerNode => {
-                        throw new ArgumentError(`Unsupported type node in enumTupleVariantTypeNode: ${innerNode.kind}`);
-                    });
+                    const tupleTransform = visitOrElse(variantNode.tuple, visitor, unexpectedNodeFallback);
                     if (!('fields' in rest) || !Array.isArray(rest.fields)) {
-                        throw new ArgumentError(
-                            `Expected "fields" array for enum tuple variant ${safeStringify(__kind)}, ` +
-                                `but received: ${formatValueType(rest.fields ?? rest)}. ` +
-                                `Received value: ${safeStringify(input)}`,
-                        );
+                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                            actualType: formatValueType(rest.fields ?? rest),
+                            expectedType: 'array (fields)',
+                            nodeKind: 'enumTupleVariantTypeNode',
+                        });
                     }
                     return { ...kindObj, fields: tupleTransform(rest.fields) };
                 }
@@ -181,34 +190,27 @@ export function createInputValueTransformerVisitor(
         },
 
         visitFixedSizeType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in fixedSizeTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitHiddenPrefixType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in hiddenPrefixTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitHiddenSuffixType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in hiddenSuffixTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitMapType(node) {
             // Maps are represented as objects in dynamic-codecs
-            const valueTransform = visitOrElse(node.value, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in mapTypeNode value: ${innerNode.kind}`);
-            });
+            const valueTransform = visitOrElse(node.value, visitor, unexpectedNodeFallback);
             return (input: unknown) => {
                 if (!isObjectRecord(input)) {
-                    throw new ArgumentError(
-                        `Expected a plain object for mapTypeNode, but received: ${formatValueType(input)}. ` +
-                            `Received value: ${safeStringify(input)}`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                        actualType: formatValueType(input),
+                        expectedType: 'object',
+                        nodeKind: 'mapTypeNode',
+                    });
                 }
                 const result: Record<string, unknown> = {};
                 for (const [key, value] of Object.entries(input)) {
@@ -224,9 +226,7 @@ export function createInputValueTransformerVisitor(
         },
 
         visitOptionType(node) {
-            const innerTransform = visitOrElse(node.item, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in optionTypeNode: ${innerNode.kind}`);
-            });
+            const innerTransform = visitOrElse(node.item, visitor, unexpectedNodeFallback);
             return (input: unknown) => {
                 if (input === null || input === undefined) return input;
                 return innerTransform(input);
@@ -234,15 +234,11 @@ export function createInputValueTransformerVisitor(
         },
 
         visitPostOffsetType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in postOffsetTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitPreOffsetType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in preOffsetTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitPublicKeyType() {
@@ -250,9 +246,7 @@ export function createInputValueTransformerVisitor(
         },
 
         visitRemainderOptionType(node) {
-            const innerTransform = visitOrElse(node.item, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in remainderOptionTypeNode: ${innerNode.kind}`);
-            });
+            const innerTransform = visitOrElse(node.item, visitor, unexpectedNodeFallback);
             return (input: unknown) => {
                 if (input === null || input === undefined) return input;
                 return innerTransform(input);
@@ -260,37 +254,30 @@ export function createInputValueTransformerVisitor(
         },
 
         visitSentinelType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in sentinelTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitSetType(node) {
             // Sets are represented as arrays in dynamic-codecs
-            const itemTransform = visitOrElse(node.item, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in setTypeNode: ${innerNode.kind}`);
-            });
+            const itemTransform = visitOrElse(node.item, visitor, unexpectedNodeFallback);
             return (input: unknown) => {
                 if (!Array.isArray(input)) {
-                    throw new ArgumentError(
-                        `Expected an array for setTypeNode, but received: ${formatValueType(input)}. ` +
-                            `Received value: ${safeStringify(input)}`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                        actualType: formatValueType(input),
+                        expectedType: 'array',
+                        nodeKind: 'setTypeNode',
+                    });
                 }
                 return input.map(itemTransform);
             };
         },
 
         visitSizePrefixType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in sizePrefixTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitSolAmountType(node) {
-            return visitOrElse(node.number, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in solAmountTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.number, visitor, unexpectedNodeFallback);
         },
 
         visitStringType() {
@@ -298,24 +285,21 @@ export function createInputValueTransformerVisitor(
         },
 
         visitStructFieldType(node) {
-            return visitOrElse(node.type, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in structFieldTypeNode: ${innerNode.kind}`);
-            });
+            return visitOrElse(node.type, visitor, unexpectedNodeFallback);
         },
 
         visitStructType(node) {
             const fieldTransformers = node.fields.map(field => {
-                const transform = visitOrElse(field, visitor, innerNode => {
-                    throw new ArgumentError(`Unsupported type node in structTypeNode field: ${innerNode.kind}`);
-                });
+                const transform = visitOrElse(field, visitor, unexpectedNodeFallback);
                 return { name: field.name, transform };
             });
             return (input: unknown) => {
                 if (!isObjectRecord(input)) {
-                    throw new ArgumentError(
-                        `Expected a plain object for structTypeNode, but received: ${formatValueType(input)}. ` +
-                            `Received value: ${safeStringify(input)}`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                        actualType: formatValueType(input),
+                        expectedType: 'object',
+                        nodeKind: 'structTypeNode',
+                    });
                 }
                 const result = { ...input } as Record<string, unknown>;
                 for (const { name, transform } of fieldTransformers) {
@@ -328,31 +312,28 @@ export function createInputValueTransformerVisitor(
         },
 
         visitTupleType(node) {
-            const itemTransforms = node.items.map(item =>
-                visitOrElse(item, visitor, innerNode => {
-                    throw new ArgumentError(`Unsupported type node in tupleTypeNode: ${innerNode.kind}`);
-                }),
-            );
+            const itemTransforms = node.items.map(item => visitOrElse(item, visitor, unexpectedNodeFallback));
             return (input: unknown) => {
                 if (!Array.isArray(input)) {
-                    throw new ArgumentError(
-                        `Expected an array for tupleTypeNode, but received: ${formatValueType(input)}. ` +
-                            `Received value: ${safeStringify(input)}`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                        actualType: formatValueType(input),
+                        expectedType: 'array',
+                        nodeKind: 'tupleTypeNode',
+                    });
                 }
                 if (input.length !== itemTransforms.length) {
-                    throw new ArgumentError(
-                        `Expected tuple of length ${itemTransforms.length} for tupleTypeNode, but received array of length ${input.length}.`,
-                    );
+                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__UNEXPECTED_ARGUMENT_TYPE, {
+                        actualType: `array(length:${input.length})`,
+                        expectedType: `array(length:${itemTransforms.length})`,
+                        nodeKind: 'tupleTypeNode',
+                    });
                 }
                 return input.map((value: unknown, index) => itemTransforms[index](value));
             };
         },
 
         visitZeroableOptionType(node) {
-            const innerTransform = visitOrElse(node.item, visitor, innerNode => {
-                throw new ArgumentError(`Unsupported type node in zeroableOptionTypeNode: ${innerNode.kind}`);
-            });
+            const innerTransform = visitOrElse(node.item, visitor, unexpectedNodeFallback);
             return (input: unknown) => {
                 if (input === null || input === undefined) return input;
                 return innerTransform(input);
@@ -389,7 +370,5 @@ export function createInputValueTransformer(
     options?: InputValueTransformerOptions,
 ): InputTransformer {
     const visitor = createInputValueTransformerVisitor(root, options);
-    return visitOrElse(typeNode, visitor, node => {
-        throw new ArgumentError(`Unsupported type node for input transformation: ${node.kind}`);
-    });
+    return visitOrElse(typeNode, visitor, unexpectedNodeFallback);
 }

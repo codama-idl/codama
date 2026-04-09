@@ -82,7 +82,7 @@ describe('SAS: createAttestation', () => {
                     schema: schemaPda,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing required account: attestation/);
+        ).rejects.toThrow(/Missing account \[attestation\]/);
     });
 
     test('should throw ArgumentError when nonce is invalid', async () => {

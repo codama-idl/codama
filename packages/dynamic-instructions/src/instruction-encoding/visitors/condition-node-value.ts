@@ -1,9 +1,17 @@
+import { CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_EXECUTE_RESOLVER, CodamaError } from '@codama/errors';
 import type { Visitor } from 'codama';
 import type { AccountValueNode, ArgumentValueNode, ResolverValueNode } from 'codama';
 
-import { ResolverError } from '../../shared/errors';
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import type { BaseResolutionContext } from '../resolvers/types';
+
+export const CONDITION_NODE_SUPPORTED_NODE_KINDS = [
+    'accountValueNode',
+    'argumentValueNode',
+    'resolverValueNode',
+] as const;
+
+type ConditionNodeSupportedNodeKind = (typeof CONDITION_NODE_SUPPORTED_NODE_KINDS)[number];
 
 /**
  * Visitor for resolving condition nodes in ConditionalValueNode.
@@ -11,7 +19,7 @@ import type { BaseResolutionContext } from '../resolvers/types';
  */
 export function createConditionNodeValueVisitor(
     ctx: BaseResolutionContext,
-): Visitor<Promise<unknown>, 'accountValueNode' | 'argumentValueNode' | 'resolverValueNode'> {
+): Visitor<Promise<unknown>, ConditionNodeSupportedNodeKind> {
     const { root, ixNode, argumentsInput, accountsInput, resolutionPath, resolversInput } = ctx;
 
     return {
@@ -48,8 +56,11 @@ export function createConditionNodeValueVisitor(
             try {
                 return await resolverFn(argumentsInput ?? {}, accountsInput ?? {});
             } catch (error) {
-                throw new ResolverError(`Resolver "${node.name}" threw an error while evaluating condition`, {
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_INSTRUCTIONS__FAILED_TO_EXECUTE_RESOLVER, {
                     cause: error,
+                    resolverName: node.name,
+                    targetKind: 'conditionalValueNode',
+                    targetName: node.name,
                 });
             }
         },

@@ -17,7 +17,7 @@ describe('tupleTypeNode', () => {
 
     test('should throw for non-array input', () => {
         const transformer = createInputValueTransformer(tupleTypeNode([numberTypeNode('u8')]), rootNodeMock);
-        expect(() => transformer('not an array')).toThrow('Expected an array for tupleTypeNode');
+        expect(() => transformer('not an array')).toThrow(/Expected \[array\] for \[tupleTypeNode\]/);
     });
 
     test('should throw for wrong length', () => {
@@ -25,7 +25,7 @@ describe('tupleTypeNode', () => {
             tupleTypeNode([numberTypeNode('u8'), numberTypeNode('u16')]),
             rootNodeMock,
         );
-        expect(() => transformer([1])).toThrow('Expected tuple of length 2');
-        expect(() => transformer([1, 2, 3])).toThrow('Expected tuple of length 2');
+        expect(() => transformer([1])).toThrow(/Expected \[array\(length:2\)\] for \[tupleTypeNode\]/);
+        expect(() => transformer([1, 2, 3])).toThrow(/Expected \[array\(length:2\)\] for \[tupleTypeNode\]/);
     });
 });
