@@ -9,6 +9,7 @@ import {
     hiddenPrefixTypeNode,
     instructionNode,
     numberTypeNode,
+    type ProgramNode,
     programNode,
     rootNode,
     sizeDiscriminatorNode,
@@ -230,6 +231,17 @@ describe('identifyEventData', () => {
         );
         const result = identifyEventData(root, hex('01020304'));
         expect(result).toBeUndefined();
+    });
+    test('it handles ProgramNode with missing events field', () => {
+        const program = programNode({
+            accounts: [accountNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myAccount' })],
+            name: 'myProgram',
+            publicKey: '1111',
+        });
+        const raw = { ...program, events: undefined } as unknown as ProgramNode;
+        const root = rootNode(raw);
+        expect(() => identifyEventData(root, hex('01020304'))).not.toThrow();
+        expect(identifyEventData(root, hex('01020304'))).toBeUndefined();
     });
     test('it identifies tuple events using constant discriminators', () => {
         const root = rootNode(

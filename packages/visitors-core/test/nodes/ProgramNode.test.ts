@@ -6,11 +6,13 @@ import {
     eventNode,
     instructionNode,
     pdaNode,
+    type ProgramNode,
     programNode,
     structTypeNode,
 } from '@codama/nodes';
-import { test } from 'vitest';
+import { expect, test } from 'vitest';
 
+import { identityVisitor, mergeVisitor, visit } from '../../src';
 import {
     expectDebugStringVisitor,
     expectDeleteNodesVisitor,
@@ -52,6 +54,22 @@ test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[instructionNode]', { ...node, instructions: [] });
     expectDeleteNodesVisitor(node, '[definedTypeNode]', { ...node, definedTypes: [] });
     expectDeleteNodesVisitor(node, '[errorNode]', { ...node, errors: [] });
+});
+
+test('mergeVisitor handles ProgramNode with missing events field', () => {
+    const raw = { ...programNode({ name: 'foo', publicKey: '1111' }), events: undefined } as unknown as ProgramNode;
+    const visitor = mergeVisitor(
+        () => 1,
+        (_, values) => values.reduce((a, b) => a + b, 1),
+    );
+    expect(() => visit(raw, visitor)).not.toThrow();
+});
+
+test('identityVisitor handles ProgramNode with missing events field', () => {
+    const raw = { ...programNode({ name: 'foo', publicKey: '1111' }), events: undefined } as unknown as ProgramNode;
+    const result = visit(raw, identityVisitor());
+    expect(result).not.toBeNull();
+    expect((result as ProgramNode).events).toEqual([]);
 });
 
 test('debugStringVisitor', () => {
