@@ -96,7 +96,9 @@ export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'even
                 return match ? stack.getPath(node.kind) : undefined;
             },
             visitProgram(node) {
-                const candidates = [...node.accounts, ...node.events, ...node.instructions].filter(isNodeFilter(kind));
+                const candidates = [...node.accounts, ...(node.events ?? []), ...node.instructions].filter(
+                    isNodeFilter(kind),
+                );
                 for (const candidate of candidates) {
                     const result = visit(candidate, this);
                     if (result) return result;

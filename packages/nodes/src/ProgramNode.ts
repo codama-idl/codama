@@ -72,7 +72,7 @@ export function getAllAccounts(node: ProgramNode | ProgramNode[] | RootNode): Ac
 }
 
 export function getAllEvents(node: ProgramNode | ProgramNode[] | RootNode): EventNode[] {
-    return getAllPrograms(node).flatMap(program => program.events);
+    return getAllPrograms(node).flatMap(program => program.events ?? []);
 }
 
 export function getAllDefinedTypes(node: ProgramNode | ProgramNode[] | RootNode): DefinedTypeNode[] {
