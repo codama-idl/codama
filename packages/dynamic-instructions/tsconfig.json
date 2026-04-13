@@ -1,9 +1,0 @@
-{
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "compilerOptions": {
-        "lib": ["ES2022.Object", "ES2022.Error"]
-    },
-    "display": "@codama/dynamic-instructions",
-    "extends": "../../tsconfig.json",
-    "include": ["src", "test"]
-}

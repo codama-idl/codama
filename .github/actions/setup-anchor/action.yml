@@ -11,11 +11,11 @@ inputs:
   cargo-lock-path:
     description: Path to Cargo.lock for cache key hashing
     required: false
-    default: packages/dynamic-instructions/test/anchor/Cargo.lock
+    default: packages/dynamic-client/test/anchor/Cargo.lock
   build-target-path:
     description: Path to the build target directory to cache
     required: false
-    default: packages/dynamic-instructions/test/anchor/target
+    default: packages/dynamic-client/test/anchor/target
 
 runs:
   using: composite
