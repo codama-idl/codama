@@ -1,5 +1,11 @@
 # @codama/node-types
 
+## 1.6.0
+
+### Minor Changes
+
+- [#985](https://github.com/codama-idl/codama/pull/985) [`6487af5`](https://github.com/codama-idl/codama/commit/6487af56598eee691a67c7e7966626ac6d0a2624) Thanks [@daog1](https://github.com/daog1)! - Add new `EventNode` to `ProgramNode` and update the Anchor adapter accordingly.
+
 ## 1.5.1
 
 ## 1.5.0
