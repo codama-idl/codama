@@ -1,0 +1,63 @@
+name: Setup Anchor CLI
+description: Install Rust toolchain and a pinned Anchor CLI version via AVM with caching for CI.
+
+inputs:
+  anchor-version:
+    description: Anchor CLI version to install (e.g. 0.32.1)
+    required: true
+  rust-version:
+    description: Rust toolchain version to install (e.g. 1.93.0)
+    required: true
+  cargo-lock-path:
+    description: Path to Cargo.lock for cache key hashing
+    required: false
+    default: packages/dynamic-client/test/programs/anchor/Cargo.lock
+  build-target-path:
+    description: Path to the build target directory to cache
+    required: false
+    default: packages/dynamic-client/test/programs/anchor/target
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ inputs.rust-version }}
+
+    - name: Cache Rust and Anchor toolchain
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          ~/.cargo/bin/avm
+          ~/.avm
+          ${{ inputs.build-target-path }}
+        key: ${{ runner.os }}-rust-anchor-${{ inputs.rust-version }}-${{ inputs.anchor-version }}-${{ inputs.cargo-lock-path && hashFiles(inputs.cargo-lock-path) || 'no-lock' }}
+        restore-keys: |
+          ${{ runner.os }}-rust-anchor-${{ inputs.rust-version }}-${{ inputs.anchor-version }}-
+          ${{ runner.os }}-rust-anchor-${{ inputs.rust-version }}-
+
+    - name: Install Anchor (pinned)
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+        echo "$HOME/.avm/bin" >> "$GITHUB_PATH"
+        export PATH="$HOME/.cargo/bin:$HOME/.avm/bin:$PATH"
+
+        desired="${{ inputs.anchor-version }}"
+
+        # Install AVM if needed.
+        if ! command -v avm >/dev/null 2>&1; then
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libssl-dev
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked
+        fi
+
+        # Ensure the desired Anchor version exists and is active.
+        avm install "$desired"
+        avm use "$desired"
+
+        anchor --version

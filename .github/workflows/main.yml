@@ -10,7 +10,9 @@ env:
   DO_NOT_TRACK: '1'
   NODE_VERSION: 20
   CODAMA_VERSION: 1.x
-  SOLANA_VERSION: 2.1.9
+  SOLANA_VERSION: 3.1.8
+  ANCHOR_VERSION: '0.32.1'
+  RUST_VERSION: '1.93.0'
 
 jobs:
   lint:
@@ -49,6 +51,12 @@ jobs:
         uses: solana-program/actions/install-solana@v1
         with:
           version: ${{ env.SOLANA_VERSION }}
+
+      - name: Setup Anchor
+        uses: ./.github/actions/setup-anchor
+        with:
+          anchor-version: ${{ env.ANCHOR_VERSION }}
+          rust-version: ${{ env.RUST_VERSION }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3

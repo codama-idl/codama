@@ -3,7 +3,7 @@ import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
     {
-        ignores: ['**/dist/**', '**/e2e/**'],
+        ignores: ['**/dist/**', '**/e2e/**', '**/generated/**', '**/target/**'],
     },
     {
         files: ['**/*.ts', '**/*.(c|m)?js'],

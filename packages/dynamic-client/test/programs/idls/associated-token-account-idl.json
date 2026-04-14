@@ -1,0 +1,300 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "1.3.7",
+    "program": {
+        "kind": "programNode",
+        "name": "splAssociatedTokenAccount",
+        "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "version": "1.1.1",
+        "docs": [],
+        "accounts": [],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "name": "create",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "fundingAddress",
+                        "isWritable": true,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "associatedAccountAddress",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "walletAddress",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "tokenMintAddress",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "systemProgram",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "publicKeyValueNode",
+                            "publicKey": "11111111111111111111111111111111",
+                            "identifier": "splSystem"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "tokenProgram",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "publicKeyValueNode",
+                            "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                            "identifier": "splToken"
+                        }
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 0
+                        },
+                        "defaultValueStrategy": "omitted"
+                    }
+                ],
+                "discriminators": [
+                    {
+                        "kind": "fieldDiscriminatorNode",
+                        "name": "discriminator",
+                        "offset": 0
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "createIdempotent",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "fundingAddress",
+                        "isWritable": true,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "associatedAccountAddress",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "walletAddress",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "tokenMintAddress",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "systemProgram",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "publicKeyValueNode",
+                            "publicKey": "11111111111111111111111111111111",
+                            "identifier": "splSystem"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "tokenProgram",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "publicKeyValueNode",
+                            "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                            "identifier": "splToken"
+                        }
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 1
+                        },
+                        "defaultValueStrategy": "omitted"
+                    }
+                ],
+                "discriminators": [
+                    {
+                        "kind": "fieldDiscriminatorNode",
+                        "name": "discriminator",
+                        "offset": 0
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "recoverNested",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "nestedAssociatedAccountAddress",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "nestedTokenMintAddress",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "destinationAssociatedAccountAddress",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "ownerAssociatedAccountAddress",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "ownerTokenMintAddress",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "walletAddress",
+                        "isWritable": true,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "tokenProgram",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "publicKeyValueNode",
+                            "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                            "identifier": "splToken"
+                        }
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 2
+                        },
+                        "defaultValueStrategy": "omitted"
+                    }
+                ],
+                "discriminators": [
+                    {
+                        "kind": "fieldDiscriminatorNode",
+                        "name": "discriminator",
+                        "offset": 0
+                    }
+                ]
+            }
+        ],
+        "definedTypes": [],
+        "pdas": [],
+        "errors": [
+            {
+                "kind": "errorNode",
+                "name": "invalidOwner",
+                "code": 0,
+                "message": "Associated token account owner does not match address derivation",
+                "docs": ["InvalidOwner: Associated token account owner does not match address derivation"]
+            }
+        ]
+    },
+    "additionalPrograms": []
+}

@@ -1,0 +1,274 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "1.5.1",
+    "program": {
+        "kind": "programNode",
+        "name": "customResolversTest",
+        "publicKey": "9oHr11Q3pmPsAkFNzQS3JjK5RJA9hwvwrSgF2MXvs22C",
+        "version": "0.1.0",
+        "docs": [
+            "Manually generated IDL for testing custom resolvers: argument resolvers, direct account resolvers, and conditional account resolvers."
+        ],
+        "pdas": [],
+        "accounts": [],
+        "definedTypes": [],
+        "errors": [],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "name": "createItem",
+                "docs": [],
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "authority",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 8
+                        },
+                        "defaultValueStrategy": "omitted"
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "name",
+                        "docs": [],
+                        "type": {
+                            "kind": "sizePrefixTypeNode",
+                            "type": {
+                                "kind": "stringTypeNode",
+                                "encoding": "utf8"
+                            },
+                            "prefix": {
+                                "kind": "numberTypeNode",
+                                "format": "u32",
+                                "endian": "le"
+                            }
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "description",
+                        "docs": [],
+                        "type": {
+                            "kind": "optionTypeNode",
+                            "fixed": false,
+                            "item": {
+                                "kind": "sizePrefixTypeNode",
+                                "type": {
+                                    "kind": "stringTypeNode",
+                                    "encoding": "utf8"
+                                },
+                                "prefix": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u32",
+                                    "endian": "le"
+                                }
+                            },
+                            "prefix": {
+                                "kind": "numberTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            }
+                        },
+                        "defaultValue": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveDescription",
+                            "docs": [],
+                            "dependsOn": []
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "tags",
+                        "docs": [],
+                        "defaultValueStrategy": "optional",
+                        "type": {
+                            "kind": "optionTypeNode",
+                            "fixed": false,
+                            "item": {
+                                "kind": "numberTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "prefix": {
+                                "kind": "numberTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            }
+                        },
+                        "defaultValue": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveTags",
+                            "docs": [],
+                            "dependsOn": []
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "transferWithResolver",
+                "docs": ["Tests direct account resolverValueNode (Pattern 3)"],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "authority",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "destination",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveDestination",
+                            "docs": [],
+                            "dependsOn": []
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "treasury",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveTreasury",
+                            "docs": [],
+                            "dependsOn": []
+                        }
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 1
+                        },
+                        "defaultValueStrategy": "omitted"
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "amount",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u64",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "conditionalTransfer",
+                "docs": ["Tests conditional resolver edge cases"],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "authority",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "optionalTarget",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "conditionalValueNode",
+                            "condition": {
+                                "kind": "resolverValueNode",
+                                "name": "resolveIncludeTarget",
+                                "docs": [],
+                                "dependsOn": []
+                            },
+                            "ifTrue": {
+                                "kind": "publicKeyValueNode",
+                                "publicKey": "11111111111111111111111111111111"
+                            }
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "requiredTarget",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "conditionalValueNode",
+                            "condition": {
+                                "kind": "resolverValueNode",
+                                "name": "resolveIncludeRequired",
+                                "docs": [],
+                                "dependsOn": []
+                            },
+                            "ifTrue": {
+                                "kind": "publicKeyValueNode",
+                                "publicKey": "11111111111111111111111111111111"
+                            }
+                        }
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 2
+                        },
+                        "defaultValueStrategy": "omitted"
+                    }
+                ]
+            }
+        ]
+    },
+    "additionalPrograms": []
+}

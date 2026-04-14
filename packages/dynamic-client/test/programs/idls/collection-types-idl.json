@@ -1,0 +1,434 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "1.5.1",
+    "program": {
+        "kind": "programNode",
+        "name": "collectionTypes",
+        "publicKey": "5YYZqJa7jR51426rhWhydoZJC3GSTtYDQNzJJrZqWxA4",
+        "version": "0.1.0",
+        "docs": [],
+        "accounts": [],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "name": "storeTuple",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "signer",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "defaultValueStrategy": "omitted",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 0
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "data",
+                        "docs": [],
+                        "type": {
+                            "kind": "tupleTypeNode",
+                            "items": [
+                                {
+                                    "kind": "numberTypeNode",
+                                    "format": "u64",
+                                    "endian": "le"
+                                },
+                                {
+                                    "kind": "sizePrefixTypeNode",
+                                    "prefix": {
+                                        "kind": "numberTypeNode",
+                                        "format": "u32",
+                                        "endian": "le"
+                                    },
+                                    "type": {
+                                        "kind": "stringTypeNode",
+                                        "encoding": "utf8"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "storeMap",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "signer",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "defaultValueStrategy": "omitted",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 1
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "data",
+                        "docs": [],
+                        "type": {
+                            "kind": "mapTypeNode",
+                            "key": {
+                                "kind": "sizePrefixTypeNode",
+                                "prefix": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u32",
+                                    "endian": "le"
+                                },
+                                "type": {
+                                    "kind": "stringTypeNode",
+                                    "encoding": "utf8"
+                                }
+                            },
+                            "value": {
+                                "kind": "numberTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            },
+                            "count": {
+                                "kind": "prefixedCountNode",
+                                "prefix": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u32",
+                                    "endian": "le"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "storeSet",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "signer",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "defaultValueStrategy": "omitted",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 2
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "data",
+                        "docs": [],
+                        "type": {
+                            "kind": "setTypeNode",
+                            "item": {
+                                "kind": "numberTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            },
+                            "count": {
+                                "kind": "prefixedCountNode",
+                                "prefix": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u32",
+                                    "endian": "le"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "storeNestedTuple",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "signer",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "defaultValueStrategy": "omitted",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 6
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "data",
+                        "docs": [],
+                        "type": {
+                            "kind": "tupleTypeNode",
+                            "items": [
+                                {
+                                    "kind": "mapTypeNode",
+                                    "key": {
+                                        "kind": "sizePrefixTypeNode",
+                                        "prefix": {
+                                            "kind": "numberTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        },
+                                        "type": {
+                                            "kind": "stringTypeNode",
+                                            "encoding": "utf8"
+                                        }
+                                    },
+                                    "value": {
+                                        "kind": "numberTypeNode",
+                                        "format": "u64",
+                                        "endian": "le"
+                                    },
+                                    "count": {
+                                        "kind": "prefixedCountNode",
+                                        "prefix": {
+                                            "kind": "numberTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        }
+                                    }
+                                },
+                                {
+                                    "kind": "arrayTypeNode",
+                                    "item": {
+                                        "kind": "numberTypeNode",
+                                        "format": "u64",
+                                        "endian": "le"
+                                    },
+                                    "count": {
+                                        "kind": "prefixedCountNode",
+                                        "prefix": {
+                                            "kind": "numberTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "storeNestedMap",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "signer",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "defaultValueStrategy": "omitted",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 7
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "data",
+                        "docs": [],
+                        "type": {
+                            "kind": "mapTypeNode",
+                            "key": {
+                                "kind": "sizePrefixTypeNode",
+                                "prefix": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u32",
+                                    "endian": "le"
+                                },
+                                "type": {
+                                    "kind": "stringTypeNode",
+                                    "encoding": "utf8"
+                                }
+                            },
+                            "value": {
+                                "kind": "arrayTypeNode",
+                                "item": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u64",
+                                    "endian": "le"
+                                },
+                                "count": {
+                                    "kind": "prefixedCountNode",
+                                    "prefix": {
+                                        "kind": "numberTypeNode",
+                                        "format": "u32",
+                                        "endian": "le"
+                                    }
+                                }
+                            },
+                            "count": {
+                                "kind": "prefixedCountNode",
+                                "prefix": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u32",
+                                    "endian": "le"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "storeNestedSet",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "signer",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": []
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "defaultValueStrategy": "omitted",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 8
+                        }
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "data",
+                        "docs": [],
+                        "type": {
+                            "kind": "setTypeNode",
+                            "item": {
+                                "kind": "tupleTypeNode",
+                                "items": [
+                                    {
+                                        "kind": "numberTypeNode",
+                                        "format": "u64",
+                                        "endian": "le"
+                                    },
+                                    {
+                                        "kind": "sizePrefixTypeNode",
+                                        "prefix": {
+                                            "kind": "numberTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        },
+                                        "type": {
+                                            "kind": "stringTypeNode",
+                                            "encoding": "utf8"
+                                        }
+                                    }
+                                ]
+                            },
+                            "count": {
+                                "kind": "prefixedCountNode",
+                                "prefix": {
+                                    "kind": "numberTypeNode",
+                                    "format": "u32",
+                                    "endian": "le"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "definedTypes": [],
+        "pdas": [],
+        "errors": []
+    },
+    "additionalPrograms": []
+}

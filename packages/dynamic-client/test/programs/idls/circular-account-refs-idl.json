@@ -1,0 +1,121 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "1.3.7",
+    "program": {
+        "kind": "programNode",
+        "name": "circularAccountRefs",
+        "publicKey": "BkppVYrCXNAr7rt6FRVBJ6ZxfcMLkkWUomuebFVnNAAt",
+        "version": "0.1.0",
+        "origin": "custom",
+        "docs": ["Test program for circular account reference detection"],
+        "accounts": [],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "name": "twoAccountCycle",
+                "docs": ["Test A->B->A circular reference"],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "accountA",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "accountValueNode",
+                            "name": "accountB"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "accountB",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "accountValueNode",
+                            "name": "accountA"
+                        }
+                    }
+                ],
+                "arguments": [],
+                "discriminators": []
+            },
+            {
+                "kind": "instructionNode",
+                "name": "selfReference",
+                "docs": ["Test A->A self-reference cycle"],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "accountA",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "accountValueNode",
+                            "name": "accountA"
+                        }
+                    }
+                ],
+                "arguments": [],
+                "discriminators": []
+            },
+            {
+                "kind": "instructionNode",
+                "name": "threeAccountCycle",
+                "docs": ["Test A->B->C->A circular reference"],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "accountA",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "accountValueNode",
+                            "name": "accountB"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "accountB",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "accountValueNode",
+                            "name": "accountC"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "accountC",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "accountValueNode",
+                            "name": "accountA"
+                        }
+                    }
+                ],
+                "arguments": [],
+                "discriminators": []
+            }
+        ],
+        "definedTypes": [],
+        "pdas": []
+    },
+    "additionalPrograms": []
+}

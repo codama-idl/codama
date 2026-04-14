@@ -1,0 +1,4 @@
+dist/
+test/programs/anchor/.anchor/
+test/programs/anchor/target/
+test/programs/generated/
