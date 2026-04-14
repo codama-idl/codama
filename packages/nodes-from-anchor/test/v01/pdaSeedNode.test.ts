@@ -67,6 +67,27 @@ test('it resolves nested arg path from defined type link', () => {
     expect(nodes!.value).toEqual(pdaSeedValueNode('amount', argumentValueNode('amount')));
 });
 
+test('it uses full nested path to avoid name collisions for deeply nested arg seeds', () => {
+    const instructionArgs = [
+        instructionArgumentNode({
+            name: 'input',
+            type: structTypeNode([
+                structFieldTypeNode({ name: 'seedEnum', type: numberTypeNode('u8') }),
+                structFieldTypeNode({
+                    name: 'innerStruct',
+                    type: structTypeNode([structFieldTypeNode({ name: 'seedEnum', type: numberTypeNode('u8') })]),
+                }),
+            ]),
+        }),
+    ];
+
+    const shallow = pdaSeedNodeFromAnchorV01({ kind: 'arg', path: 'input.seed_enum' }, instructionArgs);
+    const deep = pdaSeedNodeFromAnchorV01({ kind: 'arg', path: 'input.inner_struct.seed_enum' }, instructionArgs);
+
+    expect(shallow?.definition).toEqual(variablePdaSeedNode('seedEnum', numberTypeNode('u8')));
+    expect(deep?.definition).toEqual(variablePdaSeedNode('innerStructSeedEnum', numberTypeNode('u8')));
+});
+
 test('it returns undefined for unresolvable nested arg type', () => {
     const result = pdaSeedNodeFromAnchorV01({ kind: 'arg', path: 'args.owner' }, [
         instructionArgumentNode({ name: 'args', type: definedTypeLinkNode('UnknownType') }),

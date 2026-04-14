@@ -66,7 +66,7 @@ export function pdaSeedNodeFromAnchorV01(
         }
         case 'arg': {
             const pathParts = seed.path.split('.');
-            const argumentName = camelCase(pathParts.length > 1 ? pathParts[pathParts.length - 1] : pathParts[0]);
+            const argumentName = camelCase(pathParts.length > 1 ? pathParts.slice(1).join('_') : pathParts[0]);
 
             let argumentType: TypeNode;
             if (pathParts.length > 1) {
