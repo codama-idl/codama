@@ -10,7 +10,7 @@ import { loadIdl, SvmTestContext } from '../../test-utils';
 
 const idl = loadIdl('blog-idl.json');
 const programClient = createProgramClient<BlogProgramClient>(idl);
-const programSoPath = path.resolve(__dirname, '..', '..', 'dumps', 'blog.so');
+const programSoPath = path.resolve(__dirname, '..', 'target', 'deploy', 'blog.so');
 
 describe('blog', () => {
     let ctx: SvmTestContext;

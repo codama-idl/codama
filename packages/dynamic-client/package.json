@@ -56,7 +56,7 @@
         "lint:fix": "pnpm generate-program-types && eslint --fix . && prettier --write .",
         "test": "pnpm test:setup && pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
         "test:setup": "pnpm test:anchor:build && ( [ -n \"$CI\" ] || pnpm generate-idl-from-anchor ) && pnpm generate-program-types",
-        "test:anchor:build": "cd test/programs/anchor && anchor build",
+        "test:anchor:build": "cd test/programs/anchor && anchor build --ignore-keys",
         "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run",
