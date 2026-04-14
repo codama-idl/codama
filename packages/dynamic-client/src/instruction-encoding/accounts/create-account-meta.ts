@@ -67,12 +67,17 @@ export async function createAccountMeta(
 
             const finalAddress = isAccountProvided ? toAddress(accountAddressInput) : resolvedAccountAddress;
 
-            // Optional accounts with "programId" strategy: e.g. PMP's setData instruction `buffer` account. (isWritable, isOptional and "programId" strategy).
+            // Optional accounts resolved via "programId" optionalAccountStrategy get the program address,
+            // which cannot be writable on-chain — downgrade to readonly.
+            // E.g. PMP's setData instruction `buffer` account. (isWritable, isOptional and "programId" strategy).
             // But when buffer is null it resolves to the program address which cannot be writable, hence must be downgraded to readonly.
-            const isProgramAddress = finalAddress !== null && finalAddress === programAddress;
-            const role = isProgramAddress
-                ? getReadonlyAccountRole(ixAccountNode, signers)
-                : getAccountRole(ixAccountNode, signers);
+            const role =
+                ixAccountNode.isOptional &&
+                !isAccountProvided &&
+                ixNode.optionalAccountStrategy === 'programId' &&
+                finalAddress === programAddress
+                    ? getReadonlyAccountRole(ixAccountNode, signers)
+                    : getAccountRole(ixAccountNode, signers);
 
             return {
                 address: finalAddress,

@@ -6,7 +6,7 @@ import {
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CodamaError,
 } from '@codama/errors';
-import { Codec, mergeBytes } from '@solana/codecs';
+import { type Codec, mergeBytes } from '@solana/codecs';
 import type { InstructionNode, RootNode } from 'codama';
 import { visitOrElse } from 'codama';
 
