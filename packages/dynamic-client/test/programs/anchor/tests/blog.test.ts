@@ -108,8 +108,8 @@ describe('blog', () => {
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
 
-            // Create post (manual PDA — Codama can't express profile.post_count dependency)
-            const [postPda] = await programClient.pdas.post({ postId: 0, profile: profilePda });
+            // Create post (manual PDA — uses profile.post_count nested seed)
+            const [postPda] = await programClient.pdas.post({ profile: profilePda, profilePostCount: 0 });
             const createPostIx = await programClient.methods
                 .createPost({ content: 'Original content', title: 'Original' })
                 .accounts({ authority: payer, post: postPda })
@@ -139,7 +139,7 @@ describe('blog', () => {
             await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
-            const [postPda] = await programClient.pdas.post({ postId: 0, profile: profilePda });
+            const [postPda] = await programClient.pdas.post({ profile: profilePda, profilePostCount: 0 });
 
             const createPostIx = await programClient.methods
                 .createPost({ content: 'World', title: 'Hello' })
@@ -175,7 +175,7 @@ describe('blog', () => {
             await ctx.sendInstruction(createProfileIx, [payer]);
 
             const [profilePda] = await programClient.pdas.profile({ authority: payer });
-            const [postPda] = await programClient.pdas.post({ postId: 0, profile: profilePda });
+            const [postPda] = await programClient.pdas.post({ profile: profilePda, profilePostCount: 0 });
 
             const createPostIx = await programClient.methods
                 .createPost({ content: 'There', title: 'Hi' })
