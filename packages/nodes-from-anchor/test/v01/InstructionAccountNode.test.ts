@@ -596,7 +596,7 @@ test('it handles PDAs with a program id that points to another account', () => {
     ]);
 });
 
-test('it ignores PDA default values when program seed has a nested path', () => {
+test('it resolves PDA default values when program seed has a nested path', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
         [
             {
@@ -619,6 +619,14 @@ test('it ignores PDA default values when program seed has a nested path', () => 
 
     expect(nodes).toEqual([
         instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({
+                    name: 'myPda',
+                    seeds: [constantPdaSeedNodeFromBytes('base58', '1Ldp')],
+                }),
+                [],
+                argumentValueNode('programId'),
+            ),
             isSigner: false,
             isWritable: false,
             name: 'myPda',

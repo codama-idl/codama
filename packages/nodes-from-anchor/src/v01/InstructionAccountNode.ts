@@ -88,60 +88,54 @@ export function instructionAccountNodeFromAnchorV01(
     if (idl.address) {
         defaultValue = publicKeyValueNode(idl.address, name);
     } else if (idl.pda) {
-        const hasNestedProgramPath =
-            idl.pda.program != null && 'path' in idl.pda.program && idl.pda.program.path.includes('.');
-        if (hasNestedProgramPath) {
-            logWarn(`Skipping PDA for account "${name}": program seed uses a nested path that cannot be resolved.`);
-        } else {
-            const seedResults = idl.pda.seeds.map(seed =>
-                pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix, idlTypes, generics),
-            );
+        const seedResults = idl.pda.seeds.map(seed =>
+            pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix, idlTypes, generics),
+        );
 
-            if (seedResults.every((r): r is NonNullable<typeof r> => r != null)) {
-                const seedDefinitions = seedResults.map(r => r.definition);
-                const seedValues = seedResults.flatMap(r => (r.value ? [r.value] : []));
+        if (seedResults.every((r): r is NonNullable<typeof r> => r != null)) {
+            const seedDefinitions = seedResults.map(r => r.definition);
+            const seedValues = seedResults.flatMap(r => (r.value ? [r.value] : []));
 
-                let programId: string | undefined;
-                let programIdValue: AccountValueNode | ArgumentValueNode | undefined;
-                if (idl.pda.program !== undefined) {
-                    const result = pdaSeedNodeFromAnchorV01(
-                        idl.pda.program,
-                        instructionArguments,
-                        prefix,
-                        idlTypes,
-                        generics,
-                    );
-                    if (!result) {
-                        logWarn(`Skipping PDA for account "${name}": program seed could not be resolved.`);
-                        return instructionAccountNode({ defaultValue, docs, isOptional, isSigner, isWritable, name });
-                    }
-                    if (
-                        isNode(result.definition, 'constantPdaSeedNode') &&
-                        isNode(result.definition.value, 'bytesValueNode') &&
-                        result.definition.value.encoding === 'base58'
-                    ) {
-                        programId = result.definition.value.data;
-                    } else if (result.value && isNode(result.value.value, ['accountValueNode', 'argumentValueNode'])) {
-                        programIdValue = result.value.value;
-                    }
+            let programId: string | undefined;
+            let programIdValue: AccountValueNode | ArgumentValueNode | undefined;
+            if (idl.pda.program !== undefined) {
+                const result = pdaSeedNodeFromAnchorV01(
+                    idl.pda.program,
+                    instructionArguments,
+                    prefix,
+                    idlTypes,
+                    generics,
+                );
+                if (!result) {
+                    logWarn(`Skipping PDA for account "${name}": program seed could not be resolved.`);
+                    return instructionAccountNode({ defaultValue, docs, isOptional, isSigner, isWritable, name });
                 }
+                if (
+                    isNode(result.definition, 'constantPdaSeedNode') &&
+                    isNode(result.definition.value, 'bytesValueNode') &&
+                    result.definition.value.encoding === 'base58'
+                ) {
+                    programId = result.definition.value.data;
+                } else if (result.value && isNode(result.value.value, ['accountValueNode', 'argumentValueNode'])) {
+                    programIdValue = result.value.value;
+                }
+            }
 
-                const camelName = camelCase(name);
-                const isSelfReferential =
-                    seedValues.some(sv => isNode(sv.value, 'accountValueNode') && sv.value.name === camelName) ||
-                    (programIdValue != null &&
-                        isNode(programIdValue, 'accountValueNode') &&
-                        programIdValue.name === camelName);
-                if (isSelfReferential) {
-                    logWarn(`Skipping PDA for account "${name}": a seed references the account itself.`);
-                }
-                if (!isSelfReferential) {
-                    defaultValue = pdaValueNode(
-                        pdaNode({ name, programId, seeds: seedDefinitions }),
-                        seedValues,
-                        programIdValue,
-                    );
-                }
+            const camelName = camelCase(name);
+            const isSelfReferential =
+                seedValues.some(sv => isNode(sv.value, 'accountValueNode') && sv.value.name === camelName) ||
+                (programIdValue != null &&
+                    isNode(programIdValue, 'accountValueNode') &&
+                    programIdValue.name === camelName);
+            if (isSelfReferential) {
+                logWarn(`Skipping PDA for account "${name}": a seed references the account itself.`);
+            }
+            if (!isSelfReferential) {
+                defaultValue = pdaValueNode(
+                    pdaNode({ name, programId, seeds: seedDefinitions }),
+                    seedValues,
+                    programIdValue,
+                );
             }
         }
     }
