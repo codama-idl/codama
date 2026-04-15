@@ -21,15 +21,15 @@ import { pdaSeedNodeFromAnchorV01 } from '../../src';
 test('it creates a PdaSeedNode from a const Anchor seed', () => {
     const nodes = pdaSeedNodeFromAnchorV01({ kind: 'const', value: [11, 57, 246, 240] }, []);
 
-    expect(nodes!.definition).toEqual(constantPdaSeedNodeFromBytes('base58', 'HeLLo'));
-    expect(nodes!.value).toBeUndefined();
+    expect(nodes?.definition).toEqual(constantPdaSeedNodeFromBytes('base58', 'HeLLo'));
+    expect(nodes?.value).toBeUndefined();
 });
 
 test('it creates a PdaSeedNode from an account Anchor seed', () => {
     const nodes = pdaSeedNodeFromAnchorV01({ kind: 'account', path: 'authority' }, []);
 
-    expect(nodes!.definition).toEqual(variablePdaSeedNode('authority', publicKeyTypeNode()));
-    expect(nodes!.value).toEqual(pdaSeedValueNode('authority', accountValueNode('authority')));
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('authority', publicKeyTypeNode()));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('authority', accountValueNode('authority')));
 });
 
 test('it creates a PdaSeedNode from an arg Anchor seed', () => {
@@ -37,8 +37,8 @@ test('it creates a PdaSeedNode from an arg Anchor seed', () => {
         instructionArgumentNode({ name: 'capacity', type: numberTypeNode('u64') }),
     ]);
 
-    expect(nodes!.definition).toEqual(variablePdaSeedNode('capacity', numberTypeNode('u64')));
-    expect(nodes!.value).toEqual(pdaSeedValueNode('capacity', argumentValueNode('capacity')));
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('capacity', numberTypeNode('u64')));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('capacity', argumentValueNode('capacity')));
 });
 
 test('it resolves nested arg path from inline struct type', () => {
@@ -52,8 +52,8 @@ test('it resolves nested arg path from inline struct type', () => {
         }),
     ]);
 
-    expect(nodes!.definition).toEqual(variablePdaSeedNode('owner', publicKeyTypeNode()));
-    expect(nodes!.value).toEqual(pdaSeedValueNode('owner', argumentValueNode('owner')));
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('owner', publicKeyTypeNode()));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('owner', argumentValueNode('owner')));
 });
 
 test('it resolves nested arg path from defined type link', () => {
@@ -64,8 +64,8 @@ test('it resolves nested arg path from defined type link', () => {
         [{ name: 'MyArgs', type: { fields: [{ name: 'amount', type: 'u64' }], kind: 'struct' } }],
     );
 
-    expect(nodes!.definition).toEqual(variablePdaSeedNode('amount', numberTypeNode('u64')));
-    expect(nodes!.value).toEqual(pdaSeedValueNode('amount', argumentValueNode('amount')));
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('amount', numberTypeNode('u64')));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('amount', argumentValueNode('amount')));
 });
 
 test('it uses full nested path to avoid name collisions for deeply nested arg seeds', () => {
@@ -109,8 +109,8 @@ test('it resolves nested account path from type def', () => {
         [{ name: 'Mint', type: { fields: [{ name: 'authority', type: 'pubkey' }], kind: 'struct' } }],
     );
 
-    expect(nodes!.definition).toEqual(variablePdaSeedNode('mintAuthority', publicKeyTypeNode()));
-    expect(nodes!.value).toEqual(pdaSeedValueNode('mintAuthority', accountValueNode('mint')));
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('mintAuthority', publicKeyTypeNode()));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('mintAuthority', accountValueNode('mint')));
 });
 
 test('it returns undefined for unresolvable nested account path', () => {
@@ -176,6 +176,6 @@ test('it removes the string prefix from arg Anchor seeds', () => {
         }),
     ]);
 
-    expect(nodes!.definition).toEqual(variablePdaSeedNode('identifier', stringTypeNode('utf8')));
-    expect(nodes!.value).toEqual(pdaSeedValueNode('identifier', argumentValueNode('identifier')));
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('identifier', stringTypeNode('utf8')));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('identifier', argumentValueNode('identifier')));
 });

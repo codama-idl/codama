@@ -8,13 +8,15 @@ import {
     InstructionArgumentNode,
     isNode,
     pdaNode,
+    PdaSeedNode,
+    PdaSeedValueNode,
     PdaValueNode,
     pdaValueNode,
     PublicKeyValueNode,
     publicKeyValueNode,
 } from '@codama/nodes';
 
-import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01TypeDef } from './idl';
+import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Pda, IdlV01Seed, IdlV01TypeDef } from './idl';
 import { pdaSeedNodeFromAnchorV01 } from './PdaSeedNode';
 import type { GenericsV01 } from './unwrapGenerics';
 
@@ -84,60 +86,10 @@ export function instructionAccountNodeFromAnchorV01(
     const isWritable = idl.writable ?? false;
     const name = prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? '');
     let defaultValue: PdaValueNode | PublicKeyValueNode | undefined;
-
     if (idl.address) {
         defaultValue = publicKeyValueNode(idl.address, name);
     } else if (idl.pda) {
-        const seedResults = idl.pda.seeds.map(seed =>
-            pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix, idlTypes, generics),
-        );
-
-        if (seedResults.every((r): r is NonNullable<typeof r> => r != null)) {
-            const seedDefinitions = seedResults.map(r => r.definition);
-            const seedValues = seedResults.flatMap(r => (r.value ? [r.value] : []));
-
-            let programId: string | undefined;
-            let programIdValue: AccountValueNode | ArgumentValueNode | undefined;
-            if (idl.pda.program !== undefined) {
-                const result = pdaSeedNodeFromAnchorV01(
-                    idl.pda.program,
-                    instructionArguments,
-                    prefix,
-                    idlTypes,
-                    generics,
-                );
-                if (!result) {
-                    logWarn(`Skipping PDA for account "${name}": program seed could not be resolved.`);
-                    return instructionAccountNode({ defaultValue, docs, isOptional, isSigner, isWritable, name });
-                }
-                if (
-                    isNode(result.definition, 'constantPdaSeedNode') &&
-                    isNode(result.definition.value, 'bytesValueNode') &&
-                    result.definition.value.encoding === 'base58'
-                ) {
-                    programId = result.definition.value.data;
-                } else if (result.value && isNode(result.value.value, ['accountValueNode', 'argumentValueNode'])) {
-                    programIdValue = result.value.value;
-                }
-            }
-
-            const camelName = camelCase(name);
-            const isSelfReferential =
-                seedValues.some(sv => isNode(sv.value, 'accountValueNode') && sv.value.name === camelName) ||
-                (programIdValue != null &&
-                    isNode(programIdValue, 'accountValueNode') &&
-                    programIdValue.name === camelName);
-            if (isSelfReferential) {
-                logWarn(`Skipping PDA for account "${name}": a seed references the account itself.`);
-            }
-            if (!isSelfReferential) {
-                defaultValue = pdaValueNode(
-                    pdaNode({ name, programId, seeds: seedDefinitions }),
-                    seedValues,
-                    programIdValue,
-                );
-            }
-        }
+        defaultValue = resolvePdaDefaultValue(idl.pda, name, instructionArguments, prefix, idlTypes, generics);
     }
 
     return instructionAccountNode({
@@ -148,4 +100,82 @@ export function instructionAccountNodeFromAnchorV01(
         isWritable,
         name,
     });
+}
+
+function resolvePdaDefaultValue(
+    pda: IdlV01Pda,
+    name: string,
+    instructionArguments: InstructionArgumentNode[],
+    prefix: string | undefined,
+    idlTypes: IdlV01TypeDef[],
+    generics: GenericsV01,
+): PdaValueNode | undefined {
+    const seeds = resolveSeeds(pda.seeds, instructionArguments, prefix, idlTypes, generics);
+    if (!seeds) return undefined;
+
+    let programId: string | undefined;
+    let programValue: AccountValueNode | ArgumentValueNode | undefined;
+    if (pda.program) {
+        const result = resolveProgramSeed(pda.program, name, instructionArguments, prefix, idlTypes, generics);
+        if (!result) return undefined;
+        programId = result.id;
+        programValue = result.value;
+    }
+
+    const camelName = camelCase(name);
+    const isSelfReferential =
+        seeds.values.some(sv => isNode(sv.value, 'accountValueNode') && sv.value.name === camelName) ||
+        (programValue != null && isNode(programValue, 'accountValueNode') && programValue.name === camelName);
+    if (isSelfReferential) {
+        logWarn(`Skipping PDA for account "${name}": a seed references the account itself.`);
+        return undefined;
+    }
+
+    return pdaValueNode(pdaNode({ name, programId, seeds: seeds.definitions }), seeds.values, programValue);
+}
+
+function resolveSeeds(
+    seeds: IdlV01Seed[],
+    instructionArguments: InstructionArgumentNode[],
+    prefix: string | undefined,
+    idlTypes: IdlV01TypeDef[],
+    generics: GenericsV01,
+): { definitions: PdaSeedNode[]; values: PdaSeedValueNode[] } | undefined {
+    const results = seeds.map(seed => pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix, idlTypes, generics));
+    if (!results.every((r): r is NonNullable<typeof r> => r != null)) {
+        return undefined;
+    }
+    return {
+        definitions: results.map(r => r.definition),
+        values: results.flatMap(r => (r.value ? [r.value] : [])),
+    };
+}
+
+function resolveProgramSeed(
+    program: IdlV01Seed,
+    name: string,
+    instructionArguments: InstructionArgumentNode[],
+    prefix: string | undefined,
+    idlTypes: IdlV01TypeDef[],
+    generics: GenericsV01,
+): { id?: string; value?: AccountValueNode | ArgumentValueNode } | undefined {
+    const result = pdaSeedNodeFromAnchorV01(program, instructionArguments, prefix, idlTypes, generics);
+    if (!result) {
+        logWarn(`Skipping PDA for account "${name}": program seed could not be resolved.`);
+        return undefined;
+    }
+
+    if (
+        isNode(result.definition, 'constantPdaSeedNode') &&
+        isNode(result.definition.value, 'bytesValueNode') &&
+        result.definition.value.encoding === 'base58'
+    ) {
+        return { id: result.definition.value.data };
+    }
+
+    if (result.value && isNode(result.value.value, ['accountValueNode', 'argumentValueNode'])) {
+        return { value: result.value.value };
+    }
+
+    return {};
 }

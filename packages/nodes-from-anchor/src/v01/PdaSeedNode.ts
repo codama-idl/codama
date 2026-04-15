@@ -90,21 +90,14 @@ export function pdaSeedNodeFromAnchorV01(
             }
 
             // Anchor uses unprefixed strings for PDA seeds.
-            if (
+            const isBorshString =
                 isNode(argumentType, 'sizePrefixTypeNode') &&
                 isNode(argumentType.type, 'stringTypeNode') &&
                 argumentType.type.encoding === 'utf8' &&
                 isNode(argumentType.prefix, 'numberTypeNode') &&
-                argumentType.prefix.format === 'u32'
-            ) {
+                argumentType.prefix.format === 'u32';
+            if (isBorshString) {
                 argumentType = stringTypeNode('utf8');
-            }
-
-            if (pathParts.length > 1) {
-                return {
-                    definition: variablePdaSeedNode(argumentName, argumentType),
-                    value: pdaSeedValueNode(argumentName, argumentValueNode(argumentName)),
-                };
             }
 
             return {
@@ -118,14 +111,14 @@ export function pdaSeedNodeFromAnchorV01(
 }
 
 function resolveNestedFieldType(
-    rootType: TypeNode,
-    fieldPath: string[],
+    parentType: TypeNode,
+    pathParts: string[],
     idlTypes: IdlV01TypeDef[],
     generics: GenericsV01,
 ): TypeNode | undefined {
-    let currentType = rootType;
+    let currentType = parentType;
 
-    for (const fieldName of fieldPath) {
+    for (const fieldName of pathParts) {
         const target = camelCase(fieldName);
 
         // Resolve type links before handling struct/tuple field lookup.

@@ -16,8 +16,8 @@ import type { GenericsV01 } from './unwrapGenerics';
 
 export function instructionNodeFromAnchorV01(
     idl: IdlV01Instruction,
-    generics: GenericsV01,
     idlTypes: IdlV01TypeDef[] = [],
+    generics: GenericsV01,
 ): InstructionNode {
     const name = idl.name;
     let dataArguments = idl.args.map(arg => instructionArgumentNodeFromAnchorV01(arg, generics));
