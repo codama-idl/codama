@@ -11,6 +11,7 @@ import {
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
+    tupleTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -121,6 +122,50 @@ test('it returns undefined for unresolvable nested account path', () => {
     );
 
     expect(result).toBeUndefined();
+});
+
+test('it resolves nested arg path through inline tuple type', () => {
+    const nodes = pdaSeedNodeFromAnchorV01({ kind: 'arg', path: 'foo.0' }, [
+        instructionArgumentNode({
+            name: 'foo',
+            type: tupleTypeNode([publicKeyTypeNode(), numberTypeNode('u64')]),
+        }),
+    ]);
+
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('0', publicKeyTypeNode()));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('0', argumentValueNode('0')));
+});
+
+test('it resolves nested path through tuple then struct (foo.0.bar)', () => {
+    const nodes = pdaSeedNodeFromAnchorV01({ kind: 'arg', path: 'foo.0.bar' }, [
+        instructionArgumentNode({
+            name: 'foo',
+            type: tupleTypeNode([structTypeNode([structFieldTypeNode({ name: 'bar', type: numberTypeNode('u8') })])]),
+        }),
+    ]);
+
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('0Bar', numberTypeNode('u8')));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('0Bar', argumentValueNode('0Bar')));
+});
+
+test('it returns undefined for out-of-bounds tuple index', () => {
+    const result = pdaSeedNodeFromAnchorV01({ kind: 'arg', path: 'foo.5' }, [
+        instructionArgumentNode({
+            name: 'foo',
+            type: tupleTypeNode([publicKeyTypeNode()]),
+        }),
+    ]);
+
+    expect(result).toBeUndefined();
+});
+
+test('it resolves nested account path through IDL tuple type def', () => {
+    const nodes = pdaSeedNodeFromAnchorV01({ account: 'Pair', kind: 'account', path: 'pair.0' }, [], undefined, [
+        { name: 'Pair', type: { fields: ['pubkey', 'u64'], kind: 'struct' } },
+    ]);
+
+    expect(nodes?.definition).toEqual(variablePdaSeedNode('pair0', publicKeyTypeNode()));
+    expect(nodes?.value).toEqual(pdaSeedValueNode('pair0', accountValueNode('pair')));
 });
 
 test('it removes the string prefix from arg Anchor seeds', () => {

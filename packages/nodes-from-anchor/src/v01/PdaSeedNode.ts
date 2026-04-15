@@ -21,7 +21,7 @@ import {
 } from '@codama/nodes';
 import { getBase58Codec } from '@solana/codecs';
 
-import { IdlV01Field, IdlV01Seed, IdlV01TypeDef } from './idl';
+import { IdlV01Seed, IdlV01TypeDef } from './idl';
 import { typeNodeFromAnchorV01 } from './typeNodes';
 import type { GenericsV01 } from './unwrapGenerics';
 
@@ -128,6 +128,14 @@ function resolveNestedFieldType(
     for (const fieldName of fieldPath) {
         const target = camelCase(fieldName);
 
+        // Resolve type links before handling struct/tuple field lookup.
+        if (isNode(currentType, 'definedTypeLinkNode')) {
+            const linkName = currentType.name;
+            const typeDef = idlTypes.find(t => camelCase(t.name) === linkName);
+            if (!typeDef) return undefined;
+            currentType = typeNodeFromAnchorV01(typeDef.type, generics);
+        }
+
         if (isNode(currentType, 'structTypeNode')) {
             const field = currentType.fields.find(f => f.name === target);
             if (!field) return undefined;
@@ -135,15 +143,10 @@ function resolveNestedFieldType(
             continue;
         }
 
-        if (isNode(currentType, 'definedTypeLinkNode')) {
-            const linkName = currentType.name;
-            const typeDef = idlTypes.find(t => camelCase(t.name) === linkName);
-            if (!typeDef || typeDef.type.kind !== 'struct' || !typeDef.type.fields) return undefined;
-            const { fields } = typeDef.type;
-            if (!fields.length || typeof fields[0] !== 'object' || !('name' in fields[0])) return undefined;
-            const field = (fields as IdlV01Field[]).find(f => camelCase(f.name) === target);
-            if (!field) return undefined;
-            currentType = typeNodeFromAnchorV01(field.type, generics);
+        if (isNode(currentType, 'tupleTypeNode')) {
+            const index = Number(fieldName);
+            if (Number.isNaN(index) || index < 0 || index >= currentType.items.length) return undefined;
+            currentType = currentType.items[index];
             continue;
         }
 
