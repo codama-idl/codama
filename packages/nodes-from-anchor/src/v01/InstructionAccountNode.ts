@@ -1,3 +1,4 @@
+import { logWarn } from '@codama/errors';
 import {
     AccountValueNode,
     ArgumentValueNode,
@@ -15,8 +16,9 @@ import {
     publicKeyValueNode,
 } from '@codama/nodes';
 
-import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
+import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Pda, IdlV01Seed, IdlV01TypeDef } from './idl';
 import { pdaSeedNodeFromAnchorV01 } from './PdaSeedNode';
+import type { GenericsV01 } from './unwrapGenerics';
 
 function hasDuplicateAccountNames(idl: IdlV01InstructionAccountItem[]): boolean {
     const seenNames = new Set<string>();
@@ -45,6 +47,8 @@ export function instructionAccountNodesFromAnchorV01(
     idl: IdlV01InstructionAccountItem[],
     instructionArguments: InstructionArgumentNode[],
     prefix?: string,
+    idlTypes: IdlV01TypeDef[] = [],
+    generics: GenericsV01 = { constArgs: {}, typeArgs: {}, types: {} },
 ): InstructionAccountNode[] {
     const shouldPrefix = prefix !== undefined || hasDuplicateAccountNames(idl);
 
@@ -54,8 +58,18 @@ export function instructionAccountNodesFromAnchorV01(
                   account.accounts,
                   instructionArguments,
                   shouldPrefix ? (prefix ? `${prefix}_${account.name}` : account.name) : undefined,
+                  idlTypes,
+                  generics,
               )
-            : [instructionAccountNodeFromAnchorV01(account, instructionArguments, shouldPrefix ? prefix : undefined)],
+            : [
+                  instructionAccountNodeFromAnchorV01(
+                      account,
+                      instructionArguments,
+                      shouldPrefix ? prefix : undefined,
+                      idlTypes,
+                      generics,
+                  ),
+              ],
     );
 }
 
@@ -63,6 +77,8 @@ export function instructionAccountNodeFromAnchorV01(
     idl: IdlV01InstructionAccount,
     instructionArguments: InstructionArgumentNode[],
     prefix?: string,
+    idlTypes: IdlV01TypeDef[] = [],
+    generics: GenericsV01 = { constArgs: {}, typeArgs: {}, types: {} },
 ): InstructionAccountNode {
     const isOptional = idl.optional ?? false;
     const docs = idl.docs ?? [];
@@ -70,43 +86,10 @@ export function instructionAccountNodeFromAnchorV01(
     const isWritable = idl.writable ?? false;
     const name = prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? '');
     let defaultValue: PdaValueNode | PublicKeyValueNode | undefined;
-
     if (idl.address) {
         defaultValue = publicKeyValueNode(idl.address, name);
     } else if (idl.pda) {
-        // TODO: Handle seeds with nested paths.
-        // Currently, we gracefully ignore PDA default values if we encounter seeds with nested paths.
-        const seedsWithNestedPaths = idl.pda.seeds.some(seed => 'path' in seed && seed.path.includes('.'));
-        if (!seedsWithNestedPaths) {
-            const [seedDefinitions, seedValues] = idl.pda.seeds.reduce(
-                ([seeds, lookups], seed: IdlV01Seed) => {
-                    const { definition, value } = pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix);
-                    return [[...seeds, definition], value ? [...lookups, value] : lookups];
-                },
-                <[PdaSeedNode[], PdaSeedValueNode[]]>[[], []],
-            );
-
-            let programId: string | undefined;
-            let programIdValue: AccountValueNode | ArgumentValueNode | undefined;
-            if (idl.pda.program !== undefined) {
-                const { definition, value } = pdaSeedNodeFromAnchorV01(idl.pda.program, instructionArguments, prefix);
-                if (
-                    isNode(definition, 'constantPdaSeedNode') &&
-                    isNode(definition.value, 'bytesValueNode') &&
-                    definition.value.encoding === 'base58'
-                ) {
-                    programId = definition.value.data;
-                } else if (value && isNode(value.value, ['accountValueNode', 'argumentValueNode'])) {
-                    programIdValue = value.value;
-                }
-            }
-
-            defaultValue = pdaValueNode(
-                pdaNode({ name, programId, seeds: seedDefinitions }),
-                seedValues,
-                programIdValue,
-            );
-        }
+        defaultValue = resolvePdaDefaultValue(idl.pda, name, instructionArguments, prefix, idlTypes, generics);
     }
 
     return instructionAccountNode({
@@ -117,4 +100,82 @@ export function instructionAccountNodeFromAnchorV01(
         isWritable,
         name,
     });
+}
+
+function resolvePdaDefaultValue(
+    pda: IdlV01Pda,
+    name: string,
+    instructionArguments: InstructionArgumentNode[],
+    prefix: string | undefined,
+    idlTypes: IdlV01TypeDef[],
+    generics: GenericsV01,
+): PdaValueNode | undefined {
+    const seeds = resolveSeeds(pda.seeds, instructionArguments, prefix, idlTypes, generics);
+    if (!seeds) return undefined;
+
+    let programId: string | undefined;
+    let programValue: AccountValueNode | ArgumentValueNode | undefined;
+    if (pda.program) {
+        const result = resolveProgramSeed(pda.program, name, instructionArguments, prefix, idlTypes, generics);
+        if (!result) return undefined;
+        programId = result.id;
+        programValue = result.value;
+    }
+
+    const camelName = camelCase(name);
+    const isSelfReferential =
+        seeds.values.some(sv => isNode(sv.value, 'accountValueNode') && sv.value.name === camelName) ||
+        (programValue != null && isNode(programValue, 'accountValueNode') && programValue.name === camelName);
+    if (isSelfReferential) {
+        logWarn(`Skipping PDA for account "${name}": a seed references the account itself.`);
+        return undefined;
+    }
+
+    return pdaValueNode(pdaNode({ name, programId, seeds: seeds.definitions }), seeds.values, programValue);
+}
+
+function resolveSeeds(
+    seeds: IdlV01Seed[],
+    instructionArguments: InstructionArgumentNode[],
+    prefix: string | undefined,
+    idlTypes: IdlV01TypeDef[],
+    generics: GenericsV01,
+): { definitions: PdaSeedNode[]; values: PdaSeedValueNode[] } | undefined {
+    const results = seeds.map(seed => pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix, idlTypes, generics));
+    if (!results.every((r): r is NonNullable<typeof r> => r != null)) {
+        return undefined;
+    }
+    return {
+        definitions: results.map(r => r.definition),
+        values: results.flatMap(r => (r.value ? [r.value] : [])),
+    };
+}
+
+function resolveProgramSeed(
+    program: IdlV01Seed,
+    name: string,
+    instructionArguments: InstructionArgumentNode[],
+    prefix: string | undefined,
+    idlTypes: IdlV01TypeDef[],
+    generics: GenericsV01,
+): { id?: string; value?: AccountValueNode | ArgumentValueNode } | undefined {
+    const result = pdaSeedNodeFromAnchorV01(program, instructionArguments, prefix, idlTypes, generics);
+    if (!result) {
+        logWarn(`Skipping PDA for account "${name}": program seed could not be resolved.`);
+        return undefined;
+    }
+
+    if (
+        isNode(result.definition, 'constantPdaSeedNode') &&
+        isNode(result.definition.value, 'bytesValueNode') &&
+        result.definition.value.encoding === 'base58'
+    ) {
+        return { id: result.definition.value.data };
+    }
+
+    if (result.value && isNode(result.value.value, ['accountValueNode', 'argumentValueNode'])) {
+        return { value: result.value.value };
+    }
+
+    return {};
 }
