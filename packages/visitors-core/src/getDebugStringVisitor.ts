@@ -97,6 +97,10 @@ function getNodeDetails(node: Node): string[] {
             return [node.variant];
         case 'resolverValueNode':
             return [node.name];
+        case 'argumentValueNode':
+            // Mirrors `formatArgumentReference` in @codama/dynamic-client. Inlined here to avoid
+            // a cross-package dependency for a one-line render.
+            return [node.path && node.path.length > 0 ? `${node.name}.${node.path.join('.')}` : node.name];
         case 'constantDiscriminatorNode':
             return [...(node.offset > 0 ? [`offset:${node.offset}`] : [])];
         case 'fieldDiscriminatorNode':

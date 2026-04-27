@@ -32,6 +32,7 @@ import { getMemoizedAddressEncoder, getMemoizedBooleanEncoder, getMemoizedUtf8Co
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import type { BaseResolutionContext } from '../resolvers/types';
 import { createInputValueTransformer } from './input-value-transformer';
+import { formatArgumentPathSuffix, resolveArgumentPathType, resolveArgumentPathValue } from './resolve-argument-path';
 
 export const PDA_SEED_VALUE_SUPPORTED_NODE_KINDS = [
     'accountValueNode',
@@ -96,12 +97,20 @@ export function createPdaSeedValueVisitor(
                     referencedName: node.name,
                 });
             }
-            const argInput = argumentsInput[node.name];
+
+            const argFieldType =
+                node.path && node.path.length > 0
+                    ? resolveArgumentPathType(ixArgumentNode.type, node.path, root, node.name)
+                    : ixArgumentNode.type;
+            const argInput =
+                node.path && node.path.length > 0
+                    ? resolveArgumentPathValue(argumentsInput[node.name], node.path, node.name, ixNode.name)
+                    : argumentsInput[node.name];
 
             // Use the PDA seed's declared type (e.g. plain stringTypeNode) rather than
-            // the instruction argument's type (e.g. sizePrefixTypeNode) so the seed
-            // bytes match what the on-chain program derives.
-            const typeNode = seedTypeNode ?? ixArgumentNode.type;
+            // the (nested) instruction argument's type (e.g. sizePrefixTypeNode) so the
+            // seed bytes match what the on-chain program derives.
+            const typeNode = seedTypeNode ?? argFieldType;
 
             if (argInput === undefined || argInput === null) {
                 // optional remainderOptionTypeNode seeds encodes to zero bytes.
@@ -110,6 +119,7 @@ export function createPdaSeedValueVisitor(
                 }
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
                     argumentName: node.name,
+                    argumentPath: formatArgumentPathSuffix(node.path ?? []),
                     instructionName: ixNode.name,
                 });
             }

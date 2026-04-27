@@ -1,13 +1,19 @@
-import { getUtf8Codec } from '@solana/codecs';
+import { getU64Encoder, getUtf8Codec } from '@solana/codecs';
 import {
     argumentValueNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
+    programNode,
     publicKeyTypeNode,
     remainderOptionTypeNode,
+    rootNode,
     sizePrefixTypeNode,
     stringTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
@@ -78,6 +84,77 @@ describe('pda-seed-value: visitArgumentValue', () => {
         await expect(visitor.visitArgumentValue(argumentValueNode('title'))).rejects.toThrow(
             /Missing argument \[title\]/,
         );
+    });
+
+    describe('nested struct argument paths', () => {
+        const planDataStruct = structTypeNode([
+            structFieldTypeNode({ name: 'planId', type: numberTypeNode('u64') }),
+            structFieldTypeNode({ name: 'label', type: stringTypeNode('utf8') }),
+        ]);
+        const ixNodeWithStructArg = instructionNode({
+            arguments: [instructionArgumentNode({ name: 'planData', type: planDataStruct })],
+            name: 'createPlan',
+        });
+
+        test('should encode nested numeric field via path', async () => {
+            const visitor = makeVisitor({
+                argumentsInput: { planData: { label: 'x', planId: 42n } },
+                ixNode: ixNodeWithStructArg,
+            });
+            const result = await visitor.visitArgumentValue(argumentValueNode('planData', ['planId']));
+            expect(result).toEqual(getU64Encoder().encode(42n));
+        });
+
+        test('should throw when nested path does not exist on struct', async () => {
+            const visitor = makeVisitor({
+                argumentsInput: { planData: { label: 'x', planId: 42n } },
+                ixNode: ixNodeWithStructArg,
+            });
+            await expect(visitor.visitArgumentValue(argumentValueNode('planData', ['missing']))).rejects.toThrow(
+                /struct has no field "missing"/,
+            );
+        });
+
+        test('should throw when intermediate value is missing', async () => {
+            const visitor = makeVisitor({
+                argumentsInput: {},
+                ixNode: ixNodeWithStructArg,
+            });
+            await expect(visitor.visitArgumentValue(argumentValueNode('planData', ['planId']))).rejects.toThrow(
+                /Missing argument \[planData\]/,
+            );
+        });
+
+        test('should throw when path traverses a non-struct type', async () => {
+            const visitor = makeVisitor({
+                argumentsInput: { title: 'hi' },
+                ixNode: ixNodeWithArg, // title is stringTypeNode
+            });
+            await expect(visitor.visitArgumentValue(argumentValueNode('title', ['bogus']))).rejects.toThrow(
+                /expected structTypeNode/,
+            );
+        });
+
+        test('should walk through definedTypeLinkNode to nested struct field', async () => {
+            const planDataLink = definedTypeLinkNode('planData');
+            const localProgram = programNode({
+                definedTypes: [definedTypeNode({ name: 'planData', type: planDataStruct })],
+                name: 'test',
+                publicKey: '11111111111111111111111111111111',
+            });
+            const localRoot = rootNode(localProgram);
+            const ixNode = instructionNode({
+                arguments: [instructionArgumentNode({ name: 'planData', type: planDataLink })],
+                name: 'createPlan',
+            });
+            const visitor = makeVisitor({
+                argumentsInput: { planData: { label: 'x', planId: 7n } },
+                ixNode,
+                root: localRoot,
+            });
+            const result = await visitor.visitArgumentValue(argumentValueNode('planData', ['planId']));
+            expect(result).toEqual(getU64Encoder().encode(7n));
+        });
     });
 
     describe('remainderOptionTypeNode seeds', () => {
