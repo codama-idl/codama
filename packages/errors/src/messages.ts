@@ -84,7 +84,8 @@ export const CodamaErrorMessages: Readonly<{
         'Missing account [$accountName] in [$instructionName] instruction.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]:
         'Resolver [$resolverName] not provided for account [$accountName].',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING]: 'Missing argument [$argumentName] in [$instructionName].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING]:
+        'Missing argument [$argumentName$argumentPath] in [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: 'Cannot convert value to Address: [$value].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]: 'Circular dependency detected: [$chain].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING]:

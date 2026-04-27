@@ -269,7 +269,7 @@ export function getInstructionDependencies(input: InstructionInput | Instruction
     }
 
     if (isNode(input.defaultValue, ['argumentValueNode'])) {
-        return [argumentValueNode(input.defaultValue.name)];
+        return [argumentValueNode(input.defaultValue.name, input.defaultValue.path)];
     }
 
     if (isNode(input.defaultValue, 'pdaValueNode')) {
