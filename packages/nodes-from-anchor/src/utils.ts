@@ -14,14 +14,21 @@ export function hex(bytes: number[] | Uint8Array): string {
     return Array.from(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 }
 
+function isByteArray(value: unknown): value is number[] {
+    return Array.isArray(value) && value.every(n => typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= 255);
+}
+
 export function parseConstantValue(valueString: string, type: TypeNode): { type: TypeNode; value: ValueNode } {
     if (isNode(type, 'bytesTypeNode')) {
         try {
-            const bytes = JSON.parse(valueString) as number[];
-            return { type, value: bytesValueNode('base16', hex(new Uint8Array(bytes))) };
+            const parsed: unknown = JSON.parse(valueString);
+            if (isByteArray(parsed)) {
+                return { type, value: bytesValueNode('base16', hex(new Uint8Array(parsed))) };
+            }
         } catch {
-            return { type: stringTypeNode('utf8'), value: stringValueNode(valueString) };
+            // fall through to the string fallback below
         }
+        return { type: stringTypeNode('utf8'), value: stringValueNode(valueString) };
     }
 
     if (isNode(type, 'numberTypeNode')) {

@@ -52,6 +52,24 @@ test('it handles malformed JSON in value gracefully', () => {
     expect(node).toEqual(constantNode('invalidBytes', stringTypeNode('utf8'), stringValueNode('[invalid json')));
 });
 
+test.each([
+    ['out-of-range byte', '[999]'],
+    ['negative byte', '[-1]'],
+    ['fractional byte', '[1.5]'],
+    ['non-numeric element', '["x"]'],
+    ['non-array JSON (number)', '999'],
+    ['non-array JSON (string)', '"abc"'],
+    ['non-array JSON (null)', 'null'],
+])('it rejects invalid byte array (%s) and falls back to string', (_label, value) => {
+    const node = constantNodeFromAnchorV00({
+        name: 'bad_bytes',
+        type: 'bytes',
+        value,
+    });
+
+    expect(node).toEqual(constantNode('badBytes', stringTypeNode('utf8'), stringValueNode(value)));
+});
+
 test('it parses constants in full program', () => {
     const node = programNodeFromAnchorV00({
         constants: [
