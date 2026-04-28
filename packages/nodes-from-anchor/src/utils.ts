@@ -1,27 +1,45 @@
-import { bytesValueNode, numberValueNode, stringValueNode, ValueNode } from '@codama/nodes';
+import {
+    booleanValueNode,
+    bytesValueNode,
+    isNode,
+    numberValueNode,
+    publicKeyValueNode,
+    stringTypeNode,
+    stringValueNode,
+    TypeNode,
+    ValueNode,
+} from '@codama/nodes';
 
 export function hex(bytes: number[] | Uint8Array): string {
     return Array.from(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 }
 
-export function parseConstantValue(valueString: string): ValueNode {
-    if (valueString.startsWith('[') && valueString.endsWith(']')) {
-        // It's a byte array
+export function parseConstantValue(valueString: string, type: TypeNode): { type: TypeNode; value: ValueNode } {
+    if (isNode(type, 'bytesTypeNode')) {
         try {
             const bytes = JSON.parse(valueString) as number[];
-            const uint8Array = new Uint8Array(bytes);
-            return bytesValueNode('base16', hex(uint8Array));
+            return { type, value: bytesValueNode('base16', hex(new Uint8Array(bytes))) };
         } catch {
-            // Fallback to string if parsing fails
-            return stringValueNode(valueString);
+            return { type: stringTypeNode('utf8'), value: stringValueNode(valueString) };
         }
     }
 
-    if (/^-?\d+$/.test(valueString)) {
-        // It's a number
-        return numberValueNode(Number(valueString));
+    if (isNode(type, 'numberTypeNode')) {
+        if (/^-?\d+$/.test(valueString)) {
+            return { type, value: numberValueNode(Number(valueString)) };
+        }
+        return { type: stringTypeNode('utf8'), value: stringValueNode(valueString) };
     }
 
-    // It's a string
-    return stringValueNode(valueString);
+    if (isNode(type, 'booleanTypeNode')) {
+        if (valueString === 'true') return { type, value: booleanValueNode(true) };
+        if (valueString === 'false') return { type, value: booleanValueNode(false) };
+        return { type: stringTypeNode('utf8'), value: stringValueNode(valueString) };
+    }
+
+    if (isNode(type, 'publicKeyTypeNode')) {
+        return { type, value: publicKeyValueNode(valueString) };
+    }
+
+    return { type, value: stringValueNode(valueString) };
 }

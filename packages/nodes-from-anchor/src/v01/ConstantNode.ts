@@ -1,4 +1,4 @@
-import { ConstantNode, constantNode, numberTypeNode, stringTypeNode } from '@codama/nodes';
+import { bytesTypeNode, ConstantNode, constantNode, stringTypeNode } from '@codama/nodes';
 
 import { parseConstantValue } from '../utils';
 import { IdlV01Const } from './idl';
@@ -8,14 +8,13 @@ export function constantNodeFromAnchorV01(idl: Partial<IdlV01Const>): ConstantNo
     const name = idl.name ?? '';
     const valueString = idl.value ?? '';
 
-    // For constants, 'bytes' type represents a raw byte array, not a sized string
-    // so we use u8 to represent the type of each element
-    const type =
+    const declaredType =
         idl.type === 'bytes'
-            ? numberTypeNode('u8')
+            ? bytesTypeNode()
             : idl.type
               ? typeNodeFromAnchorV01(idl.type, { constArgs: {}, typeArgs: {}, types: {} })
               : stringTypeNode('utf8');
 
-    return constantNode(name, type, parseConstantValue(valueString));
+    const { type, value } = parseConstantValue(valueString, declaredType);
+    return constantNode(name, type, value);
 }

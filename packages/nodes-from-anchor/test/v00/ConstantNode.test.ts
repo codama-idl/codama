@@ -1,4 +1,13 @@
-import { bytesValueNode, constantNode, numberTypeNode, numberValueNode, stringValueNode } from '@codama/nodes';
+import {
+    bytesTypeNode,
+    bytesValueNode,
+    constantNode,
+    definedTypeLinkNode,
+    numberTypeNode,
+    numberValueNode,
+    stringTypeNode,
+    stringValueNode,
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { constantNodeFromAnchorV00, programNodeFromAnchorV00 } from '../../src';
@@ -20,7 +29,7 @@ test('it parses constant with bytes type and value', () => {
         value: '[116, 101, 115, 116]', // "test" in bytes
     });
 
-    expect(node).toEqual(constantNode('seedPrefix', numberTypeNode('u8'), bytesValueNode('base16', '74657374')));
+    expect(node).toEqual(constantNode('seedPrefix', bytesTypeNode(), bytesValueNode('base16', '74657374')));
 });
 
 test('it parses constant with string value', () => {
@@ -30,9 +39,7 @@ test('it parses constant with string value', () => {
         value: 'MyApp',
     });
 
-    // Type should be parsed, value should be string
-    expect(node.name).toBe('appName');
-    expect(node.value).toEqual(stringValueNode('MyApp'));
+    expect(node).toEqual(constantNode('appName', definedTypeLinkNode('String'), stringValueNode('MyApp')));
 });
 
 test('it handles malformed JSON in value gracefully', () => {
@@ -42,8 +49,7 @@ test('it handles malformed JSON in value gracefully', () => {
         value: '[invalid json',
     });
 
-    // Should fallback to string value
-    expect(node.value).toEqual(stringValueNode('[invalid json'));
+    expect(node).toEqual(constantNode('invalidBytes', stringTypeNode('utf8'), stringValueNode('[invalid json')));
 });
 
 test('it parses constants in full program', () => {
@@ -67,7 +73,5 @@ test('it parses constants in full program', () => {
 
     expect(node.constants).toHaveLength(2);
     expect(node.constants[0]).toEqual(constantNode('maxItems', numberTypeNode('u32'), numberValueNode(100)));
-    expect(node.constants[1]).toEqual(
-        constantNode('seedPrefix', numberTypeNode('u8'), bytesValueNode('base16', '616263')),
-    );
+    expect(node.constants[1]).toEqual(constantNode('seedPrefix', bytesTypeNode(), bytesValueNode('base16', '616263')));
 });

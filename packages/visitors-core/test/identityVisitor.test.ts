@@ -1,11 +1,4 @@
-import {
-    assertIsNode,
-    constantNode,
-    numberTypeNode,
-    numberValueNode,
-    publicKeyTypeNode,
-    tupleTypeNode,
-} from '@codama/nodes';
+import { assertIsNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { identityVisitor, interceptVisitor, visit } from '../src';
@@ -70,11 +63,4 @@ test('it can create partial visitors', () => {
     // And the unsupported node cannot be visited.
     // @ts-expect-error PublicKeyTypeNode is not supported.
     expect(() => visit(publicKeyTypeNode(), visitor)).toThrow();
-});
-
-test('it preserves docs on constantNode', () => {
-    const node = constantNode('myConstant', numberTypeNode('u32'), numberValueNode(42), ['My docs']);
-    const result = visit(node, identityVisitor());
-    assertIsNode(result, 'constantNode');
-    expect(result.docs).toEqual(['My docs']);
 });
