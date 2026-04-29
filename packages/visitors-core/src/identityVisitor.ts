@@ -105,7 +105,9 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             return programNode({
                 ...node,
                 accounts: node.accounts.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('accountNode')),
-                constants: node.constants.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('constantNode')),
+                constants: (node.constants ?? [])
+                    .map(visit(this))
+                    .filter(removeNullAndAssertIsNodeFilter('constantNode')),
                 definedTypes: node.definedTypes
                     .map(visit(this))
                     .filter(removeNullAndAssertIsNodeFilter('definedTypeNode')),

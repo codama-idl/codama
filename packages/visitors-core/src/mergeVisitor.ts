@@ -30,7 +30,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...node.instructions.flatMap(visit(this)),
                 ...node.definedTypes.flatMap(visit(this)),
                 ...node.errors.flatMap(visit(this)),
-                ...node.constants.flatMap(visit(this)),
+                ...(node.constants ?? []).flatMap(visit(this)),
             ]);
         };
     }
