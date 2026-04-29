@@ -1,10 +1,14 @@
 import {
+    booleanTypeNode,
+    booleanValueNode,
     bytesTypeNode,
     bytesValueNode,
     constantNode,
     definedTypeLinkNode,
     numberTypeNode,
     numberValueNode,
+    publicKeyTypeNode,
+    publicKeyValueNode,
     stringTypeNode,
     stringValueNode,
 } from '@codama/nodes';
@@ -32,7 +36,29 @@ test('it parses constant with bytes type and value', () => {
     expect(node).toEqual(constantNode('seedPrefix', bytesTypeNode(), bytesValueNode('base16', '74657374')));
 });
 
-test('it parses constant with string value', () => {
+test('it parses constant with boolean type and value', () => {
+    const node = constantNodeFromAnchorV00({
+        name: 'is_active',
+        type: 'bool',
+        value: 'true',
+    });
+
+    expect(node).toEqual(constantNode('isActive', booleanTypeNode(), booleanValueNode(true)));
+});
+
+test('it parses constant with publicKey type and value', () => {
+    const node = constantNodeFromAnchorV00({
+        name: 'admin_key',
+        type: 'publicKey',
+        value: '11111111111111111111111111111111',
+    });
+
+    expect(node).toEqual(
+        constantNode('adminKey', publicKeyTypeNode(), publicKeyValueNode('11111111111111111111111111111111')),
+    );
+});
+
+test('it resolves linked defined types as raw string values', () => {
     const node = constantNodeFromAnchorV00({
         name: 'app_name',
         type: { defined: 'String' },

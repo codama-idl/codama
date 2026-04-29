@@ -15,6 +15,7 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
     const events = idl.events ?? [];
     const instructions = idl.instructions ?? [];
     const errors = idl.errors ?? [];
+    const constants = idl.constants ?? [];
 
     const filteredTypes = types.filter(
         type =>
@@ -25,7 +26,7 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
 
     return programNode({
         accounts: accountNodes,
-        constants: (idl.constants ?? []).map(constantNodeFromAnchorV01),
+        constants: constants.map(constant => constantNodeFromAnchorV01(constant, generics)),
         definedTypes,
         errors: errors.map(errorNodeFromAnchorV01),
         events: events.map(event => eventNodeFromAnchorV01(event, types, generics)),

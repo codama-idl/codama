@@ -32,7 +32,9 @@ export function parseConstantValue(valueString: string, type: TypeNode): { type:
     }
 
     if (isNode(type, 'numberTypeNode')) {
-        if (/^-?\d+$/.test(valueString)) {
+        const isFloat = type.format === 'f32' || type.format === 'f64';
+        const numberRegex = isFloat ? /^-?\d+(\.\d+)?$/ : /^-?\d+$/;
+        if (numberRegex.test(valueString)) {
             return { type, value: numberValueNode(Number(valueString)) };
         }
         return { type: stringTypeNode('utf8'), value: stringValueNode(valueString) };
