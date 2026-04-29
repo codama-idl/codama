@@ -65,6 +65,8 @@ function getNodeDetails(node: Node): string[] {
             return [node.lifecycle, ...(node.message ? [node.message] : [])];
         case 'errorNode':
             return [node.code.toString(), node.name];
+        case 'constantNode':
+            return [node.name];
         case 'accountLinkNode':
         case 'definedTypeLinkNode':
         case 'instructionAccountLinkNode':

@@ -1,4 +1,5 @@
 import type { AccountNode } from './AccountNode';
+import type { ConstantNode } from './ConstantNode';
 import type { DefinedTypeNode } from './DefinedTypeNode';
 import type { ErrorNode } from './ErrorNode';
 import type { EventNode } from './EventNode';
@@ -13,6 +14,7 @@ export interface ProgramNode<
     TDefinedTypes extends DefinedTypeNode[] = DefinedTypeNode[],
     TErrors extends ErrorNode[] = ErrorNode[],
     TEvents extends EventNode[] = EventNode[],
+    TConstants extends ConstantNode[] = ConstantNode[],
 > {
     readonly kind: 'programNode';
 
@@ -30,4 +32,5 @@ export interface ProgramNode<
     readonly pdas: TPdas;
     readonly events: TEvents;
     readonly errors: TErrors;
+    readonly constants: TConstants;
 }
