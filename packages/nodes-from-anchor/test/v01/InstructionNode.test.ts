@@ -33,6 +33,7 @@ test('it creates instruction nodes', () => {
             discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
             name: 'mintTokens',
         },
+        [{ name: 'Distribution', type: { fields: [{ name: 'group_mint', type: 'pubkey' }], kind: 'struct' } }],
         generics,
     );
 
@@ -40,17 +41,6 @@ test('it creates instruction nodes', () => {
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    // TODO: Handle seeds with nested paths. (Needs a path in the IDL but should we?)
-                    // defaultValue: pdaValueNode(
-                    //     pdaNode({
-                    //         name: 'distribution',
-                    //         seeds: [
-                    //             constantPdaSeedNodeFromBytes('base58', 'F9bS'),
-                    //             variablePdaSeedNode('distributionGroupMint', publicKeyTypeNode()),
-                    //         ],
-                    //     }),
-                    //     [pdaSeedValueNode("distributionGroupMint", accountValueNode('distribution', 'group_mint'))],
-                    // ),
                     isSigner: false,
                     isWritable: true,
                     name: 'distribution',
@@ -79,6 +69,7 @@ test('it creates instruction nodes with anchor discriminators', () => {
             discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
             name: 'myInstruction',
         },
+        [],
         generics,
     );
 

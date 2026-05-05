@@ -1,7 +1,7 @@
 {
     "kind": "rootNode",
     "standard": "codama",
-    "version": "1.5.1",
+    "version": "1.6.0",
     "program": {
         "kind": "programNode",
         "name": "example",
@@ -556,7 +556,40 @@
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": []
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "pdaValueNode",
+                            "pda": {
+                                "kind": "pdaLinkNode",
+                                "name": "nestedExampleAccount"
+                            },
+                            "seeds": [
+                                {
+                                    "kind": "pdaSeedValueNode",
+                                    "name": "pubkey",
+                                    "value": {
+                                        "kind": "argumentValueNode",
+                                        "name": "pubkey"
+                                    }
+                                },
+                                {
+                                    "kind": "pdaSeedValueNode",
+                                    "name": "seedEnum",
+                                    "value": {
+                                        "kind": "argumentValueNode",
+                                        "name": "seedEnum"
+                                    }
+                                },
+                                {
+                                    "kind": "pdaSeedValueNode",
+                                    "name": "innerStructSeedEnum",
+                                    "value": {
+                                        "kind": "argumentValueNode",
+                                        "name": "innerStructSeedEnum"
+                                    }
+                                }
+                            ]
+                        }
                     },
                     {
                         "kind": "instructionAccountNode",
@@ -784,24 +817,7 @@
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
-                        "defaultValue": {
-                            "kind": "pdaValueNode",
-                            "pda": {
-                                "kind": "pdaLinkNode",
-                                "name": "recursive"
-                            },
-                            "seeds": [
-                                {
-                                    "kind": "pdaSeedValueNode",
-                                    "name": "recursive",
-                                    "value": {
-                                        "kind": "accountValueNode",
-                                        "name": "recursive"
-                                    }
-                                }
-                            ]
-                        }
+                        "docs": []
                     },
                     {
                         "kind": "instructionAccountNode",
@@ -1780,6 +1796,50 @@
             },
             {
                 "kind": "pdaNode",
+                "name": "nestedExampleAccount",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "WxqkpQv6EzD7FjkQ2ENw5KvgMqrLQj",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "pubkey",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "seedEnum",
+                        "docs": [],
+                        "type": {
+                            "kind": "definedTypeLinkNode",
+                            "name": "seedEnum"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "innerStructSeedEnum",
+                        "docs": [],
+                        "type": {
+                            "kind": "definedTypeLinkNode",
+                            "name": "seedEnum"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
                 "name": "newAccount",
                 "docs": [],
                 "seeds": [
@@ -1797,32 +1857,6 @@
                     {
                         "kind": "variablePdaSeedNode",
                         "name": "signer",
-                        "docs": [],
-                        "type": {
-                            "kind": "publicKeyTypeNode"
-                        }
-                    }
-                ]
-            },
-            {
-                "kind": "pdaNode",
-                "name": "recursive",
-                "docs": [],
-                "seeds": [
-                    {
-                        "kind": "constantPdaSeedNode",
-                        "type": {
-                            "kind": "bytesTypeNode"
-                        },
-                        "value": {
-                            "kind": "bytesValueNode",
-                            "data": "2TTMxGdnk9y5E",
-                            "encoding": "base58"
-                        }
-                    },
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "recursive",
                         "docs": [],
                         "type": {
                             "kind": "publicKeyTypeNode"
