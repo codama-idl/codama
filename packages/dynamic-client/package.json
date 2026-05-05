@@ -1,6 +1,6 @@
 {
     "name": "@codama/dynamic-client",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Tool to dynamically build instructions based on Codama IDLs",
     "license": "MIT",
     "repository": {
