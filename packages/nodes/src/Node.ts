@@ -23,6 +23,7 @@ export const REGISTERED_NODE_KINDS = [
     'pdaNode' as const,
     'accountNode' as const,
     'eventNode' as const,
+    'constantNode' as const,
     'instructionAccountNode' as const,
     'instructionArgumentNode' as const,
     'instructionByteDeltaNode' as const,
