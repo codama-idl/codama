@@ -5,4 +5,5 @@ export interface ArgumentValueNode {
 
     // Data.
     readonly name: CamelCaseString;
+    readonly path?: readonly CamelCaseString[];
 }

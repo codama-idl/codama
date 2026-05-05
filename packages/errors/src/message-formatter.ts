@@ -12,8 +12,11 @@ export function getHumanReadableErrorMessage<TErrorCode extends CodamaErrorCode>
     context: object = {},
 ): string {
     const messageFormatString = CodamaErrorMessages[code];
-    const message = messageFormatString.replace(/(?<!\\)\$(\w+)/g, (substring, variableName) =>
-        variableName in context ? `${context[variableName as keyof typeof context] as string}` : substring,
+    // Missing context vars render as empty string so optional fields (e.g. argumentPath) don't
+    // leak `$varname` literals into messages. This is safe because callers control both the
+    // template and context shape via CodamaErrorContext.
+    const message = messageFormatString.replace(/(?<!\\)\$(\w+)/g, (_substring, variableName) =>
+        variableName in context ? `${context[variableName as keyof typeof context] as string}` : '',
     );
     return message;
 }

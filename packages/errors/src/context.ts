@@ -127,6 +127,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING]: {
         argumentName: CamelCaseString;
+        // Pre-formatted dotted suffix (e.g. ".planId" or "") for nested-field references.
+        // Stored as a string rather than CamelCaseString[] because the message formatter is a flat
+        // ${value} substitution; structured data lives on ArgumentValueNode.path instead.
+        argumentPath?: string;
         instructionName: CamelCaseString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: {

@@ -4,6 +4,7 @@ import type { AccountValueNode, ArgumentValueNode, ResolverValueNode } from 'cod
 
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import type { BaseResolutionContext } from '../resolvers/types';
+import { resolveArgumentPathValue } from './resolve-argument-path';
 
 export const CONDITION_NODE_SUPPORTED_NODE_KINDS = [
     'accountValueNode',
@@ -42,7 +43,15 @@ export function createConditionNodeValueVisitor(
         },
 
         visitArgumentValue: async (node: ArgumentValueNode) => {
-            const argInput = argumentsInput?.[node.name];
+            const rootArg = argumentsInput?.[node.name];
+            // Conditions compare runtime values, not encoded bytes — we deliberately do not
+            // recompute the leaf field's TypeNode here. If conditional comparison ever grows a
+            // wire-typed dimension (e.g. comparing encoded discriminators), this branch must also
+            // walk ixArgumentNode.type via resolveArgumentPathType to pick the right type.
+            const argInput =
+                node.path && node.path.length > 0
+                    ? resolveArgumentPathValue(rootArg, node.path, node.name, ixNode.name)
+                    : rootArg;
             return await Promise.resolve(argInput);
         },
 

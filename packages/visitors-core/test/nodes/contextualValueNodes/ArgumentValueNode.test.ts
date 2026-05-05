@@ -25,3 +25,11 @@ test('deleteNodesVisitor', () => {
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(node, `argumentValueNode [space]`);
 });
+
+test('debugStringVisitor with path', () => {
+    expectDebugStringVisitor(argumentValueNode('plan_data', ['plan_id']), `argumentValueNode [planData.planId]`);
+});
+
+test('identityVisitor with path', () => {
+    expectIdentityVisitor(argumentValueNode('plan_data', ['plan_id']));
+});

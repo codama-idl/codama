@@ -35,6 +35,7 @@ import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-val
 import { resolveConditionalValueNodeCondition } from '../resolvers/resolve-conditional';
 import { resolvePDAAddress } from '../resolvers/resolve-pda-address';
 import type { BaseResolutionContext } from '../resolvers/types';
+import { formatArgumentPathSuffix, resolveArgumentPathValue } from './resolve-argument-path';
 
 type AccountDefaultValueVisitorContext = BaseResolutionContext & {
     accountAddressInput: AddressInput | null | undefined;
@@ -94,10 +95,15 @@ export function createAccountDefaultValueVisitor(
         },
 
         visitArgumentValue: async (node: ArgumentValueNode) => {
-            const argValue = argumentsInput?.[node.name];
+            const rootArg = argumentsInput?.[node.name];
+            const argValue =
+                node.path && node.path.length > 0
+                    ? resolveArgumentPathValue(rootArg, node.path, node.name, ixNode.name)
+                    : rootArg;
             if (argValue === undefined || argValue === null) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
                     argumentName: node.name,
+                    argumentPath: formatArgumentPathSuffix(node.path ?? []),
                     instructionName: ixNode.name,
                 });
             }

@@ -15,4 +15,17 @@ describe('condition-node-value: visitArgumentValue', () => {
         const result = await visitor.visitArgumentValue(argumentValueNode('amount'));
         expect(result).toBeUndefined();
     });
+
+    test('should resolve nested struct field value via path', async () => {
+        const visitor = makeVisitor({ argumentsInput: { config: { threshold: 7 } } });
+        const result = await visitor.visitArgumentValue(argumentValueNode('config', ['threshold']));
+        expect(result).toBe(7);
+    });
+
+    test('should throw when intermediate struct arg is missing for nested path', async () => {
+        const visitor = makeVisitor({ argumentsInput: {} });
+        await expect(visitor.visitArgumentValue(argumentValueNode('config', ['threshold']))).rejects.toThrow(
+            /Missing argument \[config\] in/,
+        );
+    });
 });
