@@ -1,5 +1,11 @@
 # @codama/node-types
 
+## 1.7.0
+
+### Minor Changes
+
+- [#958](https://github.com/codama-idl/codama/pull/958) [`d4aa3bf`](https://github.com/codama-idl/codama/commit/d4aa3bfdd1ec7db95710aeed28ce62db84f11655) Thanks [@tanmay4l](https://github.com/tanmay4l)! - Add support for constants with new ConstantNode
+
 ## 1.6.0
 
 ### Minor Changes

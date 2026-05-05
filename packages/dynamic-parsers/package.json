@@ -1,6 +1,6 @@
 {
     "name": "@codama/dynamic-parsers",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Helpers to dynamically identify and parse accounts and instructions",
     "exports": {
         "types": "./dist/types/index.d.ts",
