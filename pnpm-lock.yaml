@@ -242,6 +242,12 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
 
+  packages/fragments:
+    dependencies:
+      '@codama/errors':
+        specifier: workspace:*
+        version: link:../errors
+
   packages/library:
     dependencies:
       '@codama/cli':
@@ -294,6 +300,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes

@@ -1,0 +1,6 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "@codama/fragments",
+    "extends": "../../tsconfig.json",
+    "include": ["src", "test"]
+}

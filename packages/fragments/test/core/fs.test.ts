@@ -1,15 +1,15 @@
 import { CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, CodamaError } from '@codama/errors';
 import { expect, test } from 'vitest';
 
-import { createDirectory, deleteDirectory, fileExists, readJson, writeFile } from '../src';
+import { createDirectory, deleteDirectory, fileExists, readJson, writeFile } from '../../src/core/fs';
 
 if (__NODEJS__) {
     test('it reads JSON objects from files', () => {
-        const result = readJson('./test/fs.test.json');
+        const result = readJson('./test/core/fs.test.json');
         expect(result).toEqual({ key: 'value' });
     });
     test('it checks if a file exists', () => {
-        const result = fileExists('./test/fs.test.json');
+        const result = fileExists('./test/core/fs.test.json');
         expect(result).toBe(true);
     });
 } else {
