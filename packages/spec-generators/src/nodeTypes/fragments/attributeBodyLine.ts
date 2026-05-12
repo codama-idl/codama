@@ -1,17 +1,16 @@
 import { type Fragment, fragment, getDocblockFragment } from '@codama/fragments/javascript';
 import type { AttributeSpec } from '@codama/spec';
 
-import { isAttributeLifted } from '../options';
-import type { RenderScope } from '../utils/scope';
+import { getTypeParameterIdentifierFragment } from '../../shared';
+import { isNodeTypeParameterAttribute, type RenderScope } from '../options';
 import { getTypeExprFragment } from './typeExpr';
-import { getTypeParameterIdentifierFragment } from './typeParameterIdentifier';
 
 /**
  * Render one attribute as a body line inside an interface declaration.
- * Lifted attributes use their type-parameter identifier (e.g.
- * `readonly data: TData;`); non-lifted attributes use the rendered
- * type expression. Optional attributes carry a `?:` marker; `docs`
- * (if any) become a JSDoc prefix.
+ * Type-parameter attributes use their type-parameter identifier (e.g.
+ * `readonly data: TData;`); other attributes use the rendered type
+ * expression. Optional attributes carry a `?:` marker; `docs` (if any)
+ * become a JSDoc prefix.
  */
 export function getAttributeBodyLineFragment(
     nodeKind: string,
@@ -20,8 +19,8 @@ export function getAttributeBodyLineFragment(
 ): Fragment {
     const docPrefix = getDocblockFragment(attr.docs, { withLineJump: true });
     const optionalMark = attr.optional === true ? '?' : '';
-    const typeFragment = isAttributeLifted(nodeKind, attr, scope)
-        ? getTypeParameterIdentifierFragment(attr.name)
+    const typeFragment = isNodeTypeParameterAttribute(nodeKind, attr, scope)
+        ? getTypeParameterIdentifierFragment(attr)
         : getTypeExprFragment(attr.type);
     return fragment`${docPrefix}readonly ${attr.name}${optionalMark}: ${typeFragment};`;
 }

@@ -1,27 +1,34 @@
 export * from '@codama/node-types';
 
-export * from './contextualValueNodes';
-export * from './countNodes';
-export * from './discriminatorNodes';
-export * from './linkNodes';
-export * from './pdaSeedNodes';
-export * from './typeNodes';
-export * from './valueNodes';
-
+// The bulk of the surface — every `xxxNodeInput` type, every `xxxNode()`
+// constructor, every `*_NODE_KINDS` runtime array — is generated from
+// `@codama/spec` by `@codama-internal/spec-generators`.
+export * from './generated';
 export * from './shared';
 
-export * from './AccountNode';
-export * from './ConstantNode';
-export * from './DefinedTypeNode';
-export * from './EventNode';
-export * from './ErrorNode';
-export * from './InstructionAccountNode';
+// Hand-written helpers that layer convenience predicates and factories
+// on top of the generated constructors.
+export * from './ConstantPdaSeedNode';
+export * from './ConstantValueNode';
+export * from './EnumTypeNode';
 export * from './InstructionArgumentNode';
-export * from './InstructionByteDeltaNode';
 export * from './InstructionNode';
-export * from './InstructionRemainingAccountsNode';
-export * from './InstructionStatusNode';
+export * from './NestedTypeNode';
 export * from './Node';
-export * from './PdaNode';
+export * from './NumberTypeNode';
 export * from './ProgramNode';
-export * from './RootNode';
+
+// Legacy plural-noun aliases preserved for API stability. Each maps to
+// the canonical `*_NODE_KINDS` name generated from the matching spec
+// union.
+export {
+    CONTEXTUAL_VALUE_NODE_KINDS as CONTEXTUAL_VALUE_NODES,
+    ENUM_VARIANT_TYPE_NODE_KINDS as ENUM_VARIANT_TYPE_NODES,
+    INSTRUCTION_INPUT_VALUE_NODE_KINDS as INSTRUCTION_INPUT_VALUE_NODES,
+    REGISTERED_COUNT_NODE_KINDS as COUNT_NODES,
+    REGISTERED_DISCRIMINATOR_NODE_KINDS as DISCRIMINATOR_NODES,
+    REGISTERED_LINK_NODE_KINDS as LINK_NODES,
+    REGISTERED_PDA_SEED_NODE_KINDS as PDA_SEED_NODES,
+    TYPE_NODE_KINDS as TYPE_NODES,
+    VALUE_NODE_KINDS as VALUE_NODES,
+} from './generated';

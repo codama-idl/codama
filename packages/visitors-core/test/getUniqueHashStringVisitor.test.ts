@@ -32,10 +32,13 @@ test('it returns a unique string whilst discard docs', () => {
     // When we get its unique hash string whilst discarding docs.
     const result = visit(node, getUniqueHashStringVisitor({ removeDocs: true }));
 
-    // Then we expect the following string.
+    // Then we expect the following string. `docs` is absent because
+    // `@codama/nodes` constructors omit `docs` from the encoded shape
+    // when it would be empty; the `removeDocs` visitor preserves that
+    // omission on the rendered hash.
     expect(result).toEqual(
         '{"fields":[' +
-            '{"docs":[],"kind":"structFieldTypeNode","name":"owner","type":{"kind":"publicKeyTypeNode"}}' +
+            '{"kind":"structFieldTypeNode","name":"owner","type":{"kind":"publicKeyTypeNode"}}' +
             '],"kind":"structTypeNode"}',
     );
 });

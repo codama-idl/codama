@@ -1,7 +1,7 @@
 import type { CodamaVersion } from '@codama/node-types';
 import { expect, expectTypeOf, test } from 'vitest';
 
-import { programNode, rootNode } from '../src';
+import { CODAMA_VERSION, programNode, rootNode } from '../src';
 
 test('it returns the right node kind', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
@@ -13,9 +13,9 @@ test('it returns the right Codama standard', () => {
     expect(root.standard).toBe('codama');
 });
 
-test('it returns the right Codama version', () => {
+test('it tags the root with the spec version it was generated against', () => {
     const root = rootNode(programNode({ name: 'foo', publicKey: '1111' }));
-    expect(root.version).toBe(__VERSION__);
+    expect(root.version).toBe(CODAMA_VERSION);
     expectTypeOf(root.version).toMatchTypeOf<CodamaVersion>();
 });
 

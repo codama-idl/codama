@@ -12,7 +12,7 @@ import {
 import { describe, expect, it } from 'vitest';
 
 import { getNodeFragment } from '../../../src/nodeTypes/fragments/node';
-import type { RenderScope } from '../../../src/nodeTypes/utils/scope';
+import type { RenderScope } from '../../../src/nodeTypes/options';
 
 type NodeScope = Pick<RenderScope, 'genericParamOrder' | 'narrowableDataAttributes'>;
 
@@ -62,7 +62,7 @@ describe('getNodeFragment', () => {
         expect(c).toContain('readonly count?: number;');
     });
 
-    it('lifts every child attribute to a generic param', () => {
+    it('surfaces every child attribute as a type parameter', () => {
         const result = getNodeFragment(buildWrappingNode(), buildScope());
         expect(result.content).toContain('TPayload extends TypeNode = TypeNode');
     });
@@ -113,11 +113,11 @@ describe('getNodeFragment', () => {
         expect(result.content).toContain('/** A byte order. */\nreadonly endian: Endianness;');
         // Optional data attribute.
         expect(result.content).toContain('/** Optional count. */\nreadonly count?: number;');
-        // Child attribute (generic-lifted).
+        // Child attribute (surfaces as a type parameter).
         expect(result.content).toContain('/** A wrapped payload. */\nreadonly payload: TPayload;');
     });
 
-    it('emits lifted generics in declaration order when no override is supplied', () => {
+    it('emits type parameters in declaration order when no override is supplied', () => {
         const result = getNodeFragment(buildArgumentNode(), buildScope());
         const tTypeIdx = result.content.indexOf('TType extends');
         const tDefaultIdx = result.content.indexOf('TDefaultValue extends');
@@ -127,7 +127,7 @@ describe('getNodeFragment', () => {
         expect(tTypeIdx).toBeLessThan(tDefaultIdx);
     });
 
-    it('reorders lifted generics according to genericParamOrder', () => {
+    it('reorders type parameters according to genericParamOrder', () => {
         const result = getNodeFragment(
             buildArgumentNode(),
             buildScope({ genericParamOrder: new Map([['instructionArgumentNode', ['defaultValue', 'type']]]) }),
@@ -141,11 +141,11 @@ describe('getNodeFragment', () => {
         expect(tDefaultIdx).toBeLessThan(tTypeIdx);
     });
 
-    it('throws when genericParamOrder lists an attribute the node does not lift', () => {
+    it('throws when genericParamOrder lists an attribute the node does not surface as a type parameter', () => {
         // The override expects both `type` and `defaultValue` to be
-        // lifted. We omit `type` from the spec entirely, so the
-        // renderer's lifted set is `{ defaultValue }` while the override
-        // expects `{ defaultValue, type }`.
+        // type parameters. We omit `type` from the spec entirely, so
+        // the renderer's type-parameter set is `{ defaultValue }` while
+        // the override expects `{ defaultValue, type }`.
         const incomplete = defineNode('instructionArgumentNode', {
             attributes: [optionalAttribute('defaultValue', union('InstructionInputValueNode'))],
         });

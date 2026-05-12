@@ -1,9 +1,8 @@
 import { type Fragment, fragment, getDocblockFragment, mergeFragments, pascalCase } from '@codama/fragments/javascript';
-import { type AttributeSpec, isChildAttribute, type NodeSpec } from '@codama/spec';
+import { isChildAttribute, type NodeSpec } from '@codama/spec';
 
-import { isAttributeLifted } from '../options';
-import type { RenderScope } from '../utils/scope';
-import { isTypeExprSelfReferential } from '../utils/selfReference';
+import { getNodeTypeParameterAttributes, type RenderScope } from '../options';
+import { isTypeExprSelfReferential } from '../selfReference';
 import { getAttributeBodyLineFragment } from './attributeBodyLine';
 import { getKindLineFragment } from './kindLine';
 import { getTypeParameterDefinitionFragment } from './typeParameterDefinition';
@@ -22,7 +21,9 @@ export function getNodeFragment(node: NodeSpec, scope: NodeScope): Fragment {
     const selfAlias = isSelfReferential ? { alias: `Self${interfaceName}`, kind: node.kind } : undefined;
 
     const genericsBlock = getGenericsBlockFragment(
-        orderLifted(node, scope).map(attr => getTypeParameterDefinitionFragment(attr, { selfAlias })),
+        getNodeTypeParameterAttributes(node, scope).map(attr =>
+            getTypeParameterDefinitionFragment(attr, { selfAlias }),
+        ),
     );
 
     const dataLines = node.attributes
@@ -47,37 +48,6 @@ export function getNodeFragment(node: NodeSpec, scope: NodeScope): Fragment {
     const aliasPrefix = selfAlias ? fragment`type ${selfAlias.alias} = ${interfaceName};\n\n` : undefined;
     const docComment = getDocblockFragment(node.docs, { withLineJump: true });
     return fragment`${aliasPrefix}${docComment}export interface ${interfaceName}${genericsBlock} {\n${body}\n}`;
-}
-
-/**
- * Return the lifted attributes for `node` in their emission order. If
- * `scope.genericParamOrder` declares an override for this kind, it must
- * enumerate exactly the lifted set; mismatches throw rather than
- * silently drop generics.
- */
-function orderLifted(node: NodeSpec, scope: NodeScope): readonly AttributeSpec[] {
-    const lifted = node.attributes.filter(attr => isAttributeLifted(node.kind, attr, scope));
-    const override = scope.genericParamOrder.get(node.kind);
-    if (!override) return lifted;
-
-    const byName = new Map(lifted.map(attr => [attr.name, attr]));
-    const overrideSet = new Set(override);
-    const liftedSet = new Set(byName.keys());
-    const missingFromOverride = [...liftedSet].filter(n => !overrideSet.has(n));
-    const unknownInOverride = override.filter(n => !liftedSet.has(n));
-    if (missingFromOverride.length > 0 || unknownInOverride.length > 0) {
-        const parts: string[] = [];
-        if (missingFromOverride.length > 0) {
-            parts.push(`missing lifted attribute(s) ${JSON.stringify(missingFromOverride)}`);
-        }
-        if (unknownInOverride.length > 0) {
-            parts.push(`unknown attribute(s) ${JSON.stringify(unknownInOverride)}`);
-        }
-        throw new Error(
-            `@codama/node-types generator: genericParamOrder for "${node.kind}" is out of sync with the spec: ${parts.join('; ')}.`,
-        );
-    }
-    return override.map(name => byName.get(name)!);
 }
 
 function getGenericsBlockFragment(genericParams: readonly Fragment[]): Fragment {

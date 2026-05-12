@@ -1,9 +1,9 @@
 import { type Fragment, fragment } from '@codama/fragments/javascript';
 import type { AttributeSpec } from '@codama/spec';
 
-import { isTypeExprSelfReferential } from '../utils/selfReference';
+import { getTypeParameterIdentifierFragment } from '../../shared';
+import { isTypeExprSelfReferential } from '../selfReference';
 import { getTypeExprFragment, getTypeExprWithSelfAliasFragment } from './typeExpr';
-import { getTypeParameterIdentifierFragment } from './typeParameterIdentifier';
 
 export interface TypeParameterDefinitionOptions {
     /**
@@ -18,16 +18,16 @@ export interface TypeParameterDefinitionOptions {
 }
 
 /**
- * Render the type-parameter definition for one lifted attribute, e.g.
- * `TData extends Foo = Foo` (or `… | undefined = … | undefined` when
- * the attribute is optional). Callers must only invoke this for
- * already-lifted attributes.
+ * Render the type-parameter definition for one type-parameter
+ * attribute, e.g. `TData extends Foo = Foo` (or `… | undefined = …
+ * | undefined` when the attribute is optional). Callers must only
+ * invoke this for attributes that already surface as type parameters.
  */
 export function getTypeParameterDefinitionFragment(
     attr: AttributeSpec,
     options: TypeParameterDefinitionOptions = {},
 ): Fragment {
-    const identifier = getTypeParameterIdentifierFragment(attr.name);
+    const identifier = getTypeParameterIdentifierFragment(attr);
     const baseFragment =
         options.selfAlias && isTypeExprSelfReferential(attr.type, options.selfAlias.kind)
             ? getTypeExprWithSelfAliasFragment(attr.type, options.selfAlias.kind, options.selfAlias.alias)
