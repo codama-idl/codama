@@ -1,6 +1,5 @@
+import { OPTIONAL_NODE_KINDS } from '@codama/dynamic-address-resolution';
 import type { InstructionArgumentNode } from 'codama';
-
-import { OPTIONAL_NODE_KINDS } from '../../shared/nodes';
 
 export function isOmittedArgument(node: InstructionArgumentNode) {
     return node.defaultValueStrategy === 'omitted';

@@ -64,6 +64,7 @@
         "generate-program-types": "for f in test/programs/idls/*.json; do node ./bin/cli.cjs generate-client-types \"$f\" ./test/programs/generated; done"
     },
     "dependencies": {
+        "@codama/dynamic-address-resolution": "workspace:*",
         "@codama/dynamic-codecs": "workspace:*",
         "@codama/errors": "workspace:*",
         "@solana/addresses": "^5.3.0",

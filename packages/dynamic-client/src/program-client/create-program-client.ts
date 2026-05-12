@@ -1,4 +1,12 @@
 import {
+    type AccountsInput,
+    type AddressInput,
+    type ArgumentsInput,
+    type ResolversInput,
+    resolveStandalonePda,
+    toAddress,
+} from '@codama/dynamic-address-resolution';
+import {
     CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
     CodamaError,
@@ -8,11 +16,7 @@ import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
 import { createFromJson, updateProgramsVisitor } from 'codama';
 
-import type { AddressInput } from '../shared/address';
-import { toAddress } from '../shared/address';
-import type { AccountsInput, ArgumentsInput, ResolversInput } from '../shared/types';
 import { collectPdaNodes } from './collect-pdas';
-import { deriveStandalonePDA } from './derive-standalone-pda';
 import { MethodsBuilder } from './methods-builder';
 
 export type IdlInput = object | string;
@@ -119,7 +123,7 @@ export function createProgramClient<TClient = ProgramClient>(
                               });
                           }
 
-                          return (seeds?: Record<string, unknown>) => deriveStandalonePDA(root, pdaNode, seeds);
+                          return (seeds?: Record<string, unknown>) => resolveStandalonePda(root, pdaNode, seeds);
                       },
                       has(target, prop) {
                           return Reflect.has(target, prop) || (typeof prop === 'string' && pdaNodes.has(prop));

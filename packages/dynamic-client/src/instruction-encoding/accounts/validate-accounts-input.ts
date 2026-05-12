@@ -1,3 +1,4 @@
+import type { AccountsInput } from '@codama/dynamic-address-resolution';
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT,
@@ -7,7 +8,6 @@ import {
 import { camelCase, type InstructionNode } from 'codama';
 import { assert, StructError } from 'superstruct';
 
-import type { AccountsInput } from '../../shared/types';
 import { safeStringify } from '../../shared/util';
 import { createIxAccountsValidator } from '../validators';
 

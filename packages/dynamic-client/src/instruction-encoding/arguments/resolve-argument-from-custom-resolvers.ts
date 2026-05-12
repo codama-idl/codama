@@ -1,8 +1,8 @@
+import type { AccountsInput, ArgumentsInput, ResolversInput } from '@codama/dynamic-address-resolution';
 import { CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER, CodamaError } from '@codama/errors';
 import type { InstructionNode } from 'codama';
 import { isNode } from 'codama';
 
-import type { AccountsInput, ArgumentsInput, ResolversInput } from '../../shared/types';
 import { isOmittedArgument } from './shared';
 
 /**
