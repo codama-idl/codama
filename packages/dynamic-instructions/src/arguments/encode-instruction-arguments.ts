@@ -26,10 +26,10 @@ import { isOmittedArgument, isOptionalArgument } from './shared';
  * Optional arguments are encoded as null.
  * Required arguments are transformed from user input and then encoded.
  */
-export function encodeInstructionArguments(
+export function encodeInstructionArguments<TArgs extends ArgumentsInput = ArgumentsInput>(
     root: RootNode,
     ix: InstructionNode,
-    argumentsInput: ArgumentsInput = {},
+    argumentsInput?: TArgs,
 ): ReadonlyUint8Array {
     const chunks = ix.arguments.map(ixArgumentNode => {
         const input = argumentsInput?.[ixArgumentNode.name];
@@ -43,7 +43,7 @@ export function encodeInstructionArguments(
         }
     });
 
-    return mergeBytes(chunks as Uint8Array[]);
+    return mergeBytes(chunks.map(chunk => Uint8Array.from(chunk)));
 }
 
 function encodeOmittedArgument(

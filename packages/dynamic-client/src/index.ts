@@ -1,7 +1,7 @@
 export type { ProgramDerivedAddress } from '@solana/addresses';
 
 export { isPublicKeyLike, toAddress } from '@codama/dynamic-address-resolution';
-export type { AddressInput, PublicKeyLike } from '@codama/dynamic-address-resolution';
+export type { AddressInput, PublicKeyLike, AccountsInput, ArgumentsInput } from '@codama/dynamic-address-resolution';
 
 export { CodamaError, isCodamaError } from '@codama/errors';
 export {
@@ -26,8 +26,6 @@ export {
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT,
 } from '@codama/errors';
-
-export type { AccountsInput, ArgumentsInput } from '@codama/dynamic-address-resolution';
 
 export { createProgramClient } from './program-client/create-program-client';
 export type {

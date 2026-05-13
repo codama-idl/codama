@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/dynamic-client.svg?style=flat&label=%40codama%2Fdynamic-client
 [npm-url]: https://www.npmjs.com/package/@codama/dynamic-client
 
-This package provides a runtime Solana instruction builder that dynamically constructs `Instruction` (`@solana/instructions`) from Codama IDL and provides type generation for full TypeScript type safety.
+This package provides a runtime Solana program client to dynamically interact with Solana programs using Codama IDLs — with optional TypeScript type generation for full type safety. It contains PDA derivation, and an instruction builder powered by [@codama/dynamic-instructions](../dynamic-instructions/README.md).
 
 ## Installation
 
@@ -94,26 +94,11 @@ Accepts any of:
 
 ## Accounts
 
+Accounts with a `defaultValue` in the IDL (PDAs, program ids, constants) are resolved automatically and may be omitted from `.accounts()`.
+
 ### Automatic resolution rules
 
-Accounts (pda, program ids) with `defaultValue` are resolved automatically, hence can be omitted.
-
-| Account scenario                                                | Type in `.accounts()`          | Auto resolution                                                                              |
-| --------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
-| Required account without `defaultValue`                         | `{ system: Address }`          | No                                                                                           |
-| Required account with `defaultValue`<br>(PDA, programId, etc.)  | `{ system?: Address }`         | Auto-resolved to `defaultValue` if omitted                                                   |
-| Optional account (`isOptional: true`)<br>without `defaultValue` | `{ system: Address \| null }`  | Resolved via `optionalAccountStrategy`,<br>if provided as `null`                             |
-| Optional account (`isOptional: true`)<br>with `defaultValue`    | `{ system?: Address \| null }` | - `null` resolves via `optionalAccountStrategy`<br>- `undefined` resolves via `defaultValue` |
-
-### Auto-resolved account addresses
-
-Accounts with `defaultValue` in the IDL are automatically resolved when omitted from `.accounts()`. This includes:
-
-- **PDA accounts** — derived from seeds defined in the IDL
-- **Program IDs** — resolved to known program addresses (e.g., System Program, Token Program)
-- **Constants** — resolved from constant value nodes
-
-You can always override auto-derived accounts by providing an explicit address.
+For the full table of automatic resolution rules, see [`@codama/dynamic-address-resolution`](../dynamic-address-resolution/README.md#automatic-resolution-rules).
 
 ### Optional accounts
 

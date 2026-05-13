@@ -1,11 +1,10 @@
-import {
-    type AccountsInput,
-    type ArgumentsInput,
-    isAddressConvertible,
-    resolveInstructionAccountAddress,
-    type ResolversInput,
-    toAddress,
+import type {
+    AccountsInput,
+    ArgumentsInput,
+    ResolverFnInput,
+    ResolversInput,
 } from '@codama/dynamic-address-resolution';
+import { isAddressConvertible, resolveInstructionAccountAddress, toAddress } from '@codama/dynamic-address-resolution';
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ARGUMENT_INPUT,
@@ -18,8 +17,8 @@ import type { AccountMeta } from '@solana/instructions';
 import { AccountRole } from '@solana/instructions';
 import { type InstructionAccountNode, type InstructionNode, isNode, type RootNode } from 'codama';
 
-import type { EitherSigners } from '../../shared/types';
-import { formatValueType, safeStringify } from '../../shared/util';
+import type { EitherSigners } from '../shared/types';
+import { formatValueType, safeStringify } from '../shared/util';
 
 type ResolvedAccount = {
     address: Address | null;
@@ -34,18 +33,22 @@ type ResolvedAccountWithAddress = ResolvedAccount & { address: Address };
  * Handles optional accounts based on the instruction's optionalAccountStrategy.
  * Throws errors if required accounts are missing or cannot be resolved.
  */
-export async function createAccountMeta(
+export async function createAccountMeta<
+    TAccounts extends AccountsInput = AccountsInput,
+    TArgs extends ArgumentsInput = ArgumentsInput,
+    TResolvers extends ResolverFnInput = ResolversInput,
+>(
     root: RootNode,
     ixNode: InstructionNode,
-    argumentsInput: ArgumentsInput = {},
-    accountsInput: AccountsInput = {},
+    argumentsInput?: TArgs,
+    accountsInput?: TAccounts,
     signers: EitherSigners = [],
-    resolversInput: ResolversInput = {},
+    resolversInput?: TResolvers,
 ): Promise<AccountMeta[]> {
     const programAddress = toAddress(root.program.publicKey);
     const resolvedAccounts = await Promise.all(
         ixNode.accounts.map<Promise<ResolvedAccount>>(async ixAccountNode => {
-            const finalAddress = await resolveInstructionAccountAddress({
+            const finalAddress = await resolveInstructionAccountAddress<TAccounts, TArgs, TResolvers>({
                 accountsInput,
                 argumentsInput,
                 ixAccountNode,
@@ -54,13 +57,12 @@ export async function createAccountMeta(
                 root,
             });
 
-            const accountAddressInput = accountsInput?.[ixAccountNode.name];
-            const isAccountProvided = accountAddressInput !== undefined && accountAddressInput !== null;
-
             // Optional accounts resolved via "programId" optionalAccountStrategy get the program address,
             // which cannot be writable on-chain — downgrade to readonly.
             // E.g. PMP's setData instruction `buffer` account. (isWritable, isOptional and "programId" strategy).
             // But when buffer is null it resolves to the program address which cannot be writable, hence must be downgraded to readonly.
+            const accountAddressInput = accountsInput?.[ixAccountNode.name];
+            const isAccountProvided = accountAddressInput !== undefined && accountAddressInput !== null;
             const role =
                 ixAccountNode.isOptional &&
                 !isAccountProvided &&
@@ -95,7 +97,7 @@ export async function createAccountMeta(
                 node: remainingNode.value,
             });
         }
-        const addresses = argumentsInput[remainingNode.value.name];
+        const addresses = argumentsInput?.[remainingNode.value.name];
 
         if (addresses === undefined) {
             // Required remaining accounts must be provided.

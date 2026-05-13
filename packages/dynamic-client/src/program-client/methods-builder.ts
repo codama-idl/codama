@@ -1,9 +1,7 @@
-import type { AccountsInput, ArgumentsInput, ResolversInput } from '@codama/dynamic-address-resolution';
+import type { AccountsInput, ArgumentsInput, EitherSigners, ResolversInput } from '@codama/dynamic-instructions';
+import { createInstructionsBuilder } from '@codama/dynamic-instructions';
 import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
-
-import { createIxBuilder } from '../instruction-encoding/instructions';
-import type { EitherSigners } from '../shared/types';
 
 export class MethodsBuilder {
     private _accounts?: AccountsInput;
@@ -36,7 +34,7 @@ export class MethodsBuilder {
     }
 
     async instruction(): Promise<Instruction> {
-        const build = createIxBuilder(this.root, this.ixNode);
+        const build = createInstructionsBuilder(this.root, this.ixNode);
         return await build(this.args, this._accounts, this._signers, this._resolvers);
     }
 }
