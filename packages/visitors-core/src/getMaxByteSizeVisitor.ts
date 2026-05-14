@@ -1,9 +1,9 @@
 import { CountNode, isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS } from '@codama/nodes';
 
 import { extendVisitor } from './extendVisitor';
+import { mergeVisitor } from './generated/mergeVisitor';
 import { ByteSizeVisitorKeys } from './getByteSizeVisitor';
 import { LinkableDictionary } from './LinkableDictionary';
-import { mergeVisitor } from './mergeVisitor';
 import { getLastNodeFromPath } from './NodePath';
 import { NodeStack } from './NodeStack';
 import { pipe } from './pipe';

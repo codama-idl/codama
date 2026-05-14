@@ -289,6 +289,7 @@ macro('christmasProgram.wrappingPaper.gold.owner', [wrappingPaperEnumGold.struct
 macro('wrappingPaper.*', [
     giftAccount.data.fields[3].type,
     wrappingPaperEnum,
+    wrappingPaperEnum.size,
     wrappingPaperEnum.variants[0],
     wrappingPaperEnum.variants[1],
     wrappingPaperEnum.variants[2],

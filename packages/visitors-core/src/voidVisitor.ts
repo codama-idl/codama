@@ -1,6 +1,6 @@
 import type { NodeKind } from '@codama/nodes';
 
-import { mergeVisitor } from './mergeVisitor';
+import { mergeVisitor } from './generated/mergeVisitor';
 import { Visitor } from './visitor';
 
 export function voidVisitor<TNodeKind extends NodeKind = NodeKind>(
