@@ -1,3 +1,4 @@
+import { isPublicKeyLike } from '@codama/dynamic-address-resolution';
 import { isAddress } from '@solana/addresses';
 import type {
     ArrayTypeNode,
@@ -23,7 +24,6 @@ import {
     tuple,
 } from 'superstruct';
 
-import { isPublicKeyLike } from '../shared/address';
 import { getMemoizedUtf8Encoder } from '../shared/codecs';
 import { formatValueType, getMaybeNodeKind, safeStringify } from '../shared/util';
 

@@ -1,9 +1,9 @@
+import type { ArgumentsInput } from '@codama/dynamic-address-resolution';
 import { CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT, CodamaError } from '@codama/errors';
 import type { InstructionNode, RootNode } from 'codama';
 import type { Failure } from 'superstruct';
 import { assert, StructError } from 'superstruct';
 
-import type { ArgumentsInput } from '../../shared/types';
 import { safeStringify } from '../../shared/util';
 import { createIxArgumentsValidator } from '../validators';
 import { isOmittedArgument } from './shared';

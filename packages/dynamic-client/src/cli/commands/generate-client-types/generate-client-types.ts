@@ -1,3 +1,4 @@
+import { OPTIONAL_NODE_KINDS } from '@codama/dynamic-address-resolution';
 import type {
     DefinedTypeNode,
     InstructionAccountNode,
@@ -7,8 +8,6 @@ import type {
     RootNode,
     TypeNode,
 } from 'codama';
-
-import { OPTIONAL_NODE_KINDS } from '../../../shared/nodes';
 
 /**
  * Generate TypeScript type for program client.

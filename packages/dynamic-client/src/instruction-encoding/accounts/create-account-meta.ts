@@ -1,5 +1,12 @@
 import {
-    CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
+    type AccountsInput,
+    type ArgumentsInput,
+    isAddressConvertible,
+    resolveInstructionAccountAddress,
+    type ResolversInput,
+    toAddress,
+} from '@codama/dynamic-address-resolution';
+import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ARGUMENT_INPUT,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
@@ -11,10 +18,8 @@ import type { AccountMeta } from '@solana/instructions';
 import { AccountRole } from '@solana/instructions';
 import { type InstructionAccountNode, type InstructionNode, isNode, type RootNode } from 'codama';
 
-import { isConvertibleAddress, toAddress } from '../../shared/address';
-import type { AccountsInput, ArgumentsInput, EitherSigners, ResolversInput } from '../../shared/types';
+import type { EitherSigners } from '../../shared/types';
 import { formatValueType, safeStringify } from '../../shared/util';
-import { resolveAccountAddress } from '../resolvers/resolve-account-address';
 
 type ResolvedAccount = {
     address: Address | null;
@@ -40,32 +45,17 @@ export async function createAccountMeta(
     const programAddress = toAddress(root.program.publicKey);
     const resolvedAccounts = await Promise.all(
         ixNode.accounts.map<Promise<ResolvedAccount>>(async ixAccountNode => {
+            const finalAddress = await resolveInstructionAccountAddress({
+                accountsInput,
+                argumentsInput,
+                ixAccountNode,
+                ixNode,
+                resolversInput,
+                root,
+            });
+
             const accountAddressInput = accountsInput?.[ixAccountNode.name];
-
             const isAccountProvided = accountAddressInput !== undefined && accountAddressInput !== null;
-            // Accounts with default values can be omitted, as they can be resolved from default value
-            if (!isAccountProvided && !ixAccountNode.isOptional && !ixAccountNode.defaultValue) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.name,
-                    instructionName: ixNode.name,
-                });
-            }
-
-            let resolvedAccountAddress: Address | null = null;
-            if (!isAccountProvided) {
-                resolvedAccountAddress = await resolveAccountAddress({
-                    accountAddressInput,
-                    accountsInput,
-                    argumentsInput,
-                    ixAccountNode,
-                    ixNode,
-                    resolutionPath: [],
-                    resolversInput,
-                    root,
-                });
-            }
-
-            const finalAddress = isAccountProvided ? toAddress(accountAddressInput) : resolvedAccountAddress;
 
             // Optional accounts resolved via "programId" optionalAccountStrategy get the program address,
             // which cannot be writable on-chain — downgrade to readonly.
@@ -129,7 +119,7 @@ export async function createAccountMeta(
         const role = getRemainingAccountRole(remainingNode.isSigner, remainingNode.isWritable);
         for (let i = 0; i < addresses.length; i++) {
             const addr: unknown = addresses[i];
-            if (!isConvertibleAddress(addr)) {
+            if (!isAddressConvertible(addr)) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
                     accountName: `${remainingNode.value.name}[${i}]`,
                     actualType: formatValueType(addr),

@@ -1,8 +1,9 @@
+import type { AccountsInput, ArgumentsInput, ResolversInput } from '@codama/dynamic-address-resolution';
 import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
 
 import { createIxBuilder } from '../instruction-encoding/instructions';
-import type { AccountsInput, ArgumentsInput, EitherSigners, ResolversInput } from '../shared/types';
+import type { EitherSigners } from '../shared/types';
 
 export class MethodsBuilder {
     private _accounts?: AccountsInput;
