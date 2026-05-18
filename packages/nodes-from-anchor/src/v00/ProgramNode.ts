@@ -4,6 +4,7 @@ import { accountNodeFromAnchorV00 } from './AccountNode';
 import { constantNodeFromAnchorV00 } from './ConstantNode';
 import { definedTypeNodeFromAnchorV00 } from './DefinedTypeNode';
 import { errorNodeFromAnchorV00 } from './ErrorNode';
+import { eventNodeFromAnchorV00 } from './EventNode';
 import { IdlV00 } from './idl';
 import { instructionNodeFromAnchorV00 } from './InstructionNode';
 import { pdaNodeFromAnchorV00 } from './PdaNode';
@@ -15,11 +16,13 @@ export function programNodeFromAnchorV00(idl: IdlV00): ProgramNode {
     const instructions = (idl.instructions ?? []).map((instruction, index) =>
         instructionNodeFromAnchorV00(instruction, index, origin),
     );
+    const events = origin === 'anchor' ? (idl.events ?? []).map(eventNodeFromAnchorV00) : [];
     return programNode({
         accounts,
         constants: (idl?.constants ?? []).map(constantNodeFromAnchorV00),
         definedTypes: (idl?.types ?? []).map(definedTypeNodeFromAnchorV00),
         errors: (idl?.errors ?? []).map(errorNodeFromAnchorV00),
+        events,
         instructions,
         name: idl?.name ?? '',
         origin,
