@@ -31,15 +31,15 @@ describe('buildRenderScope', () => {
         const scope = buildRenderScope(options);
         // The defaulted maps carry the live v1 spec content; assert
         // a representative key from each rather than the full set.
-        expect(scope.unionAliasNames.get('TypeNode')).toBe('TYPE_NODES');
+        expect(scope.unionAliasNames.get('typeNode')).toBe('TYPE_NODES');
         expect(scope.mergeVisitorWalkOrder.get('arrayTypeNode')).toEqual(['count', 'item']);
         expect(scope.identityVisitorWalkOrder.get('programNode')?.[0]).toBe('accounts');
     });
 
     it('honours caller-supplied unionAliasNames overrides', () => {
-        const custom = new Map([['TypeNode', 'CUSTOM_TYPE_NODES']]);
+        const custom = new Map([['typeNode', 'CUSTOM_TYPE_NODES']]);
         const scope = buildRenderScope({ ...options, unionAliasNames: custom });
-        expect(scope.unionAliasNames.get('TypeNode')).toBe('CUSTOM_TYPE_NODES');
+        expect(scope.unionAliasNames.get('typeNode')).toBe('CUSTOM_TYPE_NODES');
     });
 
     it('emits a frozen scope', () => {

@@ -1,4 +1,5 @@
 import {
+    address,
     array,
     boolean,
     codamaVersion,
@@ -22,6 +23,12 @@ import { getTypeExprFragment } from '../../../src/nodes/fragments/typeExpr';
 describe('getTypeExprFragment', () => {
     it('renders plain string', () => {
         expect(getTypeExprFragment(string()).content).toBe('string');
+    });
+
+    it('renders address as plain string for v1 (no import)', () => {
+        const result = getTypeExprFragment(address());
+        expect(result.content).toBe('string');
+        expect(result.imports.size).toBe(0);
     });
 
     it('renders integer as number', () => {

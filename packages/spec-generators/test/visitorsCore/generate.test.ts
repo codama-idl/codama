@@ -11,10 +11,10 @@ const spec: Spec = {
         defineCategory('topLevel', {
             nodes: [
                 defineNode('wrappingTypeNode', {
-                    attributes: [attribute('payload', union('TypeNode'))],
+                    attributes: [attribute('payload', union('typeNode'))],
                 }),
             ],
-            unions: [defineUnion('TypeNode', { members: ['wrappingTypeNode'] })],
+            unions: [defineUnion('typeNode', { members: ['wrappingTypeNode'] })],
         }),
     ],
     version: '1.0.0',

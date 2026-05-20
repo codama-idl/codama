@@ -11,11 +11,11 @@ const spec: Spec = {
             nodes: [defineNode('aNode', { attributes: [] }), defineNode('bNode', { attributes: [] })],
             unions: [
                 // Resolves to a known alias.
-                defineUnion('TypeNode', { members: ['aNode'] }),
+                defineUnion('typeNode', { members: ['aNode'] }),
                 // No alias — gets inlined as a literal.
-                defineUnion('AbleNode', { members: ['aNode', 'bNode'] }),
+                defineUnion('ableNode', { members: ['aNode', 'bNode'] }),
                 // Composite: one nested union with alias plus extra leaf nodes.
-                defineUnion('AbleOrTypeNode', { members: [union('TypeNode'), 'bNode'] }),
+                defineUnion('ableOrTypeNode', { members: [union('typeNode'), 'bNode'] }),
             ],
         }),
     ],
@@ -26,24 +26,24 @@ const options = { unionAliasNames: UNION_ALIAS_NAMES };
 
 describe('getUnionKindListFragment', () => {
     it('resolves a known union name to its plural-noun alias constant', () => {
-        const result = getUnionKindListFragment('TypeNode', spec, options);
+        const result = getUnionKindListFragment('typeNode', spec, options);
         expect(result.content).toBe('TYPE_NODES');
         expect([...result.imports.keys()]).toContain('@codama/nodes');
     });
 
     it('inlines an unknown union as a literal kind array', () => {
-        const result = getUnionKindListFragment('AbleNode', spec, options);
+        const result = getUnionKindListFragment('ableNode', spec, options);
         expect(result.content).toBe(`['aNode', 'bNode']`);
     });
 
     it('mixes alias spreads and inline kinds for a composite union', () => {
-        const result = getUnionKindListFragment('AbleOrTypeNode', spec, options);
+        const result = getUnionKindListFragment('ableOrTypeNode', spec, options);
         expect(result.content).toBe(`[...TYPE_NODES, 'bNode']`);
     });
 
     it('throws when the union name is not declared in the spec', () => {
-        expect(() => getUnionKindListFragment('GhostNode', spec, options)).toThrow(
-            /union "GhostNode" referenced from a child attribute is not declared in the spec/,
+        expect(() => getUnionKindListFragment('ghostNode', spec, options)).toThrow(
+            /union "ghostNode" referenced from a child attribute is not declared in the spec/,
         );
     });
 
@@ -53,15 +53,15 @@ describe('getUnionKindListFragment', () => {
                 defineCategory('topLevel', {
                     nodes: [defineNode('aNode', { attributes: [] })],
                     unions: [
-                        defineUnion('LeafNode', { members: ['aNode'] }),
-                        defineUnion('OuterNode', { members: [union('LeafNode'), node('aNode')] }),
+                        defineUnion('leafNode', { members: ['aNode'] }),
+                        defineUnion('outerNode', { members: [union('leafNode'), node('aNode')] }),
                     ],
                 }),
             ],
             version: '1.0.0',
         };
-        expect(() => getUnionKindListFragment('OuterNode', composedWithoutAlias, options)).toThrow(
-            /OuterNode" contains a nested union "LeafNode" with no entry in unionAliasNames/,
+        expect(() => getUnionKindListFragment('outerNode', composedWithoutAlias, options)).toThrow(
+            /outerNode" contains a nested union "leafNode" with no entry in unionAliasNames/,
         );
     });
 });

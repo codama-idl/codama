@@ -20,20 +20,20 @@ export {
 /**
  * Map from a spec union name to the `@codama/nodes` plural-noun alias
  * the visitors should reference in `assertIsNode` /
- * `removeNullAndAssertIsNodeFilter` calls (e.g. `'TypeNode'` →
+ * `removeNullAndAssertIsNodeFilter` calls (e.g. `'typeNode'` →
  * `'TYPE_NODES'`). Unions absent from this map are expanded inline as
  * a literal kind array.
  */
 export const UNION_ALIAS_NAMES: ReadonlyMap<string, string> = new Map([
-    ['ContextualValueNode', 'CONTEXTUAL_VALUE_NODES'],
-    ['CountNode', 'COUNT_NODES'],
-    ['DiscriminatorNode', 'DISCRIMINATOR_NODES'],
-    ['EnumVariantTypeNode', 'ENUM_VARIANT_TYPE_NODES'],
-    ['InstructionInputValueNode', 'INSTRUCTION_INPUT_VALUE_NODES'],
-    ['LinkNode', 'LINK_NODES'],
-    ['PdaSeedNode', 'PDA_SEED_NODES'],
-    ['TypeNode', 'TYPE_NODES'],
-    ['ValueNode', 'VALUE_NODES'],
+    ['contextualValueNode', 'CONTEXTUAL_VALUE_NODES'],
+    ['countNode', 'COUNT_NODES'],
+    ['discriminatorNode', 'DISCRIMINATOR_NODES'],
+    ['enumVariantTypeNode', 'ENUM_VARIANT_TYPE_NODES'],
+    ['instructionInputValueNode', 'INSTRUCTION_INPUT_VALUE_NODES'],
+    ['linkNode', 'LINK_NODES'],
+    ['pdaSeedNode', 'PDA_SEED_NODES'],
+    ['typeNode', 'TYPE_NODES'],
+    ['valueNode', 'VALUE_NODES'],
 ]);
 
 /**

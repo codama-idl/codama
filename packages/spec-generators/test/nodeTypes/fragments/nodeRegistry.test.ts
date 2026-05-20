@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getNodeRegistryFragment } from '../../../src/nodeTypes/fragments/nodeRegistry';
 
-// The renderer derives the registered-union list from any `Registered*`
+// The renderer derives the registered-union list from any `registered*`
 // union in the spec. This helper plumbs a minimum but complete spec:
 // one stub node per registered category, each registered union
 // referencing that node, plus extra top-level nodes the caller can
@@ -24,13 +24,13 @@ function buildSpecWithAllRegisteredUnions(extraTopLevelNodes: readonly string[] 
             defineCategory('topLevel', {
                 nodes: [...stubKinds, ...extraTopLevelNodes].map(k => defineNode(k, { attributes: [] })),
                 unions: [
-                    defineUnion('RegisteredContextualValueNode', { members: ['someContextualValueNode'] }),
-                    defineUnion('RegisteredCountNode', { members: ['someCountNode'] }),
-                    defineUnion('RegisteredDiscriminatorNode', { members: ['someDiscriminatorNode'] }),
-                    defineUnion('RegisteredLinkNode', { members: ['someLinkNode'] }),
-                    defineUnion('RegisteredPdaSeedNode', { members: ['somePdaSeedNode'] }),
-                    defineUnion('RegisteredTypeNode', { members: ['someTypeNode'] }),
-                    defineUnion('RegisteredValueNode', { members: ['someValueNode'] }),
+                    defineUnion('registeredContextualValueNode', { members: ['someContextualValueNode'] }),
+                    defineUnion('registeredCountNode', { members: ['someCountNode'] }),
+                    defineUnion('registeredDiscriminatorNode', { members: ['someDiscriminatorNode'] }),
+                    defineUnion('registeredLinkNode', { members: ['someLinkNode'] }),
+                    defineUnion('registeredPdaSeedNode', { members: ['somePdaSeedNode'] }),
+                    defineUnion('registeredTypeNode', { members: ['someTypeNode'] }),
+                    defineUnion('registeredValueNode', { members: ['someValueNode'] }),
                 ],
             }),
         ],
@@ -55,20 +55,20 @@ describe('getNodeRegistryFragment', () => {
         expect(out).toContain('export type GetNodeFromKind<TKind extends NodeKind> = Extract<Node, { kind: TKind }>;');
     });
 
-    it('lists every RegisteredXxxNode union as a Node member', () => {
+    it('lists every registeredXxxNode union as a Node member', () => {
         const result = getNodeRegistryFragment(buildSpecWithAllRegisteredUnions());
         const imports = [...result.imports.keys()].sort();
-        expect(imports).toContain('union:RegisteredContextualValueNode');
-        expect(imports).toContain('union:RegisteredCountNode');
-        expect(imports).toContain('union:RegisteredDiscriminatorNode');
-        expect(imports).toContain('union:RegisteredLinkNode');
-        expect(imports).toContain('union:RegisteredPdaSeedNode');
-        expect(imports).toContain('union:RegisteredTypeNode');
-        expect(imports).toContain('union:RegisteredValueNode');
+        expect(imports).toContain('union:registeredContextualValueNode');
+        expect(imports).toContain('union:registeredCountNode');
+        expect(imports).toContain('union:registeredDiscriminatorNode');
+        expect(imports).toContain('union:registeredLinkNode');
+        expect(imports).toContain('union:registeredPdaSeedNode');
+        expect(imports).toContain('union:registeredTypeNode');
+        expect(imports).toContain('union:registeredValueNode');
     });
 
     it('lists non-registered nodes as direct Node members', () => {
-        // `accountNode` and `rootNode` aren't inside any RegisteredXxxNode
+        // `accountNode` and `rootNode` aren't inside any registeredXxxNode
         // union, so they should appear as direct members of `Node`.
         const result = getNodeRegistryFragment(buildSpecWithAllRegisteredUnions(['accountNode', 'rootNode']));
         const imports = [...result.imports.keys()];
@@ -76,8 +76,8 @@ describe('getNodeRegistryFragment', () => {
         expect(imports).toContain('node:rootNode');
     });
 
-    it('omits nodes that are reachable through a RegisteredXxxNode union from direct membership', () => {
-        // `someTypeNode` is covered by `RegisteredTypeNode`; it must not
+    it('omits nodes that are reachable through a registeredXxxNode union from direct membership', () => {
+        // `someTypeNode` is covered by `registeredTypeNode`; it must not
         // appear as a direct member of `Node`.
         const result = getNodeRegistryFragment(buildSpecWithAllRegisteredUnions());
         const imports = [...result.imports.keys()];
@@ -85,7 +85,7 @@ describe('getNodeRegistryFragment', () => {
     });
 
     it('walks nested unions and excludes any node reachable through them from direct membership', () => {
-        // Nest a sub-union inside `RegisteredTypeNode`. The sub-union's
+        // Nest a sub-union inside `registeredTypeNode`. The sub-union's
         // members must still be considered "covered" and excluded from
         // direct `Node` membership.
         const spec: Spec = {
@@ -101,15 +101,15 @@ describe('getNodeRegistryFragment', () => {
                         defineNode('deeplyNestedTypeNode', { attributes: [] }),
                     ],
                     unions: [
-                        defineUnion('RegisteredContextualValueNode', { members: ['someContextualValueNode'] }),
-                        defineUnion('RegisteredCountNode', { members: ['someCountNode'] }),
-                        defineUnion('RegisteredDiscriminatorNode', { members: ['someDiscriminatorNode'] }),
-                        defineUnion('RegisteredLinkNode', { members: ['someLinkNode'] }),
-                        defineUnion('RegisteredPdaSeedNode', { members: ['somePdaSeedNode'] }),
-                        defineUnion('RegisteredValueNode', { members: ['someValueNode'] }),
-                        defineUnion('InnerTypeNode', { members: ['deeplyNestedTypeNode'] }),
-                        defineUnion('RegisteredTypeNode', {
-                            members: [{ kind: 'union', name: 'InnerTypeNode' }],
+                        defineUnion('registeredContextualValueNode', { members: ['someContextualValueNode'] }),
+                        defineUnion('registeredCountNode', { members: ['someCountNode'] }),
+                        defineUnion('registeredDiscriminatorNode', { members: ['someDiscriminatorNode'] }),
+                        defineUnion('registeredLinkNode', { members: ['someLinkNode'] }),
+                        defineUnion('registeredPdaSeedNode', { members: ['somePdaSeedNode'] }),
+                        defineUnion('registeredValueNode', { members: ['someValueNode'] }),
+                        defineUnion('innerTypeNode', { members: ['deeplyNestedTypeNode'] }),
+                        defineUnion('registeredTypeNode', {
+                            members: [{ kind: 'union', name: 'innerTypeNode' }],
                         }),
                     ],
                 }),
@@ -123,23 +123,23 @@ describe('getNodeRegistryFragment', () => {
         expect(imports).not.toContain('node:deeplyNestedTypeNode');
     });
 
-    it('only emits the RegisteredXxxNode unions present in the spec', () => {
+    it('only emits the registeredXxxNode unions present in the spec', () => {
         // The registry is derived from `spec` — unions whose names start
-        // with `Registered`. If the spec ships only some of them, the
+        // with `registered`. If the spec ships only some of them, the
         // renderer emits exactly those and quietly omits the rest.
         const spec: Spec = {
             categories: [
                 defineCategory('topLevel', {
                     nodes: [defineNode('someContextualValueNode', { attributes: [] })],
-                    unions: [defineUnion('RegisteredContextualValueNode', { members: ['someContextualValueNode'] })],
+                    unions: [defineUnion('registeredContextualValueNode', { members: ['someContextualValueNode'] })],
                 }),
             ],
             version: '1.0.0',
         };
         const result = getNodeRegistryFragment(spec);
         const imports = [...result.imports.keys()];
-        expect(imports).toContain('union:RegisteredContextualValueNode');
-        expect(imports).not.toContain('union:RegisteredCountNode');
+        expect(imports).toContain('union:registeredContextualValueNode');
+        expect(imports).not.toContain('union:registeredCountNode');
     });
 
     it('sorts the Node members alphabetically for stable output', () => {
