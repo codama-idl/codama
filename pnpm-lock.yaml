@@ -109,6 +109,9 @@ importers:
       '@codama/dynamic-codecs':
         specifier: workspace:*
         version: link:../dynamic-codecs
+      '@codama/dynamic-instructions':
+        specifier: workspace:*
+        version: link:../dynamic-instructions
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
@@ -173,6 +176,37 @@ importers:
       '@solana/codecs':
         specifier: ^5.3.0
         version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+
+  packages/dynamic-instructions:
+    dependencies:
+      '@codama/dynamic-address-resolution':
+        specifier: workspace:*
+        version: link:../dynamic-address-resolution
+      '@codama/dynamic-codecs':
+        specifier: workspace:*
+        version: link:../dynamic-codecs
+      '@codama/errors':
+        specifier: workspace:*
+        version: link:../errors
+      '@solana/addresses':
+        specifier: ^5.3.0
+        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+      '@solana/codecs':
+        specifier: ^5.3.0
+        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+      '@solana/instructions':
+        specifier: ^5.3.0
+        version: 5.5.1(typescript@5.9.3)
+      codama:
+        specifier: workspace:*
+        version: link:../library
+      superstruct:
+        specifier: ^2.0.2
+        version: 2.0.2
+    devDependencies:
+      '@solana/kit':
+        specifier: 6.5.0
+        version: 6.5.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@6.0.6)
 
   packages/dynamic-parsers:
     dependencies:

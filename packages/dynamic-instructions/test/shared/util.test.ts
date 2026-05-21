@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
-import { formatValueType, isObjectRecord, safeStringify } from '../../../src/shared/util';
+import { formatValueType, isObjectRecord, safeStringify } from '../../src/shared/util';
 
 describe('isObjectRecord', () => {
     test('should return true for plain objects', () => {

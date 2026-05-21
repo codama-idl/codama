@@ -8,7 +8,7 @@ import {
 import { camelCase, type InstructionNode } from 'codama';
 import { assert, StructError } from 'superstruct';
 
-import { safeStringify } from '../../shared/util';
+import { safeStringify } from '../shared/util';
 import { createIxAccountsValidator } from '../validators';
 
 /**

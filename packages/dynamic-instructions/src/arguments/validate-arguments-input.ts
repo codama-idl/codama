@@ -4,7 +4,7 @@ import type { InstructionNode, RootNode } from 'codama';
 import type { Failure } from 'superstruct';
 import { assert, StructError } from 'superstruct';
 
-import { safeStringify } from '../../shared/util';
+import { safeStringify } from '../shared/util';
 import { createIxArgumentsValidator } from '../validators';
 import { isOmittedArgument } from './shared';
 

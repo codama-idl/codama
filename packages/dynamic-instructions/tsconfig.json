@@ -1,9 +1,9 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "lib": []
+        "lib": ["ES2022.Object"]
     },
-    "display": "@codama/dynamic-client",
+    "display": "@codama/dynamic-instructions",
     "extends": "../../tsconfig.json",
     "include": ["src", "test"]
 }

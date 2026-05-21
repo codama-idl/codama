@@ -1,7 +1,7 @@
 import type { InstructionArgumentNode } from 'codama';
 import { describe, expect, test } from 'vitest';
 
-import { createIxArgumentsValidator } from '../../../src/instruction-encoding/validators';
+import { createIxArgumentsValidator } from '../../src/validators';
 
 describe('Validators', () => {
     test('should throw for unsupported TypeNode kind', () => {
