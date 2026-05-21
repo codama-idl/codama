@@ -19,3 +19,9 @@ export const getAnchorAccountDiscriminatorV00 = (idlName: string): BytesValueNod
     const hash = sha256(bytes as Uint8Array).slice(0, 8);
     return bytesValueNode('base16', hex(hash));
 };
+
+export const getAnchorEventDiscriminatorV00 = (idlName: string): BytesValueNode => {
+    const bytes = getUtf8Codec().encode(`event:${pascalCase(idlName)}`);
+    const hash = sha256(bytes as Uint8Array).slice(0, 8);
+    return bytesValueNode('base16', hex(hash));
+};

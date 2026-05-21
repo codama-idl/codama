@@ -2,6 +2,7 @@ export * from './AccountNode';
 export * from './ConstantNode';
 export * from './DefinedTypeNode';
 export * from './ErrorNode';
+export * from './EventNode';
 export * from './InstructionAccountNode';
 export * from './InstructionArgumentNode';
 export * from './InstructionNode';
