@@ -26,7 +26,23 @@ pnpm install @codama/dynamic-address-resolution
 
 ## Types generation
 
-> For now, types for arguments, accounts, custom resolvers, and PDA seeds can be produced via [`@codama/dynamic-client`](../dynamic-client/README.md)'s `generate-client-types` command, and passed as generics to the functions. Types generation for this package will be added in a follow-up release.
+This package can emit TypeScript the input types required for address resolution of each instruction — `${Name}Args`, `${Name}Accounts`, `${Name}Resolvers`.
+
+### CLI
+
+```sh
+npx @codama/dynamic-address-resolution generate-types <path/to/idl.json> <output-dir>
+```
+
+Writes `<idl-name>-address-resolution-types.ts` to the output directory.
+
+### Programmatic
+
+```ts
+import { generateTypes } from '@codama/dynamic-address-resolution/codegen';
+
+const source = generateTypes(idl);
+```
 
 ## Functions
 
@@ -49,7 +65,7 @@ const address = await resolveInstructionAccountAddress({
 **Typed:**
 
 ```ts
-import type { TransferSolAccounts, TransferSolArgs } from './generated/system-program-idl-types';
+import type { TransferSolAccounts, TransferSolArgs } from './generated/system-program-idl-address-resolution-types';
 
 const address = await resolveInstructionAccountAddress<TransferSolAccounts, TransferSolArgs>({
     accountsInput: { source, destination },

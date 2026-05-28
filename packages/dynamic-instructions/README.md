@@ -20,8 +20,25 @@ pnpm install @codama/dynamic-instructions
 
 ## Types generation
 
-> [!NOTE]
-> For now, per-instruction types (`*Args`, `*Accounts`, `*Resolvers`) can be produced via [`@codama/dynamic-client`](../dynamic-client/README.md)'s `generate-client-types` command, which emits a `<idl-name>-idl-types.ts` file. A type generation for this package will be added in a follow-up release.
+This package can emit TypeScript types per-instruction - `${Name}Args`, `${Name}Accounts`, `${Name}Resolvers`, and `${Name}Signers` aliases, plus an aggregate `${Program}InstructionBuilders` map.
+
+The `${Name}Args` / `${Name}Accounts` / `${Name}Resolvers` type contracts that resolvers operate on are emitted by [`@codama/dynamic-address-resolution/codegen`](../dynamic-address-resolution/README.md) and re-used here. The builder depends on resolution because the input shape it accepts (e.g. optional auto-resolvable accounts) is a direct consequence of resolution rules.
+
+### CLI
+
+```sh
+npx @codama/dynamic-instructions generate-types <path/to/idl.json> <output-dir>
+```
+
+Writes `<idl-name>-instruction-types.ts` to the output directory.
+
+### Programmatic
+
+```ts
+import { generateTypes } from '@codama/dynamic-instructions/codegen';
+
+const source = generateTypes(idl);
+```
 
 ## Functions
 
@@ -38,10 +55,10 @@ const instruction = await build(args, accounts, signers, resolvers);
 
 **Typed:**
 
-> Types are generated via [`generate-client-types`](#types-generation).
+> Types are generated via [`generate-types`](#types-generation).
 
 ```ts
-import type { CreateItemAccounts, CreateItemArgs, CreateItemResolvers } from './generated/<idl-name>-idl-types';
+import type { CreateItemAccounts, CreateItemArgs, CreateItemResolvers } from './generated/<idl-name>-instruction-types';
 
 const build = createInstructionsBuilder<CreateItemArgs, CreateItemAccounts, [], CreateItemResolvers>(root, ixNode);
 const instruction = await build({ name: 'item' }, { authority }, [], {
@@ -61,10 +78,10 @@ const accountMetas = await createAccountMeta(root, ixNode, args, accounts, ['own
 
 **Typed:**
 
-> Types are generated via [`generate-client-types`](#types-generation).
+> Types are generated via [`generate-types`](#types-generation).
 
 ```ts
-import type { CreateItemAccounts, CreateItemArgs, CreateItemResolvers } from './generated/<idl-name>-idl-types';
+import type { CreateItemAccounts, CreateItemArgs, CreateItemResolvers } from './generated/<idl-name>-instruction-types';
 
 const accountMetas = await createAccountMeta<CreateItemAccounts, CreateItemArgs, CreateItemResolvers>(
     root,
@@ -88,10 +105,10 @@ const data = encodeInstructionArguments(root, ixNode, { amount: 1_000_000_000 })
 
 **Typed:**
 
-> Types are generated via [`generate-client-types`](#types-generation).
+> Types are generated via [`generate-types`](#types-generation).
 
 ```ts
-import type { TransferArgs } from './generated/<idl-name>-idl-types';
+import type { TransferArgs } from './generated/<idl-name>-instruction-types';
 
 const data = encodeInstructionArguments<TransferArgs>(root, ixNode, { amount: 1_000_000_000n });
 ```

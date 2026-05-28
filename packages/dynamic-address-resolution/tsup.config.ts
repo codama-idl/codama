@@ -1,5 +1,11 @@
 import { defineConfig } from 'tsup';
 
-import { getPackageBuildConfigs } from '../../tsup.config.base';
+import { getBuildConfig, getCliBuildConfig, getPackageBuildConfigs } from '../../tsup.config.base';
 
-export default defineConfig(getPackageBuildConfigs());
+const codegenConfigs = (['cjs', 'esm'] as const).map(format => ({
+    ...getBuildConfig({ format, platform: 'node' }),
+    entry: { codegen: './src/codegen/index.ts' },
+    outExtension: () => ({ js: format === 'cjs' ? '.node.cjs' : '.node.mjs' }),
+}));
+
+export default defineConfig([...getPackageBuildConfigs(), getCliBuildConfig(), ...codegenConfigs]);

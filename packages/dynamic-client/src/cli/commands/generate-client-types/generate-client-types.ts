@@ -1,24 +1,19 @@
-import { OPTIONAL_NODE_KINDS } from '@codama/dynamic-address-resolution';
-import type {
-    DefinedTypeNode,
-    InstructionAccountNode,
-    InstructionInputValueNode,
-    InstructionNode,
-    PdaNode,
-    RootNode,
-    TypeNode,
-} from 'codama';
+import {
+    generatePdaTypes,
+    generateResolutionInputTypes,
+    getResolutionRefs,
+} from '@codama/dynamic-address-resolution/codegen';
+import { generateSignerTypes, getInstructionSignerRef } from '@codama/dynamic-instructions/codegen';
+import { pascalCase, type RootNode } from 'codama';
 
 /**
  * Generate TypeScript type for program client.
  */
 export function generateClientTypes(idl: RootNode): string {
-    const programName = toPascalCase(idl.program.name);
-    const definedTypes = idl.program.definedTypes ?? [];
+    const programName = pascalCase(idl.program.name);
 
-    const pdaMap = collectPdaNodesFromIdl(idl);
-
-    const hasPdas = pdaMap.size > 0;
+    const { mapTypeName: pdasMapTypeName, typeBlock: pdaTypeBlock } = generatePdaTypes(idl);
+    const hasPdas = pdasMapTypeName !== null;
     const addressImports = hasPdas ? 'Address, ProgramDerivedAddress' : 'Address';
 
     let output = `/**
@@ -34,11 +29,6 @@ import type { InstructionNode, RootNode } from 'codama';
 import type { ${addressImports} } from '@solana/addresses';
 import type { Instruction } from '@solana/instructions';
 
-export type ResolverFn<
-    TArgumentsInput = Record<string, unknown>,
-    TAccountsInput = Record<string, unknown>
-> = (argumentsInput: TArgumentsInput, accountsInput: TAccountsInput) => Promise<unknown>;
-
 /**
  * Method builder interface.
  */
@@ -51,80 +41,23 @@ export type MethodBuilder<TAccounts, TSigners extends string[], TResolvers = Rec
 
 `;
 
+    output += generateResolutionInputTypes(idl);
+    output += generateSignerTypes(idl);
+
     for (const ix of idl.program.instructions) {
-        const typeName = toPascalCase(ix.name);
+        const typeName = pascalCase(ix.name);
+        const refs = getResolutionRefs(ix);
+        const signerRef = getInstructionSignerRef(ix);
+        const signersGeneric = signerRef.signersRef ?? 'string[]';
+        const resolversGeneric = refs.resolversRef ? `, ${refs.resolversRef}` : '';
 
-        // Build args interface
-        const args = ix.arguments.filter(arg => arg.defaultValueStrategy !== 'omitted');
-        const remainingAccountArgs = (ix.remainingAccounts ?? []).filter(ra => ra.value.kind === 'argumentValueNode');
-        let argsRef = 'void';
-        if (args.length > 0 || remainingAccountArgs.length > 0) {
-            const argsInterfaceName = `${typeName}Args`;
-            output += `export type ${argsInterfaceName} = {\n`;
-            for (const arg of args) {
-                const tsType = codamaTypeToTS(arg.type, definedTypes);
-                const isOptional = OPTIONAL_NODE_KINDS.includes(arg.type.kind);
-                const sep = isOptional ? '?:' : ':';
-                output += `    ${arg.name}${sep} ${tsType};\n`;
-            }
-            for (const ra of remainingAccountArgs) {
-                const sep = ra.isOptional ? '?:' : ':';
-                output += `    ${ra.value.name}${sep} Address[];\n`;
-            }
-            output += '};\n\n';
-            argsRef = argsInterfaceName;
+        let argsParam = '';
+        if (refs.argsRef) {
+            const allArgsOptional = !refs.hasRequiredArgs && !refs.hasRequiredRemainingAccounts;
+            argsParam = allArgsOptional ? `args?: ${refs.argsRef}` : `args: ${refs.argsRef}`;
         }
 
-        // Build accounts interface
-        // these ValueNodes don't have default value and must be provided if required.
-        const nonResolvableValueNodes = ['payerValueNode', 'identityValueNode'];
-        function isAccAutoResolvable(acc: InstructionAccountNode): boolean {
-            if (acc.defaultValue == null) return false;
-            return !nonResolvableValueNodes.includes(acc.defaultValue.kind);
-        }
-        const accountsInterfaceName = `${typeName}Accounts`;
-        if (ix.accounts.length > 0) {
-            output += `export type ${accountsInterfaceName} = {\n`;
-            for (const acc of ix.accounts) {
-                // Omittable accounts have a defaultValue that can be auto-resolved, so they can be omitted from .accounts().
-                // When null: resolved via optionalAccountStrategy.
-                // When undefined: resolved via defaultValue.
-                const omittable = isAccAutoResolvable(acc) ? '?' : '';
-                const type = acc.isOptional ? 'Address | null' : 'Address';
-                output += `    ${acc.name}${omittable}: ${type};\n`;
-            }
-            output += '} & Record<string, Address | null | undefined>;\n\n';
-        } else {
-            output += `export type ${accountsInterfaceName} = Record<string, Address | null | undefined>;\n\n`;
-        }
-
-        // Collect all ambiguous isSigner: "either" account names
-        const eitherSignerAccounts = ix.accounts.filter(acc => acc.isSigner === 'either').map(acc => `'${acc.name}'`);
-        if (eitherSignerAccounts.length > 0) {
-            output += `export type ${typeName}Signers = (${eitherSignerAccounts.join(' | ')})[];\n\n`;
-        }
-
-        // Collect resolver names for this instruction
-        const resolverNames = collectResolverNames(ix);
-        let resolversRef = '';
-        if (resolverNames.size > 0) {
-            const resolversTypeName = `${typeName}Resolvers`;
-            output += `export type ${resolversTypeName} = {\n`;
-            for (const name of resolverNames) {
-                output += `    ${name}: ResolverFn<${argsRef === 'void' ? 'Record<string, unknown>' : argsRef}, ${accountsInterfaceName}>;\n`;
-            }
-            output += '};\n\n';
-            resolversRef = resolversTypeName;
-        }
-
-        // Generate method type
-        const hasRequiredArgs = args.some(arg => !OPTIONAL_NODE_KINDS.includes(arg.type.kind));
-        const hasRequiredRemainingAccounts = remainingAccountArgs.some(ra => !ra.isOptional);
-        const allArgsOptional = !hasRequiredArgs && !hasRequiredRemainingAccounts;
-        const argsParam = argsRef === 'void' ? '' : allArgsOptional ? `args?: ${argsRef}` : `args: ${argsRef}`;
-        const signersGeneric = eitherSignerAccounts.length > 0 ? `${typeName}Signers` : 'string[]';
-        const resolversGeneric = resolversRef ? `, ${resolversRef}` : '';
-        const methodSignature = `(${argsParam}) => MethodBuilder<${accountsInterfaceName}, ${signersGeneric}${resolversGeneric}>`;
+        const methodSignature = `(${argsParam}) => MethodBuilder<${refs.accountsRef}, ${signersGeneric}${resolversGeneric}>`;
         output += `export type ${typeName}Method = ${methodSignature};\n\n`;
     }
 
@@ -134,40 +67,15 @@ export type MethodBuilder<TAccounts, TSigners extends string[], TResolvers = Rec
 export type ${programName}Methods = {\n`;
 
     for (const ix of idl.program.instructions) {
-        const typeName = toPascalCase(ix.name);
+        const typeName = pascalCase(ix.name);
         output += `    ${ix.name}: ${typeName}Method;\n`;
     }
 
     output += '};\n\n';
 
-    // Generate PDA seed types and pdas namespace
-    if (pdaMap.size > 0) {
-        for (const [pdaName, pdaNode] of pdaMap) {
-            const typeName = toPascalCase(pdaName);
-            const variableSeeds = (pdaNode.seeds ?? []).filter(s => s.kind === 'variablePdaSeedNode');
-            if (variableSeeds.length > 0) {
-                output += `export type ${typeName}PdaSeeds = {\n`;
-                for (const seed of variableSeeds) {
-                    const tsType = seed.type ? codamaTypeToTS(seed.type, definedTypes) : 'unknown';
-                    output += `    ${seed.name}: ${tsType};\n`;
-                }
-                output += '};\n\n';
-            }
-        }
+    output += pdaTypeBlock;
 
-        output += `/**\n * Strongly-typed PDAs for ${programName}.\n */\n`;
-        output += `export type ${programName}Pdas = {\n`;
-        for (const [pdaName, pdaNode] of pdaMap) {
-            const typeName = toPascalCase(pdaName);
-            const variableSeeds = (pdaNode.seeds ?? []).filter(s => s.kind === 'variablePdaSeedNode');
-            const seedsParam =
-                variableSeeds.length > 0 ? `seeds: ${typeName}PdaSeeds` : `seeds?: Record<string, unknown>`;
-            output += `    ${pdaName}: (${seedsParam}) => Promise<ProgramDerivedAddress>;\n`;
-        }
-        output += '};\n\n';
-    }
-
-    const pdasProp = pdaMap.size > 0 ? `    pdas: ${programName}Pdas;\n` : '';
+    const pdasProp = pdasMapTypeName ? `    pdas: ${pdasMapTypeName};\n` : '';
     output += `/**
  * Strongly-typed program client for ${programName}.
  */
@@ -180,153 +88,4 @@ ${pdasProp}    programAddress: Address;
 `;
 
     return output;
-}
-
-/**
- * Convert Codama type to TypeScript type string.
- */
-function codamaTypeToTS(type: TypeNode | undefined, definedTypes: DefinedTypeNode[]): string {
-    if (!type || typeof type !== 'object') return 'unknown';
-
-    switch (type.kind) {
-        case 'numberTypeNode':
-            return ['u64', 'u128', 'i64', 'i128'].includes(type.format ?? '') ? 'number | bigint' : 'number';
-        case 'publicKeyTypeNode':
-            return 'Address';
-        case 'stringTypeNode':
-            return 'string';
-        case 'booleanTypeNode':
-            return 'boolean';
-        case 'optionTypeNode':
-            return `${codamaTypeToTS(type.item, definedTypes)} | null`;
-        case 'remainderOptionTypeNode':
-        case 'zeroableOptionTypeNode':
-            return `${codamaTypeToTS(type.item, definedTypes)} | null`;
-        case 'bytesTypeNode':
-            return 'Uint8Array';
-        case 'fixedSizeTypeNode':
-        case 'sizePrefixTypeNode':
-        case 'hiddenPrefixTypeNode':
-        case 'preOffsetTypeNode':
-        case 'postOffsetTypeNode':
-        case 'hiddenSuffixTypeNode':
-        case 'sentinelTypeNode':
-            return codamaTypeToTS(type.type, definedTypes);
-        case 'amountTypeNode':
-        case 'solAmountTypeNode':
-            return 'number | bigint';
-        case 'structTypeNode': {
-            if (!type.fields || type.fields.length === 0) return '{}';
-            const fields = type.fields
-                .filter(f => f.defaultValueStrategy !== 'omitted')
-                .map(f => `${f.name}: ${codamaTypeToTS(f.type, definedTypes)}`);
-            if (fields.length === 0) return '{}';
-            return `{ ${fields.join('; ')} }`;
-        }
-        case 'enumTypeNode': {
-            if (!type.variants || type.variants.length === 0) return 'unknown';
-            const allEmpty = type.variants.every(v => v.kind === 'enumEmptyVariantTypeNode');
-            if (allEmpty) {
-                return type.variants.map(v => `'${v.name}'`).join(' | ');
-            }
-            // Enum with struct/tuple variants — discriminated union
-            const variantTypes = type.variants.map(v => {
-                if (v.kind === 'enumEmptyVariantTypeNode') {
-                    return `{ __kind: '${v.name}' }`;
-                }
-                if (v.kind === 'enumStructVariantTypeNode' && v.struct) {
-                    const inner = codamaTypeToTS(v.struct, definedTypes);
-                    return `{ __kind: '${v.name}' } & ${inner}`;
-                }
-                if (v.kind === 'enumTupleVariantTypeNode' && v.tuple) {
-                    const inner = codamaTypeToTS(v.tuple, definedTypes);
-                    return `{ __kind: '${v.name}'; fields: ${inner} }`;
-                }
-                return `{ __kind: '${v.name}' }`;
-            });
-            return variantTypes.join(' | ');
-        }
-        case 'tupleTypeNode': {
-            if (!type.items || type.items.length === 0) return '[]';
-            const items = type.items.map(i => codamaTypeToTS(i, definedTypes));
-            return `[${items.join(', ')}]`;
-        }
-        case 'arrayTypeNode':
-        case 'setTypeNode': {
-            const itemType = codamaTypeToTS(type.item, definedTypes);
-            const needsParens = itemType.includes(' | ') || itemType.includes(' & ');
-            return needsParens ? `(${itemType})[]` : `${itemType}[]`;
-        }
-        case 'mapTypeNode': {
-            const v = codamaTypeToTS(type.value, definedTypes);
-            return `Record<string, ${v}>`;
-        }
-        case 'definedTypeLinkNode': {
-            if (!type.name) return 'unknown';
-            const def = definedTypes.find(d => d.name === type.name);
-            if (!def) return 'unknown';
-            return codamaTypeToTS(def.type, definedTypes);
-        }
-        case 'dateTimeTypeNode': {
-            return codamaTypeToTS(type.number, definedTypes);
-        }
-        default:
-            type['kind'] satisfies never;
-            return 'unknown';
-    }
-}
-
-function collectPdaNodesFromIdl(idl: RootNode): Map<string, PdaNode> {
-    const pdas = new Map<string, PdaNode>();
-
-    for (const pda of idl.program.pdas ?? []) {
-        pdas.set(pda.name, pda);
-    }
-
-    for (const ix of idl.program.instructions) {
-        for (const acc of ix.accounts) {
-            if (!acc.defaultValue || acc.defaultValue.kind !== 'pdaValueNode') continue;
-            const pdaDef = acc.defaultValue.pda;
-            if (!pdaDef || pdaDef.kind !== 'pdaNode') continue;
-            if (!pdas.has(pdaDef.name)) {
-                pdas.set(pdaDef.name, pdaDef);
-            }
-        }
-    }
-
-    return pdas;
-}
-
-/**
- * Collects all unique resolverValueNode names from an instruction's accounts and arguments.
- */
-function collectResolverNames(ix: InstructionNode): Set<string> {
-    const names = new Set<string>();
-
-    function extractResolverNodeName(node: InstructionInputValueNode | undefined): void {
-        if (!node) return;
-        if (node.kind === 'resolverValueNode' && node.name) {
-            names.add(node.name);
-        } else if (node.kind === 'conditionalValueNode') {
-            extractResolverNodeName(node.condition);
-            extractResolverNodeName(node.ifTrue);
-            extractResolverNodeName(node.ifFalse);
-        }
-    }
-
-    for (const acc of ix.accounts) {
-        extractResolverNodeName(acc.defaultValue);
-    }
-    for (const arg of ix.arguments) {
-        extractResolverNodeName(arg.defaultValue);
-    }
-
-    return names;
-}
-
-function toPascalCase(str: string): string {
-    return str
-        .split(/[-_]/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join('');
 }
