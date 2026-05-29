@@ -9,6 +9,14 @@ import type { ResolverFn } from '../../src/shared/types';
 import { makeRoot } from '../test-utils';
 
 describe('emitted ResolverFn declaration', () => {
+    test('should emit the ResolverFn declaration verbatim', () => {
+        expect(RESOLVER_FN_DECLARATION).toMatchInlineSnapshot(`
+          "type ResolverFn<TArgumentsInput, TAccountsInput> = (argumentsInput: TArgumentsInput, accountsInput: TAccountsInput) => Promise<unknown>;
+
+          "
+        `);
+    });
+
     test('should be emitted verbatim when at least one instruction has resolvers', () => {
         const root = makeRoot([
             instructionNode({
@@ -29,6 +37,8 @@ describe('emitted ResolverFn declaration', () => {
     });
 
     test('should match the structural shape of the runtime ResolverFn', () => {
+        // Mirror of RESOLVER_FN_DECLARATION (which is emitted as a string).
+        // This asserts the runtime ResolverFn keeps the same structural shape.
         type EmittedResolverFn<TArgs, TAccs> = (argumentsInput: TArgs, accountsInput: TAccs) => Promise<unknown>;
         expectTypeOf<ResolverFn<{ x: number }, { a: string }>>().toEqualTypeOf<
             EmittedResolverFn<{ x: number }, { a: string }>
