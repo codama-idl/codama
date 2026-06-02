@@ -1,5 +1,20 @@
 # @codama/nodes-from-anchor
 
+## 1.5.0
+
+### Minor Changes
+
+- [#958](https://github.com/codama-idl/codama/pull/958) [`d4aa3bf`](https://github.com/codama-idl/codama/commit/d4aa3bfdd1ec7db95710aeed28ce62db84f11655) Thanks [@tanmay4l](https://github.com/tanmay4l)! - Add support for constants with new ConstantNode
+
+- [#998](https://github.com/codama-idl/codama/pull/998) [`88ef0b8`](https://github.com/codama-idl/codama/commit/88ef0b80b5e2cd047b221f58b8908457b9dfa026) Thanks [@stegaBOB](https://github.com/stegaBOB)! - Add event support to V00 anchor IDLs
+
+### Patch Changes
+
+- Updated dependencies [[`d4aa3bf`](https://github.com/codama-idl/codama/commit/d4aa3bfdd1ec7db95710aeed28ce62db84f11655)]:
+    - @codama/nodes@1.7.0
+    - @codama/visitors@1.7.0
+    - @codama/errors@1.7.0
+
 ## 1.4.1
 
 ### Patch Changes
