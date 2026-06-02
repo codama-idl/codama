@@ -84,54 +84,9 @@ const parentPath = pathDirectory(path);
 
 ## Fragments
 
-The concept of fragments is commonly used in Codama renderers as a way to combine a piece of code with any context that is relevant to that piece of code. For instance, a fragment may include a dependency map that lists all the module imports required by that piece of code.
+The fragment primitives that used to live in this package — `BaseFragment`, `createFragmentTemplate`, `mapFragmentContent`, `mapFragmentContentAsync`, and `setFragmentContent` — have moved to [`@codama/fragments`](../fragments) so they can be shared with code generators outside the renderers stack. They are still re-exported here under the same names for backward compatibility, but new code should import them from `@codama/fragments` directly.
 
-Since fragments vary from one renderer to another, this package cannot provide a one-size-fits-all `Fragment` type. Instead, it provides some base types and utility functions that can be used to build more specific fragment types.
-
-### `BaseFragment`
-
-The `BaseFragment` type is an object that includes a `content` string. Renderers may extend this type to include any additional context they need.
-
-```ts
-type Fragment = BaseFragment & Readonly<{ importMap: ImportMap }>;
-```
-
-### `mapFragmentContent`
-
-The `mapFragmentContent` helper can be used to transform the `content` of a fragment while preserving the rest of its context.
-
-```ts
-const updatedFragment = mapFragmentContent(fragment, c => `/** This is a fragment. */\n${c}`);
-```
-
-### `mapFragmentContentAsync`
-
-The `mapFragmentContentAsync` helper can be used to transform the `content` of a fragment asynchronously while preserving the rest of its context.
-
-```ts
-const updatedFragment = mapFragmentContentAsync(fragment, async c => `${await getDocs(c)}\n${c}`);
-```
-
-### `setFragmentContent`
-
-The `setFragmentContent` helper can be used to replace the `content` of a fragment while preserving the rest of its context.
-
-```ts
-const updatedFragment = setFragmentContent(fragment, '[redacted]');
-```
-
-### `createFragmentTemplate`
-
-The `createFragmentTemplate` helper can be used to create [tagged template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) functions. For this, you need to provide a function that can merge multiple fragments together and a function that can identify fragments from other values.
-
-```ts
-function fragment(template: TemplateStringsArray, ...items: unknown[]): Fragment {
-    return createFragmentTemplate(template, items, isFragment, mergeFragments);
-}
-const apple = fragment`apple`;
-const banana = fragment`banana`;
-const fruits = fragment`${apple}, ${banana}`;
-```
+For documentation, examples, and the language-specific `Fragment` and `ImportMap` types provided alongside the core primitives, see the [`@codama/fragments` README](../fragments/README.md).
 
 ## Render maps
 

@@ -1,15 +1,21 @@
-import { assert, describe, expect, expectTypeOf, test } from 'vitest';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 
+import { CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, CodamaError } from '@codama/errors';
+import { afterEach, assert, beforeEach, describe, expect, expectTypeOf, test } from 'vitest';
+
+import type { BaseFragment } from '../../src/core/BaseFragment';
 import {
     addToRenderMap,
-    BaseFragment,
     createRenderMap,
     mapRenderMapContent,
     mapRenderMapContentAsync,
     mergeRenderMaps,
     removeFromRenderMap,
-    RenderMap,
-} from '../src';
+    type RenderMap,
+    writeRenderMap,
+} from '../../src/core/renderMap';
 
 describe('createRenderMap', () => {
     test('it creates an empty render map', () => {
@@ -227,3 +233,57 @@ describe('mapRenderMapContentAsync', () => {
         assert.isFrozen(await mapRenderMapContentAsync(createRenderMap(), c => Promise.resolve(c)));
     });
 });
+
+if (__NODEJS__) {
+    describe('writeRenderMap (Node)', () => {
+        let tmp: string;
+
+        beforeEach(() => {
+            tmp = mkdtempSync(path.join(tmpdir(), 'fragments-writeRenderMap-'));
+        });
+
+        afterEach(() => {
+            rmSync(tmp, { force: true, recursive: true });
+        });
+
+        test('it writes every entry to a file under basePath', () => {
+            writeRenderMap(
+                createRenderMap({
+                    'a.txt': { content: 'A' },
+                    'b.txt': { content: 'B' },
+                }),
+                tmp,
+            );
+            expect(readFileSync(path.join(tmp, 'a.txt'), 'utf-8')).toBe('A');
+            expect(readFileSync(path.join(tmp, 'b.txt'), 'utf-8')).toBe('B');
+        });
+
+        test('it auto-creates intermediate directories for nested paths', () => {
+            writeRenderMap(createRenderMap('sub/nested/deep.txt', { content: 'deep' }), tmp);
+            expect(readFileSync(path.join(tmp, 'sub/nested/deep.txt'), 'utf-8')).toBe('deep');
+        });
+
+        test('it is a no-op for an empty render map', () => {
+            expect(() => writeRenderMap(createRenderMap(), tmp)).not.toThrow();
+        });
+
+        test('it overwrites an existing file at the same path', () => {
+            writeRenderMap(createRenderMap('a.txt', { content: 'first' }), tmp);
+            writeRenderMap(createRenderMap('a.txt', { content: 'second' }), tmp);
+            expect(readFileSync(path.join(tmp, 'a.txt'), 'utf-8')).toBe('second');
+        });
+    });
+} else {
+    describe('writeRenderMap (non-Node)', () => {
+        test('it throws when called with at least one entry on a non-Node platform', () => {
+            const map = createRenderMap('a.txt', { content: 'A' });
+            expect(() => writeRenderMap(map, '/tmp/unused')).toThrow(
+                new CodamaError(CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE, { fsFunction: 'writeFileSync' }),
+            );
+        });
+
+        test('it does not throw for an empty render map (writeFile never called)', () => {
+            expect(() => writeRenderMap(createRenderMap(), '/tmp/unused')).not.toThrow();
+        });
+    });
+}
