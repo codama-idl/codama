@@ -241,10 +241,12 @@ describe('anchor-example: commonIxs', () => {
     });
 
     describe('Circular Dependency Detection', () => {
-        test('SelfReferencePdaIx: should throw AccountError for A->A cycle', async () => {
-            await expect(
-                programClient.methods.selfReferencePda().accounts({ signer: payer }).instruction(),
-            ).rejects.toThrow(/Circular dependency detected: \[recursive -> recursive\]/);
+        test('SelfReferencePdaIx: self-referential seed is dropped, requires manual account', async () => {
+            const ix = await programClient.methods
+                .selfReferencePda()
+                .accounts({ recursive: payer, signer: payer })
+                .instruction();
+            expect(ix).toBeDefined();
         });
 
         test('TwoNodeCyclePdaIx: should throw AccountError for A->B->A pattern in two-node cycle', async () => {

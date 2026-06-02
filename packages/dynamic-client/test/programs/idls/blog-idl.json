@@ -1163,7 +1163,32 @@
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": []
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "pdaValueNode",
+                            "pda": {
+                                "kind": "pdaLinkNode",
+                                "name": "post"
+                            },
+                            "seeds": [
+                                {
+                                    "kind": "pdaSeedValueNode",
+                                    "name": "profile",
+                                    "value": {
+                                        "kind": "accountValueNode",
+                                        "name": "profile"
+                                    }
+                                },
+                                {
+                                    "kind": "pdaSeedValueNode",
+                                    "name": "profilePostCount",
+                                    "value": {
+                                        "kind": "accountValueNode",
+                                        "name": "profile"
+                                    }
+                                }
+                            ]
+                        }
                     },
                     {
                         "kind": "instructionAccountNode",
@@ -1607,7 +1632,7 @@
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "post"
+                                "name": "updatePostPost"
                             },
                             "seeds": [
                                 {
@@ -1888,6 +1913,42 @@
             },
             {
                 "kind": "pdaNode",
+                "name": "post",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "bytesTypeNode"
+                        },
+                        "value": {
+                            "kind": "bytesValueNode",
+                            "data": "3sh3oZ",
+                            "encoding": "base58"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "profile",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "profilePostCount",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u64",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
                 "name": "reaction",
                 "docs": [],
                 "seeds": [
@@ -1966,7 +2027,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "post",
+                "name": "updatePostPost",
                 "docs": [],
                 "seeds": [
                     {

@@ -30,7 +30,7 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
         definedTypes,
         errors: errors.map(errorNodeFromAnchorV01),
         events: events.map(event => eventNodeFromAnchorV01(event, types, generics)),
-        instructions: instructions.map(instruction => instructionNodeFromAnchorV01(instruction, generics)),
+        instructions: instructions.map(instruction => instructionNodeFromAnchorV01(instruction, types, generics)),
         name: idl.metadata.name,
         origin: 'anchor',
         publicKey: idl.address,
