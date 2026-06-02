@@ -1,5 +1,17 @@
 # @codama/renderers-core
 
+## 1.3.8
+
+### Patch Changes
+
+- [#994](https://github.com/codama-idl/codama/pull/994) [`e7c1bf6`](https://github.com/codama-idl/codama/commit/e7c1bf69aeeca9cfdf50e928fea5f22e37a39932) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Re-export the language-agnostic fragment primitives, path helpers, filesystem helpers, and `RenderMap` data operations from `@codama/fragments`. The implementations have moved to that package so they can be shared with code generators and other consumers outside the renderers stack; existing importers of `@codama/renderers-core` continue to see every public name at the same import path with no behaviour change. `writeRenderMapVisitor` stays in `renderers-core` since it depends on the visitor + node infrastructure that `@codama/fragments` deliberately does not pull in.
+
+- Updated dependencies [[`d4aa3bf`](https://github.com/codama-idl/codama/commit/d4aa3bfdd1ec7db95710aeed28ce62db84f11655), [`e7c1bf6`](https://github.com/codama-idl/codama/commit/e7c1bf69aeeca9cfdf50e928fea5f22e37a39932)]:
+    - @codama/visitors-core@1.7.0
+    - @codama/nodes@1.7.0
+    - @codama/fragments@0.1.0
+    - @codama/errors@1.7.0
+
 ## 1.3.7
 
 ### Patch Changes
