@@ -88,7 +88,10 @@ impl Space for TokenType {
 }
 
 // seed_enum: SeedEnum (used as example of nested enum PDA seed)
+// Anchor 1.0 (borsh) requires explicit `use_discriminant` for enums with explicit discriminants.
+// `false` keeps borsh's index-based (variant-order) encoding, which matches the explicit 0/1/2 here.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+#[borsh(use_discriminant = false)]
 pub enum SeedEnum {
 	Arm = 0,
 	Bar = 1,

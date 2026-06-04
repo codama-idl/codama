@@ -6,7 +6,7 @@ import { loadIdl, SvmTestContext } from '../../test-utils';
 
 export const idl = loadIdl('example-idl.json');
 export const programClient = createProgramClient<ExampleProgramClient>(idl);
-export const programSoPath = path.resolve(__dirname, '..', 'target', 'deploy', 'example.so');
+export const programSoPath = path.resolve(__dirname, '..', '..', 'dumps', 'example.so');
 
 export async function createTestContext() {
     const ctx = new SvmTestContext({ defaultPrograms: true });
