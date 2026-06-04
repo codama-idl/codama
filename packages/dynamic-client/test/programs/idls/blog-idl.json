@@ -1,7 +1,7 @@
 {
     "kind": "rootNode",
     "standard": "codama",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "program": {
         "kind": "programNode",
         "name": "blog",

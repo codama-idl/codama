@@ -54,13 +54,13 @@
         "dev": "vitest --project node",
         "lint": "pnpm generate-program-types && eslint . && prettier --check .",
         "lint:fix": "pnpm generate-program-types && eslint --fix . && prettier --write .",
-        "test": "pnpm test:setup && pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
-        "test:setup": "pnpm test:anchor:build && ( [ -n \"$CI\" ] || pnpm generate-idl-from-anchor ) && pnpm generate-program-types",
-        "test:anchor:build": "cd test/programs/anchor && anchor build",
+        "test": "pnpm generate-program-types && pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
+        "anchor:build": "cd test/programs/anchor && anchor build --ignore-keys",
+        "anchor:sync:build": "pnpm anchor:build && node ./scripts/anchor/sync-anchor-builds.mjs && pnpm anchor:generate-idl && pnpm generate-program-types",
+        "anchor:generate-idl": "node ./scripts/anchor/generate-idl-from-anchor.mjs",
         "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run",
-        "generate-idl-from-anchor": "node ./scripts/generate-idl-from-anchor.mjs",
         "generate-program-types": "for f in test/programs/idls/*.json; do node ./bin/cli.cjs generate-client-types \"$f\" ./test/programs/generated; done"
     },
     "dependencies": {

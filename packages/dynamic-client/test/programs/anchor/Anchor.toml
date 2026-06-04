@@ -1,4 +1,6 @@
 [toolchain]
+anchor_version = "1.0.2"
+solana_version = "3.1.14"
 
 [features]
 resolution = true
@@ -8,12 +10,6 @@ skip-lint = false
 anchor-codama = "5xjPsgMHuoj4MrAPJVBrTomk5UAZvCxVtAdcWwgheoZs"
 blog = "1rAs9KgDjEnMVrU1nJPWVhN4b6W4VEBxzcNJoeJpbVR"
 
-[registry]
-url = "https://api.apr.dev"
-
 [provider]
 cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
-
-[scripts]
-test = "pnpm ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.spec.ts"

@@ -1,0 +1,10 @@
+{
+    "blog": {
+        "binary": "2a746fac4b76cc40fa6c7f0fc9b440aebcdadc4b4ff49412fda73667183ce1d0",
+        "source": "6657a08ad1bcc5fe28fb3072ced14317cf8b449e7cc9ec7eca58e7df7c3949d0"
+    },
+    "example": {
+        "binary": "e28e45d458d89bea22014d22a8cba7eaa46a252aa54f62f8f14df6b45f8ed6a9",
+        "source": "aa53e92a38ac2450eec93fbaa5cab72a675da453267af1d32620c464b39ef946"
+    }
+}
