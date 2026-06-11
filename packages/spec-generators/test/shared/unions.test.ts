@@ -5,26 +5,26 @@ import { describe, expect, it } from 'vitest';
 import { flattenNodeUnion, getRegisteredCategoryUnions } from '../../src/shared';
 
 describe('getRegisteredCategoryUnions', () => {
-    it('returns only unions whose names start with `Registered`, sorted', () => {
+    it('returns only unions whose names start with `registered`, sorted', () => {
         const spec: Spec = {
             categories: [
                 defineCategory('type', {
                     nodes: [defineNode('aNode', { attributes: [] })],
                     unions: [
-                        defineUnion('TypeNode', { members: ['aNode'] }),
-                        defineUnion('RegisteredTypeNode', { members: ['aNode'] }),
+                        defineUnion('typeNode', { members: ['aNode'] }),
+                        defineUnion('registeredTypeNode', { members: ['aNode'] }),
                     ],
                 }),
                 defineCategory('value', {
                     nodes: [defineNode('bNode', { attributes: [] })],
-                    unions: [defineUnion('RegisteredValueNode', { members: ['bNode'] })],
+                    unions: [defineUnion('registeredValueNode', { members: ['bNode'] })],
                 }),
             ],
             version: '1.0.0',
         };
         expect(getRegisteredCategoryUnions(spec).map(u => u.name)).toEqual([
-            'RegisteredTypeNode',
-            'RegisteredValueNode',
+            'registeredTypeNode',
+            'registeredValueNode',
         ]);
     });
 
@@ -33,7 +33,7 @@ describe('getRegisteredCategoryUnions', () => {
             categories: [
                 defineCategory('type', {
                     nodes: [defineNode('aNode', { attributes: [] })],
-                    unions: [defineUnion('TypeNode', { members: ['aNode'] })],
+                    unions: [defineUnion('typeNode', { members: ['aNode'] })],
                 }),
             ],
             version: '1.0.0',
@@ -46,13 +46,13 @@ describe('getRegisteredCategoryUnions', () => {
             categories: [
                 defineCategory('type', {
                     nodes: [defineNode('aNode', { attributes: [] })],
-                    unions: [defineUnion('RegisteredTypeNode', { members: ['aNode'] })],
+                    unions: [defineUnion('registeredTypeNode', { members: ['aNode'] })],
                 }),
             ],
             version: '1.0.0',
         };
         const [first] = getRegisteredCategoryUnions(spec);
-        expect(first.name).toBe('RegisteredTypeNode');
+        expect(first.name).toBe('registeredTypeNode');
         expect(first.members).toEqual([{ kind: 'node', name: 'aNode' }]);
     });
 });

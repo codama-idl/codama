@@ -3,6 +3,8 @@ import type { TypeExpr } from '@codama/spec';
 
 export function getTypeExprFragment(expr: TypeExpr): Fragment {
     switch (expr.kind) {
+        case 'address':
+            return fragment`string`;
         case 'string':
             return getStringExprFragment(expr);
         case 'integer':

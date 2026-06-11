@@ -15,6 +15,8 @@ const NODE_TYPES_PACKAGE = '@codama/node-types';
 
 export function getTypeExprFragment(expr: TypeExpr): Fragment {
     switch (expr.kind) {
+        case 'address':
+            return fragment`string`;
         case 'string':
             return getStringExprFragment(expr);
         case 'integer':

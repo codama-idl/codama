@@ -1,15 +1,15 @@
 import type { NodeSpec, Spec, UnionSpec } from '@codama/spec';
 
 /**
- * Any union whose name starts with `Registered` is a category-registry
- * union (e.g. `RegisteredContextualValueNode`). Derived from the spec
+ * Any union whose name starts with `registered` is a category-registry
+ * union (e.g. `registeredContextualValueNode`). Derived from the spec
  * so future categories are picked up automatically.
  */
-const REGISTERED_CATEGORY_UNION_PREFIX = 'Registered';
+const REGISTERED_CATEGORY_UNION_PREFIX = 'registered';
 
 /**
  * Return the spec's per-category registry unions (those whose names
- * start with `Registered`), sorted alphabetically by name.
+ * start with `registered`), sorted alphabetically by name.
  */
 export function getRegisteredCategoryUnions(spec: Spec): readonly UnionSpec[] {
     return spec.categories

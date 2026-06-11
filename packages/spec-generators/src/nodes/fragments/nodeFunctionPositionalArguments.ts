@@ -61,8 +61,13 @@ function renderParamForAttribute(
     const override = config.attributes?.[attr.name];
     const paramName = paramIdentifier(attr, override);
     const baseTsType = renderParamTsType(attr, typeParameterAttribute, override);
-    const optionalMark = attr.optional ? '?' : '';
     const defaultClause = renderParamDefaultClause(override, typeParameterAttribute);
+    // `param?: T = default` is a syntax error; an initializer already
+    // makes the parameter callable without an argument. Emit `?` only
+    // when the spec marks the attribute optional AND the config supplies
+    // no default value.
+    const hasDefault = defaultClause.content !== '';
+    const optionalMark = attr.optional && !hasDefault ? '?' : '';
     return fragment`${paramName}${optionalMark}: ${baseTsType}${defaultClause}`;
 }
 
