@@ -3,6 +3,7 @@
     "private": true,
     "scripts": {
         "build": "turbo run build --log-order grouped",
+        "generate": "pnpm --filter @codama-internal/spec-generators generate",
         "lint": "turbo run lint --log-order grouped",
         "lint:fix": "turbo lint:fix --log-order grouped && pnpm prettier --ignore-unknown --write '{.,!packages}/*'",
         "test": "turbo run test --log-order grouped",

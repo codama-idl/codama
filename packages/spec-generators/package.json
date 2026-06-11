@@ -1,0 +1,30 @@
+{
+    "name": "@codama-internal/spec-generators",
+    "version": "0.0.0",
+    "description": "Private code generators that produce parts of the public Codama monorepo from the encoded `@codama/spec`",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "rimraf dist && tsup",
+        "generate": "pnpm build && node ./dist/generate.mjs && pnpm --filter @codama/node-types lint:fix",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "pnpm test:types && pnpm test:unit",
+        "test:types": "tsc --noEmit",
+        "test:unit": "vitest run"
+    },
+    "dependencies": {
+        "@codama/fragments": "workspace:*",
+        "@codama/spec": "1.6.0-rc.4"
+    },
+    "devDependencies": {
+        "@types/node": "^25",
+        "rimraf": "6.1.2",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.16"
+    },
+    "engines": {
+        "node": ">=20.18.0"
+    }
+}

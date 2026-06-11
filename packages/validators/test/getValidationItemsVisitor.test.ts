@@ -14,7 +14,7 @@ test('it validates program nodes', () => {
         name: '',
         origin: undefined,
         publicKey: '',
-        // @ts-expect-error Empty string does not match ProgramVersion.
+        // @ts-expect-error Empty string does not match Version.
         version: '',
     });
 

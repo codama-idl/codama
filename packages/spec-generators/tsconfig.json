@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        // The package is a Node-only build tool that consumes
+        // `@codama/spec`'s `/api` subpath. `moduleResolution: "bundler"`
+        // honours the package's `exports` map directly, so subpath types
+        // resolve without needing a `typesVersions` shim.
+        "module": "esnext",
+        "moduleResolution": "bundler"
+    },
+    "display": "@codama-internal/spec-generators",
+    "extends": "../../tsconfig.json",
+    "include": ["bin", "src", "test"]
+}

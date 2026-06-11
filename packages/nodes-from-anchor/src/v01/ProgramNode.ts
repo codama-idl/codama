@@ -1,4 +1,4 @@
-import { ProgramNode, programNode, ProgramVersion } from '@codama/nodes';
+import { ProgramNode, programNode, Version } from '@codama/nodes';
 
 import { accountNodeFromAnchorV01 } from './AccountNode';
 import { constantNodeFromAnchorV01 } from './ConstantNode';
@@ -34,6 +34,6 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
         name: idl.metadata.name,
         origin: 'anchor',
         publicKey: idl.address,
-        version: idl.metadata.version as ProgramVersion,
+        version: idl.metadata.version as Version,
     });
 }
