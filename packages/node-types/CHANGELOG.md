@@ -1,5 +1,34 @@
 # @codama/node-types
 
+## 1.8.0
+
+### Minor Changes
+
+- [#995](https://github.com/codama-idl/codama/pull/995) [`2f7c443`](https://github.com/codama-idl/codama/commit/2f7c44377520fdb512de7d25b74a03ffd8c1a491) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Regenerate the entire `@codama/node-types` source surface from the encoded `@codama/spec` description, via the new private `@codama-internal/spec-generators` package.
+
+    The bulk of the surface lives under `src/generated/` and is produced by the `gen-ts-node-types` generator from the spec. The previously hand-maintained interfaces are gone; every node, union, enumeration, and per-spec shared type is rebuilt from the spec on every `pnpm generate` run.
+
+    A small set of static helpers — the brand types, the `Docs` alias, and the `Version` template-literal type — live as hand-written sibling files at the top of `packages/node-types/src/`, alongside the existing `ProgramVersion` deprecated alias. They are imported by the generated surface but never regenerated, since their content doesn't depend on the spec. The generator wipes only `src/generated/` on every run; hand-written content at the top level survives. The per-spec `CodamaVersion` literal stays generated, in its own `src/generated/shared/codamaVersion.ts` file pinned to the spec version at generation time.
+
+    Most of the rebuild is structural: imports now point at per-file paths (`./linkNodes/PdaLinkNode`) instead of subdirectory barrels, every interface and field carries a JSDoc block sourced from the spec, and array fields are emitted as `Array<T>` rather than `T[]` so an inline-union element type doesn't need extra parentheses to preserve precedence. A handful of named API differences also shake out from this:
+    - `accountNode.size` is now typed as `number | undefined` (the previous `| null` arm had no consumer and is dropped).
+    - `programNode.origin` is now typed as the named `ProgramOrigin` union (`'anchor' | 'shank'`) instead of an inline literal union.
+    - `instructionAccountNode.isSigner` and `instructionRemainingAccountsNode.isSigner` now read `boolean | 'either'` instead of `true | false | 'either'` (a TypeScript-only readability normalisation; the encoded spec keeps the explicit `true | false` form so other codegen targets can still emit a multi-variant enum).
+    - `numberTypeNode.format` and `stringTypeNode.encoding` are emitted as named `NumberFormat` / `BytesEncoding` aliases imported from `./shared/`, with the same generic-narrowing behaviour preserved.
+    - `programNode.version` is now typed as the unified `Version` template-literal alias (`` `${number}.${number}.${number}` ``) — a tighter shape than the previous plain string, so non-conforming literal strings will now surface as TypeScript errors at the call site. The historical `ProgramVersion` name is preserved as a hand-written `@deprecated` re-export so existing consumers continue to compile; `@codama/nodes-from-anchor` is updated to import `Version` directly.
+    - `docs?` fields use a `Docs = Array<string>` alias mirroring the `'docs'` `TypeExpr` kind in `@codama/spec`. The alias is hand-written and lives at `packages/node-types/src/Docs.ts`.
+    - Documentation strings that ship as multiple paragraphs in the spec now render as multi-paragraph JSDoc blocks. Affected fields and types include `accountNode.discriminators`, `instructionNode.discriminators`, `instructionAccountNode.isSigner`, `instructionRemainingAccountsNode.isSigner`, `rootNode`, the `ConditionalValueNode` interface and its `condition`, `InstructionInputValueNode`, `ResolverValueNode`, `AmountTypeNode` and its `unit`, `MapTypeNode.size`, `NestedTypeNode`, `StringTypeNode.size`, `EnumValueNode.value`, and `NumberValueNode.number`.
+
+    Alongside the per-node interfaces, the package now exports seven `Registered<Category>Node` category-registry unions (`RegisteredContextualValueNode`, `RegisteredCountNode`, `RegisteredDiscriminatorNode`, `RegisteredLinkNode`, `RegisteredPdaSeedNode`, `RegisteredTypeNode`, `RegisteredValueNode`) corresponding one-to-one with `@codama/spec`'s category registries, plus a `GetNodeFromKind<TKind extends NodeKind>` helper that resolves to the concrete interface for a given kind. The registry unions are the recommended extension point for downstream packages that need to introduce custom node kinds.
+
+    The generator consumes `@codama/spec@1.6.0-rc.4`, which reshapes the spec into per-category groups (`spec.categories[]`) and renames the `nestedTypeNode` `TypeExpr` kind to `nestedUnion` (with an explicit `alias` field). All `docs?` fields throughout the spec are arrays of paragraph strings rather than single newline-separated strings — the renderer accepts the array shape directly. Internally, the generator's renderers are layout-agnostic: they emit `use(...)` calls keyed by symbolic module strings (e.g. `'node:numberTypeNode'`, `'enumeration:Endianness'`, `'brand:CamelCaseString'`), and a single per-spec `RenderScope` resolves those symbolic keys to concrete file locations at write time. Adding a new file kind to the generator means extending the `RenderScope` symbol map; renderers themselves stay free of file-layout knowledge.
+
+### Patch Changes
+
+- [#1001](https://github.com/codama-idl/codama/pull/1001) [`8667174`](https://github.com/codama-idl/codama/commit/8667174aabec62aed0a6a11822a87e66c9720246) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Bump `@codama/spec` from `1.6.0-rc.4` to `1.6.0-rc.6`. The encoded surface in `@codama/node-types` is functionally unchanged; one docstring paragraph on `NestedTypeNode` now reads `nestedTypeNode<T>` instead of `NestedTypeNode<T>` to mirror the spec's new camelCase nested-union alias name.
+
+    Behind the scenes, `@codama-internal/spec-generators` learns about the new `{ kind: 'address' }` `TypeExpr` (rendered as plain `string` on the v1 TS surface — a dedicated `Address` brand may follow in a future spec major), the camelCase rename of every union and enumeration name on the spec side (the generated PascalCase TS identifiers are unaffected since the generator runs each name through `pascalCase()` at render time), and a constructor-signature bug where an attribute that was both `optional` and supplied with a default would emit invalid TS (`param?: T = default`). The bug never triggered against the rc.4 v1 spec but would have surfaced once any future attribute combined `optional: true` with a configured default; the fix is to omit the `?` mark whenever an initializer is present.
+
 ## 1.7.0
 
 ### Minor Changes

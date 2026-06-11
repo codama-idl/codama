@@ -1,6 +1,6 @@
 {
     "name": "@codama/dynamic-client",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Client to dynamically interact with Solana programs using Codama IDLs",
     "license": "MIT",
     "repository": {
