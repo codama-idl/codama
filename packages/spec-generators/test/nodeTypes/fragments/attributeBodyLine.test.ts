@@ -2,11 +2,11 @@ import { attribute, boolean, enumeration, node, optionalAttribute, u32 } from '@
 import { describe, expect, it } from 'vitest';
 
 import { getAttributeBodyLineFragment } from '../../../src/nodeTypes/fragments/attributeBodyLine';
-import type { RenderScope } from '../../../src/nodeTypes/utils/scope';
+import type { RenderScope } from '../../../src/nodeTypes/options';
 
-type LiftScope = Pick<RenderScope, 'narrowableDataAttributes'>;
+type TypeParameterScope = Pick<RenderScope, 'narrowableDataAttributes'>;
 
-function buildScope(overrides: Partial<LiftScope> = {}): LiftScope {
+function buildScope(overrides: Partial<TypeParameterScope> = {}): TypeParameterScope {
     return { narrowableDataAttributes: new Set(), ...overrides };
 }
 
@@ -39,7 +39,7 @@ describe('getAttributeBodyLineFragment', () => {
         expect(result.content).toBe('/**\n * First paragraph.\n * Second paragraph.\n */\nreadonly flag: boolean;');
     });
 
-    it('uses the lifted generic identifier when the attribute is a child reference', () => {
+    it('uses the type-parameter identifier when the attribute is a child reference', () => {
         const result = getAttributeBodyLineFragment(
             'someTypeNode',
             attribute('payload', node('innerTypeNode')),
@@ -48,7 +48,7 @@ describe('getAttributeBodyLineFragment', () => {
         expect(result.content).toBe('readonly payload: TPayload;');
     });
 
-    it('uses the lifted generic identifier on optional child attributes too', () => {
+    it('uses the type-parameter identifier on optional child attributes too', () => {
         const result = getAttributeBodyLineFragment(
             'someTypeNode',
             optionalAttribute('payload', node('innerTypeNode')),
@@ -57,7 +57,7 @@ describe('getAttributeBodyLineFragment', () => {
         expect(result.content).toBe('readonly payload?: TPayload;');
     });
 
-    it('uses the lifted generic identifier for narrowable data attributes', () => {
+    it('uses the type-parameter identifier for narrowable data attributes', () => {
         const result = getAttributeBodyLineFragment(
             'numberTypeNode',
             attribute('format', enumeration('NumberFormat')),
@@ -66,7 +66,7 @@ describe('getAttributeBodyLineFragment', () => {
         expect(result.content).toBe('readonly format: TFormat;');
     });
 
-    it('does not lift a data attribute that is not in the narrowable set', () => {
+    it('does not surface a data attribute that is not in the narrowable set as a type parameter', () => {
         const result = getAttributeBodyLineFragment(
             'numberTypeNode',
             attribute('format', enumeration('NumberFormat')),

@@ -1,8 +1,9 @@
 import { joinPath } from '@codama/fragments/javascript';
 import { getSpec } from '@codama/spec';
 
-import { generateNodeTypes, GENERIC_PARAM_ORDER, NARROWABLE_DATA_ATTRIBUTES } from './nodeTypes';
-import { getRepoDirectory } from './shared';
+import { generateNodes, NODE_CONFIGS } from './nodes';
+import { generateNodeTypes } from './nodeTypes';
+import { CATEGORY_DIRECTORIES, GENERIC_PARAM_ORDER, getRepoDirectory, NARROWABLE_DATA_ATTRIBUTES } from './shared';
 
 export interface GenerateResult {
     /** One entry per generator that ran, in the order they ran. */
@@ -28,6 +29,19 @@ export function generate(): GenerateResult {
             targetSpecMajor: 1,
         });
         outputs.push({ generator: 'nodeTypes', outputDir });
+    }
+
+    {
+        const outputDir = joinPath(getRepoDirectory(), 'packages', 'nodes', 'src', 'generated');
+        generateNodes(spec, {
+            categoryDirectories: CATEGORY_DIRECTORIES,
+            genericParamOrder: GENERIC_PARAM_ORDER,
+            narrowableDataAttributes: NARROWABLE_DATA_ATTRIBUTES,
+            nodeConfigs: NODE_CONFIGS,
+            outputDir,
+            targetSpecMajor: 1,
+        });
+        outputs.push({ generator: 'nodes', outputDir });
     }
 
     return { outputs };

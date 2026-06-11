@@ -4,10 +4,11 @@ import { describe, expect, it } from 'vitest';
 
 import { getNodeRegistryFragment } from '../../../src/nodeTypes/fragments/nodeRegistry';
 
-// The renderer expects every entry in REGISTERED_CATEGORY_UNIONS to
-// resolve. This helper plumbs a minimum but complete spec: one stub
-// node per registered category, each registered union referencing that
-// node, plus extra top-level nodes the caller can supply.
+// The renderer derives the registered-union list from any `Registered*`
+// union in the spec. This helper plumbs a minimum but complete spec:
+// one stub node per registered category, each registered union
+// referencing that node, plus extra top-level nodes the caller can
+// supply.
 function buildSpecWithAllRegisteredUnions(extraTopLevelNodes: readonly string[] = []): Spec {
     const stubKinds = [
         'someContextualValueNode',
@@ -122,9 +123,10 @@ describe('getNodeRegistryFragment', () => {
         expect(imports).not.toContain('node:deeplyNestedTypeNode');
     });
 
-    it('throws when a RegisteredXxxNode union expected by the registry is absent from the spec', () => {
-        // Drop `RegisteredTypeNode` from the spec; the renderer should
-        // fail loudly rather than silently produce an incomplete Node.
+    it('only emits the RegisteredXxxNode unions present in the spec', () => {
+        // The registry is derived from `spec` — unions whose names start
+        // with `Registered`. If the spec ships only some of them, the
+        // renderer emits exactly those and quietly omits the rest.
         const spec: Spec = {
             categories: [
                 defineCategory('topLevel', {
@@ -134,7 +136,10 @@ describe('getNodeRegistryFragment', () => {
             ],
             version: '1.0.0',
         };
-        expect(() => getNodeRegistryFragment(spec)).toThrow(/missing union "RegisteredCountNode"/);
+        const result = getNodeRegistryFragment(spec);
+        const imports = [...result.imports.keys()];
+        expect(imports).toContain('union:RegisteredContextualValueNode');
+        expect(imports).not.toContain('union:RegisteredCountNode');
     });
 
     it('sorts the Node members alphabetically for stable output', () => {

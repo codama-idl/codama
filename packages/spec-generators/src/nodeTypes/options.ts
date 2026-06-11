@@ -1,30 +1,25 @@
-import type { Path } from '@codama/fragments/javascript';
-import { type AttributeSpec, isChildAttribute, type Spec } from '@codama/spec';
+import { camelCase, joinPath, pascalCase, type Path } from '@codama/fragments/javascript';
+import type { Spec } from '@codama/spec';
+
+import {
+    resolveSharedRenderOptions,
+    type SharedRenderOptions,
+    type SymbolicModule,
+    type SymbolicModuleMap,
+    validateSharedRenderOptions,
+} from '../shared';
+
+export {
+    CATEGORY_DIRECTORIES,
+    GENERIC_PARAM_ORDER,
+    getNodeTypeParameterAttributes,
+    isNodeTypeParameterAttribute,
+    NARROWABLE_DATA_ATTRIBUTES,
+} from '../shared';
 
 /** User-facing options for the `@codama/node-types` generator. */
-export interface RenderOptions {
-    /**
-     * Map from each spec `category.name` to the output subdirectory
-     * its entities are emitted into (relative to `generated/`). Use an
-     * empty string for the top-level (no subdirectory). Omitted means
-     * "use the v1 defaults" ({@link CATEGORY_DIRECTORIES}).
-     */
-    readonly categoryDirectories?: ReadonlyMap<string, string>;
-    /**
-     * Per-node override of the type-parameter emission order. Each
-     * value must enumerate exactly the set of attributes lifted for
-     * the node — no more, no fewer — otherwise the run fails.
-     */
-    readonly genericParamOrder?: ReadonlyMap<string, readonly string[]>;
-    /**
-     * `${nodeKind}:${attribute}` keys whose data attribute should be
-     * lifted to a generic param even though the spec classifies it as
-     * data. Omitted means "lift only children".
-     */
-    readonly narrowableDataAttributes?: ReadonlySet<string>;
-    /** The spec major version this invocation targets. */
-    readonly targetSpecMajor: number;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface RenderOptions extends SharedRenderOptions {}
 
 /** Options consumed by {@link generateNodeTypes}, the disk-writing entry point. */
 export interface GenerateOptions extends RenderOptions {
@@ -32,154 +27,80 @@ export interface GenerateOptions extends RenderOptions {
 }
 
 /** {@link RenderOptions} with every defaultable field resolved. */
-export interface ResolvedRenderOptions {
-    readonly categoryDirectories: ReadonlyMap<string, string>;
-    readonly genericParamOrder: ReadonlyMap<string, readonly string[]>;
-    readonly narrowableDataAttributes: ReadonlySet<string>;
-    readonly targetSpecMajor: number;
+export type ResolvedRenderOptions = Required<RenderOptions>;
+
+/**
+ * Runtime context threaded through every fragment renderer. Carries
+ * the resolved options plus the symbolic-module lookup table.
+ *
+ * Symbolic-module flavours emitted by this generator:
+ *
+ *   - `node:<nodeKind>`, `union:<UnionName>`, `enumeration:<EnumName>`,
+ *     `nestedUnion:<AliasName>` — derived from the spec.
+ *   - `brand:<BrandName>`, `docs:Docs`, `version:Version`,
+ *     `version:CodamaVersion` — hand-written sibling files.
+ *   - `registry:Node` / `registry:NodeKind` / `registry:GetNodeFromKind` —
+ *     identifiers from the top-level `Node.ts` registry file.
+ */
+export interface RenderScope extends ResolvedRenderOptions {
+    readonly symbolicModules: SymbolicModuleMap;
 }
 
 export function resolveRenderOptions(options: RenderOptions): ResolvedRenderOptions {
-    return {
-        categoryDirectories: options.categoryDirectories ?? CATEGORY_DIRECTORIES,
-        genericParamOrder: options.genericParamOrder ?? new Map(),
-        narrowableDataAttributes: options.narrowableDataAttributes ?? new Set(),
-        targetSpecMajor: options.targetSpecMajor,
-    };
+    return resolveSharedRenderOptions(options);
 }
 
-/**
- * Default narrowable data attributes for the v1 spec. Each entry
- * preserves a narrowing form supported by the legacy `@codama/node-types`
- * interface (e.g. `NumberTypeNode<'u32'>`) that downstream constructors
- * in `@codama/nodes` rely on.
- */
-export const NARROWABLE_DATA_ATTRIBUTES: ReadonlySet<string> = new Set([
-    'numberTypeNode:format',
-    'stringTypeNode:encoding',
-]);
-
-/**
- * Default per-node type-parameter ordering for the v1 spec. Preserves
- * the positional generic args of the legacy `@codama/node-types`
- * package: legacy generics keep their original positions, any extra
- * generics our renderer adds appear at the end.
- */
-export const GENERIC_PARAM_ORDER: ReadonlyMap<string, readonly string[]> = new Map([
-    ['programNode', ['pdas', 'accounts', 'instructions', 'definedTypes', 'errors', 'events', 'constants']],
-    ['pdaValueNode', ['seeds', 'programId', 'pda']],
-    ['instructionArgumentNode', ['defaultValue', 'type']],
-    [
-        'instructionNode',
-        [
-            'accounts',
-            'arguments',
-            'extraArguments',
-            'remainingAccounts',
-            'byteDeltas',
-            'discriminators',
-            'subInstructions',
-            'status',
-        ],
-    ],
-]);
-
-/**
- * Default mapping from spec category name to output subdirectory for
- * the v1 spec. The empty string places `topLevel` entities at the root
- * of `generated/`.
- */
-export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
-    ['contextualValue', 'contextualValueNodes'],
-    ['count', 'countNodes'],
-    ['discriminator', 'discriminatorNodes'],
-    ['link', 'linkNodes'],
-    ['pdaSeed', 'pdaSeedNodes'],
-    ['shared', 'shared'],
-    ['topLevel', ''],
-    ['type', 'typeNodes'],
-    ['value', 'valueNodes'],
-]);
-
-/**
- * Cross-check the caller-supplied options against the spec at
- * generation time. Catches stale `narrowableDataAttributes` entries,
- * stale `genericParamOrder` overrides, and missing `categoryDirectories`
- * entries whose keys no longer match the spec.
- */
 export function validateRenderOptions(spec: Spec, options: RenderOptions): void {
-    const actualMajor = parseSpecMajor(spec.version);
-    if (actualMajor !== options.targetSpecMajor) {
-        throw new Error(
-            `@codama/node-types generator: targetSpecMajor=${options.targetSpecMajor} but the supplied spec is at version "${spec.version}" (major ${actualMajor}).`,
-        );
-    }
+    validateSharedRenderOptions(spec, options);
+}
 
-    const validKeys = new Set<string>();
-    const validNodeKinds = new Set<string>();
+/** Hand-written branded-string types, living above `generated/`. */
+const BRAND_NAMES: readonly string[] = [
+    'CamelCaseString',
+    'KebabCaseString',
+    'PascalCaseString',
+    'SnakeCaseString',
+    'TitleCaseString',
+];
+
+export function buildRenderScope(spec: Spec, options: RenderOptions): RenderScope {
+    const resolved = resolveRenderOptions(options);
+    const symbolicModules = new Map<SymbolicModule, Path>();
+
     for (const category of spec.categories) {
+        const folder = resolved.categoryDirectories.get(category.name);
+        if (folder === undefined) {
+            throw new Error(`unknown category "${category.name}". Extend categoryDirectories.`);
+        }
         for (const node of category.nodes) {
-            validNodeKinds.add(node.kind);
-            for (const attr of node.attributes) {
-                validKeys.add(`${node.kind}:${attr.name}`);
-            }
+            symbolicModules.set(`node:${node.kind}`, joinPath(folder, pascalCase(node.kind)));
+        }
+        for (const union of category.unions) {
+            symbolicModules.set(`union:${union.name}`, joinPath(folder, pascalCase(union.name)));
+        }
+        for (const enumeration of category.enumerations) {
+            symbolicModules.set(`enumeration:${enumeration.name}`, joinPath(folder, camelCase(enumeration.name)));
+        }
+        for (const nestedUnion of category.nestedUnions) {
+            symbolicModules.set(`nestedUnion:${nestedUnion.name}`, joinPath(folder, pascalCase(nestedUnion.name)));
         }
     }
 
-    if (options.categoryDirectories) {
-        for (const category of spec.categories) {
-            if (!options.categoryDirectories.has(category.name)) {
-                throw new Error(
-                    `@codama/node-types generator: categoryDirectories is missing an entry for spec category "${category.name}".`,
-                );
-            }
-        }
+    for (const brand of BRAND_NAMES) {
+        symbolicModules.set(`brand:${brand}`, '../brands');
     }
+    symbolicModules.set('docs:Docs', '../Docs');
+    symbolicModules.set('version:Version', '../Version');
 
-    if (options.narrowableDataAttributes) {
-        for (const key of options.narrowableDataAttributes) {
-            if (!validKeys.has(key)) {
-                throw new Error(
-                    `@codama/node-types generator: narrowableDataAttributes references "${key}" which is not a (nodeKind, attribute) pair in the spec.`,
-                );
-            }
-        }
-    }
+    const sharedDir = resolved.categoryDirectories.get('shared') ?? 'shared';
+    symbolicModules.set('version:CodamaVersion', joinPath(sharedDir, 'codamaVersion'));
 
-    if (options.genericParamOrder) {
-        for (const [kind, order] of options.genericParamOrder) {
-            if (!validNodeKinds.has(kind)) {
-                throw new Error(
-                    `@codama/node-types generator: genericParamOrder references unknown node kind "${kind}".`,
-                );
-            }
-            for (const attrName of order) {
-                if (!validKeys.has(`${kind}:${attrName}`)) {
-                    throw new Error(
-                        `@codama/node-types generator: genericParamOrder for "${kind}" references attribute "${attrName}" which the spec does not declare.`,
-                    );
-                }
-            }
-        }
-    }
-}
+    symbolicModules.set('registry:Node', 'Node');
+    symbolicModules.set('registry:NodeKind', 'Node');
+    symbolicModules.set('registry:GetNodeFromKind', 'Node');
 
-/**
- * Decide whether an attribute lifts to a generic param. An attribute
- * lifts when its type tree contains a node / union / nested-union
- * reference, or when its `${kind}:${name}` key appears in
- * `narrowableDataAttributes`.
- */
-export function isAttributeLifted(
-    nodeKind: string,
-    attr: AttributeSpec,
-    options: Pick<ResolvedRenderOptions, 'narrowableDataAttributes'>,
-): boolean {
-    return isChildAttribute(attr.type) || options.narrowableDataAttributes.has(`${nodeKind}:${attr.name}`);
-}
-
-function parseSpecMajor(version: string): number {
-    const m = /^(\d+)\./.exec(version);
-    if (!m) throw new Error(`@codama/node-types generator: unable to parse spec version "${version}".`);
-    return Number(m[1]);
+    return Object.freeze({
+        ...resolved,
+        symbolicModules: Object.freeze(symbolicModules),
+    });
 }

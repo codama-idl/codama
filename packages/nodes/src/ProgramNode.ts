@@ -10,57 +10,6 @@ import type {
     RootNode,
 } from '@codama/node-types';
 
-import { camelCase, DocsInput, parseDocs } from './shared';
-
-export type ProgramNodeInput<
-    TPdas extends PdaNode[] = PdaNode[],
-    TAccounts extends AccountNode[] = AccountNode[],
-    TInstructions extends InstructionNode[] = InstructionNode[],
-    TDefinedTypes extends DefinedTypeNode[] = DefinedTypeNode[],
-    TErrors extends ErrorNode[] = ErrorNode[],
-    TEvents extends EventNode[] = EventNode[],
-    TConstants extends ConstantNode[] = ConstantNode[],
-> = Omit<
-    Partial<ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents, TConstants>>,
-    'docs' | 'kind' | 'name' | 'publicKey'
-> & {
-    readonly docs?: DocsInput;
-    readonly name: string;
-    readonly publicKey: ProgramNode['publicKey'];
-};
-
-export function programNode<
-    const TPdas extends PdaNode[] = [],
-    const TAccounts extends AccountNode[] = [],
-    const TInstructions extends InstructionNode[] = [],
-    const TDefinedTypes extends DefinedTypeNode[] = [],
-    const TErrors extends ErrorNode[] = [],
-    const TEvents extends EventNode[] = [],
-    const TConstants extends ConstantNode[] = [],
->(
-    input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents, TConstants>,
-): ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents, TConstants> {
-    return Object.freeze({
-        kind: 'programNode',
-
-        // Data.
-        name: camelCase(input.name),
-        publicKey: input.publicKey,
-        version: input.version ?? '0.0.0',
-        ...(input.origin !== undefined && { origin: input.origin }),
-        docs: parseDocs(input.docs),
-
-        // Children.
-        accounts: (input.accounts ?? []) as TAccounts,
-        instructions: (input.instructions ?? []) as TInstructions,
-        definedTypes: (input.definedTypes ?? []) as TDefinedTypes,
-        pdas: (input.pdas ?? []) as TPdas,
-        events: (input.events ?? []) as TEvents,
-        errors: (input.errors ?? []) as TErrors,
-        constants: (input.constants ?? []) as TConstants,
-    });
-}
-
 export function getAllPrograms(node: ProgramNode | ProgramNode[] | RootNode): ProgramNode[] {
     if (Array.isArray(node)) return node;
     if (node.kind === 'programNode') return [node];
