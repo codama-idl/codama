@@ -4,6 +4,12 @@ import { getSpec } from '@codama/spec';
 import { generateNodes, NODE_CONFIGS } from './nodes';
 import { generateNodeTypes } from './nodeTypes';
 import { CATEGORY_DIRECTORIES, GENERIC_PARAM_ORDER, getRepoDirectory, NARROWABLE_DATA_ATTRIBUTES } from './shared';
+import {
+    generateVisitorsCore,
+    IDENTITY_VISITOR_WALK_ORDER,
+    MERGE_VISITOR_WALK_ORDER,
+    UNION_ALIAS_NAMES,
+} from './visitorsCore';
 
 export interface GenerateResult {
     /** One entry per generator that ran, in the order they ran. */
@@ -42,6 +48,18 @@ export function generate(): GenerateResult {
             targetSpecMajor: 1,
         });
         outputs.push({ generator: 'nodes', outputDir });
+    }
+
+    {
+        const outputDir = joinPath(getRepoDirectory(), 'packages', 'visitors-core', 'src', 'generated');
+        generateVisitorsCore(spec, {
+            identityVisitorWalkOrder: IDENTITY_VISITOR_WALK_ORDER,
+            mergeVisitorWalkOrder: MERGE_VISITOR_WALK_ORDER,
+            outputDir,
+            targetSpecMajor: 1,
+            unionAliasNames: UNION_ALIAS_NAMES,
+        });
+        outputs.push({ generator: 'visitorsCore', outputDir });
     }
 
     return { outputs };

@@ -1,7 +1,7 @@
 import { Node } from '@codama/nodes';
 
+import { mergeVisitor } from './generated/mergeVisitor';
 import { interceptVisitor } from './interceptVisitor';
-import { mergeVisitor } from './mergeVisitor';
 import { pipe } from './pipe';
 import { Visitor } from './visitor';
 

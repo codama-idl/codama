@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "build": "rimraf dist && tsup",
-        "generate": "pnpm build && node ./dist/generate.mjs && pnpm --filter @codama/node-types lint:fix && pnpm --filter @codama/nodes lint:fix",
+        "generate": "pnpm build && node ./dist/generate.mjs && pnpm --filter @codama/node-types --filter @codama/nodes --filter @codama/visitors-core lint:fix",
         "lint": "eslint . && prettier --check .",
         "lint:fix": "eslint --fix . && prettier --write .",
         "test": "pnpm test:types && pnpm test:unit",
