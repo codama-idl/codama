@@ -12,6 +12,17 @@ export async function getRootNodeFromIdl(idl: unknown): Promise<RootNode> {
         return idl;
     }
 
+    // Try direct import first — works without a package.json.
+    try {
+        const rootNodeFromAnchor = await importModuleItem<(idl: unknown) => RootNode>({
+            from: '@codama/nodes-from-anchor',
+            item: 'rootNodeFromAnchor',
+        });
+        return rootNodeFromAnchor(idl);
+    } catch {
+        // Module not available via direct import.
+    }
+
     const hasNodesFromAnchor = await installMissingDependencies(
         'Anchor IDL detected. Additional dependencies are required to process Anchor IDLs.',
         ['@codama/nodes-from-anchor'],

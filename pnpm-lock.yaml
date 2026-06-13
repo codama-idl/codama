@@ -59,6 +59,9 @@ importers:
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
+      '@codama/nodes-from-anchor':
+        specifier: workspace:*
+        version: link:../nodes-from-anchor
       '@codama/visitors':
         specifier: workspace:*
         version: link:../visitors
