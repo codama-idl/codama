@@ -1,6 +1,6 @@
 import { createChildCommand, spawnChildCommand } from './childCommands';
 import { canRead, resolveRelativePath } from './fs';
-import { getPackageJson } from './packageJson';
+import { tryGetPackageJson } from './packageJson';
 
 type PackageManager = 'bun' | 'npm' | 'pnpm' | 'yarn';
 
@@ -28,8 +28,8 @@ async function detectPackageManager(): Promise<PackageManager> {
 }
 
 async function detectPackageManagerFromPackageJson(): Promise<PackageManager | undefined> {
-    const packageJson = await getPackageJson();
-    if (!packageJson.packageManager) return undefined;
+    const packageJson = await tryGetPackageJson();
+    if (!packageJson?.packageManager) return undefined;
     if (packageJson.packageManager.startsWith('npm@')) return 'npm';
     if (packageJson.packageManager.startsWith('pnpm@')) return 'pnpm';
     if (packageJson.packageManager.startsWith('yarn@')) return 'yarn';

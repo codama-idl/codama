@@ -12,6 +12,21 @@ export async function getRootNodeFromIdl(idl: unknown): Promise<RootNode> {
         return idl;
     }
 
+    // Resolve an already-installed adapter first — this works without a package.json.
+    // Only the import is guarded: a conversion error from the adapter must surface, not trigger an install.
+    let rootNodeFromAnchor: ((idl: unknown) => RootNode) | undefined;
+    try {
+        rootNodeFromAnchor = await importModuleItem<(idl: unknown) => RootNode>({
+            from: '@codama/nodes-from-anchor',
+            item: 'rootNodeFromAnchor',
+        });
+    } catch {
+        // Adapter not resolvable directly; fall back to the install flow below.
+    }
+    if (rootNodeFromAnchor) {
+        return rootNodeFromAnchor(idl);
+    }
+
     const hasNodesFromAnchor = await installMissingDependencies(
         'Anchor IDL detected. Additional dependencies are required to process Anchor IDLs.',
         ['@codama/nodes-from-anchor'],
@@ -20,7 +35,7 @@ export async function getRootNodeFromIdl(idl: unknown): Promise<RootNode> {
         throw new CliError('Cannot proceed without Anchor IDL support.');
     }
 
-    const rootNodeFromAnchor = await importModuleItem<(idl: unknown) => RootNode>({
+    rootNodeFromAnchor = await importModuleItem<(idl: unknown) => RootNode>({
         from: '@codama/nodes-from-anchor',
         item: 'rootNodeFromAnchor',
     });
