@@ -1,5 +1,27 @@
 # @codama/nodes
 
+## 1.8.0
+
+### Minor Changes
+
+- [#997](https://github.com/codama-idl/codama/pull/997) [`0b3a781`](https://github.com/codama-idl/codama/commit/0b3a781c024b27397e17ad456f039f76382cb519) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Regenerate the `xxxNodeInput` types and `xxxNode()` constructors of `@codama/nodes` from the encoded `@codama/spec` description, via a new `nodes` generator inside `@codama-internal/spec-generators`. The runtime `*_NODE_KINDS` arrays (`STANDALONE_TYPE_NODE_KINDS`, `REGISTERED_VALUE_NODE_KINDS`, `INSTRUCTION_INPUT_VALUE_NODE_KINDS`, …, and the top-level `REGISTERED_NODE_KINDS`) are now generated from the spec's union definitions instead of being maintained by hand. A new top-level `CODAMA_VERSION` constant, typed as `CodamaVersion` and pinned to the spec version at generation time, is the single source of truth for the version `@codama/nodes` was built against — `rootNode()` reads it directly when tagging the document.
+
+    The bulk of the surface lives under `packages/nodes/src/generated/` and is produced on every `pnpm generate` run. The previously hand-maintained constructors and kinds-arrays are gone; only hand-written helpers (`isNode`, `assertIsNode`, `getAllPrograms`, `getAllInstructions`, `getAllInstructionsWithSubs`, `isScalarEnum`, `isDataEnum`, `isSignedInteger`, the `NestedTypeNode` resolvers, `parseOptionalAccountStrategy`, the legacy `constantValueNodeFromString` / `constantPdaSeedNodeFromString` flavours, etc.) survive at the top of `packages/nodes/src/`. The package's `index.ts` re-exports the generated tree alongside them.
+
+    Two intentional behaviour changes shake out of the rebuild:
+    - **`docs` is now omitted entirely from the encoded shape when it would be empty.** Constructors that accept a `docs?: DocsInput` parameter previously emitted `docs: []` on the frozen node when the caller said nothing about docs; they now drop the `docs` key altogether. This matches the Rust side, keeps absent documentation out of serialised IDLs, and aligns with the `docs?: Docs` optional field already declared by `@codama/node-types`. `removeDocsVisitor` in `@codama/visitors-core` is updated to delete the `docs` key rather than blank it to `[]`, following the same convention.
+    - **`rootNode().version` now reflects the spec version `@codama/nodes` was generated against, not the runtime package version.** The constructor previously read the `__VERSION__` build-time global injected from the package's `npm_package_version`; it now reads the generated `CODAMA_VERSION` constant. In practice the two have always tracked the same release cadence so the change is invisible at HEAD, but it makes the architectural intent explicit: the version pinned in the IDL is the spec version, not the package version. The `__VERSION__` build-time global and its `packages/nodes/src/types/global.d.ts` declaration are removed accordingly.
+
+    The legacy plural-noun constants (`TYPE_NODES`, `VALUE_NODES`, `CONTEXTUAL_VALUE_NODES`, `INSTRUCTION_INPUT_VALUE_NODES`, `COUNT_NODES`, `DISCRIMINATOR_NODES`, `LINK_NODES`, `PDA_SEED_NODES`, `ENUM_VARIANT_TYPE_NODES`) are preserved as alias re-exports of the new canonical `*_NODE_KINDS` names.
+
+    The generator drives almost entirely from the spec, with a minimal per-node configuration table carrying only the conveniences the spec can't express: which spec attributes appear as bare positional parameters (the rest land in a trailing `options` bag), and per-attribute overrides for defaulted values, string-coercion patterns on link targets, and the handful of bespoke body expressions (`instructionByteDeltaNode.withHeader`). The renderer derives signature shapes, generic parameters, return types, the `XxxNodeInput` declarations, the `Partial<>` wrapping decision, the `name: string` relaxation, the `docs?: DocsInput` / drop-if-empty handling, and the conditional-spread of optional attributes from the spec directly. An auto-import scan walks each rendered file and pulls in any spec or hand-written identifier the source references, so the configuration never declares imports. Generic-parameter lifting and ordering rely on the same `narrowableDataAttributes` + `genericParamOrder` tables the `nodeTypes` generator uses, keeping the constructor's generics in lockstep with the interface's.
+
+### Patch Changes
+
+- Updated dependencies [[`2f7c443`](https://github.com/codama-idl/codama/commit/2f7c44377520fdb512de7d25b74a03ffd8c1a491), [`8667174`](https://github.com/codama-idl/codama/commit/8667174aabec62aed0a6a11822a87e66c9720246)]:
+    - @codama/node-types@1.8.0
+    - @codama/errors@1.8.0
+
 ## 1.7.0
 
 ### Minor Changes
