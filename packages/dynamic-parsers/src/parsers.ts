@@ -37,7 +37,19 @@ export function parseInstructionData(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
 ): ParsedData<InstructionNode> | undefined {
-    return parseData(root, bytes, 'instructionNode');
+    const parsed = parseData(root, bytes, 'instructionNode');
+    if (parsed) return parsed;
+
+    // Single-instruction programs may omit a discriminator (e.g. Memo program).
+    // parseData returns undefined due to being unable to identify it by discriminator
+    // Decode it directly.
+    const [singleIx, ...rest] = root.program.instructions;
+    if (singleIx && rest.length === 0 && !singleIx.discriminators?.length) {
+        const path = [root, root.program, singleIx] as NodePath<InstructionNode>;
+        return { data: getNodeCodec(path).decode(bytes), path };
+    }
+
+    return undefined;
 }
 
 export function parseData<TKind extends ParsableNodeKind>(
