@@ -40,6 +40,7 @@ export async function getPackageJson(): Promise<PackageJson> {
     return json;
 }
 
+/** Lists declared dependencies, returning `[]` outside a Node project (no `package.json`). */
 export async function getPackageJsonDependencies(options: { includeDev?: boolean } = {}): Promise<string[]> {
     const packageJson = await tryGetPackageJson();
     if (!packageJson) return [];
