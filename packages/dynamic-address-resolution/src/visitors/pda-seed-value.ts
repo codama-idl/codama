@@ -58,10 +58,12 @@ type PdaSeedValueSupportedNodeKind = (typeof PDA_SEED_VALUE_SUPPORTED_NODE_KINDS
 
 export type ConstantPdaSeedValueVisitorContext = {
     programId: Address;
-    seedTypeNode?: TypeNode;
 };
 
-export type PdaSeedValueVisitorContext = BaseResolutionContext & ConstantPdaSeedValueVisitorContext;
+export type PdaSeedValueVisitorContext = BaseResolutionContext &
+    ConstantPdaSeedValueVisitorContext & {
+        seedTypeNode?: TypeNode;
+    };
 
 /**
  * Visitor for resolving PdaSeedValueNode value to raw bytes.
@@ -77,7 +79,7 @@ export function createPdaSeedValueVisitor(
     const accountsInput = ctx.accountsInput ?? {};
     const argumentsInput = ctx.argumentsInput ?? {};
 
-    const base = createConstantPdaSeedValueVisitor({ programId, seedTypeNode });
+    const base = createConstantPdaSeedValueVisitor({ programId });
 
     const visitor: Visitor<Promise<ReadonlyUint8Array>, PdaSeedValueSupportedNodeKind> = extendVisitor(base, {
         visitAccountValue: async (node: AccountValueNode) => {
