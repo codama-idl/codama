@@ -40,7 +40,7 @@ export function parseInstructionData(
     const parsed = parseData(root, bytes, 'instructionNode');
     if (parsed) return parsed;
 
-    // Single-instruction programs may omit a discriminator (e.g. Memo program).
+    // Single-instruction programs may omit a discriminator (e.g. `Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH`).
     // parseData returns undefined due to being unable to identify it by discriminator
     // Decode it directly.
     const [singleIx, ...rest] = root.program.instructions;
