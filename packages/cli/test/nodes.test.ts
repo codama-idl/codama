@@ -1,4 +1,5 @@
 import type { RootNode } from '@codama/nodes';
+import pico from 'picocolors';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { CliError } from '../src/utils/errors';
@@ -42,9 +43,11 @@ describe('getRootNodeFromIdl', () => {
         expect(error).toBeInstanceOf(CliError);
         expect((error as CliError).message).toBe('Anchor IDL support is not available.');
         expect((error as CliError).items).toEqual([
-            'Missing dependency: @codama/nodes-from-anchor',
+            `${pico.bold('Missing dependency')}: @codama/nodes-from-anchor`,
             'No package.json was found, so Codama did not install dependencies in this directory.',
-            'Re-run with: npx -p codama -p @codama/nodes-from-anchor codama convert anchor.json codama.json',
+            `${pico.bold('Re-run with')}: ${pico.yellow(
+                'npx -p codama -p @codama/nodes-from-anchor codama convert anchor.json codama.json',
+            )}`,
         ]);
         expect(installMissingDependenciesMock).not.toHaveBeenCalled();
     });
