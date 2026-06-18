@@ -37,7 +37,7 @@ describe('pda-seed-value: visitConstantValue', () => {
         );
     });
 
-    test('constantValueNode wrapping argumentValueNode resolves the argument', async () => {
+    test('should resolve the argument when wrapping an argumentValueNode', async () => {
         const visitor = makeVisitor({
             argumentsInput: { title: 'hello' },
             ixNode: instructionNode({
