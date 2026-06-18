@@ -1,3 +1,4 @@
+import type { ResolverFn } from '@codama/dynamic-address-resolution';
 import type { Address, ProgramDerivedAddress } from '@solana/addresses';
 import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
@@ -7,7 +8,6 @@ import type {
     CreateItemAccounts,
     CreateItemArgs,
     CreateItemResolvers,
-    ResolverFn,
 } from '../../programs/generated/custom-resolvers-test-idl-types';
 import type {
     AllocateArgs,

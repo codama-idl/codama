@@ -96,6 +96,9 @@ importers:
       codama:
         specifier: workspace:*
         version: link:../library
+      commander:
+        specifier: ^14.0.2
+        version: 14.0.3
     devDependencies:
       '@solana/kit':
         specifier: 6.5.0
@@ -200,6 +203,9 @@ importers:
       codama:
         specifier: workspace:*
         version: link:../library
+      commander:
+        specifier: ^14.0.2
+        version: 14.0.3
       superstruct:
         specifier: ^2.0.2
         version: 2.0.2
