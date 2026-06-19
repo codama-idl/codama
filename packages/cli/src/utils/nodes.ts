@@ -56,18 +56,15 @@ async function tryImportRootNodeFromAnchor(): Promise<RootNodeFromAnchor | undef
     try {
         return await importModuleItem<RootNodeFromAnchor>(NODES_FROM_ANCHOR);
     } catch (error) {
-        if (isMissingModuleError(error, NODES_FROM_ANCHOR.from)) return undefined;
+        if (isMissingModuleError(error)) return undefined;
         throw error;
     }
 }
 
-function isMissingModuleError(error: unknown, moduleName: string): boolean {
+function isMissingModuleError(error: unknown): boolean {
     for (let current: unknown = error; current != null; current = (current as { cause?: unknown }).cause) {
-        const { code, message } = current as { code?: unknown; message?: unknown };
-        const isModuleNotFound = code === 'ERR_MODULE_NOT_FOUND' || code === 'MODULE_NOT_FOUND';
-        const namesRequestedModule =
-            typeof message === 'string' && (message.includes(`'${moduleName}'`) || message.includes(`"${moduleName}"`));
-        if (isModuleNotFound && namesRequestedModule) return true;
+        const { code } = current as { code?: unknown };
+        if (code === 'ERR_MODULE_NOT_FOUND' || code === 'MODULE_NOT_FOUND') return true;
     }
     return false;
 }

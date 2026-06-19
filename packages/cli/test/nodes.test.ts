@@ -76,12 +76,14 @@ describe('getRootNodeFromIdl', () => {
         expect(installMissingDependenciesMock).not.toHaveBeenCalled();
     });
 
-    test('surfaces missing transitive dependencies from an installed adapter', async () => {
-        const loadError = createMissingModuleError('missing-transitive-package');
-        importModuleItemMock.mockRejectedValue(loadError);
+    test('treats any missing-module error as a missing adapter', async () => {
+        importModuleItemMock.mockRejectedValue(createMissingModuleError('missing-transitive-package'));
+        tryGetPackageJsonMock.mockResolvedValue(undefined);
 
-        await expect(getRootNodeFromIdl(anchorIdl)).rejects.toBe(loadError);
-        expect(tryGetPackageJsonMock).not.toHaveBeenCalled();
+        const error = await getRootNodeFromIdl(anchorIdl).catch((cause: unknown) => cause);
+
+        expect(error).toBeInstanceOf(CliError);
+        expect((error as CliError).message).toBe('Anchor IDL support is not available.');
         expect(installMissingDependenciesMock).not.toHaveBeenCalled();
     });
 });
