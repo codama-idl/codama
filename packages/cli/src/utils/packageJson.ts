@@ -13,19 +13,37 @@ type PackageJson = {
 };
 
 let packageJson: PackageJson | undefined;
-export async function getPackageJson(): Promise<PackageJson> {
-    if (!packageJson) {
+let packageJsonChecked = false;
+
+/**
+ * Reads the local `package.json` if one exists. Returns `undefined` when none is found so callers
+ * can degrade gracefully (e.g. when running outside a Node project or via `npx`).
+ */
+export async function tryGetPackageJson(): Promise<PackageJson | undefined> {
+    if (!packageJsonChecked) {
         const packageJsonPath = resolveRelativePath('package.json');
-        if (!(await canRead(packageJsonPath))) {
-            throw new CliError('Cannot read package.json.', [`${pico.bold('Path')}: ${packageJsonPath}`]);
+        if (await canRead(packageJsonPath)) {
+            packageJson = await readJson<PackageJson>(packageJsonPath);
         }
-        packageJson = await readJson<PackageJson>(packageJsonPath);
+        packageJsonChecked = true;
     }
     return packageJson;
 }
 
+/** Reads the local `package.json`, throwing when none exists. */
+export async function getPackageJson(): Promise<PackageJson> {
+    const json = await tryGetPackageJson();
+    if (!json) {
+        const packageJsonPath = resolveRelativePath('package.json');
+        throw new CliError('Cannot read package.json.', [`${pico.bold('Path')}: ${packageJsonPath}`]);
+    }
+    return json;
+}
+
+/** Lists declared dependencies, returning `[]` outside a Node project (no `package.json`). */
 export async function getPackageJsonDependencies(options: { includeDev?: boolean } = {}): Promise<string[]> {
-    const packageJson = await getPackageJson();
+    const packageJson = await tryGetPackageJson();
+    if (!packageJson) return [];
     return [
         ...(packageJson.dependencies ? Object.keys(packageJson.dependencies) : []),
         ...(options.includeDev && packageJson.devDependencies ? Object.keys(packageJson.devDependencies) : []),

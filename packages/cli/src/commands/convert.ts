@@ -14,7 +14,7 @@ export function setConvertCommand(program: Command): void {
 async function doConvert(idlPath: string, outPath: string) {
     const idl = await readJson(idlPath);
 
-    const node = await getRootNodeFromIdl(idl);
+    const node = await getRootNodeFromIdl(idl, { npxCommandArgs: ['convert', idlPath, outPath] });
 
     await writeFile(outPath, JSON.stringify(node, null, 2));
 
