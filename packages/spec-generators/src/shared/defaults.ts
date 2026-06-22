@@ -25,7 +25,7 @@ export const NARROWABLE_DATA_ATTRIBUTES: ReadonlySet<string> = new Set([
 export const GENERIC_PARAM_ORDER: ReadonlyMap<string, readonly string[]> = new Map([
     ['programNode', ['pdas', 'accounts', 'instructions', 'definedTypes', 'errors', 'events', 'constants']],
     ['pdaValueNode', ['seeds', 'programId', 'pda']],
-    ['instructionArgumentNode', ['defaultValue', 'type']],
+    ['instructionArgumentNode', ['defaultValue', 'type', 'display']],
     [
         'instructionNode',
         [
@@ -37,6 +37,8 @@ export const GENERIC_PARAM_ORDER: ReadonlyMap<string, readonly string[]> = new M
             'discriminators',
             'subInstructions',
             'status',
+            'provides',
+            'display',
         ],
     ],
 ]);
@@ -50,6 +52,7 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
     ['contextualValue', 'contextualValueNodes'],
     ['count', 'countNodes'],
     ['discriminator', 'discriminatorNodes'],
+    ['display', 'displayNodes'],
     ['link', 'linkNodes'],
     ['pdaSeed', 'pdaSeedNodes'],
     ['shared', 'shared'],

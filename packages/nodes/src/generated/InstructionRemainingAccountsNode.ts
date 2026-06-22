@@ -1,16 +1,24 @@
-import type { InstructionRemainingAccountsNode, InstructionRemainingAccountsValue } from '@codama/node-types';
+import type {
+    InstructionAccountDisplayNode,
+    InstructionRemainingAccountsNode,
+    InstructionRemainingAccountsValue,
+} from '@codama/node-types';
 import { DocsInput, parseDocs } from '../shared';
 
 /** A "remaining accounts" slot in an instruction — a variable-length tail of accounts derived from a value. */
-export function instructionRemainingAccountsNode<const TValue extends InstructionRemainingAccountsValue>(
+export function instructionRemainingAccountsNode<
+    const TValue extends InstructionRemainingAccountsValue,
+    const TDisplay extends InstructionAccountDisplayNode | undefined = undefined,
+>(
     value: TValue,
     options: {
         isOptional?: boolean;
         isSigner?: boolean | 'either';
         isWritable?: boolean;
         docs?: DocsInput;
+        display?: TDisplay;
     } = {},
-): InstructionRemainingAccountsNode<TValue> {
+): InstructionRemainingAccountsNode<TValue, TDisplay> {
     const parsedDocs = parseDocs(options.docs);
     return Object.freeze({
         kind: 'instructionRemainingAccountsNode',
@@ -23,5 +31,6 @@ export function instructionRemainingAccountsNode<const TValue extends Instructio
 
         // Children.
         value,
+        ...(options.display !== undefined && { display: options.display }),
     });
 }

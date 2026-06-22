@@ -1,4 +1,5 @@
 import type { AccountBumpValueNode } from './AccountBumpValueNode';
+import type { AccountFieldValueNode } from './AccountFieldValueNode';
 import type { AccountValueNode } from './AccountValueNode';
 import type { ArgumentValueNode } from './ArgumentValueNode';
 import type { ConditionalValueNode } from './ConditionalValueNode';
@@ -11,6 +12,7 @@ import type { ResolverValueNode } from './ResolverValueNode';
 /** Every contextual-value node usable as a top-level value. */
 export type StandaloneContextualValueNode =
     | AccountBumpValueNode
+    | AccountFieldValueNode
     | AccountValueNode
     | ArgumentValueNode
     | ConditionalValueNode

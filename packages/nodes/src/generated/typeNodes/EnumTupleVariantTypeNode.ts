@@ -1,12 +1,23 @@
-import type { EnumTupleVariantTypeNode, NestedTypeNode, TupleTypeNode } from '@codama/node-types';
+import type {
+    EnumTupleVariantTypeNode,
+    EnumVariantDisplayNode,
+    NestedTypeNode,
+    TupleTypeNode,
+} from '@codama/node-types';
 import { camelCase } from '../../shared';
 
 /** A variant of an enum that carries a tuple payload (positional fields). */
-export function enumTupleVariantTypeNode<const TTuple extends NestedTypeNode<TupleTypeNode>>(
+export function enumTupleVariantTypeNode<
+    const TTuple extends NestedTypeNode<TupleTypeNode>,
+    const TDisplay extends EnumVariantDisplayNode | undefined = undefined,
+>(
     name: string,
     tuple: TTuple,
     discriminator?: number,
-): EnumTupleVariantTypeNode<TTuple> {
+    options: {
+        display?: TDisplay;
+    } = {},
+): EnumTupleVariantTypeNode<TTuple, TDisplay> {
     return Object.freeze({
         kind: 'enumTupleVariantTypeNode',
 
@@ -16,5 +27,6 @@ export function enumTupleVariantTypeNode<const TTuple extends NestedTypeNode<Tup
 
         // Children.
         tuple,
+        ...(options.display !== undefined && { display: options.display }),
     });
 }

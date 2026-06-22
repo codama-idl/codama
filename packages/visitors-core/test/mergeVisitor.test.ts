@@ -18,7 +18,7 @@ test('it sets a value for all leaves and merges node values together', () => {
     const result = visit(node, visitor);
 
     // Then we get the following result.
-    expect(result).toBe('tupleTypeNode(numberTypeNode,publicKeyTypeNode)');
+    expect(result).toBe('tupleTypeNode(numberTypeNode(),publicKeyTypeNode)');
 });
 
 test('it can be used to count nodes', () => {
@@ -51,7 +51,7 @@ test('it can create partial visitors', () => {
     const result = visit(node, visitor);
 
     // Then the unsupported node is not included in the result.
-    expect(result).toBe('tupleTypeNode(numberTypeNode)');
+    expect(result).toBe('tupleTypeNode(numberTypeNode())');
 
     // And the unsupported node cannot be visited.
     // @ts-expect-error PublicKeyTypeNode is not supported.

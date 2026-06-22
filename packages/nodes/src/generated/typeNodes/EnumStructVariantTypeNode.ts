@@ -1,12 +1,23 @@
-import type { EnumStructVariantTypeNode, NestedTypeNode, StructTypeNode } from '@codama/node-types';
+import type {
+    EnumStructVariantTypeNode,
+    EnumVariantDisplayNode,
+    NestedTypeNode,
+    StructTypeNode,
+} from '@codama/node-types';
 import { camelCase } from '../../shared';
 
 /** A variant of an enum that carries a struct payload (named fields). */
-export function enumStructVariantTypeNode<const TStruct extends NestedTypeNode<StructTypeNode>>(
+export function enumStructVariantTypeNode<
+    const TStruct extends NestedTypeNode<StructTypeNode>,
+    const TDisplay extends EnumVariantDisplayNode | undefined = undefined,
+>(
     name: string,
     struct: TStruct,
     discriminator?: number,
-): EnumStructVariantTypeNode<TStruct> {
+    options: {
+        display?: TDisplay;
+    } = {},
+): EnumStructVariantTypeNode<TStruct, TDisplay> {
     return Object.freeze({
         kind: 'enumStructVariantTypeNode',
 
@@ -16,5 +27,6 @@ export function enumStructVariantTypeNode<const TStruct extends NestedTypeNode<S
 
         // Children.
         struct,
+        ...(options.display !== undefined && { display: options.display }),
     });
 }
