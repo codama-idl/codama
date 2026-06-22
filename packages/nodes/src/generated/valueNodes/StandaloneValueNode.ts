@@ -5,6 +5,7 @@ export const STANDALONE_VALUE_NODE_KINDS = [
     'bytesValueNode' as const,
     'constantValueNode' as const,
     'enumValueNode' as const,
+    'injectedValueNode' as const,
     'mapValueNode' as const,
     'noneValueNode' as const,
     'numberValueNode' as const,

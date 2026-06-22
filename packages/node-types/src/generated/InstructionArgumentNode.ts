@@ -1,6 +1,7 @@
 import type { CamelCaseString } from '../brands';
 import type { Docs } from '../Docs';
 import type { InstructionInputValueNode } from './contextualValueNodes/InstructionInputValueNode';
+import type { StructFieldDisplayNode } from './displayNodes/StructFieldDisplayNode';
 import type { DefaultValueStrategy } from './shared/defaultValueStrategy';
 import type { TypeNode } from './typeNodes/TypeNode';
 
@@ -8,6 +9,7 @@ import type { TypeNode } from './typeNodes/TypeNode';
 export interface InstructionArgumentNode<
     TDefaultValue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
     TType extends TypeNode = TypeNode,
+    TDisplay extends StructFieldDisplayNode | undefined = StructFieldDisplayNode | undefined,
 > {
     readonly kind: 'instructionArgumentNode';
 
@@ -24,4 +26,6 @@ export interface InstructionArgumentNode<
     readonly type: TType;
     /** A default value used when the argument is omitted by callers. */
     readonly defaultValue?: TDefaultValue;
+    /** Display metadata describing how the argument is presented. */
+    readonly display?: TDisplay;
 }

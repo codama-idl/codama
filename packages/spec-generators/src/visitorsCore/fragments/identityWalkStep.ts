@@ -50,6 +50,13 @@ export function getIdentityWalkStep(
         case 'data':
             return { preStatement: undefined, rebuildExpr: fragment`${fieldAccess}` };
 
+        case 'anyNode':
+            return buildSingleNodeStep(localName, fieldAccess, optional, {
+                assertCall: use('assertIsNode', '@codama/nodes'),
+                kindArg: use('REGISTERED_NODE_KINDS', '@codama/nodes'),
+                visitThis,
+            });
+
         case 'node':
             return buildSingleNodeStep(localName, fieldAccess, optional, {
                 assertCall: use('assertIsNode', '@codama/nodes'),

@@ -1,6 +1,7 @@
 export * from './bytesEncoding';
 export * from './codamaVersion';
 export * from './defaultValueStrategy';
+export * from './displaySkip';
 export * from './endianness';
 export * from './instructionLifecycle';
 export * from './numberFormat';

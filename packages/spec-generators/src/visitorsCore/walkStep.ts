@@ -13,6 +13,8 @@ import { type ResolvedRenderOptions } from './options';
  *                     assert nested `<kind>`.
  *   - `union`       — `union('<Name>')`. Walk once, assert against the
  *                     resolved kind-list.
+ *   - `anyNode`     — `anyNode()`. Walk once, assert against the full
+ *                     registered-node kind-list.
  *   - `arrayNode`   — `array(node('<kind>'))`. Walk each, filter.
  *   - `arrayUnion`  — `array(union('<Name>'))`. Walk each, filter
  *                     against the resolved kind-list.
@@ -22,6 +24,7 @@ import { type ResolvedRenderOptions } from './options';
  * would need a new variant here.
  */
 export type ChildShape =
+    | { readonly kind: 'anyNode' }
     | { readonly kind: 'arrayNode'; readonly nodeKind: string }
     | { readonly kind: 'arrayUnion'; readonly unionName: string }
     | { readonly kind: 'data' }
@@ -32,6 +35,8 @@ export type ChildShape =
 /** Classify a {@link TypeExpr} into the matching {@link ChildShape}. */
 export function getChildShape(typeExpr: TypeExpr): ChildShape {
     switch (typeExpr.kind) {
+        case 'anyNode':
+            return { kind: 'anyNode' };
         case 'node':
             return { kind: 'node', nodeKind: typeExpr.name };
         case 'nestedUnion':

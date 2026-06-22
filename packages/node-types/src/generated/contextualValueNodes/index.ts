@@ -1,4 +1,5 @@
 export * from './AccountBumpValueNode';
+export * from './AccountFieldValueNode';
 export * from './AccountValueNode';
 export * from './ArgumentValueNode';
 export * from './ConditionalValueCondition';
