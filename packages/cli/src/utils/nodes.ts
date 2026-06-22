@@ -24,7 +24,7 @@ export async function getRootNodeFromIdl(idl: unknown, options: GetRootNodeFromI
     return rootNodeFromAnchor(idl);
 }
 
-async function resolveRootNodeFromAnchor(npxCommandArgs: string[] = ['convert']): Promise<RootNodeFromAnchor> {
+async function resolveRootNodeFromAnchor(npxCommandArgs: string[] = ['[...]']): Promise<RootNodeFromAnchor> {
     if (!(await tryGetPackageJson())) {
         throw new CliError('Anchor IDL support is not available.', [
             `${pico.bold('Missing dependency')}: ${NODES_FROM_ANCHOR.from}`,
