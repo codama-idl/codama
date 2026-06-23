@@ -24,7 +24,7 @@ import {
 import { AccountRole } from '@solana/instructions';
 import { describe, expect, test } from 'vitest';
 
-import { parseAccountData, parseEventData, parseInstruction, parseInstructionData } from '../src';
+import { parseAccountData, parseData, parseEventData, parseInstruction, parseInstructionData } from '../src';
 import { hex } from './_setup';
 
 describe('parseAccountData', () => {
@@ -59,6 +59,29 @@ describe('parseAccountData', () => {
         const result = parseAccountData(root, hex('090500416c6963652a'));
         expect(result).toStrictEqual({
             data: { age: 42, discriminator: 9, firstname: 'Alice' },
+            path: [root, root.program, root.program.accounts[0]],
+        });
+    });
+
+    test('it decodes a single account without discriminator', () => {
+        // Given a program with exactly one account without discriminator.
+        const root = rootNode(
+            programNode({
+                accounts: [
+                    accountNode({
+                        data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
+                        name: 'myAccount',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        // When we parse account data that matches no discriminator.
+        const result = parseAccountData(root, hex('2a000000'));
+        // Then we expect the single account to be decoded via the fallback.
+        expect(result).toStrictEqual({
+            data: { value: 42 },
             path: [root, root.program, root.program.accounts[0]],
         });
     });
@@ -179,6 +202,37 @@ describe('parseInstructionData', () => {
         // Then we expect no result.
         expect(result).toBeUndefined();
     });
+
+    test('it does not decode via fallback when an instruction with discriminator also exists', () => {
+        // Given a program with instruction with discriminator and instruction without discriminator.
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({
+                        arguments: [
+                            instructionArgumentNode({
+                                defaultValue: numberValueNode(9),
+                                name: 'discriminator',
+                                type: numberTypeNode('u8'),
+                            }),
+                        ],
+                        discriminators: [fieldDiscriminatorNode('discriminator')],
+                        name: 'instructionWithDiscriminator',
+                    }),
+                    instructionNode({
+                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
+                        name: 'instructionWithoutDiscriminator',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        // When we parse bytes whose leading byte (0x48) does not match the discriminator default (9).
+        const result = parseInstructionData(root, hex('48656c6c6f'));
+        // Then we expect no result because more than one instruction candidate exists.
+        expect(result).toBeUndefined();
+    });
 });
 
 describe('parseEventData', () => {
@@ -248,6 +302,29 @@ describe('parseEventData', () => {
             path: [root, root.program, root.program.events[0]],
         });
     });
+
+    test('it decodes a single event without discriminator', () => {
+        // Given a program with exactly one non-discriminated event.
+        const root = rootNode(
+            programNode({
+                events: [
+                    eventNode({
+                        data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
+                        name: 'myEvent',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        // When we parse event data that matches no discriminator.
+        const result = parseEventData(root, hex('2a000000'));
+        // Then we expect the event to be decoded via the fallback.
+        expect(result).toStrictEqual({
+            data: { value: 42 },
+            path: [root, root.program, root.program.events[0]],
+        });
+    });
 });
 
 describe('parseInstruction', () => {
@@ -283,5 +360,62 @@ describe('parseInstruction', () => {
             data: { message: 'Hello' },
             path: [root, root.program, root.program.instructions[0]],
         });
+    });
+});
+
+describe('parseData', () => {
+    test('it decodes via fallback a single node without discriminator', () => {
+        // Given a program with one account without discriminator.
+        const root = rootNode(
+            programNode({
+                accounts: [
+                    accountNode({
+                        data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
+                        name: 'myAccount',
+                    }),
+                ],
+                instructions: [
+                    instructionNode({
+                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
+                        name: 'myInstruction',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        // When we parse only the account node kind and no discriminator matches.
+        const result = parseData(root, hex('2a000000'), 'accountNode');
+        // Then we expect the single account to be decoded via the fallback.
+        expect(result).toStrictEqual({
+            data: { value: 42 },
+            path: [root, root.program, root.program.accounts[0]],
+        });
+    });
+
+    test('it does not decode via fallback when trying to parse multiple node kinds without discriminator', () => {
+        // Given a program with account and instruction without discriminators.
+        const root = rootNode(
+            programNode({
+                accounts: [
+                    accountNode({
+                        data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
+                        name: 'accountWithoutDiscriminator',
+                    }),
+                ],
+                instructions: [
+                    instructionNode({
+                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
+                        name: 'instructionWithoutDiscriminator',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        // When we parse with the default (all) kinds and no discriminator matches.
+        const result = parseData(root, hex('2a000000'));
+        // Then we expect no result because two candidates are ambiguous.
+        expect(result).toBeUndefined();
     });
 });
