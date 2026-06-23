@@ -2,6 +2,6 @@
 '@codama/dynamic-parsers': patch
 ---
 
-Decode single-instruction programs that omit a discriminator in `parseInstructionData` / `parseInstruction`
+Identify and decode nodes that omit a discriminator.
 
-`parseInstructionData` now falls back to decoding the single instruction directly when discriminator-based identification finds nothing and the program declares exactly one instruction with no discriminator (e.g. Memo program).
+When discriminator-based identification finds no match, `identifyData` (and the `identify*` / `parse*` helpers) now fall back to a Node without discriminator but only when the requested kinds resolve to exactly one candidate Node and that Node has no discriminator. Two or more Nodes without discriminator return `undefined`.
