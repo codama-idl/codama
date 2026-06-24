@@ -1,10 +1,15 @@
+import { getUtf8Codec } from '@solana/codecs';
 import {
+    argumentValueNode,
     constantValueNode,
+    instructionArgumentNode,
+    instructionNode,
     mapValueNode,
     numberValueNode,
     publicKeyTypeNode,
     publicKeyValueNode,
     someValueNode,
+    stringTypeNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
@@ -30,5 +35,19 @@ describe('pda-seed-value: visitSomeValue', () => {
         await expect(makeVisitor().visitSomeValue(node)).rejects.toThrow(
             'Cannot convert value to Address: ["invalid-key"].',
         );
+    });
+
+    test('someValueNode wrapping argumentValueNode resolves the argument', async () => {
+        const visitor = makeVisitor({
+            argumentsInput: { title: 'hello' },
+            ixNode: instructionNode({
+                arguments: [instructionArgumentNode({ name: 'title', type: stringTypeNode('utf8') })],
+                name: 'testInstruction',
+            }),
+        });
+        // @ts-expect-error Deliberate constraint violation for testing extended recursion through someValueNode.
+        const node = someValueNode(argumentValueNode('title'));
+        const result = await visitor.visitSomeValue(node);
+        expect(result).toEqual(getUtf8Codec().encode('hello'));
     });
 });

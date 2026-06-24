@@ -1,5 +1,14 @@
 import { getUtf8Codec } from '@solana/codecs';
-import { constantValueNode, mapValueNode, numberTypeNode, stringTypeNode, stringValueNode } from 'codama';
+import {
+    argumentValueNode,
+    constantValueNode,
+    instructionArgumentNode,
+    instructionNode,
+    mapValueNode,
+    numberTypeNode,
+    stringTypeNode,
+    stringValueNode,
+} from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { PDA_SEED_VALUE_SUPPORTED_NODE_KINDS } from '../../../src/visitors/pda-seed-value';
@@ -26,5 +35,19 @@ describe('pda-seed-value: visitConstantValue', () => {
         await expect(makeVisitor().visitConstantValue(node)).rejects.toThrow(
             `Expected node of kind [${PDA_SEED_VALUE_SUPPORTED_NODE_KINDS.join(',')}], got [mapValueNode]`,
         );
+    });
+
+    test('should resolve the argument when wrapping an argumentValueNode', async () => {
+        const visitor = makeVisitor({
+            argumentsInput: { title: 'hello' },
+            ixNode: instructionNode({
+                arguments: [instructionArgumentNode({ name: 'title', type: stringTypeNode('utf8') })],
+                name: 'testInstruction',
+            }),
+        });
+        // @ts-expect-error Deliberate constraint violation for testing extended recursion through constantValueNode
+        const node = constantValueNode(stringTypeNode('utf8'), argumentValueNode('title'));
+        const result = await visitor.visitConstantValue(node);
+        expect(result).toEqual(getUtf8Codec().encode('hello'));
     });
 });
