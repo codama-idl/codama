@@ -80,15 +80,22 @@ function nodeHasDefaultedRequiredAttribute(node: NodeSpec, config: NodeConstruct
 /**
  * Fields the Input type re-asserts in the intersection block:
  *
- *   - `name: string` (relaxed from `CamelCaseString`)
- *   - `docs?: DocsInput` (relaxed from `Docs`)
+ *   - Every `stringIdentifier()`-typed attribute relaxes from the branded
+ *     `CamelCaseString` to plain `string` (the constructor body runs
+ *     `camelCase(...)` on the value). This covers `name` and any other
+ *     identifier-shaped attribute (e.g. `accountFieldValueNode.account`,
+ *     `injectedValueNode.key`).
+ *   - `docs?: DocsInput` (relaxed from `Docs`).
  *   - `publicKey: ProgramNode['publicKey']` for `programNode` — a
  *     required-not-defaulted field that survives the `Partial<>` wrap.
  */
 function collectReassertedFields(node: NodeSpec): readonly { readonly name: string; readonly tsType: Fragment }[] {
     const out: { name: string; tsType: Fragment }[] = [];
-    if (node.attributes.some(a => a.name === 'name')) {
-        out.push({ name: 'name', tsType: fragment`string` });
+    for (const attr of node.attributes) {
+        if (attr.type.kind === 'string' && attr.type.constraint === 'identifier') {
+            const fieldName = attr.optional ? `${attr.name}?` : attr.name;
+            out.push({ name: fieldName, tsType: fragment`string` });
+        }
     }
     if (node.attributes.some(a => a.name === 'docs')) {
         const docsInput = use('DocsInput', 'shared:DocsInput');

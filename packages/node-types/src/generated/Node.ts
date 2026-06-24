@@ -4,6 +4,7 @@ import type { RegisteredContextualValueNode } from './contextualValueNodes/Regis
 import type { RegisteredCountNode } from './countNodes/RegisteredCountNode';
 import type { DefinedTypeNode } from './DefinedTypeNode';
 import type { RegisteredDiscriminatorNode } from './discriminatorNodes/RegisteredDiscriminatorNode';
+import type { RegisteredDisplayNode } from './displayNodes/RegisteredDisplayNode';
 import type { ErrorNode } from './ErrorNode';
 import type { EventNode } from './EventNode';
 import type { InstructionAccountNode } from './InstructionAccountNode';
@@ -16,6 +17,7 @@ import type { RegisteredLinkNode } from './linkNodes/RegisteredLinkNode';
 import type { PdaNode } from './PdaNode';
 import type { RegisteredPdaSeedNode } from './pdaSeedNodes/RegisteredPdaSeedNode';
 import type { ProgramNode } from './ProgramNode';
+import type { ProvidedNode } from './ProvidedNode';
 import type { RootNode } from './RootNode';
 import type { RegisteredTypeNode } from './typeNodes/RegisteredTypeNode';
 import type { RegisteredValueNode } from './valueNodes/RegisteredValueNode';
@@ -36,9 +38,11 @@ export type Node =
     | InstructionStatusNode
     | PdaNode
     | ProgramNode
+    | ProvidedNode
     | RegisteredContextualValueNode
     | RegisteredCountNode
     | RegisteredDiscriminatorNode
+    | RegisteredDisplayNode
     | RegisteredLinkNode
     | RegisteredPdaSeedNode
     | RegisteredTypeNode

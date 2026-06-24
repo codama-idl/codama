@@ -17,8 +17,8 @@ test('it maps the return value of a visitor to another', () => {
     const visitorB = mapVisitor(visitorA, value => value.length);
 
     // Then we expect the following results when visiting different nodes.
-    expect(visit(node, visitorB)).toBe(47);
-    expect(visit(node.items[0], visitorB)).toBe(14);
+    expect(visit(node, visitorB)).toBe(49);
+    expect(visit(node.items[0], visitorB)).toBe(16);
     expect(visit(node.items[1], visitorB)).toBe(17);
 });
 

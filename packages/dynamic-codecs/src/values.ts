@@ -60,6 +60,16 @@ export function getValueNodeVisitor(
             }
             return kind;
         },
+        visitInjectedValue(node) {
+            // `injectedValueNode` is a placeholder resolved by the provide/inject graph
+            // at instruction-build / presentation time. By codec time the resolution
+            // pass should have replaced it with a concrete value; reaching this layer
+            // unresolved indicates an upstream pipeline bug, not a value this visitor
+            // can decode without ancestor context.
+            throw new Error(
+                `cannot decode injectedValueNode (key "${node.key}"): the provide/inject resolution pass must run before codec evaluation.`,
+            );
+        },
         visitMapValue(node) {
             return Object.fromEntries(
                 node.entries.map(entry => {

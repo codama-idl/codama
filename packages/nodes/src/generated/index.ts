@@ -15,11 +15,13 @@ export * from './InstructionStatusNode';
 export * from './nodeKinds';
 export * from './PdaNode';
 export * from './ProgramNode';
+export * from './ProvidedNode';
 export * from './RootNode';
 
 export * from './contextualValueNodes';
 export * from './countNodes';
 export * from './discriminatorNodes';
+export * from './displayNodes';
 export * from './linkNodes';
 export * from './pdaSeedNodes';
 export * from './typeNodes';

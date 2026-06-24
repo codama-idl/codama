@@ -15,7 +15,7 @@
     },
     "dependencies": {
         "@codama/fragments": "workspace:*",
-        "@codama/spec": "1.6.0"
+        "@codama/spec": "1.7.0-rc.0"
     },
     "devDependencies": {
         "@types/node": "^25",

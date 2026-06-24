@@ -1,10 +1,16 @@
-import type { InstructionArgumentNode, InstructionInputValueNode, TypeNode } from '@codama/node-types';
+import type {
+    InstructionArgumentNode,
+    InstructionInputValueNode,
+    StructFieldDisplayNode,
+    TypeNode,
+} from '@codama/node-types';
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type InstructionArgumentNodeInput<
     TDefaultValue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
     TType extends TypeNode = TypeNode,
-> = Omit<InstructionArgumentNode<TDefaultValue, TType>, 'docs' | 'kind' | 'name'> & {
+    TDisplay extends StructFieldDisplayNode | undefined = StructFieldDisplayNode | undefined,
+> = Omit<InstructionArgumentNode<TDefaultValue, TType, TDisplay>, 'docs' | 'kind' | 'name'> & {
     readonly name: string;
     readonly docs?: DocsInput;
 };
@@ -13,7 +19,10 @@ export type InstructionArgumentNodeInput<
 export function instructionArgumentNode<
     const TDefaultValue extends InstructionInputValueNode | undefined = undefined,
     const TType extends TypeNode = TypeNode,
->(input: InstructionArgumentNodeInput<TDefaultValue, TType>): InstructionArgumentNode<TDefaultValue, TType> {
+    const TDisplay extends StructFieldDisplayNode | undefined = undefined,
+>(
+    input: InstructionArgumentNodeInput<TDefaultValue, TType, TDisplay>,
+): InstructionArgumentNode<TDefaultValue, TType, TDisplay> {
     const parsedDocs = parseDocs(input.docs);
     return Object.freeze({
         kind: 'instructionArgumentNode',
@@ -26,5 +35,6 @@ export function instructionArgumentNode<
         // Children.
         type: input.type,
         ...(input.defaultValue !== undefined && { defaultValue: input.defaultValue }),
+        ...(input.display !== undefined && { display: input.display }),
     });
 }

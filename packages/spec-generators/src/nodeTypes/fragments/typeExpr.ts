@@ -5,6 +5,8 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
     switch (expr.kind) {
         case 'address':
             return fragment`string`;
+        case 'anyNode':
+            return use('type Node', 'registry:Node');
         case 'string':
             return getStringExprFragment(expr);
         case 'integer':

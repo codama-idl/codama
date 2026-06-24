@@ -1,10 +1,11 @@
-import type { StructFieldTypeNode, TypeNode, ValueNode } from '@codama/node-types';
+import type { StructFieldDisplayNode, StructFieldTypeNode, TypeNode, ValueNode } from '@codama/node-types';
 import { camelCase, DocsInput, parseDocs } from '../../shared';
 
 export type StructFieldTypeNodeInput<
     TType extends TypeNode = TypeNode,
     TDefaultValue extends ValueNode | undefined = ValueNode | undefined,
-> = Omit<StructFieldTypeNode<TType, TDefaultValue>, 'docs' | 'kind' | 'name'> & {
+    TDisplay extends StructFieldDisplayNode | undefined = StructFieldDisplayNode | undefined,
+> = Omit<StructFieldTypeNode<TType, TDefaultValue, TDisplay>, 'docs' | 'kind' | 'name'> & {
     readonly name: string;
     readonly docs?: DocsInput;
 };
@@ -13,7 +14,10 @@ export type StructFieldTypeNodeInput<
 export function structFieldTypeNode<
     const TType extends TypeNode,
     const TDefaultValue extends ValueNode | undefined = undefined,
->(input: StructFieldTypeNodeInput<TType, TDefaultValue>): StructFieldTypeNode<TType, TDefaultValue> {
+    const TDisplay extends StructFieldDisplayNode | undefined = undefined,
+>(
+    input: StructFieldTypeNodeInput<TType, TDefaultValue, TDisplay>,
+): StructFieldTypeNode<TType, TDefaultValue, TDisplay> {
     const parsedDocs = parseDocs(input.docs);
     return Object.freeze({
         kind: 'structFieldTypeNode',
@@ -26,5 +30,6 @@ export function structFieldTypeNode<
         // Children.
         type: input.type,
         ...(input.defaultValue !== undefined && { defaultValue: input.defaultValue }),
+        ...(input.display !== undefined && { display: input.display }),
     });
 }

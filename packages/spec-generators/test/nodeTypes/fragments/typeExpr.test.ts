@@ -1,5 +1,6 @@
 import {
     address,
+    anyNode,
     array,
     boolean,
     codamaVersion,
@@ -96,6 +97,12 @@ describe('getTypeExprFragment', () => {
         const result = getTypeExprFragment(node('innerTypeNode'));
         expect(result.content).toBe('InnerTypeNode');
         expect([...result.imports.keys()]).toEqual(['node:innerTypeNode']);
+    });
+
+    it('renders anyNode as Node imported from the registry', () => {
+        const result = getTypeExprFragment(anyNode());
+        expect(result.content).toBe('Node');
+        expect([...result.imports.keys()]).toEqual(['registry:Node']);
     });
 
     it('renders union references with a union: import key', () => {

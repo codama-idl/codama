@@ -1,10 +1,14 @@
 import type { CamelCaseString } from '../brands';
 import type { Docs } from '../Docs';
 import type { InstructionInputValueNode } from './contextualValueNodes/InstructionInputValueNode';
+import type { InstructionAccountDisplayNode } from './displayNodes/InstructionAccountDisplayNode';
+import type { AccountLinkNode } from './linkNodes/AccountLinkNode';
 
 /** An account participating in an instruction, with its name, signing/writability flags, and an optional default value. */
 export interface InstructionAccountNode<
     TDefaultValue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
+    TAccountLink extends AccountLinkNode | undefined = AccountLinkNode | undefined,
+    TDisplay extends InstructionAccountDisplayNode | undefined = InstructionAccountDisplayNode | undefined,
 > {
     readonly kind: 'instructionAccountNode';
 
@@ -26,4 +30,11 @@ export interface InstructionAccountNode<
     // Children.
     /** A default value used to fill the slot when the caller does not provide one. */
     readonly defaultValue?: TDefaultValue;
+    /**
+     * A reference to the account's data layout. Required for consumers (e.g. `accountFieldValueNode`) to read fields from the account.
+     * The link's optional `program` allows cross-program references via the root's `additionalPrograms`.
+     */
+    readonly accountLink?: TAccountLink;
+    /** Display metadata describing how the account is presented. */
+    readonly display?: TDisplay;
 }

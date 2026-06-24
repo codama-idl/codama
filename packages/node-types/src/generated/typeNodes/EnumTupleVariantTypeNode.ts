@@ -1,10 +1,12 @@
 import type { CamelCaseString } from '../../brands';
+import type { EnumVariantDisplayNode } from '../displayNodes/EnumVariantDisplayNode';
 import type { NestedTypeNode } from './NestedTypeNode';
 import type { TupleTypeNode } from './TupleTypeNode';
 
 /** A variant of an enum that carries a tuple payload (positional fields). */
 export interface EnumTupleVariantTypeNode<
     TTuple extends NestedTypeNode<TupleTypeNode> = NestedTypeNode<TupleTypeNode>,
+    TDisplay extends EnumVariantDisplayNode | undefined = EnumVariantDisplayNode | undefined,
 > {
     readonly kind: 'enumTupleVariantTypeNode';
 
@@ -17,4 +19,6 @@ export interface EnumTupleVariantTypeNode<
     // Children.
     /** The tuple of positional fields carried by the variant. */
     readonly tuple: TTuple;
+    /** Display metadata describing how the variant is presented. */
+    readonly display?: TDisplay;
 }

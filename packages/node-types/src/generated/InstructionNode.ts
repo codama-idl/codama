@@ -1,11 +1,13 @@
 import type { CamelCaseString } from '../brands';
 import type { Docs } from '../Docs';
 import type { DiscriminatorNode } from './discriminatorNodes/DiscriminatorNode';
+import type { InstructionDisplayNode } from './displayNodes/InstructionDisplayNode';
 import type { InstructionAccountNode } from './InstructionAccountNode';
 import type { InstructionArgumentNode } from './InstructionArgumentNode';
 import type { InstructionByteDeltaNode } from './InstructionByteDeltaNode';
 import type { InstructionRemainingAccountsNode } from './InstructionRemainingAccountsNode';
 import type { InstructionStatusNode } from './InstructionStatusNode';
+import type { ProvidedNode } from './ProvidedNode';
 import type { OptionalAccountStrategy } from './shared/optionalAccountStrategy';
 
 type SelfInstructionNode = InstructionNode;
@@ -22,6 +24,8 @@ export interface InstructionNode<
     TDiscriminators extends Array<DiscriminatorNode> | undefined = Array<DiscriminatorNode> | undefined,
     TSubInstructions extends Array<SelfInstructionNode> | undefined = Array<SelfInstructionNode> | undefined,
     TStatus extends InstructionStatusNode | undefined = InstructionStatusNode | undefined,
+    TProvides extends Array<ProvidedNode> | undefined = Array<ProvidedNode> | undefined,
+    TDisplay extends InstructionDisplayNode | undefined = InstructionDisplayNode | undefined,
 > {
     readonly kind: 'instructionNode';
 
@@ -53,4 +57,11 @@ export interface InstructionNode<
     readonly status?: TStatus;
     /** Inner instructions invoked through CPI as part of executing this instruction. */
     readonly subInstructions?: TSubInstructions;
+    /**
+     * Named nodes exposed to consumers in the surrounding scope.
+     * Each entry pairs with an `injectedValueNode` that references it by key, so reusable types can pull contextual values without naming siblings directly.
+     */
+    readonly provides?: TProvides;
+    /** Display metadata describing how the instruction is presented. */
+    readonly display?: TDisplay;
 }

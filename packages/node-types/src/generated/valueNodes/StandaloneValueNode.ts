@@ -3,6 +3,7 @@ import type { BooleanValueNode } from './BooleanValueNode';
 import type { BytesValueNode } from './BytesValueNode';
 import type { ConstantValueNode } from './ConstantValueNode';
 import type { EnumValueNode } from './EnumValueNode';
+import type { InjectedValueNode } from './InjectedValueNode';
 import type { MapValueNode } from './MapValueNode';
 import type { NoneValueNode } from './NoneValueNode';
 import type { NumberValueNode } from './NumberValueNode';
@@ -20,6 +21,7 @@ export type StandaloneValueNode =
     | BytesValueNode
     | ConstantValueNode
     | EnumValueNode
+    | InjectedValueNode
     | MapValueNode
     | NoneValueNode
     | NumberValueNode

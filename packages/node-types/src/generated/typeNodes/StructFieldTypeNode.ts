@@ -1,5 +1,6 @@
 import type { CamelCaseString } from '../../brands';
 import type { Docs } from '../../Docs';
+import type { StructFieldDisplayNode } from '../displayNodes/StructFieldDisplayNode';
 import type { DefaultValueStrategy } from '../shared/defaultValueStrategy';
 import type { ValueNode } from '../valueNodes/ValueNode';
 import type { TypeNode } from './TypeNode';
@@ -8,6 +9,7 @@ import type { TypeNode } from './TypeNode';
 export interface StructFieldTypeNode<
     TType extends TypeNode = TypeNode,
     TDefaultValue extends ValueNode | undefined = ValueNode | undefined,
+    TDisplay extends StructFieldDisplayNode | undefined = StructFieldDisplayNode | undefined,
 > {
     readonly kind: 'structFieldTypeNode';
 
@@ -24,4 +26,6 @@ export interface StructFieldTypeNode<
     readonly type: TType;
     /** A default value used when the field is omitted by callers. */
     readonly defaultValue?: TDefaultValue;
+    /** Display metadata describing how the field is presented. */
+    readonly display?: TDisplay;
 }

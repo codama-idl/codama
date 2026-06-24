@@ -60,6 +60,8 @@ export const MERGE_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]> = 
             'byteDeltas',
             'discriminators',
             'subInstructions',
+            'provides',
+            'display',
         ],
     ],
     ['arrayTypeNode', ['count', 'item']],
@@ -97,6 +99,8 @@ export const IDENTITY_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]>
             'extraArguments',
             'remainingAccounts',
             'subInstructions',
+            'provides',
+            'display',
         ],
     ],
 ]);
