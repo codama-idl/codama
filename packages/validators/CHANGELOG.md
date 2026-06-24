@@ -1,5 +1,14 @@
 # @codama/validators
 
+## 1.8.1
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.8.1
+    - @codama/nodes@1.8.1
+    - @codama/visitors-core@1.8.1
+
 ## 1.8.0
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # codama
 
+## 1.8.1
+
+### Patch Changes
+
+- Updated dependencies [[`f6deb59`](https://github.com/codama-idl/codama/commit/f6deb59dfe27fc94ff93d7c3166bc2f04567df3a)]:
+    - @codama/cli@1.5.4
+    - @codama/errors@1.8.1
+    - @codama/nodes@1.8.1
+    - @codama/validators@1.8.1
+    - @codama/visitors@1.8.1
+
 ## 1.8.0
 
 ### Patch Changes
