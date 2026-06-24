@@ -1,5 +1,13 @@
 # @codama/nodes
 
+## 1.8.1
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.8.1
+    - @codama/node-types@1.8.1
+
 ## 1.8.0
 
 ### Minor Changes
