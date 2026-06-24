@@ -5,6 +5,7 @@ import {
     GetNodeFromKind,
     InstructionNode,
     isNodeFilter,
+    ProgramNode,
     resolveNestedTypeNode,
     RootNode,
     structTypeNodeFromInstructionArgumentNodes,
@@ -21,6 +22,8 @@ import {
 } from '@codama/visitors-core';
 
 import { matchDiscriminators } from './discriminators';
+
+type IdentifiableNodeKind = 'accountNode' | 'eventNode' | 'instructionNode';
 
 export function identifyAccountData(
     root: RootNode,
@@ -43,27 +46,31 @@ export function identifyInstructionData(
     return identifyData(root, bytes, 'instructionNode');
 }
 
-export function identifyData<TKind extends 'accountNode' | 'eventNode' | 'instructionNode'>(
+export function identifyData<TKind extends IdentifiableNodeKind>(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
     kind?: TKind | TKind[],
 ): NodePath<GetNodeFromKind<TKind>> | undefined {
+    const kinds = kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]);
+
     const stack = new NodeStack();
     const linkables = new LinkableDictionary();
     visit(root, getRecordLinkablesVisitor(linkables));
 
     const codecAndValueVisitors = getCodecAndValueVisitors(linkables, { stack });
-    const visitor = getByteIdentificationVisitor(
-        kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]),
-        bytes,
-        codecAndValueVisitors,
-        { stack },
-    );
+    const visitor = getByteIdentificationVisitor(kinds, bytes, codecAndValueVisitors, { stack });
 
-    return visit(root, visitor);
+    const identified = visit(root, visitor);
+    if (identified) return identified;
+
+    // Fallback: When Node of given kind doesn't have a discriminator and is single then we can identify it.
+    // Example: `Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH` program with single instruction omits a discriminator.
+    const candidates = getNodeCandidates(root.program, kinds);
+    if (candidates.length !== 1 || candidates[0].discriminators?.length) return undefined;
+    return [root, root.program, candidates[0]] as unknown as NodePath<GetNodeFromKind<TKind>>;
 }
 
-export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'eventNode' | 'instructionNode'>(
+export function getByteIdentificationVisitor<TKind extends IdentifiableNodeKind>(
     kind: TKind | TKind[],
     bytes: ReadonlyUint8Array | Uint8Array,
     codecAndValueVisitors: CodecAndValueVisitors,
@@ -96,8 +103,7 @@ export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'even
                 return match ? stack.getPath(node.kind) : undefined;
             },
             visitProgram(node) {
-                const candidates = [...node.accounts, ...node.events, ...node.instructions].filter(isNodeFilter(kind));
-                for (const candidate of candidates) {
+                for (const candidate of getNodeCandidates(node, kind)) {
                     const result = visit(candidate, this);
                     if (result) return result;
                 }
@@ -111,4 +117,11 @@ export function getByteIdentificationVisitor<TKind extends 'accountNode' | 'even
         >,
         v => recordNodeStackVisitor(v, stack),
     );
+}
+
+function getNodeCandidates(
+    program: ProgramNode,
+    kind: IdentifiableNodeKind | IdentifiableNodeKind[],
+): (AccountNode | EventNode | InstructionNode)[] {
+    return [...program.accounts, ...program.events, ...program.instructions].filter(isNodeFilter(kind));
 }
