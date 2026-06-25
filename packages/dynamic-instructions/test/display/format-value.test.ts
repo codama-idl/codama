@@ -1,4 +1,3 @@
-import type { Address } from '@solana/addresses';
 import {
     amountNumberDisplayNode,
     dateTimeNumberDisplayNode,
@@ -18,15 +17,7 @@ import {
     formatDurationValue,
     formatStringValue,
 } from '../../src/display/format-value';
-import type { DisplayResolutionContext } from '../../src/display/types';
-
-function context(overrides: Partial<DisplayResolutionContext> = {}): DisplayResolutionContext {
-    return {
-        accountAddresses: new Map<string, Address>(),
-        provides: new Map<string, ProvidedNode>(),
-        ...overrides,
-    };
-}
+import { displayContext as context } from '../test-utils';
 
 describe('formatAmountValue', () => {
     test('it scales an amount by literal decimals and appends a literal unit', async () => {

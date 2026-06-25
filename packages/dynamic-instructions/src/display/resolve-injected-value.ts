@@ -3,7 +3,7 @@ import type { Address } from '@solana/addresses';
 import { isNode, type Node } from 'codama';
 
 import { isObjectRecord } from '../shared/util';
-import type { DisplayResolutionContext } from './types';
+import type { DisplayContext } from './types';
 
 /**
  * A value resolved from the provide/inject graph for display purposes.
@@ -15,7 +15,7 @@ import type { DisplayResolutionContext } from './types';
 export type ResolvedDisplayValue = Address | bigint | number | string | null;
 
 /**
- * Resolves a node to a concrete display value within a {@link DisplayResolutionContext}.
+ * Resolves a node to a concrete display value within a {@link DisplayContext}.
  *
  * Handles the value/contextual nodes the display layer relies on:
  * - `numberValueNode` / `stringValueNode`: the literal value.
@@ -27,10 +27,7 @@ export type ResolvedDisplayValue = Address | bigint | number | string | null;
  *
  * Returns `null` when the value cannot be resolved so callers can fall back safely.
  */
-export async function resolveInjectedValue(
-    node: Node,
-    context: DisplayResolutionContext,
-): Promise<ResolvedDisplayValue> {
+export async function resolveInjectedValue(node: Node, context: DisplayContext): Promise<ResolvedDisplayValue> {
     if (isNode(node, 'numberValueNode')) {
         return node.number;
     }

@@ -12,17 +12,10 @@ import {
 import { describe, expect, test } from 'vitest';
 
 import { resolveInjectedValue } from '../../src/display/resolve-injected-value';
-import type { DisplayResolutionContext, FetchAccountDataFn } from '../../src/display/types';
+import type { FetchAccountDataFn } from '../../src/display/types';
+import { displayContext as context } from '../test-utils';
 
 const MINT = '86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY' as Address;
-
-function context(overrides: Partial<DisplayResolutionContext> = {}): DisplayResolutionContext {
-    return {
-        accountAddresses: new Map<string, Address>(),
-        provides: new Map<string, ProvidedNode>(),
-        ...overrides,
-    };
-}
 
 function providesMap(...entries: ProvidedNode[]): ReadonlyMap<string, ProvidedNode> {
     return new Map(entries.map(entry => [entry.name, entry]));
