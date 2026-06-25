@@ -46,7 +46,8 @@ async function resolvePlaceholder(root: string, name: string, displayContext: Di
         const argument = instruction.arguments.find(arg => arg.name === name);
         const decodedData = data as Record<string, unknown>;
         if (!argument || !(name in decodedData)) return null;
-        return await formatArgumentValue(argument.type, decodedData[name], displayContext);
+        const ownerPath = [...path, argument];
+        return await formatArgumentValue(argument.type, ownerPath, decodedData[name], displayContext);
     }
 
     // root === 'accounts'

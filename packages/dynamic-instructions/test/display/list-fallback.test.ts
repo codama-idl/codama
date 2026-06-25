@@ -7,9 +7,6 @@ import {
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
-    numberValueNode,
-    type ProvidedNode,
-    providedNode,
     structFieldDisplayNode,
     structFieldTypeNode,
     structTypeNode,
@@ -17,7 +14,7 @@ import {
 import { describe, expect, test } from 'vitest';
 
 import { listFallback } from '../../src/display/list-fallback';
-import { displayContext, parsedInstruction } from '../test-utils';
+import { displayContext, mockResolveDefinedType, parsedInstruction } from '../test-utils';
 
 const AUTHORITY = '86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY' as Address;
 
@@ -113,8 +110,8 @@ describe('listFallback', () => {
         expect(result).toEqual([{ label: 'Amount', value: '42' }]);
     });
 
-    test('it hides whenInjected members whose value is provided', async () => {
-        // Given an argument marked whenInjected and a provider exposing its name.
+    test('it hides whenInjected members whose value was consumed', async () => {
+        // Given an argument marked whenInjected whose name is in the consumed set.
         const instruction = instructionNode({
             accounts: [],
             arguments: [
@@ -126,19 +123,21 @@ describe('listFallback', () => {
             ],
             name: 'transfer',
         });
-        const provides = new Map<string, ProvidedNode>([['decimals', providedNode('decimals', numberValueNode(6))]]);
 
-        // When we build the fallback list with that provider present.
+        // When we build the fallback list with that member marked consumed.
         const result = await listFallback(
-            displayContext({ parsedInstruction: parsedInstruction({ data: { decimals: 6 }, instruction }), provides }),
+            displayContext({
+                consumedMemberNames: new Set(['decimals']),
+                parsedInstruction: parsedInstruction({ data: { decimals: 6 }, instruction }),
+            }),
         );
 
         // Then we expect the whenInjected argument to be hidden.
         expect(result).toEqual([]);
     });
 
-    test('it shows whenInjected members when no provider exposes them', async () => {
-        // Given an argument marked whenInjected and no matching provider.
+    test('it shows whenInjected members when their value was not consumed', async () => {
+        // Given an argument marked whenInjected that is not in the consumed set.
         const instruction = instructionNode({
             accounts: [],
             arguments: [
@@ -180,13 +179,11 @@ describe('listFallback', () => {
             ],
             name: 'placeOrder',
         });
-        const resolveDefinedType = (link: { name: string }) => (link.name === 'orderArgs' ? orderArgs : undefined);
-
         // When we build the fallback list.
         const result = await listFallback(
             displayContext({
                 parsedInstruction: parsedInstruction({ data: { args: { price: 100n, size: 5n } }, instruction }),
-                resolveDefinedType,
+                resolveDefinedType: mockResolveDefinedType(orderArgs),
             }),
         );
 

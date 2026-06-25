@@ -19,7 +19,7 @@ import type { DisplayContext } from './types';
 export async function formatAmountValue(
     value: bigint | number,
     node: AmountNumberDisplayNode,
-    context: DisplayContext,
+    context: Omit<DisplayContext, 'consumedMemberNames'>,
 ): Promise<string | null> {
     const decimals = node.decimals ? await resolveInjectedValue(node.decimals, context) : 0;
     if (decimals === null || (typeof decimals !== 'bigint' && typeof decimals !== 'number')) {

@@ -1,5 +1,6 @@
 export { createAccountMeta } from './accounts';
 export { encodeInstructionArguments } from './arguments';
+export * from './display';
 export { createInstructionsBuilder } from './instructions-builder';
 export type { InstructionsBuilderFn, EitherSigners } from './shared/types';
 
