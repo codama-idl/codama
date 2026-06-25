@@ -17,17 +17,7 @@ import {
     formatDurationValue,
     formatStringValue,
 } from '../../src/display/format-value';
-import type { DisplayResolutionContext } from '../../src/display/types';
-import { parsedInstruction } from '../test-utils';
-
-function context(overrides: Partial<DisplayResolutionContext> = {}): DisplayResolutionContext {
-    return {
-        parsedInstruction: parsedInstruction(),
-        provides: new Map<string, ProvidedNode>(),
-        resolveAccountData: () => null,
-        ...overrides,
-    };
-}
+import { displayContext as context } from '../test-utils';
 
 describe('formatAmountValue', () => {
     test('it scales an amount by literal decimals and appends a literal unit', async () => {

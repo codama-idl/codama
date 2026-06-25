@@ -11,10 +11,11 @@ import {
     instructionNode,
     type NodePath,
     programNode,
+    type ProvidedNode,
     rootNode,
 } from 'codama';
 
-import type { ResolveAccountDataFn } from '../src/display/types';
+import type { DisplayContext, ResolveAccountDataFn } from '../src/display/types';
 
 export async function generateAddress(): Promise<Address> {
     const signer = await generateKeyPairSigner();
@@ -22,6 +23,7 @@ export async function generateAddress(): Promise<Address> {
 }
 
 const FIXTURE_ADDRESS = '11111111111111111111111111111111' as Address;
+const DEFAULT_INSTRUCTION = instructionNode({ accounts: [], arguments: [], name: 'noop' });
 
 /** Wraps raw account bytes in a Kit {@link MaybeEncodedAccount} that exists, filling its metadata. */
 export function encodedAccount(bytes: ReadonlyUint8Array): MaybeEncodedAccount {
@@ -57,15 +59,19 @@ export function accountFixture(
 }
 
 /**
- * Builds a {@link ParsedInstruction} fixture from decoded argument data and named account
- * addresses. The `path` is a stub: helpers that only read `data`/`accounts` never consult it.
+ * Builds a {@link ParsedInstruction} fixture from an instruction, decoded argument data, and named
+ * account addresses. The instruction is wrapped in a fresh root so `path` is the real
+ * `[root, program, instruction]` that display helpers walk to recover the node.
  */
 export function parsedInstruction(
     overrides: {
         accounts?: ReadonlyArray<readonly [name: string, address: Address]>;
         data?: Record<string, unknown>;
+        instruction?: InstructionNode;
     } = {},
 ): ParsedInstruction {
+    const instruction = overrides.instruction ?? DEFAULT_INSTRUCTION;
+    const root = makeRoot([instruction]);
     return {
         accounts: (overrides.accounts ?? []).map(([name, address]) => ({
             address,
@@ -73,7 +79,18 @@ export function parsedInstruction(
             role: AccountRole.READONLY,
         })),
         data: overrides.data ?? {},
-        path: [] as unknown as NodePath<InstructionNode>,
+        path: [root, root.program, instruction] as NodePath<InstructionNode>,
+    };
+}
+
+/** Builds a {@link DisplayContext} with empty defaults, overridable per test. */
+export function displayContext(overrides: Partial<DisplayContext> = {}): DisplayContext {
+    return {
+        parsedInstruction: parsedInstruction(),
+        provides: new Map<string, ProvidedNode>(),
+        resolveAccountData: () => null,
+        resolveDefinedType: () => undefined,
+        ...overrides,
     };
 }
 

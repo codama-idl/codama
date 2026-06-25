@@ -6,7 +6,7 @@ import type {
 } from 'codama';
 
 import { resolveInjectedValue } from './resolve-injected-value';
-import type { DisplayResolutionContext } from './types';
+import type { DisplayContext } from './types';
 
 /**
  * Formats an integer as a scaled amount with an optional unit (e.g. `1100000000` → `"1.1 SOL"`).
@@ -19,7 +19,7 @@ import type { DisplayResolutionContext } from './types';
 export async function formatAmountValue(
     value: bigint | number,
     node: AmountNumberDisplayNode,
-    context: DisplayResolutionContext,
+    context: DisplayContext,
 ): Promise<string | null> {
     const decimals = node.decimals ? await resolveInjectedValue(node.decimals, context) : 0;
     if (decimals === null || (typeof decimals !== 'bigint' && typeof decimals !== 'number')) {
