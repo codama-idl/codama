@@ -7,9 +7,6 @@ import {
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
-    numberValueNode,
-    type ProvidedNode,
-    providedNode,
     structFieldDisplayNode,
     structFieldTypeNode,
     structTypeNode,
@@ -17,7 +14,7 @@ import {
 import { describe, expect, test } from 'vitest';
 
 import { listFallback } from '../../src/display/list-fallback';
-import { displayContext } from '../test-utils';
+import { displayContextFor, mockResolveDefinedType } from '../test-utils';
 
 const AUTHORITY = '86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY' as Address;
 
@@ -32,10 +29,9 @@ describe('listFallback', () => {
 
         // When we build the fallback list.
         const result = await listFallback(
-            displayContext({
+            displayContextFor(instruction, {
                 accountAddresses: new Map([['destination', AUTHORITY]]),
                 data: { amount: 42n },
-                instruction,
             }),
         );
 
@@ -69,10 +65,9 @@ describe('listFallback', () => {
 
         // When we build the fallback list.
         const result = await listFallback(
-            displayContext({
+            displayContextFor(instruction, {
                 accountAddresses: new Map([['destination', AUTHORITY]]),
                 data: { amount: 42n },
-                instruction,
             }),
         );
 
@@ -99,14 +94,14 @@ describe('listFallback', () => {
         });
 
         // When we build the fallback list.
-        const result = await listFallback(displayContext({ data: { amount: 42n, discriminator: 3 }, instruction }));
+        const result = await listFallback(displayContextFor(instruction, { data: { amount: 42n, discriminator: 3 } }));
 
         // Then we expect only the visible argument.
         expect(result).toEqual([{ label: 'Amount', value: '42' }]);
     });
 
-    test('it hides whenInjected members whose value is provided', async () => {
-        // Given an argument marked whenInjected and a provider exposing its name.
+    test('it hides whenInjected members whose value was consumed', async () => {
+        // Given an argument marked whenInjected whose name is in the consumed set.
         const instruction = instructionNode({
             accounts: [],
             arguments: [
@@ -118,17 +113,18 @@ describe('listFallback', () => {
             ],
             name: 'transfer',
         });
-        const provides = new Map<string, ProvidedNode>([['decimals', providedNode('decimals', numberValueNode(6))]]);
 
-        // When we build the fallback list with that provider present.
-        const result = await listFallback(displayContext({ data: { decimals: 6 }, instruction, provides }));
+        // When we build the fallback list with that member marked consumed.
+        const result = await listFallback(
+            displayContextFor(instruction, { consumedMemberNames: new Set(['decimals']), data: { decimals: 6 } }),
+        );
 
         // Then we expect the whenInjected argument to be hidden.
         expect(result).toEqual([]);
     });
 
-    test('it shows whenInjected members when no provider exposes them', async () => {
-        // Given an argument marked whenInjected and no matching provider.
+    test('it shows whenInjected members when their value was not consumed', async () => {
+        // Given an argument marked whenInjected that is not in the consumed set.
         const instruction = instructionNode({
             accounts: [],
             arguments: [
@@ -142,7 +138,7 @@ describe('listFallback', () => {
         });
 
         // When we build the fallback list.
-        const result = await listFallback(displayContext({ data: { decimals: 6 }, instruction }));
+        const result = await listFallback(displayContextFor(instruction, { data: { decimals: 6 } }));
 
         // Then we expect the argument to be shown as a backup.
         expect(result).toEqual([{ label: 'Decimals', value: '6' }]);
@@ -168,14 +164,11 @@ describe('listFallback', () => {
             ],
             name: 'placeOrder',
         });
-        const resolveDefinedType = (link: { name: string }) => (link.name === 'orderArgs' ? orderArgs : undefined);
-
         // When we build the fallback list.
         const result = await listFallback(
-            displayContext({
+            displayContextFor(instruction, {
                 data: { args: { price: 100n, size: 5n } },
-                instruction,
-                resolveDefinedType,
+                resolveDefinedType: mockResolveDefinedType(orderArgs),
             }),
         );
 

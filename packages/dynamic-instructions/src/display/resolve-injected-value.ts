@@ -27,7 +27,10 @@ export type ResolvedDisplayValue = Address | bigint | number | string | null;
  *
  * Returns `null` when the value cannot be resolved so callers can fall back safely.
  */
-export async function resolveInjectedValue(node: Node, context: DisplayContext): Promise<ResolvedDisplayValue> {
+export async function resolveInjectedValue(
+    node: Node,
+    context: Omit<DisplayContext, 'consumedMemberNames'>,
+): Promise<ResolvedDisplayValue> {
     if (isNode(node, 'numberValueNode')) {
         return node.number;
     }

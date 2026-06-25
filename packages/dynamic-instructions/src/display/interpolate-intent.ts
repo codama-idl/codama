@@ -1,3 +1,5 @@
+import { getLastNodeFromPath } from 'codama';
+
 import { formatArgumentValue } from './format-argument-value';
 import type { DisplayContext } from './types';
 
@@ -16,7 +18,8 @@ const PLACEHOLDER_PATTERN = /\$\{\s*(data|accounts)\.([a-zA-Z0-9_]+)\s*\}/g;
  * signals the caller to fall back to the structured field list.
  */
 export async function interpolateIntent(displayContext: DisplayContext): Promise<string | null> {
-    const template = displayContext.instruction.display?.interpolatedIntent;
+    const instruction = getLastNodeFromPath(displayContext.instructionPath);
+    const template = instruction.display?.interpolatedIntent;
     if (template === undefined) return null;
 
     // Resolve each distinct placeholder in parallel, then substitute them back into the template.
@@ -38,9 +41,11 @@ export async function interpolateIntent(displayContext: DisplayContext): Promise
 /** Resolves a single placeholder to its rendered string, or `null` when it cannot be resolved. */
 async function resolvePlaceholder(root: string, name: string, displayContext: DisplayContext): Promise<string | null> {
     if (root === 'data') {
-        const argument = displayContext.instruction.arguments.find(arg => arg.name === name);
+        const instruction = getLastNodeFromPath(displayContext.instructionPath);
+        const argument = instruction.arguments.find(arg => arg.name === name);
         if (!argument || !(name in displayContext.data)) return null;
-        return await formatArgumentValue(argument.type, displayContext.data[name], displayContext);
+        const ownerPath = [...displayContext.instructionPath, argument];
+        return await formatArgumentValue(argument.type, ownerPath, displayContext.data[name], displayContext);
     }
 
     // root === 'accounts'

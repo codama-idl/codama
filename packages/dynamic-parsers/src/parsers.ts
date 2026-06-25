@@ -52,8 +52,8 @@ export function parseData<TKind extends ParsableNodeKind>(
     return { data, path };
 }
 
-type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { name: CamelCaseString }>;
-type ParsedInstruction = ParsedData<InstructionNode> & { accounts: ParsedInstructionAccounts };
+export type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { name: CamelCaseString }>;
+export type ParsedInstruction = ParsedData<InstructionNode> & { accounts: ParsedInstructionAccounts };
 
 export function parseInstruction(
     root: RootNode,
