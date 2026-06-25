@@ -12,7 +12,7 @@ import {
 import { describe, expect, test } from 'vitest';
 
 import { interpolateIntent } from '../../src/display/interpolate-intent';
-import { displayContext } from '../test-utils';
+import { displayContextFor } from '../test-utils';
 
 const DESTINATION = '86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY' as Address;
 
@@ -38,10 +38,9 @@ describe('interpolateIntent', () => {
 
         // When we interpolate the intent.
         const result = await interpolateIntent(
-            displayContext({
+            displayContextFor(instruction, {
                 accountAddresses: new Map([['destination', DESTINATION]]),
                 data: { amount: 1_500_000_000n },
-                instruction,
             }),
         );
 
@@ -59,7 +58,7 @@ describe('interpolateIntent', () => {
         });
 
         // When we interpolate the intent.
-        const result = await interpolateIntent(displayContext({ instruction }));
+        const result = await interpolateIntent(displayContextFor(instruction));
 
         // Then we expect null.
         expect(result).toBeNull();
@@ -75,7 +74,7 @@ describe('interpolateIntent', () => {
         });
 
         // When we interpolate the intent.
-        const result = await interpolateIntent(displayContext({ instruction }));
+        const result = await interpolateIntent(displayContextFor(instruction));
 
         // Then we expect null so the caller falls back to the list.
         expect(result).toBeNull();
@@ -91,7 +90,7 @@ describe('interpolateIntent', () => {
         });
 
         // When we interpolate the intent without supplying the account address.
-        const result = await interpolateIntent(displayContext({ instruction }));
+        const result = await interpolateIntent(displayContextFor(instruction));
 
         // Then we expect null.
         expect(result).toBeNull();
@@ -115,7 +114,7 @@ describe('interpolateIntent', () => {
 
         // When we interpolate the intent.
         // Then it still resolves: an unresolved amount falls back to its raw value rather than failing.
-        const result = await interpolateIntent(displayContext({ data: { amount: 1_000_000n }, instruction }));
+        const result = await interpolateIntent(displayContextFor(instruction, { data: { amount: 1_000_000n } }));
         expect(result).toBe('Transfer 1000000');
     });
 });

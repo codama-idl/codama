@@ -188,6 +188,9 @@ importers:
       '@codama/dynamic-codecs':
         specifier: workspace:*
         version: link:../dynamic-codecs
+      '@codama/dynamic-parsers':
+        specifier: workspace:*
+        version: link:../dynamic-parsers
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
