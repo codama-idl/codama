@@ -1,4 +1,13 @@
-import { programNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@codama/nodes';
+import {
+    definedTypeLinkNode,
+    definedTypeNode,
+    numberTypeNode,
+    programNode,
+    publicKeyTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
+    tupleTypeNode,
+} from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
@@ -49,5 +58,57 @@ test('it validates nested nodes', () => {
     expect(items).toEqual([
         validationItem('warn', 'Tuple has no items.', tupleNode, [node]),
         validationItem('error', 'Struct field name "owner" is not unique.', structNode.fields[0], [node]),
+    ]);
+});
+
+test('it validates a defined type link nested within a struct field', () => {
+    // Given a program whose defined type links to another through a struct field.
+    const node = programNode({
+        accounts: [],
+        definedTypes: [
+            definedTypeNode({
+                name: 'foo',
+                type: structTypeNode([structFieldTypeNode({ name: 'bar', type: definedTypeLinkNode('baz') })]),
+            }),
+            definedTypeNode({ name: 'baz', type: numberTypeNode('u64') }),
+        ],
+        errors: [],
+        instructions: [],
+        name: 'test',
+        origin: 'anchor',
+        publicKey: '11111111111111111111111111111111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then we expect no validation errors.
+    expect(items).toEqual([]);
+});
+
+test('it reports a nested defined type link that points at a missing type', () => {
+    // Given a program whose defined type field links to a type that does not exist.
+    const link = definedTypeLinkNode('missing');
+    const field = structFieldTypeNode({ name: 'bar', type: link });
+    const struct = structTypeNode([field]);
+    const foo = definedTypeNode({ name: 'foo', type: struct });
+    const node = programNode({
+        accounts: [],
+        definedTypes: [foo],
+        errors: [],
+        instructions: [],
+        name: 'test',
+        origin: 'anchor',
+        publicKey: '11111111111111111111111111111111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the missing link is reported as an error.
+    expect(items).toEqual([
+        validationItem('error', 'Pointing to a missing defined type named "missing"', link, [node, foo, struct, field, link]),
     ]);
 });
