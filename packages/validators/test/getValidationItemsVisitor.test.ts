@@ -32,10 +32,10 @@ test('it validates program nodes', () => {
 
     // Then we expect the following validation errors.
     expect(items).toEqual([
-        validationItem('error', 'Program has no name.', node, []),
-        validationItem('error', 'Program has no public key.', node, []),
-        validationItem('warn', 'Program has no version.', node, []),
-        validationItem('info', 'Program has no origin.', node, []),
+        validationItem('error', 'Program has no name.', node, [node]),
+        validationItem('error', 'Program has no public key.', node, [node]),
+        validationItem('warn', 'Program has no version.', node, [node]),
+        validationItem('info', 'Program has no origin.', node, [node]),
     ]);
 });
 
@@ -56,8 +56,8 @@ test('it validates nested nodes', () => {
     const tupleNode = node.items[0];
     const structNode = node.items[1];
     expect(items).toEqual([
-        validationItem('warn', 'Tuple has no items.', tupleNode, [node]),
-        validationItem('error', 'Struct field name "owner" is not unique.', structNode.fields[0], [node]),
+        validationItem('warn', 'Tuple has no items.', tupleNode, [node, tupleNode]),
+        validationItem('error', 'Struct field name "owner" is not unique.', structNode.fields[0], [node, structNode]),
     ]);
 });
 
