@@ -6,6 +6,7 @@ import { ProgramOptions } from './programOptions';
 import { canRead, CliError, importModuleItem, logWarning } from './utils';
 
 export type Config = Readonly<{
+    additionalIdls?: readonly string[];
     idl?: string;
     scripts?: ScriptsConfig;
     before?: readonly VisitorConfig[];

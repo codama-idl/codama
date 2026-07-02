@@ -71,6 +71,7 @@ Here are the available options for the `run` command:
 The Codama configuration file defines an object containing the following fields:
 
 - `idl` (string): The path to the IDL file. This can be a Codama IDL or an Anchor IDL which will be automatically converted to a Codama IDL.
+- `additionalIdls` (array): An array of paths to additional Anchor IDLs. Their programs are included alongside the main IDL's program (as `additionalPrograms`), so a single config can generate clients for multiple programs in an Anchor workspace.
     ```json
     {
         "idl": "path/to/idl"
