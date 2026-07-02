@@ -1,4 +1,4 @@
-import type { RootNode } from '@codama/nodes';
+import { getAllPrograms, type RootNode,rootNode } from '@codama/nodes';
 import { Command } from 'commander';
 
 import { Config, getConfig, ScriptName, ScriptsConfig, VisitorConfig, VisitorPath } from './config';
@@ -46,11 +46,32 @@ async function parseConfig(
 ): Promise<ParsedConfig> {
     const idlPath = parseIdlPath(config, configPath, options);
     const idlContent = await importModuleItem({ identifier: 'IDL', from: idlPath });
-    const rootNode = await getRootNodeFromIdl(idlContent);
+    const mainRootNode = await getRootNodeFromIdl(idlContent);
+    const rootNode = await mergeAdditionalIdls(mainRootNode, config.additionalIdls ?? [], configPath);
     const scripts = parseScripts(config.scripts ?? {}, configPath);
     const visitors = (config.before ?? []).map((v, i) => parseVisitorConfig(v, configPath, i, null));
 
     return { configPath, idlContent, idlPath, rootNode, scripts, before: visitors };
+}
+
+async function mergeAdditionalIdls(
+    mainRootNode: RootNode,
+    additionalIdls: readonly string[],
+    configPath: string | null,
+): Promise<RootNode> {
+    if (additionalIdls.length === 0) {
+        return mainRootNode;
+    }
+
+    const additionalPrograms = [...mainRootNode.additionalPrograms];
+    for (const additionalIdl of additionalIdls) {
+        const additionalIdlPath = resolveConfigPath(additionalIdl, configPath);
+        const additionalIdlContent = await importModuleItem({ identifier: 'additional IDL', from: additionalIdlPath });
+        const additionalRootNode = await getRootNodeFromIdl(additionalIdlContent);
+        additionalPrograms.push(...getAllPrograms(additionalRootNode));
+    }
+
+    return rootNode(mainRootNode.program, additionalPrograms);
 }
 
 function parseIdlPath(
