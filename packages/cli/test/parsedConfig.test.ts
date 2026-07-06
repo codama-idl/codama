@@ -45,7 +45,7 @@ beforeEach(() => {
 test('merges additionalIdls programs into the root node additionalPrograms', async () => {
     getConfigMock.mockResolvedValue([{ additionalIdls: ['a.json', 'b.json'], idl: 'main.json' }, '/root/codama.json']);
     getRootNodeFromIdlMock
-        .mockResolvedValueOnce(rootNodeWith('main'))
+        .mockResolvedValueOnce({ ...rootNodeWith('main'), version: '9.9.9' } as RootNode)
         .mockResolvedValueOnce(rootNodeWith('a'))
         .mockResolvedValueOnce(rootNodeWith('b'));
 
@@ -53,6 +53,9 @@ test('merges additionalIdls programs into the root node additionalPrograms', asy
 
     expect(parsed.rootNode.program.name).toBe('main');
     expect(parsed.rootNode.additionalPrograms.map(p => p.name)).toEqual(['a', 'b']);
+    // The main root node's other fields are preserved by the merge.
+    expect(parsed.rootNode.standard).toBe('codama');
+    expect(parsed.rootNode.version).toBe('9.9.9');
 });
 
 test('leaves the root node unchanged when no additionalIdls are provided', async () => {

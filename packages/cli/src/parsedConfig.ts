@@ -1,4 +1,4 @@
-import { getAllPrograms, type RootNode,rootNode } from '@codama/nodes';
+import { getAllPrograms, type RootNode } from '@codama/nodes';
 import { Command } from 'commander';
 
 import { Config, getConfig, ScriptName, ScriptsConfig, VisitorConfig, VisitorPath } from './config';
@@ -71,7 +71,8 @@ async function mergeAdditionalIdls(
         additionalPrograms.push(...getAllPrograms(additionalRootNode));
     }
 
-    return rootNode(mainRootNode.program, additionalPrograms);
+    // Preserve the main root node's other fields (e.g. `standard`, `version`).
+    return { ...mainRootNode, additionalPrograms };
 }
 
 function parseIdlPath(
