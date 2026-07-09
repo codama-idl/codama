@@ -52,8 +52,15 @@ export function parseData<TKind extends ParsableNodeKind>(
     return { data, path };
 }
 
-type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { name: CamelCaseString }>;
-type ParsedInstruction = ParsedData<InstructionNode> & { accounts: ParsedInstructionAccounts };
+/**
+ * The parsed accounts of an instruction, each pairing its on-chain `AccountMeta` with its node name.
+ */
+export type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { name: CamelCaseString }>;
+
+/**
+ * A parsed instruction: its decoded data and node path, plus its resolved {@link ParsedInstructionAccounts}.
+ */
+export type ParsedInstruction = ParsedData<InstructionNode> & { accounts: ParsedInstructionAccounts };
 
 export function parseInstruction(
     root: RootNode,
