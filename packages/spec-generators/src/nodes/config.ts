@@ -52,6 +52,7 @@ export type AttributeOverride =
           readonly paramName?: string;
       }
     | { readonly coerce: Fragment; readonly paramName?: string }
+    | { readonly paramName: string }
     | { readonly value: Fragment };
 
 export interface NodeConstructorConfig {
@@ -347,6 +348,19 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
         },
     ],
     ['programLinkNode', { positionalArgs: ['name'] }],
+
+    [
+        'providedNode',
+        {
+            attributes: {
+                // Rename the local identifier used in generated bodies (constructor positional
+                // arg, visitor walk-step local) so it does not shadow the outer `node`
+                // parameter that every visitor receives.
+                node: { paramName: 'value' },
+            },
+            positionalArgs: ['name', 'node'],
+        },
+    ],
 
     ['constantPdaSeedNode', { positionalArgs: ['type', 'value'] }],
     ['variablePdaSeedNode', { positionalArgs: ['name', 'type', 'docs'] }],

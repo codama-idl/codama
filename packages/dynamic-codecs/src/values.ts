@@ -1,4 +1,8 @@
-import { CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
+    CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
+    CodamaError,
+} from '@codama/errors';
 import { assertIsNode, bytesTypeNode, isNode, isScalarEnum, pascalCase, ValueNode } from '@codama/nodes';
 import { LinkableDictionary, NodeStack, pipe, recordNodeStackVisitor, visit, Visitor } from '@codama/visitors-core';
 
@@ -59,6 +63,16 @@ export function getValueNodeVisitor(
                 return { ...kind, fields };
             }
             return kind;
+        },
+        visitInjectedValue(node) {
+            // `injectedValueNode` is a placeholder resolved by the provide/inject graph
+            // at instruction-build / presentation time. By codec time the resolution
+            // pass should have replaced it with a concrete value; reaching this layer
+            // unresolved indicates an upstream pipeline bug, not a value this visitor
+            // can decode without ancestor context.
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION, {
+                message: `injectedValueNode (key "${node.key}") reached codec evaluation; the provide/inject resolution pass must run first.`,
+            });
         },
         visitMapValue(node) {
             return Object.fromEntries(

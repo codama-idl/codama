@@ -3,9 +3,11 @@ import type {
     InstructionAccountNode,
     InstructionArgumentNode,
     InstructionByteDeltaNode,
+    InstructionDisplayNode,
     InstructionNode,
     InstructionRemainingAccountsNode,
     InstructionStatusNode,
+    ProvidedNode,
 } from '@codama/node-types';
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
@@ -20,6 +22,8 @@ export type InstructionNodeInput<
     TDiscriminators extends Array<DiscriminatorNode> | undefined = Array<DiscriminatorNode> | undefined,
     TSubInstructions extends Array<InstructionNode> | undefined = Array<InstructionNode> | undefined,
     TStatus extends InstructionStatusNode | undefined = InstructionStatusNode | undefined,
+    TProvides extends Array<ProvidedNode> | undefined = Array<ProvidedNode> | undefined,
+    TDisplay extends InstructionDisplayNode | undefined = InstructionDisplayNode | undefined,
 > = Omit<
     Partial<
         InstructionNode<
@@ -30,7 +34,9 @@ export type InstructionNodeInput<
             TByteDeltas,
             TDiscriminators,
             TSubInstructions,
-            TStatus
+            TStatus,
+            TProvides,
+            TDisplay
         >
     >,
     'docs' | 'kind' | 'name'
@@ -49,6 +55,8 @@ export function instructionNode<
     const TDiscriminators extends Array<DiscriminatorNode> | undefined = undefined,
     const TSubInstructions extends Array<InstructionNode> | undefined = undefined,
     const TStatus extends InstructionStatusNode | undefined = undefined,
+    const TProvides extends Array<ProvidedNode> | undefined = undefined,
+    const TDisplay extends InstructionDisplayNode | undefined = undefined,
 >(
     input: InstructionNodeInput<
         TAccounts,
@@ -58,7 +66,9 @@ export function instructionNode<
         TByteDeltas,
         TDiscriminators,
         TSubInstructions,
-        TStatus
+        TStatus,
+        TProvides,
+        TDisplay
     >,
 ): InstructionNode<
     TAccounts,
@@ -68,7 +78,9 @@ export function instructionNode<
     TByteDeltas,
     TDiscriminators,
     TSubInstructions,
-    TStatus
+    TStatus,
+    TProvides,
+    TDisplay
 > {
     const parsedDocs = parseDocs(input.docs);
     return Object.freeze({
@@ -88,5 +100,7 @@ export function instructionNode<
         ...(input.discriminators !== undefined && { discriminators: input.discriminators }),
         ...(input.status !== undefined && { status: input.status }),
         ...(input.subInstructions !== undefined && { subInstructions: input.subInstructions }),
+        ...(input.provides !== undefined && { provides: input.provides }),
+        ...(input.display !== undefined && { display: input.display }),
     });
 }

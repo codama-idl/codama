@@ -44,15 +44,21 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
+    if (keys.includes('enumEmptyVariantTypeNode')) {
+        visitor.visitEnumEmptyVariantType = function visitEnumEmptyVariantType(node) {
+            return merge(node, node.display ? visit(this)(node.display) : []);
+        };
+    }
+
     if (keys.includes('enumStructVariantTypeNode')) {
         visitor.visitEnumStructVariantType = function visitEnumStructVariantType(node) {
-            return merge(node, visit(this)(node.struct));
+            return merge(node, [...visit(this)(node.struct), ...(node.display ? visit(this)(node.display) : [])]);
         };
     }
 
     if (keys.includes('enumTupleVariantTypeNode')) {
         visitor.visitEnumTupleVariantType = function visitEnumTupleVariantType(node) {
-            return merge(node, visit(this)(node.tuple));
+            return merge(node, [...visit(this)(node.tuple), ...(node.display ? visit(this)(node.display) : [])]);
         };
     }
 
@@ -83,6 +89,12 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('mapTypeNode')) {
         visitor.visitMapType = function visitMapType(node) {
             return merge(node, [...visit(this)(node.count), ...visit(this)(node.key), ...visit(this)(node.value)]);
+        };
+    }
+
+    if (keys.includes('numberTypeNode')) {
+        visitor.visitNumberType = function visitNumberType(node) {
+            return merge(node, node.display ? visit(this)(node.display) : []);
         };
     }
 
@@ -134,11 +146,18 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
+    if (keys.includes('stringTypeNode')) {
+        visitor.visitStringType = function visitStringType(node) {
+            return merge(node, node.display ? visit(this)(node.display) : []);
+        };
+    }
+
     if (keys.includes('structFieldTypeNode')) {
         visitor.visitStructFieldType = function visitStructFieldType(node) {
             return merge(node, [
                 ...visit(this)(node.type),
                 ...(node.defaultValue ? visit(this)(node.defaultValue) : []),
+                ...(node.display ? visit(this)(node.display) : []),
             ]);
         };
     }
@@ -176,6 +195,12 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('enumValueNode')) {
         visitor.visitEnumValue = function visitEnumValue(node) {
             return merge(node, [...visit(this)(node.enum), ...(node.value ? visit(this)(node.value) : [])]);
+        };
+    }
+
+    if (keys.includes('injectedValueNode')) {
+        visitor.visitInjectedValue = function visitInjectedValue(node) {
+            return merge(node, node.fallback ? visit(this)(node.fallback) : []);
         };
     }
 
@@ -281,6 +306,15 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
         };
     }
 
+    if (keys.includes('amountNumberDisplayNode')) {
+        visitor.visitAmountNumberDisplay = function visitAmountNumberDisplay(node) {
+            return merge(node, [
+                ...(node.decimals ? visit(this)(node.decimals) : []),
+                ...(node.unit ? visit(this)(node.unit) : []),
+            ]);
+        };
+    }
+
     if (keys.includes('conditionalValueNode')) {
         visitor.visitConditionalValue = function visitConditionalValue(node) {
             return merge(node, [
@@ -344,7 +378,11 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
 
     if (keys.includes('instructionAccountNode')) {
         visitor.visitInstructionAccount = function visitInstructionAccount(node) {
-            return merge(node, node.defaultValue ? visit(this)(node.defaultValue) : []);
+            return merge(node, [
+                ...(node.defaultValue ? visit(this)(node.defaultValue) : []),
+                ...(node.accountLink ? visit(this)(node.accountLink) : []),
+                ...(node.display ? visit(this)(node.display) : []),
+            ]);
         };
     }
 
@@ -353,6 +391,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
             return merge(node, [
                 ...visit(this)(node.type),
                 ...(node.defaultValue ? visit(this)(node.defaultValue) : []),
+                ...(node.display ? visit(this)(node.display) : []),
             ]);
         };
     }
@@ -374,13 +413,15 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...(node.byteDeltas ?? []).flatMap(visit(this)),
                 ...(node.discriminators ?? []).flatMap(visit(this)),
                 ...(node.subInstructions ?? []).flatMap(visit(this)),
+                ...(node.provides ?? []).flatMap(visit(this)),
+                ...(node.display ? visit(this)(node.display) : []),
             ]);
         };
     }
 
     if (keys.includes('instructionRemainingAccountsNode')) {
         visitor.visitInstructionRemainingAccounts = function visitInstructionRemainingAccounts(node) {
-            return merge(node, visit(this)(node.value));
+            return merge(node, [...visit(this)(node.value), ...(node.display ? visit(this)(node.display) : [])]);
         };
     }
 
@@ -401,6 +442,12 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...(node.errors ?? []).flatMap(visit(this)),
                 ...(node.constants ?? []).flatMap(visit(this)),
             ]);
+        };
+    }
+
+    if (keys.includes('providedNode')) {
+        visitor.visitProvided = function visitProvided(node) {
+            return merge(node, visit(this)(node.node));
         };
     }
 

@@ -157,6 +157,12 @@ export function getMaxByteSizeVisitor(
                     return getArrayLikeSize(node.count, visit(node.item, self), self);
                 },
 
+                visitStringType() {
+                    // Strings have no fixed maximum byte size; size is determined by an
+                    // enclosing wrapper such as `sizePrefixTypeNode` or `fixedSizeTypeNode`.
+                    return null;
+                },
+
                 visitZeroableOptionType(node, { self }) {
                     const itemSize = visit(node.item, self);
                     if (!node.zeroValue) return itemSize;

@@ -44,17 +44,19 @@ describe('getNodeTypeParameterAttributes', () => {
     });
 
     it('uses genericParamOrder overrides to reorder type-parameter attributes', () => {
-        // `instructionArgumentNode` surfaces both `type` (child) and
-        // `defaultValue` (child) as type parameters; the
-        // GENERIC_PARAM_ORDER table says `defaultValue` must come first.
+        // `instructionArgumentNode` surfaces `type` (child), `defaultValue`
+        // (child), and `display` (child) as type parameters; the
+        // GENERIC_PARAM_ORDER table pins the order to
+        // `[defaultValue, type, display]`.
         const n = defineNode('instructionArgumentNode', {
             attributes: [
                 attribute('type', union('TypeNode')),
                 optionalAttribute('defaultValue', union('InstructionInputValueNode')),
+                optionalAttribute('display', node('StructFieldDisplayNode')),
             ],
         });
         const attrs = getNodeTypeParameterAttributes(n, scope);
-        expect(attrs.map(a => a.name)).toEqual(['defaultValue', 'type']);
+        expect(attrs.map(a => a.name)).toEqual(['defaultValue', 'type', 'display']);
     });
 
     it('throws when GENERIC_PARAM_ORDER references attributes the spec does not surface', () => {
@@ -68,9 +70,9 @@ describe('getNodeTypeParameterAttributes', () => {
     });
 
     it('throws when the spec surfaces a type-parameter attribute that GENERIC_PARAM_ORDER does not list', () => {
-        // `instructionArgumentNode`'s order is `[defaultValue, type]`.
-        // Synthesise a third type-parameter attribute the override
-        // doesn't know about; the strict check should reject it.
+        // `instructionArgumentNode`'s order is `[defaultValue, type, display]`.
+        // Synthesise an unrelated type-parameter attribute (`extra`) and
+        // omit `display`; the strict check should reject the mismatch.
         const n = defineNode('instructionArgumentNode', {
             attributes: [
                 attribute('type', union('TypeNode')),

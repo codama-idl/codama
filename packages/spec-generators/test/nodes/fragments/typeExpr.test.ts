@@ -1,5 +1,6 @@
 import {
     address,
+    anyNode,
     array,
     boolean,
     codamaVersion,
@@ -96,6 +97,12 @@ describe('getTypeExprFragment', () => {
     it('routes node references to @codama/node-types under their PascalCase name', () => {
         const result = getTypeExprFragment(node('innerTypeNode'));
         expect(result.content).toBe('InnerTypeNode');
+        expect([...result.imports.keys()]).toEqual(['@codama/node-types']);
+    });
+
+    it('routes anyNode to the Node registry type imported from @codama/node-types', () => {
+        const result = getTypeExprFragment(anyNode());
+        expect(result.content).toBe('Node');
         expect([...result.imports.keys()]).toEqual(['@codama/node-types']);
     });
 

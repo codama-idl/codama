@@ -22,6 +22,7 @@ export function getMergeCollectFragment(attr: AttributeSpec): Fragment | undefin
         case 'data':
             return undefined;
 
+        case 'anyNode':
         case 'node':
         case 'nestedNode':
         case 'union':

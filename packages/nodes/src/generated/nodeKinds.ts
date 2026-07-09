@@ -1,6 +1,7 @@
 import { REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS } from './contextualValueNodes/RegisteredContextualValueNode';
 import { REGISTERED_COUNT_NODE_KINDS } from './countNodes/RegisteredCountNode';
 import { REGISTERED_DISCRIMINATOR_NODE_KINDS } from './discriminatorNodes/RegisteredDiscriminatorNode';
+import { REGISTERED_DISPLAY_NODE_KINDS } from './displayNodes/RegisteredDisplayNode';
 import { REGISTERED_LINK_NODE_KINDS } from './linkNodes/RegisteredLinkNode';
 import { REGISTERED_PDA_SEED_NODE_KINDS } from './pdaSeedNodes/RegisteredPdaSeedNode';
 import { REGISTERED_TYPE_NODE_KINDS } from './typeNodes/RegisteredTypeNode';
@@ -21,10 +22,12 @@ export const REGISTERED_NODE_KINDS = [
     'instructionStatusNode' as const,
     'pdaNode' as const,
     'programNode' as const,
+    'providedNode' as const,
     'rootNode' as const,
     ...REGISTERED_CONTEXTUAL_VALUE_NODE_KINDS,
     ...REGISTERED_COUNT_NODE_KINDS,
     ...REGISTERED_DISCRIMINATOR_NODE_KINDS,
+    ...REGISTERED_DISPLAY_NODE_KINDS,
     ...REGISTERED_LINK_NODE_KINDS,
     ...REGISTERED_PDA_SEED_NODE_KINDS,
     ...REGISTERED_TYPE_NODE_KINDS,
