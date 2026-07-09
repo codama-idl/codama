@@ -18,7 +18,7 @@ import {
 import { describe, expect, test } from 'vitest';
 
 import { formatArgumentValue } from '../../src/display/format-argument-value';
-import { displayContext } from '../test-utils';
+import { displayContext, mockResolveDefinedType } from '../test-utils';
 
 describe('formatArgumentValue', () => {
     test('it formats a number with an amount display node', async () => {
@@ -28,7 +28,7 @@ describe('formatArgumentValue', () => {
         });
 
         // When we format a raw amount.
-        const result = await formatArgumentValue(type, 1_500_000_000n, displayContext());
+        const result = await formatArgumentValue(type, [], 1_500_000_000n, displayContext());
 
         // Then we expect the scaled value.
         expect(result).toBe('1.5');
@@ -39,7 +39,7 @@ describe('formatArgumentValue', () => {
         const type = numberTypeNode('u32', 'le', { display: dateTimeNumberDisplayNode({}) });
 
         // When we format a seconds timestamp.
-        const result = await formatArgumentValue(type, 1_761_365_183, displayContext());
+        const result = await formatArgumentValue(type, [], 1_761_365_183, displayContext());
 
         // Then we expect the ISO 8601 form.
         expect(result).toBe('2025-10-25T04:06:23.000Z');
@@ -50,7 +50,7 @@ describe('formatArgumentValue', () => {
         const type = numberTypeNode('u64', 'le', { display: durationNumberDisplayNode({}) });
 
         // When we format a duration in seconds.
-        const result = await formatArgumentValue(type, 3600n, displayContext());
+        const result = await formatArgumentValue(type, [], 3600n, displayContext());
 
         // Then we expect the HH:mm:ss form.
         expect(result).toBe('01:00:00');
@@ -61,7 +61,7 @@ describe('formatArgumentValue', () => {
         const type = stringTypeNode('utf8', { display: stringDisplayNode({ sliceEnd: 3, sliceStart: 0 }) });
 
         // When we format a string value.
-        const result = await formatArgumentValue(type, 'SOLANA', displayContext());
+        const result = await formatArgumentValue(type, [], 'SOLANA', displayContext());
 
         // Then we expect the sliced substring.
         expect(result).toBe('SOL');
@@ -74,7 +74,7 @@ describe('formatArgumentValue', () => {
         });
 
         // When we format the amount.
-        const result = await formatArgumentValue(type, 1_000_000n, displayContext());
+        const result = await formatArgumentValue(type, [], 1_000_000n, displayContext());
 
         // Then we expect the raw value as a string.
         expect(result).toBe('1000000');
@@ -85,7 +85,7 @@ describe('formatArgumentValue', () => {
         const type = numberTypeNode('u64');
 
         // When we format the value.
-        const result = await formatArgumentValue(type, 42n, displayContext());
+        const result = await formatArgumentValue(type, [], 42n, displayContext());
 
         // Then we expect the raw string.
         expect(result).toBe('42');
@@ -96,7 +96,7 @@ describe('formatArgumentValue', () => {
         const type = numberTypeNode('u64');
 
         // When we format the value.
-        const result = await formatArgumentValue(type, undefined, displayContext());
+        const result = await formatArgumentValue(type, [], undefined, displayContext());
 
         // Then we expect an empty string, not `JSON.stringify(undefined)`.
         expect(result).toBe('');
@@ -110,7 +110,7 @@ describe('formatArgumentValue', () => {
         ]);
 
         // When we format the decoded variant name.
-        const result = await formatArgumentValue(type, 'buy', displayContext());
+        const result = await formatArgumentValue(type, [], 'buy', displayContext());
 
         // Then we expect the variant label.
         expect(result).toBe('Buy');
@@ -121,7 +121,7 @@ describe('formatArgumentValue', () => {
         const type = enumTypeNode([enumEmptyVariantTypeNode('buyNow'), enumEmptyVariantTypeNode('sell')]);
 
         // When we format the decoded variant name.
-        const result = await formatArgumentValue(type, 'buyNow', displayContext());
+        const result = await formatArgumentValue(type, [], 'buyNow', displayContext());
 
         // Then we expect the title-cased variant name.
         expect(result).toBe('Buy Now');
@@ -137,10 +137,14 @@ describe('formatArgumentValue', () => {
             ]),
         });
         const type: TypeNode = definedTypeLinkNode('orderType');
-        const resolveDefinedType = (link: { name: string }) => (link.name === 'orderType' ? orderType : undefined);
 
         // When we format the decoded variant name.
-        const result = await formatArgumentValue(type, 'sell', displayContext({ resolveDefinedType }));
+        const result = await formatArgumentValue(
+            type,
+            [],
+            'sell',
+            displayContext({ resolveDefinedType: mockResolveDefinedType(orderType) }),
+        );
 
         // Then we expect the linked variant label.
         expect(result).toBe('Sell');

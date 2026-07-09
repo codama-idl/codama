@@ -27,7 +27,10 @@ export type ResolvedDisplayValue = Address | bigint | number | string | null;
  *
  * Returns `null` when the value cannot be resolved so callers can fall back safely.
  */
-export async function resolveInjectedValue(node: Node, context: DisplayContext): Promise<ResolvedDisplayValue> {
+export async function resolveInjectedValue(
+    node: Node,
+    context: Omit<DisplayContext, 'consumedMemberNames'>,
+): Promise<ResolvedDisplayValue> {
     if (isNode(node, 'numberValueNode')) {
         return node.number;
     }
@@ -69,7 +72,7 @@ export async function resolveInjectedValue(node: Node, context: DisplayContext):
 }
 
 /** Finds the concrete address of a named account of the surrounding instruction, or `null`. */
-function findAccountAddress(context: DisplayContext, name: string): Address | null {
+function findAccountAddress(context: Omit<DisplayContext, 'consumedMemberNames'>, name: string): Address | null {
     return context.parsedInstruction.accounts.find(account => account.name === name)?.address ?? null;
 }
 

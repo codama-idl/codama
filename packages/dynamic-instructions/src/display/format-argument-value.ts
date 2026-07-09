@@ -1,15 +1,8 @@
-import {
-    type EnumTypeNode,
-    isNode,
-    isScalarEnum,
-    pascalCase,
-    resolveNestedTypeNode,
-    titleCase,
-    type TypeNode,
-} from 'codama';
+import { type EnumTypeNode, isNode, isScalarEnum, type NodePath, pascalCase, titleCase, type TypeNode } from 'codama';
 
 import { isObjectRecord } from '../shared/util';
 import { formatAmountValue, formatDateTimeValue, formatDurationValue, formatStringValue } from './format-value';
+import { resolveDisplayType } from './resolve-display-type';
 import type { DisplayContext } from './types';
 
 /**
@@ -19,48 +12,39 @@ import type { DisplayContext } from './types';
  * present; `definedTypeLinkNode`s are followed via the context's link resolver so linked
  * enums resolve to their variants. Any value without applicable display metadata — and any
  * value whose formatter cannot resolve its inputs — falls back to a raw string form.
+ *
+ * `ownerPath` is the path to the node owning `type` (e.g. an instruction argument), used to
+ * resolve any link the type follows against the correct program.
  */
 export async function formatArgumentValue(
     type: TypeNode,
+    ownerPath: NodePath,
     value: unknown,
-    displayContext: DisplayContext,
+    displayContext: Omit<DisplayContext, 'consumedMemberNames'>,
 ): Promise<string> {
-    const resolvedType = resolveDisplayType(type, displayContext);
+    const resolved = resolveDisplayType(type, ownerPath, displayContext);
 
-    if (isNode(resolvedType, 'numberTypeNode') && resolvedType.display && isNumeric(value)) {
-        const formatted = await formatNumber(resolvedType.display, value, displayContext);
+    if (isNode(resolved.type, 'numberTypeNode') && resolved.type.display && isNumeric(value)) {
+        const formatted = await formatNumber(resolved.type.display, value, displayContext);
         if (formatted !== null) return formatted;
     }
 
-    if (isNode(resolvedType, 'stringTypeNode') && resolvedType.display && typeof value === 'string') {
-        return formatStringValue(value, resolvedType.display);
+    if (isNode(resolved.type, 'stringTypeNode') && resolved.type.display && typeof value === 'string') {
+        return formatStringValue(value, resolved.type.display);
     }
 
-    if (isNode(resolvedType, 'enumTypeNode')) {
-        return formatEnumValue(resolvedType, value);
+    if (isNode(resolved.type, 'enumTypeNode')) {
+        return formatEnumValue(resolved.type, value);
     }
 
     return rawValue(value);
-}
-
-/**
- * Resolves nested type wrappers and follows a single `definedTypeLinkNode` to its underlying type.
- * Shared by the value formatter and the fallback list so links resolve identically in both.
- */
-export function resolveDisplayType(type: TypeNode, displayContext: DisplayContext): TypeNode {
-    const resolved = resolveNestedTypeNode(type);
-    if (isNode(resolved, 'definedTypeLinkNode')) {
-        const definedType = displayContext.resolveDefinedType(resolved);
-        if (definedType) return resolveNestedTypeNode(definedType.type);
-    }
-    return resolved;
 }
 
 /** Dispatches a number to the matching number-display formatter. */
 async function formatNumber(
     display: NonNullable<Extract<TypeNode, { kind: 'numberTypeNode' }>['display']>,
     value: bigint | number,
-    displayContext: DisplayContext,
+    displayContext: Omit<DisplayContext, 'consumedMemberNames'>,
 ): Promise<string | null> {
     switch (display.kind) {
         case 'amountNumberDisplayNode':
