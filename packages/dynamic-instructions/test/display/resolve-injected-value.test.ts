@@ -16,8 +16,7 @@ import {
 import { describe, expect, test } from 'vitest';
 
 import { resolveInjectedValue } from '../../src/display/resolve-injected-value';
-import type { DisplayResolutionContext } from '../../src/display/types';
-import { accountFixture, parsedInstruction } from '../test-utils';
+import { accountFixture, displayContext as context, parsedInstruction } from '../test-utils';
 
 const MINT = '86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY' as Address;
 
@@ -26,15 +25,6 @@ const MINT_ACCOUNT = accountNode({
     data: structTypeNode([structFieldTypeNode({ name: 'decimals', type: numberTypeNode('u8') })]),
     name: 'mint',
 });
-
-function context(overrides: Partial<DisplayResolutionContext> = {}): DisplayResolutionContext {
-    return {
-        parsedInstruction: parsedInstruction(),
-        provides: new Map<string, ProvidedNode>(),
-        resolveAccountData: () => null,
-        ...overrides,
-    };
-}
 
 function providesMap(...entries: ProvidedNode[]): ReadonlyMap<string, ProvidedNode> {
     return new Map(entries.map(entry => [entry.name, entry]));
