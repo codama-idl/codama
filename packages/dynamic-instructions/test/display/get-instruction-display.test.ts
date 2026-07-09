@@ -161,8 +161,13 @@ describe('getInstructionDisplayFromParsedInstruction', () => {
 
 describe('getInstructionDisplay', () => {
     test('it returns null when the instruction cannot be parsed', async () => {
-        // Given a root whose program has no instruction matching the raw bytes.
-        const root = makeRoot([instructionNode({ accounts: [], arguments: [], name: 'noop' })]);
+        // Given a root whose program has no instruction matching the raw bytes. Two
+        // discriminator-less instructions make the single-candidate fallback ambiguous, so the
+        // parser cannot identify one.
+        const root = makeRoot([
+            instructionNode({ accounts: [], arguments: [], name: 'noop' }),
+            instructionNode({ accounts: [], arguments: [], name: 'other' }),
+        ]);
 
         // When we resolve the display of an unrecognized instruction.
         const display = await getInstructionDisplay(root, {

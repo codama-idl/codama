@@ -9,6 +9,8 @@
 
 This package provides a runtime Solana instruction builder that dynamically constructs `Instruction` (`@solana/instructions`). It provides instruction arguments encoding and validation, accounts resolution. Powers [`@codama/dynamic-client`](../dynamic-client/README.md) with `InstructionsBuilder`.
 
+It also provides a **clear-signing display** layer that turns a concrete instruction into human-readable text — see [Instruction display](#instruction-display-clear-signing).
+
 ## Installation
 
 ```sh
@@ -112,3 +114,62 @@ import type { TransferArgs } from './generated/<idl-name>-instruction-types';
 
 const data = encodeInstructionArguments<TransferArgs>(root, ixNode, { amount: 1_000_000_000n });
 ```
+
+## Instruction display (clear signing)
+
+Given an IDL enriched with `display` metadata (per [sRFC 39](https://github.com/solana-foundation/SRFCs/discussions/4)), this package resolves a concrete instruction into human-readable text for user verification. The result carries both presentation modes and lets the renderer choose:
+
+```ts
+type InstructionDisplay = {
+    // A short imperative label, e.g. "Transfer" (derived from the instruction name when absent).
+    intent: string;
+    // The interpolated sentence, e.g. "Transfer 1.5 USDC to toly.sol", or `null` when a
+    // placeholder cannot be resolved (the renderer then falls back to `fields`).
+    interpolatedIntent: string | null;
+    // The structured fallback list of labelled fields, e.g. [{ label: 'Amount', value: '1.5 USDC' }].
+    fields: { label: string; value: string }[];
+};
+```
+
+### `getInstructionDisplay(root, instruction, options?)`
+
+Parses a raw `Instruction` (`@solana/instructions`) against the root and resolves its display. Returns `null` when the instruction cannot be identified or decoded (e.g. an instruction from an unknown program).
+
+```ts
+import { getInstructionDisplay } from '@codama/dynamic-instructions';
+
+const display = await getInstructionDisplay(root, instruction);
+// => { intent: 'Transfer', interpolatedIntent: 'Transfer 1500000 to 3Wnd5…5PxJX', fields: [...] } | null
+```
+
+### `getInstructionDisplayFromParsedInstruction(root, parsedInstruction, options?)`
+
+The same, starting from an already-parsed instruction (`ParsedInstruction` from [`@codama/dynamic-parsers`](../dynamic-parsers/README.md)). Useful when you have already called `parseInstruction`.
+
+```ts
+import { parseInstruction } from '@codama/dynamic-parsers';
+import { getInstructionDisplayFromParsedInstruction } from '@codama/dynamic-instructions';
+
+const parsed = parseInstruction(root, instruction);
+if (parsed) {
+    const display = await getInstructionDisplayFromParsedInstruction(root, parsed);
+}
+```
+
+### Options
+
+Some display values live in on-chain account state (e.g. a token's `decimals`/`symbol` injected into an amount, or interpolation paths that read an account field). Supply `fetchAccount` to resolve them; without it, such values degrade gracefully (amounts stay raw, `whenInjected` fields remain visible).
+
+`fetchAccount` returns Kit's `MaybeEncodedAccount` — an `exists` flag plus, when the account exists, its raw bytes. No decoding is required on your side: the display layer decodes the bytes itself using the referenced account's `accountLink` from the IDL, which already describes the layout. This makes `fetchEncodedAccount` a drop-in.
+
+```ts
+import type { Address } from '@solana/addresses';
+import { fetchEncodedAccount } from '@solana/accounts';
+
+const display = await getInstructionDisplay(root, instruction, {
+    // Forward Kit's MaybeEncodedAccount for an address.
+    fetchAccount: (address: Address) => fetchEncodedAccount(rpc, address),
+});
+```
+
+Address presentation (`.sol` names, address-book aliases, truncation) is intentionally left to the renderer: `fields` and `interpolatedIntent` contain raw base58 addresses that the consuming wallet/UI formats as it sees fit.
