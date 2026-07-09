@@ -1,5 +1,16 @@
 # codama
 
+## 1.9.0
+
+### Patch Changes
+
+- Updated dependencies [[`f6deb59`](https://github.com/codama-idl/codama/commit/f6deb59dfe27fc94ff93d7c3166bc2f04567df3a), [`d3d9c1d`](https://github.com/codama-idl/codama/commit/d3d9c1dcab8be709b7047f7a259ad63f12cb160d)]:
+    - @codama/cli@1.5.4
+    - @codama/nodes@1.9.0
+    - @codama/validators@1.9.0
+    - @codama/visitors@1.9.0
+    - @codama/errors@1.9.0
+
 ## 1.8.0
 
 ### Patch Changes
