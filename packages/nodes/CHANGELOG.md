@@ -1,5 +1,17 @@
 # @codama/nodes
 
+## 1.9.0
+
+### Minor Changes
+
+- [#1020](https://github.com/codama-idl/codama/pull/1020) [`d3d9c1d`](https://github.com/codama-idl/codama/commit/d3d9c1dcab8be709b7047f7a259ad63f12cb160d) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Integrate `@codama/spec@1.7.0`, adding the presentation layer to the node meta-model. This introduces display nodes (`amountNumberDisplayNode`, `dateTimeNumberDisplayNode`, `durationNumberDisplayNode`, `stringDisplayNode`, `instructionDisplayNode`, `instructionAccountDisplayNode`, `structFieldDisplayNode`, `enumVariantDisplayNode`), the provide/inject graph (`providedNode`, `injectedValueNode`), the `accountFieldValueNode` contextual value backed by `instructionAccountNode.accountLink`, and the `anyNode` type expression. Existing nodes gain optional `display`/`provides` fields. All changes are additive and optional.
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @codama/errors@1.9.0
+    - @codama/node-types@1.9.0
+
 ## 1.8.0
 
 ### Minor Changes
