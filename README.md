@@ -144,6 +144,28 @@ let idl_json = codama.get_json_idl()?;
 
 We will add documentation on Codama macros when they are fully implemented but feel free to check this example that extract a Codama IDL from the [System program interface](https://github.com/lorisleiva/codama-demo-2025-08/tree/main/3-from-macros/program/src) using a [build script](https://github.com/lorisleiva/codama-demo-2025-08/blob/main/3-from-macros/program/build.rs).
 
+### Native Pinocchio Programs
+
+Native [Pinocchio](https://github.com/febo/pinocchio) programs can generate Codama IDLs with [`pinocchio-idl`](https://github.com/oxy-Op/pinocchio-to-idl).
+
+`pinocchio-idl` reads explicit Rust source annotations from Pinocchio programs and emits Codama `rootNode` JSON, which can be used directly as the `idl` input in a Codama configuration file.
+
+```sh
+pinocchio-idl generate \
+  --crate-dir path/to/program \
+  --name my_program \
+  --program-id <program_id> \
+  --out idl/my_program.codama.json
+```
+
+```json
+{
+    "idl": "idl/my_program.codama.json"
+}
+```
+
+This keeps Codama as the renderer and client-generation layer while covering native Pinocchio programs that do not produce Anchor or Shank IDLs.
+
 ## Codama's architecture
 
 The Codama IDL is designed as a tree of nodes starting with the `RootNode` which contains a `ProgramNode` and additional data such as the Codama version used when the IDL was created. Codama provides over 60 different types of nodes that help describe nearly every aspect of your Solana programs. [You can read more about the Codama nodes here](./packages/nodes).
