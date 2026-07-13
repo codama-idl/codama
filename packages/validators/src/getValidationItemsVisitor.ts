@@ -23,8 +23,6 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
             () => [] as readonly ValidationItem[],
             (_, items) => items.flat(),
         ),
-        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
-        v => recordNodeStackVisitor(v, stack),
         v =>
             extendVisitor(v, {
                 visitAccount(node, { next }) {
@@ -243,5 +241,11 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     return [...items, ...next(node)];
                 },
             }),
+        // Pipe stages run outermost-first, i.e. in reverse of their listing here:
+        //   pipe(init, g, h, i) => i(h(g(init)))   -- i is the outer layer, runs first
+        // so these record the node (onto the stack, and into linkables) BEFORE the
+        // extendVisitor logic above runs and reads that state to validate the node.
+        v => recordNodeStackVisitor(v, stack),
+        v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
