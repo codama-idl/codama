@@ -109,6 +109,12 @@ test('it reports a nested defined type link that points at a missing type', () =
 
     // Then the missing link is reported as an error.
     expect(items).toEqual([
-        validationItem('error', 'Pointing to a missing defined type named "missing"', link, [node, foo, struct, field, link]),
+        validationItem('error', 'Pointing to a missing defined type named "missing"', link, [
+            node,
+            foo,
+            struct,
+            field,
+            link,
+        ]),
     ]);
 });
