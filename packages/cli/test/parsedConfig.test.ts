@@ -45,7 +45,7 @@ beforeEach(() => {
 test('merges additionalIdls programs into the root node additionalPrograms', async () => {
     getConfigMock.mockResolvedValue([{ additionalIdls: ['a.json', 'b.json'], idl: 'main.json' }, '/root/codama.json']);
     getRootNodeFromIdlMock
-        .mockResolvedValueOnce({ ...rootNodeWith('main'), version: '9.9.9' } as RootNode)
+        .mockResolvedValueOnce({ ...rootNodeWith('main'), version: '9.9.9' } as unknown as RootNode)
         .mockResolvedValueOnce(rootNodeWith('a'))
         .mockResolvedValueOnce(rootNodeWith('b'));
 

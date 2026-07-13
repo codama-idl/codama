@@ -46,8 +46,7 @@ async function parseConfig(
 ): Promise<ParsedConfig> {
     const idlPath = parseIdlPath(config, configPath, options);
     const idlContent = await importModuleItem({ identifier: 'IDL', from: idlPath });
-    const mainRootNode = await getRootNodeFromIdl(idlContent);
-    const rootNode = await mergeAdditionalIdls(mainRootNode, config.additionalIdls ?? [], configPath);
+    const rootNode = await mergeAdditionalIdls(idlContent, config.additionalIdls ?? [], configPath);
     const scripts = parseScripts(config.scripts ?? {}, configPath);
     const visitors = (config.before ?? []).map((v, i) => parseVisitorConfig(v, configPath, i, null));
 
@@ -55,24 +54,33 @@ async function parseConfig(
 }
 
 async function mergeAdditionalIdls(
-    mainRootNode: RootNode,
+    idlContent: unknown,
     additionalIdls: readonly string[],
     configPath: string | null,
 ): Promise<RootNode> {
-    if (additionalIdls.length === 0) {
-        return mainRootNode;
-    }
+    // Convert the main IDL and every additional IDL to a root node in parallel,
+    // keeping the main root node first.
+    const rootNodes = await Promise.all([
+        getRootNodeFromIdl(idlContent),
+        ...additionalIdls.map(async additionalIdl => {
+            const additionalIdlPath = resolveConfigPath(additionalIdl, configPath);
+            const additionalIdlContent = await importModuleItem({
+                identifier: 'additional IDL',
+                from: additionalIdlPath,
+            });
+            return await getRootNodeFromIdl(additionalIdlContent);
+        }),
+    ]);
+    return mergeRootNodes(rootNodes);
+}
 
-    const additionalPrograms = [...mainRootNode.additionalPrograms];
-    for (const additionalIdl of additionalIdls) {
-        const additionalIdlPath = resolveConfigPath(additionalIdl, configPath);
-        const additionalIdlContent = await importModuleItem({ identifier: 'additional IDL', from: additionalIdlPath });
-        const additionalRootNode = await getRootNodeFromIdl(additionalIdlContent);
-        additionalPrograms.push(...getAllPrograms(additionalRootNode));
+function mergeRootNodes(rootNodes: readonly RootNode[]): RootNode {
+    const [head, ...tail] = rootNodes;
+    if (tail.length === 0) {
+        return head;
     }
-
     // Preserve the main root node's other fields (e.g. `standard`, `version`).
-    return { ...mainRootNode, additionalPrograms };
+    return { ...head, additionalPrograms: [...head.additionalPrograms, ...tail.flatMap(getAllPrograms)] };
 }
 
 function parseIdlPath(
