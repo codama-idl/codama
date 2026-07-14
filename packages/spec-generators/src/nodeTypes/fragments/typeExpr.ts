@@ -14,6 +14,8 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
             return fragment`number`;
         case 'boolean':
             return fragment`boolean`;
+        case 'json':
+            return fragment`unknown`;
         case 'literal':
             return fragment`${literalToTs(expr.value)}`;
         case 'literalUnion':

@@ -7,6 +7,7 @@ import type {
     InstructionNode,
     InstructionRemainingAccountsNode,
     InstructionStatusNode,
+    PluginNode,
     ProvidedNode,
 } from '@codama/node-types';
 import { camelCase, DocsInput, parseDocs } from '../shared';
@@ -24,6 +25,7 @@ export type InstructionNodeInput<
     TStatus extends InstructionStatusNode | undefined = InstructionStatusNode | undefined,
     TProvides extends Array<ProvidedNode> | undefined = Array<ProvidedNode> | undefined,
     TDisplay extends InstructionDisplayNode | undefined = InstructionDisplayNode | undefined,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > = Omit<
     Partial<
         InstructionNode<
@@ -36,7 +38,8 @@ export type InstructionNodeInput<
             TSubInstructions,
             TStatus,
             TProvides,
-            TDisplay
+            TDisplay,
+            TPlugins
         >
     >,
     'docs' | 'kind' | 'name'
@@ -57,6 +60,7 @@ export function instructionNode<
     const TStatus extends InstructionStatusNode | undefined = undefined,
     const TProvides extends Array<ProvidedNode> | undefined = undefined,
     const TDisplay extends InstructionDisplayNode | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     input: InstructionNodeInput<
         TAccounts,
@@ -68,7 +72,8 @@ export function instructionNode<
         TSubInstructions,
         TStatus,
         TProvides,
-        TDisplay
+        TDisplay,
+        TPlugins
     >,
 ): InstructionNode<
     TAccounts,
@@ -80,7 +85,8 @@ export function instructionNode<
     TSubInstructions,
     TStatus,
     TProvides,
-    TDisplay
+    TDisplay,
+    TPlugins
 > {
     const parsedDocs = parseDocs(input.docs);
     return Object.freeze({
@@ -102,5 +108,6 @@ export function instructionNode<
         ...(input.subInstructions !== undefined && { subInstructions: input.subInstructions }),
         ...(input.provides !== undefined && { provides: input.provides }),
         ...(input.display !== undefined && { display: input.display }),
+        ...(input.plugins !== undefined && { plugins: input.plugins }),
     });
 }

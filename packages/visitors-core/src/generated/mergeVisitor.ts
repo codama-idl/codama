@@ -415,6 +415,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...(node.subInstructions ?? []).flatMap(visit(this)),
                 ...(node.provides ?? []).flatMap(visit(this)),
                 ...(node.display ? visit(this)(node.display) : []),
+                ...(node.plugins ?? []).flatMap(visit(this)),
             ]);
         };
     }

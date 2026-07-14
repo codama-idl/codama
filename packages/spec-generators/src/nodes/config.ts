@@ -102,6 +102,7 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
     ],
     ['instructionRemainingAccountsNode', { positionalArgs: ['value'] }],
     ['instructionStatusNode', { positionalArgs: ['lifecycle', 'message'] }],
+    ['pluginNode', { positionalArgs: ['name', 'payload'] }],
     [
         'programNode',
         {

@@ -14,6 +14,7 @@ export * from './InstructionRemainingAccountsValue';
 export * from './InstructionStatusNode';
 export * from './nodeKinds';
 export * from './PdaNode';
+export * from './PluginNode';
 export * from './ProgramNode';
 export * from './ProvidedNode';
 export * from './RootNode';

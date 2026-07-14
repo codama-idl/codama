@@ -62,6 +62,7 @@ export const MERGE_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]> = 
             'subInstructions',
             'provides',
             'display',
+            'plugins',
         ],
     ],
     ['arrayTypeNode', ['count', 'item']],
@@ -101,6 +102,7 @@ export const IDENTITY_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]>
             'subInstructions',
             'provides',
             'display',
+            'plugins',
         ],
     ],
 ]);
