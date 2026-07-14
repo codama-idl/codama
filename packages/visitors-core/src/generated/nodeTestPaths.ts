@@ -68,6 +68,7 @@ export const NODE_TEST_PATHS: Readonly<Record<NodeKind, string>> = {
     pdaNode: 'PdaNode',
     pdaSeedValueNode: 'contextualValueNodes/PdaSeedValueNode',
     pdaValueNode: 'contextualValueNodes/PdaValueNode',
+    pluginNode: 'PluginNode',
     postOffsetTypeNode: 'typeNodes/PostOffsetTypeNode',
     prefixedCountNode: 'countNodes/PrefixedCountNode',
     preOffsetTypeNode: 'typeNodes/PreOffsetTypeNode',

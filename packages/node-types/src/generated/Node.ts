@@ -16,6 +16,7 @@ import type { InstructionStatusNode } from './InstructionStatusNode';
 import type { RegisteredLinkNode } from './linkNodes/RegisteredLinkNode';
 import type { PdaNode } from './PdaNode';
 import type { RegisteredPdaSeedNode } from './pdaSeedNodes/RegisteredPdaSeedNode';
+import type { PluginNode } from './PluginNode';
 import type { ProgramNode } from './ProgramNode';
 import type { ProvidedNode } from './ProvidedNode';
 import type { RootNode } from './RootNode';
@@ -37,6 +38,7 @@ export type Node =
     | InstructionRemainingAccountsNode
     | InstructionStatusNode
     | PdaNode
+    | PluginNode
     | ProgramNode
     | ProvidedNode
     | RegisteredContextualValueNode

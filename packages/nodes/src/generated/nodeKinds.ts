@@ -21,6 +21,7 @@ export const REGISTERED_NODE_KINDS = [
     'instructionRemainingAccountsNode' as const,
     'instructionStatusNode' as const,
     'pdaNode' as const,
+    'pluginNode' as const,
     'programNode' as const,
     'providedNode' as const,
     'rootNode' as const,

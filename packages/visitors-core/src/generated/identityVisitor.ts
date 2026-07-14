@@ -749,6 +749,9 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                     ? node.provides.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('providedNode'))
                     : undefined,
                 display,
+                plugins: node.plugins
+                    ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
+                    : undefined,
             });
         };
     }

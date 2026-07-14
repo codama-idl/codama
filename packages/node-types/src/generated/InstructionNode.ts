@@ -7,6 +7,7 @@ import type { InstructionArgumentNode } from './InstructionArgumentNode';
 import type { InstructionByteDeltaNode } from './InstructionByteDeltaNode';
 import type { InstructionRemainingAccountsNode } from './InstructionRemainingAccountsNode';
 import type { InstructionStatusNode } from './InstructionStatusNode';
+import type { PluginNode } from './PluginNode';
 import type { ProvidedNode } from './ProvidedNode';
 import type { OptionalAccountStrategy } from './shared/optionalAccountStrategy';
 
@@ -26,6 +27,7 @@ export interface InstructionNode<
     TStatus extends InstructionStatusNode | undefined = InstructionStatusNode | undefined,
     TProvides extends Array<ProvidedNode> | undefined = Array<ProvidedNode> | undefined,
     TDisplay extends InstructionDisplayNode | undefined = InstructionDisplayNode | undefined,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'instructionNode';
 
@@ -64,4 +66,6 @@ export interface InstructionNode<
     readonly provides?: TProvides;
     /** Display metadata describing how the instruction is presented. */
     readonly display?: TDisplay;
+    /** Namespaced plugins with custom structured data. */
+    readonly plugins?: TPlugins;
 }
