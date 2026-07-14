@@ -45,33 +45,25 @@ async function parseConfig(
     options: Pick<ProgramOptions, 'idl'>,
 ): Promise<ParsedConfig> {
     const idlPath = parseIdlPath(config, configPath, options);
-    const idlContent = await importModuleItem({ identifier: 'IDL', from: idlPath });
-    const rootNode = await mergeAdditionalIdls(idlContent, config.additionalIdls ?? [], configPath);
+    const additionalIdlPaths = (config.additionalIdls ?? []).map(idl => resolveConfigPath(idl, configPath));
+
+    // Load and convert the main IDL and every additional IDL the same way, in parallel.
+    const idls = await Promise.all([
+        loadIdl(idlPath, 'IDL'),
+        ...additionalIdlPaths.map(path => loadIdl(path, 'additional IDL')),
+    ]);
+
+    const [mainIdl] = idls;
+    const rootNode = mergeRootNodes(idls.map(idl => idl.rootNode));
     const scripts = parseScripts(config.scripts ?? {}, configPath);
     const visitors = (config.before ?? []).map((v, i) => parseVisitorConfig(v, configPath, i, null));
 
-    return { configPath, idlContent, idlPath, rootNode, scripts, before: visitors };
+    return { configPath, idlContent: mainIdl.content, idlPath, rootNode, scripts, before: visitors };
 }
 
-async function mergeAdditionalIdls(
-    idlContent: unknown,
-    additionalIdls: readonly string[],
-    configPath: string | null,
-): Promise<RootNode> {
-    // Convert the main IDL and every additional IDL to a root node in parallel,
-    // keeping the main root node first.
-    const rootNodes = await Promise.all([
-        getRootNodeFromIdl(idlContent),
-        ...additionalIdls.map(async additionalIdl => {
-            const additionalIdlPath = resolveConfigPath(additionalIdl, configPath);
-            const additionalIdlContent = await importModuleItem({
-                identifier: 'additional IDL',
-                from: additionalIdlPath,
-            });
-            return await getRootNodeFromIdl(additionalIdlContent);
-        }),
-    ]);
-    return mergeRootNodes(rootNodes);
+async function loadIdl(from: string, identifier: string): Promise<{ content: unknown; rootNode: RootNode }> {
+    const content = await importModuleItem({ identifier, from });
+    return { content, rootNode: await getRootNodeFromIdl(content) };
 }
 
 function mergeRootNodes(rootNodes: readonly RootNode[]): RootNode {
