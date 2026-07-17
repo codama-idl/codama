@@ -73,16 +73,16 @@ describe('identifyAccountData', () => {
         const result = identifyAccountData(root, hex('ff010203'));
         expect(result).toStrictEqual([root, root.program, root.program.accounts[0]]);
     });
-    test('it does not identify accounts in additional programs', () => {
+    test('it identifies accounts in additional programs', () => {
         const root = rootNode(programNode({ name: 'myProgram', publicKey: '1111' }), [
             programNode({
                 accounts: [accountNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myAccount' })],
-                name: 'myProgram',
-                publicKey: '1111',
+                name: 'myAdditionalProgram',
+                publicKey: '2222',
             }),
         ]);
         const result = identifyAccountData(root, hex('01020304'));
-        expect(result).toBeUndefined();
+        expect(result).toStrictEqual([root, root.additionalPrograms[0], root.additionalPrograms[0].accounts[0]]);
     });
     test('it does not identify accounts using instruction discriminators', () => {
         const root = rootNode(programNode({ name: 'myProgram', publicKey: '1111' }), [
@@ -156,16 +156,100 @@ describe('identifyInstructionData', () => {
         const result = identifyInstructionData(root, hex('ff010203'));
         expect(result).toStrictEqual([root, root.program, root.program.instructions[0]]);
     });
-    test('it does not identify instructions in additional programs', () => {
+    test('it identifies instructions in additional programs', () => {
         const root = rootNode(programNode({ name: 'myProgram', publicKey: '1111' }), [
+            programNode({
+                instructions: [instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myInstruction' })],
+                name: 'myAdditionalProgram',
+                publicKey: '2222',
+            }),
+        ]);
+        const result = identifyInstructionData(root, hex('01020304'));
+        expect(result).toStrictEqual([root, root.additionalPrograms[0], root.additionalPrograms[0].instructions[0]]);
+    });
+    test('it identifies instructions in the main program before additional programs', () => {
+        // Given a main program and an additional program whose instructions both match the data.
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'mainInstruction' }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+            [
+                programNode({
+                    instructions: [
+                        instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'additionalInstruction' }),
+                    ],
+                    name: 'myAdditionalProgram',
+                    publicKey: '2222',
+                }),
+            ],
+        );
+        // When we identify the data without a program address.
+        const result = identifyInstructionData(root, hex('01020304'));
+        // Then we expect the main program's instruction to win.
+        expect(result).toStrictEqual([root, root.program, root.program.instructions[0]]);
+    });
+    test('it restricts the search to programs matching the provided program address', () => {
+        // Given a main program and an additional program whose instructions both match the data.
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'mainInstruction' }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+            [
+                programNode({
+                    instructions: [
+                        instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'additionalInstruction' }),
+                    ],
+                    name: 'myAdditionalProgram',
+                    publicKey: '2222',
+                }),
+            ],
+        );
+        // When we identify the data using the additional program's address.
+        const result = identifyInstructionData(root, hex('01020304'), { programAddress: '2222' });
+        // Then we expect the additional program's instruction, not the main program's.
+        expect(result).toStrictEqual([root, root.additionalPrograms[0], root.additionalPrograms[0].instructions[0]]);
+    });
+    test('it searches all programs when no program matches the provided program address', () => {
+        const root = rootNode(
             programNode({
                 instructions: [instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myInstruction' })],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
-        ]);
-        const result = identifyInstructionData(root, hex('01020304'));
-        expect(result).toBeUndefined();
+        );
+        const result = identifyInstructionData(root, hex('01020304'), { programAddress: '9999' });
+        expect(result).toStrictEqual([root, root.program, root.program.instructions[0]]);
+    });
+    test('it identifies a single non-discriminated instruction in an additional program as a fallback', () => {
+        // Given an additional program with exactly one non-discriminated instruction.
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'mainInstruction' }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+            [
+                programNode({
+                    instructions: [instructionNode({ name: 'additionalInstruction' })],
+                    name: 'myAdditionalProgram',
+                    publicKey: '2222',
+                }),
+            ],
+        );
+        // When we identify non-matching data using the additional program's address.
+        const result = identifyInstructionData(root, hex('0102030405'), { programAddress: '2222' });
+        // Then we expect the additional program's instruction to be identified as the fallback.
+        expect(result).toStrictEqual([root, root.additionalPrograms[0], root.additionalPrograms[0].instructions[0]]);
     });
     test('it does not identify instructions using account discriminators', () => {
         const root = rootNode(programNode({ name: 'myProgram', publicKey: '1111' }), [

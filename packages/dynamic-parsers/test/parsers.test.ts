@@ -361,6 +361,71 @@ describe('parseInstruction', () => {
             path: [root, root.program, root.program.instructions[0]],
         });
     });
+
+    test('it parses an instruction from an additional program using the program address', () => {
+        // Given a token-shaped main program and an ATA-shaped additional program whose
+        // instructions share the same one-byte field discriminator.
+        const discriminator = (defaultValue: number) =>
+            instructionArgumentNode({
+                defaultValue: numberValueNode(defaultValue),
+                name: 'discriminator',
+                type: numberTypeNode('u8'),
+            });
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({
+                        accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'account' })],
+                        arguments: [discriminator(1)],
+                        discriminators: [fieldDiscriminatorNode('discriminator')],
+                        name: 'initializeAccount',
+                    }),
+                ],
+                name: 'token',
+                publicKey: '1111',
+            }),
+            [
+                programNode({
+                    instructions: [
+                        instructionNode({
+                            accounts: [
+                                instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' }),
+                                instructionAccountNode({ isSigner: false, isWritable: true, name: 'ata' }),
+                            ],
+                            arguments: [discriminator(1)],
+                            discriminators: [fieldDiscriminatorNode('discriminator')],
+                            name: 'createAssociatedTokenIdempotent',
+                        }),
+                    ],
+                    name: 'associatedToken',
+                    publicKey: '2222',
+                }),
+            ],
+        );
+
+        // And a concrete instruction targeting the additional program's address.
+        const instruction = {
+            accounts: [
+                { address: 'payer111', role: AccountRole.WRITABLE_SIGNER },
+                { address: 'ata11111', role: AccountRole.WRITABLE },
+            ],
+            data: hex('01'),
+            programAddress: '2222',
+        } as unknown as Parameters<typeof parseInstruction>[1];
+
+        // When we parse the instruction.
+        const result = parseInstruction(root, instruction);
+
+        // Then we expect the additional program's instruction, not the main program's.
+        expect(result).toStrictEqual({
+            accounts: [
+                { address: 'payer111', name: 'payer', role: AccountRole.WRITABLE_SIGNER },
+                { address: 'ata11111', name: 'ata', role: AccountRole.WRITABLE },
+            ],
+            data: { discriminator: 1 },
+            path: [root, root.additionalPrograms[0], root.additionalPrograms[0].instructions[0]],
+        });
+    });
 });
 
 describe('parseData', () => {
