@@ -88,6 +88,16 @@ if (parsedData) {
 }
 ```
 
+Note that it uses the instruction's `programAddress` to restrict the search to the matching program — including any of the root node's `additionalPrograms` — falling back to all programs when none matches.
+
+## Program selection
+
+All functions above search the root node's main program as well as its `additionalPrograms`, in that order. Additionally, they all accept an optional `programAddress` option that restricts the search to the programs matching that address, if any.
+
+```ts
+const parsedData = parseInstructionData(rootNode, bytes, { programAddress: address });
+```
+
 ### `identifyAccountData`
 
 This function tries to match the provided bytes to an account node, returning a `NodePath<AccountNode>` object if the identification was successful, or `undefined` otherwise. It is used by the `parseAccountData` function under the hood.
