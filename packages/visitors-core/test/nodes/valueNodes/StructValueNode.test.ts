@@ -23,7 +23,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[structValueNode]', null);
-    expectDeleteNodesVisitor(node, '[structFieldValueNode]', { ...node, fields: [] });
+    expectDeleteNodesVisitor(node, '[structFieldValueNode]', { ...node, fields: undefined });
 });
 
 test('debugStringVisitor', () => {

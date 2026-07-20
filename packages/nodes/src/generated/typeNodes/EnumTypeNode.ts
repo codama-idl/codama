@@ -3,7 +3,7 @@ import { numberTypeNode } from './NumberTypeNode';
 
 /** A tagged union: a numeric discriminator followed by one of several variant payloads. */
 export function enumTypeNode<
-    const TVariants extends Array<EnumVariantTypeNode>,
+    const TVariants extends Array<EnumVariantTypeNode> | undefined,
     const TSize extends NestedTypeNode<NumberTypeNode> = NumberTypeNode<'u8'>,
 >(
     variants: TVariants,
@@ -15,7 +15,7 @@ export function enumTypeNode<
         kind: 'enumTypeNode',
 
         // Children.
-        variants,
+        ...(variants !== undefined && variants.length > 0 && { variants: variants as TVariants }),
         size: (options.size ?? numberTypeNode('u8')) as TSize,
     });
 }

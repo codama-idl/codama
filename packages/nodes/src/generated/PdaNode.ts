@@ -1,7 +1,7 @@
 import type { PdaNode, PdaSeedNode } from '@codama/node-types';
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
-export type PdaNodeInput<TSeeds extends Array<PdaSeedNode> = Array<PdaSeedNode>> = Omit<
+export type PdaNodeInput<TSeeds extends Array<PdaSeedNode> | undefined = Array<PdaSeedNode> | undefined> = Omit<
     PdaNode<TSeeds>,
     'docs' | 'kind' | 'name'
 > & {
@@ -10,7 +10,9 @@ export type PdaNodeInput<TSeeds extends Array<PdaSeedNode> = Array<PdaSeedNode>>
 };
 
 /** A program-derived address: its name, optional program ID override, and the seeds used to derive it. */
-export function pdaNode<const TSeeds extends Array<PdaSeedNode>>(input: PdaNodeInput<TSeeds>): PdaNode<TSeeds> {
+export function pdaNode<const TSeeds extends Array<PdaSeedNode> | undefined>(
+    input: PdaNodeInput<TSeeds>,
+): PdaNode<TSeeds> {
     const parsedDocs = parseDocs(input.docs);
     return Object.freeze({
         kind: 'pdaNode',
@@ -21,6 +23,6 @@ export function pdaNode<const TSeeds extends Array<PdaSeedNode>>(input: PdaNodeI
         ...(input.programId !== undefined && { programId: input.programId }),
 
         // Children.
-        seeds: input.seeds,
+        ...(input.seeds !== undefined && input.seeds.length > 0 && { seeds: input.seeds as TSeeds }),
     });
 }

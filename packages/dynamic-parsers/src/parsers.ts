@@ -71,7 +71,7 @@ export function parseInstruction(
     const parsedData = parseInstructionData(root, instruction.data);
     if (!parsedData) return undefined;
     const instructionNode = getLastNodeFromPath(parsedData.path);
-    const accounts: ParsedInstructionAccounts = instructionNode.accounts.flatMap((account, index) => {
+    const accounts: ParsedInstructionAccounts = (instructionNode.accounts ?? []).flatMap((account, index) => {
         const accountMeta = instruction.accounts[index];
         if (!accountMeta) return [];
         return [{ ...accountMeta, name: account.name }];

@@ -17,7 +17,7 @@ export function flattenInstructionDataArgumentsVisitor() {
                 assertIsNode(instruction, 'instructionNode');
                 return instructionNode({
                     ...instruction,
-                    arguments: flattenInstructionArguments(instruction.arguments),
+                    arguments: flattenInstructionArguments(instruction.arguments ?? []),
                 });
             },
         },
@@ -35,7 +35,7 @@ export const flattenInstructionArguments = (
         options === '*' || camelCaseOptions.includes(camelCase(node.name));
     const inlinedArguments = nodes.flatMap(node => {
         if (isNode(node.type, 'structTypeNode') && shouldInline(node)) {
-            return node.type.fields.map(field => instructionArgumentNode({ ...field }));
+            return (node.type.fields ?? []).map(field => instructionArgumentNode({ ...field }));
         }
         return node;
     });

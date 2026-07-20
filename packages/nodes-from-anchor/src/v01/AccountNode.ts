@@ -39,7 +39,7 @@ export function accountNodeFromAnchorV01(
     });
 
     return accountNode({
-        data: structTypeNode([discriminator, ...data.fields]),
+        data: structTypeNode([discriminator, ...(data.fields ?? [])]),
         discriminators: [fieldDiscriminatorNode('discriminator')],
         name,
     });

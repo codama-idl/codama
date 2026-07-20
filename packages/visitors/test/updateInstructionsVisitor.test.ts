@@ -40,7 +40,7 @@ test('it updates the name of an instruction', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'programNode');
-    expect(result.instructions[0].name).toBe('myNewInstruction' as CamelCaseString);
+    expect((result.instructions ?? [])[0].name).toBe('myNewInstruction' as CamelCaseString);
 });
 
 test('it updates the name of an instruction within a specific program', () => {
@@ -70,10 +70,10 @@ test('it updates the name of an instruction within a specific program', () => {
 
     // Then we expect the first instruction to have been renamed.
     assertIsNode(result, 'rootNode');
-    expect(result.program.instructions[0].name).toBe('newTransfer' as CamelCaseString);
+    expect((result.program.instructions ?? [])[0].name).toBe('newTransfer' as CamelCaseString);
 
     // But not the second instruction.
-    expect(result.additionalPrograms[0].instructions[0].name).toBe('transfer' as CamelCaseString);
+    expect(((result.additionalPrograms ?? [])[0].instructions ?? [])[0].name).toBe('transfer' as CamelCaseString);
 });
 
 test('it updates the name of an instruction account', () => {
@@ -103,7 +103,7 @@ test('it updates the name of an instruction account', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    expect(result.accounts[0].name).toBe('myNewAccount' as CamelCaseString);
+    expect((result.accounts ?? [])[0].name).toBe('myNewAccount' as CamelCaseString);
 });
 
 test('it updates the name of an instruction argument', () => {
@@ -132,7 +132,7 @@ test('it updates the name of an instruction argument', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    expect(result.arguments[0].name).toBe('myNewArgument' as CamelCaseString);
+    expect((result.arguments ?? [])[0].name).toBe('myNewArgument' as CamelCaseString);
 });
 
 test('it updates the default value of an instruction argument', () => {
@@ -161,8 +161,8 @@ test('it updates the default value of an instruction argument', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    expect(result.arguments[0].defaultValue).toEqual(numberValueNode(1));
-    expect(result.arguments[0].defaultValueStrategy).toBeUndefined();
+    expect((result.arguments ?? [])[0].defaultValue).toEqual(numberValueNode(1));
+    expect((result.arguments ?? [])[0].defaultValueStrategy).toBeUndefined();
 });
 
 test('it updates the default value strategy of an instruction argument', () => {
@@ -202,10 +202,10 @@ test('it updates the default value strategy of an instruction argument', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    expect(result.arguments[0].defaultValue).toEqual(numberValueNode(42));
-    expect(result.arguments[0].defaultValueStrategy).toBe('omitted');
-    expect(result.arguments[1].defaultValue).toEqual(numberValueNode(1));
-    expect(result.arguments[1].defaultValueStrategy).toBe('optional');
+    expect((result.arguments ?? [])[0].defaultValue).toEqual(numberValueNode(42));
+    expect((result.arguments ?? [])[0].defaultValueStrategy).toBe('omitted');
+    expect((result.arguments ?? [])[1].defaultValue).toEqual(numberValueNode(1));
+    expect((result.arguments ?? [])[1].defaultValueStrategy).toBe('optional');
 });
 
 test('it updates the byteDeltas of an instruction', () => {

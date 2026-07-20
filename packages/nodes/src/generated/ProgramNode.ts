@@ -11,13 +11,13 @@ import type {
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type ProgramNodeInput<
-    TPdas extends Array<PdaNode> = Array<PdaNode>,
-    TAccounts extends Array<AccountNode> = Array<AccountNode>,
-    TInstructions extends Array<InstructionNode> = Array<InstructionNode>,
-    TDefinedTypes extends Array<DefinedTypeNode> = Array<DefinedTypeNode>,
-    TErrors extends Array<ErrorNode> = Array<ErrorNode>,
-    TEvents extends Array<EventNode> = Array<EventNode>,
-    TConstants extends Array<ConstantNode> = Array<ConstantNode>,
+    TPdas extends Array<PdaNode> | undefined = Array<PdaNode> | undefined,
+    TAccounts extends Array<AccountNode> | undefined = Array<AccountNode> | undefined,
+    TInstructions extends Array<InstructionNode> | undefined = Array<InstructionNode> | undefined,
+    TDefinedTypes extends Array<DefinedTypeNode> | undefined = Array<DefinedTypeNode> | undefined,
+    TErrors extends Array<ErrorNode> | undefined = Array<ErrorNode> | undefined,
+    TEvents extends Array<EventNode> | undefined = Array<EventNode> | undefined,
+    TConstants extends Array<ConstantNode> | undefined = Array<ConstantNode> | undefined,
 > = Omit<
     Partial<ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents, TConstants>>,
     'docs' | 'kind' | 'name' | 'publicKey'
@@ -29,13 +29,13 @@ export type ProgramNodeInput<
 
 /** A Solana program: its identity, version, accounts, instructions, defined types, PDAs, events, errors, and constants. */
 export function programNode<
-    const TPdas extends Array<PdaNode> = [],
-    const TAccounts extends Array<AccountNode> = [],
-    const TInstructions extends Array<InstructionNode> = [],
-    const TDefinedTypes extends Array<DefinedTypeNode> = [],
-    const TErrors extends Array<ErrorNode> = [],
-    const TEvents extends Array<EventNode> = [],
-    const TConstants extends Array<ConstantNode> = [],
+    const TPdas extends Array<PdaNode> | undefined = [],
+    const TAccounts extends Array<AccountNode> | undefined = [],
+    const TInstructions extends Array<InstructionNode> | undefined = [],
+    const TDefinedTypes extends Array<DefinedTypeNode> | undefined = [],
+    const TErrors extends Array<ErrorNode> | undefined = [],
+    const TEvents extends Array<EventNode> | undefined = [],
+    const TConstants extends Array<ConstantNode> | undefined = [],
 >(
     input: ProgramNodeInput<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents, TConstants>,
 ): ProgramNode<TPdas, TAccounts, TInstructions, TDefinedTypes, TErrors, TEvents, TConstants> {
@@ -51,12 +51,15 @@ export function programNode<
         ...(parsedDocs.length > 0 && { docs: parsedDocs }),
 
         // Children.
-        accounts: (input.accounts ?? []) as TAccounts,
-        instructions: (input.instructions ?? []) as TInstructions,
-        definedTypes: (input.definedTypes ?? []) as TDefinedTypes,
-        pdas: (input.pdas ?? []) as TPdas,
-        events: (input.events ?? []) as TEvents,
-        errors: (input.errors ?? []) as TErrors,
-        constants: (input.constants ?? []) as TConstants,
+        ...(input.accounts !== undefined && input.accounts.length > 0 && { accounts: input.accounts as TAccounts }),
+        ...(input.instructions !== undefined &&
+            input.instructions.length > 0 && { instructions: input.instructions as TInstructions }),
+        ...(input.definedTypes !== undefined &&
+            input.definedTypes.length > 0 && { definedTypes: input.definedTypes as TDefinedTypes }),
+        ...(input.pdas !== undefined && input.pdas.length > 0 && { pdas: input.pdas as TPdas }),
+        ...(input.events !== undefined && input.events.length > 0 && { events: input.events as TEvents }),
+        ...(input.errors !== undefined && input.errors.length > 0 && { errors: input.errors as TErrors }),
+        ...(input.constants !== undefined &&
+            input.constants.length > 0 && { constants: input.constants as TConstants }),
     });
 }

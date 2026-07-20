@@ -10,8 +10,8 @@ export function collectPdaNodesFromIdl(idl: RootNode): Map<string, PdaNode> {
         pdas.set(pda.name, pda);
     }
 
-    for (const ix of idl.program.instructions) {
-        for (const acc of ix.accounts) {
+    for (const ix of idl.program.instructions ?? []) {
+        for (const acc of ix.accounts ?? []) {
             if (!acc.defaultValue || acc.defaultValue.kind !== 'pdaValueNode') continue;
             const pdaDef = acc.defaultValue.pda;
             if (!pdaDef || pdaDef.kind !== 'pdaNode') continue;

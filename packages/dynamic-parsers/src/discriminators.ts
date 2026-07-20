@@ -69,7 +69,7 @@ function matchFieldDiscriminator(
         });
     }
     const struct = typeNode as StructTypeNode;
-    const field = struct.fields.find(field => field.name === discriminator.name);
+    const field = (struct.fields ?? []).find(field => field.name === discriminator.name);
     if (!field) {
         throw new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
             field: discriminator.name,

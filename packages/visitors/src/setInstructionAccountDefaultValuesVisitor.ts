@@ -168,7 +168,7 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
             extendVisitor(v, {
                 visitInstruction(node) {
                     const instructionPath = stack.getPath('instructionNode');
-                    const instructionAccounts = node.accounts.map((account): InstructionAccountNode => {
+                    const instructionAccounts = (node.accounts ?? []).map((account): InstructionAccountNode => {
                         const rule = matchRule(node, account);
                         if (!rule) return account;
 

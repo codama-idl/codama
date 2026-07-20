@@ -48,14 +48,14 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                 visitProgram(program, { self }) {
                     return programNode({
                         ...program,
-                        accounts: program.accounts
+                        accounts: (program.accounts ?? [])
                             .map(account => visit(account, self))
                             .filter(assertIsNodeFilter('accountNode')),
-                        definedTypes: program.definedTypes
+                        definedTypes: (program.definedTypes ?? [])
                             .filter(definedType => !shouldInline(definedType.name, program.name))
                             .map(type => visit(type, self))
                             .filter(assertIsNodeFilter('definedTypeNode')),
-                        instructions: program.instructions
+                        instructions: (program.instructions ?? [])
                             .map(instruction => visit(instruction, self))
                             .filter(assertIsNodeFilter('instructionNode')),
                     });

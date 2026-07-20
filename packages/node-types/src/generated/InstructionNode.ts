@@ -15,8 +15,8 @@ type SelfInstructionNode = InstructionNode;
 
 /** A program instruction: its accounts, arguments, byte-delta hints, discriminators, optional status, and optional sub-instructions. */
 export interface InstructionNode<
-    TAccounts extends Array<InstructionAccountNode> = Array<InstructionAccountNode>,
-    TArguments extends Array<InstructionArgumentNode> = Array<InstructionArgumentNode>,
+    TAccounts extends Array<InstructionAccountNode> | undefined = Array<InstructionAccountNode> | undefined,
+    TArguments extends Array<InstructionArgumentNode> | undefined = Array<InstructionArgumentNode> | undefined,
     TExtraArguments extends Array<InstructionArgumentNode> | undefined = Array<InstructionArgumentNode> | undefined,
     TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined =
         | Array<InstructionRemainingAccountsNode>
@@ -41,9 +41,9 @@ export interface InstructionNode<
 
     // Children.
     /** The accounts the instruction operates on, in order. */
-    readonly accounts: TAccounts;
+    readonly accounts?: TAccounts;
     /** The serialised arguments of the instruction, in order. */
-    readonly arguments: TArguments;
+    readonly arguments?: TArguments;
     /** Additional arguments exposed in the generated client API but not serialised on the wire. */
     readonly extraArguments?: TExtraArguments;
     /** Variable-length tails of accounts appended after the named account slots. */

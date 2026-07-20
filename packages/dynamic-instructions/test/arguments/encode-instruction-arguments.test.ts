@@ -121,7 +121,7 @@ describe('encodeInstructionArguments', () => {
     test('should throw DEFAULT_VALUE_MISSING when omitted argument has no defaultValue', () => {
         const modifiedIx: InstructionNode = {
             ...writeIx,
-            arguments: writeIx.arguments.map(arg =>
+            arguments: (writeIx.arguments ?? []).map(arg =>
                 arg.name === 'discriminator' ? { ...arg, defaultValue: undefined } : arg,
             ),
         };

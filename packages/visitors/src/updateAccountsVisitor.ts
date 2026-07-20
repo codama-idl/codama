@@ -83,12 +83,12 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                             .filter(p => p.program === node.name)
                             .map(p => p.pda);
                         if (pdasToUpsertForProgram.length === 0) return node;
-                        const existingPdaNames = new Set(node.pdas.map(pda => pda.name));
+                        const existingPdaNames = new Set((node.pdas ?? []).map(pda => pda.name));
                         const pdasToCreate = pdasToUpsertForProgram.filter(p => !existingPdaNames.has(p.name));
                         const pdasToUpdate = new Map(
                             pdasToUpsertForProgram.filter(p => existingPdaNames.has(p.name)).map(p => [p.name, p]),
                         );
-                        const newPdas = [...node.pdas.map(p => pdasToUpdate.get(p.name) ?? p), ...pdasToCreate];
+                        const newPdas = [...(node.pdas ?? []).map(p => pdasToUpdate.get(p.name) ?? p), ...pdasToCreate];
                         return programNode({ ...node, pdas: newPdas });
                     },
                 },

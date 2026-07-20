@@ -102,7 +102,7 @@ export function getMaxByteSizeVisitor(
                     const prefix = visit(node.size, self);
                     if (prefix === null) return null;
                     if (isScalarEnum(node)) return prefix;
-                    const variantSizes = node.variants.map(v => visit(v, self));
+                    const variantSizes = (node.variants ?? []).map(v => visit(v, self));
                     if (variantSizes.includes(null)) return null;
                     const maxVariantSize = Math.max(...(variantSizes as number[]));
                     return prefix + maxVariantSize;
@@ -113,7 +113,7 @@ export function getMaxByteSizeVisitor(
                 },
 
                 visitInstruction(node, { self }) {
-                    return sumSizes(node.arguments.map(arg => visit(arg, self)));
+                    return sumSizes((node.arguments ?? []).map(arg => visit(arg, self)));
                 },
 
                 visitInstructionArgument(node, { self }) {

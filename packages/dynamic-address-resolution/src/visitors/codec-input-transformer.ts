@@ -113,7 +113,7 @@ export function createCodecInputTransformerVisitor(
         },
 
         visitDefinedTypeLink(node) {
-            const definedType = root.program.definedTypes.find(dt => dt.name === node.name);
+            const definedType = (root.program.definedTypes ?? []).find(dt => dt.name === node.name);
             if (!definedType) {
                 throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
                     kind: 'definedTypeLinkNode',
@@ -145,10 +145,10 @@ export function createCodecInputTransformerVisitor(
 
                 const { __kind, ...rest } = input;
                 const kindObj = { __kind: pascalCase(String(__kind)) };
-                const variantNode = node.variants.find(v => v.name === __kind);
+                const variantNode = (node.variants ?? []).find(v => v.name === __kind);
 
                 if (!variantNode) {
-                    const availableVariants = node.variants.map(v => v.name).join(', ');
+                    const availableVariants = (node.variants ?? []).map(v => v.name).join(', ');
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
                         actualType: `variant '${String(__kind)}'`,
                         expectedType: `one of [${availableVariants}]`,
@@ -289,7 +289,7 @@ export function createCodecInputTransformerVisitor(
         },
 
         visitStructType(node) {
-            const fieldTransformers = node.fields.map(field => {
+            const fieldTransformers = (node.fields ?? []).map(field => {
                 const transform = visitOrElse(field, visitor, unexpectedNodeFallback);
                 return { name: field.name, transform };
             });
@@ -312,7 +312,7 @@ export function createCodecInputTransformerVisitor(
         },
 
         visitTupleType(node) {
-            const itemTransforms = node.items.map(item => visitOrElse(item, visitor, unexpectedNodeFallback));
+            const itemTransforms = (node.items ?? []).map(item => visitOrElse(item, visitor, unexpectedNodeFallback));
             return (input: unknown) => {
                 if (!Array.isArray(input)) {
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {

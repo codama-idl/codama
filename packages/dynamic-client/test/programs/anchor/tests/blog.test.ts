@@ -362,7 +362,7 @@ describe('blog', () => {
     });
 
     function decodeAccount(name: string, pda: Address) {
-        const accountNode = programClient.root.program.accounts.find(a => a.name === name);
+        const accountNode = (programClient.root.program.accounts ?? []).find(a => a.name === name);
         if (!accountNode) throw new Error(`Account node "${name}" not found in IDL`);
 
         const codec = getNodeCodec([programClient.root, programClient.root.program, accountNode]);

@@ -7,7 +7,7 @@ import type { CodamaVersion } from './shared/codamaVersion';
  */
 export interface RootNode<
     TProgram extends ProgramNode = ProgramNode,
-    TAdditionalPrograms extends Array<ProgramNode> = Array<ProgramNode>,
+    TAdditionalPrograms extends Array<ProgramNode> | undefined = Array<ProgramNode> | undefined,
 > {
     readonly kind: 'rootNode';
 
@@ -21,5 +21,5 @@ export interface RootNode<
     /** The primary program described by the document. */
     readonly program: TProgram;
     /** Additional programs referenced by the primary program. */
-    readonly additionalPrograms: TAdditionalPrograms;
+    readonly additionalPrograms?: TAdditionalPrograms;
 }

@@ -1,5 +1,5 @@
 import { fragment } from '@codama/fragments/javascript';
-import { attribute, defineNode, enumeration, node, optionalAttribute, u32, union } from '@codama/spec/api';
+import { array, attribute, defineNode, enumeration, node, optionalAttribute, u32, union } from '@codama/spec/api';
 import { describe, expect, it } from 'vitest';
 
 import type { NodeConstructorConfig } from '../../../src/nodes/config';
@@ -68,6 +68,27 @@ describe('getNodeFunctionPositionalArgumentsFragment', () => {
         expect(out).toContain('options: {');
         expect(out).toContain('subtract?:');
         expect(out).toContain('= {}');
+    });
+
+    it("widens an array attribute's `[]` default through the bare element-array type, without `| undefined`", () => {
+        // The intermediate cast widens the `[]` literal before the final
+        // narrowing to the generic. For arrays it must NOT include the
+        // `| undefined` from the type-parameter constraint — that would just
+        // add noise to the generated output.
+        const n = defineNode('myNode', {
+            attributes: [attribute('items', array(node('itemNode')))],
+        });
+        const config: NodeConstructorConfig = {
+            attributes: { items: { default: fragment`[]` } },
+            positionalArgs: ['items'],
+        };
+        const out = getNodeFunctionPositionalArgumentsFragment(
+            n,
+            getNodeTypeParameterAttributes(n, scope),
+            config,
+        ).content;
+        expect(out).toContain('= [] as Array<ItemNode> as TItems');
+        expect(out).not.toContain('| undefined');
     });
 
     it('excludes `hidden`-defaulted attributes from both signature and bag', () => {

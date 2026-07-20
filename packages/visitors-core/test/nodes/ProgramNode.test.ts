@@ -46,12 +46,12 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[programNode]', null);
-    expectDeleteNodesVisitor(node, '[pdaNode]', { ...node, pdas: [] });
-    expectDeleteNodesVisitor(node, '[accountNode]', { ...node, accounts: [] });
-    expectDeleteNodesVisitor(node, '[eventNode]', { ...node, events: [] });
-    expectDeleteNodesVisitor(node, '[instructionNode]', { ...node, instructions: [] });
-    expectDeleteNodesVisitor(node, '[definedTypeNode]', { ...node, definedTypes: [] });
-    expectDeleteNodesVisitor(node, '[errorNode]', { ...node, errors: [] });
+    expectDeleteNodesVisitor(node, '[pdaNode]', { ...node, pdas: undefined });
+    expectDeleteNodesVisitor(node, '[accountNode]', { ...node, accounts: undefined });
+    expectDeleteNodesVisitor(node, '[eventNode]', { ...node, events: undefined });
+    expectDeleteNodesVisitor(node, '[instructionNode]', { ...node, instructions: undefined });
+    expectDeleteNodesVisitor(node, '[definedTypeNode]', { ...node, definedTypes: undefined });
+    expectDeleteNodesVisitor(node, '[errorNode]', { ...node, errors: undefined });
 });
 
 test('debugStringVisitor', () => {

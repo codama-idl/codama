@@ -52,5 +52,5 @@ test('it includes the current node when applied last', () => {
     // Then we expect the number stacks to have been recorded
     // such that the number node themselves are included in the stack.
     expect(numberStacks.length).toBe(1);
-    expect(numberStacks[0].getPath()).toEqual([node, node.type, (node.type as TupleTypeNode).items[0]]);
+    expect(numberStacks[0].getPath()).toEqual([node, node.type, ((node.type as TupleTypeNode).items ?? [])[0]]);
 });

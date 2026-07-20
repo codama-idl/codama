@@ -34,7 +34,7 @@ test('it unwraps defined types by following links', () => {
 
     // Then we expect the following tree.
     assertIsNode(result, 'programNode');
-    expect(result.accounts[0].data).toStrictEqual(
+    expect((result.accounts ?? [])[0].data).toStrictEqual(
         structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u64') })]),
     );
 });
@@ -68,7 +68,7 @@ test('it follows linked nodes using the correct paths', () => {
 
     // Then we expect the final linkable to be resolved in programA.
     assertIsNode(result, 'rootNode');
-    expect(result.program.definedTypes[0]).toStrictEqual(
+    expect((result.program.definedTypes ?? [])[0]).toStrictEqual(
         definedTypeNode({ name: 'typeA', type: numberTypeNode('u64') }),
     );
 });

@@ -63,7 +63,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                 return enumEmptyVariantTypeNode(node.name);
             }
             assertIsNode(newStruct, 'structTypeNode');
-            if (newStruct.fields.length === 0) {
+            if ((newStruct.fields ?? []).length === 0) {
                 return enumEmptyVariantTypeNode(node.name);
             }
             return enumStructVariantTypeNode(node.name, newStruct, node.discriminator);
@@ -77,7 +77,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                 return enumEmptyVariantTypeNode(node.name);
             }
             assertIsNode(newTuple, 'tupleTypeNode');
-            if (newTuple.items.length === 0) {
+            if ((newTuple.items ?? []).length === 0) {
                 return enumEmptyVariantTypeNode(node.name);
             }
             return enumTupleVariantTypeNode(node.name, newTuple, node.discriminator);

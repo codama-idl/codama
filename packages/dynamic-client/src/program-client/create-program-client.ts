@@ -75,7 +75,7 @@ export function createProgramClient<TClient = ProgramClient>(
     const programAddress = address(root.program.publicKey);
 
     const instructions = new Map<string, InstructionNode>();
-    for (const ix of root.program.instructions) {
+    for (const ix of root.program.instructions ?? []) {
         instructions.set(ix.name, ix);
     }
 

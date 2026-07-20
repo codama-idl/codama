@@ -46,8 +46,9 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
                         assertIsNode(node, 'enumTupleVariantTypeNode');
                         if (!shouldUnwrap(stack)) return node;
                         const tupleNode = resolveNestedTypeNode(node.tuple);
-                        if (tupleNode.items.length !== 1) return node;
-                        let item = tupleNode.items[0];
+                        const tupleItems = tupleNode.items ?? [];
+                        if (tupleItems.length !== 1) return node;
+                        let item = tupleItems[0];
                         if (isNode(item, 'definedTypeLinkNode')) {
                             const definedType = definedTypes.get(item.name);
                             if (!definedType) return node;

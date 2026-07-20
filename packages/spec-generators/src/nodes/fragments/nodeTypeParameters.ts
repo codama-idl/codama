@@ -7,12 +7,18 @@ import { getTypeExprFragment } from './typeExpr';
 
 /**
  * The constraint Fragment for the type parameter derived from `attr`.
- * Optional attributes get `| undefined` appended; required attributes
+ * Optional attributes — and every array attribute, regardless of
+ * `optional` — get `| undefined` appended; other required attributes
  * use the bare type expression.
+ *
+ * Arrays are always optional because they skip-when-empty: an empty
+ * array is omitted from the node, so a reader may always find the
+ * attribute absent (see the "Array attributes are omitted when empty"
+ * convention in the `@codama/spec` README).
  */
 export function getNodeTypeParameterConstraint(attr: AttributeSpec): Fragment {
     const baseType = getTypeExprFragment(attr.type);
-    return attr.optional === true ? fragment`${baseType} | undefined` : baseType;
+    return attr.optional === true || attr.type.kind === 'array' ? fragment`${baseType} | undefined` : baseType;
 }
 
 /**

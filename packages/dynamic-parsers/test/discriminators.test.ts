@@ -122,8 +122,9 @@ describe('matchDiscriminators', () => {
             const discriminator = constantDiscriminatorNode(
                 constantValueNode(definedTypeLinkNode('typeB1', programLinkNode('programB')), numberValueNode(42)),
             );
+            const account = accountNode({ discriminators: [discriminator], name: 'myAccount' });
             const programA = programNode({
-                accounts: [accountNode({ discriminators: [discriminator], name: 'myAccount' })],
+                accounts: [account],
                 definedTypes: [
                     definedTypeNode({
                         name: 'typeA',
@@ -148,7 +149,7 @@ describe('matchDiscriminators', () => {
             visit(root, getRecordLinkablesVisitor(linkables));
 
             // And a stack keeping track of the current visited nodes.
-            const stack = new NodeStack([root, programA, programA.accounts[0]]);
+            const stack = new NodeStack([root, programA, account]);
             codecAndValueVisitors = getCodecAndValueVisitors(linkables, { stack });
 
             // When we match the discriminator which should resolve to a u32 number equal to 42.
@@ -244,8 +245,9 @@ describe('matchDiscriminators', () => {
                     type: definedTypeLinkNode('typeB1', programLinkNode('programB')),
                 }),
             ]);
+            const account = accountNode({ data: fields, discriminators: [discriminator], name: 'myAccount' });
             const programA = programNode({
-                accounts: [accountNode({ data: fields, discriminators: [discriminator], name: 'myAccount' })],
+                accounts: [account],
                 definedTypes: [
                     definedTypeNode({
                         name: 'typeA',
@@ -270,7 +272,7 @@ describe('matchDiscriminators', () => {
             visit(root, getRecordLinkablesVisitor(linkables));
 
             // And a stack keeping track of the current visited nodes.
-            const stack = new NodeStack([root, programA, programA.accounts[0]]);
+            const stack = new NodeStack([root, programA, account]);
             codecAndValueVisitors = getCodecAndValueVisitors(linkables, { stack });
 
             // When we match the discriminator which should resolve to a u32 number equal to 42.

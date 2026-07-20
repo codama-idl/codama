@@ -98,7 +98,7 @@ export function getByteIdentificationVisitor<TKind extends IdentifiableNodeKind>
             },
             visitInstruction(node) {
                 if (!node.discriminators) return;
-                const struct = structTypeNodeFromInstructionArgumentNodes(node.arguments);
+                const struct = structTypeNodeFromInstructionArgumentNodes(node.arguments ?? []);
                 const match = matchDiscriminators(bytes, node.discriminators, struct, codecAndValueVisitors);
                 return match ? stack.getPath(node.kind) : undefined;
             },
@@ -123,5 +123,7 @@ function getNodeCandidates(
     program: ProgramNode,
     kind: IdentifiableNodeKind | IdentifiableNodeKind[],
 ): (AccountNode | EventNode | InstructionNode)[] {
-    return [...program.accounts, ...program.events, ...program.instructions].filter(isNodeFilter(kind));
+    return [...(program.accounts ?? []), ...(program.events ?? []), ...(program.instructions ?? [])].filter(
+        isNodeFilter(kind),
+    );
 }

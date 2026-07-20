@@ -30,9 +30,9 @@ export const RESOLVER_FN_DECLARATION =
  */
 export function generateResolutionInputTypes(idl: RootNode): string {
     const definedTypes = idl.program.definedTypes ?? [];
-    const hasAnyResolvers = idl.program.instructions.some(ix => getResolutionRefs(ix).hasResolvers);
+    const hasAnyResolvers = (idl.program.instructions ?? []).some(ix => getResolutionRefs(ix).hasResolvers);
     let output = hasAnyResolvers ? RESOLVER_FN_DECLARATION : '';
-    for (const ix of idl.program.instructions) {
+    for (const ix of idl.program.instructions ?? []) {
         output += generateTypeBlockForInstruction(ix, definedTypes);
     }
     return output;
@@ -43,7 +43,7 @@ function generateTypeBlockForInstruction(ix: InstructionNode, definedTypes: Defi
     let output = '';
 
     if (refs.argsRef) {
-        const args = ix.arguments.filter(arg => arg.defaultValueStrategy !== 'omitted');
+        const args = (ix.arguments ?? []).filter(arg => arg.defaultValueStrategy !== 'omitted');
         const remainingAccountArgs = (ix.remainingAccounts ?? []).filter(ra => ra.value.kind === 'argumentValueNode');
         output += `export type ${refs.argsRef} = {\n`;
         for (const arg of args) {
@@ -59,9 +59,9 @@ function generateTypeBlockForInstruction(ix: InstructionNode, definedTypes: Defi
         output += '};\n\n';
     }
 
-    if (ix.accounts.length > 0) {
+    if ((ix.accounts ?? []).length > 0) {
         output += `export type ${refs.accountsRef} = {\n`;
-        for (const acc of ix.accounts) {
+        for (const acc of ix.accounts ?? []) {
             const omittable = isAccountAutoResolvable(acc) ? '?' : '';
             const type = acc.isOptional ? 'Address | null' : 'Address';
             output += `    ${acc.name}${omittable}: ${type};\n`;

@@ -48,10 +48,10 @@ test('it adds new default values to struct fields', () => {
     // Then we expect the following tree changes.
     assertIsNode(result, 'definedTypeNode');
     assertIsNode(result.type, 'structTypeNode');
-    expect(result.type.fields[0].defaultValue).toEqual(numberValueNode(42));
-    expect(result.type.fields[0].defaultValueStrategy).toBeUndefined();
-    expect(result.type.fields[1].defaultValue).toEqual(noneValueNode());
-    expect(result.type.fields[1].defaultValueStrategy).toBeUndefined();
+    expect((result.type.fields ?? [])[0].defaultValue).toEqual(numberValueNode(42));
+    expect((result.type.fields ?? [])[0].defaultValueStrategy).toBeUndefined();
+    expect((result.type.fields ?? [])[1].defaultValue).toEqual(noneValueNode());
+    expect((result.type.fields ?? [])[1].defaultValueStrategy).toBeUndefined();
 });
 
 test('it adds new default values with custom strategies to struct fields', () => {
@@ -84,10 +84,10 @@ test('it adds new default values with custom strategies to struct fields', () =>
     // Then we expect the following tree changes.
     assertIsNode(result, 'accountNode');
     const data = resolveNestedTypeNode(result.data);
-    expect(data.fields[0].defaultValue).toEqual(numberValueNode(42));
-    expect(data.fields[0].defaultValueStrategy).toBe('omitted');
-    expect(data.fields[1].defaultValue).toEqual(noneValueNode());
-    expect(data.fields[1].defaultValueStrategy).toBe('optional');
+    expect((data.fields ?? [])[0].defaultValue).toEqual(numberValueNode(42));
+    expect((data.fields ?? [])[0].defaultValueStrategy).toBe('omitted');
+    expect((data.fields ?? [])[1].defaultValue).toEqual(noneValueNode());
+    expect((data.fields ?? [])[1].defaultValueStrategy).toBe('optional');
 });
 
 test('it adds new default values to instruction arguments', () => {
@@ -119,8 +119,8 @@ test('it adds new default values to instruction arguments', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'instructionNode');
-    expect(result.arguments[0].defaultValue).toEqual(numberValueNode(42));
-    expect(result.arguments[0].defaultValueStrategy).toBe('omitted');
-    expect(result.arguments[1].defaultValue).toEqual(numberValueNode(1));
-    expect(result.arguments[1].defaultValueStrategy).toBeUndefined();
+    expect((result.arguments ?? [])[0].defaultValue).toEqual(numberValueNode(42));
+    expect((result.arguments ?? [])[0].defaultValueStrategy).toBe('omitted');
+    expect((result.arguments ?? [])[1].defaultValue).toEqual(numberValueNode(1));
+    expect((result.arguments ?? [])[1].defaultValueStrategy).toBeUndefined();
 });

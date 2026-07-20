@@ -13,8 +13,8 @@ import type {
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type InstructionNodeInput<
-    TAccounts extends Array<InstructionAccountNode> = Array<InstructionAccountNode>,
-    TArguments extends Array<InstructionArgumentNode> = Array<InstructionArgumentNode>,
+    TAccounts extends Array<InstructionAccountNode> | undefined = Array<InstructionAccountNode> | undefined,
+    TArguments extends Array<InstructionArgumentNode> | undefined = Array<InstructionArgumentNode> | undefined,
     TExtraArguments extends Array<InstructionArgumentNode> | undefined = Array<InstructionArgumentNode> | undefined,
     TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined =
         | Array<InstructionRemainingAccountsNode>
@@ -50,8 +50,8 @@ export type InstructionNodeInput<
 
 /** A program instruction: its accounts, arguments, byte-delta hints, discriminators, optional status, and optional sub-instructions. */
 export function instructionNode<
-    const TAccounts extends Array<InstructionAccountNode> = [],
-    const TArguments extends Array<InstructionArgumentNode> = [],
+    const TAccounts extends Array<InstructionAccountNode> | undefined = [],
+    const TArguments extends Array<InstructionArgumentNode> | undefined = [],
     const TExtraArguments extends Array<InstructionArgumentNode> | undefined = undefined,
     const TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined = undefined,
     const TByteDeltas extends Array<InstructionByteDeltaNode> | undefined = undefined,
@@ -98,16 +98,22 @@ export function instructionNode<
         optionalAccountStrategy: input.optionalAccountStrategy ?? 'programId',
 
         // Children.
-        accounts: (input.accounts ?? []) as TAccounts,
-        arguments: (input.arguments ?? []) as TArguments,
-        ...(input.extraArguments !== undefined && { extraArguments: input.extraArguments }),
-        ...(input.remainingAccounts !== undefined && { remainingAccounts: input.remainingAccounts }),
-        ...(input.byteDeltas !== undefined && { byteDeltas: input.byteDeltas }),
-        ...(input.discriminators !== undefined && { discriminators: input.discriminators }),
+        ...(input.accounts !== undefined && input.accounts.length > 0 && { accounts: input.accounts as TAccounts }),
+        ...(input.arguments !== undefined &&
+            input.arguments.length > 0 && { arguments: input.arguments as TArguments }),
+        ...(input.extraArguments !== undefined &&
+            input.extraArguments.length > 0 && { extraArguments: input.extraArguments as TExtraArguments }),
+        ...(input.remainingAccounts !== undefined &&
+            input.remainingAccounts.length > 0 && { remainingAccounts: input.remainingAccounts as TRemainingAccounts }),
+        ...(input.byteDeltas !== undefined &&
+            input.byteDeltas.length > 0 && { byteDeltas: input.byteDeltas as TByteDeltas }),
+        ...(input.discriminators !== undefined &&
+            input.discriminators.length > 0 && { discriminators: input.discriminators as TDiscriminators }),
         ...(input.status !== undefined && { status: input.status }),
-        ...(input.subInstructions !== undefined && { subInstructions: input.subInstructions }),
-        ...(input.provides !== undefined && { provides: input.provides }),
+        ...(input.subInstructions !== undefined &&
+            input.subInstructions.length > 0 && { subInstructions: input.subInstructions as TSubInstructions }),
+        ...(input.provides !== undefined && input.provides.length > 0 && { provides: input.provides as TProvides }),
         ...(input.display !== undefined && { display: input.display }),
-        ...(input.plugins !== undefined && { plugins: input.plugins }),
+        ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

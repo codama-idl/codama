@@ -24,6 +24,7 @@ export function eventNode<
 
         // Children.
         data: input.data,
-        ...(input.discriminators !== undefined && { discriminators: input.discriminators }),
+        ...(input.discriminators !== undefined &&
+            input.discriminators.length > 0 && { discriminators: input.discriminators as TDiscriminators }),
     });
 }

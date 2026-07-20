@@ -102,7 +102,7 @@ export function createPdaSeedValueVisitor(
         },
 
         visitArgumentValue: async (node: ArgumentValueNode) => {
-            const ixArgumentNode = ixNode.arguments.find(arg => arg.name === node.name);
+            const ixArgumentNode = (ixNode.arguments ?? []).find(arg => arg.name === node.name);
             if (!ixArgumentNode) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
                     instructionName: ixNode.name,

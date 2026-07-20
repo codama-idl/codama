@@ -46,7 +46,7 @@ test('it can use visitOrElse to fallback if a nested node is not supported by th
             return 1;
         },
         visitTupleType(node) {
-            return node.items.map(child => visitOrElse(child, this, () => 42)).reduce((a, b) => a + b, 1);
+            return (node.items ?? []).map(child => visitOrElse(child, this, () => 42)).reduce((a, b) => a + b, 1);
         },
     };
 

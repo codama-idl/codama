@@ -22,15 +22,16 @@ import { hex } from './_setup';
 
 describe('identifyAccountData', () => {
     test('it identifies an account using its discriminator nodes', () => {
+        const account = accountNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myAccount' });
         const root = rootNode(
             programNode({
-                accounts: [accountNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myAccount' })],
+                accounts: [account],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = identifyAccountData(root, hex('01020304'));
-        expect(result).toStrictEqual([root, root.program, root.program.accounts[0]]);
+        expect(result).toStrictEqual([root, root.program, account]);
     });
     test('it fails to identify accounts whose discriminator nodes do not match the given data', () => {
         const root = rootNode(
@@ -45,33 +46,31 @@ describe('identifyAccountData', () => {
     });
     test('it identifies a single account without discriminators as a fallback', () => {
         // Given a program with exactly one account that has no discriminator nodes.
-        const root = rootNode(
-            programNode({ accounts: [accountNode({ name: 'myAccount' })], name: 'myProgram', publicKey: '1111' }),
-        );
+        const account = accountNode({ name: 'myAccount' });
+        const root = rootNode(programNode({ accounts: [account], name: 'myProgram', publicKey: '1111' }));
         // When we identify account data that matches no discriminator.
         const result = identifyAccountData(root, hex('01020304'));
         // Then we expect the sole non-discriminated account to be identified as the fallback.
-        expect(result).toStrictEqual([root, root.program, root.program.accounts[0]]);
+        expect(result).toStrictEqual([root, root.program, account]);
     });
     test('it identifies the first matching account if multiple accounts match', () => {
+        const accountA = accountNode({
+            discriminators: [sizeDiscriminatorNode(4)],
+            name: 'accountA',
+        });
+        const accountB = accountNode({
+            discriminators: [constantDiscriminatorNode(constantValueNodeFromBytes('base16', 'ff'))],
+            name: 'accountB',
+        });
         const root = rootNode(
             programNode({
-                accounts: [
-                    accountNode({
-                        discriminators: [sizeDiscriminatorNode(4)],
-                        name: 'accountA',
-                    }),
-                    accountNode({
-                        discriminators: [constantDiscriminatorNode(constantValueNodeFromBytes('base16', 'ff'))],
-                        name: 'accountB',
-                    }),
-                ],
+                accounts: [accountA, accountB],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = identifyAccountData(root, hex('ff010203'));
-        expect(result).toStrictEqual([root, root.program, root.program.accounts[0]]);
+        expect(result).toStrictEqual([root, root.program, accountA]);
     });
     test('it does not identify accounts in additional programs', () => {
         const root = rootNode(programNode({ name: 'myProgram', publicKey: '1111' }), [
@@ -99,15 +98,16 @@ describe('identifyAccountData', () => {
 
 describe('identifyInstructionData', () => {
     test('it identifies an instruction using its discriminator nodes', () => {
+        const instruction = instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myInstruction' });
         const root = rootNode(
             programNode({
-                instructions: [instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'myInstruction' })],
+                instructions: [instruction],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = identifyInstructionData(root, hex('01020304'));
-        expect(result).toStrictEqual([root, root.program, root.program.instructions[0]]);
+        expect(result).toStrictEqual([root, root.program, instruction]);
     });
     test('it fails to identify instructions whose discriminator nodes do not match the given data', () => {
         const root = rootNode(
@@ -124,9 +124,10 @@ describe('identifyInstructionData', () => {
     });
     test('it identifies a single instruction without discriminator as a fallback', () => {
         // Given a program with exactly one instruction that has no discriminator nodes.
+        const instruction = instructionNode({ name: 'myInstruction' });
         const root = rootNode(
             programNode({
-                instructions: [instructionNode({ name: 'myInstruction' })],
+                instructions: [instruction],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
@@ -134,27 +135,26 @@ describe('identifyInstructionData', () => {
         // When we identify instruction data that matches no discriminator.
         const result = identifyInstructionData(root, hex('01020304'));
         // Then we expect the single instruction to be identified as the fallback.
-        expect(result).toStrictEqual([root, root.program, root.program.instructions[0]]);
+        expect(result).toStrictEqual([root, root.program, instruction]);
     });
     test('it identifies the first matching instruction if multiple instructions match', () => {
+        const instructionA = instructionNode({
+            discriminators: [sizeDiscriminatorNode(4)],
+            name: 'instructionA',
+        });
+        const instructionB = instructionNode({
+            discriminators: [constantDiscriminatorNode(constantValueNodeFromBytes('base16', 'ff'))],
+            name: 'instructionB',
+        });
         const root = rootNode(
             programNode({
-                instructions: [
-                    instructionNode({
-                        discriminators: [sizeDiscriminatorNode(4)],
-                        name: 'instructionA',
-                    }),
-                    instructionNode({
-                        discriminators: [constantDiscriminatorNode(constantValueNodeFromBytes('base16', 'ff'))],
-                        name: 'instructionB',
-                    }),
-                ],
+                instructions: [instructionA, instructionB],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = identifyInstructionData(root, hex('ff010203'));
-        expect(result).toStrictEqual([root, root.program, root.program.instructions[0]]);
+        expect(result).toStrictEqual([root, root.program, instructionA]);
     });
     test('it does not identify instructions in additional programs', () => {
         const root = rootNode(programNode({ name: 'myProgram', publicKey: '1111' }), [
@@ -199,12 +199,13 @@ describe('identifyInstructionData', () => {
 
     test('it prefers a discriminator match over a fallback', () => {
         // Given a program with a instruction with discriminator and without.
+        const withDiscriminator = instructionNode({
+            discriminators: [sizeDiscriminatorNode(4)],
+            name: 'withDiscriminator',
+        });
         const root = rootNode(
             programNode({
-                instructions: [
-                    instructionNode({ discriminators: [sizeDiscriminatorNode(4)], name: 'withDiscriminator' }),
-                    instructionNode({ name: 'withoutDiscriminator' }),
-                ],
+                instructions: [withDiscriminator, instructionNode({ name: 'withoutDiscriminator' })],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
@@ -212,7 +213,7 @@ describe('identifyInstructionData', () => {
         // When we identify bytes that match the discriminator (length 4).
         const result = identifyInstructionData(root, hex('01020304'));
         // Then we expect the discriminated instruction, not the fallback.
-        expect(result).toStrictEqual([root, root.program, root.program.instructions[0]]);
+        expect(result).toStrictEqual([root, root.program, withDiscriminator]);
     });
 
     test('it does not identify via fallback more than one instructions without discriminator', () => {
@@ -233,21 +234,20 @@ describe('identifyInstructionData', () => {
 
 describe('identifyEventData', () => {
     test('it identifies an event using its discriminator nodes', () => {
+        const event = eventNode({
+            data: structTypeNode([]),
+            discriminators: [sizeDiscriminatorNode(4)],
+            name: 'myEvent',
+        });
         const root = rootNode(
             programNode({
-                events: [
-                    eventNode({
-                        data: structTypeNode([]),
-                        discriminators: [sizeDiscriminatorNode(4)],
-                        name: 'myEvent',
-                    }),
-                ],
+                events: [event],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = identifyEventData(root, hex('01020304'));
-        expect(result).toStrictEqual([root, root.program, root.program.events[0]]);
+        expect(result).toStrictEqual([root, root.program, event]);
     });
     test('it fails to identify events whose discriminator nodes do not match the given data', () => {
         const root = rootNode(
@@ -268,9 +268,10 @@ describe('identifyEventData', () => {
     });
     test('it identifies a single event without discriminators as a fallback', () => {
         // Given a program with exactly one event that has no discriminator nodes.
+        const event = eventNode({ data: structTypeNode([]), name: 'myEvent' });
         const root = rootNode(
             programNode({
-                events: [eventNode({ data: structTypeNode([]), name: 'myEvent' })],
+                events: [event],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
@@ -278,7 +279,7 @@ describe('identifyEventData', () => {
         // When we identify event data that matches no discriminator.
         const result = identifyEventData(root, hex('01020304'));
         // Then we expect the single event to be identified as the fallback.
-        expect(result).toStrictEqual([root, root.program, root.program.events[0]]);
+        expect(result).toStrictEqual([root, root.program, event]);
     });
     test('it does not identify events using instruction discriminators', () => {
         const root = rootNode(
@@ -292,42 +293,39 @@ describe('identifyEventData', () => {
         expect(result).toBeUndefined();
     });
     test('it identifies tuple events using constant discriminators', () => {
+        const event = eventNode({
+            data: hiddenPrefixTypeNode(tupleTypeNode([numberTypeNode('u32')]), [
+                constantValueNode(fixedSizeTypeNode(bytesTypeNode(), 2), constantValueNodeFromBytes('base16', '0102')),
+            ]),
+            discriminators: [
+                constantDiscriminatorNode(
+                    constantValueNode(
+                        fixedSizeTypeNode(bytesTypeNode(), 2),
+                        constantValueNodeFromBytes('base16', '0102'),
+                    ),
+                ),
+            ],
+            name: 'tupleEvent',
+        });
         const root = rootNode(
             programNode({
-                events: [
-                    eventNode({
-                        data: hiddenPrefixTypeNode(tupleTypeNode([numberTypeNode('u32')]), [
-                            constantValueNode(
-                                fixedSizeTypeNode(bytesTypeNode(), 2),
-                                constantValueNodeFromBytes('base16', '0102'),
-                            ),
-                        ]),
-                        discriminators: [
-                            constantDiscriminatorNode(
-                                constantValueNode(
-                                    fixedSizeTypeNode(bytesTypeNode(), 2),
-                                    constantValueNodeFromBytes('base16', '0102'),
-                                ),
-                            ),
-                        ],
-                        name: 'tupleEvent',
-                    }),
-                ],
+                events: [event],
                 name: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = identifyEventData(root, hex('01022a000000'));
-        expect(result).toStrictEqual([root, root.program, root.program.events[0]]);
+        expect(result).toStrictEqual([root, root.program, event]);
     });
 });
 
 describe('identifyData', () => {
     test('it identifies via fallback single node without discriminator', () => {
         // Given a program with one account without discriminator.
+        const account = accountNode({ name: 'myAccount' });
         const root = rootNode(
             programNode({
-                accounts: [accountNode({ name: 'myAccount' })],
+                accounts: [account],
                 instructions: [instructionNode({ name: 'myInstruction' })],
                 name: 'myProgram',
                 publicKey: '1111',
@@ -336,7 +334,7 @@ describe('identifyData', () => {
         // When we identify only account node kind.
         const result = identifyData(root, hex('01020304'), 'accountNode');
         // Then we expect the single account to be identified as the fallback.
-        expect(result).toStrictEqual([root, root.program, root.program.accounts[0]]);
+        expect(result).toStrictEqual([root, root.program, account]);
     });
 
     test('it does not identify via fallback when trying to identify multiple node kinds without discriminator', () => {

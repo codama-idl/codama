@@ -12,13 +12,13 @@ import type { ProgramOrigin } from './shared/programOrigin';
 
 /** A Solana program: its identity, version, accounts, instructions, defined types, PDAs, events, errors, and constants. */
 export interface ProgramNode<
-    TPdas extends Array<PdaNode> = Array<PdaNode>,
-    TAccounts extends Array<AccountNode> = Array<AccountNode>,
-    TInstructions extends Array<InstructionNode> = Array<InstructionNode>,
-    TDefinedTypes extends Array<DefinedTypeNode> = Array<DefinedTypeNode>,
-    TErrors extends Array<ErrorNode> = Array<ErrorNode>,
-    TEvents extends Array<EventNode> = Array<EventNode>,
-    TConstants extends Array<ConstantNode> = Array<ConstantNode>,
+    TPdas extends Array<PdaNode> | undefined = Array<PdaNode> | undefined,
+    TAccounts extends Array<AccountNode> | undefined = Array<AccountNode> | undefined,
+    TInstructions extends Array<InstructionNode> | undefined = Array<InstructionNode> | undefined,
+    TDefinedTypes extends Array<DefinedTypeNode> | undefined = Array<DefinedTypeNode> | undefined,
+    TErrors extends Array<ErrorNode> | undefined = Array<ErrorNode> | undefined,
+    TEvents extends Array<EventNode> | undefined = Array<EventNode> | undefined,
+    TConstants extends Array<ConstantNode> | undefined = Array<ConstantNode> | undefined,
 > {
     readonly kind: 'programNode';
 
@@ -36,17 +36,17 @@ export interface ProgramNode<
 
     // Children.
     /** The accounts owned by the program. */
-    readonly accounts: TAccounts;
+    readonly accounts?: TAccounts;
     /** The instructions exposed by the program. */
-    readonly instructions: TInstructions;
+    readonly instructions?: TInstructions;
     /** The reusable types defined by the program. */
-    readonly definedTypes: TDefinedTypes;
+    readonly definedTypes?: TDefinedTypes;
     /** The PDAs derived by the program. */
-    readonly pdas: TPdas;
+    readonly pdas?: TPdas;
     /** The events emitted by the program. */
-    readonly events: TEvents;
+    readonly events?: TEvents;
     /** The errors returned by the program. */
-    readonly errors: TErrors;
+    readonly errors?: TErrors;
     /** The constants exposed by the program. */
-    readonly constants: TConstants;
+    readonly constants?: TConstants;
 }

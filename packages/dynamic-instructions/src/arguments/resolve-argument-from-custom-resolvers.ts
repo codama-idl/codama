@@ -28,7 +28,7 @@ export async function resolveArgumentDefaultsFromCustomResolvers<
 ): Promise<TArgs> {
     const resolvedArgumentsInput: Record<string, unknown> = { ...argumentsInput };
 
-    const allArguments = [...ixNode.arguments, ...(ixNode.extraArguments ?? [])];
+    const allArguments = [...(ixNode.arguments ?? []), ...(ixNode.extraArguments ?? [])];
     for (const argumentNode of allArguments) {
         if (resolvedArgumentsInput[argumentNode.name] !== undefined) continue;
         if (isOmittedArgument(argumentNode)) continue;

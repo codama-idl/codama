@@ -189,7 +189,7 @@ export function getNodeCodecVisitor(
             if (isScalarEnum(node)) {
                 return getEnumCodec(
                     Object.fromEntries(
-                        node.variants.flatMap((variant, index) => [
+                        (node.variants ?? []).flatMap((variant, index) => [
                             [variant.name, index],
                             [index, variant.name],
                         ]),
@@ -198,7 +198,9 @@ export function getNodeCodecVisitor(
                 ) as Codec<unknown>;
             }
             // Data enums are decoded as discriminated unions, e.g. `{ __kind: 'Move', x: 10, y: 20 }`.
-            const variants = node.variants.map(variant => [pascalCase(variant.name), visit(variant, this)] as const);
+            const variants = (node.variants ?? []).map(
+                variant => [pascalCase(variant.name), visit(variant, this)] as const,
+            );
             return getDiscriminatedUnionCodec(variants, { size }) as unknown as Codec<unknown>;
         },
         visitEvent(node) {
@@ -210,7 +212,7 @@ export function getNodeCodecVisitor(
         },
         visitHiddenPrefixType(node) {
             const type = visit(node.type, this);
-            const constants = node.prefix.map(constant => {
+            const constants = (node.prefix ?? []).map(constant => {
                 const constantCodec = visit(constant.type, this);
                 const constantValue = visit(constant.value, valueNodeVisitor);
                 return getConstantCodec(constantCodec.encode(constantValue));
@@ -219,7 +221,7 @@ export function getNodeCodecVisitor(
         },
         visitHiddenSuffixType(node) {
             const type = visit(node.type, this);
-            const constants = node.suffix.map(constant => {
+            const constants = (node.suffix ?? []).map(constant => {
                 const constantCodec = visit(constant.type, this);
                 const constantValue = visit(constant.value, valueNodeVisitor);
                 return getConstantCodec(constantCodec.encode(constantValue));
@@ -227,7 +229,7 @@ export function getNodeCodecVisitor(
             return getHiddenSuffixCodec(type, constants);
         },
         visitInstruction(node) {
-            return visit(structTypeNodeFromInstructionArgumentNodes(node.arguments), this);
+            return visit(structTypeNodeFromInstructionArgumentNodes(node.arguments ?? []), this);
         },
         visitInstructionArgument(node) {
             return visit(structFieldTypeNodeFromInstructionArgumentNode(node), this);
@@ -334,11 +336,11 @@ export function getNodeCodecVisitor(
             return visit(node.type, this);
         },
         visitStructType(node) {
-            const fields = node.fields.map(field => [field.name, visit(field, this)] as const);
+            const fields = (node.fields ?? []).map(field => [field.name, visit(field, this)] as const);
             return getStructCodec(fields) as Codec<unknown>;
         },
         visitTupleType(node) {
-            const items = node.items.map(item => visit(item, this));
+            const items = (node.items ?? []).map(item => visit(item, this));
             return getTupleCodec(items) as Codec<unknown>;
         },
         visitZeroableOptionType(node) {

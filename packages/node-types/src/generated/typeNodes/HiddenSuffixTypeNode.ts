@@ -4,7 +4,7 @@ import type { TypeNode } from './TypeNode';
 /** Suffixes another type with a list of constant values that are written and read but not surfaced as fields to consumers. */
 export interface HiddenSuffixTypeNode<
     TType extends TypeNode = TypeNode,
-    TSuffix extends Array<ConstantValueNode> = Array<ConstantValueNode>,
+    TSuffix extends Array<ConstantValueNode> | undefined = Array<ConstantValueNode> | undefined,
 > {
     readonly kind: 'hiddenSuffixTypeNode';
 
@@ -12,5 +12,5 @@ export interface HiddenSuffixTypeNode<
     /** The wrapped type whose serialisation is followed by the hidden suffix. */
     readonly type: TType;
     /** The constant values written after the wrapped type, in order. */
-    readonly suffix: TSuffix;
+    readonly suffix?: TSuffix;
 }

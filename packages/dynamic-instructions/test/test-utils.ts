@@ -189,7 +189,7 @@ export function makeParsedInstruction(
     accountAddresses: ReadonlyMap<string, Address> = new Map(),
 ): ParsedInstruction {
     return {
-        accounts: instruction.accounts.flatMap(account => {
+        accounts: (instruction.accounts ?? []).flatMap(account => {
             const address = accountAddresses.get(account.name);
             return address ? [{ address, name: account.name, role: AccountRole.READONLY }] : [];
         }),

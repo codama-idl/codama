@@ -109,9 +109,18 @@ function renderParamDefaultClause(
     // on a `ProgramNode[]` attribute) widens the literal expression
     // before the final narrowing — matches the existing hand-written
     // pattern `[] as ProgramNode[] as TAdditionalPrograms`.
+    //
+    // For array attributes the intermediate is the bare element-array
+    // type rather than the `| undefined` type-parameter constraint:
+    // widening a literal `[]` never needs the `| undefined`, and
+    // including it just adds noise to the generated output.
     if (typeParameterAttribute) {
         const genericName = getTypeParameterIdentifierFragment(typeParameterAttribute);
-        const intermediate = override.genericDefault ?? getNodeTypeParameterConstraint(typeParameterAttribute);
+        const intermediate =
+            override.genericDefault ??
+            (typeParameterAttribute.type.kind === 'array'
+                ? getTypeExprFragment(typeParameterAttribute.type)
+                : getNodeTypeParameterConstraint(typeParameterAttribute));
         const needsIntermediate = intermediate.content !== override.default.content;
         const castChain = needsIntermediate
             ? fragment`${override.default} as ${intermediate} as ${genericName}`

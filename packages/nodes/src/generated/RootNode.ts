@@ -5,7 +5,10 @@ import { CODAMA_VERSION } from './codamaVersion';
  * The root of a Codama IDL document.
  * Pairs a primary program with any number of additional programs and tags the document with the spec version.
  */
-export function rootNode<const TProgram extends ProgramNode, const TAdditionalPrograms extends Array<ProgramNode> = []>(
+export function rootNode<
+    const TProgram extends ProgramNode,
+    const TAdditionalPrograms extends Array<ProgramNode> | undefined = [],
+>(
     program: TProgram,
     additionalPrograms: TAdditionalPrograms = [] as Array<ProgramNode> as TAdditionalPrograms,
 ): RootNode<TProgram, TAdditionalPrograms> {
@@ -18,6 +21,7 @@ export function rootNode<const TProgram extends ProgramNode, const TAdditionalPr
 
         // Children.
         program,
-        additionalPrograms,
+        ...(additionalPrograms !== undefined &&
+            additionalPrograms.length > 0 && { additionalPrograms: additionalPrograms as TAdditionalPrograms }),
     });
 }

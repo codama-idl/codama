@@ -3,7 +3,7 @@ import { pdaLinkNode } from '../linkNodes/PdaLinkNode';
 
 /** Resolves to a PDA derived from a list of seed values. */
 export function pdaValueNode<
-    const TSeeds extends Array<PdaSeedValueNode> = [],
+    const TSeeds extends Array<PdaSeedValueNode> | undefined = [],
     const TProgramId extends PdaValueProgramId | undefined = undefined,
     const TPda extends PdaValuePda = PdaValuePda,
 >(
@@ -16,7 +16,7 @@ export function pdaValueNode<
 
         // Children.
         pda: (typeof pda === 'string' ? pdaLinkNode(pda) : pda) as TPda,
-        seeds,
+        ...(seeds !== undefined && seeds.length > 0 && { seeds: seeds as TSeeds }),
         ...(programId !== undefined && { programId }),
     });
 }

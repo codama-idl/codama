@@ -53,7 +53,7 @@ test('identityVisitor with inlined PdaNode', () => {
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[pdaValueNode]', null);
     expectDeleteNodesVisitor(node, '[pdaLinkNode]', null);
-    expectDeleteNodesVisitor(node, '[pdaSeedValueNode]', { ...node, seeds: [] });
+    expectDeleteNodesVisitor(node, '[pdaSeedValueNode]', { ...node, seeds: undefined });
 });
 
 test('debugStringVisitor', () => {

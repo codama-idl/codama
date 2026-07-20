@@ -51,7 +51,7 @@ export function fillDefaultPdaSeedValuesVisitor(
                     ? visitedNode.pda
                     : linkables.get([...instructionPath, visitedNode.pda]);
                 if (!foundPda) return visitedNode;
-                const seeds = addDefaultSeedValuesFromPdaWhenMissing(instruction, foundPda, visitedNode.seeds);
+                const seeds = addDefaultSeedValuesFromPdaWhenMissing(instruction, foundPda, visitedNode.seeds ?? []);
                 if (strictMode && !allSeedsAreValid(instruction, foundPda, seeds)) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, {
                         instruction,
@@ -79,10 +79,10 @@ function addDefaultSeedValuesFromPdaWhenMissing(
 }
 
 function getDefaultSeedValuesFromPda(instruction: InstructionNode, pda: PdaNode): PdaSeedValueNode[] {
-    return pda.seeds.flatMap((seed): PdaSeedValueNode[] => {
+    return (pda.seeds ?? []).flatMap((seed): PdaSeedValueNode[] => {
         if (!isNode(seed, 'variablePdaSeedNode')) return [];
 
-        const hasMatchingAccount = instruction.accounts.some(a => a.name === seed.name);
+        const hasMatchingAccount = (instruction.accounts ?? []).some(a => a.name === seed.name);
         if (isNode(seed.type, 'publicKeyTypeNode') && hasMatchingAccount) {
             return [pdaSeedValueNode(seed.name, accountValueNode(seed.name))];
         }
@@ -97,8 +97,9 @@ function getDefaultSeedValuesFromPda(instruction: InstructionNode, pda: PdaNode)
 }
 
 function allSeedsAreValid(instruction: InstructionNode, foundPda: PdaNode, seeds: PdaSeedValueNode[]) {
-    const hasAllVariableSeeds = foundPda.seeds.filter(isNodeFilter('variablePdaSeedNode')).length === seeds.length;
-    const allAccountsName = instruction.accounts.map(a => a.name);
+    const hasAllVariableSeeds =
+        (foundPda.seeds ?? []).filter(isNodeFilter('variablePdaSeedNode')).length === seeds.length;
+    const allAccountsName = (instruction.accounts ?? []).map(a => a.name);
     const allArgumentsName = getAllInstructionArguments(instruction).map(a => a.name);
     const validSeeds = seeds.every(seed => {
         if (isNode(seed.value, 'accountValueNode')) {

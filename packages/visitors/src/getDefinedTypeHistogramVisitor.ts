@@ -107,7 +107,7 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                 visitInstruction(node, { self }) {
                     mode = 'instruction';
                     stackLevel = 0;
-                    const dataHistograms = node.arguments.map(arg => visit(arg, self));
+                    const dataHistograms = (node.arguments ?? []).map(arg => visit(arg, self));
                     const extraHistograms = (node.extraArguments ?? []).map(arg => visit(arg, self));
                     mode = null;
                     const subHistograms = (node.subInstructions ?? []).map(ix => visit(ix, self));

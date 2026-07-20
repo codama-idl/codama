@@ -29,7 +29,7 @@ export async function resolveStandalonePda(
 ): Promise<ProgramDerivedAddress> {
     const programAddress = toAddress(pdaNode.programId || root.program.publicKey);
     const seedValues = await Promise.all(
-        pdaNode.seeds.map(async (seedNode): Promise<ReadonlyUint8Array> => {
+        (pdaNode.seeds ?? []).map(async (seedNode): Promise<ReadonlyUint8Array> => {
             if (seedNode.kind === 'constantPdaSeedNode') {
                 return await resolveStandaloneConstantSeed(programAddress, seedNode);
             }

@@ -14,9 +14,14 @@ describe('getTypeParameterDefinitionFragment', () => {
         expect(result.content).toBe('TPayload extends InnerTypeNode | undefined = InnerTypeNode | undefined');
     });
 
-    it('renders an array-of-node child as an Array<T> type parameter', () => {
+    it('renders an array-of-node child as an optional Array<T> type parameter (arrays skip-when-empty)', () => {
+        // Arrays always append `| undefined`, regardless of `optional`, because they
+        // are omitted when empty on write (see the "Array attributes are omitted when
+        // empty" convention in the `@codama/spec` README).
         const result = getTypeParameterDefinitionFragment(attribute('items', array(node('innerTypeNode'))));
-        expect(result.content).toBe('TItems extends Array<InnerTypeNode> = Array<InnerTypeNode>');
+        expect(result.content).toBe(
+            'TItems extends Array<InnerTypeNode> | undefined = Array<InnerTypeNode> | undefined',
+        );
     });
 
     it('renders a narrowable data attribute as a type parameter over its enumeration constraint', () => {

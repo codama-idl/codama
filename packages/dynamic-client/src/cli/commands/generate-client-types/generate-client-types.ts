@@ -44,7 +44,7 @@ export type MethodBuilder<TAccounts, TSigners extends string[], TResolvers = Rec
     output += generateResolutionInputTypes(idl);
     output += generateSignerTypes(idl);
 
-    for (const ix of idl.program.instructions) {
+    for (const ix of idl.program.instructions ?? []) {
         const typeName = pascalCase(ix.name);
         const refs = getResolutionRefs(ix);
         const signerRef = getInstructionSignerRef(ix);
@@ -66,7 +66,7 @@ export type MethodBuilder<TAccounts, TSigners extends string[], TResolvers = Rec
  */
 export type ${programName}Methods = {\n`;
 
-    for (const ix of idl.program.instructions) {
+    for (const ix of idl.program.instructions ?? []) {
         const typeName = pascalCase(ix.name);
         output += `    ${ix.name}: ${typeName}Method;\n`;
     }

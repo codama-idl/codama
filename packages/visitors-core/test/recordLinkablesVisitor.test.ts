@@ -47,7 +47,7 @@ test('it records program nodes', () => {
 
     // Then we expect program paths to be recorded and retrievable.
     expect(linkables.getPath([programLinkNode('programA')])).toEqual([node, node.program]);
-    expect(linkables.getPath([programLinkNode('programB')])).toEqual([node, node.additionalPrograms[0]]);
+    expect(linkables.getPath([programLinkNode('programB')])).toEqual([node, (node.additionalPrograms ?? [])[0]]);
 });
 
 test('it records account nodes', () => {
@@ -66,8 +66,8 @@ test('it records account nodes', () => {
     visit(node, visitor);
 
     // Then we expect account paths to be recorded and retrievable.
-    expect(linkables.getPath([accountLinkNode('accountA', 'myProgram')])).toEqual([node, node.accounts[0]]);
-    expect(linkables.getPath([accountLinkNode('accountB', 'myProgram')])).toEqual([node, node.accounts[1]]);
+    expect(linkables.getPath([accountLinkNode('accountA', 'myProgram')])).toEqual([node, (node.accounts ?? [])[0]]);
+    expect(linkables.getPath([accountLinkNode('accountB', 'myProgram')])).toEqual([node, (node.accounts ?? [])[1]]);
 });
 
 test('it records defined type nodes', () => {
@@ -89,8 +89,14 @@ test('it records defined type nodes', () => {
     visit(node, visitor);
 
     // Then we expect defined type paths to be recorded and retrievable.
-    expect(linkables.getPath([definedTypeLinkNode('typeA', 'myProgram')])).toEqual([node, node.definedTypes[0]]);
-    expect(linkables.getPath([definedTypeLinkNode('typeB', 'myProgram')])).toEqual([node, node.definedTypes[1]]);
+    expect(linkables.getPath([definedTypeLinkNode('typeA', 'myProgram')])).toEqual([
+        node,
+        (node.definedTypes ?? [])[0],
+    ]);
+    expect(linkables.getPath([definedTypeLinkNode('typeB', 'myProgram')])).toEqual([
+        node,
+        (node.definedTypes ?? [])[1],
+    ]);
 });
 
 test('it records pda nodes', () => {
@@ -109,8 +115,8 @@ test('it records pda nodes', () => {
     visit(node, visitor);
 
     // Then we expect pda paths to be recorded and retrievable.
-    expect(linkables.getPath([pdaLinkNode('pdaA', 'myProgram')])).toEqual([node, node.pdas[0]]);
-    expect(linkables.getPath([pdaLinkNode('pdaB', 'myProgram')])).toEqual([node, node.pdas[1]]);
+    expect(linkables.getPath([pdaLinkNode('pdaA', 'myProgram')])).toEqual([node, (node.pdas ?? [])[0]]);
+    expect(linkables.getPath([pdaLinkNode('pdaB', 'myProgram')])).toEqual([node, (node.pdas ?? [])[1]]);
 });
 
 test('it records instruction nodes', () => {
@@ -129,8 +135,14 @@ test('it records instruction nodes', () => {
     visit(node, visitor);
 
     // Then we expect instruction paths to be recorded and retrievable.
-    expect(linkables.getPath([instructionLinkNode('instructionA', 'myProgram')])).toEqual([node, node.instructions[0]]);
-    expect(linkables.getPath([instructionLinkNode('instructionB', 'myProgram')])).toEqual([node, node.instructions[1]]);
+    expect(linkables.getPath([instructionLinkNode('instructionA', 'myProgram')])).toEqual([
+        node,
+        (node.instructions ?? [])[0],
+    ]);
+    expect(linkables.getPath([instructionLinkNode('instructionB', 'myProgram')])).toEqual([
+        node,
+        (node.instructions ?? [])[1],
+    ]);
 });
 
 test('it records instruction account nodes', () => {
@@ -156,12 +168,12 @@ test('it records instruction account nodes', () => {
     const instruction = instructionLinkNode('myInstruction', 'myProgram');
     expect(linkables.getPath([instructionAccountLinkNode('accountA', instruction)])).toEqual([
         node,
-        node.instructions[0],
+        (node.instructions ?? [])[0],
         instructionAccounts[0],
     ]);
     expect(linkables.getPath([instructionAccountLinkNode('accountB', instruction)])).toEqual([
         node,
-        node.instructions[0],
+        (node.instructions ?? [])[0],
         instructionAccounts[1],
     ]);
 });
@@ -189,12 +201,12 @@ test('it records instruction argument nodes', () => {
     const instruction = instructionLinkNode('myInstruction', 'myProgram');
     expect(linkables.getPath([instructionArgumentLinkNode('argumentA', instruction)])).toEqual([
         node,
-        node.instructions[0],
+        (node.instructions ?? [])[0],
         instructionArguments[0],
     ]);
     expect(linkables.getPath([instructionArgumentLinkNode('argumentB', instruction)])).toEqual([
         node,
-        node.instructions[0],
+        (node.instructions ?? [])[0],
         instructionArguments[1],
     ]);
 });
@@ -256,20 +268,22 @@ test('it keeps track of the current program when extending a visitor', () => {
     visit(node, visitor);
 
     // Then we expect each program to have its own account.
-    expect(dictionary.programA).toBe(programA.accounts[0]);
-    expect(dictionary.programB).toBe(programB.accounts[0]);
+    expect(dictionary.programA).toBe((programA.accounts ?? [])[0]);
+    expect(dictionary.programB).toBe((programB.accounts ?? [])[0]);
 });
 
 test('it keeps track of the current instruction when extending a visitor', () => {
     // Given the following program node containing two instructions each containing an account with the same name.
+    const accountA = instructionAccountNode({ isSigner: true, isWritable: false, name: 'someAccount' });
+    const accountB = instructionAccountNode({ isSigner: true, isWritable: false, name: 'someAccount' });
     const node = programNode({
         instructions: [
             instructionNode({
-                accounts: [instructionAccountNode({ isSigner: true, isWritable: false, name: 'someAccount' })],
+                accounts: [accountA],
                 name: 'instructionA',
             }),
             instructionNode({
-                accounts: [instructionAccountNode({ isSigner: true, isWritable: false, name: 'someAccount' })],
+                accounts: [accountB],
                 name: 'instructionB',
             }),
         ],
@@ -299,8 +313,8 @@ test('it keeps track of the current instruction when extending a visitor', () =>
     visit(node, visitor);
 
     // Then we expect each instruction to have its own account.
-    expect(dictionary.instructionA).toBe(node.instructions[0].accounts[0]);
-    expect(dictionary.instructionB).toBe(node.instructions[1].accounts[0]);
+    expect(dictionary.instructionA).toBe(accountA);
+    expect(dictionary.instructionB).toBe(accountB);
 });
 
 test('it does not record linkable types that are not under a program node', () => {

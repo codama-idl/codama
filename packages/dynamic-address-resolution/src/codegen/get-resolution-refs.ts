@@ -38,7 +38,7 @@ export type ResolutionRefs = {
 export function getResolutionRefs(ix: InstructionNode): ResolutionRefs {
     const typeName = pascalCase(ix.name);
 
-    const args = ix.arguments.filter(arg => arg.defaultValueStrategy !== 'omitted');
+    const args = (ix.arguments ?? []).filter(arg => arg.defaultValueStrategy !== 'omitted');
     const remainingAccountArgs = (ix.remainingAccounts ?? []).filter(ra => ra.value.kind === 'argumentValueNode');
     const hasArgs = args.length > 0 || remainingAccountArgs.length > 0;
     const hasRequiredArgs = args.some(arg => !OPTIONAL_NODE_KINDS.includes(arg.type.kind));

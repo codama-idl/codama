@@ -30,7 +30,7 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                 transform: (node, stack) => {
                     assertIsNode(node, 'instructionNode');
 
-                    const argFields = node.arguments;
+                    const argFields = node.arguments ?? [];
                     const argName = camelCase(argNameInput);
                     const argFieldIndex = argFields.findIndex(field => field.name === argName);
                     const argField = argFieldIndex >= 0 ? argFields[argFieldIndex] : null;
@@ -60,7 +60,7 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                         });
                     }
 
-                    const subInstructions = argType.variants.map((variant, index): InstructionNode => {
+                    const subInstructions = (argType.variants ?? []).map((variant, index): InstructionNode => {
                         const subName = camelCase(`${node.name} ${variant.name}`);
                         const subFields = argFields.slice(0, argFieldIndex);
                         subFields.push(

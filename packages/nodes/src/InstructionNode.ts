@@ -16,7 +16,7 @@ export function parseOptionalAccountStrategy(
 }
 
 export function getAllInstructionArguments(node: InstructionNode): InstructionArgumentNode[] {
-    return [...node.arguments, ...(node.extraArguments ?? [])];
+    return [...(node.arguments ?? []), ...(node.extraArguments ?? [])];
 }
 
 export function getAllInstructionsWithSubs(
@@ -31,7 +31,7 @@ export function getAllInstructionsWithSubs(
         return subInstructionsFirst ? [...subInstructions, node] : [node, ...subInstructions];
     }
 
-    const instructions = isNode(node, 'programNode') ? node.instructions : getAllInstructions(node);
+    const instructions = isNode(node, 'programNode') ? (node.instructions ?? []) : getAllInstructions(node);
 
     return instructions.flatMap(instruction => getAllInstructionsWithSubs(instruction, config));
 }

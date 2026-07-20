@@ -24,7 +24,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[mapValueNode]', null);
-    expectDeleteNodesVisitor(node, '[mapEntryValueNode]', { ...node, entries: [] });
+    expectDeleteNodesVisitor(node, '[mapEntryValueNode]', { ...node, entries: undefined });
 });
 
 test('debugStringVisitor', () => {

@@ -47,11 +47,11 @@ export function extractPdasVisitor() {
 export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     const hashVisitor = getUniqueHashStringVisitor();
     const pdaMap = new Map<Fingerprint, PdaNode>();
-    const usedNames = new Set<CamelCaseString>(program.pdas.map(p => p.name));
+    const usedNames = new Set<CamelCaseString>((program.pdas ?? []).map(p => p.name));
     const nameToFingerprint = new Map<CamelCaseString, Fingerprint>();
 
-    const rewrittenInstructions = program.instructions.map(instruction => {
-        const rewrittenAccounts = instruction.accounts.map(account => {
+    const rewrittenInstructions = (program.instructions ?? []).map(instruction => {
+        const rewrittenAccounts = (instruction.accounts ?? []).map(account => {
             if (
                 !account.defaultValue ||
                 !isNode(account.defaultValue, 'pdaValueNode') ||
@@ -98,6 +98,6 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     return programNode({
         ...program,
         instructions: rewrittenInstructions,
-        pdas: [...program.pdas, ...pdaMap.values()],
+        pdas: [...(program.pdas ?? []), ...pdaMap.values()],
     });
 }

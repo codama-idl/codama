@@ -17,7 +17,8 @@ import { createIxAccountsValidator } from '../validators';
  * Skips validation for instructions without accounts.
  */
 export function createAccountsInputValidator(ixNode: InstructionNode) {
-    const validator = ixNode.accounts.length ? createIxAccountsValidator(ixNode.accounts) : null;
+    const accounts = ixNode.accounts ?? [];
+    const validator = accounts.length ? createIxAccountsValidator(accounts) : null;
 
     return (accountsInput: AccountsInput = {}) => {
         if (!validator) return;
