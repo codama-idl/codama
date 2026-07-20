@@ -1,4 +1,5 @@
-import type { ProgramNode, RootNode } from '@codama/nodes';
+import type { RootNode } from '@codama/nodes';
+import { programNode, rootNode } from '@codama/nodes';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import { getConfig } from '../src/config';
@@ -14,27 +15,8 @@ const getConfigMock = vi.mocked(getConfig);
 const importModuleItemMock = vi.mocked(importModuleItem);
 const getRootNodeFromIdlMock = vi.mocked(getRootNodeFromIdl);
 
-function programNode(name: string): ProgramNode {
-    return {
-        accounts: [],
-        constants: [],
-        definedTypes: [],
-        errors: [],
-        instructions: [],
-        kind: 'programNode',
-        name,
-        pdas: [],
-    } as unknown as ProgramNode;
-}
-
 function rootNodeWith(name: string): RootNode {
-    return {
-        additionalPrograms: [],
-        kind: 'rootNode',
-        program: programNode(name),
-        standard: 'codama',
-        version: '1.0.0',
-    } as unknown as RootNode;
+    return rootNode(programNode({ name, publicKey: '11111111111111111111111111111111' }));
 }
 
 beforeEach(() => {
