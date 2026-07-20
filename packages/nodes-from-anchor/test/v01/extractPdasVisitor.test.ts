@@ -52,7 +52,7 @@ test('it extracts a single PDA to program level', () => {
             seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
         }),
     ]);
-    expect(result.instructions[0].accounts[0].defaultValue).toEqual(pdaValueNode(pdaLinkNode('myPda'), []));
+    expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(pdaValueNode(pdaLinkNode('myPda'), []));
 });
 
 test('it deduplicates the same PDA across two instructions', () => {
@@ -92,11 +92,11 @@ test('it deduplicates the same PDA across two instructions', () => {
 
     // Only one PDA extracted.
     expect(result.pdas).toHaveLength(1);
-    expect(result.pdas[0].name).toBe('myPda');
+    expect((result.pdas ?? [])[0].name).toBe('myPda');
 
     // Both instructions use pdaLinkNode.
-    for (const ix of result.instructions) {
-        const account = ix.accounts[0];
+    for (const ix of result.instructions ?? []) {
+        const account = (ix.accounts ?? [])[0];
         expect(account.defaultValue).toEqual(
             pdaValueNode(pdaLinkNode('myPda'), [pdaSeedValueNode('owner', accountValueNode('owner'))]),
         );
@@ -146,8 +146,8 @@ test('it handles name collisions with different seeds by suffixing', () => {
     const result = extractPdasFromProgram(program);
 
     expect(result.pdas).toHaveLength(2);
-    expect(result.pdas[0].name).toBe('authority');
-    expect(result.pdas[1].name).toBe('instructionBAuthority');
+    expect((result.pdas ?? [])[0].name).toBe('authority');
+    expect((result.pdas ?? [])[1].name).toBe('instructionBAuthority');
     expect(warnSpy).toHaveBeenCalledOnce();
 
     warnSpy.mockRestore();
@@ -177,9 +177,9 @@ test('it excludes foreign-program PDAs', () => {
 
     const result = extractPdasFromProgram(program);
 
-    expect(result.pdas).toEqual([]);
+    expect(result.pdas ?? []).toEqual([]);
     // Account is unchanged (still inline pdaNode).
-    expect(result.instructions[0].accounts[0].defaultValue).toEqual(
+    expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(
         pdaValueNode(
             pdaNode({
                 name: 'ata',
@@ -220,10 +220,10 @@ test('it keeps dynamic programId on pdaValueNode, not on PdaNode', () => {
     const result = extractPdasFromProgram(program);
 
     // PdaNode has no programId.
-    expect(result.pdas[0].programId).toBeUndefined();
+    expect((result.pdas ?? [])[0].programId).toBeUndefined();
 
     // pdaValueNode still has the dynamic programId.
-    const defaultValue = result.instructions[0].accounts[0].defaultValue;
+    const defaultValue = (result.instructions ?? [])[0].accounts?.[0]!.defaultValue;
     expect(defaultValue).toEqual(
         pdaValueNode(
             pdaLinkNode('dynamicPda'),
@@ -269,13 +269,13 @@ test('it deduplicates same seeds with different account names using first name',
     const result = extractPdasFromProgram(program);
 
     expect(result.pdas).toHaveLength(1);
-    expect(result.pdas[0].name).toBe('authority');
+    expect((result.pdas ?? [])[0].name).toBe('authority');
 
     // Both instructions link to the first-encountered name.
-    expect(result.instructions[0].accounts[0].defaultValue).toEqual(
+    expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(
         pdaValueNode(pdaLinkNode('authority'), [pdaSeedValueNode('owner', accountValueNode('owner'))]),
     );
-    expect(result.instructions[1].accounts[0].defaultValue).toEqual(
+    expect((result.instructions ?? [])[1].accounts?.[0]!.defaultValue).toEqual(
         pdaValueNode(pdaLinkNode('authority'), [pdaSeedValueNode('owner', accountValueNode('owner'))]),
     );
 });
@@ -310,8 +310,8 @@ test('it preserves existing program-level PDAs', () => {
     const result = extractPdasFromProgram(program);
 
     expect(result.pdas).toHaveLength(2);
-    expect(result.pdas[0]).toEqual(existingPda);
-    expect(result.pdas[1].name).toBe('newPda');
+    expect((result.pdas ?? [])[0]).toEqual(existingPda);
+    expect((result.pdas ?? [])[1].name).toBe('newPda');
 });
 
 test('it returns empty pdas when no PDA accounts exist', () => {
@@ -326,7 +326,7 @@ test('it returns empty pdas when no PDA accounts exist', () => {
     ]);
 
     const result = extractPdasFromProgram(program);
-    expect(result.pdas).toEqual([]);
+    expect(result.pdas ?? []).toEqual([]);
     // Nothing changed on the node at all.
     expect(result).toEqual(program);
 });

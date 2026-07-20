@@ -13,19 +13,18 @@ import { hex } from '../_setup';
 
 test('it resolves the codec of defined type link nodes', () => {
     // Given an existing defined type and a LinkNode pointing to it.
+    const slotType = definedTypeNode({ name: 'slot', type: numberTypeNode('u64') });
+    const lastSlotType = definedTypeNode({ name: 'lastSlot', type: definedTypeLinkNode('slot') });
     const root = rootNode(
         programNode({
-            definedTypes: [
-                definedTypeNode({ name: 'slot', type: numberTypeNode('u64') }),
-                definedTypeNode({ name: 'lastSlot', type: definedTypeLinkNode('slot') }),
-            ],
+            definedTypes: [slotType, lastSlotType],
             name: 'myProgram',
             publicKey: '1111',
         }),
     );
 
     // When we get the codec for the defined type pointing to another defined type.
-    const codec = getNodeCodec([root, root.program, root.program.definedTypes[1]]);
+    const codec = getNodeCodec([root, root.program, lastSlotType]);
 
     // Then we expect the codec to match the linked defined type.
     expect(codec.encode(42)).toStrictEqual(hex('2a00000000000000'));
@@ -35,13 +34,12 @@ test('it resolves the codec of defined type link nodes', () => {
 test('it follows linked nodes using the correct paths', () => {
     // Given two link nodes designed so that the path would
     // fail if we did not save and restored linked paths.
+    const typeA = definedTypeNode({
+        name: 'typeA',
+        type: definedTypeLinkNode('typeB1', programLinkNode('programB')),
+    });
     const programA = programNode({
-        definedTypes: [
-            definedTypeNode({
-                name: 'typeA',
-                type: definedTypeLinkNode('typeB1', programLinkNode('programB')),
-            }),
-        ],
+        definedTypes: [typeA],
         name: 'programA',
         publicKey: '1111',
     });
@@ -56,7 +54,7 @@ test('it follows linked nodes using the correct paths', () => {
     const root = rootNode(programA, [programB]);
 
     // When we get the codec for the defined type in programA.
-    const codec = getNodeCodec([root, programA, programA.definedTypes[0]]);
+    const codec = getNodeCodec([root, programA, typeA]);
 
     // Then we expect the links in programB to be resolved correctly.
     expect(codec.encode(42)).toStrictEqual(hex('2a00000000000000'));

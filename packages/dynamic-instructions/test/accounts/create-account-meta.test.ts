@@ -69,9 +69,10 @@ const transferIx = instructionNode({
 const transferRoot = makeRoot(transferIx);
 
 // initializeMint: 2 accounts, no remainingAccounts
+const initMintMintAccount = instructionAccountNode({ isSigner: false, isWritable: true, name: 'mint' });
 const initMintIx = instructionNode({
     accounts: [
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'mint' }),
+        initMintMintAccount,
         instructionAccountNode({
             defaultValue: publicKeyValueNode('SysvarRent111111111111111111111111111111111'),
             isSigner: false,
@@ -200,7 +201,7 @@ describe('createAccountMeta: remaining accounts', () => {
 describe('createAccountMeta: UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY', () => {
     test('should throw when optionalAccountStrategy is unsupported', async () => {
         const optionalAccount = {
-            ...initMintIx.accounts[0],
+            ...initMintMintAccount,
             defaultValue: undefined,
             isOptional: true,
         };

@@ -53,7 +53,7 @@ function collectInjectedKeys(displayContext: BaseDisplayContext): Set<string> {
     const keys = new Set<string>();
     const instructionPath = displayContext.parsedInstruction.path;
     const instruction = getLastNodeFromPath(instructionPath);
-    instruction.arguments.forEach(argument => {
+    (instruction.arguments ?? []).forEach(argument => {
         collectMemberInjectedKeys(
             argument.type,
             argument.display?.flatten ?? false,
@@ -85,7 +85,7 @@ function collectMemberInjectedKeys(
         addInjectedKey(resolved.type.display.decimals, keys);
         addInjectedKey(resolved.type.display.unit, keys);
     } else if (flatten && isNode(resolved.type, 'structTypeNode')) {
-        resolved.type.fields.forEach(field => {
+        (resolved.type.fields ?? []).forEach(field => {
             collectMemberInjectedKeys(field.type, false, [...resolved.ownerPath, field], keys, displayContext);
         });
     }

@@ -605,7 +605,7 @@ describe('anchor-example: nestedExampleIx', () => {
 });
 
 function decodeNestedExampleAccount(root: RootNode, data: Uint8Array) {
-    const accountNode = root.program.accounts.find(a => a.name === 'nestedExampleAccount');
+    const accountNode = (root.program.accounts ?? []).find(a => a.name === 'nestedExampleAccount');
     if (!accountNode) {
         throw new Error('Could not find account node "nestedExampleAccount" node in IDL');
     }

@@ -28,9 +28,9 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
     const camelCaseOptions = options === '*' ? options : options.map(camelCase);
     const shouldInline = (field: StructFieldTypeNode): boolean =>
         options === '*' || camelCaseOptions.includes(camelCase(field.name));
-    const inlinedFields = node.fields.flatMap(field => {
+    const inlinedFields = (node.fields ?? []).flatMap(field => {
         if (isNode(field.type, 'structTypeNode') && shouldInline(field)) {
-            return field.type.fields;
+            return field.type.fields ?? [];
         }
         return [field];
     });

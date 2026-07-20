@@ -26,7 +26,7 @@ test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[tupleValueNode]', null);
     expectDeleteNodesVisitor(node, ['[stringValueNode]', '[numberValueNode]', '[publicKeyValueNode]'], {
         ...node,
-        items: [],
+        items: undefined,
     });
 });
 

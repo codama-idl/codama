@@ -32,7 +32,7 @@ test('identityVisitor', () => {
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[rootNode]', null);
     expectDeleteNodesVisitor(node, '[programNode]', null);
-    expectDeleteNodesVisitor(node, '[programNode]splAddressLookupTable', { ...node, additionalPrograms: [] });
+    expectDeleteNodesVisitor(node, '[programNode]splAddressLookupTable', { ...node, additionalPrograms: undefined });
 });
 
 test('debugStringVisitor', () => {

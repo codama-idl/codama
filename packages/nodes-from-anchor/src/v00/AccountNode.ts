@@ -37,7 +37,7 @@ export function accountNodeFromAnchorV00(
             name: 'discriminator',
             type: fixedSizeTypeNode(bytesTypeNode(), 8),
         });
-        data = structTypeNode([discriminator, ...data.fields]);
+        data = structTypeNode([discriminator, ...(data.fields ?? [])]);
         discriminators = [fieldDiscriminatorNode('discriminator')];
     }
 

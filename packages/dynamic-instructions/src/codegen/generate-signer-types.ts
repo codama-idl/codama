@@ -7,7 +7,7 @@ import { collectEitherSignerNames } from './collect-either-signer-names';
  */
 export function generateSignerTypes(idl: RootNode): string {
     let output = '';
-    for (const ix of idl.program.instructions) {
+    for (const ix of idl.program.instructions ?? []) {
         output += generateSignersTypeBlock(ix);
     }
     return output;

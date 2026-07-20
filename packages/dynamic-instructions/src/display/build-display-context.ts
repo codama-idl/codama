@@ -72,7 +72,7 @@ function createAccountDataResolver(
     const instruction = getLastNodeFromPath(parsedInstruction.path);
     return (accountName, bytes) => {
         const target = camelCase(accountName);
-        const instructionAccount = instruction.accounts.find(account => account.name === target);
+        const instructionAccount = (instruction.accounts ?? []).find(account => account.name === target);
         if (!instructionAccount?.accountLink) return null;
 
         const linkPath = [...parsedInstruction.path, instructionAccount.accountLink] as NodePath<AccountLinkNode>;

@@ -10,12 +10,12 @@ import { isNode, type PdaNode, type RootNode } from 'codama';
 export function collectPdaNodes(root: RootNode): Map<string, PdaNode> {
     const pdas = new Map<string, PdaNode>();
 
-    for (const pda of root.program.pdas) {
+    for (const pda of root.program.pdas ?? []) {
         pdas.set(pda.name, pda);
     }
 
-    for (const ix of root.program.instructions) {
-        for (const acc of ix.accounts) {
+    for (const ix of root.program.instructions ?? []) {
+        for (const acc of ix.accounts ?? []) {
             if (!acc.defaultValue || !isNode(acc.defaultValue, 'pdaValueNode')) continue;
             if (!isNode(acc.defaultValue.pda, 'pdaNode')) continue;
             const pdaNode = acc.defaultValue.pda;

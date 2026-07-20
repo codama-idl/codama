@@ -52,7 +52,7 @@ test('it adds PDA nodes to a program', () => {
     const result = visit(node, addPdasVisitor({ myProgram: newPdas }));
 
     // Then we expect the following program to be returned.
-    expect(result).toEqual({ ...node, pdas: [...node.pdas, ...newPdas] });
+    expect(result).toEqual({ ...node, pdas: [...(node.pdas ?? []), ...newPdas] });
 });
 
 test('it fails to add a PDA if its name conflicts with an existing PDA on the program', () => {
@@ -142,5 +142,5 @@ test('it adds PDA nodes to a program with docs', () => {
     const result = visit(node, addPdasVisitor({ myProgram: newPdas }));
 
     // Then we expect the following program to be returned.
-    expect(result).toEqual({ ...node, pdas: [...node.pdas, ...newPdas] });
+    expect(result).toEqual({ ...node, pdas: [...(node.pdas ?? []), ...newPdas] });
 });

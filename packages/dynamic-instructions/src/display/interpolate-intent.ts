@@ -43,7 +43,7 @@ async function resolvePlaceholder(root: string, name: string, displayContext: Di
     const { data, path } = displayContext.parsedInstruction;
     if (root === 'data') {
         const instruction = getLastNodeFromPath(path);
-        const argument = instruction.arguments.find(arg => arg.name === name);
+        const argument = (instruction.arguments ?? []).find(arg => arg.name === name);
         const decodedData = data as Record<string, unknown>;
         if (!argument || !(name in decodedData)) return null;
         const ownerPath = [...path, argument];

@@ -38,7 +38,7 @@ export function setInstructionDiscriminatorsVisitor(map: Record<string, Discrimi
 
                     return instructionNode({
                         ...node,
-                        arguments: [discriminatorArgument, ...node.arguments],
+                        arguments: [discriminatorArgument, ...(node.arguments ?? [])],
                         discriminators: [
                             fieldDiscriminatorNode(discriminator.name ?? 'discriminator'),
                             ...(node.discriminators ?? []),

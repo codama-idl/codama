@@ -24,7 +24,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[arrayValueNode]', null);
-    expectDeleteNodesVisitor(node, '[publicKeyValueNode]', { ...node, items: [] });
+    expectDeleteNodesVisitor(node, '[publicKeyValueNode]', { ...node, items: undefined });
 });
 
 test('debugStringVisitor', () => {

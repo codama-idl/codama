@@ -25,7 +25,7 @@ import type { DisplayContext, DisplayField } from './types';
 export async function listFallback(displayContext: DisplayContext): Promise<DisplayField[]> {
     const instruction = getLastNodeFromPath(displayContext.parsedInstruction.path);
     const argumentFieldGroups = await Promise.all(
-        instruction.arguments.map(argument => argumentFields(argument, displayContext)),
+        (instruction.arguments ?? []).map(argument => argumentFields(argument, displayContext)),
     );
     return [...argumentFieldGroups.flat(), ...accountFields(displayContext)];
 }
@@ -63,7 +63,9 @@ async function flattenedFields(
     prefix: string | undefined,
     displayContext: DisplayContext,
 ): Promise<DisplayField[]> {
-    const visibleFields = struct.fields.filter(field => !isSkipped(field.display?.skip, field.name, displayContext));
+    const visibleFields = (struct.fields ?? []).filter(
+        field => !isSkipped(field.display?.skip, field.name, displayContext),
+    );
     return await Promise.all(
         visibleFields.map(async field => {
             const label = `${prefix ?? ''}${field.display?.label ?? titleCase(field.name)}`;
@@ -81,7 +83,7 @@ async function flattenedFields(
 /** Produces the display fields for the instruction's accounts. */
 function accountFields(displayContext: DisplayContext): DisplayField[] {
     const instruction = getLastNodeFromPath(displayContext.parsedInstruction.path);
-    return instruction.accounts.flatMap(account => {
+    return (instruction.accounts ?? []).flatMap(account => {
         if (isSkipped(account.display?.skip, account.name, displayContext)) return [];
         const address = displayContext.parsedInstruction.accounts.find(a => a.name === account.name)?.address;
         if (!address) return [];

@@ -21,6 +21,7 @@ export function resolverValueNode<const TDependsOn extends Array<ResolverDepende
         ...(parsedDocs.length > 0 && { docs: parsedDocs }),
 
         // Children.
-        ...(options.dependsOn !== undefined && { dependsOn: options.dependsOn }),
+        ...(options.dependsOn !== undefined &&
+            options.dependsOn.length > 0 && { dependsOn: options.dependsOn as TDependsOn }),
     });
 }

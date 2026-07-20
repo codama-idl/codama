@@ -47,7 +47,7 @@ export async function createAccountMeta<
 ): Promise<AccountMeta[]> {
     const programAddress = toAddress(root.program.publicKey);
     const resolvedAccounts = await Promise.all(
-        ixNode.accounts.map<Promise<ResolvedAccount>>(async ixAccountNode => {
+        (ixNode.accounts ?? []).map<Promise<ResolvedAccount>>(async ixAccountNode => {
             const finalAddress = await resolveInstructionAccountAddress<TAccounts, TArgs, TResolvers>({
                 accountsInput,
                 argumentsInput,

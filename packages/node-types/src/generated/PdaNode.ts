@@ -3,7 +3,7 @@ import type { Docs } from '../Docs';
 import type { PdaSeedNode } from './pdaSeedNodes/PdaSeedNode';
 
 /** A program-derived address: its name, optional program ID override, and the seeds used to derive it. */
-export interface PdaNode<TSeeds extends Array<PdaSeedNode> = Array<PdaSeedNode>> {
+export interface PdaNode<TSeeds extends Array<PdaSeedNode> | undefined = Array<PdaSeedNode> | undefined> {
     readonly kind: 'pdaNode';
 
     // Data.
@@ -16,5 +16,5 @@ export interface PdaNode<TSeeds extends Array<PdaSeedNode> = Array<PdaSeedNode>>
 
     // Children.
     /** The seeds used to derive the PDA, in order. */
-    readonly seeds: TSeeds;
+    readonly seeds?: TSeeds;
 }

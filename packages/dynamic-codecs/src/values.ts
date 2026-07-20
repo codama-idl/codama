@@ -24,7 +24,7 @@ export function getValueNodeVisitor(
 
     const baseVisitor: Visitor<unknown, ValueNode['kind']> = {
         visitArrayValue(node) {
-            return node.items.map(item => visit(item, this));
+            return (node.items ?? []).map(item => visit(item, this));
         },
         visitBooleanValue(node) {
             return node.boolean;
@@ -42,7 +42,8 @@ export function getValueNodeVisitor(
         visitEnumValue(node) {
             const enumType = linkables.getOrThrow([...stack.getPath(node.kind), node.enum]).type;
             assertIsNode(enumType, 'enumTypeNode');
-            const variantIndex = enumType.variants.findIndex(variant => variant.name === node.variant);
+            const variants = enumType.variants ?? [];
+            const variantIndex = variants.findIndex(variant => variant.name === node.variant);
             if (variantIndex < 0) {
                 throw new CodamaError(CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, {
                     enum: node.enum,
@@ -50,7 +51,7 @@ export function getValueNodeVisitor(
                     variant: node.variant,
                 });
             }
-            const variant = enumType.variants[variantIndex];
+            const variant = variants[variantIndex];
             if (isScalarEnum(enumType)) return variantIndex;
             const kind = { __kind: pascalCase(node.variant) };
             if (isNode(variant, 'enumEmptyVariantTypeNode')) return kind;
@@ -76,7 +77,7 @@ export function getValueNodeVisitor(
         },
         visitMapValue(node) {
             return Object.fromEntries(
-                node.entries.map(entry => {
+                (node.entries ?? []).map(entry => {
                     const key = visit(entry.key, this);
                     const value = visit(entry.value, this);
                     return [key, value];
@@ -93,7 +94,7 @@ export function getValueNodeVisitor(
             return node.publicKey;
         },
         visitSetValue(node) {
-            return node.items.map(item => visit(item, this));
+            return (node.items ?? []).map(item => visit(item, this));
         },
         visitSomeValue(node) {
             const value = visit(node.value, this);
@@ -104,7 +105,7 @@ export function getValueNodeVisitor(
         },
         visitStructValue(node) {
             return Object.fromEntries(
-                node.fields.map(field => {
+                (node.fields ?? []).map(field => {
                     const name = field.name;
                     const value = visit(field.value, this);
                     return [name, value];
@@ -112,7 +113,7 @@ export function getValueNodeVisitor(
             );
         },
         visitTupleValue(node) {
-            return node.items.map(item => visit(item, this));
+            return (node.items ?? []).map(item => visit(item, this));
         },
     };
 

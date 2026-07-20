@@ -93,12 +93,34 @@ describe('getNodeFunctionAttributeFragment', () => {
         expect(out).toContain('...(program !== undefined && {');
     });
 
-    it('rule 5: default override on a non-bare type-parameter attribute emits a `?? <default>` fallback', () => {
+    it('rule 3: an array type-parameter attribute becomes a skip-when-empty spread, keeping its generic cast', () => {
+        // Arrays skip-when-empty and take precedence over a `default` override
+        // in the body — an empty or absent array is omitted from the node (see
+        // the "Array attributes are omitted when empty" convention in the
+        // `@codama/spec` README). The `as TItems` cast is preserved.
         const attr = specAttr(attribute('items', array(union('ValueNode'))));
         const override: AttributeOverride = { default: fragment`[]` };
         const typeParamAttr = typeParamAttrFor(attribute('items', array(union('ValueNode'))));
         const out = getNodeFunctionAttributeFragment(attr, 'input.items', override, typeParamAttr, false).content;
-        expect(out).toBe('items: (input.items ?? []) as TItems,');
+        expect(out).toBe(
+            '...(input.items !== undefined && input.items.length > 0 && { items: input.items as TItems }),',
+        );
+    });
+
+    it('rule 3: a non-generic array attribute becomes a skip-when-empty spread without a cast', () => {
+        const attr = specAttr(optionalAttribute('discriminators', array(union('DiscriminatorNode'))));
+        const out = getNodeFunctionAttributeFragment(attr, 'input.discriminators', undefined, undefined, false).content;
+        expect(out).toBe(
+            '...(input.discriminators !== undefined && input.discriminators.length > 0 && ' +
+                '{ discriminators: input.discriminators }),',
+        );
+    });
+
+    it('rule 6: default override on a non-array type-parameter attribute emits a `?? <default>` fallback', () => {
+        const attr = specAttr(attribute('size', u32()));
+        const override: AttributeOverride = { default: fragment`0` };
+        const out = getNodeFunctionAttributeFragment(attr, 'input.size', override, undefined, false).content;
+        expect(out).toBe('size: input.size ?? 0,');
     });
 
     it('rule 6: optional attribute without overrides becomes a conditional spread', () => {

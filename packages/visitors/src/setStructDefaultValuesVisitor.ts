@@ -26,7 +26,7 @@ export function setStructDefaultValuesVisitor(map: StructDefaultValueMap) {
                     select: `${stack}.[structTypeNode]`,
                     transform: node => {
                         assertIsNode(node, 'structTypeNode');
-                        const fields = node.fields.map((field): StructFieldTypeNode => {
+                        const fields = (node.fields ?? []).map((field): StructFieldTypeNode => {
                             const defaultValue = camelCasedDefaultValues[field.name];
                             if (defaultValue === undefined) return field;
                             if (defaultValue === null) {
@@ -67,7 +67,7 @@ export function setStructDefaultValuesVisitor(map: StructDefaultValueMap) {
                         };
                         return instructionNode({
                             ...node,
-                            arguments: node.arguments.map(transformArguments),
+                            arguments: (node.arguments ?? []).map(transformArguments),
                             extraArguments: node.extraArguments
                                 ? node.extraArguments.map(transformArguments)
                                 : undefined,

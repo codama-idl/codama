@@ -8,7 +8,7 @@ import { createTestProgramClient, loadRoot, SvmTestContext } from '../test-utils
 const root = loadRoot('collection-types-idl.json');
 
 function decodeInstructionData(instructionName: string, data: ReadonlyUint8Array): unknown {
-    const ix = root.program.instructions.find(i => i.name === instructionName);
+    const ix = (root.program.instructions ?? []).find(i => i.name === instructionName);
     if (!ix) throw new Error(`Instruction ${instructionName} not found`);
 
     const codec = getNodeCodec([root, root.program, ix]);

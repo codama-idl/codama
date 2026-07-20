@@ -110,7 +110,7 @@ export function getByteSizeVisitor(
                     const prefix = visit(node.size, self);
                     if (prefix === null) return null;
                     if (isScalarEnum(node)) return prefix;
-                    const variantSizes = node.variants.map(v => visit(v, self));
+                    const variantSizes = (node.variants ?? []).map(v => visit(v, self));
                     const allVariantHaveTheSameFixedSize = variantSizes.every((one, _, all) => one === all[0]);
                     return allVariantHaveTheSameFixedSize && variantSizes.length > 0 && variantSizes[0] !== null
                         ? variantSizes[0] + prefix
@@ -122,7 +122,7 @@ export function getByteSizeVisitor(
                 },
 
                 visitInstruction(node, { self }) {
-                    return sumSizes(node.arguments.map(arg => visit(arg, self)));
+                    return sumSizes((node.arguments ?? []).map(arg => visit(arg, self)));
                 },
 
                 visitInstructionArgument(node, { self }) {

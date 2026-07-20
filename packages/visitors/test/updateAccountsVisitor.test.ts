@@ -35,7 +35,7 @@ test('it updates the name of an account', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'programNode');
-    expect(result.accounts[0].name).toBe('myNewAccount' as CamelCaseString);
+    expect((result.accounts ?? [])[0].name).toBe('myNewAccount' as CamelCaseString);
 });
 
 test('it updates the name of an account within a specific program', () => {
@@ -65,10 +65,10 @@ test('it updates the name of an account within a specific program', () => {
 
     // Then we expect the first account to have been renamed.
     assertIsNode(result, 'rootNode');
-    expect(result.program.accounts[0].name).toBe('newCandyMachine' as CamelCaseString);
+    expect((result.program.accounts ?? [])[0].name).toBe('newCandyMachine' as CamelCaseString);
 
     // But not the second account.
-    expect(result.additionalPrograms[0].accounts[0].name).toBe('candyMachine' as CamelCaseString);
+    expect(((result.additionalPrograms ?? [])[0].accounts ?? [])[0].name).toBe('candyMachine' as CamelCaseString);
 });
 
 test("it renames the fields of an account's data", () => {
@@ -91,7 +91,7 @@ test("it renames the fields of an account's data", () => {
     // Then we expect the following tree changes.
     assertIsNode(result, 'accountNode');
     const data = resolveNestedTypeNode(result.data);
-    expect(data.fields[0].name).toBe('myNewData' as CamelCaseString);
+    expect((data.fields ?? [])[0].name).toBe('myNewData' as CamelCaseString);
 });
 
 test('it updates the name of associated PDA nodes', () => {
@@ -114,10 +114,10 @@ test('it updates the name of associated PDA nodes', () => {
 
     // Then we expect the associated PDA node to have been renamed.
     assertIsNode(result, 'programNode');
-    expect(result.pdas[0].name).toBe('myNewAccount' as CamelCaseString);
+    expect((result.pdas ?? [])[0].name).toBe('myNewAccount' as CamelCaseString);
 
     // But not the other PDA node.
-    expect(result.pdas[1].name).toBe('myOtherAccount' as CamelCaseString);
+    expect((result.pdas ?? [])[1].name).toBe('myOtherAccount' as CamelCaseString);
 });
 
 test('it creates a new PDA node when providing seeds to an account with no linked PDA', () => {
@@ -143,12 +143,12 @@ test('it creates a new PDA node when providing seeds to an account with no linke
     assertIsNode(result, 'rootNode');
 
     // Then we expect a new PDA node to have been created on the program.
-    expect(result.program.pdas.length).toBe(1);
-    expect(result.additionalPrograms[0].pdas.length).toBe(0);
-    expect(result.program.pdas[0]).toEqual(pdaNode({ name: 'myAccount', seeds }));
+    expect((result.program.pdas ?? []).length).toBe(1);
+    expect(((result.additionalPrograms ?? [])[0].pdas ?? []).length).toBe(0);
+    expect((result.program.pdas ?? [])[0]).toEqual(pdaNode({ name: 'myAccount', seeds }));
 
     // And the account now links to the new PDA node.
-    expect(result.program.accounts[0].pda).toEqual(pdaLinkNode('myAccount'));
+    expect((result.program.accounts ?? [])[0].pda).toEqual(pdaLinkNode('myAccount'));
 });
 
 test('it updates the PDA node when the updated account name matches an existing PDA node', () => {
@@ -172,11 +172,11 @@ test('it updates the PDA node when the updated account name matches an existing 
     assertIsNode(result, 'programNode');
 
     // Then we expect the PDA node with the same name to have been updated.
-    expect(result.pdas.length).toBe(1);
-    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myAccount', seeds }));
+    expect((result.pdas ?? []).length).toBe(1);
+    expect((result.pdas ?? [])[0]).toEqual(pdaNode({ name: 'myAccount', seeds }));
 
     // And the account now links to this PDA node.
-    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myAccount'));
+    expect((result.accounts ?? [])[0].pda).toEqual(pdaLinkNode('myAccount'));
 });
 
 test('it updates the PDA node with the provided seeds when an account is linked to a PDA', () => {
@@ -200,11 +200,11 @@ test('it updates the PDA node with the provided seeds when an account is linked 
     assertIsNode(result, 'programNode');
 
     // Then we expect the linked PDA node to have been updated.
-    expect(result.pdas.length).toBe(1);
-    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
+    expect((result.pdas ?? []).length).toBe(1);
+    expect((result.pdas ?? [])[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
 
     // And the account still links to the PDA node.
-    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myPda'));
+    expect((result.accounts ?? [])[0].pda).toEqual(pdaLinkNode('myPda'));
 });
 
 test('it creates a new PDA node when updating an account with seeds and a new linked PDA that does not exist', () => {
@@ -229,11 +229,11 @@ test('it creates a new PDA node when updating an account with seeds and a new li
     assertIsNode(result, 'programNode');
 
     // Then we expect the linked PDA node to have been created.
-    expect(result.pdas.length).toBe(1);
-    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
+    expect((result.pdas ?? []).length).toBe(1);
+    expect((result.pdas ?? [])[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
 
     // And the account now links to the PDA node.
-    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myPda'));
+    expect((result.accounts ?? [])[0].pda).toEqual(pdaLinkNode('myPda'));
 });
 
 test('it updates a PDA node when updating an account with seeds and a new linked PDA that exists', () => {
@@ -259,11 +259,11 @@ test('it updates a PDA node when updating an account with seeds and a new linked
     assertIsNode(result, 'programNode');
 
     // Then we expect the existing PDA node to have been updated.
-    expect(result.pdas.length).toBe(1);
-    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
+    expect((result.pdas ?? []).length).toBe(1);
+    expect((result.pdas ?? [])[0]).toEqual(pdaNode({ name: 'myPda', seeds }));
 
     // And the account now links to this PDA node.
-    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myPda'));
+    expect((result.accounts ?? [])[0].pda).toEqual(pdaLinkNode('myPda'));
 });
 
 test('it can update the seeds and name of an account at the same time', () => {
@@ -288,12 +288,12 @@ test('it can update the seeds and name of an account at the same time', () => {
     assertIsNode(result, 'programNode');
 
     // Then we expect the account name to have been updated.
-    expect(result.accounts[0].name).toBe('myNewAccount' as CamelCaseString);
+    expect((result.accounts ?? [])[0].name).toBe('myNewAccount' as CamelCaseString);
 
     // And a new PDA node to have been created with that new name and the provided seeds.
-    expect(result.pdas.length).toBe(1);
-    expect(result.pdas[0]).toEqual(pdaNode({ name: 'myNewAccount', seeds }));
+    expect((result.pdas ?? []).length).toBe(1);
+    expect((result.pdas ?? [])[0]).toEqual(pdaNode({ name: 'myNewAccount', seeds }));
 
     // And the account to now link to the PDA node.
-    expect(result.accounts[0].pda).toEqual(pdaLinkNode('myNewAccount'));
+    expect((result.accounts ?? [])[0].pda).toEqual(pdaLinkNode('myNewAccount'));
 });

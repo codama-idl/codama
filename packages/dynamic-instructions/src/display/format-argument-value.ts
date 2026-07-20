@@ -65,7 +65,7 @@ function formatEnumValue(enumType: EnumTypeNode, value: unknown): string {
     if (decodedName === null) return rawValue(value);
 
     // Scalar enums decode to the variant name as-is; data enum `__kind` is the PascalCase form.
-    const variant = enumType.variants.find(candidate =>
+    const variant = (enumType.variants ?? []).find(candidate =>
         isScalarEnum(enumType) ? candidate.name === decodedName : pascalCase(candidate.name) === decodedName,
     );
     if (!variant) return rawValue(value);

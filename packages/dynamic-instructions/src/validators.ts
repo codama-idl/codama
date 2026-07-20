@@ -144,7 +144,7 @@ function createValidatorForTypeNode(nodeName: string, node: TypeNode, definedTyp
             return keyValueValidator;
         }
         case 'structTypeNode': {
-            const structShape = node.fields.reduce<Record<string, StructUnknown>>((acc, field) => {
+            const structShape = (node.fields ?? []).reduce<Record<string, StructUnknown>>((acc, field) => {
                 acc[field.name] = createValidatorForTypeNode(
                     `${nodeName}_struct_${field.name}`,
                     field.type,
@@ -155,7 +155,7 @@ function createValidatorForTypeNode(nodeName: string, node: TypeNode, definedTyp
             return object(structShape) as StructUnknown;
         }
         case 'tupleTypeNode': {
-            const validators = node.items.map((typeNode, index) =>
+            const validators = (node.items ?? []).map((typeNode, index) =>
                 createValidatorForTypeNode(`${nodeName}_tuple${typeNode.kind}_${index}`, typeNode, definedTypes),
             );
             return tuple(validators as [StructUnknown, ...StructUnknown[]]) as StructUnknown;
@@ -190,7 +190,7 @@ function createValidatorForTypeNode(nodeName: string, node: TypeNode, definedTyp
             return createValidatorForTypeNode(`${nodeName}_size_prefix`, node.type, definedTypes);
         }
         case 'enumTypeNode': {
-            return EnumVariantValidator(nodeName, node.variants, definedTypes);
+            return EnumVariantValidator(nodeName, node.variants ?? [], definedTypes);
         }
         case 'amountTypeNode': {
             return AmountTypeValidator(nodeName);

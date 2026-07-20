@@ -16,8 +16,8 @@ test('it visits all nodes and returns different instances of the same nodes', ()
     // But the nodes are different instances.
     expect(result).not.toBe(node);
     assertIsNode(result, 'tupleTypeNode');
-    expect(result.items[0]).not.toBe(node.items[0]);
-    expect(result.items[1]).not.toBe(node.items[1]);
+    expect((result.items ?? [])[0]).not.toBe((node.items ?? [])[0]);
+    expect((result.items ?? [])[1]).not.toBe((node.items ?? [])[1]);
 });
 
 test('it can remove nodes by returning null', () => {
@@ -54,8 +54,8 @@ test('it can create partial visitors', () => {
     expect(result).toEqual(node);
     expect(result).not.toBe(node);
     assertIsNode(result, 'tupleTypeNode');
-    expect(result.items[0]).not.toBe(node.items[0]);
-    expect(result.items[1]).not.toBe(node.items[1]);
+    expect((result.items ?? [])[0]).not.toBe((node.items ?? [])[0]);
+    expect((result.items ?? [])[1]).not.toBe((node.items ?? [])[1]);
 
     // But the unsupported node was not visited.
     expect(events).toEqual(['visiting:tupleTypeNode', 'visiting:numberTypeNode']);

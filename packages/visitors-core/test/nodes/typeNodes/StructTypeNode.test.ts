@@ -23,8 +23,8 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[structTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[structFieldTypeNode]', { ...node, fields: [] });
-    expectDeleteNodesVisitor(node, ['[publicKeyTypeNode]', '[numberTypeNode]'], { ...node, fields: [] });
+    expectDeleteNodesVisitor(node, '[structFieldTypeNode]', { ...node, fields: undefined });
+    expectDeleteNodesVisitor(node, ['[publicKeyTypeNode]', '[numberTypeNode]'], { ...node, fields: undefined });
 });
 
 test('debugStringVisitor', () => {

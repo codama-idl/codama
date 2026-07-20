@@ -19,6 +19,6 @@ test('it visits all nodes and returns different instances of the same nodes with
     // But the nodes are different instances.
     expect(result).not.toBe(node);
     assertIsNode(result, 'tupleTypeNode');
-    expect(result.items[0]).not.toBe(node.items[0]);
-    expect(result.items[1]).not.toBe(node.items[1]);
+    expect((result.items ?? [])[0]).not.toBe((node.items ?? [])[0]);
+    expect((result.items ?? [])[1]).not.toBe((node.items ?? [])[1]);
 });

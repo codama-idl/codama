@@ -33,7 +33,7 @@ export async function resolveAccountValueNodeAddress<
     }
 
     // Find the referenced account in the instruction.
-    const referencedIxAccountNode = ixNode.accounts.find(acc => acc.name === node.name);
+    const referencedIxAccountNode = (ixNode.accounts ?? []).find(acc => acc.name === node.name);
     if (!referencedIxAccountNode) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
             instructionName: ixNode.name,

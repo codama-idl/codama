@@ -29,6 +29,7 @@ export function accountNode<
         // Children.
         data: (input.data ?? structTypeNode([])) as TData,
         ...(input.pda !== undefined && { pda: input.pda }),
-        ...(input.discriminators !== undefined && { discriminators: input.discriminators }),
+        ...(input.discriminators !== undefined &&
+            input.discriminators.length > 0 && { discriminators: input.discriminators as TDiscriminators }),
     });
 }

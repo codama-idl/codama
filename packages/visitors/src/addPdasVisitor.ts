@@ -10,7 +10,7 @@ export function addPdasVisitor(pdas: Record<string, Omit<PdaNodeInput, 'programI
                 select: `[programNode]${programName}`,
                 transform: node => {
                     assertIsNode(node, 'programNode');
-                    const existingPdaNames = new Set(node.pdas.map(pda => pda.name));
+                    const existingPdaNames = new Set((node.pdas ?? []).map(pda => pda.name));
                     const newPdaNames = new Set(newPdas.map(pda => pda.name));
                     const overlappingPdaNames = new Set([...existingPdaNames].filter(name => newPdaNames.has(name)));
                     if (overlappingPdaNames.size > 0) {
@@ -22,7 +22,10 @@ export function addPdasVisitor(pdas: Record<string, Omit<PdaNodeInput, 'programI
                     }
                     return programNode({
                         ...node,
-                        pdas: [...node.pdas, ...newPdas.map(({ name, seeds, docs }) => pdaNode({ docs, name, seeds }))],
+                        pdas: [
+                            ...(node.pdas ?? []),
+                            ...newPdas.map(({ name, seeds, docs }) => pdaNode({ docs, name, seeds })),
+                        ],
                     });
                 },
             };

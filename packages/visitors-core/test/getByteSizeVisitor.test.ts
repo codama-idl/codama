@@ -206,13 +206,12 @@ describe('definedTypeLinkNode', () => {
         expectSizeWithContext([context, definedTypeLinkNode('myType')], null);
     });
     test('it follows linked nodes using the correct paths when jumping between programs', () => {
+        const typeA = definedTypeNode({
+            name: 'typeA',
+            type: definedTypeLinkNode('typeB1', programLinkNode('programB')),
+        });
         const programA = programNode({
-            definedTypes: [
-                definedTypeNode({
-                    name: 'typeA',
-                    type: definedTypeLinkNode('typeB1', programLinkNode('programB')),
-                }),
-            ],
+            definedTypes: [typeA],
             name: 'programA',
             publicKey: '1111',
         });
@@ -226,7 +225,7 @@ describe('definedTypeLinkNode', () => {
         });
         const context = rootNode(programA, [programB]);
 
-        expectSizeWithContext([context, programA, programA.definedTypes[0]], 8);
+        expectSizeWithContext([context, programA, typeA], 8);
     });
 });
 

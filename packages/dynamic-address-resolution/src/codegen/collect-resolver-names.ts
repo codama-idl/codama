@@ -6,10 +6,10 @@ import type { InstructionInputValueNode, InstructionNode } from 'codama';
 export function collectResolverNames(ix: InstructionNode): Set<string> {
     const names = new Set<string>();
 
-    for (const acc of ix.accounts) {
+    for (const acc of ix.accounts ?? []) {
         extractResolverNodeName(acc.defaultValue, names);
     }
-    for (const arg of ix.arguments) {
+    for (const arg of ix.arguments ?? []) {
         extractResolverNodeName(arg.defaultValue, names);
     }
 

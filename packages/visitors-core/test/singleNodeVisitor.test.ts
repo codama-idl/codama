@@ -8,7 +8,7 @@ test('it visits a single node and return a custom value', () => {
     const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a visitor that counts the number of direct items in a tuple node.
-    const visitor = singleNodeVisitor('tupleTypeNode', node => node.items.length);
+    const visitor = singleNodeVisitor('tupleTypeNode', node => (node.items ?? []).length);
 
     // When we visit the tree using that visitor.
     const result = visit(node, visitor);
@@ -28,11 +28,13 @@ test('it can create rootNode only visitors that return new rootNode instances', 
     const node = rootNode({} as ProgramNode);
 
     // And a root node visitor that adds an additional program node.
-    const visitor = rootNodeVisitor(node => rootNode(node.program, [...node.additionalPrograms, {} as ProgramNode]));
+    const visitor = rootNodeVisitor(node =>
+        rootNode(node.program, [...(node.additionalPrograms ?? []), {} as ProgramNode]),
+    );
 
     // When we visit the empty root node using that visitor.
     const result = visit(node, visitor);
 
     // Then we expect the returned root node to have one additional program node.
-    expect(result.additionalPrograms.length).toBe(1);
+    expect((result.additionalPrograms ?? []).length).toBe(1);
 });

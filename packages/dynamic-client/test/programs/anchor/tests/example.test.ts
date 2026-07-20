@@ -307,7 +307,7 @@ function decodeDataAccount1(
     root: RootNode,
     data: Uint8Array,
 ): { bump: number; input: bigint; optionalInput: string | null } {
-    const accountNode = root.program.accounts.find(a => a.name === 'dataAccount1');
+    const accountNode = (root.program.accounts ?? []).find(a => a.name === 'dataAccount1');
     if (!accountNode) {
         throw new Error('Could not find account node "dataAccount1" in IDL');
     }

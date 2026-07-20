@@ -57,9 +57,9 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[instructionNode]', null);
-    expectDeleteNodesVisitor(node, '[instructionAccountNode]', { ...node, accounts: [] });
-    expectDeleteNodesVisitor(node, '[instructionArgumentNode]', { ...node, arguments: [] });
-    expectDeleteNodesVisitor(node, '[fieldDiscriminatorNode]', { ...node, discriminators: [] });
+    expectDeleteNodesVisitor(node, '[instructionAccountNode]', { ...node, accounts: undefined });
+    expectDeleteNodesVisitor(node, '[instructionArgumentNode]', { ...node, arguments: undefined });
+    expectDeleteNodesVisitor(node, '[fieldDiscriminatorNode]', { ...node, discriminators: undefined });
 });
 
 test('debugStringVisitor', () => {

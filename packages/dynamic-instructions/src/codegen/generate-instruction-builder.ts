@@ -17,7 +17,7 @@ export function generateInstructionBuildersMap(idl: RootNode): string {
  */
 export type ${programName}InstructionBuilders = {\n`;
 
-    for (const ix of idl.program.instructions) {
+    for (const ix of idl.program.instructions ?? []) {
         const refs = getResolutionRefs(ix);
         const signerRef = getInstructionSignerRef(ix);
         const argsGeneric = refs.argsRef ?? 'Record<string, never>';

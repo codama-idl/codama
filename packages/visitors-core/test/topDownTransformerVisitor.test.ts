@@ -67,7 +67,7 @@ test('it can create partial transformer visitors', () => {
                 select: '[tupleTypeNode]',
                 transform: node => {
                     assertIsNode(node, 'tupleTypeNode');
-                    return tupleTypeNode([numberTypeNode('u64'), ...node.items]) as unknown as typeof node;
+                    return tupleTypeNode([numberTypeNode('u64'), ...(node.items ?? [])]) as unknown as typeof node;
                 },
             },
         ],
@@ -133,8 +133,9 @@ test('it can transform nodes using multiple node selectors', () => {
 test('it can start from an existing stack', () => {
     // Given the following tuple node inside a program node.
     const tuple = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const myTuple = definedTypeNode({ name: 'myTuple', type: tuple });
     const program = programNode({
-        definedTypes: [definedTypeNode({ name: 'myTuple', type: tuple })],
+        definedTypes: [myTuple],
         name: 'myProgram',
         publicKey: '1111',
     });
@@ -147,7 +148,7 @@ test('it can start from an existing stack', () => {
     };
 
     // When we visit the tuple with an existing stack that contains the program node.
-    const stack = new NodeStack([program, program.definedTypes[0]]);
+    const stack = new NodeStack([program, myTuple]);
     const resultWithStack = visit(tuple, topDownTransformerVisitor([transformer], { stack }));
 
     // Then we expect the number node to have been removed.

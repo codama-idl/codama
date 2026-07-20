@@ -51,7 +51,7 @@ export function createValueNodeVisitor(): Visitor<ResolvedValue, ValueNodeSuppor
     const visitor: Visitor<ResolvedValue, ValueNodeSupportedNodeKind> = {
         visitArrayValue: (node: ArrayValueNode) => ({
             kind: node.kind,
-            value: node.items.map(item =>
+            value: (node.items ?? []).map(item =>
                 visitOrElse(item, visitor, n => {
                     throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                         expectedKinds: [...VALUE_NODE_SUPPORTED_NODE_KINDS],
@@ -90,7 +90,7 @@ export function createValueNodeVisitor(): Visitor<ResolvedValue, ValueNodeSuppor
 
         visitMapValue: (node: MapValueNode) => ({
             kind: node.kind,
-            value: node.entries.map(entry => ({
+            value: (node.entries ?? []).map(entry => ({
                 key: visitOrElse(entry.key, visitor, n => {
                     throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                         expectedKinds: [...VALUE_NODE_SUPPORTED_NODE_KINDS],
@@ -125,7 +125,7 @@ export function createValueNodeVisitor(): Visitor<ResolvedValue, ValueNodeSuppor
 
         visitSetValue: (node: SetValueNode) => ({
             kind: node.kind,
-            value: node.items.map(item =>
+            value: (node.items ?? []).map(item =>
                 visitOrElse(item, visitor, n => {
                     throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                         expectedKinds: [...VALUE_NODE_SUPPORTED_NODE_KINDS],
@@ -154,7 +154,7 @@ export function createValueNodeVisitor(): Visitor<ResolvedValue, ValueNodeSuppor
         visitStructValue: (node: StructValueNode) => ({
             kind: node.kind,
             value: Object.fromEntries(
-                node.fields.map(field => [
+                (node.fields ?? []).map(field => [
                     field.name,
                     visitOrElse(field.value, visitor, n => {
                         throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
@@ -169,7 +169,7 @@ export function createValueNodeVisitor(): Visitor<ResolvedValue, ValueNodeSuppor
 
         visitTupleValue: (node: TupleValueNode) => ({
             kind: node.kind,
-            value: node.items.map(item =>
+            value: (node.items ?? []).map(item =>
                 visitOrElse(item, visitor, n => {
                     throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                         expectedKinds: [...VALUE_NODE_SUPPORTED_NODE_KINDS],

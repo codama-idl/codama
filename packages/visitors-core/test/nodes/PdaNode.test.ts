@@ -34,7 +34,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[pdaNode]', null);
-    expectDeleteNodesVisitor(node, ['[variablePdaSeedNode]', '[constantPdaSeedNode]'], { ...node, seeds: [] });
+    expectDeleteNodesVisitor(node, ['[variablePdaSeedNode]', '[constantPdaSeedNode]'], { ...node, seeds: undefined });
     expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', {
         ...node,
         seeds: [constantPdaSeedNode(numberTypeNode('u8'), numberValueNode(123456))],

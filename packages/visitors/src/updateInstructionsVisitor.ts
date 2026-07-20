@@ -65,7 +65,7 @@ export function updateInstructionsVisitor(map: Record<string, InstructionUpdates
                 const instructionPath = stack.getPath('instructionNode');
                 const { accounts: accountUpdates, arguments: argumentUpdates, ...metadataUpdates } = updates;
                 const { newArguments, newExtraArguments } = handleInstructionArguments(node, argumentUpdates ?? {});
-                const newAccounts = node.accounts.map(account =>
+                const newAccounts = (node.accounts ?? []).map(account =>
                     handleInstructionAccount(instructionPath, account, accountUpdates ?? {}, linkables),
                 );
                 return instructionNode({
@@ -118,7 +118,7 @@ function handleInstructionArguments(
 } {
     const usedArguments = new Set<string>();
 
-    const newArguments = instruction.arguments.map(node => {
+    const newArguments = (instruction.arguments ?? []).map(node => {
         const argUpdate = argUpdates[node.name];
         if (!argUpdate) return node;
         usedArguments.add(node.name);

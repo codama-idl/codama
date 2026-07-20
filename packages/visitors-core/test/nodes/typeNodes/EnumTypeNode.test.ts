@@ -47,7 +47,7 @@ test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(
         node,
         ['[enumEmptyVariantTypeNode]', '[enumTupleVariantTypeNode]', '[enumStructVariantTypeNode]'],
-        { ...node, variants: [] },
+        { ...node, variants: undefined },
     );
     expectDeleteNodesVisitor(node, ['[tupleTypeNode]', '[structFieldTypeNode]'], {
         ...node,

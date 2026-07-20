@@ -31,7 +31,7 @@ export function encodeInstructionArguments<TArgs extends ArgumentsInput = Argume
     ix: InstructionNode,
     argumentsInput?: TArgs,
 ): ReadonlyUint8Array {
-    const chunks = ix.arguments.map(ixArgumentNode => {
+    const chunks = (ix.arguments ?? []).map(ixArgumentNode => {
         const input = argumentsInput?.[ixArgumentNode.name];
         const nodeCodec = getNodeCodec([root, root.program, ix, ixArgumentNode]);
         if (isOmittedArgument(ixArgumentNode)) {
@@ -48,7 +48,7 @@ export function encodeInstructionArguments<TArgs extends ArgumentsInput = Argume
 
 function encodeOmittedArgument(
     ix: InstructionNode,
-    ixArgumentNode: InstructionNode['arguments'][number],
+    ixArgumentNode: NonNullable<InstructionNode['arguments']>[number],
     nodeCodec: Codec<unknown>,
 ): ReadonlyUint8Array {
     const defaultValue = ixArgumentNode.defaultValue;
@@ -71,7 +71,7 @@ function encodeOmittedArgument(
 
 function encodeOptionalArgument(
     ix: InstructionNode,
-    ixArgumentNode: InstructionNode['arguments'][number],
+    ixArgumentNode: NonNullable<InstructionNode['arguments']>[number],
     nodeCodec: Codec<unknown>,
 ): ReadonlyUint8Array {
     try {
@@ -88,7 +88,7 @@ function encodeOptionalArgument(
 function encodeRequiredArgument(
     root: RootNode,
     ix: InstructionNode,
-    ixArgumentNode: InstructionNode['arguments'][number],
+    ixArgumentNode: NonNullable<InstructionNode['arguments']>[number],
     input: ArgumentsInput[string],
     nodeCodec: Codec<unknown>,
 ): ReadonlyUint8Array {

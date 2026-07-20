@@ -50,11 +50,11 @@ export async function resolvePDAAddress<
         });
     }
 
-    const pdaNode = resolvePdaNode(pdaValueNode, root.program.pdas);
+    const pdaNode = resolvePdaNode(pdaValueNode, root.program.pdas ?? []);
     const programId = address(pdaNode.programId || root.program.publicKey);
 
     const seedValues = await Promise.all(
-        pdaNode.seeds.map(async seedNode => {
+        (pdaNode.seeds ?? []).map(async seedNode => {
             if (seedNode.kind === 'constantPdaSeedNode') {
                 return await resolveConstantPdaSeed({
                     accountsInput,
@@ -69,7 +69,7 @@ export async function resolvePDAAddress<
             }
 
             if (seedNode.kind === 'variablePdaSeedNode') {
-                const variableSeedValueNodes = pdaValueNode.seeds;
+                const variableSeedValueNodes = pdaValueNode.seeds ?? [];
                 const seedName = seedNode.name;
                 const variableSeedValueNode = variableSeedValueNodes.find(node => node.name === seedName);
 

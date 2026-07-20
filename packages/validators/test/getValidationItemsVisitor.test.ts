@@ -41,23 +41,21 @@ test('it validates program nodes', () => {
 
 test('it validates nested nodes', () => {
     // Given the following tuple with nested issues.
-    const node = tupleTypeNode([
-        tupleTypeNode([]),
-        structTypeNode([
-            structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() }),
-            structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() }),
-        ]),
+    const tupleNode = tupleTypeNode([]);
+    const duplicateOwnerField = structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() });
+    const structNode = structTypeNode([
+        duplicateOwnerField,
+        structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() }),
     ]);
+    const node = tupleTypeNode([tupleNode, structNode]);
 
     // When we get the validation items using a visitor.
     const items = visit(node, getValidationItemsVisitor());
 
     // Then we expect the following validation errors.
-    const tupleNode = node.items[0];
-    const structNode = node.items[1];
     expect(items).toEqual([
         validationItem('warn', 'Tuple has no items.', tupleNode, [node, tupleNode]),
-        validationItem('error', 'Struct field name "owner" is not unique.', structNode.fields[0], [node, structNode]),
+        validationItem('error', 'Struct field name "owner" is not unique.', duplicateOwnerField, [node, structNode]),
     ]);
 });
 

@@ -19,7 +19,7 @@ export function deduplicateIdenticalDefinedTypesVisitor() {
         // Fill the type map with all defined types.
         const allPrograms = getAllPrograms(root);
         allPrograms.forEach(program => {
-            program.definedTypes.forEach(type => {
+            (program.definedTypes ?? []).forEach(type => {
                 const typeWithProgram = { program, type };
                 const list = typeMap.get(type.name) ?? [];
                 typeMap.set(type.name, [...list, typeWithProgram]);

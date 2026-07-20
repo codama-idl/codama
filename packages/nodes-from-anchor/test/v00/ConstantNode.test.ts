@@ -116,6 +116,8 @@ test('it parses constants in full program', () => {
     });
 
     expect(node.constants).toHaveLength(2);
-    expect(node.constants[0]).toEqual(constantNode('maxItems', numberTypeNode('u32'), numberValueNode(100)));
-    expect(node.constants[1]).toEqual(constantNode('seedPrefix', bytesTypeNode(), bytesValueNode('base16', '616263')));
+    expect((node.constants ?? [])[0]).toEqual(constantNode('maxItems', numberTypeNode('u32'), numberValueNode(100)));
+    expect((node.constants ?? [])[1]).toEqual(
+        constantNode('seedPrefix', bytesTypeNode(), bytesValueNode('base16', '616263')),
+    );
 });

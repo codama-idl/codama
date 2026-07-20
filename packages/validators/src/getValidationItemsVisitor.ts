@@ -84,10 +84,11 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitEnumType(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (node.variants.length === 0) {
+                    const variants = node.variants ?? [];
+                    if (variants.length === 0) {
                         items.push(validationItem('warn', 'Enum has no variants.', node, stack));
                     }
-                    node.variants.forEach(variant => {
+                    variants.forEach(variant => {
                         if (!variant.name) {
                             items.push(validationItem('error', 'Enum variant has no name.', node, stack));
                         }
@@ -117,7 +118,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                     // Check for duplicate account names.
                     const accountNameHistogram = new Map<string, number>();
-                    node.accounts.forEach(account => {
+                    (node.accounts ?? []).forEach(account => {
                         if (!account.name) {
                             items.push(validationItem('error', 'Instruction account has no name.', node, stack));
                             return;
@@ -166,7 +167,9 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     getAllInstructionArguments(node).forEach(argument => {
                         const { defaultValue } = argument;
                         if (isNode(defaultValue, 'accountBumpValueNode')) {
-                            const defaultAccount = node.accounts.find(account => account.name === defaultValue.name);
+                            const defaultAccount = (node.accounts ?? []).find(
+                                account => account.name === defaultValue.name,
+                            );
                             if (defaultAccount && defaultAccount.isSigner !== false) {
                                 items.push(
                                     validationItem(
@@ -214,7 +217,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                     // Check for duplicate field names.
                     const fieldNameHistogram = new Map<string, number>();
-                    node.fields.forEach(field => {
+                    (node.fields ?? []).forEach(field => {
                         if (!field.name) return; // Handled by TypeStructField
                         const count = (fieldNameHistogram.get(field.name) ?? 0) + 1;
                         fieldNameHistogram.set(field.name, count);
@@ -235,7 +238,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitTupleType(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (node.items.length === 0) {
+                    if ((node.items ?? []).length === 0) {
                         items.push(validationItem('warn', 'Tuple has no items.', node, stack));
                     }
                     return [...items, ...next(node)];
