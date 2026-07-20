@@ -1,4 +1,4 @@
-import type { RootNode } from '@codama/nodes';
+import { getAllPrograms, type RootNode } from '@codama/nodes';
 import { Command } from 'commander';
 
 import { Config, getConfig, ScriptName, ScriptsConfig, VisitorConfig, VisitorPath } from './config';
@@ -45,12 +45,34 @@ async function parseConfig(
     options: Pick<ProgramOptions, 'idl'>,
 ): Promise<ParsedConfig> {
     const idlPath = parseIdlPath(config, configPath, options);
-    const idlContent = await importModuleItem({ identifier: 'IDL', from: idlPath });
-    const rootNode = await getRootNodeFromIdl(idlContent);
+    const additionalIdlPaths = (config.additionalIdls ?? []).map(idl => resolveConfigPath(idl, configPath));
+
+    // Load and convert the main IDL and every additional IDL the same way, in parallel.
+    const idls = await Promise.all([
+        loadIdl(idlPath, 'IDL'),
+        ...additionalIdlPaths.map(path => loadIdl(path, 'additional IDL')),
+    ]);
+
+    const [mainIdl] = idls;
+    const rootNode = mergeRootNodes(idls.map(idl => idl.rootNode));
     const scripts = parseScripts(config.scripts ?? {}, configPath);
     const visitors = (config.before ?? []).map((v, i) => parseVisitorConfig(v, configPath, i, null));
 
-    return { configPath, idlContent, idlPath, rootNode, scripts, before: visitors };
+    return { configPath, idlContent: mainIdl.content, idlPath, rootNode, scripts, before: visitors };
+}
+
+async function loadIdl(from: string, identifier: string): Promise<{ content: unknown; rootNode: RootNode }> {
+    const content = await importModuleItem({ identifier, from });
+    return { content, rootNode: await getRootNodeFromIdl(content) };
+}
+
+function mergeRootNodes(rootNodes: readonly RootNode[]): RootNode {
+    const [head, ...tail] = rootNodes;
+    if (tail.length === 0) {
+        return head;
+    }
+    // Preserve the main root node's other fields (e.g. `standard`, `version`).
+    return { ...head, additionalPrograms: [...head.additionalPrograms, ...tail.flatMap(getAllPrograms)] };
 }
 
 function parseIdlPath(
