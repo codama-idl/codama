@@ -1,4 +1,5 @@
 export * from './build-display-context';
+export * from './dictionary';
 export * from './format-argument-value';
 export * from './format-value';
 export * from './get-instruction-display';

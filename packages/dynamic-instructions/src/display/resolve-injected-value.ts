@@ -1,6 +1,7 @@
 import type { Address } from '@solana/addresses';
 import { isNode, type Node } from 'codama';
 
+import { resolveInjectionTarget } from './resolve-injection-target';
 import type { DisplayContext } from './types';
 
 /**
@@ -17,8 +18,9 @@ export type ResolvedDisplayValue = Address | bigint | number | string | null;
  *
  * Handles the value/contextual nodes the display layer relies on:
  * - `numberValueNode` / `stringValueNode`: the literal value.
- * - `injectedValueNode`: looks the key up in `provides`, resolving the matched provider's node;
- *   when no provider supplies the key, falls back to the injection's own `fallback`.
+ * - `injectedValueNode`: selected to its terminal node via {@link resolveInjectionTarget} (a
+ *   matching provider wins, else the injection's own `fallback`) before being evaluated. The
+ *   selection is cycle-safe, so a cyclic provider chain resolves to `null` rather than overflowing.
  * - `argumentValueNode`: the decoded value of the referenced instruction argument.
  * - `accountValueNode`: the referenced account's address.
  * - `accountFieldValueNode`: a field of the referenced account's data — the account is fetched via
@@ -40,14 +42,10 @@ export async function resolveInjectedValue(
     }
 
     if (isNode(node, 'injectedValueNode')) {
-        const provided = context.provides.get(node.key);
-        if (provided) {
-            return await resolveInjectedValue(provided.node, context);
-        }
-        if (node.fallback) {
-            return await resolveInjectedValue(node.fallback, context);
-        }
-        return null;
+        // Selection (provider → fallback → chain) is cycle-guarded and shared with the offline
+        // planner and the consumed-member walk; the terminal is never itself an `injectedValueNode`.
+        const target = resolveInjectionTarget(node, context.provides);
+        return target ? await resolveInjectedValue(target, context) : null;
     }
 
     if (isNode(node, 'argumentValueNode')) {
