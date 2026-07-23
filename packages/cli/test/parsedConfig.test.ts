@@ -34,17 +34,20 @@ test('merges additionalIdls programs into the root node additionalPrograms', asy
     const parsed = await getParsedConfig({});
 
     expect(parsed.rootNode.program.name).toBe('main');
-    expect(parsed.rootNode.additionalPrograms.map(p => p.name)).toEqual(['a', 'b']);
+    expect((parsed.rootNode.additionalPrograms ?? []).map(p => p.name)).toEqual(['a', 'b']);
     // The main root node's other fields are preserved by the merge.
     expect(parsed.rootNode.standard).toBe('codama');
     expect(parsed.rootNode.version).toBe('9.9.9');
 });
 
 test('leaves the root node unchanged when no additionalIdls are provided', async () => {
+    const mainRootNode = rootNodeWith('main');
     getConfigMock.mockResolvedValue([{ idl: 'main.json' }, '/root/codama.json']);
-    getRootNodeFromIdlMock.mockResolvedValue(rootNodeWith('main'));
+    getRootNodeFromIdlMock.mockResolvedValue(mainRootNode);
 
     const parsed = await getParsedConfig({});
 
-    expect(parsed.rootNode.additionalPrograms).toEqual([]);
+    // The single root node is returned untouched, so its empty `additionalPrograms` stays omitted.
+    expect(parsed.rootNode).toBe(mainRootNode);
+    expect(parsed.rootNode.additionalPrograms).toBeUndefined();
 });

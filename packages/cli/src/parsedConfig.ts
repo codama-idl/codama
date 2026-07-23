@@ -72,7 +72,7 @@ function mergeRootNodes(rootNodes: readonly RootNode[]): RootNode {
         return head;
     }
     // Preserve the main root node's other fields (e.g. `standard`, `version`).
-    return { ...head, additionalPrograms: [...head.additionalPrograms, ...tail.flatMap(getAllPrograms)] };
+    return { ...head, additionalPrograms: [...(head.additionalPrograms ?? []), ...tail.flatMap(getAllPrograms)] };
 }
 
 function parseIdlPath(
