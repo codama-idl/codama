@@ -9,7 +9,7 @@ import type {
     InstructionWithData,
 } from '@solana/instructions';
 
-import { identifyData } from './identify';
+import { identifyData, IdentifyDataOptions } from './identify';
 
 type ParsableNode = AccountNode | EventNode | InstructionNode;
 type ParsableNodeKind = ParsableNode['kind'];
@@ -22,30 +22,39 @@ export type ParsedData<TNode extends ParsableNode> = {
 export function parseAccountData(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
+    options: IdentifyDataOptions = {},
 ): ParsedData<AccountNode> | undefined {
-    return parseData(root, bytes, 'accountNode');
+    return parseData(root, bytes, 'accountNode', options);
 }
 
 export function parseEventData(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
+    options: IdentifyDataOptions = {},
 ): ParsedData<EventNode> | undefined {
-    return parseData(root, bytes, 'eventNode');
+    return parseData(root, bytes, 'eventNode', options);
 }
 
 export function parseInstructionData(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
+    options: IdentifyDataOptions = {},
 ): ParsedData<InstructionNode> | undefined {
-    return parseData(root, bytes, 'instructionNode');
+    return parseData(root, bytes, 'instructionNode', options);
 }
 
 export function parseData<TKind extends ParsableNodeKind>(
     root: RootNode,
     bytes: ReadonlyUint8Array | Uint8Array,
     kind?: TKind | TKind[],
+    options: IdentifyDataOptions = {},
 ): ParsedData<GetNodeFromKind<TKind>> | undefined {
-    const path = identifyData<TKind>(root, bytes, kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]));
+    const path = identifyData<TKind>(
+        root,
+        bytes,
+        kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]),
+        options,
+    );
     if (!path) return undefined;
     const codec = getNodeCodec(path as NodePath<ParsableNode>);
     const data = codec.decode(bytes);
@@ -68,7 +77,7 @@ export function parseInstruction(
         InstructionWithAccounts<readonly (AccountLookupMeta | AccountMeta)[]> &
         InstructionWithData<ReadonlyUint8Array>,
 ): ParsedInstruction | undefined {
-    const parsedData = parseInstructionData(root, instruction.data);
+    const parsedData = parseInstructionData(root, instruction.data, { programAddress: instruction.programAddress });
     if (!parsedData) return undefined;
     const instructionNode = getLastNodeFromPath(parsedData.path);
     const accounts: ParsedInstructionAccounts = (instructionNode.accounts ?? []).flatMap((account, index) => {
