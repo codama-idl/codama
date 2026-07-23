@@ -1,5 +1,12 @@
 # @codama/errors
 
+## 1.10.0
+
+### Patch Changes
+
+- Updated dependencies [[`add9be2`](https://github.com/codama-idl/codama/commit/add9be28470d66ad2e99fab7688597ef7840cb4a)]:
+    - @codama/node-types@1.10.0
+
 ## 1.9.0
 
 ### Patch Changes
