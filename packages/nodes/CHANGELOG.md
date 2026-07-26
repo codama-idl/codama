@@ -1,5 +1,23 @@
 # @codama/nodes
 
+## 1.10.0
+
+### Minor Changes
+
+- [#1025](https://github.com/codama-idl/codama/pull/1025) [`add9be2`](https://github.com/codama-idl/codama/commit/add9be28470d66ad2e99fab7688597ef7840cb4a) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Omit empty array attributes from nodes, and default absent arrays to `[]` on read.
+
+    Every node array attribute — whether previously required (e.g. `programNode.accounts`, `instructionNode.arguments`, `structTypeNode.fields`) or optional (e.g. `instructionNode.discriminators`) — is now omitted from the node when empty, and defaults to `[]` when absent. An absent array and an empty array are semantically identical, so this keeps encoded IDLs small (they are often uploaded on-chain) and makes adding or omitting an array attribute non-breaking. Reading remains backwards-compatible: IDLs that still serialise empty arrays continue to parse, and every visitor and accessor normalises an absent array to `[]`.
+
+    **Breaking type change.** While runtime reads stay backwards-compatible, this is a breaking change at the type level for external consumers such as renderers and community packages. Array attributes are now typed as optional on the node interfaces (e.g. `ProgramNode.accounts` is now `readonly accounts?: AccountNode[]`), so any code that reads an array attribute without guarding — e.g. `program.accounts.map(…)` — must now coalesce with `?? []` (`(program.accounts ?? []).map(…)`). Type-parameter constraints also widen from `Array<T>` to `Array<T> | undefined`, so indexing into these types (e.g. `InstructionNode['arguments'][number]`) must be rewritten as `NonNullable<InstructionNode['arguments']>[number]`. Consumers should expect compile errors on the first unguarded array read after upgrading and add `?? []` guards accordingly.
+
+- [#1023](https://github.com/codama-idl/codama/pull/1023) [`61ac0a6`](https://github.com/codama-idl/codama/commit/61ac0a6d426802d35d0fe0a1eb4fc92b33b0d8a9) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Integrate `@codama/spec@1.8.0`, adding the `pluginNode` to the node meta-model. A `pluginNode` attaches named, plugin-specific data to a node: it carries a `name` that uniquely identifies the plugin and an optional opaque `payload`. The payload is typed by the new `json` type expression, which renders as `unknown` in TypeScript. `instructionNode` gains an optional `plugins` field holding an array of `pluginNode`. All changes are additive and optional.
+
+### Patch Changes
+
+- Updated dependencies [[`add9be2`](https://github.com/codama-idl/codama/commit/add9be28470d66ad2e99fab7688597ef7840cb4a)]:
+    - @codama/node-types@1.10.0
+    - @codama/errors@1.10.0
+
 ## 1.9.0
 
 ### Minor Changes
