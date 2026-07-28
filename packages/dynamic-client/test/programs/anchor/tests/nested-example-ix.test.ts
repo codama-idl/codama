@@ -56,14 +56,14 @@ describe('anchor-example: nestedExampleIx', () => {
             innerEnum: { __kind: 'None' },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([1, 2, 3])),
-                enumsArray: [seedEnumToNumber('arm'), seedEnumToNumber('car')],
+                enumsArray: [seedEnumVariant('arm'), seedEnumVariant('car')],
                 name: 'hello',
                 optionalPubkey: none(),
-                seedEnum: seedEnumToNumber('bar'),
+                seedEnum: seedEnumVariant('bar'),
                 value: 100n,
             },
             pubkey: pubkeyArg,
-            seedEnum: seedEnumToNumber('arm'),
+            seedEnum: seedEnumVariant('arm'),
         });
     });
 
@@ -112,14 +112,14 @@ describe('anchor-example: nestedExampleIx', () => {
             innerEnum: { __kind: 'None' },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([])),
-                enumsArray: [seedEnumToNumber('bar'), seedEnumToNumber('bar')],
+                enumsArray: [seedEnumVariant('bar'), seedEnumVariant('bar')],
                 name: 'test',
                 optionalPubkey: none(),
-                seedEnum: seedEnumToNumber('arm'),
+                seedEnum: seedEnumVariant('arm'),
                 value: 0n,
             },
             pubkey: pubkeyArg,
-            seedEnum: seedEnumToNumber('bar'),
+            seedEnum: seedEnumVariant('bar'),
         });
     });
 
@@ -171,14 +171,14 @@ describe('anchor-example: nestedExampleIx', () => {
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([0xde, 0xad, 0xbe, 0xef])),
-                enumsArray: [seedEnumToNumber('car'), seedEnumToNumber('arm')],
+                enumsArray: [seedEnumVariant('car'), seedEnumVariant('arm')],
                 name: 'transfer',
                 optionalPubkey: none(),
-                seedEnum: seedEnumToNumber('car'),
+                seedEnum: seedEnumVariant('car'),
                 value: 999n,
             },
             pubkey: pubkeyArg,
-            seedEnum: seedEnumToNumber('car'),
+            seedEnum: seedEnumVariant('car'),
         });
     });
 
@@ -235,14 +235,14 @@ describe('anchor-example: nestedExampleIx', () => {
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([])),
-                enumsArray: [seedEnumToNumber('arm'), seedEnumToNumber('arm')],
+                enumsArray: [seedEnumVariant('arm'), seedEnumVariant('arm')],
                 name: 'nft-test',
                 optionalPubkey: none(),
-                seedEnum: seedEnumToNumber('arm'),
+                seedEnum: seedEnumVariant('arm'),
                 value: 1n,
             },
             pubkey: pubkeyArg,
-            seedEnum: seedEnumToNumber('arm'),
+            seedEnum: seedEnumVariant('arm'),
         });
     });
 
@@ -295,14 +295,14 @@ describe('anchor-example: nestedExampleIx', () => {
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([10, 20])),
-                enumsArray: [seedEnumToNumber('bar'), seedEnumToNumber('car')],
+                enumsArray: [seedEnumVariant('bar'), seedEnumVariant('car')],
                 name: 'staker',
                 optionalPubkey: some(optionalPubkey),
-                seedEnum: seedEnumToNumber('car'),
+                seedEnum: seedEnumVariant('car'),
                 value: 42n,
             },
             pubkey: pubkeyArg,
-            seedEnum: seedEnumToNumber('bar'),
+            seedEnum: seedEnumVariant('bar'),
         });
     });
 
@@ -637,15 +637,10 @@ async function deriveNestedExamplePda(
 }
 
 /** SeedEnum enum is stored as a number. */
-export function seedEnumToNumber(enumValue: string) {
-    switch (enumValue.toLowerCase()) {
-        case 'arm':
-            return 0;
-        case 'bar':
-            return 1;
-        case 'car':
-            return 2;
-        default:
-            throw new Error(`Unknown enum value: ${enumValue}`);
+export function seedEnumVariant(enumValue: string) {
+    const kind = enumValue.charAt(0).toUpperCase() + enumValue.slice(1).toLowerCase();
+    if (!['Arm', 'Bar', 'Car'].includes(kind)) {
+        throw new Error(`Unknown enum value: ${enumValue}`);
     }
+    return { __kind: kind };
 }

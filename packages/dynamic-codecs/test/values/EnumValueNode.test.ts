@@ -24,7 +24,7 @@ import { expect, test } from 'vitest';
 
 import { getValueNodeVisitor } from '../../src';
 
-test('it returns scalar enum values as numbers', () => {
+test('it returns scalar enum values as discriminated unions', () => {
     // Given a program with a scalar enum.
     const definedType = definedTypeNode({
         name: 'direction',
@@ -51,11 +51,11 @@ test('it returns scalar enum values as numbers', () => {
     const resultDown = visit(enumValueNode('direction', 'down'), visitor);
     const resultLeft = visit(enumValueNode('direction', 'left'), visitor);
 
-    // Then we expect the values to be resolved from the linkable type as numbers.
-    expect(resultUp).toBe(0);
-    expect(resultRight).toBe(1);
-    expect(resultDown).toBe(2);
-    expect(resultLeft).toBe(3);
+    // Then we expect the values to be resolved from the linkable type as discriminated unions.
+    expect(resultUp).toStrictEqual({ __kind: 'Up' });
+    expect(resultRight).toStrictEqual({ __kind: 'Right' });
+    expect(resultDown).toStrictEqual({ __kind: 'Down' });
+    expect(resultLeft).toStrictEqual({ __kind: 'Left' });
 });
 
 test('it returns data enum values as objects', () => {

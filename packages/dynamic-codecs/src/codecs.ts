@@ -16,7 +16,6 @@ import {
     InstructionLinkNode,
     InstructionNode,
     isNode,
-    isScalarEnum,
     NumberFormat,
     pascalCase,
     RegisteredTypeNode,
@@ -50,7 +49,6 @@ import {
     getBooleanCodec,
     getConstantCodec,
     getDiscriminatedUnionCodec,
-    getEnumCodec,
     getF32Codec,
     getF64Codec,
     getHiddenPrefixCodec,
@@ -185,19 +183,8 @@ export function getNodeCodecVisitor(
         },
         visitEnumType(node) {
             const size = visit(node.size, this) as NumberCodec;
-            // Scalar enums are decoded as simple numbers.
-            if (isScalarEnum(node)) {
-                return getEnumCodec(
-                    Object.fromEntries(
-                        (node.variants ?? []).flatMap((variant, index) => [
-                            [variant.name, index],
-                            [index, variant.name],
-                        ]),
-                    ),
-                    { size },
-                ) as Codec<unknown>;
-            }
-            // Data enums are decoded as discriminated unions, e.g. `{ __kind: 'Move', x: 10, y: 20 }`.
+            // All enums are decoded as discriminated unions,
+            // e.g. `{ __kind: 'Up' }` or `{ __kind: 'Move', x: 10, y: 20 }`.
             const variants = (node.variants ?? []).map(
                 variant => [pascalCase(variant.name), visit(variant, this)] as const,
             );
