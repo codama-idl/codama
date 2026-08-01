@@ -21,7 +21,7 @@ const generics = {} as GenericsV01;
 test('it parses constant with number type and value', () => {
     const node = constantNodeFromAnchorV01(
         {
-            name: 'max_size',
+            name: 'MAX_SIZE',
             type: 'u64',
             value: '1000',
         },
@@ -29,6 +29,7 @@ test('it parses constant with number type and value', () => {
     );
 
     expect(node).toEqual(constantNode('maxSize', numberTypeNode('u64'), numberValueNode(1000)));
+    expect(node.name).toBe('maxSize');
 });
 
 test('it parses constant with bytes type and value', () => {

@@ -26,6 +26,11 @@ export function pascalCase(str: string): PascalCaseString {
 
 export function camelCase(str: string): CamelCaseString {
     if (str.length === 0) return str as CamelCaseString;
+    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(str)) {
+        return str
+            .toLowerCase()
+            .replace(/_([a-z0-9])/g, (_, character: string) => character.toUpperCase()) as CamelCaseString;
+    }
     const pascalStr = pascalCase(str);
     return (pascalStr.charAt(0).toLowerCase() + pascalStr.slice(1)) as CamelCaseString;
 }
