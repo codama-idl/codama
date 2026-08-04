@@ -42,9 +42,16 @@ export function titleCase(str: string): string {
 
 /**
  * Normalise an arbitrary string into PascalCase by stripping the
- * spaces from its {@link titleCase} form.
+ * spaces from its {@link titleCase} form. Uppercased snake_case
+ * inputs (e.g. `FROM_UPPERCASED_SNAKE_CASE`) are treated as
+ * underscore-delimited words rather than letter-by-letter.
  */
 export function pascalCase(str: string): string {
+    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(str)) {
+        return str
+            .toLowerCase()
+            .replace(/(?:^|_)([a-z0-9])/g, (_, character: string) => character.toUpperCase());
+    }
     return titleCase(str).split(' ').join('');
 }
 
