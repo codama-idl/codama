@@ -12,6 +12,9 @@ export function capitalize(str: string): string {
 }
 
 export function titleCase(str: string): TitleCaseString {
+    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(str)) {
+        return str.toLowerCase().split('_').map(capitalize).join(' ') as TitleCaseString;
+    }
     return str
         .replace(/([A-Z])/g, ' $1')
         .split(/[^a-zA-Z0-9]+/)
@@ -21,11 +24,6 @@ export function titleCase(str: string): TitleCaseString {
 }
 
 export function pascalCase(str: string): PascalCaseString {
-    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(str)) {
-        return str
-            .toLowerCase()
-            .replace(/(?:^|_)([a-z0-9])/g, (_, character: string) => character.toUpperCase()) as PascalCaseString;
-    }
     return titleCase(str).split(' ').join('') as PascalCaseString;
 }
 
