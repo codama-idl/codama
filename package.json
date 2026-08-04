@@ -14,7 +14,7 @@
         "@changesets/cli": "^2.29.8",
         "@solana/eslint-config-solana": "^5.0.0",
         "@solana/prettier-config-solana": "0.0.6",
-        "@types/node": "^25",
+        "@types/node": "^26",
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",
         "eslint": "^9.39.2",
