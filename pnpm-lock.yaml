@@ -18,8 +18,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@eslint/js@9.39.2)(@types/eslint__js@8.42.3)(eslint-plugin-jest@27.9.0(eslint@9.39.2)(jest@30.0.0-alpha.6(@types/node@26.1.2))(typescript@5.9.3))(eslint-plugin-react-hooks@4.6.0(eslint@9.39.2))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.2))(eslint-plugin-sort-keys-fix@1.1.2)(eslint-plugin-typescript-sort-keys@3.3.0(@typescript-eslint/parser@8.43.0(eslint@9.39.2)(typescript@5.9.3))(eslint@9.39.2)(typescript@5.9.3))(eslint@9.39.2)(globals@14.0.0)(jest@30.0.0-alpha.6(@types/node@26.1.2))(typescript-eslint@8.43.0(eslint@9.39.2)(typescript@5.9.3))(typescript@5.9.3)
       '@solana/prettier-config-solana':
-        specifier: 0.0.6
-        version: 0.0.6(prettier@3.7.4)
+        specifier: 0.0.7
+        version: 0.0.7(prettier@3.7.4)
       '@types/node':
         specifier: ^26
         version: 26.1.2
@@ -2201,8 +2201,8 @@ packages:
       typescript:
         optional: true
 
-  '@solana/prettier-config-solana@0.0.6':
-    resolution: {integrity: sha512-/s55hDoAyh5QyltQh/jjNK3AgACEq885+DnC6lYhrmYZiV6I0iHITWYnKd8d23KRKs/RBjlaQH54MiafeoI9hw==}
+  '@solana/prettier-config-solana@0.0.7':
+    resolution: {integrity: sha512-uJyzzvVVZ04e4K6ukCLSQccL4N9RYQ9GG9rK8S0QoCttD5D9FukToaIUNxWtA4RIswGcNCq0yusaLjmbG7I0SA==}
     deprecated: This package is deprecated. It has been replaced by @solana-config/prettier, part of the @solana-foundation/js-configs monorepo (https://github.com/solana-foundation/js-configs). Please migrate to the new package; this one will no longer receive updates.
     peerDependencies:
       prettier: ^3.7.4
@@ -6960,7 +6960,7 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/prettier-config-solana@0.0.6(prettier@3.7.4)':
+  '@solana/prettier-config-solana@0.0.7(prettier@3.7.4)':
     dependencies:
       prettier: 3.7.4
 
