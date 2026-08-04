@@ -80,7 +80,7 @@
         "@codama/renderers-core": "workspace:*",
         "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.3",
         "@solana-program/program-metadata": "^0.8.0",
-        "@solana-program/token": "0.10.0",
+        "@solana-program/token": "0.15.0",
         "@solana-program/token-2022": "^0.14.0",
         "@solana/kit": "7.0.0",
         "litesvm": "1.0.0",
