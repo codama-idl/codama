@@ -78,7 +78,7 @@
     "devDependencies": {
         "@codama/nodes-from-anchor": "workspace:*",
         "@codama/renderers-core": "workspace:*",
-        "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.2",
+        "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.3",
         "@solana-program/program-metadata": "^0.5.1",
         "@solana-program/token": "0.10.0",
         "@solana-program/token-2022": "^0.14.0",
