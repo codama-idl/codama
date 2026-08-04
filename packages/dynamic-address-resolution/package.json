@@ -74,7 +74,7 @@
         "commander": "^14.0.2"
     },
     "devDependencies": {
-        "@solana/kit": "6.5.0"
+        "@solana/kit": "7.0.0"
     },
     "license": "MIT",
     "repository": {
