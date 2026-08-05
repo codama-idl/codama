@@ -29,9 +29,14 @@ export function capitalize(str: string): string {
  * Normalise an arbitrary string into Title Case — a space-separated
  * sequence of {@link capitalize}d words. Inserts a space before each
  * uppercase letter, then splits on any run of non-alphanumeric
- * characters and re-joins with single spaces.
+ * characters and re-joins with single spaces. Uppercased snake_case
+ * inputs (e.g. `FROM_UPPERCASED_SNAKE_CASE`) are treated as
+ * underscore-delimited words rather than letter-by-letter.
  */
 export function titleCase(str: string): string {
+    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(str)) {
+        return str.toLowerCase().split('_').map(capitalize).join(' ');
+    }
     return str
         .replace(/([A-Z])/g, ' $1')
         .split(/[^a-zA-Z0-9]+/)

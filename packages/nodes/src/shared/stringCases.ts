@@ -12,6 +12,9 @@ export function capitalize(str: string): string {
 }
 
 export function titleCase(str: string): TitleCaseString {
+    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(str)) {
+        return str.toLowerCase().split('_').map(capitalize).join(' ') as TitleCaseString;
+    }
     return str
         .replace(/([A-Z])/g, ' $1')
         .split(/[^a-zA-Z0-9]+/)
