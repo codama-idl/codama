@@ -24,7 +24,7 @@ This package includes the following packages. Note that some of them also re-exp
     - [`@codama/node-types`](../node-types)
 - [`@codama/validators`](../validators)
 - [`@codama/visitors`](../visitors)
-    - [`@codama/visitor-core`](../visitor-core)
+    - [`@codama/visitors-core`](../visitors-core)
 
 ## The Codama helper
 
