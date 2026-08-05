@@ -181,7 +181,7 @@ In the example below, we remove the `mint` account, the `initializeMint` instruc
 
 Generates a JavaScript client for the IDL at the specified output path.
 
-See [`@codama/renderer-js`](https://github.com/codama-idl/renderers-js).
+See [`@codama/renderers-js`](https://github.com/codama-idl/renderers-js).
 
 ```json
 {
