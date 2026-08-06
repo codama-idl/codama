@@ -87,6 +87,18 @@ describe('resolveInjectedValue', () => {
         expect(result).toBeNull();
     });
 
+    test('it returns null on a cyclic injection instead of overflowing', async () => {
+        // Given `decimals` provided by re-injecting itself.
+        const node = injectedValueNode({ key: 'decimals' });
+        const provides = providesMap(providedNode('decimals', injectedValueNode({ key: 'decimals' })));
+
+        // When we resolve it.
+        const result = await resolveInjectedValue(node, context({ provides }));
+
+        // Then the cycle guard yields null rather than recursing forever.
+        expect(result).toBeNull();
+    });
+
     test('it resolves an argument value node to the decoded argument', async () => {
         // Given an argument value node and a decoded argument in context data.
         const node = argumentValueNode('decimals');

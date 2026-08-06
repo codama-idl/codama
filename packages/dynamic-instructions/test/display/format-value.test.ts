@@ -76,6 +76,20 @@ describe('formatAmountValue', () => {
         expect(result).toBeNull();
     });
 
+    test('it returns null on a cyclic injection instead of overflowing', async () => {
+        // Given an amount whose injected decimals are provided by re-injecting themselves.
+        const node = amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) });
+        const provides = new Map<string, ProvidedNode>([
+            ['decimals', providedNode('decimals', injectedValueNode({ key: 'decimals' }))],
+        ]);
+
+        // When we format the amount.
+        const result = await formatAmountValue(1_000_000n, node, context({ provides }));
+
+        // Then the cycle resolves to null rather than recursing forever.
+        expect(result).toBeNull();
+    });
+
     test('it omits the unit but still scales when only the unit is unresolvable', async () => {
         // Given resolvable decimals but an unresolvable unit.
         const node = amountNumberDisplayNode({

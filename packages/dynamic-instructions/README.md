@@ -173,3 +173,43 @@ const display = await getInstructionDisplay(root, instruction, {
 ```
 
 Address presentation (`.sol` names, address-book aliases, truncation) is intentionally left to the renderer: `fields` and `interpolatedIntent` contain raw base58 addresses that the consuming wallet/UI formats as it sees fit.
+
+## Offline display dictionary
+
+An offline renderer — typically a hardware wallet — cannot reach an RPC to resolve the values above, nor a name service to present addresses. The **display dictionary** is a serialisable bundle of exactly that external data, assembled by an online companion and handed to the device so it can resolve a display with no network access.
+
+```ts
+type DisplayDictionary = {
+    // Fetched on-chain account state, keyed by address (the offline counterpart of `fetchAccount`).
+    accounts: ReadonlyMap<Address, EncodedAccount>;
+    // Human-readable names, keyed by address — a `.sol` domain, token symbol, program label, alias…
+    names: ReadonlyMap<Address, string>;
+};
+```
+
+Only accounts that exist are stored: a missing key means "no data for this address", which is all the renderer can act on. It cannot, nor does it need to, distinguish an account that was never fetched from one that does not exist on-chain — both degrade the display the same way.
+
+The `names` map is deliberately generic: it names an address, whatever the source. This is how an offline renderer recovers the presentation the online layer would delegate to it.
+
+### Building the dictionary (online)
+
+`getRequiredAccountsForDisplay(root, parsedInstruction)` returns the addresses whose account state a display would read — computed statically from the IDL and the instruction, with no network access. `getDisplayAccountMap` uses it to batch-fetch those accounts into the `accounts` map:
+
+```ts
+import { fetchEncodedAccounts } from '@solana/accounts';
+import { parseInstruction } from '@codama/dynamic-parsers';
+import { getDisplayAccountMap, getDisplayDictionaryCodec } from '@codama/dynamic-instructions';
+
+const parsed = parseInstruction(root, instruction);
+const accounts = await getDisplayAccountMap(root, parsed, addresses => fetchEncodedAccounts(rpc, addresses));
+
+const dictionary = { accounts, names /* built from your own name sources */ };
+const bytes = getDisplayDictionaryCodec().encode(dictionary);
+```
+
+> [!NOTE]
+> A filler for the `names` map is **not** provided: its data comes from sources Codama has no opinion on (name services, token registries, curated label lists). Populate it yourself from whichever sources you trust.
+
+### Consuming the dictionary (offline)
+
+`fetchAccounts` (batch) is the counterpart of the display layer's `fetchAccount`; wire it to Kit's `fetchEncodedAccounts` for a single `getMultipleAccounts` round-trip. The bundle is encoded with byte codecs — `getDisplayDictionaryCodec` (and per-map `getDisplayAccountMapCodec` / `getDisplayNamedMapCodec`, each also available as split `…Encoder` / `…Decoder`). The offline renderer decodes it and resolves the display from the maps: account bytes are decoded through the IDL's `accountLink` exactly as online, and addresses are named from `names`.
