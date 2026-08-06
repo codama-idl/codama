@@ -3,7 +3,7 @@ import {
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
     CodamaError,
 } from '@codama/errors';
-import { assertIsNode, bytesTypeNode, isNode, isScalarEnum, pascalCase, ValueNode } from '@codama/nodes';
+import { assertIsNode, bytesTypeNode, isNode, pascalCase, ValueNode } from '@codama/nodes';
 import { LinkableDictionary, NodeStack, pipe, recordNodeStackVisitor, visit, Visitor } from '@codama/visitors-core';
 
 import { CodecVisitorOptions, getNodeCodecVisitor } from './codecs';
@@ -52,7 +52,6 @@ export function getValueNodeVisitor(
                 });
             }
             const variant = variants[variantIndex];
-            if (isScalarEnum(enumType)) return variantIndex;
             const kind = { __kind: pascalCase(node.variant) };
             if (isNode(variant, 'enumEmptyVariantTypeNode')) return kind;
             if (isNode(variant, 'enumStructVariantTypeNode') && !!node.value) {

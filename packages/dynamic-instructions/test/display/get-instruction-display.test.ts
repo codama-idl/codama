@@ -234,8 +234,8 @@ describe('cross-program link resolution', () => {
         const root = rootNode(programA, [programB]);
         const parsed = {
             accounts: [],
-            // `inner` is an all-empty-variant (scalar) enum, decoded as the variant name.
-            data: { order: { mode: 'buy' } },
+            // `inner` is an all-empty-variant (scalar) enum, decoded as a discriminated union.
+            data: { order: { mode: { __kind: 'Buy' } } },
             path: instructionPathOf(root, instruction),
         };
 
