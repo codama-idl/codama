@@ -1,5 +1,15 @@
 # @codama/nodes
 
+## 1.10.1
+
+### Patch Changes
+
+- [#1030](https://github.com/codama-idl/codama/pull/1030) [`f69845c`](https://github.com/codama-idl/codama/commit/f69845cb89ee0cc3877ee89a4b734386e9336074) Thanks [@ChiefWoods](https://github.com/ChiefWoods)! - fix(nodes): uppercased snake case not correctly converted to snake case
+
+- Updated dependencies []:
+    - @codama/errors@1.10.1
+    - @codama/node-types@1.10.1
+
 ## 1.10.0
 
 ### Minor Changes
