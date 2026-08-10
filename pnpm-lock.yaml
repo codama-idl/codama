@@ -91,8 +91,8 @@ importers:
         specifier: ^5.3.0
         version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
       '@solana/codecs':
-        specifier: ^5.3.0
-        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+        specifier: ^7.0.0
+        version: 7.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
       codama:
         specifier: workspace:*
         version: link:../library
@@ -122,8 +122,8 @@ importers:
         specifier: ^5.3.0
         version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
       '@solana/codecs':
-        specifier: ^5.3.0
-        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+        specifier: ^7.0.0
+        version: 7.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
       '@solana/instructions':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
@@ -177,8 +177,8 @@ importers:
         specifier: workspace:*
         version: link:../visitors-core
       '@solana/codecs':
-        specifier: ^5.3.0
-        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+        specifier: ^7.0.0
+        version: 7.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
 
   packages/dynamic-instructions:
     dependencies:
@@ -201,8 +201,8 @@ importers:
         specifier: ^5.3.0
         version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
       '@solana/codecs':
-        specifier: ^5.3.0
-        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+        specifier: ^7.0.0
+        version: 7.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
       '@solana/instructions':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
@@ -239,8 +239,8 @@ importers:
         version: 7.0.0(typescript@5.9.3)
     devDependencies:
       '@solana/codecs':
-        specifier: ^5.3.0
-        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+        specifier: ^7.0.0
+        version: 7.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
 
   packages/errors:
     dependencies:
@@ -304,8 +304,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       '@solana/codecs':
-        specifier: ^5.3.0
-        version: 5.5.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
+        specifier: ^7.0.0
+        version: 7.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
 
   packages/renderers-core:
     dependencies:
