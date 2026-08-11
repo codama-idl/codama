@@ -337,7 +337,7 @@ describe('parseInstruction', () => {
         const instruction = {
             accounts: [{ address: '1111', role: AccountRole.READONLY_SIGNER }],
             data: hex('48656c6c6f'),
-            programAddress: 'myProgramAddress',
+            programAddress: '1111',
         } as unknown as Parameters<typeof parseInstruction>[1];
 
         // When we parse the instruction.
@@ -349,6 +349,89 @@ describe('parseInstruction', () => {
             data: { message: 'Hello' },
             path: [root, root.program, memoInstruction],
         });
+    });
+
+    test('it parses an instruction from an additional program using the program address', () => {
+        // Given a token-shaped main program and an ATA-shaped additional program whose
+        // instructions share the same one-byte field discriminator.
+        const discriminator = (defaultValue: number) =>
+            instructionArgumentNode({
+                defaultValue: numberValueNode(defaultValue),
+                name: 'discriminator',
+                type: numberTypeNode('u8'),
+            });
+        const additionalInstruction = instructionNode({
+            accounts: [
+                instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' }),
+                instructionAccountNode({ isSigner: false, isWritable: true, name: 'ata' }),
+            ],
+            arguments: [discriminator(1)],
+            discriminators: [fieldDiscriminatorNode('discriminator')],
+            name: 'createAssociatedTokenIdempotent',
+        });
+        const additionalProgram = programNode({
+            instructions: [additionalInstruction],
+            name: 'associatedToken',
+            publicKey: '2222',
+        });
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({
+                        accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'account' })],
+                        arguments: [discriminator(1)],
+                        discriminators: [fieldDiscriminatorNode('discriminator')],
+                        name: 'initializeAccount',
+                    }),
+                ],
+                name: 'token',
+                publicKey: '1111',
+            }),
+            [additionalProgram],
+        );
+
+        // And a concrete instruction targeting the additional program's address.
+        const instruction = {
+            accounts: [
+                { address: 'payer111', role: AccountRole.WRITABLE_SIGNER },
+                { address: 'ata11111', role: AccountRole.WRITABLE },
+            ],
+            data: hex('01'),
+            programAddress: '2222',
+        } as unknown as Parameters<typeof parseInstruction>[1];
+
+        // When we parse the instruction.
+        const result = parseInstruction(root, instruction);
+
+        // Then we expect the additional program's instruction, not the main program's.
+        expect(result).toStrictEqual({
+            accounts: [
+                { address: 'payer111', name: 'payer', role: AccountRole.WRITABLE_SIGNER },
+                { address: 'ata11111', name: 'ata', role: AccountRole.WRITABLE },
+            ],
+            data: { discriminator: 1 },
+            path: [root, additionalProgram, additionalInstruction],
+        });
+    });
+    test('it does not parse an instruction whose program is not part of the root', () => {
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({
+                        arguments: [instructionArgumentNode({ name: 'value', type: numberTypeNode('u8') })],
+                        name: 'myInstruction',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = parseInstruction(root, {
+            accounts: [],
+            data: hex('01'),
+            programAddress: '9999',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+        expect(result).toBeUndefined();
     });
 });
 
