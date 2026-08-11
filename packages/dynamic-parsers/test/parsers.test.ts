@@ -447,6 +447,35 @@ describe('parseInstruction', () => {
             remainingAccounts: [],
         });
     });
+    test('it returns undefined when the identified data cannot be decoded', () => {
+        // Given an instruction whose discriminator matches one-byte data but whose full
+        // arguments require more bytes than provided.
+        const instruction = instructionNode({
+            arguments: [
+                instructionArgumentNode({
+                    defaultValue: numberValueNode(1),
+                    defaultValueStrategy: 'omitted',
+                    name: 'discriminator',
+                    type: numberTypeNode('u8'),
+                }),
+                instructionArgumentNode({ name: 'amount', type: numberTypeNode('u64') }),
+            ],
+            discriminators: [fieldDiscriminatorNode('discriminator')],
+            name: 'myInstruction',
+        });
+        const root = rootNode(programNode({ instructions: [instruction], name: 'myProgram', publicKey: '1111' }));
+
+        // When we parse truncated data: the discriminator matches but `amount` cannot decode.
+        const result = parseInstruction(root, {
+            accounts: [],
+            data: hex('01'),
+            programAddress: '1111',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+
+        // Then we expect undefined rather than a decode error: parsing is total.
+        expect(result).toBeUndefined();
+    });
+
     test('it does not parse an instruction whose program is not part of the root', () => {
         const root = rootNode(
             programNode({

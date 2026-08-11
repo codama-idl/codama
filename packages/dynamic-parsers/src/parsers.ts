@@ -57,8 +57,14 @@ export function parseData<TKind extends ParsableNodeKind>(
     );
     if (!path) return undefined;
     const codec = getNodeCodec(path as NodePath<ParsableNode>);
-    const data = codec.decode(bytes);
-    return { data, path };
+    try {
+        return { data: codec.decode(bytes), path };
+    } catch {
+        // A discriminator can match while the full data does not conform (e.g. truncated or
+        // corrupt bytes). Parsing is total: data that cannot be decoded is not parsable,
+        // mirroring the `undefined` returned when nothing is identified.
+        return undefined;
+    }
 }
 
 /**

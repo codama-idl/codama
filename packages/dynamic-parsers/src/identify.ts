@@ -5,6 +5,7 @@ import {
     getAllPrograms,
     GetNodeFromKind,
     InstructionNode,
+    isNode,
     isNodeFilter,
     ProgramNode,
     resolveNestedTypeNode,
@@ -107,30 +108,22 @@ export function getByteIdentificationVisitor<TKind extends IdentifiableNodeKind>
     const stack = options.stack ?? new NodeStack();
     const programAddress = options.programAddress;
 
+    // Accounts, events, and instructions identify identically: match the bytes against the
+    // candidate's discriminators over its data struct (arguments, for instructions).
+    const identifyCandidate = (node: AccountNode | EventNode | InstructionNode) => {
+        if (!node.discriminators) return undefined;
+        const struct = isNode(node, 'instructionNode')
+            ? structTypeNodeFromInstructionArgumentNodes(node.arguments ?? [])
+            : resolveNestedTypeNode(node.data);
+        const match = matchDiscriminators(bytes, node.discriminators, struct, codecAndValueVisitors);
+        return match ? stack.getPath(node.kind) : undefined;
+    };
+
     return pipe(
         {
-            visitAccount(node) {
-                if (!node.discriminators) return;
-                const struct = resolveNestedTypeNode(node.data);
-                const match = matchDiscriminators(bytes, node.discriminators, struct, codecAndValueVisitors);
-                return match ? stack.getPath(node.kind) : undefined;
-            },
-            visitEvent(node) {
-                if (!node.discriminators) return;
-                const match = matchDiscriminators(
-                    bytes,
-                    node.discriminators,
-                    resolveNestedTypeNode(node.data),
-                    codecAndValueVisitors,
-                );
-                return match ? stack.getPath(node.kind) : undefined;
-            },
-            visitInstruction(node) {
-                if (!node.discriminators) return;
-                const struct = structTypeNodeFromInstructionArgumentNodes(node.arguments ?? []);
-                const match = matchDiscriminators(bytes, node.discriminators, struct, codecAndValueVisitors);
-                return match ? stack.getPath(node.kind) : undefined;
-            },
+            visitAccount: identifyCandidate,
+            visitEvent: identifyCandidate,
+            visitInstruction: identifyCandidate,
             visitProgram(node) {
                 for (const candidate of getNodeCandidates(node, kind)) {
                     const result = visit(candidate, this);
