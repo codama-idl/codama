@@ -6,6 +6,7 @@ import {
     definedTypeNode,
     durationNumberDisplayNode,
     enumEmptyVariantTypeNode,
+    enumTupleVariantTypeNode,
     enumTypeNode,
     enumVariantDisplayNode,
     injectedValueNode,
@@ -15,6 +16,7 @@ import {
     stringDisplayNode,
     stringTypeNode,
     stringValueNode,
+    tupleTypeNode,
     type TypeNode,
     zeroableOptionTypeNode,
 } from 'codama';
@@ -220,6 +222,59 @@ describe('formatArgumentValue', () => {
 
         // Then we expect the linked variant label.
         expect(result).toBe('Buy');
+    });
+
+    test('it labels a scalar enum variant decoded as a numeric index', async () => {
+        // Given a scalar enum with positional discriminators.
+        const type = enumTypeNode([
+            enumEmptyVariantTypeNode('buy', undefined, { display: enumVariantDisplayNode({ label: 'Buy' }) }),
+            enumEmptyVariantTypeNode('sell', undefined, { display: enumVariantDisplayNode({ label: 'Sell' }) }),
+        ]);
+
+        // When we format the numeric index the dynamic codecs decode to.
+        const result = await formatArgumentValue(type, [], 1, displayContext());
+
+        // Then we expect the matching variant's label, not the bare index.
+        expect(result).toBe('Sell');
+    });
+
+    test('it labels a scalar enum variant decoded as an explicit discriminator value', async () => {
+        // Given a scalar enum whose variants declare explicit discriminators.
+        const type = enumTypeNode([enumEmptyVariantTypeNode('legacy', 5), enumEmptyVariantTypeNode('current', 7)]);
+
+        // When we format an explicit discriminator value.
+        const result = await formatArgumentValue(type, [], 7, displayContext());
+
+        // Then we expect the variant matching that discriminator, not the position.
+        expect(result).toBe('Current');
+    });
+
+    test('it falls back to the raw index when no variant matches', async () => {
+        // Given a scalar enum with two variants.
+        const type = enumTypeNode([enumEmptyVariantTypeNode('buy'), enumEmptyVariantTypeNode('sell')]);
+
+        // When we format an out-of-range index.
+        const result = await formatArgumentValue(type, [], 9, displayContext());
+
+        // Then we expect the raw value.
+        expect(result).toBe('9');
+    });
+
+    test('it matches a data enum kind regardless of casing', async () => {
+        // Given an enum whose decoded `__kind` arrives in raw camelCase (codecs disagree on casing).
+        const type = enumTypeNode([
+            enumEmptyVariantTypeNode('name'),
+            enumEmptyVariantTypeNode('symbol'),
+            enumTupleVariantTypeNode('key', tupleTypeNode([stringTypeNode('utf8')])),
+        ]);
+
+        // When we format both casings of a variant kind.
+        const rawCased = await formatArgumentValue(type, [], { __kind: 'symbol' }, displayContext());
+        const pascalCased = await formatArgumentValue(type, [], { __kind: 'Symbol' }, displayContext());
+
+        // Then we expect both to match the variant.
+        expect(rawCased).toBe('Symbol');
+        expect(pascalCased).toBe('Symbol');
     });
 
     test('it unwraps nested option values', async () => {

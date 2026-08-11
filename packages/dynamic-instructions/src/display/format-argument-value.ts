@@ -1,4 +1,4 @@
-import { type EnumTypeNode, isNode, isScalarEnum, type NodePath, pascalCase, titleCase, type TypeNode } from 'codama';
+import { type EnumTypeNode, isNode, type NodePath, pascalCase, titleCase, type TypeNode } from 'codama';
 
 import { isObjectRecord } from '../shared/util';
 import { formatAmountValue, formatDateTimeValue, formatDurationValue, formatStringValue } from './format-value';
@@ -65,18 +65,32 @@ async function formatNumber(
 
 /**
  * Formats an enum value using the matched variant's display label.
- * Scalar enums decode to the variant name; data enums decode to `{ __kind: 'PascalVariant', ... }`.
+ *
+ * Decoded enum values arrive in several shapes depending on the codec: a numeric discriminator
+ * (scalar enums through the dynamic codecs), the variant name as a string, or a
+ * `{ __kind: <variant> }` object whose casing varies (raw camelCase or PascalCase). All are
+ * matched to the variant; anything unmatched falls back to the raw form.
  */
 function formatEnumValue(enumType: EnumTypeNode, value: unknown): string {
+    const variants = enumType.variants ?? [];
+
+    // Numeric decode: match the variant's discriminator, explicit or inferred from position.
+    if (typeof value === 'number' || typeof value === 'bigint') {
+        const target = Number(value);
+        const variant = variants.find((candidate, index) => (candidate.discriminator ?? index) === target);
+        return variant ? variantLabel(variant) : rawValue(value);
+    }
+
     const decodedName = enumVariantName(value);
     if (decodedName === null) return rawValue(value);
 
-    // Scalar enums decode to the variant name as-is; data enum `__kind` is the PascalCase form.
-    const variant = (enumType.variants ?? []).find(candidate =>
-        isScalarEnum(enumType) ? candidate.name === decodedName : pascalCase(candidate.name) === decodedName,
-    );
-    if (!variant) return rawValue(value);
+    // Codecs disagree on name casing, so compare through a common PascalCase form.
+    const variant = variants.find(candidate => pascalCase(candidate.name) === pascalCase(decodedName));
+    return variant ? variantLabel(variant) : rawValue(value);
+}
 
+/** The label shown for a variant: its display label, or its title-cased name. */
+function variantLabel(variant: NonNullable<EnumTypeNode['variants']>[number]): string {
     return variant.display?.label ?? titleCase(variant.name);
 }
 
