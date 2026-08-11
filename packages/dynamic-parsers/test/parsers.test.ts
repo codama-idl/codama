@@ -337,7 +337,7 @@ describe('parseInstruction', () => {
         const instruction = {
             accounts: [{ address: '1111', role: AccountRole.READONLY_SIGNER }],
             data: hex('48656c6c6f'),
-            programAddress: 'myProgramAddress',
+            programAddress: '1111',
         } as unknown as Parameters<typeof parseInstruction>[1];
 
         // When we parse the instruction.
@@ -360,6 +360,20 @@ describe('parseInstruction', () => {
                 name: 'discriminator',
                 type: numberTypeNode('u8'),
             });
+        const additionalInstruction = instructionNode({
+            accounts: [
+                instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' }),
+                instructionAccountNode({ isSigner: false, isWritable: true, name: 'ata' }),
+            ],
+            arguments: [discriminator(1)],
+            discriminators: [fieldDiscriminatorNode('discriminator')],
+            name: 'createAssociatedTokenIdempotent',
+        });
+        const additionalProgram = programNode({
+            instructions: [additionalInstruction],
+            name: 'associatedToken',
+            publicKey: '2222',
+        });
         const root = rootNode(
             programNode({
                 instructions: [
@@ -373,23 +387,7 @@ describe('parseInstruction', () => {
                 name: 'token',
                 publicKey: '1111',
             }),
-            [
-                programNode({
-                    instructions: [
-                        instructionNode({
-                            accounts: [
-                                instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' }),
-                                instructionAccountNode({ isSigner: false, isWritable: true, name: 'ata' }),
-                            ],
-                            arguments: [discriminator(1)],
-                            discriminators: [fieldDiscriminatorNode('discriminator')],
-                            name: 'createAssociatedTokenIdempotent',
-                        }),
-                    ],
-                    name: 'associatedToken',
-                    publicKey: '2222',
-                }),
-            ],
+            [additionalProgram],
         );
 
         // And a concrete instruction targeting the additional program's address.
@@ -412,8 +410,28 @@ describe('parseInstruction', () => {
                 { address: 'ata11111', name: 'ata', role: AccountRole.WRITABLE },
             ],
             data: { discriminator: 1 },
-            path: [root, root.additionalPrograms[0], root.additionalPrograms[0].instructions[0]],
+            path: [root, additionalProgram, additionalInstruction],
         });
+    });
+    test('it does not parse an instruction whose program is not part of the root', () => {
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({
+                        arguments: [instructionArgumentNode({ name: 'value', type: numberTypeNode('u8') })],
+                        name: 'myInstruction',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = parseInstruction(root, {
+            accounts: [],
+            data: hex('01'),
+            programAddress: '9999',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+        expect(result).toBeUndefined();
     });
 });
 

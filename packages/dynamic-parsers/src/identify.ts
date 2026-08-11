@@ -28,8 +28,12 @@ type IdentifiableNodeKind = 'accountNode' | 'eventNode' | 'instructionNode';
 
 export type IdentifyDataOptions = {
     /**
-     * When provided, restricts the search to the programs matching this address,
-     * if any. When no program matches the address, all programs are searched.
+     * When provided, restricts the search to the programs matching this address.
+     * When no program matches the address, nothing is identified: bytes can
+     * legitimately match several programs of the same root (e.g. a token
+     * instruction and an ATA instruction sharing a one-byte discriminator), so
+     * matching a program we know nothing about against another program's
+     * candidates would confidently misattribute the data.
      */
     programAddress?: string;
 };
@@ -81,7 +85,12 @@ export function identifyData<TKind extends IdentifiableNodeKind>(
 
     // Fallback: When Node of given kind doesn't have a discriminator and is single then we can identify it.
     // Example: `Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH` program with single instruction omits a discriminator.
-    for (const program of getCandidatePrograms(root, options.programAddress)) {
+    // Without a program address the fallback stays conservative (main program only): bytes alone
+    // cannot tell which program a discriminator-less candidate belongs to.
+    const fallbackPrograms = options.programAddress
+        ? getCandidatePrograms(root, options.programAddress)
+        : [root.program];
+    for (const program of fallbackPrograms) {
         const candidates = getNodeCandidates(program, kinds);
         if (candidates.length !== 1 || candidates[0].discriminators?.length) continue;
         return [root, program, candidates[0]] as unknown as NodePath<GetNodeFromKind<TKind>>;
@@ -145,8 +154,7 @@ export function getByteIdentificationVisitor<TKind extends IdentifiableNodeKind>
 function getCandidatePrograms(root: RootNode, programAddress?: string): ProgramNode[] {
     const programs = getAllPrograms(root);
     if (programAddress === undefined) return programs;
-    const matches = programs.filter(program => program.publicKey === programAddress);
-    return matches.length > 0 ? matches : programs;
+    return programs.filter(program => program.publicKey === programAddress);
 }
 
 function getNodeCandidates(
