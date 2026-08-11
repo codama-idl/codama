@@ -7,6 +7,7 @@ import {
     instructionArgumentNode,
     instructionNode,
     numberTypeNode,
+    optionTypeNode,
     structFieldDisplayNode,
     structFieldTypeNode,
     structTypeNode,
@@ -192,5 +193,71 @@ describe('listFallback', () => {
             { label: 'args.Price', value: '100' },
             { label: 'args.Size', value: '5' },
         ]);
+    });
+
+    test('it flattens a present option-wrapped struct argument', async () => {
+        // Given a flattened argument whose type is an option of a linked struct.
+        const orderArgs = definedTypeNode({
+            name: 'orderArgs',
+            type: structTypeNode([
+                structFieldTypeNode({ name: 'price', type: numberTypeNode('u64') }),
+                structFieldTypeNode({ name: 'size', type: numberTypeNode('u64') }),
+            ]),
+        });
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [
+                instructionArgumentNode({
+                    display: structFieldDisplayNode({ flatten: true }),
+                    name: 'args',
+                    type: optionTypeNode(definedTypeLinkNode('orderArgs')),
+                }),
+            ],
+            name: 'placeOrder',
+        });
+
+        // When we build the fallback list with a `Some` value.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({
+                    data: { args: { __option: 'Some', value: { price: 100n, size: 5n } } },
+                    instruction,
+                }),
+                resolveDefinedType: mockResolveDefinedType(orderArgs),
+            }),
+        );
+
+        // Then we expect the inner struct's fields lifted into the list.
+        expect(result).toEqual([
+            { label: 'Price', value: '100' },
+            { label: 'Size', value: '5' },
+        ]);
+    });
+
+    test('it renders an absent option-wrapped struct argument as a single none field', async () => {
+        // Given a flattened argument whose type is an option of a struct.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [
+                instructionArgumentNode({
+                    display: structFieldDisplayNode({ flatten: true }),
+                    name: 'args',
+                    type: optionTypeNode(
+                        structTypeNode([structFieldTypeNode({ name: 'price', type: numberTypeNode('u64') })]),
+                    ),
+                }),
+            ],
+            name: 'placeOrder',
+        });
+
+        // When we build the fallback list with a `None` value.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({ data: { args: { __option: 'None' } }, instruction }),
+            }),
+        );
+
+        // Then we expect a single field marking the absence, not a flattened struct.
+        expect(result).toEqual([{ label: 'Args', value: 'none' }]);
     });
 });

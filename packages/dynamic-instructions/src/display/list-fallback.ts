@@ -10,6 +10,7 @@ import {
 
 import { isObjectRecord } from '../shared/util';
 import { formatArgumentValue } from './format-argument-value';
+import { unwrapOptionValue } from './option-value';
 import { resolveDisplayType } from './resolve-display-type';
 import type { DisplayContext, DisplayField } from './types';
 
@@ -41,11 +42,19 @@ async function argumentFields(
     const ownerPath: NodePath = [...displayContext.parsedInstruction.path, argument];
     const resolved = resolveDisplayType(argument.type, ownerPath, displayContext);
 
-    if (argument.display?.flatten && isNode(resolved.type, 'structTypeNode') && isObjectRecord(value)) {
+    // Flattening reads the struct's fields, so option wrappers are unwrapped first; an absent
+    // (`None`) struct cannot be flattened and renders as a single `none` field instead.
+    const unwrapped = unwrapOptionValue(value);
+    if (
+        argument.display?.flatten &&
+        !unwrapped.none &&
+        isNode(resolved.type, 'structTypeNode') &&
+        isObjectRecord(unwrapped.value)
+    ) {
         return await flattenedFields(
             resolved.type,
             resolved.ownerPath,
-            value,
+            unwrapped.value,
             argument.display.flattenPrefix,
             displayContext,
         );

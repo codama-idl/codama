@@ -11,9 +11,12 @@ import {
     injectedValueNode,
     numberTypeNode,
     numberValueNode,
+    optionTypeNode,
     stringDisplayNode,
     stringTypeNode,
+    stringValueNode,
     type TypeNode,
+    zeroableOptionTypeNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
@@ -148,5 +151,90 @@ describe('formatArgumentValue', () => {
 
         // Then we expect the linked variant label.
         expect(result).toBe('Sell');
+    });
+
+    test('it unwraps a present option value through the item display', async () => {
+        // Given an option of a u64 typed with an amount display.
+        const type = optionTypeNode(
+            numberTypeNode('u64', 'le', {
+                display: amountNumberDisplayNode({ decimals: numberValueNode(9), unit: stringValueNode('SOL') }),
+            }),
+        );
+
+        // When we format a `Some` value.
+        const result = await formatArgumentValue(
+            type,
+            [],
+            { __option: 'Some', value: 1_500_000_000n },
+            displayContext(),
+        );
+
+        // Then we expect the inner value rendered through the item's display.
+        expect(result).toBe('1.5 SOL');
+    });
+
+    test('it renders an absent option value as none', async () => {
+        // Given an option of a displayed number type.
+        const type = optionTypeNode(
+            numberTypeNode('u64', 'le', { display: amountNumberDisplayNode({ decimals: numberValueNode(9) }) }),
+        );
+
+        // When we format a `None` value.
+        const result = await formatArgumentValue(type, [], { __option: 'None' }, displayContext());
+
+        // Then we expect the human-readable absence marker.
+        expect(result).toBe('none');
+    });
+
+    test('it unwraps a zeroable option value through the item display', async () => {
+        // Given a zeroable option of a displayed number type.
+        const type = zeroableOptionTypeNode(
+            numberTypeNode('u64', 'le', { display: amountNumberDisplayNode({ decimals: numberValueNode(6) }) }),
+        );
+
+        // When we format a `Some` value.
+        const result = await formatArgumentValue(type, [], { __option: 'Some', value: 1_500_000n }, displayContext());
+
+        // Then we expect the inner value rendered through the item's display.
+        expect(result).toBe('1.5');
+    });
+
+    test('it unwraps an option of a linked enum to the variant label', async () => {
+        // Given an option of a link to a defined enum.
+        const orderType: DefinedTypeNode = definedTypeNode({
+            name: 'orderType',
+            type: enumTypeNode([
+                enumEmptyVariantTypeNode('buy', undefined, { display: enumVariantDisplayNode({ label: 'Buy' }) }),
+                enumEmptyVariantTypeNode('sell'),
+            ]),
+        });
+        const type = optionTypeNode(definedTypeLinkNode('orderType'));
+
+        // When we format a `Some` variant name.
+        const result = await formatArgumentValue(
+            type,
+            [],
+            { __option: 'Some', value: 'buy' },
+            displayContext({ resolveDefinedType: mockResolveDefinedType(orderType) }),
+        );
+
+        // Then we expect the linked variant label.
+        expect(result).toBe('Buy');
+    });
+
+    test('it unwraps nested option values', async () => {
+        // Given an option of an option of a plain number.
+        const type = optionTypeNode(optionTypeNode(numberTypeNode('u64')));
+
+        // When we format a doubly-wrapped value.
+        const result = await formatArgumentValue(
+            type,
+            [],
+            { __option: 'Some', value: { __option: 'Some', value: 42n } },
+            displayContext(),
+        );
+
+        // Then we expect the innermost value.
+        expect(result).toBe('42');
     });
 });
