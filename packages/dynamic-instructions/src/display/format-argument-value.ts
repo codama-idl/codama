@@ -7,6 +7,20 @@ import { resolveDisplayType } from './resolve-display-type';
 import type { DisplayContext } from './types';
 
 /**
+ * A formatted value paired with whether its presentation degraded.
+ *
+ * `degraded` is `true` only when an `amountNumberDisplayNode` was present but its scale could
+ * not be resolved: the raw integer then reads exactly like a scaled amount, so callers must
+ * either mark it (fallback list) or refuse to present it as prose (interpolated intents).
+ * Other unpresented values — missing display metadata, invalid date-times — are not degraded:
+ * their raw forms carry no false confidence.
+ */
+export type FormattedArgumentValue = {
+    degraded: boolean;
+    text: string;
+};
+
+/**
  * Formats a single decoded value according to the presentation metadata on its type.
  *
  * Numbers, strings, and enum variants are rendered through their value-display nodes when
@@ -14,7 +28,8 @@ import type { DisplayContext } from './types';
  * enums resolve to their variants; `Option` values are unwrapped so presentation applies to
  * the inner value (`None` renders as `"none"`). Any value without applicable display
  * metadata — and any value whose formatter cannot resolve its inputs — falls back to a raw
- * string form.
+ * string form, flagged as `degraded` when the failed presentation was an amount scale (see
+ * {@link FormattedArgumentValue}).
  *
  * `ownerPath` is the path to the node owning `type` (e.g. an instruction argument), used to
  * resolve any link the type follows against the correct program.
@@ -24,27 +39,30 @@ export async function formatArgumentValue(
     ownerPath: NodePath,
     value: unknown,
     displayContext: Omit<DisplayContext, 'consumedMemberNames'>,
-): Promise<string> {
+): Promise<FormattedArgumentValue> {
     const unwrapped = unwrapOptionValue(value);
-    if (unwrapped.none) return 'none';
+    if (unwrapped.none) return { degraded: false, text: 'none' };
     const innerValue = unwrapped.value;
 
     const resolved = resolveDisplayType(type, ownerPath, displayContext);
 
     if (isNode(resolved.type, 'numberTypeNode') && resolved.type.display && isNumeric(innerValue)) {
         const formatted = await formatNumber(resolved.type.display, innerValue, displayContext);
-        if (formatted !== null) return formatted;
+        if (formatted !== null) return { degraded: false, text: formatted };
+        if (resolved.type.display.kind === 'amountNumberDisplayNode') {
+            return { degraded: true, text: rawValue(innerValue) };
+        }
     }
 
     if (isNode(resolved.type, 'stringTypeNode') && resolved.type.display && typeof innerValue === 'string') {
-        return formatStringValue(innerValue, resolved.type.display);
+        return { degraded: false, text: formatStringValue(innerValue, resolved.type.display) };
     }
 
     if (isNode(resolved.type, 'enumTypeNode')) {
-        return formatEnumValue(resolved.type, innerValue);
+        return { degraded: false, text: formatEnumValue(resolved.type, innerValue) };
     }
 
-    return rawValue(innerValue);
+    return { degraded: false, text: rawValue(innerValue) };
 }
 
 /** Dispatches a number to the matching number-display formatter. */

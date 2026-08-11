@@ -1,7 +1,9 @@
 import type { Address } from '@solana/addresses';
 import {
+    amountNumberDisplayNode,
     definedTypeLinkNode,
     definedTypeNode,
+    injectedValueNode,
     instructionAccountDisplayNode,
     instructionAccountNode,
     instructionArgumentNode,
@@ -193,6 +195,30 @@ describe('listFallback', () => {
             { label: 'args.Price', value: '100' },
             { label: 'args.Size', value: '5' },
         ]);
+    });
+
+    test('it marks an amount whose scale cannot be resolved as raw', async () => {
+        // Given an amount whose injected decimals have no provider.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [
+                instructionArgumentNode({
+                    name: 'amount',
+                    type: numberTypeNode('u64', 'le', {
+                        display: amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) }),
+                    }),
+                }),
+            ],
+            name: 'transfer',
+        });
+
+        // When we build the fallback list.
+        const result = await listFallback(
+            displayContext({ parsedInstruction: parsedInstruction({ data: { amount: 1_000_000n }, instruction }) }),
+        );
+
+        // Then we expect the raw value explicitly marked, so it cannot read as a scaled amount.
+        expect(result).toEqual([{ label: 'Amount', value: '1000000 (raw)' }]);
     });
 
     test('it flattens a present option-wrapped struct argument', async () => {

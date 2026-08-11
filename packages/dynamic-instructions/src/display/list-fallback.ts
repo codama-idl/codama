@@ -9,7 +9,7 @@ import {
 } from 'codama';
 
 import { isObjectRecord } from '../shared/util';
-import { formatArgumentValue } from './format-argument-value';
+import { formatArgumentValue, type FormattedArgumentValue } from './format-argument-value';
 import { unwrapOptionValue } from './option-value';
 import { resolveDisplayType } from './resolve-display-type';
 import type { DisplayContext, DisplayField } from './types';
@@ -61,7 +61,8 @@ async function argumentFields(
     }
 
     const label = argument.display?.label ?? titleCase(argument.name);
-    return [{ label, value: await formatArgumentValue(argument.type, ownerPath, value, displayContext) }];
+    const formatted = await formatArgumentValue(argument.type, ownerPath, value, displayContext);
+    return [{ label, value: markIfDegraded(formatted) }];
 }
 
 /** Lifts a struct's fields into the parent list, prefixing each label and reading nested values. */
@@ -84,9 +85,17 @@ async function flattenedFields(
                 value[field.name],
                 displayContext,
             );
-            return { label, value: formatted };
+            return { label, value: markIfDegraded(formatted) };
         }),
     );
+}
+
+/**
+ * Renders a formatted value, marking amounts whose scale failed to resolve so a raw integer
+ * cannot be mistaken for a scaled amount (see `FormattedArgumentValue`).
+ */
+function markIfDegraded(formatted: FormattedArgumentValue): string {
+    return formatted.degraded ? `${formatted.text} (raw)` : formatted.text;
 }
 
 /** Produces the display fields for the instruction's accounts. */
