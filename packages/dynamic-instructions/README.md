@@ -158,7 +158,7 @@ if (parsed) {
 
 ### Options
 
-Some display values live in on-chain account state (e.g. a token's `decimals`/`symbol` injected into an amount, or interpolation paths that read an account field). Supply `fetchAccount` to resolve them; without it, such values degrade gracefully (amounts stay raw, `whenInjected` fields remain visible).
+Some display values live in on-chain account state (e.g. a token's `decimals`/`symbol` injected into an amount, or interpolation paths that read an account field). Supply `fetchAccount` to resolve them; without it, such values degrade gracefully and visibly: an amount whose scale cannot be resolved renders marked as raw in the field list (e.g. `1500000 (raw)`) so it cannot be mistaken for a scaled amount, any sentence referencing it is suppressed (`interpolatedIntent` becomes `null`, falling back to the fields), and `whenInjected` members remain visible.
 
 `fetchAccount` returns Kit's `MaybeEncodedAccount` — an `exists` flag plus, when the account exists, its raw bytes. No decoding is required on your side: the display layer decodes the bytes itself using the referenced account's `accountLink` from the IDL, which already describes the layout. This makes `fetchEncodedAccount` a drop-in.
 

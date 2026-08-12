@@ -129,11 +129,13 @@ describe('getInstructionDisplayFromParsedInstruction', () => {
             { label: 'To', value: DESTINATION },
         ]);
 
-        // When offline, the amount stays raw and the mint reappears as a backup (arguments first).
+        // When offline, the unresolvable amount suppresses the sentence — an unscaled integer in
+        // prose would read as a scaled amount — and the field list carries it marked as raw, with
+        // the mint reappearing as a backup (arguments first).
         const offline = await getInstructionDisplayFromParsedInstruction(root, parsed);
-        expect(offline.interpolatedIntent).toBe(`Transfer 1500000 to ${DESTINATION}`);
+        expect(offline.interpolatedIntent).toBeNull();
         expect(offline.fields).toEqual([
-            { label: 'Amount', value: '1500000' },
+            { label: 'Amount', value: '1500000 (raw)' },
             { label: 'Token Mint', value: MINT },
             { label: 'To', value: DESTINATION },
         ]);

@@ -8,6 +8,7 @@ import {
     instructionNode,
     numberTypeNode,
     numberValueNode,
+    stringValueNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
@@ -105,7 +106,7 @@ describe('interpolateIntent', () => {
         expect(result).toBeNull();
     });
 
-    test('it returns null when a value formatter cannot resolve its inputs', async () => {
+    test('it returns null when a referenced amount scale cannot be resolved', async () => {
         // Given an amount whose injected decimals cannot be resolved.
         const instruction = instructionNode({
             accounts: [],
@@ -122,10 +123,36 @@ describe('interpolateIntent', () => {
         });
 
         // When we interpolate the intent.
-        // Then it still resolves: an unresolved amount falls back to its raw value rather than failing.
+        // Then we expect null: an unscaled integer in prose reads exactly like a scaled amount, so
+        // the sentence is suppressed in favour of the field list, which marks the value as raw.
         const result = await interpolateIntent(
             displayContext({ parsedInstruction: parsedInstruction({ data: { amount: 1_000_000n }, instruction }) }),
         );
-        expect(result).toBe('Transfer 1000000');
+        expect(result).toBeNull();
+    });
+
+    test('it keeps the sentence when a referenced amount has no decimals attribute', async () => {
+        // Given an amount display authored with a unit and no decimals (a valid unscaled amount).
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [
+                instructionArgumentNode({
+                    name: 'amount',
+                    type: numberTypeNode('u64', 'le', {
+                        display: amountNumberDisplayNode({ unit: stringValueNode('base units') }),
+                    }),
+                }),
+            ],
+            display: instructionDisplayNode({ interpolatedIntent: 'Transfer ${data.amount}' }),
+            name: 'transfer',
+        });
+
+        // When we interpolate the intent.
+        const result = await interpolateIntent(
+            displayContext({ parsedInstruction: parsedInstruction({ data: { amount: 1_500_000n }, instruction }) }),
+        );
+
+        // Then we expect the sentence with the authored unscaled rendering.
+        expect(result).toBe('Transfer 1500000 base units');
     });
 });
