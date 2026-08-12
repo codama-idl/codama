@@ -1,3 +1,4 @@
+import { AccountRole } from '@solana/instructions';
 import {
     type DisplaySkip,
     getLastNodeFromPath,
@@ -16,7 +17,7 @@ import type { DisplayContext, DisplayField } from './types';
 
 /**
  * Builds the fallback display: a flat, ordered list of labelled fields for an instruction's
- * arguments and accounts.
+ * arguments, accounts, and remaining accounts.
  *
  * Honours each member's display metadata — `skip` (hidden when `'always'`, or when
  * `'whenInjected'` and the value was surfaced through the provide/inject graph), `label`
@@ -28,7 +29,7 @@ export async function listFallback(displayContext: DisplayContext): Promise<Disp
     const argumentFieldGroups = await Promise.all(
         (instruction.arguments ?? []).map(argument => argumentFields(argument, displayContext)),
     );
-    return [...argumentFieldGroups.flat(), ...accountFields(displayContext)];
+    return [...argumentFieldGroups.flat(), ...accountFields(displayContext), ...remainingAccountFields(displayContext)];
 }
 
 /** Produces the display fields for a single instruction argument (one field, or many when flattened). */
@@ -108,6 +109,47 @@ function accountFields(displayContext: DisplayContext): DisplayField[] {
         const label = account.display?.label ?? titleCase(account.name);
         return [{ label, value: address }];
     });
+}
+
+/**
+ * Produces the display fields for the instruction's remaining accounts.
+ *
+ * The instruction node describes remaining accounts as ordered groups
+ * (`instructionRemainingAccountsNode`); the parsed instruction carries the concrete trailing
+ * metas unsplit. Each non-final group consumes the run of metas whose signer role matches its
+ * `isSigner` flag; the final group takes everything left. Each group honours its display
+ * metadata (`label` override, `skip`) and numbers its entries when it holds more than one.
+ */
+function remainingAccountFields(displayContext: DisplayContext): DisplayField[] {
+    const instruction = getLastNodeFromPath(displayContext.parsedInstruction.path);
+    const groups = instruction.remainingAccounts ?? [];
+    const metas = displayContext.parsedInstruction.remainingAccounts ?? [];
+    if (groups.length === 0 || metas.length === 0) return [];
+
+    let cursor = 0;
+    return groups.flatMap((group, groupIndex) => {
+        const taken: string[] = [];
+        const isLastGroup = groupIndex === groups.length - 1;
+        while (cursor < metas.length && (isLastGroup || signerMatches(group.isSigner, metas[cursor].role))) {
+            taken.push(metas[cursor].address);
+            cursor += 1;
+        }
+
+        const name = isNode(group.value, 'argumentValueNode') ? group.value.name : undefined;
+        if (isSkipped(group.display?.skip, name ?? '', displayContext)) return [];
+        const label = group.display?.label ?? (name ? titleCase(name) : 'Remaining Accounts');
+        return taken.map((address, index) => ({
+            label: taken.length > 1 ? `${label} #${index + 1}` : label,
+            value: address,
+        }));
+    });
+}
+
+/** Whether an account meta's role satisfies a remaining-accounts group's `isSigner` flag. */
+function signerMatches(isSigner: boolean | 'either' | undefined, role: AccountRole): boolean {
+    if (isSigner === 'either') return true;
+    const signs = role === AccountRole.READONLY_SIGNER || role === AccountRole.WRITABLE_SIGNER;
+    return (isSigner ?? false) === signs;
 }
 
 /**

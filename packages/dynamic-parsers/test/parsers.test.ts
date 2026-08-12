@@ -1,5 +1,6 @@
 import {
     accountNode,
+    argumentValueNode,
     bytesTypeNode,
     constantDiscriminatorNode,
     constantValueNode,
@@ -11,6 +12,7 @@ import {
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
+    instructionRemainingAccountsNode,
     numberTypeNode,
     numberValueNode,
     programNode,
@@ -348,7 +350,38 @@ describe('parseInstruction', () => {
             accounts: [{ address: '1111', name: 'signer', role: AccountRole.READONLY_SIGNER }],
             data: { message: 'Hello' },
             path: [root, root.program, memoInstruction],
+            remainingAccounts: [],
         });
+    });
+
+    test('it captures account metas beyond the named accounts as remaining accounts', () => {
+        // Given an instruction with one named account and a remaining-accounts group.
+        const instruction = instructionNode({
+            accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'source' })],
+            arguments: [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
+            name: 'transfer',
+            remainingAccounts: [
+                instructionRemainingAccountsNode(argumentValueNode('multiSigners'), { isSigner: true }),
+            ],
+        });
+        const root = rootNode(programNode({ instructions: [instruction], name: 'myProgram', publicKey: '1111' }));
+
+        // When we parse a concrete instruction carrying two metas beyond the named account.
+        const result = parseInstruction(root, {
+            accounts: [
+                { address: 'source11', role: AccountRole.WRITABLE },
+                { address: 'signerA1', role: AccountRole.READONLY_SIGNER },
+                { address: 'signerB1', role: AccountRole.READONLY_SIGNER },
+            ],
+            data: hex('2a'),
+            programAddress: '1111',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+
+        // Then we expect the trailing metas captured as remaining accounts.
+        expect(result?.remainingAccounts).toStrictEqual([
+            { address: 'signerA1', role: AccountRole.READONLY_SIGNER },
+            { address: 'signerB1', role: AccountRole.READONLY_SIGNER },
+        ]);
     });
 
     test('it parses an instruction from an additional program using the program address', () => {
@@ -411,6 +444,7 @@ describe('parseInstruction', () => {
             ],
             data: { discriminator: 1 },
             path: [root, additionalProgram, additionalInstruction],
+            remainingAccounts: [],
         });
     });
     test('it does not parse an instruction whose program is not part of the root', () => {

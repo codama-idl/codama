@@ -1,6 +1,8 @@
 import type { Address } from '@solana/addresses';
+import { AccountRole } from '@solana/instructions';
 import {
     amountNumberDisplayNode,
+    argumentValueNode,
     definedTypeLinkNode,
     definedTypeNode,
     injectedValueNode,
@@ -8,6 +10,7 @@ import {
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
+    instructionRemainingAccountsNode,
     numberTypeNode,
     optionTypeNode,
     structFieldDisplayNode,
@@ -20,6 +23,10 @@ import { listFallback } from '../../src/display/list-fallback';
 import { displayContext, mockResolveDefinedType, parsedInstruction } from '../test-utils';
 
 const AUTHORITY = '86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY' as Address;
+const SIGNER_A = '3Wnd5Df69KitZfUoPYZU438eFRNwGHkhLnSAWL65PxJX' as Address;
+const SIGNER_B = '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM' as Address;
+const SOURCE_A = 'Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS' as Address;
+const SOURCE_B = 'DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21hy' as Address;
 
 describe('listFallback', () => {
     test('it lists arguments and accounts with derived labels', async () => {
@@ -194,6 +201,135 @@ describe('listFallback', () => {
         expect(result).toEqual([
             { label: 'args.Price', value: '100' },
             { label: 'args.Size', value: '5' },
+        ]);
+    });
+
+    test('it renders remaining accounts under their group label', async () => {
+        // Given a memo-shaped instruction with a labelled signers group. The label is distinct
+        // from the derived `titleCase('signers')` form so this test cannot pass via derivation.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [],
+            name: 'addMemo',
+            remainingAccounts: [
+                instructionRemainingAccountsNode(argumentValueNode('signers'), {
+                    display: instructionAccountDisplayNode({ label: 'Memo Signers' }),
+                    isOptional: true,
+                    isSigner: true,
+                }),
+            ],
+        });
+
+        // When we build the fallback list with two trailing signer metas.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({
+                    instruction,
+                    remainingAccounts: [
+                        [SIGNER_A, AccountRole.READONLY_SIGNER],
+                        [SIGNER_B, AccountRole.READONLY_SIGNER],
+                    ],
+                }),
+            }),
+        );
+
+        // Then we expect one numbered field per trailing account.
+        expect(result).toEqual([
+            { label: 'Memo Signers #1', value: SIGNER_A },
+            { label: 'Memo Signers #2', value: SIGNER_B },
+        ]);
+    });
+
+    test('it derives the remaining accounts label from the group value name', async () => {
+        // Given a remaining-accounts group with no display label.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [],
+            name: 'transfer',
+            remainingAccounts: [
+                instructionRemainingAccountsNode(argumentValueNode('multiSigners'), { isSigner: true }),
+            ],
+        });
+
+        // When we build the fallback list with one trailing meta.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({
+                    instruction,
+                    remainingAccounts: [[SIGNER_A, AccountRole.READONLY_SIGNER]],
+                }),
+            }),
+        );
+
+        // Then we expect the title-cased value name as label, unnumbered for a single account.
+        expect(result).toEqual([{ label: 'Multi Signers', value: SIGNER_A }]);
+    });
+
+    test('it hides remaining accounts whose group is skipped', async () => {
+        // Given a remaining-accounts group marked skip always.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [],
+            name: 'transfer',
+            remainingAccounts: [
+                instructionRemainingAccountsNode(argumentValueNode('multiSigners'), {
+                    display: instructionAccountDisplayNode({ skip: 'always' }),
+                    isSigner: true,
+                }),
+            ],
+        });
+
+        // When we build the fallback list with a trailing meta.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({
+                    instruction,
+                    remainingAccounts: [[SIGNER_A, AccountRole.READONLY_SIGNER]],
+                }),
+            }),
+        );
+
+        // Then we expect no fields.
+        expect(result).toEqual([]);
+    });
+
+    test('it partitions trailing metas between groups by signer role', async () => {
+        // Given two remaining-accounts groups: signers first, then non-signing sources.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [],
+            name: 'withdrawWithheldTokensFromAccounts',
+            remainingAccounts: [
+                instructionRemainingAccountsNode(argumentValueNode('multiSigners'), {
+                    display: instructionAccountDisplayNode({ label: 'Multisig Signers' }),
+                    isSigner: true,
+                }),
+                instructionRemainingAccountsNode(argumentValueNode('sources'), {
+                    display: instructionAccountDisplayNode({ label: 'Source Accounts' }),
+                    isSigner: false,
+                }),
+            ],
+        });
+
+        // When we build the fallback list with one signer then two non-signer metas.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({
+                    instruction,
+                    remainingAccounts: [
+                        [SIGNER_A, AccountRole.READONLY_SIGNER],
+                        [SOURCE_A, AccountRole.WRITABLE],
+                        [SOURCE_B, AccountRole.WRITABLE],
+                    ],
+                }),
+            }),
+        );
+
+        // Then we expect the signer run under the first group and the rest under the final group.
+        expect(result).toEqual([
+            { label: 'Multisig Signers', value: SIGNER_A },
+            { label: 'Source Accounts #1', value: SOURCE_A },
+            { label: 'Source Accounts #2', value: SOURCE_B },
         ]);
     });
 
