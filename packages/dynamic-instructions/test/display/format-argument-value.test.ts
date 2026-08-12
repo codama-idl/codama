@@ -1,5 +1,6 @@
 import {
     amountNumberDisplayNode,
+    arrayTypeNode,
     dateTimeNumberDisplayNode,
     definedTypeLinkNode,
     type DefinedTypeNode,
@@ -13,6 +14,7 @@ import {
     numberTypeNode,
     numberValueNode,
     optionTypeNode,
+    remainderCountNode,
     stringDisplayNode,
     stringTypeNode,
     stringValueNode,
@@ -81,8 +83,9 @@ describe('formatArgumentValue', () => {
         // When we format the amount.
         const result = await formatArgumentValue(type, [], 1_000_000n, displayContext());
 
-        // Then we expect the raw value, flagged as degraded: it reads exactly like a scaled amount.
-        expect(result).toEqual({ degraded: true, text: '1000000' });
+        // Then we expect the raw value explicitly marked and flagged as degraded: unmarked, it
+        // would read exactly like a scaled amount.
+        expect(result).toEqual({ degraded: true, text: '1000000 (raw)' });
     });
 
     test('it does not flag an amount with absent decimals as degraded', async () => {
@@ -299,6 +302,38 @@ describe('formatArgumentValue', () => {
         // Then we expect both to match the variant.
         expect(rawCased.text).toBe('Symbol');
         expect(pascalCased.text).toBe('Symbol');
+    });
+
+    test('it renders arrays compactly through their item display', async () => {
+        // Given an array of amounts scaled to 9 decimals.
+        const type = arrayTypeNode(
+            numberTypeNode('u64', 'le', {
+                display: amountNumberDisplayNode({ decimals: numberValueNode(9), unit: stringValueNode('SOL') }),
+            }),
+            remainderCountNode(),
+        );
+
+        // When we format an array value.
+        const result = await formatArgumentValue(type, [], [1_500_000_000n, 500_000_000n], displayContext());
+
+        // Then we expect a comma-joined line with each element presented.
+        expect(result).toEqual({ degraded: false, text: '1.5 SOL, 0.5 SOL' });
+    });
+
+    test('it marks degraded array elements inline and flags the array', async () => {
+        // Given an array of amounts whose injected decimals have no provider.
+        const type = arrayTypeNode(
+            numberTypeNode('u64', 'le', {
+                display: amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) }),
+            }),
+            remainderCountNode(),
+        );
+
+        // When we format an array value.
+        const result = await formatArgumentValue(type, [], [1_000_000n, 500_000n], displayContext());
+
+        // Then we expect each element marked raw and the whole array flagged as degraded.
+        expect(result).toEqual({ degraded: true, text: '1000000 (raw), 500000 (raw)' });
     });
 
     test('it unwraps nested option values', async () => {

@@ -3,6 +3,7 @@ import { AccountRole } from '@solana/instructions';
 import {
     amountNumberDisplayNode,
     argumentValueNode,
+    arrayTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
     injectedValueNode,
@@ -13,6 +14,8 @@ import {
     instructionRemainingAccountsNode,
     numberTypeNode,
     optionTypeNode,
+    publicKeyTypeNode,
+    remainderCountNode,
     structFieldDisplayNode,
     structFieldTypeNode,
     structTypeNode,
@@ -331,6 +334,82 @@ describe('listFallback', () => {
             { label: 'Source Accounts #1', value: SOURCE_A },
             { label: 'Source Accounts #2', value: SOURCE_B },
         ]);
+    });
+
+    test('it expands an address array into one field per element', async () => {
+        // Given a lookup-table-shaped instruction with an address-array argument.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [
+                instructionArgumentNode({
+                    display: structFieldDisplayNode({ label: 'New Addresses' }),
+                    name: 'addresses',
+                    type: arrayTypeNode(publicKeyTypeNode(), remainderCountNode()),
+                }),
+            ],
+            name: 'extendLookupTable',
+        });
+
+        // When we build the fallback list with two addresses.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({ data: { addresses: [SIGNER_A, SIGNER_B] }, instruction }),
+            }),
+        );
+
+        // Then we expect one numbered field per address, matching how accounts are rendered.
+        expect(result).toEqual([
+            { label: 'New Addresses #1', value: SIGNER_A },
+            { label: 'New Addresses #2', value: SIGNER_B },
+        ]);
+    });
+
+    test('it keeps a single-element address array unnumbered', async () => {
+        // Given an address-array argument holding one address.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [
+                instructionArgumentNode({
+                    name: 'addresses',
+                    type: arrayTypeNode(publicKeyTypeNode(), remainderCountNode()),
+                }),
+            ],
+            name: 'extendLookupTable',
+        });
+
+        // When we build the fallback list.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({ data: { addresses: [SIGNER_A] }, instruction }),
+            }),
+        );
+
+        // Then we expect a single unnumbered field.
+        expect(result).toEqual([{ label: 'Addresses', value: SIGNER_A }]);
+    });
+
+    test('it renders non-address arrays as one compact field', async () => {
+        // Given a numeric array argument.
+        const instruction = instructionNode({
+            accounts: [],
+            arguments: [
+                instructionArgumentNode({
+                    name: 'values',
+                    type: arrayTypeNode(numberTypeNode('u8'), remainderCountNode()),
+                }),
+            ],
+            name: 'setValues',
+        });
+
+        // When we build the fallback list.
+        const result = await listFallback(
+            displayContext({
+                parsedInstruction: parsedInstruction({ data: { values: [1, 2, 3] }, instruction }),
+            }),
+        );
+
+        // Then we expect a single comma-joined field, not one line per number.
+        expect(result).toEqual([{ label: 'Values', value: '1, 2, 3' }]);
     });
 
     test('it marks an amount whose scale cannot be resolved as raw', async () => {

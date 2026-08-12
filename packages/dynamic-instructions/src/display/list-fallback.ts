@@ -7,10 +7,11 @@ import {
     type NodePath,
     type StructTypeNode,
     titleCase,
+    type TypeNode,
 } from 'codama';
 
 import { isObjectRecord } from '../shared/util';
-import { formatArgumentValue, type FormattedArgumentValue } from './format-argument-value';
+import { formatArgumentValue } from './format-argument-value';
 import { unwrapOptionValue } from './option-value';
 import { resolveDisplayType } from './resolve-display-type';
 import type { DisplayContext, DisplayField } from './types';
@@ -62,8 +63,7 @@ async function argumentFields(
     }
 
     const label = argument.display?.label ?? titleCase(argument.name);
-    const formatted = await formatArgumentValue(argument.type, ownerPath, value, displayContext);
-    return [{ label, value: markIfDegraded(formatted) }];
+    return await memberFields(label, argument.type, ownerPath, value, displayContext);
 }
 
 /** Lifts a struct's fields into the parent list, prefixing each label and reading nested values. */
@@ -77,26 +77,48 @@ async function flattenedFields(
     const visibleFields = (struct.fields ?? []).filter(
         field => !isSkipped(field.display?.skip, field.name, displayContext),
     );
-    return await Promise.all(
+    const fieldGroups = await Promise.all(
         visibleFields.map(async field => {
             const label = `${prefix ?? ''}${field.display?.label ?? titleCase(field.name)}`;
-            const formatted = await formatArgumentValue(
-                field.type,
-                [...structPath, field],
-                value[field.name],
-                displayContext,
-            );
-            return { label, value: markIfDegraded(formatted) };
+            return await memberFields(label, field.type, [...structPath, field], value[field.name], displayContext);
         }),
     );
+    return fieldGroups.flat();
 }
 
 /**
- * Renders a formatted value, marking amounts whose scale failed to resolve so a raw integer
- * cannot be mistaken for a scaled amount (see `FormattedArgumentValue`).
+ * Produces the display fields for one labelled member.
+ *
+ * Address arrays expand into one field per element — addresses are individually verified on
+ * signing screens, matching how named and remaining accounts each get their own field — with
+ * `#n`-numbered labels when there are several. Everything else renders as a single field
+ * through {@link formatArgumentValue} (which renders non-address arrays compactly and marks
+ * degraded amounts).
  */
-function markIfDegraded(formatted: FormattedArgumentValue): string {
-    return formatted.degraded ? `${formatted.text} (raw)` : formatted.text;
+async function memberFields(
+    label: string,
+    type: TypeNode,
+    ownerPath: NodePath,
+    value: unknown,
+    displayContext: DisplayContext,
+): Promise<DisplayField[]> {
+    const resolved = resolveDisplayType(type, ownerPath, displayContext);
+    const unwrapped = unwrapOptionValue(value);
+    if (!unwrapped.none && isNode(resolved.type, 'arrayTypeNode') && Array.isArray(unwrapped.value)) {
+        const itemType = resolved.type.item;
+        const item = resolveDisplayType(itemType, resolved.ownerPath, displayContext);
+        if (isNode(item.type, 'publicKeyTypeNode')) {
+            const elements = unwrapped.value;
+            return await Promise.all(
+                elements.map(async (element, index) => ({
+                    label: elements.length > 1 ? `${label} #${index + 1}` : label,
+                    value: (await formatArgumentValue(itemType, resolved.ownerPath, element, displayContext)).text,
+                })),
+            );
+        }
+    }
+    const formatted = await formatArgumentValue(type, ownerPath, value, displayContext);
+    return [{ label, value: formatted.text }];
 }
 
 /** Produces the display fields for the instruction's accounts. */

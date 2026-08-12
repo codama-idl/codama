@@ -10,10 +10,11 @@ import type { DisplayContext } from './types';
  * A formatted value paired with whether its presentation degraded.
  *
  * `degraded` is `true` only when an `amountNumberDisplayNode` was present but its scale could
- * not be resolved: the raw integer then reads exactly like a scaled amount, so callers must
- * either mark it (fallback list) or refuse to present it as prose (interpolated intents).
- * Other unpresented values — missing display metadata, invalid date-times — are not degraded:
- * their raw forms carry no false confidence.
+ * not be resolved: the raw integer then reads exactly like a scaled amount. Degraded values
+ * carry an explicit ` (raw)` marker in their `text` (applied per element inside arrays), and
+ * interpolated intents refuse to present them as prose. Other unpresented values — missing
+ * display metadata, invalid date-times — are not degraded: their raw forms carry no false
+ * confidence.
  */
 export type FormattedArgumentValue = {
     degraded: boolean;
@@ -46,11 +47,25 @@ export async function formatArgumentValue(
 
     const resolved = resolveDisplayType(type, ownerPath, displayContext);
 
+    // Arrays render compactly through their item type — one comma-joined line whose elements
+    // each carry their own presentation (and their own ` (raw)` marker when degraded). The
+    // fallback list expands address arrays into per-element fields before reaching here.
+    if (isNode(resolved.type, 'arrayTypeNode') && Array.isArray(innerValue)) {
+        const itemType = resolved.type.item;
+        const elements = await Promise.all(
+            innerValue.map(element => formatArgumentValue(itemType, resolved.ownerPath, element, displayContext)),
+        );
+        return {
+            degraded: elements.some(element => element.degraded),
+            text: elements.map(element => element.text).join(', '),
+        };
+    }
+
     if (isNode(resolved.type, 'numberTypeNode') && resolved.type.display && isNumeric(innerValue)) {
         const formatted = await formatNumber(resolved.type.display, innerValue, displayContext);
         if (formatted !== null) return { degraded: false, text: formatted };
         if (resolved.type.display.kind === 'amountNumberDisplayNode') {
-            return { degraded: true, text: rawValue(innerValue) };
+            return { degraded: true, text: `${rawValue(innerValue)} (raw)` };
         }
     }
 
