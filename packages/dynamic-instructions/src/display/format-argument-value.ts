@@ -2,6 +2,7 @@ import { type EnumTypeNode, isNode, isScalarEnum, type NodePath, pascalCase, tit
 
 import { isObjectRecord } from '../shared/util';
 import { formatAmountValue, formatDateTimeValue, formatDurationValue, formatStringValue } from './format-value';
+import { unwrapOptionValue } from './option-value';
 import { resolveDisplayType } from './resolve-display-type';
 import type { DisplayContext } from './types';
 
@@ -10,8 +11,10 @@ import type { DisplayContext } from './types';
  *
  * Numbers, strings, and enum variants are rendered through their value-display nodes when
  * present; `definedTypeLinkNode`s are followed via the context's link resolver so linked
- * enums resolve to their variants. Any value without applicable display metadata — and any
- * value whose formatter cannot resolve its inputs — falls back to a raw string form.
+ * enums resolve to their variants; `Option` values are unwrapped so presentation applies to
+ * the inner value (`None` renders as `"none"`). Any value without applicable display
+ * metadata — and any value whose formatter cannot resolve its inputs — falls back to a raw
+ * string form.
  *
  * `ownerPath` is the path to the node owning `type` (e.g. an instruction argument), used to
  * resolve any link the type follows against the correct program.
@@ -22,22 +25,26 @@ export async function formatArgumentValue(
     value: unknown,
     displayContext: Omit<DisplayContext, 'consumedMemberNames'>,
 ): Promise<string> {
+    const unwrapped = unwrapOptionValue(value);
+    if (unwrapped.none) return 'none';
+    const innerValue = unwrapped.value;
+
     const resolved = resolveDisplayType(type, ownerPath, displayContext);
 
-    if (isNode(resolved.type, 'numberTypeNode') && resolved.type.display && isNumeric(value)) {
-        const formatted = await formatNumber(resolved.type.display, value, displayContext);
+    if (isNode(resolved.type, 'numberTypeNode') && resolved.type.display && isNumeric(innerValue)) {
+        const formatted = await formatNumber(resolved.type.display, innerValue, displayContext);
         if (formatted !== null) return formatted;
     }
 
-    if (isNode(resolved.type, 'stringTypeNode') && resolved.type.display && typeof value === 'string') {
-        return formatStringValue(value, resolved.type.display);
+    if (isNode(resolved.type, 'stringTypeNode') && resolved.type.display && typeof innerValue === 'string') {
+        return formatStringValue(innerValue, resolved.type.display);
     }
 
     if (isNode(resolved.type, 'enumTypeNode')) {
-        return formatEnumValue(resolved.type, value);
+        return formatEnumValue(resolved.type, innerValue);
     }
 
-    return rawValue(value);
+    return rawValue(innerValue);
 }
 
 /** Dispatches a number to the matching number-display formatter. */
