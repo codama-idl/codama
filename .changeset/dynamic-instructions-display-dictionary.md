@@ -1,7 +1,0 @@
----
-'@codama/dynamic-instructions': minor
----
-
-Add an offline display dictionary so a renderer (e.g. a hardware wallet) can resolve an instruction's clear-signing display with no network access. `DisplayDictionary` bundles a `DisplayAccountMap` (address to `EncodedAccount`, the offline counterpart of the display layer's `fetchAccount`; only existing accounts are stored, so a missing key means "no data") and a generic `DisplayNamedMap` (address to name — a `.sol` domain, token symbol, program label, alias…). `getRequiredAccountsForDisplay` statically computes which accounts a display would read, `getDisplayAccountMap` batch-fetches them via a `FetchAccountsFn`, and `getDisplayDictionaryCodec` (with per-map codecs, each split into `…Encoder`/`…Decoder`) serialises the bundle. A filler for the named map is not provided: its data comes from sources Codama has no opinion on.
-
-The offline planner and the `whenInjected` skip rule now resolve the provide/inject graph through a single shared walk (`resolveInjectionTarget`): both follow an injection's `fallback` when no provider supplies its key, so a display value reachable only through a fallback is fetched (and hides its member) as it would be at runtime. The walk is cycle-safe, so a self-referential provider resolves to "no value" instead of overflowing the stack. `resolveInjectedValue` (the display-rendering path) now performs injection selection through the same shared walk, so it too is cycle-safe rather than overflowing on a cyclic provider graph.
