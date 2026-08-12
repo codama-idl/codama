@@ -1,4 +1,4 @@
-import { type EnumTypeNode, isNode, isScalarEnum, type NodePath, pascalCase, titleCase, type TypeNode } from 'codama';
+import { type EnumTypeNode, isNode, type NodePath, pascalCase, titleCase, type TypeNode } from 'codama';
 
 import { isObjectRecord } from '../shared/util';
 import { formatAmountValue, formatDateTimeValue, formatDurationValue, formatStringValue } from './format-value';
@@ -65,16 +65,13 @@ async function formatNumber(
 
 /**
  * Formats an enum value using the matched variant's display label.
- * Scalar enums decode to the variant name; data enums decode to `{ __kind: 'PascalVariant', ... }`.
+ * Enums decode to `{ __kind: 'PascalVariant', ... }`; bare variant name strings are also accepted.
  */
 function formatEnumValue(enumType: EnumTypeNode, value: unknown): string {
     const decodedName = enumVariantName(value);
     if (decodedName === null) return rawValue(value);
 
-    // Scalar enums decode to the variant name as-is; data enum `__kind` is the PascalCase form.
-    const variant = (enumType.variants ?? []).find(candidate =>
-        isScalarEnum(enumType) ? candidate.name === decodedName : pascalCase(candidate.name) === decodedName,
-    );
+    const variant = (enumType.variants ?? []).find(candidate => pascalCase(candidate.name) === pascalCase(decodedName));
     if (!variant) return rawValue(value);
 
     return variant.display?.label ?? titleCase(variant.name);

@@ -15,12 +15,12 @@ import { expect, test } from 'vitest';
 import { getNodeCodec } from '../../src';
 import { hex } from '../_setup';
 
-test('it encodes scalar enums', () => {
+test('it encodes scalar enums as discriminated unions', () => {
     const codec = getNodeCodec([enumTypeNode([enumEmptyVariantTypeNode('up'), enumEmptyVariantTypeNode('down')])]);
-    expect(codec.encode(0)).toStrictEqual(hex('00'));
-    expect(codec.decode(hex('00'))).toBe(0);
-    expect(codec.encode(1)).toStrictEqual(hex('01'));
-    expect(codec.decode(hex('01'))).toBe(1);
+    expect(codec.encode({ __kind: 'Up' })).toStrictEqual(hex('00'));
+    expect(codec.decode(hex('00'))).toStrictEqual({ __kind: 'Up' });
+    expect(codec.encode({ __kind: 'Down' })).toStrictEqual(hex('01'));
+    expect(codec.decode(hex('01'))).toStrictEqual({ __kind: 'Down' });
 });
 
 test('it encodes scalar enums with custom sizes', () => {
@@ -29,10 +29,25 @@ test('it encodes scalar enums with custom sizes', () => {
             size: numberTypeNode('u16'),
         }),
     ]);
-    expect(codec.encode(0)).toStrictEqual(hex('0000'));
-    expect(codec.decode(hex('0000'))).toBe(0);
-    expect(codec.encode(1)).toStrictEqual(hex('0100'));
-    expect(codec.decode(hex('0100'))).toBe(1);
+    expect(codec.encode({ __kind: 'Up' })).toStrictEqual(hex('0000'));
+    expect(codec.decode(hex('0000'))).toStrictEqual({ __kind: 'Up' });
+    expect(codec.encode({ __kind: 'Down' })).toStrictEqual(hex('0100'));
+    expect(codec.decode(hex('0100'))).toStrictEqual({ __kind: 'Down' });
+});
+
+test('it decodes empty variants the same way in scalar and data enums', () => {
+    const scalar = getNodeCodec([enumTypeNode([enumEmptyVariantTypeNode('quit'), enumEmptyVariantTypeNode('stay')])]);
+    const data = getNodeCodec([
+        enumTypeNode([
+            enumEmptyVariantTypeNode('quit'),
+            enumStructVariantTypeNode(
+                'move',
+                structTypeNode([structFieldTypeNode({ name: 'x', type: numberTypeNode('u8') })]),
+            ),
+        ]),
+    ]);
+    expect(scalar.decode(hex('00'))).toStrictEqual({ __kind: 'Quit' });
+    expect(data.decode(hex('00'))).toStrictEqual({ __kind: 'Quit' });
 });
 
 test('it encodes data enums', () => {

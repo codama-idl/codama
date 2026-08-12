@@ -130,6 +130,31 @@ describe('formatArgumentValue', () => {
         expect(result).toBe('Buy Now');
     });
 
+    test('it labels a scalar enum variant decoded as a discriminated union', async () => {
+        // Given a scalar enum whose variant carries a display label.
+        const type = enumTypeNode([
+            enumEmptyVariantTypeNode('buy', undefined, { display: enumVariantDisplayNode({ label: 'Buy' }) }),
+            enumEmptyVariantTypeNode('sell', undefined, { display: enumVariantDisplayNode({ label: 'Sell' }) }),
+        ]);
+
+        // When we format the decoded discriminated union shape.
+        const result = await formatArgumentValue(type, [], { __kind: 'Buy' }, displayContext());
+
+        // Then we expect the variant label.
+        expect(result).toBe('Buy');
+    });
+
+    test('it title-cases a decoded scalar enum union without a display label', async () => {
+        // Given a scalar enum variant with no display.
+        const type = enumTypeNode([enumEmptyVariantTypeNode('buyNow'), enumEmptyVariantTypeNode('sell')]);
+
+        // When we format the decoded discriminated union shape.
+        const result = await formatArgumentValue(type, [], { __kind: 'BuyNow' }, displayContext());
+
+        // Then we expect the title-cased variant name.
+        expect(result).toBe('Buy Now');
+    });
+
     test('it resolves a defined-type link to a linked enum', async () => {
         // Given an argument typed as a link to a defined enum.
         const orderType: DefinedTypeNode = definedTypeNode({
