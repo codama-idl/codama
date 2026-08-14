@@ -1,5 +1,15 @@
 # @codama/renderers-core
 
+## 1.3.12
+
+### Patch Changes
+
+- Updated dependencies [[`f69845c`](https://github.com/codama-idl/codama/commit/f69845cb89ee0cc3877ee89a4b734386e9336074)]:
+    - @codama/fragments@0.1.4
+    - @codama/nodes@1.10.1
+    - @codama/visitors-core@1.10.1
+    - @codama/errors@1.10.1
+
 ## 1.3.11
 
 ### Patch Changes
