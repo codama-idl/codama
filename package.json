@@ -10,7 +10,7 @@
         "publish-packages": "pnpm build && changeset publish"
     },
     "devDependencies": {
-        "@changesets/changelog-github": "^0.7.0",
+        "@changesets/changelog-github": "^1.0.0",
         "@changesets/cli": "^3.0.0",
         "@solana/eslint-config-solana": "^5.0.0",
         "@solana/prettier-config-solana": "0.0.7",
