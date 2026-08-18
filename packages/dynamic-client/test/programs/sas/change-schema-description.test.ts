@@ -31,7 +31,7 @@ describe('SAS: changeSchemaDescription', () => {
 
         const account = ctx.requireEncodedAccount(schemaPda);
         const schema = getSchemaDecoder().decode(account.data);
-        expect(schema.description).toEqual(new TextEncoder().encode('Updated description'));
+        expect(schema.description).toBe('Updated description');
     });
 
     test('should throw AccountError when schema is missing', async () => {
