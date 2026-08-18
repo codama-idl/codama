@@ -8,7 +8,7 @@ on:
 env:
   # Among other things, opts out of Turborepo telemetry. See https://consoledonottrack.com/.
   DO_NOT_TRACK: '1'
-  NODE_VERSION: 20
+  NODE_VERSION: 24
   CODAMA_VERSION: 1.x
 
 jobs:
