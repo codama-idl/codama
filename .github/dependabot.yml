@@ -7,3 +7,17 @@ updates:
       time: '01:00'
       timezone: America/Los_Angeles
     open-pull-requests-limit: 10
+    groups:
+      # Solana Kit packages (published from anza-xyz/kit) move in lockstep,
+      # so bump them together. Non-Kit @solana/* packages (e.g. the eslint
+      # and prettier configs) are deliberately not listed here.
+      solana-kit:
+        patterns:
+          - '@solana/accounts'
+          - '@solana/addresses'
+          - '@solana/codecs*'
+          - '@solana/instructions'
+          - '@solana/kit'
+      solana-program:
+        patterns:
+          - '@solana-program/*'
