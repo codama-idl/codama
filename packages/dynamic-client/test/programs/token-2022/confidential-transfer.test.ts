@@ -1,6 +1,6 @@
+import { type Extension, type ExtensionArgs, getMintDecoder, getMintSize } from '@solana-program/token-2022';
 import type { Address } from '@solana/addresses';
 import { none, some } from '@solana/codecs';
-import { type Extension, type ExtensionArgs, getMintDecoder, getMintSize } from '@solana-program/token-2022';
 import { describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';

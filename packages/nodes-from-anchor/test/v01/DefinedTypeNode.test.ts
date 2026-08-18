@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys-fix/sort-keys-fix */
+/* eslint-disable sort-keys */
 import { definedTypeNode, numberTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 

@@ -14,12 +14,10 @@ export type FlattenStructOptions = string[] | '*';
 
 export function flattenStructVisitor(map: Record<string, FlattenStructOptions>) {
     return bottomUpTransformerVisitor(
-        Object.entries(map).map(
-            ([stack, options]): BottomUpNodeTransformerWithSelector => ({
-                select: `${stack}.[structTypeNode]`,
-                transform: node => flattenStruct(node, options),
-            }),
-        ),
+        Object.entries(map).map(([stack, options]): BottomUpNodeTransformerWithSelector => ({
+            select: `${stack}.[structTypeNode]`,
+            transform: node => flattenStruct(node, options),
+        })),
     );
 }
 

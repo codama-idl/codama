@@ -90,7 +90,7 @@ export function mapRenderMapFragment<TFragment extends BaseFragment>(
     renderMap: RenderMap<TFragment>,
     fn: (fragment: TFragment, path: Path) => TFragment,
 ): RenderMap<TFragment> {
-    return Object.freeze(new Map([...[...renderMap.entries()].map(([key, value]) => [key, fn(value, key)] as const)]));
+    return Object.freeze(new Map([...renderMap.entries()].map(([key, value]) => [key, fn(value, key)] as const)));
 }
 
 /** Async variant of {@link mapRenderMapFragment}. */
@@ -100,9 +100,9 @@ export async function mapRenderMapFragmentAsync<TFragment extends BaseFragment>(
 ): Promise<RenderMap<TFragment>> {
     return Object.freeze(
         new Map(
-            await Promise.all([
-                ...[...renderMap.entries()].map(async ([key, value]) => [key, await fn(value, key)] as const),
-            ]),
+            await Promise.all(
+                [...renderMap.entries()].map(async ([key, value]) => [key, await fn(value, key)] as const),
+            ),
         ),
     );
 }

@@ -100,7 +100,7 @@ function getNodeDetails(node: Node): string[] {
         case 'resolverValueNode':
             return [node.name];
         case 'constantDiscriminatorNode':
-            return [...(node.offset > 0 ? [`offset:${node.offset}`] : [])];
+            return node.offset > 0 ? [`offset:${node.offset}`] : [];
         case 'fieldDiscriminatorNode':
             return [node.name, ...(node.offset > 0 ? [`offset:${node.offset}`] : [])];
         case 'sizeDiscriminatorNode':

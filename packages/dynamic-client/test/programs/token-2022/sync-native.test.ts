@@ -1,5 +1,5 @@
-import { address } from '@solana/addresses';
 import { getTokenDecoder } from '@solana-program/token-2022';
+import { address } from '@solana/addresses';
 import { describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';

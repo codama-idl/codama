@@ -1,5 +1,5 @@
-import { some } from '@solana/codecs';
 import { getTokenDecoder, getTokenSize } from '@solana-program/token-2022';
+import { some } from '@solana/codecs';
 import { describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';

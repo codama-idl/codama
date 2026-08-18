@@ -46,7 +46,7 @@ export function getValueNodeVisitor(
             const variantIndex = variants.findIndex(variant => variant.name === node.variant);
             if (variantIndex < 0) {
                 throw new CodamaError(CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, {
-                    enum: node.enum,
+                    enum: enumType,
                     enumName: node.enum.name,
                     variant: node.variant,
                 });

@@ -2,18 +2,41 @@
     "name": "@codama/dynamic-client",
     "version": "0.1.5",
     "description": "Client to dynamically interact with Solana programs using Codama IDLs",
+    "keywords": [
+        "dynamic client",
+        "framework",
+        "solana",
+        "specifications",
+        "standard"
+    ],
+    "bugs": {
+        "url": "http://github.com/codama-idl/codama/issues"
+    },
     "license": "MIT",
     "repository": {
         "type": "git",
         "url": "https://github.com/codama-idl/codama",
         "directory": "packages/dynamic-client"
     },
-    "bugs": {
-        "url": "http://github.com/codama-idl/codama/issues"
-    },
     "bin": {
         "dynamic-client": "./bin/cli.cjs"
     },
+    "files": [
+        "./dist/types",
+        "./dist/index.*",
+        "./dist/cli.*",
+        "./bin/*"
+    ],
+    "type": "commonjs",
+    "sideEffects": false,
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.mjs": "./dist/index.browser.mjs"
+    },
+    "types": "./dist/types/index.d.ts",
+    "react-native": "./dist/index.react-native.mjs",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",
@@ -26,34 +49,9 @@
             "require": "./dist/index.node.cjs"
         }
     },
-    "browser": {
-        "./dist/index.node.cjs": "./dist/index.browser.cjs",
-        "./dist/index.node.mjs": "./dist/index.browser.mjs"
-    },
-    "main": "./dist/index.node.cjs",
-    "module": "./dist/index.node.mjs",
-    "react-native": "./dist/index.react-native.mjs",
-    "types": "./dist/types/index.d.ts",
-    "type": "commonjs",
-    "files": [
-        "./dist/types",
-        "./dist/index.*",
-        "./dist/cli.*",
-        "./bin/*"
-    ],
-    "sideEffects": false,
-    "keywords": [
-        "solana",
-        "framework",
-        "standard",
-        "specifications",
-        "dynamic client"
-    ],
     "scripts": {
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
-        "lint": "pnpm generate-program-types && eslint . && prettier --check .",
-        "lint:fix": "pnpm generate-program-types && eslint --fix . && prettier --write .",
         "test": "pnpm generate-program-types && pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
         "anchor:build": "cd test/programs/anchor && anchor build --ignore-keys",
         "anchor:sync:build": "pnpm anchor:build && node ./scripts/anchor/sync-anchor-builds.mjs && pnpm anchor:generate-idl && pnpm generate-program-types",

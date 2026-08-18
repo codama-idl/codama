@@ -48,7 +48,7 @@ export function syncAnchorBuilds(packageRoot = process.cwd()) {
             .map(key => [key, hashes[key]]),
     );
     writeFileSync(outArtifactPath, JSON.stringify(sorted, null, 4) + '\n');
-    return { hashes: sorted, artifactPath: outArtifactPath };
+    return { artifactPath: outArtifactPath, hashes: sorted };
 }
 
 /**

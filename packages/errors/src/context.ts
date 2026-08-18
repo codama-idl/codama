@@ -6,6 +6,7 @@
 import {
     AccountNode,
     AccountValueNode,
+    ArgumentValueNode,
     CamelCaseString,
     EnumTypeNode,
     InstructionAccountNode,
@@ -278,7 +279,7 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: {
         formattedHistogram: string;
-        validationItems: ValidationItem[];
+        validationItems: readonly ValidationItem[];
     };
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND]: {
         argumentName: CamelCaseString;
@@ -286,8 +287,8 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         instructionName: CamelCaseString;
     };
     [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]: {
-        dependency: InstructionAccountNode | InstructionArgumentNode;
-        dependencyKind: 'instructionAccountNode' | 'instructionArgumentNode';
+        dependency: AccountValueNode | ArgumentValueNode;
+        dependencyKind: 'accountValueNode' | 'argumentValueNode';
         dependencyName: CamelCaseString;
         instruction: InstructionNode;
         instructionName: CamelCaseString;
@@ -313,7 +314,7 @@ type ValidationItem = {
     level: 'debug' | 'error' | 'info' | 'trace' | 'warn';
     message: string;
     node: Node;
-    path: Node[];
+    path: readonly Node[];
 };
 
 export function decodeEncodedContext(encodedContext: string): object {
@@ -326,6 +327,7 @@ function encodeValue(value: unknown): string {
         const commaSeparatedValues = value.map(encodeValue).join('%2C%20' /* ", " */);
         return '%5B' /* "[" */ + commaSeparatedValues + /* "]" */ '%5D';
     } else if (typeof value === 'bigint') {
+        // eslint-disable-next-line typescript/no-base-to-string -- `value` is narrowed to `bigint` here.
         return `${value}n`;
     } else {
         return encodeURIComponent(
