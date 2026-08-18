@@ -1,6 +1,6 @@
+import { Compression, DataSource, Encoding, Format } from '@solana-program/program-metadata';
 import type { Address } from '@solana/addresses';
 import type { Some } from '@solana/codecs';
-import { Compression, DataSource, Encoding, Format } from '@solana-program/program-metadata';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';

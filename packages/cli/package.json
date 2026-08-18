@@ -2,17 +2,19 @@
     "name": "@codama/cli",
     "version": "1.6.1",
     "description": "A CLI for setting up and managing Codama IDLs",
-    "exports": {
-        "types": "./dist/types/index.d.ts",
-        "node": {
-            "import": "./dist/index.node.mjs",
-            "require": "./dist/index.node.cjs"
-        }
+    "keywords": [
+        "cli",
+        "codama",
+        "standard"
+    ],
+    "bugs": {
+        "url": "http://github.com/codama-idl/codama/issues"
     },
-    "main": "./dist/index.node.cjs",
-    "module": "./dist/index.node.mjs",
-    "types": "./dist/types/index.d.ts",
-    "type": "commonjs",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/codama-idl/codama"
+    },
     "bin": {
         "codama": "./bin/cli.cjs"
     },
@@ -22,17 +24,21 @@
         "./dist/cli.*",
         "./dist/index.*"
     ],
+    "type": "commonjs",
     "sideEffects": false,
-    "keywords": [
-        "codama",
-        "standard",
-        "cli"
-    ],
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "types": "./dist/types/index.d.ts",
+    "exports": {
+        "types": "./dist/types/index.d.ts",
+        "node": {
+            "import": "./dist/index.node.mjs",
+            "require": "./dist/index.node.cjs"
+        }
+    },
     "scripts": {
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
-        "lint": "eslint . && prettier --check .",
-        "lint:fix": "eslint --fix . && prettier --write .",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit && pnpm test:exports",
         "test:exports": "node test/exports/module.mjs && node test/exports/commonjs.cjs",
         "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
@@ -49,14 +55,6 @@
     },
     "devDependencies": {
         "@types/prompts": "^2.4.9"
-    },
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/codama-idl/codama"
-    },
-    "bugs": {
-        "url": "http://github.com/codama-idl/codama/issues"
     },
     "browserslist": [
         "supports bigint and not dead",

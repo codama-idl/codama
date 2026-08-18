@@ -1,5 +1,5 @@
-import type { Address } from '@solana/addresses';
 import { getMintSize, getTokenSize } from '@solana-program/token-2022';
+import type { Address } from '@solana/addresses';
 
 import type { SystemProgramClient } from '../generated/system-program-idl-types';
 import type { Token2022ProgramClient } from '../generated/token-2022-idl-types';

@@ -11,23 +11,21 @@ type NumberWrapperMap = Record<string, NumberWrapper>;
 
 export function setNumberWrappersVisitor(map: NumberWrapperMap) {
     return bottomUpTransformerVisitor(
-        Object.entries(map).map(
-            ([selectorStack, wrapper]): BottomUpNodeTransformerWithSelector => ({
-                select: `${selectorStack}.[numberTypeNode]`,
-                transform: node => {
-                    assertIsNestedTypeNode(node, 'numberTypeNode');
-                    switch (wrapper.kind) {
-                        case 'DateTime':
-                            return dateTimeTypeNode(node);
-                        case 'SolAmount':
-                            return solAmountTypeNode(node);
-                        case 'Amount':
-                            return amountTypeNode(node, wrapper.decimals, wrapper.unit);
-                        default:
-                            throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, { wrapper });
-                    }
-                },
-            }),
-        ),
+        Object.entries(map).map(([selectorStack, wrapper]): BottomUpNodeTransformerWithSelector => ({
+            select: `${selectorStack}.[numberTypeNode]`,
+            transform: node => {
+                assertIsNestedTypeNode(node, 'numberTypeNode');
+                switch (wrapper.kind) {
+                    case 'DateTime':
+                        return dateTimeTypeNode(node);
+                    case 'SolAmount':
+                        return solAmountTypeNode(node);
+                    case 'Amount':
+                        return amountTypeNode(node, wrapper.decimals, wrapper.unit);
+                    default:
+                        throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, { wrapper });
+                }
+            },
+        })),
     );
 }

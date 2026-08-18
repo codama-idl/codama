@@ -1,14 +1,12 @@
 {
     "name": "@codama-internal/spec-generators",
     "version": "0.0.0",
-    "description": "Private code generators that produce parts of the public Codama monorepo from the encoded `@codama/spec`",
     "private": true,
+    "description": "Private code generators that produce parts of the public Codama monorepo from the encoded `@codama/spec`",
     "type": "module",
     "scripts": {
         "build": "rimraf dist && tsup",
         "generate": "pnpm build && node ./dist/generate.mjs && pnpm --filter @codama/node-types --filter @codama/nodes --filter @codama/visitors-core lint:fix",
-        "lint": "eslint . && prettier --check .",
-        "lint:fix": "eslint --fix . && prettier --write .",
         "test": "pnpm test:types && pnpm test:unit",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run"

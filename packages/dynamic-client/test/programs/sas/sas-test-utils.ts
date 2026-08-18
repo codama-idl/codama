@@ -1,7 +1,7 @@
 import path from 'node:path';
 
-import { type Address } from '@solana/addresses';
 import { getMintSize } from '@solana-program/token-2022';
+import { type Address } from '@solana/addresses';
 import {
     deriveAttestationPda,
     deriveCredentialPda,

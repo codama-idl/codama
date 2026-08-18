@@ -5,15 +5,13 @@ export type ErrorUpdates = Partial<ErrorNodeInput> | { delete: true };
 
 export function updateErrorsVisitor(map: Record<string, ErrorUpdates>) {
     return bottomUpTransformerVisitor(
-        Object.entries(map).map(
-            ([name, updates]): BottomUpNodeTransformerWithSelector => ({
-                select: `[errorNode]${name}`,
-                transform: node => {
-                    assertIsNode(node, 'errorNode');
-                    if ('delete' in updates) return null;
-                    return errorNode({ ...node, ...updates });
-                },
-            }),
-        ),
+        Object.entries(map).map(([name, updates]): BottomUpNodeTransformerWithSelector => ({
+            select: `[errorNode]${name}`,
+            transform: node => {
+                assertIsNode(node, 'errorNode');
+                if ('delete' in updates) return null;
+                return errorNode({ ...node, ...updates });
+            },
+        })),
     );
 }
