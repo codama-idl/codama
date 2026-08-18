@@ -70,7 +70,7 @@
         "@codama/dynamic-codecs": "workspace:*",
         "@codama/dynamic-parsers": "workspace:*",
         "@codama/errors": "workspace:*",
-        "@solana/accounts": "^7.0.0",
+        "@solana/accounts": "^7.1.0",
         "@solana/addresses": "^5.3.0",
         "@solana/codecs": "^5.3.0",
         "@solana/instructions": "^7.1.0",
