@@ -1,5 +1,4 @@
 import { type Address } from '@solana/addresses';
-import { getU32Encoder } from '@solana/codecs';
 import { deriveSchemaPda, getSchemaDecoder } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
@@ -42,25 +41,11 @@ describe('SAS: createSchema', () => {
         });
         await ctx.sendInstruction(ix, [authority]);
 
-        const textEncoder = new TextEncoder();
         const account = ctx.requireEncodedAccount(schemaPda);
         const schema = getSchemaDecoder().decode(account.data);
-        expect(schema.description).toEqual(textEncoder.encode('This is description'));
-
-        const sizePrefixEncoder = getU32Encoder();
-        expect(schema.fieldNames).toEqual(
-            new Uint8Array([
-                ...sizePrefixEncoder.encode('firstName'.length),
-                ...textEncoder.encode('firstName'),
-                ...sizePrefixEncoder.encode('age'.length),
-                ...textEncoder.encode('age'),
-                ...sizePrefixEncoder.encode('lastName'.length),
-                ...textEncoder.encode('lastName'),
-            ]),
-        );
-        expect(schema.layout).toEqual(
-            new Uint8Array([SCHEMA_DATA_STRING_TYPE, SCHEMA_DATA_U8_TYPE, SCHEMA_DATA_STRING_TYPE]),
-        );
+        expect(schema.description).toBe('This is description');
+        expect(schema.fieldNames).toEqual(['firstName', 'age', 'lastName']);
+        expect(schema.layout).toEqual([SCHEMA_DATA_STRING_TYPE, SCHEMA_DATA_U8_TYPE, SCHEMA_DATA_STRING_TYPE]);
     });
 
     test('should throw AccountError when credential is missing', async () => {
