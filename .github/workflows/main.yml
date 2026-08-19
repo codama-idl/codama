@@ -75,8 +75,21 @@ jobs:
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
+      # Authenticate as the codama-releases GitHub App so the release branch,
+      # pull request and merge commits are not authored by github-actions[bot],
+      # whose pull requests require manual workflow approval and whose merge
+      # commits do not trigger push workflows at all.
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -86,20 +99,23 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v2.1.1
         with:
-          commit: '[${{ env.CODAMA_VERSION }}] Publish packages'
-          title: '[${{ env.CODAMA_VERSION }}] Publish packages'
-          publish: pnpm publish-packages
+          github-token: ${{ steps.app-token.outputs.token }}
+          commit-message: '[${{ env.CODAMA_VERSION }}] Publish packages'
+          pr-title: '[${{ env.CODAMA_VERSION }}] Publish packages'
+          publish-script: pnpm publish-packages
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # changesets/action v2 no longer writes ~/.npmrc from NPM_TOKEN;
+          # setup-node's registry-url writes one reading NODE_AUTH_TOKEN.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   dependabot:
     runs-on: ubuntu-latest
