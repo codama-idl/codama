@@ -1,5 +1,15 @@
 # @codama/visitors
 
+## 1.10.2
+
+### Patch Changes
+
+- [#1081](https://github.com/codama-idl/codama/pull/1081) [`21c278c`](https://github.com/codama-idl/codama/commit/21c278c46a0e509095f7b88b0475280022bca794) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Correct error context types that could never match their runtime values, surfaced by type-aware linting: validation items and their node paths are now `readonly`, and the `CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY` context types its `dependency` as the dangling `AccountValueNode | ArgumentValueNode` reference it actually receives. The `CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND` context now carries the resolved enum type node instead of the defined type link, and account-field-not-found errors normalise the missing field name to camel case.
+- Updated dependencies [[`21c278c`](https://github.com/codama-idl/codama/commit/21c278c46a0e509095f7b88b0475280022bca794)]:
+  - @codama/errors@1.10.2
+  - @codama/nodes@1.10.2
+  - @codama/visitors-core@1.10.2
+
 ## 1.10.1
 
 ### Patch Changes
