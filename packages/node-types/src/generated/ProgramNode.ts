@@ -10,7 +10,11 @@ import type { InstructionNode } from './InstructionNode';
 import type { PdaNode } from './PdaNode';
 import type { ProgramOrigin } from './shared/programOrigin';
 
-/** A Solana program: its identity, version, accounts, instructions, defined types, PDAs, events, errors, and constants. */
+/**
+ * A Solana program: its identity, version, accounts, instructions, defined types, PDAs, events, errors, and constants.
+ *
+ * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/37ec38ea-66df-4c08-81c3-822ef4388580)
+ */
 export interface ProgramNode<
     TPdas extends Array<PdaNode> | undefined = Array<PdaNode> | undefined,
     TAccounts extends Array<AccountNode> | undefined = Array<AccountNode> | undefined,

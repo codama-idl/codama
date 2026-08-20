@@ -12,6 +12,9 @@ export interface EnumTypeNode<
     // Children.
     /** The variants of the enum, in declaration order. */
     readonly variants?: TVariants;
-    /** The numeric type used to serialise the discriminator. */
+    /**
+     * The numeric type used to serialise the discriminator.
+     * The discriminator prepends the serialised variant payload to identify which variant was selected. By default it is the index of the variant (starting at 0), unless the variant provides its own custom discriminator value.
+     */
     readonly size: TSize;
 }

@@ -6,7 +6,7 @@ export interface PdaSeedValueNode<TValue extends PdaSeedValueValue = PdaSeedValu
     readonly kind: 'pdaSeedValueNode';
 
     // Data.
-    /** The name of the seed being filled in. */
+    /** The name of the seed being filled in — a `variablePdaSeedNode` of the PDA definition. */
     readonly name: CamelCaseString;
 
     // Children.

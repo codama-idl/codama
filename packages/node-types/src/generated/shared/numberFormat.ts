@@ -14,7 +14,7 @@ export type NumberFormat =
     | 'i64'
     /** Signed 8-bit integer. */
     | 'i8'
-    /** Solana compact-u16 encoding: a variable-length unsigned integer occupying 1 to 3 bytes. */
+    /** Solana compact-u16 encoding: a variable-length unsigned integer occupying 1 to 3 bytes. Values up to `0x7f` are stored as-is in a single byte; above that, the top bit of each byte is set and the remaining value continues in the next byte, with the third byte — when needed — using all 8 bits. */
     | 'shortU16'
     /** Unsigned 128-bit integer. */
     | 'u128'

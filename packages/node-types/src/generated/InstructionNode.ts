@@ -13,7 +13,11 @@ import type { OptionalAccountStrategy } from './shared/optionalAccountStrategy';
 
 type SelfInstructionNode = InstructionNode;
 
-/** A program instruction: its accounts, arguments, byte-delta hints, discriminators, optional status, and optional sub-instructions. */
+/**
+ * A program instruction: its accounts, arguments, byte-delta hints, discriminators, optional status, and optional sub-instructions.
+ *
+ * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/0d8edced-cfa4-4500-b80c-ebc56181a338)
+ */
 export interface InstructionNode<
     TAccounts extends Array<InstructionAccountNode> | undefined = Array<InstructionAccountNode> | undefined,
     TArguments extends Array<InstructionArgumentNode> | undefined = Array<InstructionArgumentNode> | undefined,
@@ -36,7 +40,10 @@ export interface InstructionNode<
     readonly name: CamelCaseString;
     /** Markdown documentation for the instruction. */
     readonly docs?: Docs;
-    /** How absent optional accounts are represented when serialising the instruction. */
+    /**
+     * How absent optional accounts are represented when serialising the instruction.
+     * When absent, `programId` is assumed.
+     */
     readonly optionalAccountStrategy?: OptionalAccountStrategy;
 
     // Children.
@@ -44,11 +51,17 @@ export interface InstructionNode<
     readonly accounts?: TAccounts;
     /** The serialised arguments of the instruction, in order. */
     readonly arguments?: TArguments;
-    /** Additional arguments exposed in the generated client API but not serialised on the wire. */
+    /**
+     * Additional arguments exposed in the generated client API but not serialised on the wire.
+     * Typically useful for feeding the default values of other arguments or accounts.
+     */
     readonly extraArguments?: TExtraArguments;
     /** Variable-length tails of accounts appended after the named account slots. */
     readonly remainingAccounts?: TRemainingAccounts;
-    /** Byte-size adjustments applied when computing rent or buffer size — for instructions that resize accounts. */
+    /**
+     * Byte-size adjustments applied when computing rent or buffer size — for instructions that resize accounts.
+     * All deltas are added together, unless their `subtract` attribute is set.
+     */
     readonly byteDeltas?: TByteDeltas;
     /**
      * Discriminators that distinguish this instruction from others.
@@ -57,7 +70,7 @@ export interface InstructionNode<
     readonly discriminators?: TDiscriminators;
     /** The lifecycle status of the instruction. */
     readonly status?: TStatus;
-    /** Inner instructions invoked through CPI as part of executing this instruction. */
+    /** Nested instructions that split this instruction into distinct scenarios — e.g. one sub-instruction per version of the instruction. */
     readonly subInstructions?: TSubInstructions;
     /**
      * Named nodes exposed to consumers in the surrounding scope.

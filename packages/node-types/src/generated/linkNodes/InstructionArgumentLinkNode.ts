@@ -12,6 +12,9 @@ export interface InstructionArgumentLinkNode<
     readonly name: CamelCaseString;
 
     // Children.
-    /** The instruction the referenced argument belongs to. When omitted, the surrounding instruction is assumed. */
+    /**
+     * The instruction the referenced argument belongs to. When omitted, the surrounding instruction is assumed.
+     * The instruction link may itself point to a different program if needed.
+     */
     readonly instruction?: TInstruction;
 }

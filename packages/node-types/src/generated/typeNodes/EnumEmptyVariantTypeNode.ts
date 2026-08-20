@@ -10,7 +10,7 @@ export interface EnumEmptyVariantTypeNode<
     // Data.
     /** The name of the variant. */
     readonly name: CamelCaseString;
-    /** Explicit discriminator value. When omitted, the discriminator is inferred from the variant position. */
+    /** Explicit discriminator value. When omitted, the discriminator is the index of the variant in the enum, starting at 0. */
     readonly discriminator?: number;
 
     // Children.

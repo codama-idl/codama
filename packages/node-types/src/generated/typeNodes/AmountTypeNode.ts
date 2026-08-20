@@ -3,7 +3,7 @@ import type { NumberTypeNode } from './NumberTypeNode';
 
 /**
  * Wraps a number type to provide additional context such as decimal places and a unit.
- * Useful for amounts representing financial values.
+ * Particularly useful for representing financial values as integers, since floating-point numbers are notoriously unsafe for that purpose.
  */
 export interface AmountTypeNode<TNumber extends NestedTypeNode<NumberTypeNode> = NestedTypeNode<NumberTypeNode>> {
     readonly kind: 'amountTypeNode';

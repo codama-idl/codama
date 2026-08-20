@@ -328,8 +328,8 @@ importers:
         specifier: workspace:*
         version: link:../fragments
       '@codama/spec':
-        specifier: 1.8.0
-        version: 1.8.0
+        specifier: 1.9.1
+        version: 1.9.1
     devDependencies:
       '@types/node':
         specifier: ^26
@@ -466,8 +466,8 @@ packages:
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
-  '@codama/spec@1.8.0':
-    resolution: {integrity: sha512-vHuEs0KzCWfpgjALrVywb3WgMfc08PWwIx6yUaB6g5pckv8shcrDBQJA2vyNKfc8BRYdX6fwogLhytpDgyyJ0Q==}
+  '@codama/spec@1.9.1':
+    resolution: {integrity: sha512-6GNKNt6zvxBBvtbokh1VwjTb09Kjc79a44Vt0v7Lk3Hq+ZaI5/uimk9F8bM1IlBuKhBPZmtrAON/X7QPSxqriA==}
     engines: {node: '>=22.12.0'}
 
   '@esbuild/aix-ppc64@0.27.0':
@@ -3393,7 +3393,7 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@codama/spec@1.8.0': {}
+  '@codama/spec@1.9.1': {}
 
   '@esbuild/aix-ppc64@0.27.0':
     optional: true
