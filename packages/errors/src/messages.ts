@@ -44,6 +44,7 @@ import {
     CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
     CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
     CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
+    CODAMA_ERROR__UNSUPPORTED_VERSION,
     CODAMA_ERROR__VERSION_MISMATCH,
     CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
@@ -124,8 +125,10 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING]: 'Unrecognized bytes encoding [$encoding].',
     [CODAMA_ERROR__UNRECOGNIZED_NODE_KIND]: 'Unrecognized node kind [$kind].',
     [CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT]: 'Unrecognized number format [$format].',
+    [CODAMA_ERROR__UNSUPPORTED_VERSION]:
+        'Codama IDLs of version [$version] predate the 1.0.0 specification and cannot be upgraded automatically. Please regenerate the IDL from its original source.',
     [CODAMA_ERROR__VERSION_MISMATCH]:
-        'The provided RootNode version [$rootVersion] is not compatible with the Codama spec version [$codamaVersion] supported by the installed packages.',
+        'The provided RootNode version [$rootVersion] is not compatible with the Codama spec version [$codamaVersion] supported by the installed packages. Older versions can be upgraded using the `@codama/upgrade` package; newer versions require updating your Codama dependencies.',
     [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: 'Account [$name] does not have a field named [$missingField].',
     [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:
         'Cannot add PDAs to program [$programName] because the following PDA names already exist [$duplicatedPdaNames].',
