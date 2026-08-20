@@ -1,4 +1,5 @@
 import type { PluginNode } from '@codama/node-types';
+
 import { camelCase } from '../shared';
 
 /**

@@ -1,4 +1,5 @@
 import type { BooleanTypeNode, NestedTypeNode, NumberTypeNode } from '@codama/node-types';
+
 import { numberTypeNode } from './NumberTypeNode';
 
 /** A boolean serialised as a numeric value. The wrapped number type determines the byte width. */

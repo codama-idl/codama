@@ -1,4 +1,5 @@
 import type { StructFieldValueNode, ValueNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** A named field of a `structValueNode`. */

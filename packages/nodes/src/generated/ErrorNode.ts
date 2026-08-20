@@ -1,4 +1,5 @@
 import type { ErrorNode } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type ErrorNodeInput = Omit<ErrorNode, 'docs' | 'kind' | 'name'> & {

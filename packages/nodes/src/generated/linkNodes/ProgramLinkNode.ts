@@ -1,4 +1,5 @@
 import type { ProgramLinkNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** A reference to a program by name. */

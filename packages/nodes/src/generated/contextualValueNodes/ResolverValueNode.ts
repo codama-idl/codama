@@ -1,4 +1,5 @@
 import type { ResolverDependency, ResolverValueNode } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../../shared';
 
 /**

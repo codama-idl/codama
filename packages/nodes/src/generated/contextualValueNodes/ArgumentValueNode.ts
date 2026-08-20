@@ -1,4 +1,5 @@
 import type { ArgumentValueNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** Refers to a named argument of the surrounding instruction. */

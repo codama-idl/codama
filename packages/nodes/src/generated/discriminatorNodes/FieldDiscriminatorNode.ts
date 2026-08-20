@@ -1,4 +1,5 @@
 import type { FieldDiscriminatorNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** Identifies a node by the value of a named field at a known byte offset. */

@@ -4,7 +4,6 @@ const solanaConfig = require('@solana-config/oxc/oxlint');
 // Keep in sync with oxfmt.config.ts.
 const ignorePatterns = [
     '**/dist/',
-    '**/generated/',
     '**/target/',
     '**/test-ledger/',
     '**/idls/',
@@ -25,6 +24,11 @@ module.exports = oxlint.defineConfig({
         // These packages define large, deliberately ordered node structures.
         {
             files: ['packages/cli/**', 'packages/node-types/**', 'packages/nodes/**'],
+            rules: { 'sort-keys': 'off' },
+        },
+        // Generated output is deliberately ordered and machine-written.
+        {
+            files: ['**/generated/**'],
             rules: { 'sort-keys': 'off' },
         },
     ],

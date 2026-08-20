@@ -1,4 +1,5 @@
 import type { PdaSeedValueNode, PdaSeedValueValue } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** Pairs a PDA seed name with the value to substitute when deriving the PDA. */

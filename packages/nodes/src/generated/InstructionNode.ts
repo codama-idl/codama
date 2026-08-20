@@ -10,6 +10,7 @@ import type {
     PluginNode,
     ProvidedNode,
 } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type InstructionNodeInput<

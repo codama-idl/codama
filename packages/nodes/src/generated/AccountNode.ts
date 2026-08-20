@@ -1,4 +1,5 @@
 import type { AccountNode, DiscriminatorNode, NestedTypeNode, PdaLinkNode, StructTypeNode } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 import { structTypeNode } from './typeNodes/StructTypeNode';
 

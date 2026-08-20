@@ -8,6 +8,7 @@ import type {
     PdaNode,
     ProgramNode,
 } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type ProgramNodeInput<

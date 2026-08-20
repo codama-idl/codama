@@ -1,4 +1,5 @@
 import type { InstructionByteDeltaNode, InstructionByteDeltaValue } from '@codama/node-types';
+
 import { isNode } from '../Node';
 
 /** A byte-size delta applied when computing rent or buffer size — typically used by instructions that resize accounts. */

@@ -4,7 +4,6 @@ const solanaFmt = require('@solana-config/oxc/oxfmt');
 // Keep in sync with oxlint.config.ts.
 const ignorePatterns = [
     '**/dist/',
-    '**/generated/',
     '**/target/',
     '**/test-ledger/',
     '**/idls/',
