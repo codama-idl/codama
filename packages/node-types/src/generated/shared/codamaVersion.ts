@@ -1,6 +1,6 @@
 /**
- * The Codama spec version this package describes. Pinned to the literal
- * version of the spec at generation time; documents conforming to this
- * version of the spec carry this exact string.
+ * The shape of Codama spec versions this package describes. Pinned to the
+ * spec major at generation time; documents conforming to any minor or patch
+ * of that major carry a string of this shape.
  */
-export type CodamaVersion = '1.9.1';
+export type CodamaVersion = `1.${number}.${number}`;
