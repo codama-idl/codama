@@ -1,4 +1,5 @@
 import type { DefinedTypeNode, TypeNode } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type DefinedTypeNodeInput<TType extends TypeNode = TypeNode> = Omit<

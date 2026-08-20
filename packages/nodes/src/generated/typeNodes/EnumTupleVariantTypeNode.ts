@@ -4,6 +4,7 @@ import type {
     NestedTypeNode,
     TupleTypeNode,
 } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** A variant of an enum that carries a tuple payload (positional fields). */

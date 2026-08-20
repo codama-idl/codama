@@ -1,4 +1,5 @@
 import type { Node, ProvidedNode } from '@codama/node-types';
+
 import { camelCase } from '../shared';
 
 /**

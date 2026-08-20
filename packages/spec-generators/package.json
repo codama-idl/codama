@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "build": "rimraf dist && tsup",
-        "generate": "pnpm build && node ./dist/generate.mjs && pnpm --filter @codama/node-types --filter @codama/nodes --filter @codama/visitors-core lint:fix",
+        "generate": "pnpm build && node ./dist/generate.mjs && pnpm -w lint:fix",
         "test": "pnpm test:types && pnpm test:unit",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run"

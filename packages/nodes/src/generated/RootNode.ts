@@ -1,4 +1,5 @@
 import type { ProgramNode, RootNode } from '@codama/node-types';
+
 import { CODAMA_VERSION } from './codamaVersion';
 
 /**

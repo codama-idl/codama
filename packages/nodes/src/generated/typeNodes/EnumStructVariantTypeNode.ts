@@ -4,6 +4,7 @@ import type {
     NestedTypeNode,
     StructTypeNode,
 } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** A variant of an enum that carries a struct payload (named fields). */

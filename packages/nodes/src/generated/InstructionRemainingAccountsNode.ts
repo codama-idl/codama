@@ -3,6 +3,7 @@ import type {
     InstructionRemainingAccountsNode,
     InstructionRemainingAccountsValue,
 } from '@codama/node-types';
+
 import { DocsInput, parseDocs } from '../shared';
 
 /** A "remaining accounts" slot in an instruction — a variable-length tail of accounts derived from a value. */

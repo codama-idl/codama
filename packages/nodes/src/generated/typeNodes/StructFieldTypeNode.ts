@@ -1,4 +1,5 @@
 import type { StructFieldDisplayNode, StructFieldTypeNode, TypeNode, ValueNode } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../../shared';
 
 export type StructFieldTypeNodeInput<

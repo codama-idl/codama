@@ -1,4 +1,5 @@
 import type { PublicKeyValueNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** A concrete public key, with an optional symbolic identifier for the address. */

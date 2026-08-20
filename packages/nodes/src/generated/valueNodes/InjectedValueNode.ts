@@ -1,4 +1,5 @@
 import type { InjectedValueNode, ValueNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 export type InjectedValueNodeInput<TFallback extends ValueNode | undefined = ValueNode | undefined> = Omit<

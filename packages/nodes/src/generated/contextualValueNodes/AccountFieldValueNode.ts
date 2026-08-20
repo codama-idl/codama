@@ -1,4 +1,5 @@
 import type { AccountFieldValueNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 export type AccountFieldValueNodeInput = Omit<AccountFieldValueNode, 'account' | 'kind' | 'path'> & {

@@ -4,6 +4,7 @@ import type {
     InstructionAccountNode,
     InstructionInputValueNode,
 } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type InstructionAccountNodeInput<
