@@ -5,7 +5,7 @@ export interface FieldDiscriminatorNode {
     readonly kind: 'fieldDiscriminatorNode';
 
     // Data.
-    /** The name of the discriminating field. */
+    /** The name of the discriminating field — a `structFieldTypeNode` of the account data or an argument of the instruction. */
     readonly name: CamelCaseString;
     /** The byte offset of the field. */
     readonly offset: number;

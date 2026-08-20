@@ -1,7 +1,10 @@
 import type { ConstantValueNode } from '../valueNodes/ConstantValueNode';
 import type { TypeNode } from './TypeNode';
 
-/** Suffixes another type with a list of constant values that are written and read but not surfaced as fields to consumers. */
+/**
+ * Suffixes another type with a list of constant values that are written and read but not surfaced as fields to consumers.
+ * When decoding, the suffixed constants are consumed and checked against their expected values before being discarded.
+ */
 export interface HiddenSuffixTypeNode<
     TType extends TypeNode = TypeNode,
     TSuffix extends Array<ConstantValueNode> | undefined = Array<ConstantValueNode> | undefined,

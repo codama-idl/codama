@@ -14,7 +14,10 @@ export interface EnumValueNode<
     readonly variant: CamelCaseString;
 
     // Children.
-    /** A link to the defined enum type the value belongs to. */
+    /**
+     * A link to the defined enum type the value belongs to.
+     * The linked defined type must contain an `enumTypeNode`.
+     */
     readonly enum: TEnum;
     /**
      * The variant payload — a struct value for struct variants or a tuple value for tuple variants.

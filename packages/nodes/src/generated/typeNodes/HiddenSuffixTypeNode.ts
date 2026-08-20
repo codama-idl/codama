@@ -1,6 +1,9 @@
 import type { ConstantValueNode, HiddenSuffixTypeNode, TypeNode } from '@codama/node-types';
 
-/** Suffixes another type with a list of constant values that are written and read but not surfaced as fields to consumers. */
+/**
+ * Suffixes another type with a list of constant values that are written and read but not surfaced as fields to consumers.
+ * When decoding, the suffixed constants are consumed and checked against their expected values before being discarded.
+ */
 export function hiddenSuffixTypeNode<
     const TType extends TypeNode,
     const TSuffix extends Array<ConstantValueNode> | undefined,

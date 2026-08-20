@@ -9,7 +9,7 @@ export interface ZeroableOptionTypeNode<
     readonly kind: 'zeroableOptionTypeNode';
 
     // Children.
-    /** The type carried by the option when present. */
+    /** The type carried by the option when present. Must be of fixed size. */
     readonly item: TItem;
     /** The constant value that signals absence. When omitted, the all-zero byte pattern of the item type is used. */
     readonly zeroValue?: TZeroValue;

@@ -10,11 +10,11 @@ export interface InstructionRemainingAccountsNode<
     readonly kind: 'instructionRemainingAccountsNode';
 
     // Data.
-    /** Whether the remaining-accounts tail may be empty. */
+    /** Whether the remaining-accounts tail may be empty. Defaults to `false`. */
     readonly isOptional?: boolean;
     /**
      * Whether each remaining account must sign the transaction.
-     * The literal `"either"` indicates a slot that may or may not sign depending on context.
+     * The literal `"either"` indicates that each account may or may not be a signer, independently of the others. Defaults to `false`.
      */
     readonly isSigner?: boolean | 'either';
     /** Whether the instruction may write to each remaining account. */

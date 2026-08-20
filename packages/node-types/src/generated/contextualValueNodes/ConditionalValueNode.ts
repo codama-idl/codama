@@ -19,11 +19,11 @@ export interface ConditionalValueNode<
     readonly condition: TCondition;
     /**
      * When present, the condition result is compared for equality against this value.
-     * Otherwise the result is treated as a boolean.
+     * When omitted, the condition passes if the referenced account or argument exists in the current context, regardless of its value.
      */
     readonly value?: TValue;
-    /** The value used when the condition resolves truthy (or matches `value`). */
+    /** The value used when the condition passes — i.e. it matches `value` or, without a `value`, exists. */
     readonly ifTrue?: TIfTrue;
-    /** The value used when the condition resolves falsy (or does not match `value`). */
+    /** The value used when the condition fails — i.e. it does not match `value` or, without a `value`, does not exist. */
     readonly ifFalse?: TIfFalse;
 }

@@ -1,6 +1,9 @@
 import type { ConstantValueNode, HiddenPrefixTypeNode, TypeNode } from '@codama/node-types';
 
-/** Prefixes another type with a list of constant values that are written and read but not surfaced as fields to consumers. */
+/**
+ * Prefixes another type with a list of constant values that are written and read but not surfaced as fields to consumers.
+ * When decoding, the prefixed constants are consumed and checked against their expected values before being discarded.
+ */
 export function hiddenPrefixTypeNode<
     const TType extends TypeNode,
     const TPrefix extends Array<ConstantValueNode> | undefined,

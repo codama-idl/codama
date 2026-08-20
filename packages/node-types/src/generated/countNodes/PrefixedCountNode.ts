@@ -1,7 +1,10 @@
 import type { NestedTypeNode } from '../typeNodes/NestedTypeNode';
 import type { NumberTypeNode } from '../typeNodes/NumberTypeNode';
 
-/** A count strategy where the number of items is read from a numeric prefix. */
+/**
+ * A count strategy where the number of items is read from a numeric prefix.
+ * This enables nodes such as `arrayTypeNode` to represent collections whose length is stored as a prefix.
+ */
 export interface PrefixedCountNode<TPrefix extends NestedTypeNode<NumberTypeNode> = NestedTypeNode<NumberTypeNode>> {
     readonly kind: 'prefixedCountNode';
 

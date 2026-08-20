@@ -5,7 +5,11 @@ import type { PdaLinkNode } from './linkNodes/PdaLinkNode';
 import type { NestedTypeNode } from './typeNodes/NestedTypeNode';
 import type { StructTypeNode } from './typeNodes/StructTypeNode';
 
-/** An on-chain account: its name, data structure, optional fixed size, optional PDA, and optional discriminators. */
+/**
+ * An on-chain account: its name, data structure, optional fixed size, optional PDA, and optional discriminators.
+ *
+ * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/77974dad-212e-49b1-8e41-5d466c273a02)
+ */
 export interface AccountNode<
     TData extends NestedTypeNode<StructTypeNode> = NestedTypeNode<StructTypeNode>,
     TPda extends PdaLinkNode | undefined = PdaLinkNode | undefined,
@@ -22,7 +26,10 @@ export interface AccountNode<
     readonly docs?: Docs;
 
     // Children.
-    /** The struct describing the account data. */
+    /**
+     * The struct describing the account data.
+     * It must be a struct so its fields can be referenced by other nodes — e.g. `accountFieldValueNode`.
+     */
     readonly data: TData;
     /** A link to the PDA the account is derived from, if applicable. */
     readonly pda?: TPda;

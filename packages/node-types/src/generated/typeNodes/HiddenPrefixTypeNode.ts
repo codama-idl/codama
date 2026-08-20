@@ -1,7 +1,10 @@
 import type { ConstantValueNode } from '../valueNodes/ConstantValueNode';
 import type { TypeNode } from './TypeNode';
 
-/** Prefixes another type with a list of constant values that are written and read but not surfaced as fields to consumers. */
+/**
+ * Prefixes another type with a list of constant values that are written and read but not surfaced as fields to consumers.
+ * When decoding, the prefixed constants are consumed and checked against their expected values before being discarded.
+ */
 export interface HiddenPrefixTypeNode<
     TType extends TypeNode = TypeNode,
     TPrefix extends Array<ConstantValueNode> | undefined = Array<ConstantValueNode> | undefined,

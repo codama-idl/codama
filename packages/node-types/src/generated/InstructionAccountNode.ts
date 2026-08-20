@@ -4,7 +4,11 @@ import type { InstructionInputValueNode } from './contextualValueNodes/Instructi
 import type { InstructionAccountDisplayNode } from './displayNodes/InstructionAccountDisplayNode';
 import type { AccountLinkNode } from './linkNodes/AccountLinkNode';
 
-/** An account participating in an instruction, with its name, signing/writability flags, and an optional default value. */
+/**
+ * An account participating in an instruction, with its name, signing/writability flags, and an optional default value.
+ *
+ * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/4656a08b-2f89-49c2-b428-5378cb1a0b9e)
+ */
 export interface InstructionAccountNode<
     TDefaultValue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
     TAccountLink extends AccountLinkNode | undefined = AccountLinkNode | undefined,
@@ -22,7 +26,10 @@ export interface InstructionAccountNode<
      * The literal `"either"` indicates a slot that may or may not sign depending on context.
      */
     readonly isSigner: boolean | 'either';
-    /** Whether the account slot may be omitted by callers. */
+    /**
+     * Whether the account slot may be omitted by callers.
+     * When `true`, absent accounts are handled according to the `optionalAccountStrategy` attribute of the surrounding `instructionNode`. Defaults to `false`.
+     */
     readonly isOptional?: boolean;
     /** Markdown documentation for the account slot. */
     readonly docs?: Docs;
