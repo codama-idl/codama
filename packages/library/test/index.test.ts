@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest';
 
 import {
+    CODAMA_ERROR__VERSION_MISMATCH,
     CODAMA_VERSION,
+    CodamaError,
     createFromJson,
     createFromRoot,
     getAllInstructions,
@@ -9,6 +11,7 @@ import {
     programNode,
     rootNode,
     rootNodeVisitor,
+    validateCodamaVersion,
     voidVisitor,
 } from '../src';
 
@@ -63,4 +66,40 @@ test('it reads an IDL that omits every array attribute without throwing (skip-wh
     expect(reserialised).toEqual(JSON.parse(json) as unknown);
     expect('accounts' in reserialised.program).toBe(false);
     expect('instructions' in reserialised.program).toBe(false);
+});
+
+test('it accepts document versions sharing the spec major, regardless of minor and patch', () => {
+    expect(() => validateCodamaVersion(CODAMA_VERSION)).not.toThrow();
+    expect(() => validateCodamaVersion('1.0.0')).not.toThrow();
+    expect(() => validateCodamaVersion('1.42.7')).not.toThrow();
+    expect(() => validateCodamaVersion('1.6.0-rc.6')).not.toThrow();
+});
+
+test('it rejects document versions from another spec major', () => {
+    expect(() => validateCodamaVersion('2.0.0')).toThrow(
+        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '2.0.0' }),
+    );
+    expect(() => validateCodamaVersion('0.21.3')).toThrow(
+        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '0.21.3' }),
+    );
+});
+
+test('it rejects unparsable document versions', () => {
+    expect(() => validateCodamaVersion('')).toThrow(
+        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '' }),
+    );
+    expect(() => validateCodamaVersion('not-a-version')).toThrow(
+        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, {
+            codamaVersion: CODAMA_VERSION,
+            rootVersion: 'not-a-version',
+        }),
+    );
+});
+
+test('it validates the document version when creating a Codama instance', () => {
+    const program = programNode({ name: 'myProgram', publicKey: '1111' });
+    expect(() => createFromRoot(rootNode(program))).not.toThrow();
+    expect(() => createFromRoot({ ...rootNode(program), version: '99.0.0' as typeof CODAMA_VERSION })).toThrow(
+        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '99.0.0' }),
+    );
 });
