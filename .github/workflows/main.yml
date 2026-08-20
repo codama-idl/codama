@@ -67,6 +67,9 @@ jobs:
       - name: Build and run tests
         run: pnpm test
 
+      - name: Regenerate output from the pinned @codama/spec
+        run: pnpm generate
+
       - name: Ensure working directory is clean
         run: |
           git status
