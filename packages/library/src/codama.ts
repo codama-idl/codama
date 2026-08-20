@@ -1,6 +1,6 @@
 import { CODAMA_ERROR__VERSION_MISMATCH } from '@codama/errors';
 import { CodamaError } from '@codama/errors';
-import { assertIsNode, CodamaVersion, Node, RootNode } from '@codama/nodes';
+import { assertIsNode, CODAMA_VERSION, CodamaVersion, getCodamaVersionMajor, Node, RootNode } from '@codama/nodes';
 import { visit, Visitor } from '@codama/visitors';
 
 export interface Codama {
@@ -39,13 +39,19 @@ export function createFromJson(json: string): Codama {
     return createFromRoot(JSON.parse(json) as RootNode);
 }
 
-export function validateCodamaVersion(rootVersion: CodamaVersion): void {
-    const codamaVersion = __VERSION__;
-    if (rootVersion === codamaVersion) return;
-    const [rootMajor, rootMinor] = rootVersion.split('.').map(Number);
-    const [CodamaMajor, CodamaMinor] = codamaVersion.split('.').map(Number);
-    const isZeroMajor = rootMajor === 0 && CodamaMajor === 0;
-    if (isZeroMajor && rootMinor === CodamaMinor) return;
-    if (rootMajor === CodamaMajor) return;
+/**
+ * Asserts that a document version is compatible with the Codama spec version
+ * supported by the installed packages — i.e. that both share the same major —
+ * and narrows it to `CodamaVersion` accordingly.
+ *
+ * The document version is compared against the generated `CODAMA_VERSION`
+ * spec constant, not the npm package version: the two are unrelated
+ * namespaces. Accepts any string since documents usually arrive as
+ * untrusted JSON; unparsable versions are rejected.
+ */
+export function validateCodamaVersion(rootVersion: string): asserts rootVersion is CodamaVersion {
+    const codamaVersion = CODAMA_VERSION;
+    const rootMajor = getCodamaVersionMajor(rootVersion);
+    if (rootMajor !== null && rootMajor === getCodamaVersionMajor(codamaVersion)) return;
     throw new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion, rootVersion });
 }
