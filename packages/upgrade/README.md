@@ -75,4 +75,4 @@ function inspectLegacyIdl(root: v1.RootNode) {
 
 Upgrade functions are pure JSON-tree-in, JSON-tree-out transforms with no environment access, which keeps the upgrade chain portable to other implementations of the Codama standard.
 
-Maintainers: the playbook for releasing a new major of the Codama standard lives in the repository-root [CONTRIBUTING](../../CONTRIBUTING.md).
+Maintainers: the playbook for releasing a new major of the Codama standard lives in the repository-root [CONTRIBUTING](https://github.com/codama-idl/codama/blob/main/CONTRIBUTING.md).

@@ -328,11 +328,11 @@ importers:
         specifier: workspace:*
         version: link:../fragments
       '@codama/spec':
-        specifier: 1.9.1
-        version: 1.9.1
+        specifier: 1.9.2
+        version: 1.9.2
       '@codama/spec-v1':
-        specifier: npm:@codama/spec@1.9.1
-        version: '@codama/spec@1.9.1'
+        specifier: npm:@codama/spec@1.9.2
+        version: '@codama/spec@1.9.2'
     devDependencies:
       '@types/node':
         specifier: ^26
@@ -485,8 +485,8 @@ packages:
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
-  '@codama/spec@1.9.1':
-    resolution: {integrity: sha512-6GNKNt6zvxBBvtbokh1VwjTb09Kjc79a44Vt0v7Lk3Hq+ZaI5/uimk9F8bM1IlBuKhBPZmtrAON/X7QPSxqriA==}
+  '@codama/spec@1.9.2':
+    resolution: {integrity: sha512-QcNSRZNp13AardSMiip+Ef38+X30TbARS6vYriZwxXla1y/TLTJxj1FNdJ014kWUPpR7IvkR2Gc7cse0KEbuiw==}
     engines: {node: '>=22.12.0'}
 
   '@esbuild/aix-ppc64@0.27.0':
@@ -3412,7 +3412,7 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@codama/spec@1.9.1': {}
+  '@codama/spec@1.9.2': {}
 
   '@esbuild/aix-ppc64@0.27.0':
     optional: true
