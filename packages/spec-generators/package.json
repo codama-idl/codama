@@ -13,8 +13,8 @@
     },
     "dependencies": {
         "@codama/fragments": "workspace:*",
-        "@codama/spec": "1.9.1",
-        "@codama/spec-v1": "npm:@codama/spec@1.9.1"
+        "@codama/spec": "1.9.2",
+        "@codama/spec-v1": "npm:@codama/spec@1.9.2"
     },
     "devDependencies": {
         "@types/node": "^26",

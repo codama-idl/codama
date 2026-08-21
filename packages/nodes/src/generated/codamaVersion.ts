@@ -8,4 +8,4 @@ import type { CodamaVersion } from '@codama/node-types';
  * that need to compare an IDL's `version` against the spec
  * shape `@codama/nodes` understands.
  */
-export const CODAMA_VERSION: CodamaVersion = '1.9.1';
+export const CODAMA_VERSION: CodamaVersion = '1.9.2';
