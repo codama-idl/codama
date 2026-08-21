@@ -1,6 +1,6 @@
 {
     "name": "@codama/errors",
-    "version": "1.10.2",
+    "version": "1.11.0",
     "description": "Error management for Codama",
     "keywords": [
         "framework",
