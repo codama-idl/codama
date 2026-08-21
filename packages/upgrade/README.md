@@ -68,9 +68,11 @@ The node types of older majors are frozen into this package at the time each maj
 ```ts
 import type { v1 } from '@codama/upgrade';
 
-function inspectLegacyDocument(root: v1.RootNode) {
+function inspectLegacyIdl(root: v1.RootNode) {
     // Typed against the frozen v1 node types.
 }
 ```
 
 Upgrade functions are pure JSON-tree-in, JSON-tree-out transforms with no environment access, which keeps the upgrade chain portable to other implementations of the Codama standard.
+
+Maintainers: the playbook for releasing a new major of the Codama standard lives in the repository-root [CONTRIBUTING](../../CONTRIBUTING.md).
