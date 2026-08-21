@@ -1,6 +1,6 @@
 {
     "name": "@codama/dynamic-address-resolution",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "description": "Address resolution functionality for instruction accounts in Codama IDLs",
     "keywords": [
         "address-resolution",

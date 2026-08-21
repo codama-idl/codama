@@ -1,6 +1,6 @@
 {
     "name": "@codama/nodes-from-anchor",
-    "version": "1.5.5",
+    "version": "1.5.6",
     "description": "Node specifications and helpers for the Codama standard",
     "keywords": [
         "framework",
