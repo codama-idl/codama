@@ -6,6 +6,7 @@ import {
 import {
     accountValueNode,
     argumentValueNode,
+    bytesTypeNode,
     camelCase,
     constantPdaSeedNodeFromBytes,
     InstructionArgumentNode,
@@ -51,16 +52,26 @@ export function pdaSeedNodeFromAnchorV01(
                 throw new CodamaError(CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: originalArgumentName });
             }
 
-            // Anchor uses unprefixed strings for PDA seeds even though the
-            // argument itself uses a Borsh size-prefixed string. Thus, we
-            // must recognize this case and convert the type accordingly.
+            // Anchor uses unprefixed strings and byte arrays for PDA seeds
+            // even though the arguments themselves use Borsh size-prefixed
+            // types. Thus, we must recognize both cases and convert the
+            // types accordingly.
             const isBorshString =
                 isNode(argumentNode.type, 'sizePrefixTypeNode') &&
                 isNode(argumentNode.type.type, 'stringTypeNode') &&
                 argumentNode.type.type.encoding === 'utf8' &&
                 isNode(argumentNode.type.prefix, 'numberTypeNode') &&
                 argumentNode.type.prefix.format === 'u32';
-            const argumentType = isBorshString ? stringTypeNode('utf8') : argumentNode.type;
+            const isBorshBytes =
+                isNode(argumentNode.type, 'sizePrefixTypeNode') &&
+                isNode(argumentNode.type.type, 'bytesTypeNode') &&
+                isNode(argumentNode.type.prefix, 'numberTypeNode') &&
+                argumentNode.type.prefix.format === 'u32';
+            const argumentType = isBorshString
+                ? stringTypeNode('utf8')
+                : isBorshBytes
+                  ? bytesTypeNode()
+                  : argumentNode.type;
 
             return {
                 definition: variablePdaSeedNode(argumentNode.name, argumentType),
