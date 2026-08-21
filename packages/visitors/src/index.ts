@@ -1,6 +1,7 @@
 export * from '@codama/visitors-core';
 
 export * from './addPdasVisitor';
+export * from './checkCodamaVersionVisitor';
 export * from './createSubInstructionsFromEnumArgsVisitor';
 export * from './deduplicateIdenticalDefinedTypesVisitor';
 export * from './fillDefaultPdaSeedValuesVisitor';

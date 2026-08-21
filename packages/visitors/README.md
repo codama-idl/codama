@@ -72,6 +72,21 @@ codama.update(
 );
 ```
 
+### `checkCodamaVersionVisitor`
+
+This visitor checks that the version of the visited Codama IDL shares its major with the Codama spec version supported by the installed packages — mirroring the check performed by `createFromRoot` — and throws a `CODAMA_ERROR__VERSION_MISMATCH` error otherwise. The IDL is returned unchanged when the check passes.
+
+It is mainly useful at IDL-ingestion boundaries that bypass `createFromRoot`, such as the [Codama CLI](../cli) which otherwise accepts IDLs verbatim without any version checking. For instance, it can be used as a `before` visitor to fail fast on incompatible IDLs:
+
+```json
+{
+    "idl": "program/idl.json",
+    "before": ["@codama/visitors#checkCodamaVersionVisitor"]
+}
+```
+
+Note that older IDLs can be upgraded instead of rejected by using the [`@codama/upgrade`](../upgrade) package as a `before` visitor.
+
 ### `createSubInstructionsFromEnumArgsVisitor`
 
 This visitor splits an instruction into multiple sub-instructions by using an enum argument such that each of its variants creates a different sub-instruction. It accepts an object where the keys are the instruction names and the values are the enum argument names that will be used to split the instruction.
