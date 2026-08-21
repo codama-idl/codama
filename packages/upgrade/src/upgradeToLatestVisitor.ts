@@ -4,7 +4,7 @@ import { rootNodeVisitor, Visitor } from '@codama/visitors-core';
 import { upgrade, UpgradableRootNode } from './upgrade';
 
 /**
- * A visitor that upgrades the visited document to the latest major via
+ * A visitor that upgrades the visited IDL to the latest major via
  * {@link upgrade}.
  *
  * Designed as a preprocessing step at IDL-ingestion boundaries — e.g. as a

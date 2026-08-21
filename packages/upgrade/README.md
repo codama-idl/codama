@@ -31,11 +31,11 @@ import { createFromRoot } from 'codama';
 const codama = createFromRoot(upgrade(rootNodeOfAnyVersion));
 ```
 
-Documents already on the latest major go through unchanged, minus the version restamp. Documents that predate the 1.0.0 specification throw a `CODAMA_ERROR__UNSUPPORTED_VERSION` error and must be regenerated from their original source; documents from a future major throw a `CODAMA_ERROR__VERSION_MISMATCH` error and require updating your Codama dependencies instead.
+IDLs already on the latest major go through unchanged, minus the version restamp. IDLs that predate the 1.0.0 specification throw a `CODAMA_ERROR__UNSUPPORTED_VERSION` error and must be regenerated from their original source; IDLs from a future major throw a `CODAMA_ERROR__VERSION_MISMATCH` error and require updating your Codama dependencies instead.
 
 ### `upgradeFromJson(json)`
 
-This function wraps `upgrade` for JSON-encoded documents, e.g. when reading an IDL from disk or from the chain.
+This function wraps `upgrade` for JSON-encoded IDLs, e.g. when reading an IDL from disk or from the chain.
 
 ```ts
 import { upgradeFromJson } from '@codama/upgrade';
@@ -48,7 +48,7 @@ const codama = createFromRoot(upgradeFromJson(json));
 
 ### `upgradeToLatestVisitor()`
 
-This function returns a visitor that upgrades the visited document, designed as a preprocessing step at IDL-ingestion boundaries. It is also the package's default export, so it can be used as a `before` visitor in a Codama CLI config using the bare module name, ensuring any older IDL is upgraded before other visitors and scripts run:
+This function returns a visitor that upgrades the visited IDL, designed as a preprocessing step at IDL-ingestion boundaries. It is also the package's default export, so it can be used as a `before` visitor in a Codama CLI config using the bare module name, ensuring any older IDL is upgraded before other visitors and scripts run:
 
 ```json
 {
@@ -61,7 +61,7 @@ The explicit `"@codama/upgrade#upgradeToLatestVisitor"` form is equivalent.
 
 ## How it works
 
-The package maintains an append-only chain of pure, hand-written functions, each upgrading exactly one major to the next. Upgrading detects the document's source major from its `version` attribute, runs every function from that major up to the latest, and restamps the result — so supporting a new major only ever requires one new function, and every older version reaches the latest for free, forever.
+The package maintains an append-only chain of pure, hand-written functions, each upgrading exactly one major to the next. Upgrading detects the IDL's source major from its `version` attribute, runs every function from that major up to the latest, and restamps the result — so supporting a new major only ever requires one new function, and every older version reaches the latest for free, forever.
 
 The node types of older majors are frozen into this package at the time each major is superseded (generated from a pinned `@codama/spec` of that era and committed). They are exposed as type-only namespaces for anyone writing custom migration logic:
 

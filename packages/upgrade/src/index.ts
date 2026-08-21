@@ -1,7 +1,7 @@
 /**
  * `@codama/upgrade` — public API.
  *
- * Upgrades Codama documents of any supported major to the latest major via
+ * Upgrades Codama IDLs of any supported major to the latest major via
  * an append-only chain of pure, single-major upgrade functions. The frozen
  * node types of older majors are exposed under the `v1` (etc.) type-only
  * namespaces.

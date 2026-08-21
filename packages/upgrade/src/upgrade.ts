@@ -4,22 +4,22 @@ import { assertIsNode, CODAMA_VERSION, getCodamaVersionMajor, Node, RootNode } f
 import type * as v1 from './v1';
 
 /**
- * Any Codama document that {@link upgrade} can bring to the latest major —
+ * Any Codama IDL that {@link upgrade} can bring to the latest major —
  * the union of every supported major's `RootNode` shape. Grows by one
  * member per frozen major.
  */
 export type UpgradableRootNode = RootNode | v1.RootNode;
 
 /**
- * Upgrades a Codama document of any supported major to the latest major
+ * Upgrades a Codama IDL of any supported major to the latest major
  * and restamps it with the latest `CODAMA_VERSION`.
  *
  * Each supported major is bridged by a pure, hand-written function
  * upgrading exactly one major to the next; the chain is append-only, so
- * every major back to 1.0.0 remains upgradable forever. Documents already
+ * every major back to 1.0.0 remains upgradable forever. IDLs already
  * on the latest major go through unchanged, minus the version restamp.
- * Pre-1.0 documents are refused with `CODAMA_ERROR__UNSUPPORTED_VERSION`;
- * documents above the latest supported major are refused with
+ * Pre-1.0 IDLs are refused with `CODAMA_ERROR__UNSUPPORTED_VERSION`;
+ * IDLs above the latest supported major are refused with
  * `CODAMA_ERROR__VERSION_MISMATCH`.
  */
 export function upgrade(root: UpgradableRootNode): RootNode {
