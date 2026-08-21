@@ -21,7 +21,7 @@ import { describe, expect, test } from 'vitest';
 import { upgradeFromJson } from '../src';
 
 /**
- * A representative v1 document carrying an older minor version stamp, the
+ * A representative v1 IDL carrying an older minor version stamp, the
  * way a historical IDL would arrive from disk or from the chain.
  */
 const v1Json = JSON.stringify({
@@ -54,7 +54,7 @@ const v1Json = JSON.stringify({
 });
 
 describe('upgradeFromJson', () => {
-    test('it parses and upgrades a JSON-encoded document', () => {
+    test('it parses and upgrades a JSON-encoded IDL', () => {
         const upgraded = upgradeFromJson(v1Json);
         expect(upgraded.version).toBe(CODAMA_VERSION);
         expect(upgraded.program.name).toBe('myProgram');
@@ -62,7 +62,7 @@ describe('upgradeFromJson', () => {
         expect(upgraded.program.instructions).toHaveLength(1);
     });
 
-    test('it produces a document that passes the validators', () => {
+    test('it produces an IDL that passes the validators', () => {
         const upgraded = upgradeFromJson(v1Json);
         expect(() => visit(upgraded, throwValidatorItemsVisitor(getValidationItemsVisitor()))).not.toThrow();
     });

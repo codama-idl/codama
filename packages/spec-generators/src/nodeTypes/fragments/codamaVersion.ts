@@ -5,7 +5,7 @@ export function getCodamaVersionFragment(specVersion: string): Fragment {
     const docblock = getDocblockFragment(
         [
             'The shape of Codama spec versions this package describes. Pinned to the',
-            'spec major at generation time; documents conforming to any minor or patch',
+            'spec major at generation time; IDLs conforming to any minor or patch',
             'of that major carry a string of this shape.',
         ],
         { withLineJump: true },

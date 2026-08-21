@@ -40,13 +40,13 @@ export function createFromJson(json: string): Codama {
 }
 
 /**
- * Asserts that a document version is compatible with the Codama spec version
+ * Asserts that an IDL version is compatible with the Codama spec version
  * supported by the installed packages — i.e. that both share the same major —
  * and narrows it to `CodamaVersion` accordingly.
  *
- * The document version is compared against the generated `CODAMA_VERSION`
+ * The IDL version is compared against the generated `CODAMA_VERSION`
  * spec constant, not the npm package version: the two are unrelated
- * namespaces. Accepts any string since documents usually arrive as
+ * namespaces. Accepts any string since IDLs usually arrive as
  * untrusted JSON; unparsable versions are rejected.
  */
 export function validateCodamaVersion(rootVersion: string): asserts rootVersion is CodamaVersion {
