@@ -170,7 +170,7 @@ describe('formatArgumentValue', () => {
         const result = await formatArgumentValue(type, [], { __kind: 'Buy' }, displayContext());
 
         // Then we expect the variant label.
-        expect(result).toBe('Buy');
+        expect(result).toEqual({ degraded: false, text: 'Buy' });
     });
 
     test('it title-cases a decoded scalar enum union without a display label', async () => {
@@ -181,7 +181,7 @@ describe('formatArgumentValue', () => {
         const result = await formatArgumentValue(type, [], { __kind: 'BuyNow' }, displayContext());
 
         // Then we expect the title-cased variant name.
-        expect(result).toBe('Buy Now');
+        expect(result).toEqual({ degraded: false, text: 'Buy Now' });
     });
 
     test('it resolves a defined-type link to a linked enum', async () => {
