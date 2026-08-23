@@ -2,4 +2,4 @@
 
 const run = require('../dist/cli.cjs').run;
 
-run(process.argv);
+void run(process.argv);

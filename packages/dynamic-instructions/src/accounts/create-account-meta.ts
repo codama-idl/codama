@@ -88,7 +88,7 @@ export async function createAccountMeta<
         }));
 
     // Resolve remaining accounts from argument values
-    // https://github.com/codama-idl/codama/blob/main/packages/nodes/docs/InstructionRemainingAccountsNode.md
+    // https://github.com/codama-idl/spec/blob/main/v1/docs/InstructionRemainingAccountsNode.md
     for (const remainingNode of ixNode.remainingAccounts ?? []) {
         if (!isNode(remainingNode.value, 'argumentValueNode')) {
             throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {

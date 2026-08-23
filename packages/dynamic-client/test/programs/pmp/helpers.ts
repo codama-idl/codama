@@ -1,14 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
-import { getOptionEncoder, getStructEncoder, getU32Encoder, getU64Encoder, none, some } from '@solana/codecs';
 import {
     type Buffer as PmpBuffer,
     getBufferDecoder,
     getMetadataDecoder,
     type Metadata as PmpMetadata,
 } from '@solana-program/program-metadata';
+import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
+import { getOptionEncoder, getStructEncoder, getU32Encoder, getU64Encoder, none, some } from '@solana/codecs';
 
 import type { SvmTestContext } from '../../svm-test-context';
 import type { ProgramMetadataProgramClient } from '../generated/pmp-idl-types';

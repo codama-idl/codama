@@ -1,19 +1,42 @@
 {
     "name": "@codama/dynamic-client",
-    "version": "0.1.4",
+    "version": "0.1.6",
     "description": "Client to dynamically interact with Solana programs using Codama IDLs",
+    "keywords": [
+        "dynamic client",
+        "framework",
+        "solana",
+        "specifications",
+        "standard"
+    ],
+    "bugs": {
+        "url": "http://github.com/codama-idl/codama/issues"
+    },
     "license": "MIT",
     "repository": {
         "type": "git",
         "url": "https://github.com/codama-idl/codama",
         "directory": "packages/dynamic-client"
     },
-    "bugs": {
-        "url": "http://github.com/codama-idl/codama/issues"
-    },
     "bin": {
         "dynamic-client": "./bin/cli.cjs"
     },
+    "files": [
+        "./dist/types",
+        "./dist/index.*",
+        "./dist/cli.*",
+        "./bin/*"
+    ],
+    "type": "commonjs",
+    "sideEffects": false,
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.mjs": "./dist/index.browser.mjs"
+    },
+    "types": "./dist/types/index.d.ts",
+    "react-native": "./dist/index.react-native.mjs",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",
@@ -26,34 +49,9 @@
             "require": "./dist/index.node.cjs"
         }
     },
-    "browser": {
-        "./dist/index.node.cjs": "./dist/index.browser.cjs",
-        "./dist/index.node.mjs": "./dist/index.browser.mjs"
-    },
-    "main": "./dist/index.node.cjs",
-    "module": "./dist/index.node.mjs",
-    "react-native": "./dist/index.react-native.mjs",
-    "types": "./dist/types/index.d.ts",
-    "type": "commonjs",
-    "files": [
-        "./dist/types",
-        "./dist/index.*",
-        "./dist/cli.*",
-        "./bin/*"
-    ],
-    "sideEffects": false,
-    "keywords": [
-        "solana",
-        "framework",
-        "standard",
-        "specifications",
-        "dynamic client"
-    ],
     "scripts": {
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
-        "lint": "pnpm generate-program-types && eslint . && prettier --check .",
-        "lint:fix": "pnpm generate-program-types && eslint --fix . && prettier --write .",
         "test": "pnpm generate-program-types && pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
         "anchor:build": "cd test/programs/anchor && anchor build --ignore-keys",
         "anchor:sync:build": "pnpm anchor:build && node ./scripts/anchor/sync-anchor-builds.mjs && pnpm anchor:generate-idl && pnpm generate-program-types",
@@ -68,23 +66,23 @@
         "@codama/dynamic-codecs": "workspace:*",
         "@codama/dynamic-instructions": "workspace:*",
         "@codama/errors": "workspace:*",
-        "@solana/addresses": "^5.3.0",
-        "@solana/codecs": "^5.3.0",
-        "@solana/instructions": "^5.3.0",
+        "@solana/addresses": "^7.1.0",
+        "@solana/codecs": "^7.1.0",
+        "@solana/instructions": "^7.1.0",
         "codama": "workspace:*",
-        "commander": "^14.0.2",
+        "commander": "^15.0.0",
         "superstruct": "^2.0.2"
     },
     "devDependencies": {
         "@codama/nodes-from-anchor": "workspace:*",
         "@codama/renderers-core": "workspace:*",
-        "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.2",
-        "@solana-program/program-metadata": "^0.5.1",
-        "@solana-program/token": "0.10.0",
-        "@solana-program/token-2022": "^0.9.0",
-        "@solana/kit": "6.5.0",
-        "litesvm": "1.0.0",
-        "sas-lib": "^1.0.10"
+        "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.3",
+        "@solana-program/program-metadata": "^0.8.0",
+        "@solana-program/token": "0.15.0",
+        "@solana-program/token-2022": "^0.15.0",
+        "@solana/kit": "7.1.0",
+        "litesvm": "1.3.0",
+        "sas-lib": "2.0.0-beta"
     },
     "browserslist": [
         "supports bigint and not dead",

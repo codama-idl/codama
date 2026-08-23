@@ -1,5 +1,40 @@
 # @codama/renderers-core
 
+## 1.4.0
+
+### Minor Changes
+
+- [#1085](https://github.com/codama-idl/codama/pull/1085) [`cc37342`](https://github.com/codama-idl/codama/commit/cc373429f5cc43064c03375aa7fb3c7858f8e4da) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add a `writeIdlVisitor` that writes the visited `RootNode` to a JSON file at the given path. Use it as a Codama CLI script to write the IDL back to a file after all `before` visitors have been applied.
+  
+  ```ts
+  // codama.mjs
+  export default {
+      idl: 'interface-idl.json',
+      before: [...],
+      scripts: {
+          idl: { from: '@codama/renderers-core#writeIdlVisitor', args: ['idl.json'] },
+      },
+  };
+  ```
+
+### Patch Changes
+
+- Updated dependencies [[`21c278c`](https://github.com/codama-idl/codama/commit/21c278c46a0e509095f7b88b0475280022bca794)]:
+  - @codama/errors@1.10.2
+  - @codama/fragments@0.1.5
+  - @codama/nodes@1.10.2
+  - @codama/visitors-core@1.10.2
+
+## 1.3.12
+
+### Patch Changes
+
+- Updated dependencies [[`f69845c`](https://github.com/codama-idl/codama/commit/f69845cb89ee0cc3877ee89a4b734386e9336074)]:
+    - @codama/fragments@0.1.4
+    - @codama/nodes@1.10.1
+    - @codama/visitors-core@1.10.1
+    - @codama/errors@1.10.1
+
 ## 1.3.11
 
 ### Patch Changes

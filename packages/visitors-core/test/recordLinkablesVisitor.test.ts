@@ -15,6 +15,7 @@ import {
     isNode,
     numberTypeNode,
     pdaLinkNode,
+    camelCase,
     pdaNode,
     programLinkNode,
     programNode,
@@ -354,7 +355,7 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
         new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
             kind: 'accountLinkNode',
             linkNode,
-            name: 'missingAccount',
+            name: camelCase('missingAccount'),
             path: [node, linkNode],
         }),
     );

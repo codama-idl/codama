@@ -1,5 +1,6 @@
 import { joinPath } from '@codama/fragments/javascript';
 import { getSpec } from '@codama/spec';
+import { getSpec as getSpecV1 } from '@codama/spec-v1';
 
 import { generateNodes, NODE_CONFIGS } from './nodes';
 import { generateNodeTypes } from './nodeTypes';
@@ -60,6 +61,23 @@ export function generate(): GenerateResult {
             unionAliasNames: UNION_ALIAS_NAMES,
         });
         outputs.push({ generator: 'visitorsCore', outputDir });
+    }
+
+    // Freeze the v1 node types into `@codama/upgrade`. The frozen snapshot
+    // is generated from its own aliased pin (`@codama/spec-v1`), so it only
+    // changes when that pin — or the generator code — deliberately changes.
+    // While the living `@codama/spec` pin is still on its 1.x line the two
+    // specs coincide; after the v2 transition, the living pin moves to 2.x
+    // and the alias keeps pointing at the last published 1.x.
+    {
+        const outputDir = joinPath(getRepoDirectory(), 'packages', 'upgrade', 'src', 'v1', 'generated');
+        generateNodeTypes(getSpecV1(), {
+            genericParamOrder: GENERIC_PARAM_ORDER,
+            narrowableDataAttributes: NARROWABLE_DATA_ATTRIBUTES,
+            outputDir,
+            targetSpecMajor: 1,
+        });
+        outputs.push({ generator: 'nodeTypes@v1-frozen', outputDir });
     }
 
     return { outputs };

@@ -1,5 +1,25 @@
 # @codama/nodes-from-anchor
 
+## 1.5.5
+
+### Patch Changes
+
+- Updated dependencies [[`21c278c`](https://github.com/codama-idl/codama/commit/21c278c46a0e509095f7b88b0475280022bca794)]:
+  - @codama/errors@1.10.2
+  - @codama/visitors@1.10.2
+  - @codama/nodes@1.10.2
+
+## 1.5.4
+
+### Patch Changes
+
+- [#1030](https://github.com/codama-idl/codama/pull/1030) [`f69845c`](https://github.com/codama-idl/codama/commit/f69845cb89ee0cc3877ee89a4b734386e9336074) Thanks [@ChiefWoods](https://github.com/ChiefWoods)! - fix(nodes): uppercased snake case not correctly converted to snake case
+
+- Updated dependencies [[`f69845c`](https://github.com/codama-idl/codama/commit/f69845cb89ee0cc3877ee89a4b734386e9336074)]:
+    - @codama/nodes@1.10.1
+    - @codama/visitors@1.10.1
+    - @codama/errors@1.10.1
+
 ## 1.5.3
 
 ### Patch Changes

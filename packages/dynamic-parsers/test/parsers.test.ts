@@ -1,5 +1,6 @@
 import {
     accountNode,
+    argumentValueNode,
     bytesTypeNode,
     constantDiscriminatorNode,
     constantValueNode,
@@ -11,6 +12,7 @@ import {
     instructionAccountNode,
     instructionArgumentNode,
     instructionNode,
+    instructionRemainingAccountsNode,
     numberTypeNode,
     numberValueNode,
     programNode,
@@ -337,7 +339,7 @@ describe('parseInstruction', () => {
         const instruction = {
             accounts: [{ address: '1111', role: AccountRole.READONLY_SIGNER }],
             data: hex('48656c6c6f'),
-            programAddress: 'myProgramAddress',
+            programAddress: '1111',
         } as unknown as Parameters<typeof parseInstruction>[1];
 
         // When we parse the instruction.
@@ -348,7 +350,151 @@ describe('parseInstruction', () => {
             accounts: [{ address: '1111', name: 'signer', role: AccountRole.READONLY_SIGNER }],
             data: { message: 'Hello' },
             path: [root, root.program, memoInstruction],
+            remainingAccounts: [],
         });
+    });
+
+    test('it captures account metas beyond the named accounts as remaining accounts', () => {
+        // Given an instruction with one named account and a remaining-accounts group.
+        const instruction = instructionNode({
+            accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'source' })],
+            arguments: [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
+            name: 'transfer',
+            remainingAccounts: [
+                instructionRemainingAccountsNode(argumentValueNode('multiSigners'), { isSigner: true }),
+            ],
+        });
+        const root = rootNode(programNode({ instructions: [instruction], name: 'myProgram', publicKey: '1111' }));
+
+        // When we parse a concrete instruction carrying two metas beyond the named account.
+        const result = parseInstruction(root, {
+            accounts: [
+                { address: 'source11', role: AccountRole.WRITABLE },
+                { address: 'signerA1', role: AccountRole.READONLY_SIGNER },
+                { address: 'signerB1', role: AccountRole.READONLY_SIGNER },
+            ],
+            data: hex('2a'),
+            programAddress: '1111',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+
+        // Then we expect the trailing metas captured as remaining accounts.
+        expect(result?.remainingAccounts).toStrictEqual([
+            { address: 'signerA1', role: AccountRole.READONLY_SIGNER },
+            { address: 'signerB1', role: AccountRole.READONLY_SIGNER },
+        ]);
+    });
+
+    test('it parses an instruction from an additional program using the program address', () => {
+        // Given a token-shaped main program and an ATA-shaped additional program whose
+        // instructions share the same one-byte field discriminator.
+        const discriminator = (defaultValue: number) =>
+            instructionArgumentNode({
+                defaultValue: numberValueNode(defaultValue),
+                name: 'discriminator',
+                type: numberTypeNode('u8'),
+            });
+        const additionalInstruction = instructionNode({
+            accounts: [
+                instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' }),
+                instructionAccountNode({ isSigner: false, isWritable: true, name: 'ata' }),
+            ],
+            arguments: [discriminator(1)],
+            discriminators: [fieldDiscriminatorNode('discriminator')],
+            name: 'createAssociatedTokenIdempotent',
+        });
+        const additionalProgram = programNode({
+            instructions: [additionalInstruction],
+            name: 'associatedToken',
+            publicKey: '2222',
+        });
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({
+                        accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'account' })],
+                        arguments: [discriminator(1)],
+                        discriminators: [fieldDiscriminatorNode('discriminator')],
+                        name: 'initializeAccount',
+                    }),
+                ],
+                name: 'token',
+                publicKey: '1111',
+            }),
+            [additionalProgram],
+        );
+
+        // And a concrete instruction targeting the additional program's address.
+        const instruction = {
+            accounts: [
+                { address: 'payer111', role: AccountRole.WRITABLE_SIGNER },
+                { address: 'ata11111', role: AccountRole.WRITABLE },
+            ],
+            data: hex('01'),
+            programAddress: '2222',
+        } as unknown as Parameters<typeof parseInstruction>[1];
+
+        // When we parse the instruction.
+        const result = parseInstruction(root, instruction);
+
+        // Then we expect the additional program's instruction, not the main program's.
+        expect(result).toStrictEqual({
+            accounts: [
+                { address: 'payer111', name: 'payer', role: AccountRole.WRITABLE_SIGNER },
+                { address: 'ata11111', name: 'ata', role: AccountRole.WRITABLE },
+            ],
+            data: { discriminator: 1 },
+            path: [root, additionalProgram, additionalInstruction],
+            remainingAccounts: [],
+        });
+    });
+    test('it returns undefined when the identified data cannot be decoded', () => {
+        // Given an instruction whose discriminator matches one-byte data but whose full
+        // arguments require more bytes than provided.
+        const instruction = instructionNode({
+            arguments: [
+                instructionArgumentNode({
+                    defaultValue: numberValueNode(1),
+                    defaultValueStrategy: 'omitted',
+                    name: 'discriminator',
+                    type: numberTypeNode('u8'),
+                }),
+                instructionArgumentNode({ name: 'amount', type: numberTypeNode('u64') }),
+            ],
+            discriminators: [fieldDiscriminatorNode('discriminator')],
+            name: 'myInstruction',
+        });
+        const root = rootNode(programNode({ instructions: [instruction], name: 'myProgram', publicKey: '1111' }));
+
+        // When we parse truncated data: the discriminator matches but `amount` cannot decode.
+        const result = parseInstruction(root, {
+            accounts: [],
+            data: hex('01'),
+            programAddress: '1111',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+
+        // Then we expect undefined rather than a decode error: parsing is total.
+        expect(result).toBeUndefined();
+    });
+
+    test('it does not parse an instruction whose program is not part of the root', () => {
+        const root = rootNode(
+            programNode({
+                instructions: [
+                    instructionNode({
+                        arguments: [instructionArgumentNode({ name: 'value', type: numberTypeNode('u8') })],
+                        name: 'myInstruction',
+                    }),
+                ],
+                name: 'myProgram',
+                publicKey: '1111',
+            }),
+        );
+        const result = parseInstruction(root, {
+            accounts: [],
+            data: hex('01'),
+            programAddress: '9999',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+        expect(result).toBeUndefined();
     });
 });
 

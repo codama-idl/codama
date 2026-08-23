@@ -20,9 +20,7 @@ export class NodeStack {
 
     constructor(...stack: readonly [...(readonly NodePath[]), NodePath] | readonly []) {
         this.stack =
-            stack.length === 0
-                ? [[]]
-                : ([...stack.map(nodes => [...nodes])] as [...MutableNodePath[], MutableNodePath]);
+            stack.length === 0 ? [[]] : (stack.map(nodes => [...nodes]) as [...MutableNodePath[], MutableNodePath]);
     }
 
     private get currentPath(): MutableNodePath {

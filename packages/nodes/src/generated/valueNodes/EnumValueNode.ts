@@ -1,4 +1,5 @@
 import type { DefinedTypeLinkNode, EnumValueNode, EnumValuePayload } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 import { definedTypeLinkNode } from '../linkNodes/DefinedTypeLinkNode';
 

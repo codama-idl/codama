@@ -8,12 +8,10 @@ export function deleteNodesVisitor<TNodeKind extends NodeKind = NodeKind>(
     options?: Parameters<typeof topDownTransformerVisitor<TNodeKind>>[1],
 ) {
     return topDownTransformerVisitor<TNodeKind>(
-        selectors.map(
-            (selector): TopDownNodeTransformerWithSelector => ({
-                select: selector,
-                transform: () => null,
-            }),
-        ),
+        selectors.map((selector): TopDownNodeTransformerWithSelector => ({
+            select: selector,
+            transform: () => null,
+        })),
         options,
     );
 }

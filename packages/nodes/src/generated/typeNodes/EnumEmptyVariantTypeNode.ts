@@ -1,4 +1,5 @@
 import type { EnumEmptyVariantTypeNode, EnumVariantDisplayNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 
 /** A unit-style variant of an enum that carries no payload. */

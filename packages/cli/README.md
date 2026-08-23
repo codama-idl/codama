@@ -162,6 +162,19 @@ There are plenty of existing visitors that you can use in your Codama scripts. T
 
 The examples below show how to use some of these visitors in your configuration file. They make heavy use of the [`@codama/visitors`](https://github.com/codama-idl/codama/tree/main/packages/visitors/README.md) package which provides a large number of utility visitors.
 
+### Checking the IDL version
+
+Throws an error if the IDL's major version does not match the Codama spec version supported by your installed packages. The CLI otherwise accepts IDLs verbatim without any version checking, so this is best used as a `before` visitor to fail fast on incompatible IDLs.
+
+See [`checkCodamaVersionVisitor`](https://github.com/codama-idl/codama/tree/main/packages/visitors#checkcodamaversionvisitor)
+
+```json
+{
+    "idl": "program/idl.json",
+    "before": ["@codama/visitors#checkCodamaVersionVisitor"]
+}
+```
+
 ### Deleting nodes
 
 Returns a new IDL with the specified nodes removed.
@@ -181,7 +194,7 @@ In the example below, we remove the `mint` account, the `initializeMint` instruc
 
 Generates a JavaScript client for the IDL at the specified output path.
 
-See [`@codama/renderer-js`](https://github.com/codama-idl/renderers-js).
+See [`@codama/renderers-js`](https://github.com/codama-idl/renderers-js).
 
 ```json
 {
@@ -236,5 +249,18 @@ In the example below, we rename the `vault` account to `safe` and update the `au
             }
         }
     ]
+}
+```
+
+### Upgrading legacy IDLs
+
+Returns a new IDL upgraded to the latest major version of the Codama standard. Since renderers and other visitors expect the latest version, this is best used as a `before` visitor so any older IDL is upgraded before everything else runs.
+
+See [`@codama/upgrade`](https://github.com/codama-idl/codama/tree/main/packages/upgrade)
+
+```json
+{
+    "idl": "program/idl.json",
+    "before": ["@codama/upgrade"]
 }
 ```

@@ -1,4 +1,5 @@
 import type { AccountLinkNode, ProgramLinkNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 import { programLinkNode } from './ProgramLinkNode';
 

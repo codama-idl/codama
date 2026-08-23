@@ -1,10 +1,50 @@
 {
     "name": "@codama/dynamic-instructions",
-    "version": "0.3.1",
+    "version": "0.4.1",
     "description": "Runtime instruction creation for Codama IDLs",
+    "keywords": [
+        "framework",
+        "instructions",
+        "solana",
+        "specifications",
+        "standard"
+    ],
+    "bugs": {
+        "url": "http://github.com/codama-idl/codama/issues"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/codama-idl/codama",
+        "directory": "packages/dynamic-instructions"
+    },
     "bin": {
         "dynamic-instructions": "./bin/cli.cjs"
     },
+    "files": [
+        "./dist/types",
+        "./dist/index.*",
+        "./dist/cli.*",
+        "./dist/codegen.*",
+        "./bin/*"
+    ],
+    "type": "commonjs",
+    "sideEffects": false,
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.mjs": "./dist/index.browser.mjs"
+    },
+    "types": "./dist/types/index.d.ts",
+    "typesVersions": {
+        "*": {
+            "codegen": [
+                "./dist/types/codegen/index.d.ts"
+            ]
+        }
+    },
+    "react-native": "./dist/index.react-native.mjs",
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
@@ -24,42 +64,9 @@
             "require": "./dist/codegen.node.cjs"
         }
     },
-    "browser": {
-        "./dist/index.node.cjs": "./dist/index.browser.cjs",
-        "./dist/index.node.mjs": "./dist/index.browser.mjs"
-    },
-    "main": "./dist/index.node.cjs",
-    "module": "./dist/index.node.mjs",
-    "react-native": "./dist/index.react-native.mjs",
-    "types": "./dist/types/index.d.ts",
-    "typesVersions": {
-        "*": {
-            "codegen": [
-                "./dist/types/codegen/index.d.ts"
-            ]
-        }
-    },
-    "type": "commonjs",
-    "files": [
-        "./dist/types",
-        "./dist/index.*",
-        "./dist/cli.*",
-        "./dist/codegen.*",
-        "./bin/*"
-    ],
-    "sideEffects": false,
-    "keywords": [
-        "solana",
-        "framework",
-        "standard",
-        "specifications",
-        "instructions"
-    ],
     "scripts": {
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
-        "lint": "eslint . && prettier --check .",
-        "lint:fix": "eslint --fix . && prettier --write .",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
         "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
         "test:types": "tsc --noEmit",
@@ -70,25 +77,16 @@
         "@codama/dynamic-codecs": "workspace:*",
         "@codama/dynamic-parsers": "workspace:*",
         "@codama/errors": "workspace:*",
-        "@solana/accounts": "^5.3.0",
-        "@solana/addresses": "^5.3.0",
-        "@solana/codecs": "^5.3.0",
-        "@solana/instructions": "^5.3.0",
+        "@solana/accounts": "^7.1.0",
+        "@solana/addresses": "^7.1.0",
+        "@solana/codecs": "^7.1.0",
+        "@solana/instructions": "^7.1.0",
         "codama": "workspace:*",
-        "commander": "^14.0.2",
+        "commander": "^15.0.0",
         "superstruct": "^2.0.2"
     },
     "devDependencies": {
-        "@solana/kit": "6.5.0"
-    },
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/codama-idl/codama",
-        "directory": "packages/dynamic-instructions"
-    },
-    "bugs": {
-        "url": "http://github.com/codama-idl/codama/issues"
+        "@solana/kit": "7.1.0"
     },
     "browserslist": [
         "supports bigint and not dead",

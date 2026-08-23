@@ -8,6 +8,7 @@ import type {
     PdaNode,
     ProgramNode,
 } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type ProgramNodeInput<
@@ -27,7 +28,11 @@ export type ProgramNodeInput<
     readonly publicKey: ProgramNode['publicKey'];
 };
 
-/** A Solana program: its identity, version, accounts, instructions, defined types, PDAs, events, errors, and constants. */
+/**
+ * A Solana program: its identity, version, accounts, instructions, defined types, PDAs, events, errors, and constants.
+ *
+ * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/37ec38ea-66df-4c08-81c3-822ef4388580)
+ */
 export function programNode<
     const TPdas extends Array<PdaNode> | undefined = [],
     const TAccounts extends Array<AccountNode> | undefined = [],

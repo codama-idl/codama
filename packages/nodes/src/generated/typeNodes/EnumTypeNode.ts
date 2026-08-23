@@ -1,4 +1,5 @@
 import type { EnumTypeNode, EnumVariantTypeNode, NestedTypeNode, NumberTypeNode } from '@codama/node-types';
+
 import { numberTypeNode } from './NumberTypeNode';
 
 /** A tagged union: a numeric discriminator followed by one of several variant payloads. */

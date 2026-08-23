@@ -17,6 +17,7 @@ import {
     InstructionInputValueNode,
     InstructionNode,
     isNode,
+    PdaSeedValueNode,
     VALUE_NODES,
 } from '@codama/nodes';
 
@@ -134,7 +135,8 @@ export function getResolvedInstructionInputsVisitor(
                             instructionAccount: account,
                             instructionAccountName: account.name,
                             instructionName: instruction.name,
-                            seed,
+                            // The guard above narrows `seed.value`, which TS does not propagate to `seed` itself.
+                            seed: seed as PdaSeedValueNode<AccountValueNode>,
                             seedName: seed.name,
                             seedValueName: seed.value.name,
                         });

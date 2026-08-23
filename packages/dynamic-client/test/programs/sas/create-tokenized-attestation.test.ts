@@ -1,5 +1,5 @@
-import { type Address } from '@solana/addresses';
 import { findAssociatedTokenPda } from '@solana-program/token';
+import { type Address } from '@solana/addresses';
 import {
     deriveAttestationMintPda,
     deriveAttestationPda,

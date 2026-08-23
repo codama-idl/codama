@@ -78,6 +78,7 @@ import {
     variablePdaSeedNode,
     zeroableOptionTypeNode,
 } from '@codama/nodes';
+
 import { staticVisitor } from '../staticVisitor';
 import { type Visitor, visit as baseVisit } from '../visitor';
 

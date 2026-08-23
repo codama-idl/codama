@@ -1,7 +1,35 @@
 {
     "name": "@codama/visitors",
-    "version": "1.10.0",
+    "version": "1.10.2",
     "description": "All visitors for the Codama framework",
+    "keywords": [
+        "framework",
+        "solana",
+        "standard",
+        "visitors"
+    ],
+    "bugs": {
+        "url": "http://github.com/codama-idl/codama/issues"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/codama-idl/codama"
+    },
+    "files": [
+        "./dist/types",
+        "./dist/index.*"
+    ],
+    "type": "commonjs",
+    "sideEffects": false,
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.mjs": "./dist/index.browser.mjs"
+    },
+    "types": "./dist/types/index.d.ts",
+    "react-native": "./dist/index.react-native.mjs",
     "exports": {
         "types": "./dist/types/index.d.ts",
         "react-native": "./dist/index.react-native.mjs",
@@ -14,31 +42,9 @@
             "require": "./dist/index.node.cjs"
         }
     },
-    "browser": {
-        "./dist/index.node.cjs": "./dist/index.browser.cjs",
-        "./dist/index.node.mjs": "./dist/index.browser.mjs"
-    },
-    "main": "./dist/index.node.cjs",
-    "module": "./dist/index.node.mjs",
-    "react-native": "./dist/index.react-native.mjs",
-    "types": "./dist/types/index.d.ts",
-    "type": "commonjs",
-    "files": [
-        "./dist/types",
-        "./dist/index.*"
-    ],
-    "sideEffects": false,
-    "keywords": [
-        "solana",
-        "framework",
-        "standard",
-        "visitors"
-    ],
     "scripts": {
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
-        "lint": "eslint . && prettier --check .",
-        "lint:fix": "eslint --fix . && prettier --write .",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
         "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
         "test:types": "tsc --noEmit",
@@ -48,14 +54,6 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*"
-    },
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/codama-idl/codama"
-    },
-    "bugs": {
-        "url": "http://github.com/codama-idl/codama/issues"
     },
     "browserslist": [
         "supports bigint and not dead",

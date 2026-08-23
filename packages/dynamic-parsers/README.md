@@ -88,6 +88,18 @@ if (parsedData) {
 }
 ```
 
+Note that it uses the instruction's `programAddress` to restrict the search to the matching program — including any of the root node's `additionalPrograms`. When no program of the root matches that address, nothing is parsed: matching an unknown program against another program's candidates would confidently misattribute the data, which matters when the result is displayed to end users (e.g. clear signing).
+
+## Program selection
+
+All functions above search the root node's main program as well as its `additionalPrograms`, in that order. Additionally, they all accept an optional `programAddress` option that restricts the search to the programs matching that address. When no program matches, nothing is identified.
+
+```ts
+const parsedData = parseInstructionData(rootNode, bytes, { programAddress: address });
+```
+
+The single-non-discriminated-candidate fallback follows the same selection when a `programAddress` is provided. Without one, it stays conservative and only applies to the main program, since bytes alone cannot tell which program a discriminator-less candidate belongs to.
+
 ### `identifyAccountData`
 
 This function tries to match the provided bytes to an account node, returning a `NodePath<AccountNode>` object if the identification was successful, or `undefined` otherwise. It is used by the `parseAccountData` function under the hood.

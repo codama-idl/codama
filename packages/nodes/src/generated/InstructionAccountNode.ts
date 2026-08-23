@@ -4,6 +4,7 @@ import type {
     InstructionAccountNode,
     InstructionInputValueNode,
 } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type InstructionAccountNodeInput<
@@ -15,7 +16,11 @@ export type InstructionAccountNodeInput<
     readonly docs?: DocsInput;
 };
 
-/** An account participating in an instruction, with its name, signing/writability flags, and an optional default value. */
+/**
+ * An account participating in an instruction, with its name, signing/writability flags, and an optional default value.
+ *
+ * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/4656a08b-2f89-49c2-b428-5378cb1a0b9e)
+ */
 export function instructionAccountNode<
     const TDefaultValue extends InstructionInputValueNode | undefined = undefined,
     const TAccountLink extends AccountLinkNode | undefined = undefined,

@@ -6,6 +6,7 @@ import {
 } from '@codama/errors';
 import {
     accountNode,
+    camelCase,
     constantDiscriminatorNode,
     constantValueNode,
     constantValueNodeFromBytes,
@@ -220,7 +221,7 @@ describe('matchDiscriminators', () => {
             const fields = structTypeNode([]);
             expect(() =>
                 matchDiscriminators(hex('0102030405'), [discriminator], fields, codecAndValueVisitors),
-            ).toThrow(new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: 'key' }));
+            ).toThrow(new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: camelCase('key') }));
         });
         test('it throws an error if the discriminator field does not have a default value', () => {
             const discriminator = fieldDiscriminatorNode('key');
@@ -232,7 +233,9 @@ describe('matchDiscriminators', () => {
             ]);
             expect(() =>
                 matchDiscriminators(hex('0102030405'), [discriminator], fields, codecAndValueVisitors),
-            ).toThrow(new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, { field: 'key' }));
+            ).toThrow(
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, { field: camelCase('key') }),
+            );
         });
         test('it resolves link nodes correctly', () => {
             // Given two link nodes designed so that the path would

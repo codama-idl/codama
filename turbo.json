@@ -23,14 +23,6 @@
         "test:treeshakability": {
             "dependsOn": ["build"]
         },
-        "test:types": {},
-        "lint": {
-            "inputs": ["$TURBO_DEFAULT$", "../../eslint.config.*"],
-            "outputs": []
-        },
-        "lint:fix": {
-            "inputs": ["$TURBO_DEFAULT$", "../../eslint.config.*"],
-            "outputs": ["*"]
-        }
+        "test:types": {}
     }
 }

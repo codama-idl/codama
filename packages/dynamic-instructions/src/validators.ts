@@ -480,7 +480,7 @@ function ArrayValidator(
     // First define a validator for every array item
     const itemValidator = createValidatorForTypeNode(nodeName, node.item, definedTypes);
     // Then validate CountNode representing array size:
-    // https://github.com/codama-idl/codama/blob/main/packages/nodes/docs/typeNodes/ArrayTypeNode.md
+    // https://github.com/codama-idl/spec/blob/main/v1/docs/typeNodes/ArrayTypeNode.md
     switch (node.count.kind) {
         case 'fixedCountNode': {
             return size(array(itemValidator), node.count.value) as StructUnknown;

@@ -34,6 +34,20 @@ export async function buildDisplayContext(
     parsedInstruction: ParsedInstruction,
     options: GetInstructionDisplayOptions = {},
 ): Promise<DisplayContext> {
+    const baseContext = buildBaseDisplayContext(root, parsedInstruction, options);
+    return { ...baseContext, consumedMemberNames: await resolveConsumedMemberNames(baseContext) };
+}
+
+/**
+ * Assembles the {@link DisplayContext} without its `consumedMemberNames`: the part that needs no
+ * account state and so builds synchronously. Callers needing only the static graph (e.g. the
+ * offline-dictionary planner) reuse it without triggering account fetches.
+ */
+export function buildBaseDisplayContext(
+    root: RootNode,
+    parsedInstruction: ParsedInstruction,
+    options: GetInstructionDisplayOptions = {},
+): Omit<DisplayContext, 'consumedMemberNames'> {
     const instruction = getLastNodeFromPath(parsedInstruction.path);
 
     const provides = new Map<string, ProvidedNode>(
@@ -43,15 +57,13 @@ export async function buildDisplayContext(
     const linkables = new LinkableDictionary();
     visit(root, getRecordLinkablesVisitor(linkables));
 
-    const baseContext: Omit<DisplayContext, 'consumedMemberNames'> = {
+    return {
         fetchAccount: options.fetchAccount,
         parsedInstruction,
         provides,
         resolveAccountData: createAccountDataResolver(parsedInstruction, linkables),
         resolveDefinedType: linkPath => linkables.getPath(linkPath),
     };
-
-    return { ...baseContext, consumedMemberNames: await resolveConsumedMemberNames(baseContext) };
 }
 
 /**

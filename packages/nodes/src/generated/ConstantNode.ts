@@ -1,4 +1,5 @@
 import type { ConstantNode, TypeNode, ValueNode } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 /** A named constant exposed by the program: a typed value associated with a name. */

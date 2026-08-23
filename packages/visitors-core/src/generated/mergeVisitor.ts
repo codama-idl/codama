@@ -1,4 +1,5 @@
 import { REGISTERED_NODE_KINDS, type Node, type NodeKind } from '@codama/nodes';
+
 import { staticVisitor } from '../staticVisitor';
 import { type Visitor, visit as baseVisit } from '../visitor';
 

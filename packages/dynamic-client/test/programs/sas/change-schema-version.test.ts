@@ -56,7 +56,7 @@ describe('SAS: changeSchemaVersion', () => {
 
         const account = ctx.requireEncodedAccount(newSchemaPda);
         const schema = getSchemaDecoder().decode(account.data);
-        expect(schema.layout).toEqual(new Uint8Array([SCHEMA_DATA_STRING_TYPE, SCHEMA_DATA_U8_TYPE]));
+        expect(schema.layout).toEqual([SCHEMA_DATA_STRING_TYPE, SCHEMA_DATA_U8_TYPE]);
         expect(schema.version).toBe(2);
     });
 

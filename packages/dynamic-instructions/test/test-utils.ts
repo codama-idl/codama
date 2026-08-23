@@ -97,6 +97,7 @@ export function parsedInstruction(
         accounts?: ReadonlyArray<readonly [name: string, address: Address]>;
         data?: Record<string, unknown>;
         instruction?: InstructionNode;
+        remainingAccounts?: ReadonlyArray<readonly [address: Address, role: AccountRole]>;
     } = {},
 ): ParsedInstruction {
     const instruction = overrides.instruction ?? DEFAULT_INSTRUCTION;
@@ -109,6 +110,7 @@ export function parsedInstruction(
         })),
         data: overrides.data ?? {},
         path: [root, root.program, instruction] as NodePath<InstructionNode>,
+        remainingAccounts: (overrides.remainingAccounts ?? []).map(([address, role]) => ({ address, role })),
     };
 }
 

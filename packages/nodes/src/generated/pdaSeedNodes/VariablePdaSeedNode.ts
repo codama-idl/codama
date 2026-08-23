@@ -1,4 +1,5 @@
 import type { TypeNode, VariablePdaSeedNode } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../../shared';
 
 /** A PDA seed whose value is provided at derivation time, identified by name. */

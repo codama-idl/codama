@@ -4,6 +4,7 @@ import type {
     StructFieldDisplayNode,
     TypeNode,
 } from '@codama/node-types';
+
 import { camelCase, DocsInput, parseDocs } from '../shared';
 
 export type InstructionArgumentNodeInput<
@@ -15,7 +16,12 @@ export type InstructionArgumentNodeInput<
     readonly docs?: DocsInput;
 };
 
-/** A named argument of an instruction, with its type and an optional default value. */
+/**
+ * A named argument of an instruction, with its type and an optional default value.
+ * Serialised next to each other, the arguments of an instruction form its data.
+ *
+ * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/7e2def82-949a-4663-bdc3-ac599d39d2d2)
+ */
 export function instructionArgumentNode<
     const TDefaultValue extends InstructionInputValueNode | undefined = undefined,
     const TType extends TypeNode = TypeNode,

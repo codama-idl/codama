@@ -1,4 +1,5 @@
 import type { NestedTypeNode, NumberTypeNode, OptionTypeNode, TypeNode } from '@codama/node-types';
+
 import { numberTypeNode } from './NumberTypeNode';
 
 /** A value that may be present or absent (Some/None), with an explicit numeric prefix indicating presence. */

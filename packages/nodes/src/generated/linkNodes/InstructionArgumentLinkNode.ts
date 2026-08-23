@@ -1,4 +1,5 @@
 import type { InstructionArgumentLinkNode, InstructionLinkNode } from '@codama/node-types';
+
 import { camelCase } from '../../shared';
 import { instructionLinkNode } from './InstructionLinkNode';
 

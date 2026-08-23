@@ -1,3 +1,8 @@
+import { TOKEN_PROGRAM_ADDRESS as TOKEN_PROGRAM_ADDR } from '@solana-program/token';
+import {
+    ASSOCIATED_TOKEN_PROGRAM_ADDRESS as ASSOCIATED_TOKEN_PROGRAM_ADDR,
+    TOKEN_2022_PROGRAM_ADDRESS as T2022_PROGRAM_ADDR,
+} from '@solana-program/token-2022';
 import {
     type Address,
     address,
@@ -13,11 +18,6 @@ import {
     setTransactionMessageFeePayerSigner,
     signTransactionWithSigners,
 } from '@solana/kit';
-import { TOKEN_PROGRAM_ADDRESS as TOKEN_PROGRAM_ADDR } from '@solana-program/token';
-import {
-    ASSOCIATED_TOKEN_PROGRAM_ADDRESS as ASSOCIATED_TOKEN_PROGRAM_ADDR,
-    TOKEN_2022_PROGRAM_ADDRESS as T2022_PROGRAM_ADDR,
-} from '@solana-program/token-2022';
 import { FailedTransactionMetadata, LiteSVM, type TransactionMetadata } from 'litesvm';
 
 /**

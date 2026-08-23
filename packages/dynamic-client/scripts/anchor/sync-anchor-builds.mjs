@@ -4,7 +4,7 @@ try {
     const { hashes, artifactPath } = syncAnchorBuilds();
     console.log(`Wrote ${artifactPath}`);
     for (const [program, hash] of Object.entries(hashes)) {
-        console.log(`  ${program}: ${hash}`);
+        console.log(`  ${program}: source ${hash.source}, binary ${hash.binary}`);
     }
 } catch (error) {
     console.error('[sync-anchor-builds] Failed to sync anchor builds!');

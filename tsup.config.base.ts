@@ -41,10 +41,8 @@ export function getBuildConfig(options: BuildOptions): TsupConfig {
         name: platform,
         // Inline private, non-published packages.
         // WARNING: This inlines packages recursively. Make sure these don't have deep dep trees.
-        noExternal: [
-            // @noble/hashes/sha256 is an ESM-only module, so we have to inline it in CJS builds.
-            ...(format === 'cjs' ? ['@noble/hashes/sha256', '@noble/hashes/crypto'] : []),
-        ],
+        // @noble/hashes/sha256 is an ESM-only module, so we have to inline it in CJS builds.
+        noExternal: format === 'cjs' ? ['@noble/hashes/sha256', '@noble/hashes/crypto'] : [],
         outExtension({ format }) {
             const extension =
                 format === 'iife' ? `.production.min.js` : `.${platform}.${format === 'cjs' ? 'cjs' : 'mjs'}`;
