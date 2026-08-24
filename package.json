@@ -11,7 +11,7 @@
     },
     "devDependencies": {
         "@changesets/changelog-github": "^1.0.0",
-        "@changesets/cli": "^3.0.0",
+        "@changesets/cli": "^3.0.1",
         "@solana-config/oxc": "^0.1.1",
         "@types/node": "^26",
         "agadoo": "^3.0.0",
