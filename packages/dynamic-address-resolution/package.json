@@ -75,13 +75,13 @@
     "dependencies": {
         "@codama/dynamic-codecs": "workspace:*",
         "@codama/errors": "workspace:*",
-        "@solana/addresses": "^7.1.0",
-        "@solana/codecs": "^7.1.0",
+        "@solana/addresses": "^7.1.1",
+        "@solana/codecs": "^7.1.1",
         "codama": "workspace:*",
         "commander": "^15.0.0"
     },
     "devDependencies": {
-        "@solana/kit": "7.1.0"
+        "@solana/kit": "7.1.1"
     },
     "browserslist": [
         "supports bigint and not dead",
