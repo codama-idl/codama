@@ -1,4 +1,5 @@
 import type { ReadonlyUint8Array } from '@solana/codecs';
+import { pascalCase } from 'codama';
 import type { Visitor } from 'codama';
 import type {
     BooleanValueNode,
@@ -34,7 +35,7 @@ export function createDefaultValueEncoderVisitor(codec: {
     return {
         visitBooleanValue: (node: BooleanValueNode) => codec.encode(node.boolean),
         visitBytesValue: (node: BytesValueNode) => codec.encode([node.encoding, node.data]),
-        visitEnumValue: (node: EnumValueNode) => codec.encode(node.variant),
+        visitEnumValue: (node: EnumValueNode) => codec.encode({ __kind: pascalCase(node.variant) }),
         visitNoneValue: () => codec.encode(null),
         visitNumberValue: (node: NumberValueNode) => codec.encode(node.number),
         visitPublicKeyValue: (node: PublicKeyValueNode) => codec.encode(node.publicKey),

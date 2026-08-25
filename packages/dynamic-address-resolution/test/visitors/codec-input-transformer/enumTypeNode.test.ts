@@ -24,7 +24,7 @@ import { rootNodeMock } from './codec-input-transformer-test-utils';
 describe('enumTypeNode', () => {
     // Based on pmp-idl.json, mpl-token-metadata-idl.json, token-2022-idl.json
 
-    test('should pass through scalar enum (number)', () => {
+    test('should resolve scalar enum (number)', () => {
         // Based on pmp-idl.json: accountDiscriminator enum
         const scalarEnum = enumTypeNode([
             enumEmptyVariantTypeNode('empty'),
@@ -33,17 +33,17 @@ describe('enumTypeNode', () => {
         ]);
         const transformer = createCodecInputTransformer(scalarEnum, rootNodeMock);
 
-        expect(transformer(0)).toBe(0);
-        expect(transformer(1)).toBe(1);
-        expect(transformer(2)).toBe(2);
+        expect(transformer(0)).toEqual({ __kind: 'Empty' });
+        expect(transformer(1)).toEqual({ __kind: 'Buffer' });
+        expect(transformer(2)).toEqual({ __kind: 'Metadata' });
     });
 
-    test('should pass through scalar enum (string)', () => {
+    test('should resolve scalar enum (string)', () => {
         const scalarEnum = enumTypeNode([enumEmptyVariantTypeNode('initialized'), enumEmptyVariantTypeNode('frozen')]);
         const transformer = createCodecInputTransformer(scalarEnum, rootNodeMock);
 
-        expect(transformer('initialized')).toBe('initialized');
-        expect(transformer('frozen')).toBe('frozen');
+        expect(transformer('initialized')).toEqual({ __kind: 'Initialized' });
+        expect(transformer('frozen')).toEqual({ __kind: 'Frozen' });
     });
 
     test('should pass through empty variant enum', () => {
