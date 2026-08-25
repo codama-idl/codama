@@ -147,11 +147,11 @@ importers:
         specifier: ^0.0.3
         version: 0.0.3(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
       '@solana-program/program-metadata':
-        specifier: ^0.8.1
-        version: 0.8.1(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
+        specifier: ^0.9.0
+        version: 0.9.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana-program/token':
-        specifier: 0.15.0
-        version: 0.15.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
+        specifier: 0.16.0
+        version: 0.16.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana-program/token-2022':
         specifier: ^0.15.0
         version: 0.15.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@7.1.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))
@@ -1372,17 +1372,11 @@ packages:
       oxlint:
         optional: true
 
-  '@solana-program/compute-budget@0.17.0':
-    resolution: {integrity: sha512-A87tabCdAhJJbZrAuTmVdt/SdkxFQQEzj4lFAvEeGZ96KcZ8ySomt0MHf4jquiqFAdc68xLfpPUHGUM/tswUtA==}
-    engines: {node: '>=24.0.0'}
-    peerDependencies:
-      '@solana/kit': ^7.0.0
-
-  '@solana-program/program-metadata@0.8.1':
-    resolution: {integrity: sha512-EAi69bosz1CE81Iu6V4Js9UFH2sbRN//TV16OCx3tt+Ekb/QpRjWkjEu7UzPtKhVg4omseDJuRwZeSFmVSlDGg==}
+  '@solana-program/program-metadata@0.9.0':
+    resolution: {integrity: sha512-kgFBo+qDVRY0cknRTRduJmBg1HhvIeiGTIFXgJstQAtFRXRcG8uiaN9/hICA4Yf6DKGo0NBLLex5y1qWbmrPTQ==}
     hasBin: true
     peerDependencies:
-      '@solana/kit': ^7.0.0
+      '@solana/kit': ^8.0.0
 
   '@solana-program/record@0.3.0':
     resolution: {integrity: sha512-q8z86INfXRQ5357qgVBrw05vC+u3xg8Vb4E1gEwnYUvAkL3cbJSjWVfTlGRiGWYmPNq/FYIWbsFrhsxXyhaJ+w==}
@@ -1399,6 +1393,11 @@ packages:
     resolution: {integrity: sha512-Id6QQxCG7ByImXPD5X/c3Ag2kySD+49aJ9waIkfxyUFyokhMQgxYQAx2rKuaygaBlaBQY6VVfBS46pqxZV+99A==}
     peerDependencies:
       '@solana/kit': ^7.0.0
+
+  '@solana-program/system@0.14.0':
+    resolution: {integrity: sha512-Pjs2RINZHYmk/pqWNBCuQmfNjZT9woPJ/w7QkzzCSwcqcokbARtxsnIdgj4lJVxvr1DuxG8JGIbKnq6z1QRY6Q==}
+    peerDependencies:
+      '@solana/kit': ^8.0.0
 
   '@solana-program/token-2022@0.15.0':
     resolution: {integrity: sha512-Q9vR9kzP+l9AVWt2Uj5nH44BrnotiLFmX3AYDgsFQfuTla9n66RokNPGaSrCMUvQS0xRBv/u9BhH4p39qdB9Hw==}
@@ -1417,11 +1416,11 @@ packages:
     peerDependencies:
       '@solana/kit': ^6.5.0
 
-  '@solana-program/token@0.15.0':
-    resolution: {integrity: sha512-SeLm08EYIfT453I6lo7wTGgfMbz1s7bJ1jSHFHBFebSJHD3xF46zRgMxq3YKRlr/RM8jN0cG8SjZVu+IDvMxEA==}
+  '@solana-program/token@0.16.0':
+    resolution: {integrity: sha512-VuFIu5vXsw1zwqls4/sGB88234oucmpuig553A33UnrbYnPZ8yXmqLYULBD92/k1pCGnMK+NMLWvsKzlZQ/1Kw==}
     engines: {node: '>=24.0.0'}
     peerDependencies:
-      '@solana/kit': ^7.0.0
+      '@solana/kit': ^8.0.0
 
   '@solana-program/zk-elgamal-proof@0.3.2':
     resolution: {integrity: sha512-bCiRVKtqYZpajgC2RVypZL4A0xHjQYVEsVSNMTtPJ1jjE5KOUvsXhnngGMYShK6BHv+fQP4F8QKvEVW/HOSFAg==}
@@ -2515,8 +2514,8 @@ packages:
     resolution: {integrity: sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==}
     engines: {node: '>= 0.4'}
 
-  caniuse-lite@1.0.30001809:
-    resolution: {integrity: sha512-xxWVywk6a6Arlk+hymeycyn/VgqEfLDxupvhH/xiY5SJ/18kmi9o6MiO320DCUzypORHLtvh0I4i04tUhCNHNQ==}
+  caniuse-lite@1.0.30001810:
+    resolution: {integrity: sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg==}
 
   chai@6.2.2:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
@@ -2586,8 +2585,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron-to-chromium@1.5.412:
-    resolution: {integrity: sha512-z4rMe3esBzlzovKHj4gxJnsCGZRK5l4baUvm+gCGJBPE+gsyUMKsuU9tnEUtI1dOebXz1ytAPGjvXhmQ7rIPwA==}
+  electron-to-chromium@1.5.414:
+    resolution: {integrity: sha512-aYlviXiaXBbzvKgyALpcMmqa3Np3sDr0XnZbEG62n2UpZFbEcjQ4EEMOLGzVPhwVnwTz0lvKY+GcARbunuHekw==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -2933,6 +2932,10 @@ packages:
 
   picomatch@4.0.5:
     resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==}
+    engines: {node: '>=12'}
+
+  picomatch@4.0.7:
+    resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
   pirates@4.0.7:
@@ -3916,14 +3919,9 @@ snapshots:
       oxfmt: 0.64.0
       oxlint: 1.79.0(oxlint-tsgolint@7.0.2001)
 
-  '@solana-program/compute-budget@0.17.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))':
+  '@solana-program/program-metadata@0.9.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))':
     dependencies:
-      '@solana/kit': 7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
-
-  '@solana-program/program-metadata@0.8.1(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))':
-    dependencies:
-      '@solana-program/compute-budget': 0.17.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
-      '@solana-program/system': 0.13.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
+      '@solana-program/system': 0.14.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana/kit': 7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
       commander: 13.1.0
       pako: 2.2.0
@@ -3943,6 +3941,10 @@ snapshots:
     dependencies:
       '@solana/kit': 7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
 
+  '@solana-program/system@0.14.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))':
+    dependencies:
+      '@solana/kit': 7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
+
   '@solana-program/token-2022@0.15.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@7.1.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))':
     dependencies:
       '@noble/curves': 1.9.7
@@ -3956,9 +3958,9 @@ snapshots:
       '@solana-program/system': 0.12.2(@solana/kit@6.10.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana/kit': 6.10.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
 
-  '@solana-program/token@0.15.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))':
+  '@solana-program/token@0.16.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))':
     dependencies:
-      '@solana-program/system': 0.13.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
+      '@solana-program/system': 0.14.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana/kit': 7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
 
   '@solana-program/zk-elgamal-proof@0.3.2(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))':
@@ -5128,8 +5130,8 @@ snapshots:
 
   browserslist@4.25.4:
     dependencies:
-      caniuse-lite: 1.0.30001809
-      electron-to-chromium: 1.5.412
+      caniuse-lite: 1.0.30001810
+      electron-to-chromium: 1.5.414
       node-releases: 2.0.53
       update-browserslist-db: 1.3.1(browserslist@4.25.4)
 
@@ -5173,7 +5175,7 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       get-intrinsic: 1.3.0
 
-  caniuse-lite@1.0.30001809: {}
+  caniuse-lite@1.0.30001810: {}
 
   chai@6.2.2: {}
 
@@ -5227,7 +5229,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron-to-chromium@1.5.412: {}
+  electron-to-chromium@1.5.414: {}
 
   emoji-regex@8.0.0: {}
 
@@ -5331,6 +5333,10 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
       picomatch: 4.0.5
+
+  fdir@6.5.0(picomatch@4.0.7):
+    optionalDependencies:
+      picomatch: 4.0.7
 
   fix-dts-default-cjs-exports@1.0.1:
     dependencies:
@@ -5630,6 +5636,8 @@ snapshots:
 
   picomatch@4.0.5: {}
 
+  picomatch@4.0.7: {}
+
   pirates@4.0.7: {}
 
   pkg-types@1.3.1:
@@ -5914,8 +5922,8 @@ snapshots:
   vite@7.3.0(@types/node@26.2.0)(yaml@2.9.0):
     dependencies:
       esbuild: 0.27.7
-      fdir: 6.5.0(picomatch@4.0.5)
-      picomatch: 4.0.5
+      fdir: 6.5.0(picomatch@4.0.7)
+      picomatch: 4.0.7
       postcss: 8.5.26
       rollup: 4.62.5
       tinyglobby: 0.2.17
