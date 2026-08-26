@@ -38,6 +38,14 @@ describe('enumTypeNode', () => {
         expect(transformer(2)).toEqual({ __kind: 'Metadata' });
     });
 
+    test('should resolve a PascalCase __kind object for a camelCase variant', () => {
+        const scalarEnum = enumTypeNode([enumEmptyVariantTypeNode('arm'), enumEmptyVariantTypeNode('bar')]);
+        const transformer = createCodecInputTransformer(scalarEnum, rootNodeMock);
+
+        expect(transformer({ __kind: 'Arm' })).toStrictEqual({ __kind: 'Arm' });
+        expect(transformer({ __kind: 'arm' })).toStrictEqual({ __kind: 'Arm' });
+    });
+
     test('should resolve scalar enum (string)', () => {
         const scalarEnum = enumTypeNode([enumEmptyVariantTypeNode('initialized'), enumEmptyVariantTypeNode('frozen')]);
         const transformer = createCodecInputTransformer(scalarEnum, rootNodeMock);

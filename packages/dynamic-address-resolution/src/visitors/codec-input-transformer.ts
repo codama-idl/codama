@@ -152,7 +152,7 @@ export function createCodecInputTransformerVisitor(
 
                 const { __kind, ...rest } = input;
                 const kindObj = { __kind: pascalCase(String(__kind)) };
-                const variantNode = (node.variants ?? []).find(v => v.name === __kind);
+                const variantNode = (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(String(__kind)));
 
                 if (!variantNode) {
                     const availableVariants = (node.variants ?? []).map(v => v.name).join(', ');

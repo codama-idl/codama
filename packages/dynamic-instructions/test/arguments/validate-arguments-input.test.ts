@@ -2,12 +2,19 @@ import { address } from '@solana/addresses';
 import type { InstructionNode } from 'codama';
 import {
     argumentValueNode,
+    definedTypeLinkNode,
+    definedTypeNode,
+    enumEmptyVariantTypeNode,
+    enumStructVariantTypeNode,
+    enumTypeNode,
     instructionArgumentNode,
     instructionNode,
     instructionRemainingAccountsNode,
     numberTypeNode,
     programNode,
     rootNode,
+    structFieldTypeNode,
+    structTypeNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
@@ -70,5 +77,66 @@ describe('Instruction validation: remaining account arguments', () => {
         const withoutSigners = encodeInstructionArguments(multisigRoot, multisigIx, { m: 2 });
 
         expect(withSigners).toEqual(withoutSigners);
+    });
+});
+
+describe('Instruction validation: enum inputs accept the shape the codec decodes', () => {
+    const seedEnum = definedTypeNode({
+        name: 'seedEnum',
+        type: enumTypeNode([
+            enumEmptyVariantTypeNode('arm'),
+            enumEmptyVariantTypeNode('bar'),
+            enumEmptyVariantTypeNode('car'),
+        ]),
+    });
+    const command = definedTypeNode({
+        name: 'command',
+        type: enumTypeNode([
+            enumEmptyVariantTypeNode('quit'),
+            enumStructVariantTypeNode(
+                'move',
+                structTypeNode([structFieldTypeNode({ name: 'x', type: numberTypeNode('u8') })]),
+            ),
+        ]),
+    });
+    const enumIx = instructionNode({
+        arguments: [
+            instructionArgumentNode({ name: 'seedEnum', type: definedTypeLinkNode('seedEnum') }),
+            instructionArgumentNode({ name: 'command', type: definedTypeLinkNode('command') }),
+        ],
+        name: 'nestedExampleIx',
+    });
+    const enumRoot = makeRoot(enumIx, [seedEnum, command]);
+    const validate = createArgumentsInputValidator(enumRoot, enumIx);
+
+    const validSeed = 'arm';
+    const validCommand = { __kind: 'quit' };
+
+    test('accepts an empty variant as a PascalCase __kind object', () => {
+        expect(() => validate({ command: validCommand, seedEnum: { __kind: 'Arm' } })).not.toThrow();
+    });
+
+    test('accepts an empty variant as a PascalCase bare name', () => {
+        expect(() => validate({ command: validCommand, seedEnum: 'Arm' })).not.toThrow();
+    });
+
+    test('accepts a struct variant as a PascalCase __kind object', () => {
+        expect(() => validate({ command: { __kind: 'Move', x: 12 }, seedEnum: validSeed })).not.toThrow();
+    });
+
+    test('still accepts the raw camelCase shapes', () => {
+        expect(() => validate({ command: { __kind: 'move', x: 12 }, seedEnum: 'arm' })).not.toThrow();
+    });
+
+    test('still rejects an invalid payload under a PascalCase __kind', () => {
+        expect(() => validate({ command: { __kind: 'Move', x: 'oops' }, seedEnum: validSeed })).toThrow(
+            /Enum variant "Move" has invalid/,
+        );
+    });
+
+    test('still rejects an unknown variant', () => {
+        expect(() => validate({ command: validCommand, seedEnum: { __kind: 'Leg' } })).toThrow(
+            /Invalid enum variant "Leg"/,
+        );
     });
 });
