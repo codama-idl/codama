@@ -11,6 +11,7 @@ import type {
     SetTypeNode,
     TypeNode,
 } from 'codama';
+import { pascalCase } from 'codama';
 import {
     array,
     boolean,
@@ -248,20 +249,22 @@ function EnumVariantValidator(
     variants: EnumVariantTypeNode[],
     definedTypes: DefinedTypeNode[],
 ): StructUnknown {
-    const variantMap = new Map<string, EnumVariantTypeNode>(variants.map(v => [v.name, v]));
-    const variantNames = Array.from(variantMap.keys());
+    // Keyed by PascalCase so both raw node names and the codec's decoded
+    // `__kind` casing match the same variant.
+    const variantMap = new Map<string, EnumVariantTypeNode>(variants.map(v => [pascalCase(v.name), v]));
+    const variantNames = variants.map(v => v.name);
 
     // Eagerly build per-variant payload validators for struct and tuple variants
     const variantValidators = new Map<string, StructUnknown>();
     for (const variant of variants) {
         if (variant.kind === 'enumStructVariantTypeNode') {
             variantValidators.set(
-                variant.name,
+                pascalCase(variant.name),
                 createValidatorForTypeNode(`${nodeName}_${variant.name}`, variant.struct, definedTypes),
             );
         } else if (variant.kind === 'enumTupleVariantTypeNode') {
             variantValidators.set(
-                variant.name,
+                pascalCase(variant.name),
                 createValidatorForTypeNode(`${nodeName}_${variant.name}`, variant.tuple, definedTypes),
             );
         }
@@ -271,7 +274,8 @@ function EnumVariantValidator(
         // Scalar enum: plain string variant name (e.g. 'foo', 'bar')
         if (typeof value === 'string')
             return (
-                variantMap.has(value) || `Invalid enum value "${value}". Expected one of: ${variantNames.join(', ')}`
+                variantMap.has(pascalCase(value)) ||
+                `Invalid enum value "${value}". Expected one of: ${variantNames.join(', ')}`
             );
 
         // Data enum variant: object with __kind (e.g. { __kind: 'tokenTransfer', amount: 1000 })
@@ -280,7 +284,7 @@ function EnumVariantValidator(
             if (typeof kind !== 'string') {
                 return `Expected __kind to be a string, received: ${formatValueType(kind)}`;
             }
-            const variant = variantMap.get(kind);
+            const variant = variantMap.get(pascalCase(kind));
             if (!variant) {
                 return `Invalid enum variant "${kind}". Expected one of: ${variantNames.join(', ')}`;
             }
@@ -292,7 +296,7 @@ function EnumVariantValidator(
             // Validations of enum payloads
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { __kind: _, ...rest } = value as Record<string, unknown>;
-            const payloadValidator = variantValidators.get(kind);
+            const payloadValidator = variantValidators.get(pascalCase(kind));
             if (!payloadValidator) {
                 return true;
             }

@@ -126,12 +126,19 @@ export function createCodecInputTransformerVisitor(
         },
 
         visitEnumType(node) {
-            // Scalar enums pass through (just numbers/strings)
-            // Data enums need variant transformation with PascalCase __kind
-            // Because @codama/dynamic-codecs applies pascalCase() to variant names when building discriminated union codecs:
-            // @see https://github.com/codama-idl/codama/blob/main/packages/dynamic-codecs/src/codecs.ts#L199
+            // Enums encode as discriminated unions with a PascalCase `__kind`,
+            // matching how @codama/dynamic-codecs builds the codec. Bare
+            // empty-variant names and indices are also accepted and resolved
+            // to that shape for ergonomics.
             return (input: unknown) => {
                 if (typeof input === 'number' || typeof input === 'string') {
+                    const variantNode =
+                        typeof input === 'number'
+                            ? (node.variants ?? [])[input]
+                            : (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(input));
+                    if (variantNode && isNode(variantNode, 'enumEmptyVariantTypeNode')) {
+                        return { __kind: pascalCase(variantNode.name) };
+                    }
                     return input;
                 }
 
@@ -145,7 +152,7 @@ export function createCodecInputTransformerVisitor(
 
                 const { __kind, ...rest } = input;
                 const kindObj = { __kind: pascalCase(String(__kind)) };
-                const variantNode = (node.variants ?? []).find(v => v.name === __kind);
+                const variantNode = (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(String(__kind)));
 
                 if (!variantNode) {
                     const availableVariants = (node.variants ?? []).map(v => v.name).join(', ');
