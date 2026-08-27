@@ -17,7 +17,7 @@
     ],
   "linked": [],
   "access": "public",
-  "baseBranch": "1.x",
+  "baseBranch": "main",
   "privatePackages": {
         "version": false,
         "tag": false
