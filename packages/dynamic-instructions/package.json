@@ -77,16 +77,16 @@
         "@codama/dynamic-codecs": "workspace:*",
         "@codama/dynamic-parsers": "workspace:*",
         "@codama/errors": "workspace:*",
-        "@solana/accounts": "^7.1.1",
-        "@solana/addresses": "^7.1.1",
-        "@solana/codecs": "^7.1.1",
-        "@solana/instructions": "^7.1.1",
+        "@solana/accounts": "^8.0.0",
+        "@solana/addresses": "^8.0.0",
+        "@solana/codecs": "^8.0.0",
+        "@solana/instructions": "^8.0.0",
         "codama": "workspace:*",
         "commander": "^15.0.0",
         "superstruct": "^2.0.2"
     },
     "devDependencies": {
-        "@solana/kit": "7.1.1"
+        "@solana/kit": "8.0.0"
     },
     "browserslist": [
         "supports bigint and not dead",
