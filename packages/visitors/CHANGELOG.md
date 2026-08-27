@@ -1,5 +1,18 @@
 # @codama/visitors
 
+## 1.11.0
+
+### Minor Changes
+
+- [#1096](https://github.com/codama-idl/codama/pull/1096) [`362f618`](https://github.com/codama-idl/codama/commit/362f618127d6642b3ec09d3016cb801629b2aa53) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add `checkCodamaVersionVisitor`. It checks the version of the visited Codama IDL against the Codama spec version supported by the installed packages, throwing a `CODAMA_ERROR__VERSION_MISMATCH` error when the majors differ. It is mainly useful at IDL-ingestion boundaries that bypass `createFromRoot`, such as a `before` visitor in a Codama CLI config.
+
+### Patch Changes
+
+- Updated dependencies [[`fa4a453`](https://github.com/codama-idl/codama/commit/fa4a45315028a9cb125ebaf31695df82a6ffc1c6), [`abefbeb`](https://github.com/codama-idl/codama/commit/abefbeb3ae369b01a46794ca3824a23391548040), [`55b9ede`](https://github.com/codama-idl/codama/commit/55b9edef01767a29d7ebeeeaed3bd75610150e28), [`dabfe42`](https://github.com/codama-idl/codama/commit/dabfe42211380aa16109058142dec6b21ced3835), [`b418a9e`](https://github.com/codama-idl/codama/commit/b418a9e19b0b15a3dc1c79edb246d78694d6310e)]:
+  - @codama/nodes@1.11.0
+  - @codama/errors@1.11.0
+  - @codama/visitors-core@1.11.0
+
 ## 1.10.2
 
 ### Patch Changes
