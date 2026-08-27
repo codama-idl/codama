@@ -66,9 +66,9 @@
         "@codama/dynamic-codecs": "workspace:*",
         "@codama/dynamic-instructions": "workspace:*",
         "@codama/errors": "workspace:*",
-        "@solana/addresses": "^7.1.1",
-        "@solana/codecs": "^7.1.1",
-        "@solana/instructions": "^7.1.1",
+        "@solana/addresses": "^8.0.0",
+        "@solana/codecs": "^8.0.0",
+        "@solana/instructions": "^8.0.0",
         "codama": "workspace:*",
         "commander": "^15.0.0",
         "superstruct": "^2.0.2"
@@ -80,7 +80,7 @@
         "@solana-program/program-metadata": "^0.9.0",
         "@solana-program/token": "0.16.0",
         "@solana-program/token-2022": "^0.15.0",
-        "@solana/kit": "7.1.1",
+        "@solana/kit": "8.0.0",
         "litesvm": "1.4.0",
         "sas-lib": "2.0.0-beta"
     },
