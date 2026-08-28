@@ -1,0 +1,11 @@
+name: Promote
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    uses: codama-idl/release-tools/.github/workflows/promote.yml@v1
+    secrets: inherit

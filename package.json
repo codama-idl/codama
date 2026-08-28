@@ -7,11 +7,13 @@
         "lint": "oxlint && oxfmt --check",
         "lint:fix": "oxlint --fix && oxfmt",
         "test": "turbo run test --log-order grouped",
-        "publish-packages": "pnpm build && changeset publish"
+        "publish-packages": "pnpm build && changeset publish",
+        "release:version": "changeset version && release-tools postversion"
     },
     "devDependencies": {
         "@changesets/changelog-github": "^1.0.0",
         "@changesets/cli": "^3.0.1",
+        "@codama/release-tools": "github:codama-idl/release-tools#v1.0.0",
         "@solana-config/oxc": "^0.1.1",
         "@types/node": "^26",
         "agadoo": "^3.0.0",
