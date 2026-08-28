@@ -81,7 +81,7 @@
         "@solana-program/token": "0.16.0",
         "@solana-program/token-2022": "^0.15.0",
         "@solana/kit": "8.0.0",
-        "litesvm": "1.4.0",
+        "litesvm": "1.4.1",
         "sas-lib": "2.0.0-beta"
     },
     "browserslist": [
