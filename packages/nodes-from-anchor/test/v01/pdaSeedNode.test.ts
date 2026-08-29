@@ -1,6 +1,7 @@
 import {
     accountValueNode,
     argumentValueNode,
+    bytesTypeNode,
     constantPdaSeedNodeFromBytes,
     instructionArgumentNode,
     numberTypeNode,
@@ -47,4 +48,16 @@ test('it removes the string prefix from arg Anchor seeds', () => {
 
     expect(nodes.definition).toEqual(variablePdaSeedNode('identifier', stringTypeNode('utf8')));
     expect(nodes.value).toEqual(pdaSeedValueNode('identifier', argumentValueNode('identifier')));
+});
+
+test('it removes the bytes prefix from arg Anchor seeds', () => {
+    const nodes = pdaSeedNodeFromAnchorV01({ kind: 'arg', path: 'seed_data' }, [
+        instructionArgumentNode({
+            name: 'seed_data',
+            type: sizePrefixTypeNode(bytesTypeNode(), numberTypeNode('u32')),
+        }),
+    ]);
+
+    expect(nodes.definition).toEqual(variablePdaSeedNode('seed_data', bytesTypeNode()));
+    expect(nodes.value).toEqual(pdaSeedValueNode('seed_data', argumentValueNode('seed_data')));
 });
