@@ -151,6 +151,8 @@ export function createCodecInputTransformerVisitor(
                 }
 
                 const { __kind, ...rest } = input;
+                // The codec emits __discriminator on decode; drop it before re-encoding.
+                delete (rest as { __discriminator?: unknown }).__discriminator;
                 const kindObj = { __kind: pascalCase(String(__kind)) };
                 const variantNode = (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(String(__kind)));
 

@@ -52,8 +52,8 @@ describe('anchor-example: nestedExampleIx', () => {
 
         const exampleAccount = decodeNestedExampleAccount(programClient.root, exampleAccountData);
         expect(exampleAccount.input).toEqual({
-            header: { command: { __kind: 'Start', fields: [42n] }, version: 1 },
-            innerEnum: { __kind: 'None' },
+            header: { command: { __discriminator: 0, __kind: 'Start', fields: [42n] }, version: 1 },
+            innerEnum: { __discriminator: 2, __kind: 'None' },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([1, 2, 3])),
                 enumsArray: [seedEnumVariant('arm'), seedEnumVariant('car')],
@@ -104,12 +104,13 @@ describe('anchor-example: nestedExampleIx', () => {
         expect(exampleAccount.input).toEqual({
             header: {
                 command: {
+                    __discriminator: 2,
                     __kind: 'Continue',
                     reason: 'keep going',
                 },
                 version: 2,
             },
-            innerEnum: { __kind: 'None' },
+            innerEnum: { __discriminator: 2, __kind: 'None' },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([])),
                 enumsArray: [seedEnumVariant('bar'), seedEnumVariant('bar')],
@@ -160,14 +161,16 @@ describe('anchor-example: nestedExampleIx', () => {
         expect(exampleAccount.input).toEqual({
             header: {
                 command: {
+                    __discriminator: 1,
                     __kind: 'Stop',
                 },
                 version: 1,
             },
             innerEnum: {
+                __discriminator: 0,
                 __kind: 'TokenTransfer',
                 amount: 500n,
-                tokenType: { __kind: 'SPL' },
+                tokenType: { __discriminator: 0, __kind: 'SPL' },
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([0xde, 0xad, 0xbe, 0xef])),
@@ -223,15 +226,17 @@ describe('anchor-example: nestedExampleIx', () => {
         expect(exampleAccount.input).toEqual({
             header: {
                 command: {
+                    __discriminator: 0,
                     __kind: 'Start',
                     fields: [42n],
                 },
                 version: 1,
             },
             innerEnum: {
+                __discriminator: 0,
                 __kind: 'TokenTransfer',
                 amount: 1n,
-                tokenType: { __kind: 'NFT', collection: 'DegenApes' },
+                tokenType: { __discriminator: 1, __kind: 'NFT', collection: 'DegenApes' },
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([])),
@@ -284,12 +289,14 @@ describe('anchor-example: nestedExampleIx', () => {
         expect(exampleAccount.input).toEqual({
             header: {
                 command: {
+                    __discriminator: 0,
                     __kind: 'Start',
                     fields: [321n],
                 },
                 version: 3,
             },
             innerEnum: {
+                __discriminator: 1,
                 __kind: 'Stake',
                 duration: 86400n,
             },
@@ -639,8 +646,9 @@ async function deriveNestedExamplePda(
 /** SeedEnum enum is stored as a number. */
 export function seedEnumVariant(enumValue: string) {
     const kind = enumValue.charAt(0).toUpperCase() + enumValue.slice(1).toLowerCase();
-    if (!['Arm', 'Bar', 'Car'].includes(kind)) {
+    const variants = ['Arm', 'Bar', 'Car'];
+    if (!variants.includes(kind)) {
         throw new Error(`Unknown enum value: ${enumValue}`);
     }
-    return { __kind: kind };
+    return { __discriminator: variants.indexOf(kind), __kind: kind };
 }
