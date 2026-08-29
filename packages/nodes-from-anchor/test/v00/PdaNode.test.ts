@@ -1,9 +1,11 @@
 import {
+    bytesTypeNode,
     constantPdaSeedNode,
     constantPdaSeedNodeFromProgramId,
     numberTypeNode,
     numberValueNode,
     pdaNode,
+    stringTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -30,4 +32,22 @@ test('it creates PDA nodes', () => {
             ],
         }),
     );
+});
+
+test('it removes the string prefix from variable seeds', () => {
+    const node = pdaNodeFromAnchorV00({
+        name: 'myPda',
+        seeds: [{ description: '', kind: 'variable', name: 'label', type: 'string' }],
+    });
+
+    expect(node).toEqual(pdaNode({ name: 'myPda', seeds: [variablePdaSeedNode('label', stringTypeNode('utf8'))] }));
+});
+
+test('it removes the bytes prefix from variable seeds', () => {
+    const node = pdaNodeFromAnchorV00({
+        name: 'myPda',
+        seeds: [{ description: '', kind: 'variable', name: 'seedData', type: 'bytes' }],
+    });
+
+    expect(node).toEqual(pdaNode({ name: 'myPda', seeds: [variablePdaSeedNode('seedData', bytesTypeNode())] }));
 });
