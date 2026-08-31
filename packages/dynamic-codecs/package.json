@@ -55,7 +55,7 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/codecs": "^8.0.0"
+        "@solana/codecs": "^8.1.0"
     },
     "browserslist": [
         "supports bigint and not dead",
