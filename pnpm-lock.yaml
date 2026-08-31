@@ -30,8 +30,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(browserslist@4.25.4)
       happy-dom:
-        specifier: ^20.11.6
-        version: 20.11.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        specifier: ^20.11.12
+        version: 20.11.12(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       oxfmt:
         specifier: ^0.65.0
         version: 0.65.0
@@ -55,7 +55,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@26.3.0)(happy-dom@20.11.6(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.3.0)(yaml@2.9.0))
+        version: 4.1.11(@types/node@26.3.0)(happy-dom@20.11.12(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.3.0)(yaml@2.9.0))
 
   packages/cli:
     dependencies:
@@ -351,7 +351,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@26.3.0)(happy-dom@20.11.6(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.3.0)(yaml@2.9.0))
+        version: 4.1.11(@types/node@26.3.0)(happy-dom@20.11.12(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.3.0)(yaml@2.9.0))
 
   packages/upgrade:
     dependencies:
@@ -2578,8 +2578,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron-to-chromium@1.5.416:
-    resolution: {integrity: sha512-K6bvB2BjnNrugtIih6ewlbBI9DXa976jIdiIlRLHhBoEI9a4JaQjjHyF+A1IQI543aQYR4LnmOrT/K5fZj0aPA==}
+  electron-to-chromium@1.5.417:
+    resolution: {integrity: sha512-4T+DTDWuMPM4aHlHwWdAVCVWwp7LDilnhzkj+c/Lbj91XSQrLuOmZSLtS9Q4iIqjlPUbPOnC624zDVVHCHaolQ==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -2692,8 +2692,8 @@ packages:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  happy-dom@20.11.6:
-    resolution: {integrity: sha512-Hldbg8AdAa5a5oDcZpjqnGitp7JB0hqWmfv/8qr+kft4vzSD8BHsbdRfzYvL/0QcbKcURC/yyoygbeDQarPvYg==}
+  happy-dom@20.11.12:
+    resolution: {integrity: sha512-7+mrTTD+6fOG3dx0URrDLrCX8QDTE+YujSOQD4VPZcYze/yJ0vVhRKaIBTjqlk+R4NetxVz21odnevHYIjIJ+g==}
     engines: {node: '>=20.0.0'}
 
   has-property-descriptors@1.0.2:
@@ -5116,7 +5116,7 @@ snapshots:
   browserslist@4.25.4:
     dependencies:
       caniuse-lite: 1.0.30001810
-      electron-to-chromium: 1.5.416
+      electron-to-chromium: 1.5.417
       node-releases: 2.0.54
       update-browserslist-db: 1.3.2(browserslist@4.25.4)
 
@@ -5214,7 +5214,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron-to-chromium@1.5.416: {}
+  electron-to-chromium@1.5.417: {}
 
   emoji-regex@8.0.0: {}
 
@@ -5387,7 +5387,7 @@ snapshots:
 
   gopd@1.2.0: {}
 
-  happy-dom@20.11.6(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+  happy-dom@20.11.12(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       '@types/node': 26.3.0
       '@types/whatwg-mimetype': 3.0.2
@@ -5917,7 +5917,7 @@ snapshots:
       fsevents: 2.3.3
       yaml: 2.9.0
 
-  vitest@4.1.11(@types/node@26.3.0)(happy-dom@20.11.6(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.3.0)(yaml@2.9.0)):
+  vitest@4.1.11(@types/node@26.3.0)(happy-dom@20.11.12(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.3.0)(yaml@2.9.0)):
     dependencies:
       '@vitest/expect': 4.1.11
       '@vitest/mocker': 4.1.11(vite@7.3.0(@types/node@26.3.0)(yaml@2.9.0))
@@ -5941,7 +5941,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.3.0
-      happy-dom: 20.11.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      happy-dom: 20.11.12(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - msw
 

@@ -18,7 +18,7 @@
         "@types/node": "^26",
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",
-        "happy-dom": "^20.11.6",
+        "happy-dom": "^20.11.12",
         "oxfmt": "^0.65.0",
         "oxlint": "^1.80.0",
         "oxlint-tsgolint": "^7.0.2001",
