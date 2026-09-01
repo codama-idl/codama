@@ -150,9 +150,8 @@ export function createCodecInputTransformerVisitor(
                     return input;
                 }
 
-                const { __kind, ...rest } = input;
-                // The codec emits __discriminator on decode; drop it before re-encoding.
-                delete (rest as { __discriminator?: unknown }).__discriminator;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { __discriminator: _d, __kind, ...rest } = input as Record<string, unknown> & { __kind: unknown };
                 const kindObj = { __kind: pascalCase(String(__kind)) };
                 const variantNode = (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(String(__kind)));
 
