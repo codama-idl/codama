@@ -295,7 +295,7 @@ function EnumVariantValidator(
 
             // Validations of enum payloads
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { __kind: _, ...rest } = value as Record<string, unknown>;
+            const { __discriminator: _d, __kind: _, ...rest } = value as Record<string, unknown>;
             const payloadValidator = variantValidators.get(pascalCase(kind));
             if (!payloadValidator) {
                 return true;

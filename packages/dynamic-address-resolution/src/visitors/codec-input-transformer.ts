@@ -150,7 +150,8 @@ export function createCodecInputTransformerVisitor(
                     return input;
                 }
 
-                const { __kind, ...rest } = input;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { __discriminator: _d, __kind, ...rest } = input as Record<string, unknown> & { __kind: unknown };
                 const kindObj = { __kind: pascalCase(String(__kind)) };
                 const variantNode = (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(String(__kind)));
 
