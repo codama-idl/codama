@@ -56,10 +56,10 @@
         "@codama/errors": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
-        "@solana/instructions": "^8.1.0"
+        "@solana/instructions": "^8.2.0"
     },
     "devDependencies": {
-        "@solana/codecs": "^8.1.0"
+        "@solana/codecs": "^8.2.0"
     },
     "browserslist": [
         "supports bigint and not dead",
