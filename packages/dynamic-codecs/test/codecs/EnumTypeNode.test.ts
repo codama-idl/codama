@@ -118,3 +118,20 @@ test('it re-encodes its own decoded output', () => {
     const decoded = codec.decode(hex('09'));
     expect(codec.encode(decoded)).toStrictEqual(hex('09'));
 });
+
+test('it infers omitted discriminators from the variant position', () => {
+    // Mixed explicit and implicit discriminators: an omitted one is the
+    // variant's position, not the previous explicit value plus one.
+    const codec = getNodeCodec([
+        enumTypeNode([
+            enumEmptyVariantTypeNode('first', 5),
+            enumEmptyVariantTypeNode('second'),
+            enumEmptyVariantTypeNode('third', 9),
+        ]),
+    ]);
+    expect(codec.encode({ __kind: 'First' })).toStrictEqual(hex('05'));
+    expect(codec.encode({ __kind: 'Second' })).toStrictEqual(hex('01'));
+    expect(codec.encode({ __kind: 'Third' })).toStrictEqual(hex('09'));
+    expect(codec.decode(hex('01'))).toStrictEqual({ __discriminator: 1, __kind: 'Second' });
+    expect(codec.decode(hex('09'))).toStrictEqual({ __discriminator: 9, __kind: 'Third' });
+});
