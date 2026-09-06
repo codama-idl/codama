@@ -48,7 +48,7 @@ import {
     getBase64Codec,
     getBooleanCodec,
     getConstantCodec,
-    getDiscriminatedUnionCodec,
+    getUnionCodec,
     getF32Codec,
     getF64Codec,
     getHiddenPrefixCodec,
@@ -183,12 +183,44 @@ export function getNodeCodecVisitor(
         },
         visitEnumType(node) {
             const size = visit(node.size, this) as NumberCodec;
-            // All enums are decoded as discriminated unions,
-            // e.g. `{ __kind: 'Up' }` or `{ __kind: 'Move', x: 10, y: 20 }`.
-            const variants = (node.variants ?? []).map(
-                variant => [pascalCase(variant.name), visit(variant, this)] as const,
-            );
-            return getDiscriminatedUnionCodec(variants, { size }) as unknown as Codec<unknown>;
+            // All enums are decoded as discriminated unions carrying their wire
+            // discriminator, e.g. `{ __kind: 'Up', __discriminator: 0 }` or
+            // `{ __kind: 'Move', __discriminator: 1, x: 10, y: 20 }`. The wire
+            // byte honors `variant.discriminator`, falling back to the position.
+            const variants = node.variants ?? [];
+            const discriminators = variants.map((variant, index) => variant.discriminator ?? index);
+            const variantCodecs = variants.map((variant, index) => {
+                const kind = pascalCase(variant.name);
+                const discriminator = discriminators[index];
+                const payload = getHiddenPrefixCodec(visit(variant, this) as Codec<unknown>, [
+                    getConstantCodec(size.encode(discriminator)),
+                ]);
+                return transformCodec(
+                    payload,
+                    (value: unknown) => {
+                        if (typeof value !== 'object' || value === null) return value;
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const { __discriminator: _d, __kind: _k, ...rest } = value as Record<string, unknown>;
+                        return rest;
+                    },
+                    (decoded: unknown) => ({
+                        __discriminator: discriminator,
+                        __kind: kind,
+                        ...(typeof decoded === 'object' && decoded !== null ? decoded : {}),
+                    }),
+                );
+            });
+            return getUnionCodec(
+                variantCodecs,
+                value => {
+                    const kind = (value as { __kind?: unknown } | null)?.__kind;
+                    return variants.findIndex(variant => pascalCase(variant.name) === kind);
+                },
+                (bytes, offset) => {
+                    const [discriminator] = size.read(bytes, offset);
+                    return discriminators.indexOf(Number(discriminator));
+                },
+            ) as unknown as Codec<unknown>;
         },
         visitEvent(node) {
             return visit(node.data, this);

@@ -52,7 +52,7 @@ export function getValueNodeVisitor(
                 });
             }
             const variant = variants[variantIndex];
-            const kind = { __kind: pascalCase(node.variant) };
+            const kind = { __discriminator: variant.discriminator ?? variantIndex, __kind: pascalCase(node.variant) };
             if (isNode(variant, 'enumEmptyVariantTypeNode')) return kind;
             if (isNode(variant, 'enumStructVariantTypeNode') && !!node.value) {
                 const value = visit(node.value, this) as object;

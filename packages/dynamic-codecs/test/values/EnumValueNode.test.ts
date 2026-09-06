@@ -52,10 +52,10 @@ test('it returns scalar enum values as discriminated unions', () => {
     const resultLeft = visit(enumValueNode('direction', 'left'), visitor);
 
     // Then we expect the values to be resolved from the linkable type as discriminated unions.
-    expect(resultUp).toStrictEqual({ __kind: 'Up' });
-    expect(resultRight).toStrictEqual({ __kind: 'Right' });
-    expect(resultDown).toStrictEqual({ __kind: 'Down' });
-    expect(resultLeft).toStrictEqual({ __kind: 'Left' });
+    expect(resultUp).toStrictEqual({ __discriminator: 0, __kind: 'Up' });
+    expect(resultRight).toStrictEqual({ __discriminator: 1, __kind: 'Right' });
+    expect(resultDown).toStrictEqual({ __discriminator: 2, __kind: 'Down' });
+    expect(resultLeft).toStrictEqual({ __discriminator: 3, __kind: 'Left' });
 });
 
 test('it returns data enum values as objects', () => {
@@ -100,7 +100,7 @@ test('it returns data enum values as objects', () => {
     );
 
     // Then we expect the values to be resolved from the linkable type as numbers.
-    expect(resultQuit).toStrictEqual({ __kind: 'Quit' });
-    expect(resultWrite).toStrictEqual({ __kind: 'Write', fields: ['Hello'] });
-    expect(resultMove).toStrictEqual({ __kind: 'Move', x: 10, y: 20 });
+    expect(resultQuit).toStrictEqual({ __discriminator: 0, __kind: 'Quit' });
+    expect(resultWrite).toStrictEqual({ __discriminator: 1, __kind: 'Write', fields: ['Hello'] });
+    expect(resultMove).toStrictEqual({ __discriminator: 2, __kind: 'Move', x: 10, y: 20 });
 });
