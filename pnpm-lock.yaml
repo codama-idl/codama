@@ -165,8 +165,8 @@ importers:
         specifier: 1.4.1
         version: 1.4.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
       sas-lib:
-        specifier: 2.0.0-beta
-        version: 2.0.0-beta(@solana/kit@8.2.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
+        specifier: 2.0.0-beta.1
+        version: 2.0.0-beta.1(@solana/kit@8.2.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
 
   packages/dynamic-codecs:
     dependencies:
@@ -2997,8 +2997,8 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
-  sas-lib@2.0.0-beta:
-    resolution: {integrity: sha512-Dt7iSgPMJ1U6x7IsnRWSFOHKti+taW4GntaTy0sbm1lSNhE1SbsWC8Go3rUDKZ+bwd7NE/C1RBikBZme3avykg==}
+  sas-lib@2.0.0-beta.1:
+    resolution: {integrity: sha512-EUtUaXuKnhkOeYcwpWdiXO+mIKTVfkmvNBvOFSqlzwKe6v/Fx8UDD1yfcuLDD9CDVSAZjDVeoWGT1HjsJyG7Wg==}
     peerDependencies:
       '@solana/kit': ^7.0.0
 
@@ -5735,7 +5735,7 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.63.1
       fsevents: 2.3.3
 
-  sas-lib@2.0.0-beta(@solana/kit@8.2.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)):
+  sas-lib@2.0.0-beta.1(@solana/kit@8.2.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)):
     dependencies:
       '@solana/kit': 8.2.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
 
