@@ -77,9 +77,9 @@
         "@codama/nodes-from-anchor": "workspace:*",
         "@codama/renderers-core": "workspace:*",
         "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.3",
-        "@solana-program/program-metadata": "^0.9.1",
-        "@solana-program/token": "0.16.0",
-        "@solana-program/token-2022": "^0.16.0",
+        "@solana-program/program-metadata": "^0.9.2",
+        "@solana-program/token": "0.16.1",
+        "@solana-program/token-2022": "^0.16.1",
         "@solana/kit": "8.2.0",
         "litesvm": "1.4.1",
         "sas-lib": "2.0.0-beta"
