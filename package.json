@@ -11,7 +11,7 @@
         "release:version": "changeset version && release-tools postversion"
     },
     "devDependencies": {
-        "@changesets/changelog-github": "^1.0.0",
+        "@changesets/changelog-github": "^1.0.1",
         "@changesets/cli": "^3.0.2",
         "@codama/release-tools": "github:codama-idl/release-tools#v1.0.0",
         "@solana-config/oxc": "^0.1.1",
