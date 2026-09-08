@@ -1,5 +1,18 @@
 # @codama/nodes
 
+## 1.11.0
+
+### Patch Changes
+
+- [#1090](https://github.com/codama-idl/codama/pull/1090) [`fa4a453`](https://github.com/codama-idl/codama/commit/fa4a45315028a9cb125ebaf31695df82a6ffc1c6) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Update the generated node types and constructors to `@codama/spec@1.9.1`. Generated docblocks now carry the enriched spec documentation (strategy walkthroughs with buffer diagrams for the offset type nodes, serialisation caveats, and worked examples), the `CodamaVersion` type moves from `'1.8.0'` to `'1.9.1'`, and new documents created via `rootNode()` are stamped with version `1.9.1`.
+
+- [#1093](https://github.com/codama-idl/codama/pull/1093) [`55b9ede`](https://github.com/codama-idl/codama/commit/55b9edef01767a29d7ebeeeaed3bd75610150e28) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Widen the `CodamaVersion` type from the exact pinned literal (`'1.9.1'`) to a major-pinned template literal (`1.${number}.${number}`), so any document of the current spec major type-checks as a `RootNode` rather than only documents carrying the exact pinned version. Add a `getCodamaVersionMajor(version)` helper to `@codama/nodes` that defensively extracts the major from an arbitrary version string, returning `null` when it cannot be parsed.
+
+- [#1099](https://github.com/codama-idl/codama/pull/1099) [`dabfe42`](https://github.com/codama-idl/codama/commit/dabfe42211380aa16109058142dec6b21ced3835) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Bump the generated `CODAMA_VERSION` to 1.9.2 and refresh the generated documentation from the latest spec.
+- Updated dependencies [[`fa4a453`](https://github.com/codama-idl/codama/commit/fa4a45315028a9cb125ebaf31695df82a6ffc1c6), [`abefbeb`](https://github.com/codama-idl/codama/commit/abefbeb3ae369b01a46794ca3824a23391548040), [`55b9ede`](https://github.com/codama-idl/codama/commit/55b9edef01767a29d7ebeeeaed3bd75610150e28), [`dabfe42`](https://github.com/codama-idl/codama/commit/dabfe42211380aa16109058142dec6b21ced3835), [`b418a9e`](https://github.com/codama-idl/codama/commit/b418a9e19b0b15a3dc1c79edb246d78694d6310e)]:
+  - @codama/node-types@1.11.0
+  - @codama/errors@1.11.0
+
 ## 1.10.2
 
 ### Patch Changes

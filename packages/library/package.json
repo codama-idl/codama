@@ -1,6 +1,6 @@
 {
     "name": "codama",
-    "version": "1.10.2",
+    "version": "1.11.0",
     "description": "A Solana framework for building standardised programs",
     "keywords": [
         "code generation",

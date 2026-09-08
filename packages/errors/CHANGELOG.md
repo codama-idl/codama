@@ -1,5 +1,17 @@
 # @codama/errors
 
+## 1.11.0
+
+### Minor Changes
+
+- [#1095](https://github.com/codama-idl/codama/pull/1095) [`b418a9e`](https://github.com/codama-idl/codama/commit/b418a9e19b0b15a3dc1c79edb246d78694d6310e) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add the `CODAMA_ERROR__UNSUPPORTED_VERSION` error code for Codama IDLs that predate the 1.0.0 specification. The `CODAMA_ERROR__VERSION_MISMATCH` message now points older versions at the `@codama/upgrade` package and newer versions at updating their Codama dependencies.
+
+### Patch Changes
+
+- [#1094](https://github.com/codama-idl/codama/pull/1094) [`abefbeb`](https://github.com/codama-idl/codama/commit/abefbeb3ae369b01a46794ca3824a23391548040) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix `validateCodamaVersion` to compare the document's version against the Codama spec version (`CODAMA_VERSION`) instead of the npm package version, which is an unrelated namespace and caused false mismatches whenever the two drifted apart. The function now accepts any string and narrows it to `CodamaVersion` on success, rejects unparsable versions, and no longer special-cases 0.x versions. The `CODAMA_ERROR__VERSION_MISMATCH` message is reworded accordingly.
+- Updated dependencies [[`fa4a453`](https://github.com/codama-idl/codama/commit/fa4a45315028a9cb125ebaf31695df82a6ffc1c6), [`55b9ede`](https://github.com/codama-idl/codama/commit/55b9edef01767a29d7ebeeeaed3bd75610150e28), [`dabfe42`](https://github.com/codama-idl/codama/commit/dabfe42211380aa16109058142dec6b21ced3835)]:
+  - @codama/node-types@1.11.0
+
 ## 1.10.2
 
 ### Patch Changes
