@@ -15,8 +15,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       '@codama/release-tools':
-        specifier: github:codama-idl/release-tools#v1.0.0
-        version: https://codeload.github.com/codama-idl/release-tools/tar.gz/60c0f05d093d7c307ba80c20cd78e50e9dd1eb3e
+        specifier: github:codama-idl/release-tools#v1.2.0
+        version: https://codeload.github.com/codama-idl/release-tools/tar.gz/97d4c3bdd1bf5623cdc53a083bf2a00bf24843c5
       '@solana-config/oxc':
         specifier: ^0.1.1
         version: 0.1.1(oxfmt@0.67.0)(oxlint@1.82.0(oxlint-tsgolint@7.0.2001))
@@ -488,8 +488,8 @@ packages:
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
-  '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/60c0f05d093d7c307ba80c20cd78e50e9dd1eb3e':
-    resolution: {tarball: https://codeload.github.com/codama-idl/release-tools/tar.gz/60c0f05d093d7c307ba80c20cd78e50e9dd1eb3e}
+  '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/97d4c3bdd1bf5623cdc53a083bf2a00bf24843c5':
+    resolution: {tarball: https://codeload.github.com/codama-idl/release-tools/tar.gz/97d4c3bdd1bf5623cdc53a083bf2a00bf24843c5}
     version: 1.0.0
     engines: {node: '>=20'}
     hasBin: true
@@ -3389,7 +3389,7 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/60c0f05d093d7c307ba80c20cd78e50e9dd1eb3e': {}
+  '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/97d4c3bdd1bf5623cdc53a083bf2a00bf24843c5': {}
 
   '@codama/spec@1.9.2': {}
 
