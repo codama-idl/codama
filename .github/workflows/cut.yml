@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   cut:
-    uses: codama-idl/release-tools/.github/workflows/cut.yml@v1
+    uses: codama-idl/release-tools/.github/workflows/cut.yml@cc0b8c9589e43c869233e2533dacb35f25b188e4 # v1.2.0
     with:
       tracking-issue: ${{ inputs.tracking-issue }}
       announce: ${{ inputs.announce }}
