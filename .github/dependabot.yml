@@ -44,8 +44,8 @@ updates:
       github-actions:
         patterns:
           - "*"
-        # Minor and patch bumps are grouped into one PR;
-        # majors are split out so each can be reviewed on its own.
+        # Minor and patch bumps are grouped into one PR.
+        # Majors are split out so each can be reviewed on its own.
         update-types:
           - "minor"
           - "patch"
