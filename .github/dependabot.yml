@@ -1,3 +1,5 @@
+# Dependabot version updates. Opens PRs to keep dependency versions fresh.
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
 updates:
   - package-ecosystem: 'npm'
@@ -29,3 +31,21 @@ updates:
           - 'oxfmt'
           - 'oxlint-tsgolint'
           - '@solana-config/oxc'
+
+  # GitHub Actions used across .github/workflows/*.
+  # Third-party actions are pinned to commit SHAs and this keeps the pins from rotting.
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+        # Minor and patch bumps are grouped into one PR.
+        # Majors are split out so each can be reviewed on its own.
+        update-types:
+          - 'minor'
+          - 'patch'

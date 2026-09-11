@@ -7,5 +7,5 @@ permissions:
 
 jobs:
   promote:
-    uses: codama-idl/release-tools/.github/workflows/promote.yml@v1
+    uses: codama-idl/release-tools/.github/workflows/promote.yml@cc0b8c9589e43c869233e2533dacb35f25b188e4 # v1.2.0
     secrets: inherit

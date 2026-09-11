@@ -53,7 +53,7 @@
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
         "test": "pnpm generate-program-types && pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
-        "anchor:build": "cd test/programs/anchor && anchor build --ignore-keys",
+        "anchor:build": "cd test/programs/anchor && anchor build --ignore-keys -- --locked",
         "anchor:sync:build": "pnpm anchor:build && node ./scripts/anchor/sync-anchor-builds.mjs && pnpm anchor:generate-idl && pnpm generate-program-types",
         "anchor:generate-idl": "node ./scripts/anchor/generate-idl-from-anchor.mjs",
         "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
