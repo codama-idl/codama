@@ -1,5 +1,17 @@
 # @codama/nodes-from-anchor
 
+## 1.5.6
+
+### Patch Changes
+
+- [#1126](https://github.com/codama-idl/codama/pull/1126) [`9a19abf`](https://github.com/codama-idl/codama/commit/9a19abf09f47bc72fe9279e587c83f76ff768cf1) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix `Vec<u8>` instruction arguments used as PDA seeds to derive from their raw bytes instead of the Borsh size-prefixed encoding. Anchor derives byte-array seeds from the unprefixed bytes, so the generated seed type previously produced a different PDA than the on-chain program for any program using a `Vec<u8>` seed.
+
+- [#1127](https://github.com/codama-idl/codama/pull/1127) [`3e5388a`](https://github.com/codama-idl/codama/commit/3e5388a918ed0ca9acfdde8522127913b758c864) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix variable `string` and `bytes` PDA seeds from legacy Anchor IDLs to derive from their raw bytes instead of their Borsh size-prefixed encoding, matching the existing behaviour of constant seeds.
+- Updated dependencies [[`fa4a453`](https://github.com/codama-idl/codama/commit/fa4a45315028a9cb125ebaf31695df82a6ffc1c6), [`abefbeb`](https://github.com/codama-idl/codama/commit/abefbeb3ae369b01a46794ca3824a23391548040), [`362f618`](https://github.com/codama-idl/codama/commit/362f618127d6642b3ec09d3016cb801629b2aa53), [`55b9ede`](https://github.com/codama-idl/codama/commit/55b9edef01767a29d7ebeeeaed3bd75610150e28), [`dabfe42`](https://github.com/codama-idl/codama/commit/dabfe42211380aa16109058142dec6b21ced3835), [`b418a9e`](https://github.com/codama-idl/codama/commit/b418a9e19b0b15a3dc1c79edb246d78694d6310e)]:
+  - @codama/nodes@1.11.0
+  - @codama/errors@1.11.0
+  - @codama/visitors@1.11.0
+
 ## 1.5.5
 
 ### Patch Changes
