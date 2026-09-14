@@ -1,2 +1,5 @@
 packages:
   - "packages/*"
+
+# No dependency may run install or build scripts.
+onlyBuiltDependencies: []

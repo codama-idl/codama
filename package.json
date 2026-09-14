@@ -13,7 +13,7 @@
     "devDependencies": {
         "@changesets/changelog-github": "^1.0.1",
         "@changesets/cli": "^3.0.2",
-        "@codama/release-tools": "github:codama-idl/release-tools#v1.0.0",
+        "@codama/release-tools": "github:codama-idl/release-tools#v1.2.0",
         "@solana-config/oxc": "^0.1.1",
         "@types/node": "^26",
         "agadoo": "^3.0.0",
