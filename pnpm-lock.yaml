@@ -30,8 +30,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(browserslist@4.25.4)
       happy-dom:
-        specifier: ^20.14.0
-        version: 20.14.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        specifier: ^20.14.3
+        version: 20.14.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       oxfmt:
         specifier: ^0.67.0
         version: 0.67.0
@@ -55,7 +55,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.0.0
-        version: 5.0.0(@types/node@26.5.1)(happy-dom@20.14.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.5.1)(yaml@2.9.0))
+        version: 5.0.0(@types/node@26.5.1)(happy-dom@20.14.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.5.1)(yaml@2.9.0))
 
   packages/cli:
     dependencies:
@@ -351,7 +351,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.0.0
-        version: 5.0.0(@types/node@26.5.1)(happy-dom@20.14.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.5.1)(yaml@2.9.0))
+        version: 5.0.0(@types/node@26.5.1)(happy-dom@20.14.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.5.1)(yaml@2.9.0))
 
   packages/upgrade:
     dependencies:
@@ -2669,8 +2669,8 @@ packages:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  happy-dom@20.14.0:
-    resolution: {integrity: sha512-4bRh1KzRvKDnFNTlLhzT1RZTpkKhQbQDl9j+7GXszWsvuspYdo29k6OHRf4PwiM6oLb8r/pMWeYiJjkfod5AvQ==}
+  happy-dom@20.14.3:
+    resolution: {integrity: sha512-0KMb/Eh8rsd+aMNkOk5h8LkAjo9Na1aksnEGmsuZf+GXl6UkAdIi0VbUHU7d59lXhNmawODgwwuCMiZpCxwwCw==}
     engines: {node: '>=20.0.0'}
 
   has-property-descriptors@1.0.2:
@@ -5328,7 +5328,7 @@ snapshots:
 
   gopd@1.2.0: {}
 
-  happy-dom@20.14.0(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+  happy-dom@20.14.3(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       '@types/node': 26.5.1
       '@types/whatwg-mimetype': 3.0.2
@@ -5860,7 +5860,7 @@ snapshots:
       fsevents: 2.3.3
       yaml: 2.9.0
 
-  vitest@5.0.0(@types/node@26.5.1)(happy-dom@20.14.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.5.1)(yaml@2.9.0)):
+  vitest@5.0.0(@types/node@26.5.1)(happy-dom@20.14.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.5.1)(yaml@2.9.0)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.0.0(vite@7.3.0(@types/node@26.5.1)(yaml@2.9.0))
@@ -5878,7 +5878,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.5.1
-      happy-dom: 20.14.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      happy-dom: 20.14.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - msw
 
