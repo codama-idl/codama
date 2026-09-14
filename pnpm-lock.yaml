@@ -156,8 +156,8 @@ importers:
         specifier: 0.16.1
         version: 0.16.1(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana-program/token-2022':
-        specifier: ^0.16.1
-        version: 0.16.1(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@8.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))
+        specifier: ^0.17.0
+        version: 0.17.0(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@8.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))
       '@solana/kit':
         specifier: 8.3.0
         version: 8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
@@ -848,13 +848,9 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@noble/curves@1.9.7':
-    resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
-    engines: {node: ^14.21.3 || >=16}
-
-  '@noble/hashes@1.8.0':
-    resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
-    engines: {node: ^14.21.3 || >=16}
+  '@noble/curves@2.4.0':
+    resolution: {integrity: sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==}
+    engines: {node: '>= 20.19.0'}
 
   '@noble/hashes@2.4.0':
     resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
@@ -1402,8 +1398,8 @@ packages:
     peerDependencies:
       '@solana/kit': ^8.0.0
 
-  '@solana-program/token-2022@0.16.1':
-    resolution: {integrity: sha512-VEQHBcFFGErW+gDGQAjuLRjAbg2x7uJqoWV9EgwG82exPpqHP2VGcV0sb7DXc8uXP+IvkmZeVH81gtuKyMxpZw==}
+  '@solana-program/token-2022@0.17.0':
+    resolution: {integrity: sha512-LAtSQVLuWLSANAzvyOURR4yDik3eVHtgYiAMADmcayX4ljeN3CEdOtQvbfmB95wDa4R/N0PUhbyXTMWsELKkpw==}
     peerDependencies:
       '@solana/kit': ^8.0.0
       '@solana/sysvars': ^8.0.0
@@ -3600,11 +3596,9 @@ snapshots:
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
 
-  '@noble/curves@1.9.7':
+  '@noble/curves@2.4.0':
     dependencies:
-      '@noble/hashes': 1.8.0
-
-  '@noble/hashes@1.8.0': {}
+      '@noble/hashes': 2.4.0
 
   '@noble/hashes@2.4.0': {}
 
@@ -3918,9 +3912,9 @@ snapshots:
     dependencies:
       '@solana/kit': 8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
 
-  '@solana-program/token-2022@0.16.1(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@8.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))':
+  '@solana-program/token-2022@0.17.0(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@8.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))':
     dependencies:
-      '@noble/curves': 1.9.7
+      '@noble/curves': 2.4.0
       '@solana-program/record': 0.4.1(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana-program/system': 0.14.1(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
       '@solana-program/zk-elgamal-proof': 0.4.0(@solana/kit@8.3.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))
