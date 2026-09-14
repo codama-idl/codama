@@ -1,6 +1,6 @@
 {
     "name": "@codama/upgrade",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Upgrade Codama IDLs to the latest major version of the standard",
     "keywords": [
         "framework",
