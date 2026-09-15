@@ -1,5 +1,20 @@
 # codama
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases[bot]](https://github.com/codama-releases%5Bbot%5D)! - Start major 2. Release candidates publish under the `rc` dist-tag while this major is in development.
+
+### Patch Changes
+
+- Updated dependencies [[`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d)]:
+  - @codama/cli@2.0.0-rc.0
+  - @codama/errors@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+  - @codama/validators@2.0.0-rc.0
+  - @codama/visitors@2.0.0-rc.0
+
 ## 1.11.0
 
 ### Patch Changes
