@@ -84,7 +84,7 @@ jobs:
       id-token: write
     uses: codama-idl/release-tools/.github/workflows/release.yml@v1
     with:
-      release-version: 1.x
+      release-version: 2.x
     secrets: inherit
 
   dependabot:
