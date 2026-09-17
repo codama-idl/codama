@@ -1,7 +1,6 @@
 import type {
     DiscriminatorNode,
     InstructionAccountNode,
-    InstructionArgumentNode,
     InstructionByteDeltaNode,
     InstructionDisplayNode,
     InstructionNode,
@@ -9,14 +8,16 @@ import type {
     InstructionStatusNode,
     PluginNode,
     ProvidedNode,
+    TextNode,
+    TypeNode,
 } from '@codama/node-types';
 
-import { camelCase, DocsInput, parseDocs } from '../shared';
+import { identifierString } from '../shared';
 
 export type InstructionNodeInput<
+    TDocs extends string | TextNode | undefined = string | TextNode | undefined,
     TAccounts extends Array<InstructionAccountNode> | undefined = Array<InstructionAccountNode> | undefined,
-    TArguments extends Array<InstructionArgumentNode> | undefined = Array<InstructionArgumentNode> | undefined,
-    TExtraArguments extends Array<InstructionArgumentNode> | undefined = Array<InstructionArgumentNode> | undefined,
+    TData extends TypeNode | undefined = TypeNode | undefined,
     TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined =
         | Array<InstructionRemainingAccountsNode>
         | undefined,
@@ -30,9 +31,9 @@ export type InstructionNodeInput<
 > = Omit<
     Partial<
         InstructionNode<
+            TDocs,
             TAccounts,
-            TArguments,
-            TExtraArguments,
+            TData,
             TRemainingAccounts,
             TByteDeltas,
             TDiscriminators,
@@ -43,21 +44,20 @@ export type InstructionNodeInput<
             TPlugins
         >
     >,
-    'docs' | 'kind' | 'name'
+    'identifier' | 'kind'
 > & {
-    readonly name: string;
-    readonly docs?: DocsInput;
+    readonly identifier: string;
 };
 
 /**
- * A program instruction: its accounts, arguments, byte-delta hints, discriminators, optional status, and optional sub-instructions.
+ * A program instruction: its accounts, data, byte-delta hints, discriminators, optional status, and optional sub-instructions.
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/0d8edced-cfa4-4500-b80c-ebc56181a338)
  */
 export function instructionNode<
+    const TDocs extends string | TextNode | undefined = undefined,
     const TAccounts extends Array<InstructionAccountNode> | undefined = [],
-    const TArguments extends Array<InstructionArgumentNode> | undefined = [],
-    const TExtraArguments extends Array<InstructionArgumentNode> | undefined = undefined,
+    const TData extends TypeNode | undefined = undefined,
     const TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined = undefined,
     const TByteDeltas extends Array<InstructionByteDeltaNode> | undefined = undefined,
     const TDiscriminators extends Array<DiscriminatorNode> | undefined = undefined,
@@ -68,9 +68,9 @@ export function instructionNode<
     const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     input: InstructionNodeInput<
+        TDocs,
         TAccounts,
-        TArguments,
-        TExtraArguments,
+        TData,
         TRemainingAccounts,
         TByteDeltas,
         TDiscriminators,
@@ -81,9 +81,9 @@ export function instructionNode<
         TPlugins
     >,
 ): InstructionNode<
+    TDocs,
     TAccounts,
-    TArguments,
-    TExtraArguments,
+    TData,
     TRemainingAccounts,
     TByteDeltas,
     TDiscriminators,
@@ -93,21 +93,17 @@ export function instructionNode<
     TDisplay,
     TPlugins
 > {
-    const parsedDocs = parseDocs(input.docs);
     return Object.freeze({
         kind: 'instructionNode',
 
         // Data.
-        name: camelCase(input.name),
-        ...(parsedDocs.length > 0 && { docs: parsedDocs }),
+        identifier: identifierString(input.identifier),
         optionalAccountStrategy: input.optionalAccountStrategy ?? 'programId',
 
         // Children.
+        ...(input.docs !== undefined && { docs: input.docs }),
         ...(input.accounts !== undefined && input.accounts.length > 0 && { accounts: input.accounts as TAccounts }),
-        ...(input.arguments !== undefined &&
-            input.arguments.length > 0 && { arguments: input.arguments as TArguments }),
-        ...(input.extraArguments !== undefined &&
-            input.extraArguments.length > 0 && { extraArguments: input.extraArguments as TExtraArguments }),
+        ...(input.data !== undefined && { data: input.data }),
         ...(input.remainingAccounts !== undefined &&
             input.remainingAccounts.length > 0 && { remainingAccounts: input.remainingAccounts as TRemainingAccounts }),
         ...(input.byteDeltas !== undefined &&

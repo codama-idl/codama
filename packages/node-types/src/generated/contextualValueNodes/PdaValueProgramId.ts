@@ -1,5 +1,5 @@
 import type { AccountValueNode } from './AccountValueNode';
-import type { ArgumentValueNode } from './ArgumentValueNode';
+import type { DataValueNode } from './DataValueNode';
 
 /** The program-id forms accepted by a `pdaValueNode`. */
-export type PdaValueProgramId = AccountValueNode | ArgumentValueNode;
+export type PdaValueProgramId = AccountValueNode | DataValueNode;

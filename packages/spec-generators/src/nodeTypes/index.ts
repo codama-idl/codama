@@ -9,11 +9,16 @@ import {
 } from '@codama/fragments/javascript';
 import type { Spec } from '@codama/spec';
 
-import { getIndexPagesRenderMap, getPageFragment, resolveEntryPath, type SymbolicModule } from '../shared';
+import {
+    getIndexPagesRenderMap,
+    getPageFragment,
+    resolveEntryPath,
+    type SymbolicModule,
+    withBaseAttributes,
+} from '../shared';
 import {
     getCodamaVersionFragment,
     getEnumerationFragment,
-    getNestedUnionFragment,
     getNodeFragment,
     getNodeRegistryFragment,
     getUnionFragment,
@@ -48,9 +53,14 @@ export function generateNodeTypes(spec: Spec, options: GenerateOptions): void {
 
 /** Pure-and-sync render-map entry point. Tests can call this directly without touching the filesystem. */
 export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Fragment> {
+    // Validate against the raw spec (base attributes are appended
+    // automatically and must not be referenced by override maps), then
+    // render from the base-appended spec so `plugins` surfaces on every
+    // node as an ordinary trailing child.
     validateRenderOptions(spec, options);
-    const scope = buildRenderScope(spec, options);
-    const specPages = getSpecPagesRenderMap(spec, scope);
+    const augmentedSpec = withBaseAttributes(spec);
+    const scope = buildRenderScope(augmentedSpec, options);
+    const specPages = getSpecPagesRenderMap(augmentedSpec, scope);
     const indexPages = getIndexPagesRenderMap(specPages, scope.symbolicModules);
     return mergeRenderMaps([specPages, indexPages]);
 }
@@ -67,7 +77,6 @@ function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragme
         for (const n of category.nodes) emit(`node:${n.kind}`, getNodeFragment(n, scope));
         for (const u of category.unions) emit(`union:${u.name}`, getUnionFragment(u));
         for (const e of category.enumerations) emit(`enumeration:${e.name}`, getEnumerationFragment(e));
-        for (const nu of category.nestedUnions) emit(`nestedUnion:${nu.name}`, getNestedUnionFragment(nu));
         if (category.name === 'shared') {
             emit('version:CodamaVersion', getCodamaVersionFragment(spec.version));
         }

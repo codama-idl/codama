@@ -3,7 +3,7 @@ import type { AttributeSpec } from '@codama/spec';
 
 import { getTypeParameterIdentifierFragment } from '../../shared';
 import type { AttributeOverride } from '../config';
-import { isStringIdentifierAttr } from '../paramIdentifier';
+import { getBrandedStringHelper } from '../paramIdentifier';
 
 /**
  * Render one attribute as a field of the node function's
@@ -19,8 +19,10 @@ import { isStringIdentifierAttr } from '../paramIdentifier';
  *      when empty" convention in the `@codama/spec` README). The
  *      generic cast (`as TGeneric`) is preserved for type-parameter
  *      arrays so callers keep their narrowed tuple type.
- *   4. `stringIdentifier()`-typed → wrap reader in `camelCase(...)`,
- *      under a conditional spread when optional.
+ *   4. Constrained-`string` attribute (identifier/namespace/path/integer/
+ *      decimal) → wrap reader in the matching branded-string validator
+ *      (e.g. `identifierString(...)`), which asserts the format and throws
+ *      on a malformed value, under a conditional spread when optional.
  *   5. `coerce` override → emit the coerce fragment, with `as TGeneric`
  *      cast when the attribute is a type parameter, under a conditional
  *      spread when optional.
@@ -60,12 +62,13 @@ export function getNodeFunctionAttributeFragment(
         return fragment`...(${reader} !== undefined && ${reader}.length > 0 && { ${key}: ${value} }),`;
     }
 
-    if (isStringIdentifierAttr(attr)) {
-        const camelCaseRef = use('camelCase', 'shared:camelCase');
+    const brandHelper = getBrandedStringHelper(attr);
+    if (brandHelper) {
+        const brandRef = use(brandHelper, `shared:${brandHelper}`);
         if (attr.optional) {
-            return fragment`...(${reader} !== undefined && { ${key}: ${camelCaseRef}(${reader}) }),`;
+            return fragment`...(${reader} !== undefined && { ${key}: ${brandRef}(${reader}) }),`;
         }
-        return fragment`${key}: ${camelCaseRef}(${reader}),`;
+        return fragment`${key}: ${brandRef}(${reader}),`;
     }
 
     if (override && 'coerce' in override) {

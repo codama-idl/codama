@@ -3,4 +3,5 @@ export const REGISTERED_COUNT_NODE_KINDS = [
     'fixedCountNode' as const,
     'prefixedCountNode' as const,
     'remainderCountNode' as const,
+    'sentinelCountNode' as const,
 ];

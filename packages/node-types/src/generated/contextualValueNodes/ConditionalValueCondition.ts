@@ -1,6 +1,5 @@
 import type { AccountValueNode } from './AccountValueNode';
-import type { ArgumentValueNode } from './ArgumentValueNode';
-import type { ResolverValueNode } from './ResolverValueNode';
+import type { DataValueNode } from './DataValueNode';
 
 /** The condition forms accepted by a `conditionalValueNode`. */
-export type ConditionalValueCondition = AccountValueNode | ArgumentValueNode | ResolverValueNode;
+export type ConditionalValueCondition = AccountValueNode | DataValueNode;

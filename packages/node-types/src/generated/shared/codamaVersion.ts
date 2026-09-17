@@ -3,4 +3,4 @@
  * spec major at generation time; IDLs conforming to any minor or patch
  * of that major carry a string of this shape.
  */
-export type CodamaVersion = `1.${number}.${number}`;
+export type CodamaVersion = `2.${number}.${number}`;

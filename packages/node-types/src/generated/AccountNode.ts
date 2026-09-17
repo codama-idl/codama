@@ -1,34 +1,36 @@
-import type { CamelCaseString } from '../brands';
-import type { Docs } from '../Docs';
+import type { IdentifierString } from '../brands';
 import type { DiscriminatorNode } from './discriminatorNodes/DiscriminatorNode';
 import type { PdaLinkNode } from './linkNodes/PdaLinkNode';
-import type { NestedTypeNode } from './typeNodes/NestedTypeNode';
-import type { StructTypeNode } from './typeNodes/StructTypeNode';
+import type { PluginNode } from './PluginNode';
+import type { TextNode } from './TextNode';
+import type { TypeNode } from './typeNodes/TypeNode';
 
 /**
- * An on-chain account: its name, data structure, optional fixed size, optional PDA, and optional discriminators.
+ * An on-chain account: its identifier, data type, optional fixed size, optional PDA, and optional discriminators.
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/77974dad-212e-49b1-8e41-5d466c273a02)
  */
 export interface AccountNode<
-    TData extends NestedTypeNode<StructTypeNode> = NestedTypeNode<StructTypeNode>,
+    TDocs extends string | TextNode | undefined = string | TextNode | undefined,
+    TData extends TypeNode = TypeNode,
     TPda extends PdaLinkNode | undefined = PdaLinkNode | undefined,
     TDiscriminators extends Array<DiscriminatorNode> | undefined = Array<DiscriminatorNode> | undefined,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'accountNode';
 
     // Data.
-    /** The name of the account. */
-    readonly name: CamelCaseString;
+    /** The identifier of the account. */
+    readonly identifier: IdentifierString;
     /** The size of the account in bytes, when the data length is fixed. */
     readonly size?: number;
-    /** Markdown documentation for the account. */
-    readonly docs?: Docs;
 
     // Children.
+    /** Markdown documentation for the account. */
+    readonly docs?: TDocs;
     /**
-     * The struct describing the account data.
-     * It must be a struct so its fields can be referenced by other nodes — e.g. `accountFieldValueNode`.
+     * The type describing the account data — any type node, including a `definedTypeLinkNode` to share or reuse a defined type.
+     * Nodes that reference account fields by name — e.g. `accountDataValueNode` or `fieldDiscriminatorNode` — are only valid when this type resolves to a struct (following links).
      */
     readonly data: TData;
     /** A link to the PDA the account is derived from, if applicable. */
@@ -38,4 +40,9 @@ export interface AccountNode<
      * When multiple are listed, they are combined with a logical AND.
      */
     readonly discriminators?: TDiscriminators;
+    /**
+     * Namespaced plugins with custom structured data.
+     * The universal extension point for renderer-specific or not-yet-standardised metadata.
+     */
+    readonly plugins?: TPlugins;
 }
