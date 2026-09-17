@@ -1,10 +1,15 @@
 import { joinPath } from '@codama/fragments/javascript';
 import { getSpec } from '@codama/spec';
-import { getSpec as getSpecV1 } from '@codama/spec-v1';
 
 import { generateNodes, NODE_CONFIGS } from './nodes';
 import { generateNodeTypes } from './nodeTypes';
-import { CATEGORY_DIRECTORIES, GENERIC_PARAM_ORDER, getRepoDirectory, NARROWABLE_DATA_ATTRIBUTES } from './shared';
+import {
+    CATEGORY_DIRECTORIES,
+    GENERIC_PARAM_ORDER,
+    getRepoDirectory,
+    NARROWABLE_DATA_ATTRIBUTES,
+    parseSpecMajor,
+} from './shared';
 import {
     generateVisitorsCore,
     IDENTITY_VISITOR_WALK_ORDER,
@@ -26,6 +31,13 @@ export interface GenerateResult {
 export function generate(): GenerateResult {
     const outputs: { generator: string; outputDir: string }[] = [];
     const spec = getSpec();
+    // The generator is single-major: it only ever renders the spec on its
+    // own branch (v2 on `main`). Deriving the major from the living pin
+    // keeps the guard meaningful — it catches a living pin that drifts from
+    // the major the rest of the tree expects. Node types for prior majors
+    // live as a frozen static snapshot in `@codama/upgrade`
+    // (`packages/upgrade/src/v1/generated`); they are not regenerated here.
+    const specMajor = parseSpecMajor(spec.version);
 
     {
         const outputDir = joinPath(getRepoDirectory(), 'packages', 'node-types', 'src', 'generated');
@@ -33,7 +45,7 @@ export function generate(): GenerateResult {
             genericParamOrder: GENERIC_PARAM_ORDER,
             narrowableDataAttributes: NARROWABLE_DATA_ATTRIBUTES,
             outputDir,
-            targetSpecMajor: 1,
+            targetSpecMajor: specMajor,
         });
         outputs.push({ generator: 'nodeTypes', outputDir });
     }
@@ -46,7 +58,7 @@ export function generate(): GenerateResult {
             narrowableDataAttributes: NARROWABLE_DATA_ATTRIBUTES,
             nodeConfigs: NODE_CONFIGS,
             outputDir,
-            targetSpecMajor: 1,
+            targetSpecMajor: specMajor,
         });
         outputs.push({ generator: 'nodes', outputDir });
     }
@@ -57,27 +69,10 @@ export function generate(): GenerateResult {
             identityVisitorWalkOrder: IDENTITY_VISITOR_WALK_ORDER,
             mergeVisitorWalkOrder: MERGE_VISITOR_WALK_ORDER,
             outputDir,
-            targetSpecMajor: 1,
+            targetSpecMajor: specMajor,
             unionAliasNames: UNION_ALIAS_NAMES,
         });
         outputs.push({ generator: 'visitorsCore', outputDir });
-    }
-
-    // Freeze the v1 node types into `@codama/upgrade`. The frozen snapshot
-    // is generated from its own aliased pin (`@codama/spec-v1`), so it only
-    // changes when that pin — or the generator code — deliberately changes.
-    // While the living `@codama/spec` pin is still on its 1.x line the two
-    // specs coincide; after the v2 transition, the living pin moves to 2.x
-    // and the alias keeps pointing at the last published 1.x.
-    {
-        const outputDir = joinPath(getRepoDirectory(), 'packages', 'upgrade', 'src', 'v1', 'generated');
-        generateNodeTypes(getSpecV1(), {
-            genericParamOrder: GENERIC_PARAM_ORDER,
-            narrowableDataAttributes: NARROWABLE_DATA_ATTRIBUTES,
-            outputDir,
-            targetSpecMajor: 1,
-        });
-        outputs.push({ generator: 'nodeTypes@v1-frozen', outputDir });
     }
 
     return { outputs };

@@ -48,8 +48,10 @@ export type ResolvedRenderOptions = Required<RenderOptions>;
  *   - `kinds:Node`             — the top-level `nodeKinds` registry.
  *   - `generated:CodamaVersion` — the generated `codamaVersion` constant.
  *   - `shared:<symbol>`        — a hand-written sibling utility above
- *                                `generated/` (`camelCase`, `DocsInput`,
- *                                `isNode`, `parseDocs`).
+ *                                `generated/` (`isNode` and the
+ *                                branded-string validators
+ *                                `identifierString`/`namespaceString`/
+ *                                `pathString`/`integerString`/`decimalString`).
  *
  * Imports from `@codama/node-types` do NOT use this resolver: renderers
  * call `use(<identifier>, '@codama/node-types')` directly and the
@@ -78,10 +80,12 @@ export function validateRenderOptions(spec: Spec, options: RenderOptions): void 
  * `'../../<file>'` from a subdirectory file.
  */
 const SHARED_HELPER_PATHS: Readonly<Record<string, Path>> = Object.freeze({
-    DocsInput: '../shared',
-    camelCase: '../shared',
+    decimalString: '../shared',
+    identifierString: '../shared',
+    integerString: '../shared',
     isNode: '../Node',
-    parseDocs: '../shared',
+    namespaceString: '../shared',
+    pathString: '../shared',
 });
 
 export function buildRenderScope(spec: Spec, options: RenderOptions): RenderScope {

@@ -1,19 +1,26 @@
-import type { PdaSeedValueNode, PdaSeedValueValue } from '@codama/node-types';
+import type { PdaSeedValueNode, PdaSeedValueValue, PluginNode } from '@codama/node-types';
 
-import { camelCase } from '../../shared';
+import { identifierString } from '../../shared';
 
 /** Pairs a PDA seed name with the value to substitute when deriving the PDA. */
-export function pdaSeedValueNode<const TValue extends PdaSeedValueValue>(
-    name: string,
+export function pdaSeedValueNode<
+    const TValue extends PdaSeedValueValue,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
+>(
+    identifier: string,
     value: TValue,
-): PdaSeedValueNode<TValue> {
+    options: {
+        plugins?: TPlugins;
+    } = {},
+): PdaSeedValueNode<TValue, TPlugins> {
     return Object.freeze({
         kind: 'pdaSeedValueNode',
 
         // Data.
-        name: camelCase(name),
+        identifier: identifierString(identifier),
 
         // Children.
         value,
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

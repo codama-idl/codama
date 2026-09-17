@@ -1,14 +1,20 @@
-import { type Fragment, fragment, mergeFragments, use } from '@codama/fragments/javascript';
+import { type Fragment, fragment, mergeFragments } from '@codama/fragments/javascript';
 import { type AttributeSpec, isChildAttribute, type NodeSpec } from '@codama/spec';
 
 import type { AttributeOverride, NodeConstructorConfig } from '../config';
 import { paramIdentifier } from '../paramIdentifier';
 import { getNodeFunctionAttributeFragment } from './nodeFunctionAttribute';
 
+/** True when `override` carries a `coerce` body expression. */
+function hasCoerce(override: AttributeOverride | undefined): boolean {
+    return override !== undefined && 'coerce' in override;
+}
+
 /**
  * The node function body — a `return Object.freeze({ kind, ... });`
- * block, optionally preceded by a `const parsedDocs = parseDocs(...);`
- * hoist when the node has a `docs` attribute.
+ * block. `docs` and `text` attributes are ordinary `string | textNode`
+ * children with no bespoke handling: pass-through when required,
+ * conditional spread when optional, like every other child.
  */
 export function getNodeFunctionBodyFragment(
     node: NodeSpec,
@@ -21,24 +27,24 @@ export function getNodeFunctionBodyFragment(
 
     const dataLines: Fragment[] = [];
     const childLines: Fragment[] = [];
-    let docsPreStatement: Fragment | undefined;
+    const preStatements: Fragment[] = [];
 
     for (const attr of node.attributes) {
         const isChild = isChildAttribute(attr.type);
         const override = config?.attributes?.[attr.name];
         const isBarePositional = isPositional && positionalSet.has(attr.name);
-        const reader = computeReader(attr, override, isPositional, positionalSet);
+        let reader = computeReader(attr, override, isPositional, positionalSet);
         const typeParamAttr = typeParameterAttrsByName.get(attr.name);
 
-        if (attr.type.kind === 'docs') {
-            // Hoist `parseDocs(<reader>)` to a `parsedDocs` local so
-            // we can both test its length and reuse the result. Named
-            // `parsedDocs` rather than `docs` to avoid shadowing a
-            // positional `docs` parameter.
-            const parseDocsRef = use('parseDocs', 'shared:parseDocs');
-            docsPreStatement = fragment`const parsedDocs = ${parseDocsRef}(${reader});`;
-            dataLines.push(fragment`...(parsedDocs.length > 0 && { docs: parsedDocs }),`);
-            continue;
+        // A `coerce` override's body expression is authored against the
+        // attribute's bare param name (e.g. `typeof program === 'string'
+        // ? …`). When the attribute isn't a bare positional its reader is
+        // `options.<name>` / `input.<name>`, so bind that to the expected
+        // local name first, then read from the local.
+        if (hasCoerce(override) && !isBarePositional) {
+            const local = paramIdentifier(attr, override);
+            preStatements.push(fragment`const ${local} = ${reader};`);
+            reader = local;
         }
 
         const line = getNodeFunctionAttributeFragment(attr, reader, override, typeParamAttr, isBarePositional);
@@ -56,9 +62,9 @@ export function getNodeFunctionBodyFragment(
 
     const objectLiteral = mergeFragments(sectionFragments, parts => parts.join('\n'));
     const returnBlock = fragment`return Object.freeze({\n${objectLiteral}\n});`;
-
-    if (!docsPreStatement) return returnBlock;
-    return fragment`${docsPreStatement}\n${returnBlock}`;
+    if (preStatements.length === 0) return returnBlock;
+    const preBlock = mergeFragments(preStatements, parts => parts.join('\n'));
+    return fragment`${preBlock}\n${returnBlock}`;
 }
 
 /**

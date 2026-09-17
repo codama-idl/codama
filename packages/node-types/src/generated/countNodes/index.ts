@@ -3,3 +3,4 @@ export * from './FixedCountNode';
 export * from './PrefixedCountNode';
 export * from './RegisteredCountNode';
 export * from './RemainderCountNode';
+export * from './SentinelCountNode';

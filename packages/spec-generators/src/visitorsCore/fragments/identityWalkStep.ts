@@ -64,17 +64,16 @@ export function getIdentityWalkStep(
                 visitThis,
             });
 
-        case 'nestedNode':
-            return buildSingleNodeStep(localName, fieldAccess, optional, {
-                assertCall: use('assertIsNestedTypeNode', '@codama/nodes'),
-                kindArg: fragment`'${shape.nodeKind}'`,
-                visitThis,
-            });
-
         case 'union':
             return buildSingleNodeStep(localName, fieldAccess, optional, {
                 assertCall: use('assertIsNode', '@codama/nodes'),
                 kindArg: getUnionKindListFragment(shape.unionName, spec, options),
+                visitThis,
+            });
+
+        case 'text':
+            return buildTextStep(localName, fieldAccess, optional, {
+                assertCall: use('assertIsNode', '@codama/nodes'),
                 visitThis,
             });
 
@@ -121,6 +120,37 @@ function buildSingleNodeStep(
         return { preStatement, rebuildExpr: fragment`${localName}` };
     }
     const preStatement = fragment`const ${localName} = ${visitThis}(${fieldAccess});\nif (${localName} === null) return null;\n${assertCall}(${localName}, ${kindArg});`;
+    return { preStatement, rebuildExpr: fragment`${localName}` };
+}
+
+/**
+ * A `text`/`docs` child is `string | textNode`. Visit only when the
+ * value is a `textNode`; a bare string (the canonical plugin-free
+ * spelling) passes through unchanged. The `typeof … === 'string'` guard
+ * narrows the union so the `textNode` arm is a `Node` for `visit`, and
+ * `assertIsNode(…, 'textNode')` narrows the visited result back to a
+ * `textNode` so the rebuilt value keeps the `string | textNode` type. A
+ * required text field returns `null` from the surrounding visitor only
+ * when a `textNode` visit itself yields `null` — a plain string is
+ * always retained.
+ */
+function buildTextStep(
+    localName: string,
+    fieldAccess: string,
+    optional: boolean,
+    deps: { readonly assertCall: Fragment; readonly visitThis: Fragment },
+): IdentityWalkStep {
+    const { assertCall, visitThis } = deps;
+    // Visit the `textNode` arm into its own `const` (so the visited
+    // value narrows via `assertIsNode`), then the rebuild `const` is a
+    // ternary: bare strings pass through, `textNode`s use the visited-
+    // and-asserted value. The intermediate `${localName}Node` name avoids
+    // widening a single `let` across the string/node arms.
+    if (optional) {
+        const preStatement = fragment`let ${localName} = ${fieldAccess};\nif (${localName} !== undefined && typeof ${localName} !== 'string') {\nconst visited = ${visitThis}(${localName}) ?? undefined;\nif (visited !== undefined) ${assertCall}(visited, 'textNode');\n${localName} = visited;\n}`;
+        return { preStatement, rebuildExpr: fragment`${localName}` };
+    }
+    const preStatement = fragment`let ${localName} = ${fieldAccess};\nif (typeof ${localName} !== 'string') {\nconst visited = ${visitThis}(${localName});\nif (visited === null) return null;\n${assertCall}(visited, 'textNode');\n${localName} = visited;\n}`;
     return { preStatement, rebuildExpr: fragment`${localName}` };
 }
 

@@ -15,7 +15,6 @@ export * from './generated';
 // Hand-written static helpers — referenced by the generated surface but
 // kept outside `./generated/` because they don't depend on the spec.
 export * from './brands';
-export * from './Docs';
 export * from './Version';
 
 // Hand-written deprecated aliases — see each file for rationale.

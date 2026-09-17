@@ -1,9 +1,9 @@
-import { type Fragment, fragment, mergeFragments, use } from '@codama/fragments/javascript';
+import { type Fragment, fragment, mergeFragments } from '@codama/fragments/javascript';
 import type { AttributeSpec, NodeSpec } from '@codama/spec';
 
 import { getTypeParameterIdentifierFragment } from '../../shared';
 import type { AttributeOverride, NodeConstructorConfig } from '../config';
-import { isStringIdentifierAttr, paramIdentifier } from '../paramIdentifier';
+import { getBrandedStringHelper, paramIdentifier } from '../paramIdentifier';
 import { getNodeTypeParameterConstraint } from './nodeTypeParameters';
 import { getTypeExprFragment } from './typeExpr';
 
@@ -87,14 +87,14 @@ function renderParamTsType(
 /**
  * The TS type expression for one attribute in the node function's
  * positional-parameter signature or bag-field type. Type-parameter
- * attributes render as their generic identifier; `docs` widens to
- * `DocsInput`; `stringIdentifier()`-typed attributes widen to plain
- * `string`. Everything else falls through to the spec type.
+ * attributes render as their generic identifier (this covers `docs`
+ * and `text`, which are `string | textNode` children); constrained-
+ * `string` attributes (identifier/namespace/path/integer/decimal) widen
+ * to plain `string`. Everything else falls through to the spec type.
  */
 function renderAttributeTsType(attr: AttributeSpec, typeParameterAttribute: AttributeSpec | undefined): Fragment {
     if (typeParameterAttribute) return fragment`${getTypeParameterIdentifierFragment(typeParameterAttribute)}`;
-    if (attr.type.kind === 'docs') return use('DocsInput', 'shared:DocsInput');
-    if (isStringIdentifierAttr(attr)) return fragment`string`;
+    if (getBrandedStringHelper(attr) !== null) return fragment`string`;
     return getTypeExprFragment(attr.type);
 }
 

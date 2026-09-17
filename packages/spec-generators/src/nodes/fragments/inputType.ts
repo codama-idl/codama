@@ -5,10 +5,10 @@
  * The Input type takes the same type parameters as the node function
  * (with the "wide" defaults: each type parameter defaults to its own
  * constraint) and relaxes the strict shape of the matching node
- * interface so callers can pass `name: string` instead of the branded
- * `CamelCaseString`, `docs?: DocsInput` instead of `Docs`, and omit any
- * attribute the node function defaults (via a `Partial<>` wrap when
- * present).
+ * interface so callers can pass `identifier: string` instead of the
+ * branded `IdentifierString`, and omit any attribute the node function
+ * defaults (via a `Partial<>` wrap when present). `docs`/`text` need no
+ * relaxation — they are ordinary `string | textNode` children.
  */
 
 import { type Fragment, fragment, mergeFragments, use } from '@codama/fragments/javascript';
@@ -16,7 +16,7 @@ import type { AttributeSpec, NodeSpec } from '@codama/spec';
 
 import { getTypeParameterIdentifierFragment, getTypeParameterIdentifierListFragment } from '../../shared';
 import type { NodeConstructorConfig } from '../config';
-import { isStringIdentifierAttr } from '../paramIdentifier';
+import { getBrandedStringHelper } from '../paramIdentifier';
 import { getNodeTypeParameterConstraint } from './nodeTypeParameters';
 
 export function getInputTypeFragment(
@@ -81,26 +81,22 @@ function nodeHasDefaultedRequiredAttribute(node: NodeSpec, config: NodeConstruct
 /**
  * Fields the Input type re-asserts in the intersection block:
  *
- *   - Every `stringIdentifier()`-typed attribute relaxes from the branded
- *     `CamelCaseString` to plain `string` (the constructor body runs
- *     `camelCase(...)` on the value). This covers `name` and any other
- *     identifier-shaped attribute (e.g. `accountFieldValueNode.account`,
- *     `injectedValueNode.key`).
- *   - `docs?: DocsInput` (relaxed from `Docs`).
+ *   - Every constrained-`string` attribute (identifier/namespace/path/
+ *     integer/decimal) relaxes from its branded type to plain `string`
+ *     (the constructor body validates and brands the value via the
+ *     matching helper). This covers `identifier` and siblings like
+ *     `accountDataValueNode.account`, `injectedValueNode.key`,
+ *     `pluginNode.namespace` and path/value strings.
  *   - `publicKey: ProgramNode['publicKey']` for `programNode` — a
  *     required-not-defaulted field that survives the `Partial<>` wrap.
  */
 function collectReassertedFields(node: NodeSpec): readonly { readonly name: string; readonly tsType: Fragment }[] {
     const out: { name: string; tsType: Fragment }[] = [];
     for (const attr of node.attributes) {
-        if (isStringIdentifierAttr(attr)) {
+        if (getBrandedStringHelper(attr) !== null) {
             const fieldName = attr.optional ? `${attr.name}?` : attr.name;
             out.push({ name: fieldName, tsType: fragment`string` });
         }
-    }
-    if (node.attributes.some(a => a.name === 'docs')) {
-        const docsInput = use('DocsInput', 'shared:DocsInput');
-        out.push({ name: 'docs?', tsType: fragment`${docsInput}` });
     }
     if (node.kind === 'programNode') {
         out.push({ name: 'publicKey', tsType: fragment`ProgramNode['publicKey']` });

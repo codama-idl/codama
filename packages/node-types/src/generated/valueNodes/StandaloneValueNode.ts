@@ -3,10 +3,11 @@ import type { BooleanValueNode } from './BooleanValueNode';
 import type { BytesValueNode } from './BytesValueNode';
 import type { ConstantValueNode } from './ConstantValueNode';
 import type { EnumValueNode } from './EnumValueNode';
+import type { FloatValueNode } from './FloatValueNode';
 import type { InjectedValueNode } from './InjectedValueNode';
+import type { IntegerValueNode } from './IntegerValueNode';
 import type { MapValueNode } from './MapValueNode';
 import type { NoneValueNode } from './NoneValueNode';
-import type { NumberValueNode } from './NumberValueNode';
 import type { PublicKeyValueNode } from './PublicKeyValueNode';
 import type { SetValueNode } from './SetValueNode';
 import type { SomeValueNode } from './SomeValueNode';
@@ -21,10 +22,11 @@ export type StandaloneValueNode =
     | BytesValueNode
     | ConstantValueNode
     | EnumValueNode
+    | FloatValueNode
     | InjectedValueNode
+    | IntegerValueNode
     | MapValueNode
     | NoneValueNode
-    | NumberValueNode
     | PublicKeyValueNode
     | SetValueNode
     | SomeValueNode

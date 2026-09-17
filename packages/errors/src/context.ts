@@ -52,6 +52,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY,
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
+    CODAMA_ERROR__INVALID_BRANDED_STRING,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
     CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS,
@@ -203,6 +204,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         enum: EnumTypeNode;
         enumName: CamelCaseString;
         variant: CamelCaseString;
+    };
+    [CODAMA_ERROR__INVALID_BRANDED_STRING]: {
+        actual: string;
+        expected: string;
     };
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: {
         kind: LinkNode['kind'];

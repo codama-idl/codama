@@ -1,3 +1,4 @@
+import type { PluginNode } from '../PluginNode';
 import type { TypeNode } from '../typeNodes/TypeNode';
 import type { ConstantPdaSeedValue } from './ConstantPdaSeedValue';
 
@@ -5,6 +6,7 @@ import type { ConstantPdaSeedValue } from './ConstantPdaSeedValue';
 export interface ConstantPdaSeedNode<
     TType extends TypeNode = TypeNode,
     TValue extends ConstantPdaSeedValue = ConstantPdaSeedValue,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'constantPdaSeedNode';
 
@@ -13,4 +15,9 @@ export interface ConstantPdaSeedNode<
     readonly type: TType;
     /** The constant value to use as the seed — either a literal value or the program ID placeholder. */
     readonly value: TValue;
+    /**
+     * Namespaced plugins with custom structured data.
+     * The universal extension point for renderer-specific or not-yet-standardised metadata.
+     */
+    readonly plugins?: TPlugins;
 }

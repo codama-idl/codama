@@ -1,18 +1,25 @@
-import type { InstructionAccountLinkNode, InstructionLinkNode } from '@codama/node-types';
+import type { InstructionAccountLinkNode, InstructionLinkNode, PluginNode } from '@codama/node-types';
 
-import { camelCase } from '../../shared';
+import { identifierString } from '../../shared';
 import { instructionLinkNode } from './InstructionLinkNode';
 
 /** A reference to an account of another instruction. */
-export function instructionAccountLinkNode<const TInstruction extends InstructionLinkNode | undefined = undefined>(
-    name: string,
-    instruction?: TInstruction | string,
-): InstructionAccountLinkNode<TInstruction> {
+export function instructionAccountLinkNode<
+    const TInstruction extends InstructionLinkNode | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
+>(
+    identifier: string,
+    options: {
+        instruction?: TInstruction;
+        plugins?: TPlugins;
+    } = {},
+): InstructionAccountLinkNode<TInstruction, TPlugins> {
+    const instruction = options.instruction;
     return Object.freeze({
         kind: 'instructionAccountLinkNode',
 
         // Data.
-        name: camelCase(name),
+        identifier: identifierString(identifier),
 
         // Children.
         ...(instruction !== undefined && {
@@ -20,5 +27,6 @@ export function instructionAccountLinkNode<const TInstruction extends Instructio
                 ? instructionLinkNode(instruction)
                 : instruction) as TInstruction,
         }),
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

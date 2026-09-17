@@ -1,19 +1,26 @@
-import type { StructFieldValueNode, ValueNode } from '@codama/node-types';
+import type { PluginNode, StructFieldValueNode, ValueNode } from '@codama/node-types';
 
-import { camelCase } from '../../shared';
+import { identifierString } from '../../shared';
 
 /** A named field of a `structValueNode`. */
-export function structFieldValueNode<const TValue extends ValueNode>(
-    name: string,
+export function structFieldValueNode<
+    const TValue extends ValueNode,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
+>(
+    identifier: string,
     value: TValue,
-): StructFieldValueNode<TValue> {
+    options: {
+        plugins?: TPlugins;
+    } = {},
+): StructFieldValueNode<TValue, TPlugins> {
     return Object.freeze({
         kind: 'structFieldValueNode',
 
         // Data.
-        name: camelCase(name),
+        identifier: identifierString(identifier),
 
         // Children.
         value,
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

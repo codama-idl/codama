@@ -1,12 +1,19 @@
-import type { IdentityValueNode } from '@codama/node-types';
+import type { IdentityValueNode, PluginNode } from '@codama/node-types';
 
 /**
  * Refers to the wallet identity providing the instruction context — the main wallet that should own things.
  * For instance, in a web application the identity would be the connected wallet; in a terminal, the wallet identified by `solana address`.
  * A similar node exists for the main wallet that should pay for things — `payerValueNode`. In practice the identity and the payer are often the same, but offering the distinction can be useful should they differ.
  */
-export function identityValueNode(): IdentityValueNode {
+export function identityValueNode<const TPlugins extends Array<PluginNode> | undefined = undefined>(
+    options: {
+        plugins?: TPlugins;
+    } = {},
+): IdentityValueNode<TPlugins> {
     return Object.freeze({
         kind: 'identityValueNode',
+
+        // Children.
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

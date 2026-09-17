@@ -1,10 +1,13 @@
-import type { ErrorNode } from '@codama/node-types';
+import type { ErrorNode, PluginNode, TextNode } from '@codama/node-types';
 
-import { camelCase, DocsInput, parseDocs } from '../shared';
+import { identifierString } from '../shared';
 
-export type ErrorNodeInput = Omit<ErrorNode, 'docs' | 'kind' | 'name'> & {
-    readonly name: string;
-    readonly docs?: DocsInput;
+export type ErrorNodeInput<
+    TMessage extends string | TextNode = string | TextNode,
+    TDocs extends string | TextNode | undefined = string | TextNode | undefined,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
+> = Omit<ErrorNode<TMessage, TDocs, TPlugins>, 'identifier' | 'kind'> & {
+    readonly identifier: string;
 };
 
 /**
@@ -12,15 +15,21 @@ export type ErrorNodeInput = Omit<ErrorNode, 'docs' | 'kind' | 'name'> & {
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/0bde98ea-0327-404b-bf38-137d105826b0)
  */
-export function errorNode(input: ErrorNodeInput): ErrorNode {
-    const parsedDocs = parseDocs(input.docs);
+export function errorNode<
+    const TMessage extends string | TextNode,
+    const TDocs extends string | TextNode | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
+>(input: ErrorNodeInput<TMessage, TDocs, TPlugins>): ErrorNode<TMessage, TDocs, TPlugins> {
     return Object.freeze({
         kind: 'errorNode',
 
         // Data.
-        name: camelCase(input.name),
+        identifier: identifierString(input.identifier),
         code: input.code,
+
+        // Children.
         message: input.message,
-        ...(parsedDocs.length > 0 && { docs: parsedDocs }),
+        ...(input.docs !== undefined && { docs: input.docs }),
+        ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

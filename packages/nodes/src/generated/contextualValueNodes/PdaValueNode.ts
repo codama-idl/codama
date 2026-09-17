@@ -1,4 +1,4 @@
-import type { PdaSeedValueNode, PdaValueNode, PdaValuePda, PdaValueProgramId } from '@codama/node-types';
+import type { PdaSeedValueNode, PdaValueNode, PdaValuePda, PdaValueProgramId, PluginNode } from '@codama/node-types';
 
 import { pdaLinkNode } from '../linkNodes/PdaLinkNode';
 
@@ -7,17 +7,22 @@ export function pdaValueNode<
     const TSeeds extends Array<PdaSeedValueNode> | undefined = [],
     const TProgramId extends PdaValueProgramId | undefined = undefined,
     const TPda extends PdaValuePda = PdaValuePda,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     pda: TPda | string,
-    seeds: TSeeds = [] as Array<PdaSeedValueNode> as TSeeds,
-    programId?: TProgramId,
-): PdaValueNode<TSeeds, TProgramId, TPda> {
+    options: {
+        seeds?: TSeeds;
+        programId?: TProgramId;
+        plugins?: TPlugins;
+    } = {},
+): PdaValueNode<TSeeds, TProgramId, TPda, TPlugins> {
     return Object.freeze({
         kind: 'pdaValueNode',
 
         // Children.
         pda: (typeof pda === 'string' ? pdaLinkNode(pda) : pda) as TPda,
-        ...(seeds !== undefined && seeds.length > 0 && { seeds: seeds as TSeeds }),
-        ...(programId !== undefined && { programId }),
+        ...(options.seeds !== undefined && options.seeds.length > 0 && { seeds: options.seeds as TSeeds }),
+        ...(options.programId !== undefined && { programId: options.programId }),
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

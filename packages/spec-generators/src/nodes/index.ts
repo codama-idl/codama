@@ -10,7 +10,13 @@ import {
 } from '@codama/fragments/javascript';
 import type { Spec } from '@codama/spec';
 
-import { getIndexPagesRenderMap, getPageFragment, resolveEntryPath, type SymbolicModule } from '../shared';
+import {
+    getIndexPagesRenderMap,
+    getPageFragment,
+    resolveEntryPath,
+    type SymbolicModule,
+    withBaseAttributes,
+} from '../shared';
 import {
     getCodamaVersionConstantFragment,
     getKindUnionConstantFragment,
@@ -50,9 +56,12 @@ export function generateNodes(spec: Spec, options: GenerateOptions): void {
 
 /** Pure-and-sync render-map entry point. Tests can call this directly without touching the filesystem. */
 export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Fragment> {
+    // Validate against the raw spec; render from the base-appended spec so
+    // `plugins` surfaces on every node as an ordinary trailing child.
     validateRenderOptions(spec, options);
-    const scope = buildRenderScope(spec, options);
-    const specPages = getSpecPagesRenderMap(spec, scope);
+    const augmentedSpec = withBaseAttributes(spec);
+    const scope = buildRenderScope(augmentedSpec, options);
+    const specPages = getSpecPagesRenderMap(augmentedSpec, scope);
     const indexPages = getIndexPagesRenderMap(specPages, scope.symbolicModules);
     return mergeRenderMaps([specPages, indexPages]);
 }

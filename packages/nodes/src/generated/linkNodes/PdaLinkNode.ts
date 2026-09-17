@@ -1,22 +1,30 @@
-import type { PdaLinkNode, ProgramLinkNode } from '@codama/node-types';
+import type { PdaLinkNode, PluginNode, ProgramLinkNode } from '@codama/node-types';
 
-import { camelCase } from '../../shared';
+import { identifierString } from '../../shared';
 import { programLinkNode } from './ProgramLinkNode';
 
 /** A reference to a PDA defined elsewhere — possibly in a different program. */
-export function pdaLinkNode<const TProgram extends ProgramLinkNode | undefined = undefined>(
-    name: string,
-    program?: TProgram | string,
-): PdaLinkNode<TProgram> {
+export function pdaLinkNode<
+    const TProgram extends ProgramLinkNode | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
+>(
+    identifier: string,
+    options: {
+        program?: TProgram;
+        plugins?: TPlugins;
+    } = {},
+): PdaLinkNode<TProgram, TPlugins> {
+    const program = options.program;
     return Object.freeze({
         kind: 'pdaLinkNode',
 
         // Data.
-        name: camelCase(name),
+        identifier: identifierString(identifier),
 
         // Children.
         ...(program !== undefined && {
             program: (typeof program === 'string' ? programLinkNode(program) : program) as TProgram,
         }),
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

@@ -1,6 +1,6 @@
 /**
- * How a pre-offset modifier interprets its offset value before serialising the wrapped type.
- * See `preOffsetTypeNode` for an illustrated walkthrough of each strategy.
+ * How a pre-offset transform interprets its offset value before serialising the transformed type.
+ * See `preOffsetTransformNode` for an illustrated walkthrough of each strategy.
  */
 export type PreOffsetStrategy =
     /** Move the cursor to the absolute byte position given by the offset; a negative offset counts backwards from the end of the buffer. */

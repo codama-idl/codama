@@ -1,3 +1,4 @@
+import type { PluginNode } from './PluginNode';
 import type { ProgramNode } from './ProgramNode';
 import type { CodamaVersion } from './shared/codamaVersion';
 
@@ -10,6 +11,7 @@ import type { CodamaVersion } from './shared/codamaVersion';
 export interface RootNode<
     TProgram extends ProgramNode = ProgramNode,
     TAdditionalPrograms extends Array<ProgramNode> | undefined = Array<ProgramNode> | undefined,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'rootNode';
 
@@ -27,4 +29,9 @@ export interface RootNode<
     readonly program: TProgram;
     /** Additional programs referenced by the primary program. */
     readonly additionalPrograms?: TAdditionalPrograms;
+    /**
+     * Namespaced plugins with custom structured data.
+     * The universal extension point for renderer-specific or not-yet-standardised metadata.
+     */
+    readonly plugins?: TPlugins;
 }
