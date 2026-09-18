@@ -59,7 +59,7 @@ export async function resolveConsumedMemberNames(displayContext: BaseDisplayCont
 
 /** Collects the member names a resolved value node references (an account, its field, or an argument). */
 function collectReferencedMembers(node: Node, members: Set<string>): void {
-    if (isNode(node, 'accountValueNode')) members.add(node.name);
+    if (isNode(node, 'accountValueNode')) members.add(node.identifier);
     else if (isNode(node, 'accountFieldValueNode')) members.add(node.account);
     else if (isNode(node, 'argumentValueNode')) members.add(node.name);
 }

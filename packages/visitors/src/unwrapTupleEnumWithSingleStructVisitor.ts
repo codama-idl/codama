@@ -34,7 +34,7 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
     return rootNodeVisitor(root => {
         const typesToPotentiallyUnwrap: string[] = [];
         const definedTypes: Map<string, DefinedTypeNode> = new Map(
-            getAllDefinedTypes(root).map(definedType => [definedType.name, definedType]),
+            getAllDefinedTypes(root).map(definedType => [definedType.identifier, definedType]),
         );
 
         let newRoot = visit(
@@ -50,15 +50,15 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
                         if (tupleItems.length !== 1) return node;
                         let item = tupleItems[0];
                         if (isNode(item, 'definedTypeLinkNode')) {
-                            const definedType = definedTypes.get(item.name);
+                            const definedType = definedTypes.get(item.identifier);
                             if (!definedType) return node;
                             if (!isNode(definedType.type, 'structTypeNode')) return node;
-                            typesToPotentiallyUnwrap.push(item.name);
+                            typesToPotentiallyUnwrap.push(item.identifier);
                             item = definedType.type;
                         }
                         if (!isNode(item, 'structTypeNode')) return node;
                         const nestedStruct = transformNestedTypeNode(node.tuple, () => item as StructTypeNode);
-                        return enumStructVariantTypeNode(node.name, nestedStruct);
+                        return enumStructVariantTypeNode(node.identifier, nestedStruct);
                     },
                 },
             ]),

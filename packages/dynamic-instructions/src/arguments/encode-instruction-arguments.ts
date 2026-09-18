@@ -32,7 +32,7 @@ export function encodeInstructionArguments<TArgs extends ArgumentsInput = Argume
     argumentsInput?: TArgs,
 ): ReadonlyUint8Array {
     const chunks = (ix.arguments ?? []).map(ixArgumentNode => {
-        const input = argumentsInput?.[ixArgumentNode.name];
+        const input = argumentsInput?.[ixArgumentNode.identifier];
         const nodeCodec = getNodeCodec([root, root.program, ix, ixArgumentNode]);
         if (isOmittedArgument(ixArgumentNode)) {
             return encodeOmittedArgument(ix, ixArgumentNode, nodeCodec);
@@ -54,8 +54,8 @@ function encodeOmittedArgument(
     const defaultValue = ixArgumentNode.defaultValue;
     if (defaultValue === undefined) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING, {
-            argumentName: ixArgumentNode.name,
-            instructionName: ix.name,
+            argumentName: ixArgumentNode.identifier,
+            instructionName: ix.identifier,
         });
     }
 
@@ -78,9 +78,9 @@ function encodeOptionalArgument(
         return nodeCodec.encode(null);
     } catch (error) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_ARGUMENT, {
-            argumentName: ixArgumentNode.name,
+            argumentName: ixArgumentNode.identifier,
             cause: error,
-            instructionName: ix.name,
+            instructionName: ix.identifier,
         });
     }
 }
@@ -94,8 +94,8 @@ function encodeRequiredArgument(
 ): ReadonlyUint8Array {
     if (input === undefined) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
-            argumentName: ixArgumentNode.name,
-            instructionName: ix.name,
+            argumentName: ixArgumentNode.identifier,
+            instructionName: ix.identifier,
         });
     }
 
@@ -107,9 +107,9 @@ function encodeRequiredArgument(
         return nodeCodec.encode(transformedInput);
     } catch (error) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_ARGUMENT, {
-            argumentName: ixArgumentNode.name,
+            argumentName: ixArgumentNode.identifier,
             cause: error,
-            instructionName: ix.name,
+            instructionName: ix.identifier,
         });
     }
 }

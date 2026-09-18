@@ -54,7 +54,7 @@ export async function resolveInjectedValue(
     }
 
     if (isNode(node, 'accountValueNode')) {
-        return findAccountAddress(context, node.name);
+        return findAccountAddress(context, node.identifier);
     }
 
     if (isNode(node, 'accountFieldValueNode')) {

@@ -43,10 +43,10 @@ export function getDebugStringVisitor(options: { indent?: boolean; indentSeparat
 function getNodeDetails(node: Node): string[] {
     switch (node.kind) {
         case 'programNode':
-            return [node.name, node.publicKey];
+            return [node.identifier, node.publicKey];
         case 'instructionAccountNode':
             return [
-                node.name,
+                node.identifier,
                 ...(node.isWritable ? ['writable'] : []),
                 ...(node.isSigner === true ? ['signer'] : []),
                 ...(node.isSigner === 'either' ? ['optionalSigner'] : []),
@@ -64,9 +64,9 @@ function getNodeDetails(node: Node): string[] {
         case 'instructionStatusNode':
             return [node.lifecycle, ...(node.message ? [node.message] : [])];
         case 'errorNode':
-            return [node.code.toString(), node.name];
+            return [node.code.toString(), node.identifier];
         case 'constantNode':
-            return [node.name];
+            return [node.identifier];
         case 'accountLinkNode':
         case 'definedTypeLinkNode':
         case 'instructionAccountLinkNode':
@@ -74,7 +74,7 @@ function getNodeDetails(node: Node): string[] {
         case 'instructionLinkNode':
         case 'pdaLinkNode':
         case 'programLinkNode':
-            return [node.name];
+            return [node.identifier];
         case 'numberTypeNode':
             return [node.format, ...(node.endian === 'be' ? ['bigEndian'] : [])];
         case 'amountTypeNode':
@@ -112,6 +112,6 @@ function getNodeDetails(node: Node): string[] {
         case 'postOffsetTypeNode':
             return [node.offset.toString(), node.strategy ?? 'relative'];
         default:
-            return 'name' in node ? [node.name] : [];
+            return 'identifier' in node ? [node.identifier] : [];
     }
 }

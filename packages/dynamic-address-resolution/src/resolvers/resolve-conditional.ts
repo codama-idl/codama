@@ -50,7 +50,7 @@ export async function resolveConditionalValueNodeCondition<
 
     if (!expectedValueNode && !ifTrue && !ifFalse) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION, {
-            message: `Invalid conditionalValueNode: missing value and branches for account ${ixAccountNode.name} in ${ixNode.name}`,
+            message: `Invalid conditionalValueNode: missing value and branches for account ${ixAccountNode.identifier} in ${ixNode.identifier}`,
         });
     }
 

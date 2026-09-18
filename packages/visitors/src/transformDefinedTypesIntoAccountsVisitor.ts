@@ -5,9 +5,13 @@ export function transformDefinedTypesIntoAccountsVisitor(definedTypes: string[])
     return pipe(nonNullableIdentityVisitor({ keys: ['rootNode', 'programNode'] }), v =>
         extendVisitor(v, {
             visitProgram(program) {
-                const typesToExtract = (program.definedTypes ?? []).filter(node => definedTypes.includes(node.name));
+                const typesToExtract = (program.definedTypes ?? []).filter(node =>
+                    definedTypes.includes(node.identifier),
+                );
 
-                const newDefinedTypes = (program.definedTypes ?? []).filter(node => !definedTypes.includes(node.name));
+                const newDefinedTypes = (program.definedTypes ?? []).filter(
+                    node => !definedTypes.includes(node.identifier),
+                );
 
                 const newAccounts = typesToExtract.map(node => {
                     assertIsNode(node.type, 'structTypeNode');

@@ -7,7 +7,7 @@ export function collectPdaNodesFromIdl(idl: RootNode): Map<string, PdaNode> {
     const pdas = new Map<string, PdaNode>();
 
     for (const pda of idl.program.pdas ?? []) {
-        pdas.set(pda.name, pda);
+        pdas.set(pda.identifier, pda);
     }
 
     for (const ix of idl.program.instructions ?? []) {
@@ -15,8 +15,8 @@ export function collectPdaNodesFromIdl(idl: RootNode): Map<string, PdaNode> {
             if (!acc.defaultValue || acc.defaultValue.kind !== 'pdaValueNode') continue;
             const pdaDef = acc.defaultValue.pda;
             if (!pdaDef || pdaDef.kind !== 'pdaNode') continue;
-            if (!pdas.has(pdaDef.name)) {
-                pdas.set(pdaDef.name, pdaDef);
+            if (!pdas.has(pdaDef.identifier)) {
+                pdas.set(pdaDef.identifier, pdaDef);
             }
         }
     }

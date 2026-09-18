@@ -31,7 +31,9 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
     return bottomUpTransformerVisitor(
         Object.entries(map).flatMap(([selector, updates]) => {
             const newName =
-                typeof updates === 'object' && 'name' in updates && updates.name ? camelCase(updates.name) : undefined;
+                typeof updates === 'object' && 'identifier' in updates && updates.identifier
+                    ? camelCase(updates.identifier)
+                    : undefined;
             const pdasToUpsert = [] as { pda: PdaNode; program: CamelCaseString }[];
 
             const transformers: BottomUpNodeTransformerWithSelector[] = [
@@ -47,21 +49,21 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                         if (pda && seeds !== undefined) {
                             newPda = pda;
                             pdasToUpsert.push({
-                                pda: pdaNode({ name: pda.name, seeds }),
-                                program: programNode.name,
+                                pda: pdaNode({ identifier: pda.identifier, seeds }),
+                                program: programNode.identifier,
                             });
                         } else if (pda) {
                             newPda = pda;
                         } else if (seeds !== undefined && node.pda) {
                             pdasToUpsert.push({
-                                pda: pdaNode({ name: node.pda.name, seeds }),
-                                program: programNode.name,
+                                pda: pdaNode({ identifier: node.pda.identifier, seeds }),
+                                program: programNode.identifier,
                             });
                         } else if (seeds !== undefined) {
-                            newPda = pdaLinkNode(newName ?? node.name);
+                            newPda = pdaLinkNode(newName ?? node.identifier);
                             pdasToUpsert.push({
-                                pda: pdaNode({ name: newName ?? node.name, seeds }),
-                                program: programNode.name,
+                                pda: pdaNode({ identifier: newName ?? node.identifier, seeds }),
+                                program: programNode.identifier,
                             });
                         }
 
@@ -80,15 +82,20 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                     transform: node => {
                         assertIsNode(node, 'programNode');
                         const pdasToUpsertForProgram = pdasToUpsert
-                            .filter(p => p.program === node.name)
+                            .filter(p => p.program === node.identifier)
                             .map(p => p.pda);
                         if (pdasToUpsertForProgram.length === 0) return node;
-                        const existingPdaNames = new Set((node.pdas ?? []).map(pda => pda.name));
-                        const pdasToCreate = pdasToUpsertForProgram.filter(p => !existingPdaNames.has(p.name));
+                        const existingPdaNames = new Set((node.pdas ?? []).map(pda => pda.identifier));
+                        const pdasToCreate = pdasToUpsertForProgram.filter(p => !existingPdaNames.has(p.identifier));
                         const pdasToUpdate = new Map(
-                            pdasToUpsertForProgram.filter(p => existingPdaNames.has(p.name)).map(p => [p.name, p]),
+                            pdasToUpsertForProgram
+                                .filter(p => existingPdaNames.has(p.identifier))
+                                .map(p => [p.identifier, p]),
                         );
-                        const newPdas = [...(node.pdas ?? []).map(p => pdasToUpdate.get(p.name) ?? p), ...pdasToCreate];
+                        const newPdas = [
+                            ...(node.pdas ?? []).map(p => pdasToUpdate.get(p.identifier) ?? p),
+                            ...pdasToCreate,
+                        ];
                         return programNode({ ...node, pdas: newPdas });
                     },
                 },
@@ -107,7 +114,7 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                         select: ['[pdaNode]', selector],
                         transform: node => {
                             assertIsNode(node, 'pdaNode');
-                            return pdaNode({ name: newName, seeds: node.seeds });
+                            return pdaNode({ identifier: newName, seeds: node.seeds });
                         },
                     },
                     {

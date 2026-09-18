@@ -27,29 +27,29 @@ export async function resolveAccountValueNodeAddress<
     const { accountsInput, ixNode, resolutionPath } = ctx;
 
     // Check if user provided the account address.
-    const providedAddress = accountsInput?.[node.name];
+    const providedAddress = accountsInput?.[node.identifier];
     if (providedAddress !== undefined && providedAddress !== null) {
         return toAddress(providedAddress);
     }
 
     // Find the referenced account in the instruction.
-    const referencedIxAccountNode = (ixNode.accounts ?? []).find(acc => acc.name === node.name);
+    const referencedIxAccountNode = (ixNode.accounts ?? []).find(acc => acc.identifier === node.identifier);
     if (!referencedIxAccountNode) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-            instructionName: ixNode.name,
-            referencedName: node.name,
+            instructionName: ixNode.identifier,
+            referencedName: node.identifier,
         });
     }
 
     // Detect circular dependencies before recursing.
-    detectCircularDependency(node.name, resolutionPath);
+    detectCircularDependency(node.identifier, resolutionPath);
 
     return await resolveAccountAddress({
         accountsInput: ctx.accountsInput,
         argumentsInput: ctx.argumentsInput,
         ixAccountNode: referencedIxAccountNode,
         ixNode,
-        resolutionPath: [...resolutionPath, node.name],
+        resolutionPath: [...resolutionPath, node.identifier],
         resolversInput: ctx.resolversInput,
         root: ctx.root,
     });

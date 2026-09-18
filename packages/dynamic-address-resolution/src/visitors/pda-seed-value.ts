@@ -94,7 +94,7 @@ export function createPdaSeedValueVisitor(
 
             if (resolvedAddress === null) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, {
-                    accountName: node.name,
+                    accountName: node.identifier,
                 });
             }
 
@@ -102,10 +102,10 @@ export function createPdaSeedValueVisitor(
         },
 
         visitArgumentValue: async (node: ArgumentValueNode) => {
-            const ixArgumentNode = (ixNode.arguments ?? []).find(arg => arg.name === node.name);
+            const ixArgumentNode = (ixNode.arguments ?? []).find(arg => arg.identifier === node.name);
             if (!ixArgumentNode) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-                    instructionName: ixNode.name,
+                    instructionName: ixNode.identifier,
                     referencedName: node.name,
                 });
             }
@@ -123,7 +123,7 @@ export function createPdaSeedValueVisitor(
                 }
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
                     argumentName: node.name,
-                    instructionName: ixNode.name,
+                    instructionName: ixNode.identifier,
                 });
             }
             const codec = getNodeCodec([root, root.program, ixNode, { ...ixArgumentNode, type: typeNode }]);

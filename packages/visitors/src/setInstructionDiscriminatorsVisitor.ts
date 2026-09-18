@@ -31,7 +31,7 @@ export function setInstructionDiscriminatorsVisitor(map: Record<string, Discrimi
                     defaultValue: discriminator.value,
                     defaultValueStrategy: discriminator.strategy ?? 'omitted',
                     docs: discriminator.docs ?? [],
-                    name: discriminator.name ?? 'discriminator',
+                    identifier: discriminator.name ?? 'discriminator',
                     type: discriminator.type ?? numberTypeNode('u8'),
                 });
 

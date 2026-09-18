@@ -9,7 +9,9 @@ export function updateProgramsVisitor(map: Record<string, ProgramUpdates>) {
     return bottomUpTransformerVisitor(
         Object.entries(map).flatMap(([name, updates]): BottomUpNodeTransformerWithSelector[] => {
             const newName =
-                typeof updates === 'object' && 'name' in updates && updates.name ? camelCase(updates.name) : undefined;
+                typeof updates === 'object' && 'identifier' in updates && updates.identifier
+                    ? camelCase(updates.identifier)
+                    : undefined;
 
             const transformers: BottomUpNodeTransformerWithSelector[] = [
                 {

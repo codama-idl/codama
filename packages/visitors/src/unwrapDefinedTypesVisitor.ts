@@ -32,8 +32,9 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
         v =>
             extendVisitor(v, {
                 visitDefinedTypeLink(linkType, { self }) {
-                    const programName = linkType.program?.name ?? findProgramNodeFromPath(stack.getPath())?.name;
-                    if (!shouldInline(linkType.name, programName)) {
+                    const programName =
+                        linkType.program?.identifier ?? findProgramNodeFromPath(stack.getPath())?.identifier;
+                    if (!shouldInline(linkType.identifier, programName)) {
                         return linkType;
                     }
                     const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
@@ -52,7 +53,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                             .map(account => visit(account, self))
                             .filter(assertIsNodeFilter('accountNode')),
                         definedTypes: (program.definedTypes ?? [])
-                            .filter(definedType => !shouldInline(definedType.name, program.name))
+                            .filter(definedType => !shouldInline(definedType.identifier, program.identifier))
                             .map(type => visit(type, self))
                             .filter(assertIsNodeFilter('definedTypeNode')),
                         instructions: (program.instructions ?? [])

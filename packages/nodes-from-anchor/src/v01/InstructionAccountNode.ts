@@ -102,7 +102,7 @@ export function instructionAccountNodeFromAnchorV01(
             }
 
             defaultValue = pdaValueNode(
-                pdaNode({ name, programId, seeds: seedDefinitions }),
+                pdaNode({ identifier: name, programId, seeds: seedDefinitions }),
                 seedValues,
                 programIdValue,
             );
@@ -115,6 +115,6 @@ export function instructionAccountNodeFromAnchorV01(
         isOptional,
         isSigner,
         isWritable,
-        name,
+        identifier: name,
     });
 }

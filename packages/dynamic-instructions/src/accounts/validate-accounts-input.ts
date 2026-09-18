@@ -32,7 +32,7 @@ export function createAccountsInputValidator(ixNode: InstructionNode) {
                 if (value == null) {
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
                         accountName: camelCase(key),
-                        instructionName: ixNode.name,
+                        instructionName: ixNode.identifier,
                     });
                 } else {
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS, {

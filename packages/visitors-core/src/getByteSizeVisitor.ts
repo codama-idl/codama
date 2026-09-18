@@ -77,13 +77,13 @@ export function getByteSizeVisitor(
                 },
 
                 visitDefinedType(node, { self }) {
-                    if (visitedDefinedTypes.has(node.name)) {
-                        return visitedDefinedTypes.get(node.name)!;
+                    if (visitedDefinedTypes.has(node.identifier)) {
+                        return visitedDefinedTypes.get(node.identifier)!;
                     }
-                    definedTypeStack.push(node.name);
+                    definedTypeStack.push(node.identifier);
                     const child = visit(node.type, self);
                     definedTypeStack.pop();
-                    visitedDefinedTypes.set(node.name, child);
+                    visitedDefinedTypes.set(node.identifier, child);
                     return child;
                 },
 
@@ -94,7 +94,7 @@ export function getByteSizeVisitor(
                     const linkedDefinedType = getLastNodeFromPath(linkedDefinedPath);
 
                     // This prevents infinite recursion by assuming cyclic types don't have a fixed size.
-                    if (definedTypeStack.includes(linkedDefinedType.name)) return null;
+                    if (definedTypeStack.includes(linkedDefinedType.identifier)) return null;
 
                     stack.pushPath(linkedDefinedPath);
                     const result = visit(linkedDefinedType, self);

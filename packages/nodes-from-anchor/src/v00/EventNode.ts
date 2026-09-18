@@ -23,6 +23,6 @@ export function eventNodeFromAnchorV00(idl: IdlV00Event): EventNode {
     return eventNode({
         data: hiddenPrefixTypeNode(data, [discriminatorConstant]),
         discriminators: [constantDiscriminatorNode(discriminatorConstant)],
-        name,
+        identifier: name,
     });
 }

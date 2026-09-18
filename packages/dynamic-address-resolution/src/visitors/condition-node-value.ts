@@ -29,7 +29,7 @@ export function createConditionNodeValueVisitor<
         visitAccountValue: async (node: AccountValueNode) => {
             // If the user explicitly provides null for a conditional account,
             // return it for the conditionalValueNode ifFalse branch.
-            const accountAddressInput = accountsInput?.[node.name];
+            const accountAddressInput = accountsInput?.[node.identifier];
             if (accountAddressInput === null) {
                 return null;
             }

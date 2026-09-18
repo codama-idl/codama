@@ -153,12 +153,12 @@ export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAcco
         account: InstructionAccountNode,
     ): InstructionAccountDefaultRule | undefined {
         return sortedRules.find(rule => {
-            if ('instruction' in rule && rule.instruction && camelCase(rule.instruction) !== instruction.name) {
+            if ('instruction' in rule && rule.instruction && camelCase(rule.instruction) !== instruction.identifier) {
                 return false;
             }
             return typeof rule.account === 'string'
-                ? camelCase(rule.account) === account.name
-                : rule.account.test(account.name);
+                ? camelCase(rule.account) === account.identifier
+                : rule.account.test(account.identifier);
         });
     }
 
