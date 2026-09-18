@@ -51,7 +51,7 @@ export function buildBaseDisplayContext(
     const instruction = getLastNodeFromPath(parsedInstruction.path);
 
     const provides = new Map<string, ProvidedNode>(
-        (instruction.provides ?? []).map(provided => [provided.name, provided]),
+        (instruction.provides ?? []).map(provided => [provided.identifier, provided]),
     );
 
     const linkables = new LinkableDictionary();
@@ -84,7 +84,7 @@ function createAccountDataResolver(
     const instruction = getLastNodeFromPath(parsedInstruction.path);
     return (accountName, bytes) => {
         const target = camelCase(accountName);
-        const instructionAccount = (instruction.accounts ?? []).find(account => account.name === target);
+        const instructionAccount = (instruction.accounts ?? []).find(account => account.identifier === target);
         if (!instructionAccount?.accountLink) return null;
 
         const linkPath = [...parsedInstruction.path, instructionAccount.accountLink] as NodePath<AccountLinkNode>;

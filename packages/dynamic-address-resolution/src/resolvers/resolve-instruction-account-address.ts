@@ -31,7 +31,7 @@ export async function resolveInstructionAccountAddress<
     resolversInput,
     root,
 }: ResolveInstructionAccountAddressInput<TAccounts, TArgs, TResolvers>): Promise<Address | null> {
-    const accountAddressInput = accountsInput?.[ixAccountNode.name];
+    const accountAddressInput = accountsInput?.[ixAccountNode.identifier];
     const isAccountProvided = accountAddressInput !== undefined && accountAddressInput !== null;
 
     // Accounts values (with default or with optionalAccountStrategy) can be omitted, as they are auto-resolved.
@@ -48,8 +48,8 @@ export async function resolveInstructionAccountAddress<
 
     if (!isAccountProvided && !canAutoResolve) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-            accountName: ixAccountNode.name,
-            instructionName: ixNode.name,
+            accountName: ixAccountNode.identifier,
+            instructionName: ixNode.identifier,
         });
     }
 

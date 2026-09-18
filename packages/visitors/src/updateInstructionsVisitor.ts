@@ -90,7 +90,7 @@ function handleInstructionAccount(
     accountUpdates: InstructionAccountUpdates,
     linkables: LinkableDictionary,
 ): InstructionAccountNode {
-    const accountUpdate = accountUpdates?.[account.name];
+    const accountUpdate = accountUpdates?.[account.identifier];
     if (!accountUpdate) return account;
     const { defaultValue, ...acountWithoutDefault } = {
         ...account,
@@ -117,30 +117,30 @@ function handleInstructionArguments(
     const usedArguments = new Set<string>();
 
     const newArguments = (instruction.arguments ?? []).map(node => {
-        const argUpdate = argUpdates[node.name];
+        const argUpdate = argUpdates[node.identifier];
         if (!argUpdate) return node;
-        usedArguments.add(node.name);
+        usedArguments.add(node.identifier);
         return instructionArgumentNode({
             ...node,
             defaultValue: argUpdate.defaultValue ?? node.defaultValue,
             defaultValueStrategy: argUpdate.defaultValueStrategy ?? node.defaultValueStrategy,
             docs: argUpdate.docs ?? node.docs,
-            name: argUpdate.name ?? node.name,
+            identifier: argUpdate.identifier ?? node.identifier,
             type: argUpdate.type ?? node.type,
         });
     });
 
     const updatedExtraArguments = (instruction.extraArguments ?? []).map(node => {
-        if (usedArguments.has(node.name)) return node;
-        const argUpdate = argUpdates[node.name];
+        if (usedArguments.has(node.identifier)) return node;
+        const argUpdate = argUpdates[node.identifier];
         if (!argUpdate) return node;
-        usedArguments.add(node.name);
+        usedArguments.add(node.identifier);
         return instructionArgumentNode({
             ...node,
             defaultValue: argUpdate.defaultValue ?? node.defaultValue,
             defaultValueStrategy: argUpdate.defaultValueStrategy ?? node.defaultValueStrategy,
             docs: argUpdate.docs ?? node.docs,
-            name: argUpdate.name ?? node.name,
+            identifier: argUpdate.identifier ?? node.identifier,
             type: argUpdate.type ?? node.type,
         });
     });
@@ -156,7 +156,7 @@ function handleInstructionArguments(
                     defaultValue: argUpdate.defaultValue ?? undefined,
                     defaultValueStrategy: argUpdate.defaultValueStrategy ?? undefined,
                     docs: argUpdate.docs ?? [],
-                    name: argUpdate.name ?? argName,
+                    identifier: argUpdate.identifier ?? argName,
                     type,
                 });
             }),

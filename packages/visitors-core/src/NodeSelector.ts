@@ -33,7 +33,11 @@ export const getNodeSelectorFunction = (selector: NodeSelector): NodeSelectorFun
         }
 
         // Check names.
-        if (name && (!('name' in node) || camelCase(name) !== node.name)) {
+        // NOTE: v2 identifiers are no longer camelCase-normalised, so comparing a
+        // camelCased selector against `node.identifier` is not quite right — the
+        // case-fold/underscore-strip comparison is a follow-up. Cast to `string`
+        // for now to keep the mechanical rename compiling without changing behaviour.
+        if (name && (!('identifier' in node) || camelCase(name) !== (node.identifier as string))) {
             return false;
         }
 

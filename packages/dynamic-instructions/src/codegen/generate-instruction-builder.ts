@@ -11,7 +11,7 @@ import { getInstructionSignerRef } from './generate-signer-types';
  * Use `generateTypes` instead.
  */
 export function generateInstructionBuildersMap(idl: RootNode): string {
-    const programName = pascalCase(idl.program.name);
+    const programName = pascalCase(idl.program.identifier);
     let output = `/**
  * Strongly-typed instruction builders for ${programName}.
  */
@@ -23,7 +23,7 @@ export type ${programName}InstructionBuilders = {\n`;
         const argsGeneric = refs.argsRef ?? 'Record<string, never>';
         const signersGeneric = signerRef.signersRef ?? 'string[]';
         const resolversGeneric = refs.resolversRef ? `, ${refs.resolversRef}` : '';
-        output += `    ${ix.name}: InstructionsBuilderFn<${argsGeneric}, ${refs.accountsRef}, ${signersGeneric}${resolversGeneric}>;\n`;
+        output += `    ${ix.identifier}: InstructionsBuilderFn<${argsGeneric}, ${refs.accountsRef}, ${signersGeneric}${resolversGeneric}>;\n`;
     }
 
     output += '};\n';

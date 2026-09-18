@@ -30,7 +30,7 @@ export async function resolveArgumentDefaultsFromCustomResolvers<
 
     const allArguments = [...(ixNode.arguments ?? []), ...(ixNode.extraArguments ?? [])];
     for (const argumentNode of allArguments) {
-        if (resolvedArgumentsInput[argumentNode.name] !== undefined) continue;
+        if (resolvedArgumentsInput[argumentNode.identifier] !== undefined) continue;
         if (isOmittedArgument(argumentNode)) continue;
         if (!isNode(argumentNode.defaultValue, 'resolverValueNode')) continue;
 
@@ -41,7 +41,7 @@ export async function resolveArgumentDefaultsFromCustomResolvers<
         if (!resolverFn) continue;
 
         try {
-            resolvedArgumentsInput[argumentNode.name] = await resolverFn(
+            resolvedArgumentsInput[argumentNode.identifier] = await resolverFn(
                 resolvedArgumentsInput as TArgs,
                 (accountsInput ?? {}) as TAccounts,
             );
@@ -50,7 +50,7 @@ export async function resolveArgumentDefaultsFromCustomResolvers<
                 cause: error,
                 resolverName: argumentNode.defaultValue.name,
                 targetKind: 'instructionArgumentNode',
-                targetName: argumentNode.name,
+                targetName: argumentNode.identifier,
             });
         }
     }

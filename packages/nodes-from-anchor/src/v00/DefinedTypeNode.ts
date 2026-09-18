@@ -7,5 +7,5 @@ export function definedTypeNodeFromAnchorV00(idl: Partial<IdlV00TypeDef>): Defin
     const name = idl.name ?? '';
     const idlType = idl.type ?? { fields: [], kind: 'struct' };
     const type = typeNodeFromAnchorV00(idlType);
-    return definedTypeNode({ docs: idl.docs, name, type });
+    return definedTypeNode({ docs: idl.docs, identifier: name, type });
 }

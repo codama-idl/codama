@@ -64,7 +64,7 @@ export function createProgramClient<TClient = ProgramClient>(
     if (options.programId) {
         codama.update(
             updateProgramsVisitor({
-                [codama.getRoot().program.name]: {
+                [codama.getRoot().program.identifier]: {
                     publicKey: toAddress(options.programId),
                 },
             }),
@@ -76,7 +76,7 @@ export function createProgramClient<TClient = ProgramClient>(
 
     const instructions = new Map<string, InstructionNode>();
     for (const ix of root.program.instructions ?? []) {
-        instructions.set(ix.name, ix);
+        instructions.set(ix.identifier, ix);
     }
 
     const methods = new Proxy(

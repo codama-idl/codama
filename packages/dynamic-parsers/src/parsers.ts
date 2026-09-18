@@ -98,7 +98,7 @@ export function parseInstruction(
     const accounts: ParsedInstructionAccounts = namedAccounts.flatMap((account, index) => {
         const accountMeta = instruction.accounts[index];
         if (!accountMeta) return [];
-        return [{ ...accountMeta, name: account.name }];
+        return [{ ...accountMeta, name: account.identifier }];
     });
     const remainingAccounts = instruction.accounts.slice(namedAccounts.length);
     return { ...parsedData, accounts, remainingAccounts };

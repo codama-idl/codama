@@ -31,13 +31,13 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
 
                 const argFields = node.arguments ?? [];
                 const argName = camelCase(argNameInput);
-                const argFieldIndex = argFields.findIndex(field => field.name === argName);
+                const argFieldIndex = argFields.findIndex(field => field.identifier === argName);
                 const argField = argFieldIndex >= 0 ? argFields[argFieldIndex] : null;
                 if (!argField) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
                         argumentName: argName,
                         instruction: node,
-                        instructionName: node.name,
+                        instructionName: node.identifier,
                     });
                 }
 
@@ -55,18 +55,18 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, {
                         argumentName: argName,
                         instruction: node,
-                        instructionName: node.name,
+                        instructionName: node.identifier,
                     });
                 }
 
                 const subInstructions = (argType.variants ?? []).map((variant, index): InstructionNode => {
-                    const subName = camelCase(`${node.name} ${variant.name}`);
+                    const subName = camelCase(`${node.identifier} ${variant.identifier}`);
                     const subFields = argFields.slice(0, argFieldIndex);
                     subFields.push(
                         instructionArgumentNode({
                             defaultValue: numberValueNode(index),
                             defaultValueStrategy: 'omitted',
-                            name: `${subName}Discriminator`,
+                            identifier: `${subName}Discriminator`,
                             type: numberTypeNode('u8'),
                         }),
                     );
@@ -90,7 +90,7 @@ export function createSubInstructionsFromEnumArgsVisitor(map: Record<string, str
                     return instructionNode({
                         ...node,
                         arguments: flattenInstructionArguments(subFields),
-                        name: subName,
+                        identifier: subName,
                     });
                 });
 

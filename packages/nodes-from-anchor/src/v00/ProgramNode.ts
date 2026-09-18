@@ -24,7 +24,7 @@ export function programNodeFromAnchorV00(idl: IdlV00): ProgramNode {
         errors: (idl?.errors ?? []).map(errorNodeFromAnchorV00),
         events,
         instructions,
-        name: idl?.name ?? '',
+        identifier: idl?.name ?? '',
         origin,
         pdas,
         publicKey: (idl?.metadata as { address?: string })?.address ?? '',

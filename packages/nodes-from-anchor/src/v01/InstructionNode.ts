@@ -21,7 +21,7 @@ export function instructionNodeFromAnchorV01(idl: IdlV01Instruction, generics: G
     const discriminatorField = instructionArgumentNode({
         defaultValue: getAnchorDiscriminatorV01(idl.discriminator),
         defaultValueStrategy: 'omitted',
-        name: 'discriminator',
+        identifier: 'discriminator',
         type: fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
     });
     dataArguments = [discriminatorField, ...dataArguments];
@@ -32,7 +32,7 @@ export function instructionNodeFromAnchorV01(idl: IdlV01Instruction, generics: G
         arguments: dataArguments,
         discriminators,
         docs: idl.docs ?? [],
-        name: camelCase(name),
+        identifier: camelCase(name),
         optionalAccountStrategy: 'programId',
     });
 }

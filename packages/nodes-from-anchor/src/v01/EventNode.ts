@@ -33,6 +33,6 @@ export function eventNodeFromAnchorV01(idl: IdlV01Event, types: IdlV01TypeDef[],
     return eventNode({
         data: hiddenPrefixTypeNode(data, [discriminatorConstant]),
         discriminators: [constantDiscriminatorNode(discriminatorConstant)],
-        name,
+        identifier: name,
     });
 }

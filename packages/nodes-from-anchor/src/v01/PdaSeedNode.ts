@@ -47,7 +47,7 @@ export function pdaSeedNodeFromAnchorV01(
             // Ignore nested paths.
             const [originalArgumentName] = seed.path.split('.');
             const argumentName = camelCase(originalArgumentName);
-            const argumentNode = instructionArguments.find(({ name }) => name === argumentName);
+            const argumentNode = instructionArguments.find(({ identifier }) => identifier === argumentName);
             if (!argumentNode) {
                 throw new CodamaError(CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: originalArgumentName });
             }
@@ -74,8 +74,8 @@ export function pdaSeedNodeFromAnchorV01(
                   : argumentNode.type;
 
             return {
-                definition: variablePdaSeedNode(argumentNode.name, argumentType),
-                value: pdaSeedValueNode(argumentNode.name, argumentValueNode(argumentNode.name)),
+                definition: variablePdaSeedNode(argumentNode.identifier, argumentType),
+                value: pdaSeedValueNode(argumentNode.identifier, argumentValueNode(argumentNode.identifier)),
             };
         }
         default:

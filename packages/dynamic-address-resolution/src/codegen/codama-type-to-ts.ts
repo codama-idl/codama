@@ -37,7 +37,7 @@ export function codamaTypeToTS(type: TypeNode | undefined, definedTypes: Defined
             if (!type.fields || type.fields.length === 0) return '{}';
             const fields = type.fields
                 .filter(f => f.defaultValueStrategy !== 'omitted')
-                .map(f => `${f.name}: ${codamaTypeToTS(f.type, definedTypes)}`);
+                .map(f => `${f.identifier}: ${codamaTypeToTS(f.type, definedTypes)}`);
             if (fields.length === 0) return '{}';
             return `{ ${fields.join('; ')} }`;
         }
@@ -45,21 +45,21 @@ export function codamaTypeToTS(type: TypeNode | undefined, definedTypes: Defined
             if (!type.variants || type.variants.length === 0) return 'unknown /** empty variants in enumTypeNode */';
             const allEmpty = type.variants.every(v => v.kind === 'enumEmptyVariantTypeNode');
             if (allEmpty) {
-                return type.variants.map(v => `'${v.name}'`).join(' | ');
+                return type.variants.map(v => `'${v.identifier}'`).join(' | ');
             }
             const variantTypes = type.variants.map(v => {
                 if (v.kind === 'enumEmptyVariantTypeNode') {
-                    return `{ __kind: '${v.name}' }`;
+                    return `{ __kind: '${v.identifier}' }`;
                 }
                 if (v.kind === 'enumStructVariantTypeNode' && v.struct) {
                     const inner = codamaTypeToTS(v.struct, definedTypes);
-                    return `{ __kind: '${v.name}' } & ${inner}`;
+                    return `{ __kind: '${v.identifier}' } & ${inner}`;
                 }
                 if (v.kind === 'enumTupleVariantTypeNode' && v.tuple) {
                     const inner = codamaTypeToTS(v.tuple, definedTypes);
-                    return `{ __kind: '${v.name}'; fields: ${inner} }`;
+                    return `{ __kind: '${v.identifier}'; fields: ${inner} }`;
                 }
-                return `{ __kind: '${v.name}' }`;
+                return `{ __kind: '${v.identifier}' }`;
             });
             return variantTypes.join(' | ');
         }
@@ -79,8 +79,8 @@ export function codamaTypeToTS(type: TypeNode | undefined, definedTypes: Defined
             return `Record<string, ${v}>`;
         }
         case 'definedTypeLinkNode': {
-            if (!type.name) return 'unknown /** name missing in definedTypeLinkNode */';
-            const def = definedTypes.find(d => d.name === type.name);
+            if (!type.identifier) return 'unknown /** name missing in definedTypeLinkNode */';
+            const def = definedTypes.find(d => d.identifier === type.identifier);
             if (!def) return 'unknown /** DefinedTypeNode not found for definedTypeLinkNode */';
             return codamaTypeToTS(def.type, definedTypes);
         }

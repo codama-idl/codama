@@ -38,9 +38,9 @@ async function argumentFields(
     argument: InstructionArgumentNode,
     displayContext: DisplayContext,
 ): Promise<DisplayField[]> {
-    if (isSkipped(argument.display?.skip, argument.name, displayContext)) return [];
+    if (isSkipped(argument.display?.skip, argument.identifier, displayContext)) return [];
 
-    const value = (displayContext.parsedInstruction.data as Record<string, unknown>)[argument.name];
+    const value = (displayContext.parsedInstruction.data as Record<string, unknown>)[argument.identifier];
     const ownerPath: NodePath = [...displayContext.parsedInstruction.path, argument];
     const resolved = resolveDisplayType(argument.type, ownerPath, displayContext);
 
@@ -62,7 +62,7 @@ async function argumentFields(
         );
     }
 
-    const label = argument.display?.label ?? titleCase(argument.name);
+    const label = argument.display?.label ?? titleCase(argument.identifier);
     return await memberFields(label, argument.type, ownerPath, value, displayContext);
 }
 
@@ -75,12 +75,18 @@ async function flattenedFields(
     displayContext: DisplayContext,
 ): Promise<DisplayField[]> {
     const visibleFields = (struct.fields ?? []).filter(
-        field => !isSkipped(field.display?.skip, field.name, displayContext),
+        field => !isSkipped(field.display?.skip, field.identifier, displayContext),
     );
     const fieldGroups = await Promise.all(
         visibleFields.map(async field => {
-            const label = `${prefix ?? ''}${field.display?.label ?? titleCase(field.name)}`;
-            return await memberFields(label, field.type, [...structPath, field], value[field.name], displayContext);
+            const label = `${prefix ?? ''}${field.display?.label ?? titleCase(field.identifier)}`;
+            return await memberFields(
+                label,
+                field.type,
+                [...structPath, field],
+                value[field.identifier],
+                displayContext,
+            );
         }),
     );
     return fieldGroups.flat();
@@ -125,10 +131,10 @@ async function memberFields(
 function accountFields(displayContext: DisplayContext): DisplayField[] {
     const instruction = getLastNodeFromPath(displayContext.parsedInstruction.path);
     return (instruction.accounts ?? []).flatMap(account => {
-        if (isSkipped(account.display?.skip, account.name, displayContext)) return [];
-        const address = displayContext.parsedInstruction.accounts.find(a => a.name === account.name)?.address;
+        if (isSkipped(account.display?.skip, account.identifier, displayContext)) return [];
+        const address = displayContext.parsedInstruction.accounts.find(a => a.name === account.identifier)?.address;
         if (!address) return [];
-        const label = account.display?.label ?? titleCase(account.name);
+        const label = account.display?.label ?? titleCase(account.identifier);
         return [{ label, value: address }];
     });
 }

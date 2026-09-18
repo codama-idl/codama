@@ -155,7 +155,7 @@ export function createValueNodeVisitor(): Visitor<ResolvedValue, ValueNodeSuppor
             kind: node.kind,
             value: Object.fromEntries(
                 (node.fields ?? []).map(field => [
-                    field.name,
+                    field.identifier,
                     visitOrElse(field.value, visitor, n => {
                         throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                             expectedKinds: [...VALUE_NODE_SUPPORTED_NODE_KINDS],

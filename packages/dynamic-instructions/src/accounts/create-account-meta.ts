@@ -61,7 +61,7 @@ export async function createAccountMeta<
             // which cannot be writable on-chain — downgrade to readonly.
             // E.g. PMP's setData instruction `buffer` account. (isWritable, isOptional and "programId" strategy).
             // But when buffer is null it resolves to the program address which cannot be writable, hence must be downgraded to readonly.
-            const accountAddressInput = accountsInput?.[ixAccountNode.name];
+            const accountAddressInput = accountsInput?.[ixAccountNode.identifier];
             const isAccountProvided = accountAddressInput !== undefined && accountAddressInput !== null;
             const role =
                 ixAccountNode.isOptional &&
@@ -104,7 +104,7 @@ export async function createAccountMeta<
             if (!remainingNode.isOptional) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
                     argumentName: remainingNode.value.name,
-                    instructionName: ixNode.name,
+                    instructionName: ixNode.identifier,
                 });
             }
             // Optional remaining accounts can be safely omitted.
@@ -167,7 +167,7 @@ function getReadonlyAccountRole(acc: InstructionAccountNode, signers: string[] |
 
 function isSignerAccount(acc: InstructionAccountNode, signers: string[]) {
     if (acc.isSigner === 'either') {
-        return signers.includes(acc.name);
+        return signers.includes(acc.identifier);
     }
     return acc.isSigner === true;
 }

@@ -32,7 +32,7 @@ export function instructionNodeFromAnchorV00(
         const discriminatorField = instructionArgumentNode({
             defaultValue: numberValueNode(idl.discriminant.value),
             defaultValueStrategy: 'omitted',
-            name: 'discriminator',
+            identifier: 'discriminator',
             type: typeNodeFromAnchorV00(idl.discriminant.type),
         });
         dataArguments = [discriminatorField, ...dataArguments];
@@ -41,7 +41,7 @@ export function instructionNodeFromAnchorV00(
         const discriminatorField = instructionArgumentNode({
             defaultValue: getAnchorInstructionDiscriminatorV00(idlName),
             defaultValueStrategy: 'omitted',
-            name: 'discriminator',
+            identifier: 'discriminator',
             type: fixedSizeTypeNode(bytesTypeNode(), 8),
         });
         dataArguments = [discriminatorField, ...dataArguments];
@@ -50,7 +50,7 @@ export function instructionNodeFromAnchorV00(
         const discriminatorField = instructionArgumentNode({
             defaultValue: bytesValueNode('base16', ixIndex.toString(16)),
             defaultValueStrategy: 'omitted',
-            name: 'discriminator',
+            identifier: 'discriminator',
             type: fixedSizeTypeNode(bytesTypeNode(), 1),
         });
         dataArguments = [discriminatorField, ...dataArguments];
@@ -62,7 +62,7 @@ export function instructionNodeFromAnchorV00(
         arguments: dataArguments,
         discriminators,
         docs: idl.docs ?? [],
-        name,
+        identifier: name,
         optionalAccountStrategy: idl.legacyOptionalAccountsStrategy ? 'omitted' : 'programId',
     });
 }

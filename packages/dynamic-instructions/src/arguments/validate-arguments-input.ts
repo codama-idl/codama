@@ -18,7 +18,7 @@ import { isOmittedArgument } from './shared';
 export function createArgumentsInputValidator(root: RootNode, ixNode: InstructionNode) {
     const requiredArguments = (ixNode.arguments ?? []).filter(arg => arg?.defaultValueStrategy !== 'omitted');
     const validator = requiredArguments.length
-        ? createIxArgumentsValidator(ixNode.name, requiredArguments, root.program.definedTypes ?? [])
+        ? createIxArgumentsValidator(ixNode.identifier, requiredArguments, root.program.definedTypes ?? [])
         : null;
 
     return (argumentsInput: ArgumentsInput = {}) => {
@@ -81,7 +81,7 @@ function formatFailureValue(value: unknown): string {
  */
 function validateOmittedArguments(ixNode: InstructionNode, argumentsInput: ArgumentsInput = {}) {
     (ixNode.arguments ?? []).filter(isOmittedArgument).forEach(ixArgumentNode => {
-        if (Object.hasOwn(argumentsInput, ixArgumentNode.name)) {
+        if (Object.hasOwn(argumentsInput, ixArgumentNode.identifier)) {
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT, {
                 message: 'Omitted argument must not be provided',
             });

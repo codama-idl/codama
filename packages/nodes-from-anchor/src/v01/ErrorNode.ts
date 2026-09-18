@@ -9,6 +9,6 @@ export function errorNodeFromAnchorV01(idl: Partial<IdlV01ErrorCode>): ErrorNode
         code: idl.code ?? -1,
         docs: `${name}: ${msg}`,
         message: msg,
-        name,
+        identifier: name,
     });
 }

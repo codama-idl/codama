@@ -32,7 +32,7 @@ export const flattenInstructionArguments = (
 ): InstructionArgumentNode[] => {
     const camelCaseOptions = options === '*' ? options : options.map(camelCase);
     const shouldInline = (node: InstructionArgumentNode): boolean =>
-        options === '*' || camelCaseOptions.includes(camelCase(node.name));
+        options === '*' || camelCaseOptions.includes(camelCase(node.identifier));
     const inlinedArguments = nodes.flatMap(node => {
         if (isNode(node.type, 'structTypeNode') && shouldInline(node)) {
             return (node.type.fields ?? []).map(field => instructionArgumentNode({ ...field }));
@@ -40,7 +40,7 @@ export const flattenInstructionArguments = (
         return node;
     });
 
-    const inlinedFieldsNames = inlinedArguments.map(arg => arg.name);
+    const inlinedFieldsNames = inlinedArguments.map(arg => arg.identifier);
     const duplicates = inlinedFieldsNames.filter((e, i, a) => a.indexOf(e) !== i);
     const uniqueDuplicates = [...new Set(duplicates)];
     const hasConflictingNames = uniqueDuplicates.length > 0;

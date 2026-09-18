@@ -34,7 +34,7 @@ export function accountNodeFromAnchorV00(
         const discriminator = structFieldTypeNode({
             defaultValue: getAnchorAccountDiscriminatorV00(idlName),
             defaultValueStrategy: 'omitted',
-            name: 'discriminator',
+            identifier: 'discriminator',
             type: fixedSizeTypeNode(bytesTypeNode(), 8),
         });
         data = structTypeNode([discriminator, ...(data.fields ?? [])]);
@@ -45,7 +45,7 @@ export function accountNodeFromAnchorV00(
         data,
         discriminators,
         docs: idl.docs ?? [],
-        name,
+        identifier: name,
         pda: hasSeeds ? pdaLinkNode(name) : undefined,
         size: idl.size,
     });

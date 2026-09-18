@@ -25,7 +25,7 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
     assertIsNode(node, 'structTypeNode');
     const camelCaseOptions = options === '*' ? options : options.map(camelCase);
     const shouldInline = (field: StructFieldTypeNode): boolean =>
-        options === '*' || camelCaseOptions.includes(camelCase(field.name));
+        options === '*' || camelCaseOptions.includes(camelCase(field.identifier));
     const inlinedFields = (node.fields ?? []).flatMap(field => {
         if (isNode(field.type, 'structTypeNode') && shouldInline(field)) {
             return field.type.fields ?? [];
@@ -33,7 +33,7 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
         return [field];
     });
 
-    const inlinedFieldsNames = inlinedFields.map(arg => arg.name);
+    const inlinedFieldsNames = inlinedFields.map(arg => arg.identifier);
     const duplicates = inlinedFieldsNames.filter((e, i, a) => a.indexOf(e) !== i);
     const uniqueDuplicates = [...new Set(duplicates)];
     const hasConflictingNames = uniqueDuplicates.length > 0;

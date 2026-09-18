@@ -70,7 +70,7 @@ export function createAccountDefaultValueVisitor<
     ctx: AccountDefaultValueVisitorContext<TAccounts, TArgs, TResolvers>,
 ): Visitor<Promise<Address | null>, AccountDefaultValueSupportedNodeKind> {
     const { root, ixNode, ixAccountNode, argumentsInput, accountsInput, resolversInput, resolutionPath } = ctx;
-    const accountAddressInput = accountsInput?.[ixAccountNode.name];
+    const accountAddressInput = accountsInput?.[ixAccountNode.identifier];
 
     return {
         visitAccountBumpValue: async (_node: AccountBumpValueNode) => {
@@ -97,13 +97,13 @@ export function createAccountDefaultValueVisitor<
             if (argValue === undefined || argValue === null) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
                     argumentName: node.name,
-                    instructionName: ixNode.name,
+                    instructionName: ixNode.identifier,
                 });
             }
 
             if (!isAddressConvertible(argValue)) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                    accountName: ixAccountNode.name,
+                    accountName: ixAccountNode.identifier,
                     actualType: formatValueType(argValue),
                     expectedType: 'Address | PublicKey',
                 });
@@ -132,8 +132,8 @@ export function createAccountDefaultValueVisitor<
                     return null;
                 }
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.name,
-                    instructionName: ixNode.name,
+                    accountName: ixAccountNode.identifier,
+                    instructionName: ixNode.identifier,
                 });
             }
             // Recursively resolve the chosen branch.
@@ -151,8 +151,8 @@ export function createAccountDefaultValueVisitor<
         visitIdentityValue: async (_node: IdentityValueNode) => {
             if (accountAddressInput === undefined || accountAddressInput === null) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.name,
-                    instructionName: ixNode.name,
+                    accountName: ixAccountNode.identifier,
+                    instructionName: ixNode.identifier,
                 });
             }
             return await Promise.resolve(toAddress(accountAddressInput));
@@ -161,8 +161,8 @@ export function createAccountDefaultValueVisitor<
         visitPayerValue: async (_node: PayerValueNode) => {
             if (accountAddressInput === undefined || accountAddressInput === null) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.name,
-                    instructionName: ixNode.name,
+                    accountName: ixAccountNode.identifier,
+                    instructionName: ixNode.identifier,
                 });
             }
             return await Promise.resolve(toAddress(accountAddressInput));
@@ -180,7 +180,7 @@ export function createAccountDefaultValueVisitor<
             });
             if (pda === null) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, {
-                    accountName: ixAccountNode.name,
+                    accountName: ixAccountNode.identifier,
                 });
             }
             return pda[0];
@@ -198,7 +198,7 @@ export function createAccountDefaultValueVisitor<
             const resolverFn = resolversInput?.[node.name];
             if (!resolverFn) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING, {
-                    accountName: ixAccountNode.name,
+                    accountName: ixAccountNode.identifier,
                     resolverName: node.name,
                 });
             }
@@ -210,13 +210,13 @@ export function createAccountDefaultValueVisitor<
                     cause: error,
                     resolverName: node.name,
                     targetKind: 'instructionAccountNode',
-                    targetName: ixAccountNode.name,
+                    targetName: ixAccountNode.identifier,
                 });
             }
 
             if (!isAddressConvertible(result)) {
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS, {
-                    accountName: ixAccountNode.name,
+                    accountName: ixAccountNode.identifier,
                     value: safeStringify(result),
                 });
             }

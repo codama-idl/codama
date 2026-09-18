@@ -74,15 +74,15 @@ export class LinkableDictionary {
         const instructionDictionary = this.getOrCreateInstructionDictionary(programDictionary, linkablePath);
 
         if (isNodePath(linkablePath, 'accountNode')) {
-            programDictionary.accounts.set(linkableNode.name, linkablePath);
+            programDictionary.accounts.set(linkableNode.identifier, linkablePath);
         } else if (isNodePath(linkablePath, 'definedTypeNode')) {
-            programDictionary.definedTypes.set(linkableNode.name, linkablePath);
+            programDictionary.definedTypes.set(linkableNode.identifier, linkablePath);
         } else if (isNodePath(linkablePath, 'pdaNode')) {
-            programDictionary.pdas.set(linkableNode.name, linkablePath);
+            programDictionary.pdas.set(linkableNode.identifier, linkablePath);
         } else if (instructionDictionary && isNodePath(linkablePath, 'instructionAccountNode')) {
-            instructionDictionary.accounts.set(linkableNode.name, linkablePath);
+            instructionDictionary.accounts.set(linkableNode.identifier, linkablePath);
         } else if (instructionDictionary && isNodePath(linkablePath, 'instructionArgumentNode')) {
-            instructionDictionary.arguments.set(linkableNode.name, linkablePath);
+            instructionDictionary.arguments.set(linkableNode.identifier, linkablePath);
         }
 
         return this;
@@ -98,7 +98,7 @@ export class LinkableDictionary {
             throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
                 kind: linkNode.kind,
                 linkNode,
-                name: linkNode.name,
+                name: linkNode.identifier,
                 path: linkPath,
             });
         }
@@ -116,17 +116,17 @@ export class LinkableDictionary {
         type LinkablePath = NodePath<GetLinkableFromLinkNode<TLinkNode>> | undefined;
 
         if (isNode(linkNode, 'accountLinkNode')) {
-            return programDictionary.accounts.get(linkNode.name) as LinkablePath;
+            return programDictionary.accounts.get(linkNode.identifier) as LinkablePath;
         } else if (isNode(linkNode, 'definedTypeLinkNode')) {
-            return programDictionary.definedTypes.get(linkNode.name) as LinkablePath;
+            return programDictionary.definedTypes.get(linkNode.identifier) as LinkablePath;
         } else if (isNode(linkNode, 'instructionAccountLinkNode')) {
-            return instructionDictionary?.accounts.get(linkNode.name) as LinkablePath;
+            return instructionDictionary?.accounts.get(linkNode.identifier) as LinkablePath;
         } else if (isNode(linkNode, 'instructionArgumentLinkNode')) {
             return instructionDictionary?.arguments.get(linkNode.name) as LinkablePath;
         } else if (isNode(linkNode, 'instructionLinkNode')) {
             return instructionDictionary?.instruction as LinkablePath;
         } else if (isNode(linkNode, 'pdaLinkNode')) {
-            return programDictionary.pdas.get(linkNode.name) as LinkablePath;
+            return programDictionary.pdas.get(linkNode.identifier) as LinkablePath;
         } else if (isNode(linkNode, 'programLinkNode')) {
             return programDictionary.program as LinkablePath;
         }
@@ -150,17 +150,17 @@ export class LinkableDictionary {
         const instructionDictionary = this.getInstructionDictionary(programDictionary, linkPath);
 
         if (isNode(linkNode, 'accountLinkNode')) {
-            return programDictionary.accounts.has(linkNode.name);
+            return programDictionary.accounts.has(linkNode.identifier);
         } else if (isNode(linkNode, 'definedTypeLinkNode')) {
-            return programDictionary.definedTypes.has(linkNode.name);
+            return programDictionary.definedTypes.has(linkNode.identifier);
         } else if (isNode(linkNode, 'instructionAccountLinkNode')) {
-            return !!instructionDictionary && instructionDictionary.accounts.has(linkNode.name);
+            return !!instructionDictionary && instructionDictionary.accounts.has(linkNode.identifier);
         } else if (isNode(linkNode, 'instructionArgumentLinkNode')) {
             return !!instructionDictionary && instructionDictionary.arguments.has(linkNode.name);
         } else if (isNode(linkNode, 'instructionLinkNode')) {
-            return programDictionary.instructions.has(linkNode.name);
+            return programDictionary.instructions.has(linkNode.identifier);
         } else if (isNode(linkNode, 'pdaLinkNode')) {
-            return programDictionary.pdas.has(linkNode.name);
+            return programDictionary.pdas.has(linkNode.identifier);
         } else if (isNode(linkNode, 'programLinkNode')) {
             return true;
         }
@@ -173,7 +173,7 @@ export class LinkableDictionary {
         const programNode = isNode(linkableNode, 'programNode') ? linkableNode : findProgramNodeFromPath(linkablePath);
         if (!programNode) return undefined;
 
-        let programDictionary = this.programs.get(programNode.name);
+        let programDictionary = this.programs.get(programNode.identifier);
         if (!programDictionary) {
             programDictionary = {
                 accounts: new Map(),
@@ -182,7 +182,7 @@ export class LinkableDictionary {
                 pdas: new Map(),
                 program: getNodePathUntilLastNode(linkablePath, 'programNode')!,
             };
-            this.programs.set(programNode.name, programDictionary);
+            this.programs.set(programNode.identifier, programDictionary);
         }
 
         return programDictionary;
@@ -198,14 +198,14 @@ export class LinkableDictionary {
             : findInstructionNodeFromPath(linkablePath);
         if (!instructionNode) return undefined;
 
-        let instructionDictionary = programDictionary.instructions.get(instructionNode.name);
+        let instructionDictionary = programDictionary.instructions.get(instructionNode.identifier);
         if (!instructionDictionary) {
             instructionDictionary = {
                 accounts: new Map(),
                 arguments: new Map(),
                 instruction: getNodePathUntilLastNode(linkablePath, 'instructionNode')!,
             };
-            programDictionary.instructions.set(instructionNode.name, instructionDictionary);
+            programDictionary.instructions.set(instructionNode.identifier, instructionDictionary);
         }
 
         return instructionDictionary;
@@ -215,13 +215,13 @@ export class LinkableDictionary {
         const linkNode = getLastNodeFromPath(linkPath);
         let programName: CamelCaseString | undefined = undefined;
         if (isNode(linkNode, 'programLinkNode')) {
-            programName = linkNode.name;
+            programName = linkNode.identifier;
         } else if ('program' in linkNode) {
-            programName = linkNode.program?.name;
+            programName = linkNode.program?.identifier;
         } else if ('instruction' in linkNode) {
-            programName = linkNode.instruction?.program?.name;
+            programName = linkNode.instruction?.program?.identifier;
         }
-        programName = programName ?? findProgramNodeFromPath(linkPath)?.name;
+        programName = programName ?? findProgramNodeFromPath(linkPath)?.identifier;
 
         return programName ? this.programs.get(programName) : undefined;
     }
@@ -233,11 +233,11 @@ export class LinkableDictionary {
         const linkNode = getLastNodeFromPath(linkPath);
         let instructionName: CamelCaseString | undefined = undefined;
         if (isNode(linkNode, 'instructionLinkNode')) {
-            instructionName = linkNode.name;
+            instructionName = linkNode.identifier;
         } else if ('instruction' in linkNode) {
-            instructionName = linkNode.instruction?.name;
+            instructionName = linkNode.instruction?.identifier;
         }
-        instructionName = instructionName ?? findInstructionNodeFromPath(linkPath)?.name;
+        instructionName = instructionName ?? findInstructionNodeFromPath(linkPath)?.identifier;
 
         return instructionName ? programDictionary.instructions.get(instructionName) : undefined;
     }

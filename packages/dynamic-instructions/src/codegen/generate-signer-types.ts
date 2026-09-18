@@ -26,7 +26,7 @@ export function getInstructionSignerRef(ix: InstructionNode): InstructionSignerR
     const hasEitherSigners = collectEitherSignerNames(ix).length > 0;
     return {
         hasEitherSigners,
-        signersRef: hasEitherSigners ? `${pascalCase(ix.name)}Signers` : null,
+        signersRef: hasEitherSigners ? `${pascalCase(ix.identifier)}Signers` : null,
     };
 }
 
@@ -34,5 +34,5 @@ function generateSignersTypeBlock(ix: InstructionNode): string {
     const names = collectEitherSignerNames(ix);
     if (names.length === 0) return '';
     const quoted = names.map(name => `'${name}'`);
-    return `export type ${pascalCase(ix.name)}Signers = (${quoted.join(' | ')})[];\n\n`;
+    return `export type ${pascalCase(ix.identifier)}Signers = (${quoted.join(' | ')})[];\n\n`;
 }
