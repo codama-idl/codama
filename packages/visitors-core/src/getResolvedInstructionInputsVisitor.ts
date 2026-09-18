@@ -49,23 +49,23 @@ export function getResolvedInstructionInputsVisitor(
     function resolveInstructionInput(instruction: InstructionNode, input: InstructionInput): void {
         // Ensure we don't visit the same input twice.
         if (
-            (isNode(input, 'instructionAccountNode') && visitedAccounts.has(input.name)) ||
-            (isNode(input, 'instructionArgumentNode') && visitedArgs.has(input.name))
+            (isNode(input, 'instructionAccountNode') && visitedAccounts.has(input.identifier)) ||
+            (isNode(input, 'instructionArgumentNode') && visitedArgs.has(input.identifier))
         ) {
             return;
         }
 
         // Ensure we don't have a circular dependency.
-        const isCircular = stack.some(({ kind, name }) => kind === input.kind && name === input.name);
+        const isCircular = stack.some(({ kind, identifier }) => kind === input.kind && identifier === input.identifier);
         if (isCircular) {
             const cycle = [...stack, input];
             throw new CodamaError(
                 CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
                 {
                     cycle,
-                    formattedCycle: cycle.map(({ name }) => name).join(' -> '),
+                    formattedCycle: cycle.map(({ identifier }) => identifier).join(' -> '),
                     instruction,
-                    instructionName: instruction.name,
+                    instructionName: instruction.identifier,
                 },
             );
         }
@@ -81,9 +81,9 @@ export function getResolvedInstructionInputsVisitor(
         // Store the resolved input.
         resolved.push(localResolved);
         if (localResolved.kind === 'instructionAccountNode') {
-            visitedAccounts.set(input.name, localResolved);
+            visitedAccounts.set(input.identifier, localResolved);
         } else {
-            visitedArgs.set(input.name, localResolved);
+            visitedArgs.set(input.identifier, localResolved);
         }
     }
 
@@ -101,7 +101,7 @@ export function getResolvedInstructionInputsVisitor(
             isPda: getAllInstructionArguments(instruction).some(
                 argument =>
                     isNode(argument.defaultValue, 'accountBumpValueNode') &&
-                    argument.defaultValue.name === account.name,
+                    argument.defaultValue.identifier === account.identifier,
             ),
             resolvedIsOptional: !!account.isOptional,
             resolvedIsSigner: account.isSigner,
@@ -109,7 +109,7 @@ export function getResolvedInstructionInputsVisitor(
 
         switch (localResolved.defaultValue?.kind) {
             case 'accountValueNode':
-                const defaultAccount = visitedAccounts.get(localResolved.defaultValue.name)!;
+                const defaultAccount = visitedAccounts.get(localResolved.defaultValue.identifier)!;
                 const resolvedIsPublicKey = account.isSigner === false && defaultAccount.isSigner === false;
                 const resolvedIsSigner = account.isSigner === true && defaultAccount.isSigner === true;
                 const resolvedIsOptionalSigner = !resolvedIsPublicKey && !resolvedIsSigner;
@@ -128,17 +128,17 @@ export function getResolvedInstructionInputsVisitor(
                 const { seeds } = localResolved.defaultValue;
                 (seeds ?? []).forEach(seed => {
                     if (!isNode(seed.value, 'accountValueNode')) return;
-                    const dependency = visitedAccounts.get(seed.value.name)!;
+                    const dependency = visitedAccounts.get(seed.value.identifier)!;
                     if (dependency.resolvedIsOptional) {
                         throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
                             instruction: instruction,
                             instructionAccount: account,
-                            instructionAccountName: account.name,
-                            instructionName: instruction.name,
+                            instructionAccountName: account.identifier,
+                            instructionName: instruction.identifier,
                             // The guard above narrows `seed.value`, which TS does not propagate to `seed` itself.
                             seed: seed as PdaSeedValueNode<AccountValueNode>,
-                            seedName: seed.name,
-                            seedValueName: seed.value.name,
+                            seedName: seed.identifier,
+                            seedValueName: seed.value.identifier,
                         });
                     }
                 });
@@ -174,23 +174,25 @@ export function getResolvedInstructionInputsVisitor(
         dependencies.forEach(dependency => {
             let input: InstructionInput | null = null;
             if (isNode(dependency, 'accountValueNode')) {
-                const dependencyAccount = (instruction.accounts ?? []).find(a => a.name === dependency.name);
+                const dependencyAccount = (instruction.accounts ?? []).find(
+                    a => a.identifier === dependency.identifier,
+                );
                 if (!dependencyAccount) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
                         dependency,
                         dependencyKind: dependency.kind,
-                        dependencyName: dependency.name,
+                        dependencyName: dependency.identifier,
                         instruction,
-                        instructionName: instruction.name,
+                        instructionName: instruction.identifier,
                         parent,
                         parentKind: parent.kind,
-                        parentName: parent.name,
+                        parentName: parent.identifier,
                     });
                 }
                 input = { ...dependencyAccount };
             } else if (isNode(dependency, 'argumentValueNode')) {
                 const dependencyArgument = getAllInstructionArguments(instruction).find(
-                    a => a.name === dependency.name,
+                    a => a.identifier === dependency.name,
                 );
                 if (!dependencyArgument) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
@@ -198,10 +200,10 @@ export function getResolvedInstructionInputsVisitor(
                         dependencyKind: dependency.kind,
                         dependencyName: dependency.name,
                         instruction,
-                        instructionName: instruction.name,
+                        instructionName: instruction.identifier,
                         parent,
                         parentKind: parent.kind,
-                        parentName: parent.name,
+                        parentName: parent.identifier,
                     });
                 }
                 input = { ...dependencyArgument };
@@ -242,7 +244,7 @@ export function deduplicateInstructionDependencies(dependencies: InstructionDepe
     const args = new Map<CamelCaseString, InstructionDependency>();
     dependencies.forEach(dependency => {
         if (isNode(dependency, 'accountValueNode')) {
-            accounts.set(dependency.name, dependency);
+            accounts.set(dependency.identifier, dependency);
         } else if (isNode(dependency, 'argumentValueNode')) {
             args.set(dependency.name, dependency);
         }
@@ -267,7 +269,7 @@ export function getInstructionDependencies(input: InstructionInput | Instruction
     };
 
     if (isNode(input.defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {
-        return [accountValueNode(input.defaultValue.name)];
+        return [accountValueNode(input.defaultValue.identifier)];
     }
 
     if (isNode(input.defaultValue, ['argumentValueNode'])) {

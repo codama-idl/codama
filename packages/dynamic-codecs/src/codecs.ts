@@ -178,7 +178,7 @@ export function getNodeCodecVisitor(
             return visit(node.struct, this);
         },
         visitEnumTupleVariantType(node) {
-            const tupleAsStruct = structTypeNode([structFieldTypeNode({ name: 'fields', type: node.tuple })]);
+            const tupleAsStruct = structTypeNode([structFieldTypeNode({ identifier: 'fields', type: node.tuple })]);
             return visit(tupleAsStruct, this);
         },
         visitEnumType(node) {
@@ -190,7 +190,7 @@ export function getNodeCodecVisitor(
             const variants = node.variants ?? [];
             const discriminators = variants.map((variant, index) => variant.discriminator ?? index);
             const variantCodecs = variants.map((variant, index) => {
-                const kind = pascalCase(variant.name);
+                const kind = pascalCase(variant.identifier);
                 const discriminator = discriminators[index];
                 const payload = getHiddenPrefixCodec(visit(variant, this) as Codec<unknown>, [
                     getConstantCodec(size.encode(discriminator)),
@@ -214,7 +214,7 @@ export function getNodeCodecVisitor(
                 variantCodecs,
                 value => {
                     const kind = (value as { __kind?: unknown } | null)?.__kind;
-                    return variants.findIndex(variant => pascalCase(variant.name) === kind);
+                    return variants.findIndex(variant => pascalCase(variant.identifier) === kind);
                 },
                 (bytes, offset) => {
                     const [discriminator] = size.read(bytes, offset);
@@ -355,7 +355,7 @@ export function getNodeCodecVisitor(
             return visit(node.type, this);
         },
         visitStructType(node) {
-            const fields = (node.fields ?? []).map(field => [field.name, visit(field, this)] as const);
+            const fields = (node.fields ?? []).map(field => [field.identifier, visit(field, this)] as const);
             return getStructCodec(fields) as Codec<unknown>;
         },
         visitTupleType(node) {

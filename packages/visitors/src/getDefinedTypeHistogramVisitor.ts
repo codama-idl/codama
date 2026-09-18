@@ -83,7 +83,7 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
 
                 visitDefinedTypeLink(node) {
                     const program = findProgramNodeFromPath(stack.getPath());
-                    const key = program ? `${program.name}.${node.name}` : node.name;
+                    const key = program ? `${program.identifier}.${node.identifier}` : node.identifier;
                     return {
                         [key]: {
                             directlyAsInstructionArgs: Number(mode === 'instruction' && stackLevel <= 1),

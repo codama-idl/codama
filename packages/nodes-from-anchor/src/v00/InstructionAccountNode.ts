@@ -49,6 +49,6 @@ export function instructionAccountNodeFromAnchorV00(idl: IdlV00Account, prefix?:
         isOptional,
         isSigner: idl.isOptionalSigner ? 'either' : (idl.isSigner ?? false),
         isWritable: idl.isMut ?? false,
-        name: prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? ''),
+        identifier: prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? ''),
     });
 }

@@ -34,13 +34,13 @@ export function accountNodeFromAnchorV01(
     const discriminator = structFieldTypeNode({
         defaultValue: getAnchorDiscriminatorV01(idl.discriminator),
         defaultValueStrategy: 'omitted',
-        name: 'discriminator',
+        identifier: 'discriminator',
         type: fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
     });
 
     return accountNode({
         data: structTypeNode([discriminator, ...(data.fields ?? [])]),
         discriminators: [fieldDiscriminatorNode('discriminator')],
-        name,
+        identifier: name,
     });
 }

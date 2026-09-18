@@ -69,7 +69,7 @@ export function assertIsNodePath<TKind extends NodeKind>(
 
 export function nodePathToStringArray(path: NodePath): string[] {
     return path.map((node): string => {
-        return 'name' in node ? `[${node.kind}]${node.name}` : `[${node.kind}]`;
+        return 'identifier' in node ? `[${node.kind}]${node.identifier}` : `[${node.kind}]`;
     });
 }
 

@@ -27,7 +27,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
             extendVisitor(v, {
                 visitAccount(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Account has no name.', node, stack));
                     }
                     return [...items, ...next(node)];
@@ -35,7 +35,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitDefinedType(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Defined type has no name.', node, stack));
                     }
                     return [...items, ...next(node)];
@@ -43,13 +43,13 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitDefinedTypeLink(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Pointing to a defined type with no name.', node, stack));
                     } else if (!linkables.has(stack.getPath(node.kind))) {
                         items.push(
                             validationItem(
                                 'error',
-                                `Pointing to a missing defined type named "${node.name}"`,
+                                `Pointing to a missing defined type named "${node.identifier}"`,
                                 node,
                                 stack,
                             ),
@@ -60,7 +60,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitEnumEmptyVariantType(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Enum variant has no name.', node, stack));
                     }
                     return [...items, ...next(node)];
@@ -68,7 +68,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitEnumStructVariantType(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Enum variant has no name.', node, stack));
                     }
                     return [...items, ...next(node)];
@@ -76,7 +76,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitEnumTupleVariantType(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Enum variant has no name.', node, stack));
                     }
                     return [...items, ...next(node)];
@@ -89,7 +89,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                         items.push(validationItem('warn', 'Enum has no variants.', node, stack));
                     }
                     variants.forEach(variant => {
-                        if (!variant.name) {
+                        if (!variant.identifier) {
                             items.push(validationItem('error', 'Enum variant has no name.', node, stack));
                         }
                     });
@@ -98,7 +98,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitError(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Error has no name.', node, stack));
                     }
                     if (typeof node.code !== 'number') {
@@ -112,25 +112,25 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitInstruction(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Instruction has no name.', node, stack));
                     }
 
                     // Check for duplicate account names.
                     const accountNameHistogram = new Map<string, number>();
                     (node.accounts ?? []).forEach(account => {
-                        if (!account.name) {
+                        if (!account.identifier) {
                             items.push(validationItem('error', 'Instruction account has no name.', node, stack));
                             return;
                         }
-                        const count = (accountNameHistogram.get(account.name) ?? 0) + 1;
-                        accountNameHistogram.set(account.name, count);
+                        const count = (accountNameHistogram.get(account.identifier) ?? 0) + 1;
+                        accountNameHistogram.set(account.identifier, count);
                         // Only throw an error once per duplicated names.
                         if (count === 2) {
                             items.push(
                                 validationItem(
                                     'error',
-                                    `Account name "${account.name}" is not unique in instruction "${node.name}".`,
+                                    `Account name "${account.identifier}" is not unique in instruction "${node.identifier}".`,
                                     node,
                                     stack,
                                 ),
@@ -168,14 +168,14 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                         const { defaultValue } = argument;
                         if (isNode(defaultValue, 'accountBumpValueNode')) {
                             const defaultAccount = (node.accounts ?? []).find(
-                                account => account.name === defaultValue.name,
+                                account => account.identifier === defaultValue.identifier,
                             );
                             if (defaultAccount && defaultAccount.isSigner !== false) {
                                 items.push(
                                     validationItem(
                                         'error',
-                                        `Argument ${argument.name} cannot default to the bump attribute of ` +
-                                            `the [${defaultValue.name}] account as it may be a Signer.`,
+                                        `Argument ${argument.identifier} cannot default to the bump attribute of ` +
+                                            `the [${defaultValue.identifier}] account as it may be a Signer.`,
                                         node,
                                         stack,
                                     ),
@@ -189,7 +189,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitProgram(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Program has no name.', node, stack));
                     }
                     if (!node.publicKey) {
@@ -206,7 +206,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
 
                 visitStructFieldType(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.name) {
+                    if (!node.identifier) {
                         items.push(validationItem('error', 'Struct field has no name.', node, stack));
                     }
                     return [...items, ...next(node)];
@@ -218,15 +218,15 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     // Check for duplicate field names.
                     const fieldNameHistogram = new Map<string, number>();
                     (node.fields ?? []).forEach(field => {
-                        if (!field.name) return; // Handled by TypeStructField
-                        const count = (fieldNameHistogram.get(field.name) ?? 0) + 1;
-                        fieldNameHistogram.set(field.name, count);
+                        if (!field.identifier) return; // Handled by TypeStructField
+                        const count = (fieldNameHistogram.get(field.identifier) ?? 0) + 1;
+                        fieldNameHistogram.set(field.identifier, count);
                         // Only throw an error once per duplicated names.
                         if (count === 2) {
                             items.push(
                                 validationItem(
                                     'error',
-                                    `Struct field name "${field.name}" is not unique.`,
+                                    `Struct field name "${field.identifier}" is not unique.`,
                                     field,
                                     stack,
                                 ),

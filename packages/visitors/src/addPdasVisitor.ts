@@ -10,21 +10,21 @@ export function addPdasVisitor(pdas: Record<string, Omit<PdaNodeInput, 'programI
                 select: `[programNode]${programName}`,
                 transform: node => {
                     assertIsNode(node, 'programNode');
-                    const existingPdaNames = new Set((node.pdas ?? []).map(pda => pda.name));
-                    const newPdaNames = new Set(newPdas.map(pda => pda.name));
+                    const existingPdaNames = new Set((node.pdas ?? []).map(pda => pda.identifier));
+                    const newPdaNames = new Set(newPdas.map(pda => pda.identifier));
                     const overlappingPdaNames = new Set([...existingPdaNames].filter(name => newPdaNames.has(name)));
                     if (overlappingPdaNames.size > 0) {
                         throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
                             duplicatedPdaNames: [...overlappingPdaNames],
                             program: node,
-                            programName: node.name,
+                            programName: node.identifier,
                         });
                     }
                     return programNode({
                         ...node,
                         pdas: [
                             ...(node.pdas ?? []),
-                            ...newPdas.map(({ name, seeds, docs }) => pdaNode({ docs, name, seeds })),
+                            ...newPdas.map(({ identifier, seeds, docs }) => pdaNode({ docs, identifier, seeds })),
                         ],
                     });
                 },

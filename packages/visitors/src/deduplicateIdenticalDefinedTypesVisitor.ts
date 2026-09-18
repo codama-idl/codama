@@ -21,8 +21,8 @@ export function deduplicateIdenticalDefinedTypesVisitor() {
         allPrograms.forEach(program => {
             (program.definedTypes ?? []).forEach(type => {
                 const typeWithProgram = { program, type };
-                const list = typeMap.get(type.name) ?? [];
-                typeMap.set(type.name, [...list, typeWithProgram]);
+                const list = typeMap.get(type.identifier) ?? [];
+                typeMap.set(type.identifier, [...list, typeWithProgram]);
             });
         });
 
@@ -53,7 +53,10 @@ export function deduplicateIdenticalDefinedTypesVisitor() {
                 return sortedListTail;
             })
             // Get selectors from the defined types and their programs.
-            .map(({ program, type }): NodeSelector => `[programNode]${program.name}.[definedTypeNode]${type.name}`);
+            .map(
+                ({ program, type }): NodeSelector =>
+                    `[programNode]${program.identifier}.[definedTypeNode]${type.identifier}`,
+            );
 
         // Delete the identified nodes if any.
         if (deleteSelectors.length > 0) {

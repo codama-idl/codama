@@ -42,7 +42,7 @@ export async function resolveAccountAddress<
     resolutionPath,
     resolversInput,
 }: ResolveAccountAddressContext<TAccounts, TArgs, TResolvers>): Promise<Address | null> {
-    const accountAddressInput = accountsInput?.[ixAccountNode.name];
+    const accountAddressInput = accountsInput?.[ixAccountNode.identifier];
     // Optional accounts explicitly provided as null should be resolved based on optionalAccountStrategy
     if (accountAddressInput === null && ixAccountNode.isOptional) {
         return resolveOptionalAccountWithStrategy(root, ixNode, ixAccountNode);
@@ -77,8 +77,8 @@ export async function resolveAccountAddress<
     }
 
     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-        accountName: ixAccountNode.name,
-        instructionName: ixNode.name,
+        accountName: ixAccountNode.identifier,
+        instructionName: ixNode.identifier,
     });
 }
 
@@ -94,7 +94,7 @@ function resolveOptionalAccountWithStrategy(
 ) {
     if (!ixAccountNode.isOptional) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION, {
-            message: `resolveOptionalAccountWithStrategy called for non-optional account: ${ixAccountNode.name}`,
+            message: `resolveOptionalAccountWithStrategy called for non-optional account: ${ixAccountNode.identifier}`,
         });
     }
     switch (ixNode.optionalAccountStrategy) {
@@ -104,8 +104,8 @@ function resolveOptionalAccountWithStrategy(
             return toAddress(root.program.publicKey);
         default:
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY, {
-                accountName: ixAccountNode.name,
-                instructionName: ixNode.name,
+                accountName: ixAccountNode.identifier,
+                instructionName: ixNode.identifier,
                 strategy: safeStringify(ixNode.optionalAccountStrategy),
             });
     }

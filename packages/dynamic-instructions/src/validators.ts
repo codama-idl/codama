@@ -38,7 +38,8 @@ type StructUnknown = Struct<unknown, unknown>;
  */
 export function createIxAccountsValidator(ixAccountNodes: InstructionAccountNode[]): StructUnknown {
     const shape = ixAccountNodes.reduce<Record<string, StructUnknown>>((acc, node) => {
-        acc[node.name] = node.isOptional || node.defaultValue ? OptionalSolanaAddressValidator : SolanaAddressValidator;
+        acc[node.identifier] =
+            node.isOptional || node.defaultValue ? OptionalSolanaAddressValidator : SolanaAddressValidator;
         return acc;
     }, {});
     return object(shape) as StructUnknown;
@@ -54,10 +55,10 @@ export function createIxArgumentsValidator(
 ): StructUnknown {
     const shape = ixArgumentNodes.reduce<Record<string, StructUnknown>>((acc, argumentNode, index) => {
         if (!argumentNode.type) {
-            throw new Error(`Argument ${argumentNode.name} of instruction ${ixNodeName} does not have a type`);
+            throw new Error(`Argument ${argumentNode.identifier} of instruction ${ixNodeName} does not have a type`);
         }
-        acc[argumentNode.name] = createValidatorForTypeNode(
-            `${ixNodeName}_${argumentNode.name}_${index}`,
+        acc[argumentNode.identifier] = createValidatorForTypeNode(
+            `${ixNodeName}_${argumentNode.identifier}_${index}`,
             argumentNode.type,
             definedTypes,
         );
@@ -69,7 +70,7 @@ export function createIxArgumentsValidator(
 function createValidatorForTypeNode(nodeName: string, node: TypeNode, definedTypes: DefinedTypeNode[]): StructUnknown {
     if (!node) {
         throw new Error(
-            `Node ${nodeName} is not defined. ${definedTypes.length} defined types were provided: ${definedTypes.map(t => t.name).join(', ')}`,
+            `Node ${nodeName} is not defined. ${definedTypes.length} defined types were provided: ${definedTypes.map(t => t.identifier).join(', ')}`,
         );
     }
     switch (node.kind) {
@@ -120,9 +121,9 @@ function createValidatorForTypeNode(nodeName: string, node: TypeNode, definedTyp
             return createValidatorForTypeNode(`${nodeName}_date_time`, node.number, definedTypes);
         }
         case 'definedTypeLinkNode': {
-            const definedType = definedTypes.find(d => d.name === node.name);
+            const definedType = definedTypes.find(d => d.identifier === node.identifier);
             if (!definedType) {
-                throw new Error(`Undefined type: ${node.name} ${node.kind}`);
+                throw new Error(`Undefined type: ${node.identifier} ${node.kind}`);
             }
             return createValidatorForTypeNode(`${nodeName}_defined_type`, definedType.type, definedTypes);
         }
@@ -146,8 +147,8 @@ function createValidatorForTypeNode(nodeName: string, node: TypeNode, definedTyp
         }
         case 'structTypeNode': {
             const structShape = (node.fields ?? []).reduce<Record<string, StructUnknown>>((acc, field) => {
-                acc[field.name] = createValidatorForTypeNode(
-                    `${nodeName}_struct_${field.name}`,
+                acc[field.identifier] = createValidatorForTypeNode(
+                    `${nodeName}_struct_${field.identifier}`,
                     field.type,
                     definedTypes,
                 );
@@ -217,7 +218,7 @@ function RemainderOptionTypeItemValidator(
     }
 
     if (itemNode.kind === 'definedTypeLinkNode') {
-        const definedType = definedTypes.find(d => d.name === itemNode.name);
+        const definedType = definedTypes.find(d => d.identifier === itemNode.identifier);
         if (definedType?.type.kind === 'fixedSizeTypeNode' && definedType.type.type.kind === 'stringTypeNode') {
             return StringValidatorForFixedSize(definedType.type.size);
         }
@@ -251,21 +252,21 @@ function EnumVariantValidator(
 ): StructUnknown {
     // Keyed by PascalCase so both raw node names and the codec's decoded
     // `__kind` casing match the same variant.
-    const variantMap = new Map<string, EnumVariantTypeNode>(variants.map(v => [pascalCase(v.name), v]));
-    const variantNames = variants.map(v => v.name);
+    const variantMap = new Map<string, EnumVariantTypeNode>(variants.map(v => [pascalCase(v.identifier), v]));
+    const variantNames = variants.map(v => v.identifier);
 
     // Eagerly build per-variant payload validators for struct and tuple variants
     const variantValidators = new Map<string, StructUnknown>();
     for (const variant of variants) {
         if (variant.kind === 'enumStructVariantTypeNode') {
             variantValidators.set(
-                pascalCase(variant.name),
-                createValidatorForTypeNode(`${nodeName}_${variant.name}`, variant.struct, definedTypes),
+                pascalCase(variant.identifier),
+                createValidatorForTypeNode(`${nodeName}_${variant.identifier}`, variant.struct, definedTypes),
             );
         } else if (variant.kind === 'enumTupleVariantTypeNode') {
             variantValidators.set(
-                pascalCase(variant.name),
-                createValidatorForTypeNode(`${nodeName}_${variant.name}`, variant.tuple, definedTypes),
+                pascalCase(variant.identifier),
+                createValidatorForTypeNode(`${nodeName}_${variant.identifier}`, variant.tuple, definedTypes),
             );
         }
     }

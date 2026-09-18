@@ -18,7 +18,7 @@ import { bottomUpTransformerVisitor, getUniqueHashStringVisitor, visit, type Vis
 type Fingerprint = string;
 
 function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): Fingerprint {
-    return visit(pdaNode({ ...pda, name: '' }), hashVisitor);
+    return visit(pdaNode({ ...pda, identifier: '' }), hashVisitor);
 }
 
 function getUniquePdaName(name: CamelCaseString, usedNames: Set<CamelCaseString>): CamelCaseString {
@@ -47,7 +47,7 @@ export function extractPdasVisitor() {
 export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     const hashVisitor = getUniqueHashStringVisitor();
     const pdaMap = new Map<Fingerprint, PdaNode>();
-    const usedNames = new Set<CamelCaseString>((program.pdas ?? []).map(p => p.name));
+    const usedNames = new Set<CamelCaseString>((program.pdas ?? []).map(p => p.identifier));
     const nameToFingerprint = new Map<CamelCaseString, Fingerprint>();
 
     const rewrittenInstructions = (program.instructions ?? []).map(instruction => {
@@ -66,13 +66,13 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
             const fingerprint = pdaFingerprint(pda, hashVisitor);
 
             if (!pdaMap.has(fingerprint)) {
-                let resolvedName = pda.name;
+                let resolvedName = pda.identifier;
                 const existingFingerprint = nameToFingerprint.get(resolvedName);
 
                 if (existingFingerprint !== undefined && existingFingerprint !== fingerprint) {
-                    resolvedName = camelCase(`${instruction.name}_${pda.name}`);
+                    resolvedName = camelCase(`${instruction.identifier}_${pda.identifier}`);
                     logWarn(
-                        `PDA name collision: "${pda.name}" has different seeds across instructions. ` +
+                        `PDA name collision: "${pda.identifier}" has different seeds across instructions. ` +
                             `Renaming to "${resolvedName}".`,
                     );
                 }
@@ -81,11 +81,11 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
 
                 usedNames.add(resolvedName);
                 nameToFingerprint.set(resolvedName, fingerprint);
-                pdaMap.set(fingerprint, pdaNode({ ...pda, name: resolvedName }));
+                pdaMap.set(fingerprint, pdaNode({ ...pda, identifier: resolvedName }));
             }
 
             const extractedPda = pdaMap.get(fingerprint)!;
-            const defaultValue = { ...account.defaultValue, pda: pdaLinkNode(extractedPda.name) };
+            const defaultValue = { ...account.defaultValue, pda: pdaLinkNode(extractedPda.identifier) };
             return instructionAccountNode({ ...account, defaultValue });
         });
 

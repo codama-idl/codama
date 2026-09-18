@@ -10,7 +10,7 @@ import { pascalCase, type RootNode } from 'codama';
  * Generate TypeScript type for program client.
  */
 export function generateClientTypes(idl: RootNode): string {
-    const programName = pascalCase(idl.program.name);
+    const programName = pascalCase(idl.program.identifier);
 
     const { mapTypeName: pdasMapTypeName, typeBlock: pdaTypeBlock } = generatePdaTypes(idl);
     const hasPdas = pdasMapTypeName !== null;
@@ -45,7 +45,7 @@ export type MethodBuilder<TAccounts, TSigners extends string[], TResolvers = Rec
     output += generateSignerTypes(idl);
 
     for (const ix of idl.program.instructions ?? []) {
-        const typeName = pascalCase(ix.name);
+        const typeName = pascalCase(ix.identifier);
         const refs = getResolutionRefs(ix);
         const signerRef = getInstructionSignerRef(ix);
         const signersGeneric = signerRef.signersRef ?? 'string[]';
@@ -67,8 +67,8 @@ export type MethodBuilder<TAccounts, TSigners extends string[], TResolvers = Rec
 export type ${programName}Methods = {\n`;
 
     for (const ix of idl.program.instructions ?? []) {
-        const typeName = pascalCase(ix.name);
-        output += `    ${ix.name}: ${typeName}Method;\n`;
+        const typeName = pascalCase(ix.identifier);
+        output += `    ${ix.identifier}: ${typeName}Method;\n`;
     }
 
     output += '};\n\n';

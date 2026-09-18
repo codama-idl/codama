@@ -23,12 +23,12 @@ export function setAccountDiscriminatorFromFieldVisitor(
 
                 const accountData = resolveNestedTypeNode(node.data);
                 const accountFields = accountData.fields ?? [];
-                const fieldIndex = accountFields.findIndex(f => f.name === field);
+                const fieldIndex = accountFields.findIndex(f => f.identifier === field);
                 if (fieldIndex < 0) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
                         account: node,
                         missingField: camelCase(field),
-                        name: node.name,
+                        name: node.identifier,
                     });
                 }
 

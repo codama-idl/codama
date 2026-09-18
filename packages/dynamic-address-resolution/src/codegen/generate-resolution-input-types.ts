@@ -50,7 +50,7 @@ function generateTypeBlockForInstruction(ix: InstructionNode, definedTypes: Defi
             const tsType = codamaTypeToTS(arg.type, definedTypes);
             const isOptional = OPTIONAL_NODE_KINDS.includes(arg.type.kind);
             const sep = isOptional ? '?:' : ':';
-            output += `    ${arg.name}${sep} ${tsType};\n`;
+            output += `    ${arg.identifier}${sep} ${tsType};\n`;
         }
         for (const ra of remainingAccountArgs) {
             const sep = ra.isOptional ? '?:' : ':';
@@ -64,7 +64,7 @@ function generateTypeBlockForInstruction(ix: InstructionNode, definedTypes: Defi
         for (const acc of ix.accounts ?? []) {
             const omittable = isAccountAutoResolvable(acc) ? '?' : '';
             const type = acc.isOptional ? 'Address | null' : 'Address';
-            output += `    ${acc.name}${omittable}: ${type};\n`;
+            output += `    ${acc.identifier}${omittable}: ${type};\n`;
         }
         output += '};\n\n';
         output += `export type ${refs.accountsWithDataRef} = ${refs.accountsRef} & Record<string, Address | null | undefined>;\n\n`;

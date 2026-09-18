@@ -70,12 +70,12 @@ export async function resolvePDAAddress<
 
             if (seedNode.kind === 'variablePdaSeedNode') {
                 const variableSeedValueNodes = pdaValueNode.seeds ?? [];
-                const seedName = seedNode.name;
-                const variableSeedValueNode = variableSeedValueNodes.find(node => node.name === seedName);
+                const seedName = seedNode.identifier;
+                const variableSeedValueNode = variableSeedValueNodes.find(node => node.identifier === seedName);
 
                 if (!variableSeedValueNode) {
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-                        instructionName: ixNode.name,
+                        instructionName: ixNode.identifier,
                         referencedName: seedName,
                     });
                 }
@@ -107,12 +107,12 @@ export async function resolvePDAAddress<
 
 function resolvePdaNode(pdaDefaultValue: PdaValueNode, pdas: PdaNode[]): PdaNode {
     if (isNode(pdaDefaultValue.pda, 'pdaLinkNode')) {
-        const linkedPda = pdas.find(p => p.name === pdaDefaultValue.pda.name);
+        const linkedPda = pdas.find(p => p.identifier === pdaDefaultValue.pda.identifier);
         if (!linkedPda) {
             throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
                 kind: 'pdaLinkNode',
                 linkNode: pdaDefaultValue.pda,
-                name: pdaDefaultValue.pda.name,
+                name: pdaDefaultValue.pda.identifier,
                 path: [],
             });
         }
@@ -162,10 +162,10 @@ function resolveVariablePdaSeed<
         });
     }
 
-    if (seedNode.name !== variableSeedValueNode.name) {
+    if (seedNode.identifier !== variableSeedValueNode.identifier) {
         // Sanity check: this should not happen.
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION, {
-            message: `Mismatched PDA seed names: expected [${seedNode.name}], got [${variableSeedValueNode.name}]`,
+            message: `Mismatched PDA seed names: expected [${seedNode.identifier}], got [${variableSeedValueNode.identifier}]`,
         });
     }
 
