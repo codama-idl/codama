@@ -79,7 +79,7 @@
         "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.3",
         "@solana-program/program-metadata": "^0.9.3",
         "@solana-program/token": "0.16.1",
-        "@solana-program/token-2022": "^0.17.0",
+        "@solana-program/token-2022": "^0.18.0",
         "@solana/kit": "8.3.0",
         "litesvm": "1.4.1",
         "sas-lib": "2.0.0-beta.1"
