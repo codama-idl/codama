@@ -11,7 +11,7 @@ const { CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, CODAMA_ERROR__UNEXPECTED_NODE_KIND
 Object.values(CodamaErrorCodeModule) satisfies CodamaErrorCode[];
 
 const unexpectedNodeKindError = new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-    expectedKinds: ['numberTypeNode', 'stringTypeNode'],
+    expectedKinds: ['integerTypeNode', 'stringTypeNode'],
     kind: 'publicKeyTypeNode',
     node: {} as PublicKeyTypeNode,
 });
@@ -28,7 +28,7 @@ const unexpectedNodeKindError = new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KI
     new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {});
     // @ts-expect-error Missing part of the context.
     new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-        expectedKinds: ['numberTypeNode', 'stringTypeNode'],
+        expectedKinds: ['integerTypeNode', 'stringTypeNode'],
         node: {} as PublicKeyTypeNode,
     });
     new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
