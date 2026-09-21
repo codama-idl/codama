@@ -6,18 +6,19 @@
 import {
     AccountNode,
     AccountValueNode,
-    ArgumentValueNode,
-    CamelCaseString,
+    DataValueNode,
     EnumTypeNode,
+    IdentifierString,
     InstructionAccountNode,
-    InstructionArgumentNode,
     InstructionNode,
     LinkNode,
     Node,
     NodeKind,
+    PathString,
     PdaNode,
     PdaSeedValueNode,
     ProgramNode,
+    StructFieldTypeNode,
 } from '@codama/node-types';
 
 import {
@@ -115,22 +116,22 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         idlType: string;
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: {
-        field: CamelCaseString;
+        field: IdentifierString;
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND]: {
-        field: CamelCaseString;
+        field: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]: {
-        accountName: CamelCaseString;
-        instructionName: CamelCaseString;
+        accountName: IdentifierString;
+        instructionName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]: {
-        accountName: CamelCaseString;
-        resolverName: CamelCaseString;
+        accountName: IdentifierString;
+        resolverName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING]: {
-        argumentName: CamelCaseString;
-        instructionName: CamelCaseString;
+        argumentName: IdentifierString;
+        instructionName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: {
         value: string;
@@ -139,20 +140,20 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         chain: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING]: {
-        argumentName: CamelCaseString;
-        instructionName: CamelCaseString;
+        argumentName: IdentifierString;
+        instructionName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]: {
-        accountName: CamelCaseString;
+        accountName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_ARGUMENT]: {
-        argumentName: CamelCaseString;
-        instructionName: CamelCaseString;
+        argumentName: IdentifierString;
+        instructionName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER]: {
-        resolverName: CamelCaseString;
+        resolverName: IdentifierString;
         targetKind: NodeKind;
-        targetName: CamelCaseString;
+        targetName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT]: {
         message: string;
@@ -162,11 +163,11 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         instructionName: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: {
-        accountName: CamelCaseString;
+        accountName: IdentifierString;
         value: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ARGUMENT_INPUT]: {
-        argumentName: CamelCaseString;
+        argumentName: IdentifierString;
         expectedType: string;
         value: string;
     };
@@ -174,8 +175,8 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         message: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]: {
-        instructionName: CamelCaseString;
-        referencedName: CamelCaseString;
+        instructionName: IdentifierString;
+        referencedName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]: {
         available: string;
@@ -196,14 +197,14 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         nodeKind: NodeKind;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY]: {
-        accountName: CamelCaseString;
-        instructionName: CamelCaseString;
+        accountName: IdentifierString;
+        instructionName: IdentifierString;
         strategy: string;
     };
     [CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND]: {
         enum: EnumTypeNode;
-        enumName: CamelCaseString;
-        variant: CamelCaseString;
+        enumName: IdentifierString;
+        variant: IdentifierString;
     };
     [CODAMA_ERROR__INVALID_BRANDED_STRING]: {
         actual: string;
@@ -212,7 +213,7 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: {
         kind: LinkNode['kind'];
         linkNode: LinkNode;
-        name: CamelCaseString;
+        name: IdentifierString;
         path: readonly Node[];
     };
     [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
@@ -254,19 +255,19 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: {
         account: AccountNode;
-        missingField: CamelCaseString;
-        name: CamelCaseString;
+        missingField: IdentifierString;
+        name: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]: {
-        duplicatedPdaNames: CamelCaseString[];
+        duplicatedPdaNames: IdentifierString[];
         program: ProgramNode;
-        programName: CamelCaseString;
+        programName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION]: {
         visitFunction: string;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES]: {
-        conflictingAttributes: CamelCaseString[];
+        conflictingAttributes: IdentifierString[];
     };
     [CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK]: {
         path: readonly Node[];
@@ -274,45 +275,45 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE]: {
         instruction: InstructionNode;
         instructionAccount: InstructionAccountNode;
-        instructionAccountName: CamelCaseString;
-        instructionName: CamelCaseString;
+        instructionAccountName: IdentifierString;
+        instructionName: IdentifierString;
         seed: PdaSeedValueNode<AccountValueNode>;
-        seedName: CamelCaseString;
-        seedValueName: CamelCaseString;
+        seedName: IdentifierString;
+        seedValueName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES]: {
-        cycle: (InstructionAccountNode | InstructionArgumentNode)[];
+        cycle: (InstructionAccountNode | StructFieldTypeNode)[];
         formattedCycle: string;
         instruction: InstructionNode;
-        instructionName: CamelCaseString;
+        instructionName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: {
         formattedHistogram: string;
         validationItems: readonly ValidationItem[];
     };
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND]: {
-        argumentName: CamelCaseString;
+        argumentName: IdentifierString;
         instruction: InstructionNode;
-        instructionName: CamelCaseString;
+        instructionName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]: {
-        dependency: AccountValueNode | ArgumentValueNode;
-        dependencyKind: 'accountValueNode' | 'argumentValueNode';
-        dependencyName: CamelCaseString;
+        dependency: AccountValueNode | DataValueNode;
+        dependencyKind: 'accountValueNode' | 'dataValueNode';
+        dependencyName: IdentifierString | PathString;
         instruction: InstructionNode;
-        instructionName: CamelCaseString;
-        parent: InstructionAccountNode | InstructionArgumentNode;
-        parentKind: 'instructionAccountNode' | 'instructionArgumentNode';
-        parentName: CamelCaseString;
+        instructionName: IdentifierString;
+        parent: InstructionAccountNode | StructFieldTypeNode;
+        parentKind: 'instructionAccountNode' | 'structFieldTypeNode';
+        parentName: IdentifierString | PathString;
     };
     [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: {
         wrapper: string;
     };
     [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]: {
         instruction: InstructionNode;
-        instructionName: CamelCaseString;
+        instructionName: IdentifierString;
         pda: PdaNode;
-        pdaName: CamelCaseString;
+        pdaName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: {
         key: string;
