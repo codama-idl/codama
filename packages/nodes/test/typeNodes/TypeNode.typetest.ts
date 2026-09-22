@@ -2,7 +2,7 @@ import type { RegisteredTypeNode } from '@codama/node-types';
 
 import { REGISTERED_TYPE_NODE_KINDS } from '../../src';
 
-// [DESCRIBE] Registered value node kinds.
+// [DESCRIBE] Registered type node kinds.
 {
     // It matches exactly with RegisteredTypeNode['kind'].
     {

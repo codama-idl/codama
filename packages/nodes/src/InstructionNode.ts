@@ -1,10 +1,4 @@
-import type {
-    InstructionArgumentNode,
-    InstructionNode,
-    OptionalAccountStrategy,
-    ProgramNode,
-    RootNode,
-} from '@codama/node-types';
+import type { InstructionNode, OptionalAccountStrategy, ProgramNode, RootNode } from '@codama/node-types';
 
 import { isNode } from './Node';
 import { getAllInstructions } from './ProgramNode';
@@ -13,10 +7,6 @@ export function parseOptionalAccountStrategy(
     optionalAccountStrategy: OptionalAccountStrategy | undefined,
 ): OptionalAccountStrategy {
     return optionalAccountStrategy ?? 'programId';
-}
-
-export function getAllInstructionArguments(node: InstructionNode): InstructionArgumentNode[] {
-    return [...(node.arguments ?? []), ...(node.extraArguments ?? [])];
 }
 
 export function getAllInstructionsWithSubs(
