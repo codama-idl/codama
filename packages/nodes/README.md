@@ -26,8 +26,8 @@ pnpm install @codama/nodes
 
 The Codama IDL is composed of various nodes that describe different aspects of a Solana program. Some nodes are categorised together as they share a similar purpose. For instance, all the nodes that describe a data structure that can be encoded and decoded into buffers are grouped under the `TypeNode` category.
 
-The nodes themselves are defined by the [Codama specification](https://github.com/codama-idl/spec), which is the canonical reference for this package. Every node has its own generated documentation page describing its attributes and providing worked TypeScript examples. Head over to the [spec documentation](https://github.com/codama-idl/spec/blob/main/v1/docs/README.md) to explore all available nodes and their categories.
+The nodes themselves are defined by the [Codama specification](https://github.com/codama-idl/spec), which is the canonical reference for this package. Every node has its own generated documentation page describing its attributes and providing worked TypeScript examples. Head over to the [spec documentation](https://github.com/codama-idl/spec/blob/main/docs/README.md) to explore all available nodes and their categories.
 
 ## Helpers
 
-For every concrete node in the spec, this package exports a factory function named after it — e.g. `accountNode(input)` creates an `AccountNode` and `numberTypeNode('u64')` creates a `NumberTypeNode`. The worked examples on each documentation page use these helpers directly. The package also exports the matching TypeScript types, including the `Node` union type representing all available nodes and category unions such as `TypeNode` and `ValueNode`.
+For every concrete node in the spec, this package exports a factory function named after it — e.g. `accountNode(input)` creates an `AccountNode` and `integerTypeNode('u64')` creates an `IntegerTypeNode`. The worked examples on each documentation page use these helpers directly. The package also exports the matching TypeScript types, including the `Node` union type representing all available nodes and category unions such as `TypeNode` and `ValueNode`.
