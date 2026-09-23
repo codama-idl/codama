@@ -1,4 +1,4 @@
-import { definedTypeLinkNode } from '@codama/nodes';
+import { definedTypeLinkNode, programLinkNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = definedTypeLinkNode('tokenState', 'splToken');
+const node = definedTypeLinkNode('tokenState', { program: programLinkNode('splToken') });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);

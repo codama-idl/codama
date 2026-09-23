@@ -1,4 +1,4 @@
-import { numberTypeNode, optionTypeNode, publicKeyTypeNode } from '@codama/nodes';
+import { integerTypeNode, optionTypeNode, publicKeyTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -10,7 +10,7 @@ import {
 
 const node = optionTypeNode(publicKeyTypeNode(), {
     fixed: true,
-    prefix: numberTypeNode('u64'),
+    prefix: integerTypeNode('u64'),
 });
 
 test('mergeVisitor', () => {
@@ -24,7 +24,7 @@ test('identityVisitor', () => {
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[optionTypeNode]', null);
     expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
@@ -32,7 +32,7 @@ test('debugStringVisitor', () => {
         node,
         `
 optionTypeNode [fixed]
-|   numberTypeNode [u64]
+|   integerTypeNode [u64]
 |   publicKeyTypeNode`,
     );
 });

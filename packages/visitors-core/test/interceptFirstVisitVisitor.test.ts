@@ -1,11 +1,11 @@
-import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { extendVisitor, interceptFirstVisitVisitor, visit, voidVisitor } from '../src';
 
 test('it returns a new visitor that only intercepts the first visit of a visitor', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // And an intercepted void visitor that records the events that happened during the first visit.
     const events: string[] = [];
@@ -28,7 +28,7 @@ test('it returns a new visitor that only intercepts the first visit of a visitor
 
 test('it still works on subsequent calls', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // And an intercepted void visitor that records the events that happened during the first visit.
     const events: string[] = [];
@@ -48,7 +48,7 @@ test('it still works on subsequent calls', () => {
 
 test('it resets the first visit boolean if an error is thrown', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // And an intercepted visitor that records the events that happened during the first visit
     // but throws an error when it visits publicKeyTypeNodes.

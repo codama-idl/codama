@@ -1,4 +1,4 @@
-import { mapEntryValueNode, mapValueNode, numberValueNode, stringValueNode } from '@codama/nodes';
+import { mapEntryValueNode, mapValueNode, integerValueNode, stringValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -9,9 +9,9 @@ import {
 } from '../_setup';
 
 const node = mapValueNode([
-    mapEntryValueNode(stringValueNode('Alice'), numberValueNode(42)),
-    mapEntryValueNode(stringValueNode('Bob'), numberValueNode(37)),
-    mapEntryValueNode(stringValueNode('Carla'), numberValueNode(29)),
+    mapEntryValueNode(stringValueNode('Alice'), integerValueNode('42')),
+    mapEntryValueNode(stringValueNode('Bob'), integerValueNode('37')),
+    mapEntryValueNode(stringValueNode('Carla'), integerValueNode('29')),
 ]);
 
 test('mergeVisitor', () => {
@@ -34,12 +34,12 @@ test('debugStringVisitor', () => {
 mapValueNode
 |   mapEntryValueNode
 |   |   stringValueNode [Alice]
-|   |   numberValueNode [42]
+|   |   integerValueNode [42]
 |   mapEntryValueNode
 |   |   stringValueNode [Bob]
-|   |   numberValueNode [37]
+|   |   integerValueNode [37]
 |   mapEntryValueNode
 |   |   stringValueNode [Carla]
-|   |   numberValueNode [29]`,
+|   |   integerValueNode [29]`,
     );
 });

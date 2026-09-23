@@ -1,4 +1,4 @@
-import { Node } from '@codama/nodes';
+import { getTextNodeContent, Node } from '@codama/nodes';
 
 import { mergeVisitor } from './generated/mergeVisitor';
 import { interceptVisitor } from './interceptVisitor';
@@ -62,7 +62,7 @@ function getNodeDetails(node: Node): string[] {
         case 'instructionByteDeltaNode':
             return [...(node.subtract ? ['subtract'] : []), ...(node.withHeader ? ['withHeader'] : [])];
         case 'instructionStatusNode':
-            return [node.lifecycle, ...(node.message ? [node.message] : [])];
+            return [node.lifecycle, ...(node.message ? [getTextNodeContent(node.message)] : [])];
         case 'errorNode':
             return [node.code.toString(), node.identifier];
         case 'constantNode':
@@ -70,23 +70,33 @@ function getNodeDetails(node: Node): string[] {
         case 'accountLinkNode':
         case 'definedTypeLinkNode':
         case 'instructionAccountLinkNode':
-        case 'instructionArgumentLinkNode':
         case 'instructionLinkNode':
         case 'pdaLinkNode':
         case 'programLinkNode':
             return [node.identifier];
-        case 'numberTypeNode':
-            return [node.format, ...(node.endian === 'be' ? ['bigEndian'] : [])];
-        case 'amountTypeNode':
-            return [node.decimals.toString(), ...(node.unit ? [node.unit] : [])];
+        case 'integerTypeNode':
+        case 'floatTypeNode':
+            return [node.format, ...(node.endian === 'be' ? ['bigEndian'] : []), ...(node.unit ? [node.unit] : [])];
+        case 'fixedPointTypeNode':
+            return [
+                `scale:${node.scale}`,
+                ...(node.base !== undefined ? [`base:${node.base}`] : []),
+                ...(node.unit ? [node.unit] : []),
+            ];
+        case 'durationTypeNode':
+        case 'dateTimeTypeNode':
+            return node.ticksPerSecond !== undefined ? [`ticksPerSecond:${node.ticksPerSecond}`] : [];
         case 'stringTypeNode':
             return [node.encoding];
         case 'optionTypeNode':
             return node.fixed ? ['fixed'] : [];
         case 'fixedCountNode':
             return [node.value.toString()];
-        case 'numberValueNode':
-            return [node.number.toString()];
+        case 'sentinelCountNode':
+            return node.strategy ? [node.strategy] : [];
+        case 'integerValueNode':
+        case 'floatValueNode':
+            return [node.value];
         case 'stringValueNode':
             return [node.string];
         case 'booleanValueNode':
@@ -97,20 +107,35 @@ function getNodeDetails(node: Node): string[] {
             return [...(node.identifier ? [`${node.identifier}`] : []), node.publicKey];
         case 'enumValueNode':
             return [node.variant];
-        case 'resolverValueNode':
-            return [node.name];
+        case 'textNode':
+            return [getTextNodeContent(node)];
+        case 'dataValueNode':
+            return [node.path];
+        case 'accountDataValueNode':
+            return [node.account, ...(node.path ? [node.path] : [])];
+        case 'injectedValueNode':
+            return [node.key];
+        case 'enumVariantTypeNode':
+            return [
+                node.identifier,
+                ...(node.discriminator !== undefined ? [`discriminator:${node.discriminator}`] : []),
+            ];
+        case 'pluginNode':
+            return [node.namespace];
         case 'constantDiscriminatorNode':
             return node.offset > 0 ? [`offset:${node.offset}`] : [];
         case 'fieldDiscriminatorNode':
-            return [node.name, ...(node.offset > 0 ? [`offset:${node.offset}`] : [])];
+            return [node.path, ...(node.offset > 0 ? [`offset:${node.offset}`] : [])];
         case 'sizeDiscriminatorNode':
             return [node.size.toString()];
-        case 'fixedSizeTypeNode':
+        case 'fixedSizeTransformNode':
             return [node.size.toString()];
-        case 'preOffsetTypeNode':
-            return [node.offset.toString(), node.strategy ?? 'relative'];
-        case 'postOffsetTypeNode':
-            return [node.offset.toString(), node.strategy ?? 'relative'];
+        case 'sizePrefixTransformNode':
+        case 'sentinelTransformNode':
+            return [];
+        case 'preOffsetTransformNode':
+        case 'postOffsetTransformNode':
+            return [node.offset.toString(), node.strategy];
         default:
             return 'identifier' in node ? [node.identifier] : [];
     }

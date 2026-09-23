@@ -1,4 +1,4 @@
-import { enumEmptyVariantTypeNode } from '@codama/nodes';
+import { integerTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = enumEmptyVariantTypeNode('initialized');
+const node = integerTypeNode('u64');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[enumEmptyVariantTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `enumEmptyVariantTypeNode [initialized]`);
+    expectDebugStringVisitor(node, `integerTypeNode [u64]`);
 });

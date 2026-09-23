@@ -1,4 +1,4 @@
-import { constantValueNode, numberTypeNode, numberValueNode } from '@codama/nodes';
+import { constantValueNode, integerTypeNode, integerValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = constantValueNode(numberTypeNode('u8'), numberValueNode(42));
+const node = constantValueNode(integerTypeNode('u8'), integerValueNode('42'));
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 3);
@@ -20,8 +20,8 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[constantValueNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[numberValueNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
@@ -29,7 +29,7 @@ test('debugStringVisitor', () => {
         node,
         `
 constantValueNode
-|   numberTypeNode [u8]
-|   numberValueNode [42]`,
+|   integerTypeNode [u8]
+|   integerValueNode [42]`,
     );
 });

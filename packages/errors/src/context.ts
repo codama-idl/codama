@@ -18,6 +18,7 @@ import {
     PdaNode,
     PdaSeedValueNode,
     ProgramNode,
+    ProvidedNode,
     StructFieldTypeNode,
 } from '@codama/node-types';
 
@@ -77,6 +78,7 @@ import {
     CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
+    CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
     CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
     CodamaErrorCode,
 } from './codes';
@@ -314,6 +316,12 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         instructionName: IdentifierString;
         pda: PdaNode;
         pdaName: IdentifierString;
+    };
+    [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]: {
+        expectedKinds: NodeKind[];
+        key: IdentifierString;
+        provider: ProvidedNode;
+        providedKind: NodeKind;
     };
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: {
         key: string;

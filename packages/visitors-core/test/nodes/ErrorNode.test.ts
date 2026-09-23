@@ -10,8 +10,8 @@ import {
 
 const node = errorNode({
     code: 42,
+    identifier: 'InvalidTokenOwner',
     message: 'The provided account does not match the owner of the token account.',
-    name: 'InvalidTokenOwner',
 });
 
 test('mergeVisitor', () => {
@@ -27,5 +27,5 @@ test('deleteNodesVisitor', () => {
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `errorNode [42.invalidTokenOwner]`);
+    expectDebugStringVisitor(node, `errorNode [42.InvalidTokenOwner]`);
 });

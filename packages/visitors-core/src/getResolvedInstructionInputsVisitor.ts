@@ -1,4 +1,3 @@
-/* eslint-disable no-case-declarations */
 import {
     CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
@@ -8,62 +7,147 @@ import {
 import {
     AccountValueNode,
     accountValueNode,
-    ArgumentValueNode,
-    argumentValueNode,
-    CamelCaseString,
-    getAllInstructionArguments,
+    DataValueNode,
+    dataValueNode,
+    IdentifierString,
     InstructionAccountNode,
-    InstructionArgumentNode,
     InstructionInputValueNode,
+    INSTRUCTION_INPUT_VALUE_NODES,
     InstructionNode,
     isNode,
+    PathString,
     PdaSeedValueNode,
+    StructFieldTypeNode,
     VALUE_NODES,
 } from '@codama/nodes';
 
+import { LinkableDictionary } from './LinkableDictionary';
+import { getLastNodeFromPath } from './NodePath';
+import { NodeStack } from './NodeStack';
+import { pipe } from './pipe';
+import { ProvidedScope } from './ProvidedScope';
+import { recordNodeStackVisitor } from './recordNodeStackVisitor';
+import { recordProvidedScopeVisitor } from './recordProvidedScopeVisitor';
 import { singleNodeVisitor } from './singleNodeVisitor';
 import { Visitor } from './visitor';
 
-export type ResolvedInstructionInput = ResolvedInstructionAccount | ResolvedInstructionArgument;
-export type ResolvedInstructionAccount = InstructionAccountNode & {
+/** A resolved account or data-field input, discriminated by `node.kind`. */
+export type ResolvedInstructionInput = ResolvedInstructionAccount | ResolvedInstructionDataField;
+
+export type ResolvedInstructionAccount = {
     dependsOn: InstructionDependency[];
     isPda: boolean;
+    node: InstructionAccountNode;
+    /** The input's default value after resolving any `injectedValueNode` through the {@link ProvidedScope}. */
+    resolvedDefaultValue?: InstructionInputValueNode;
     resolvedIsOptional: boolean;
     resolvedIsSigner: boolean | 'either';
 };
-export type ResolvedInstructionArgument = InstructionArgumentNode & {
-    dependsOn: InstructionDependency[];
-};
-type InstructionInput = InstructionAccountNode | InstructionArgumentNode;
-type InstructionDependency = AccountValueNode | ArgumentValueNode;
 
+export type ResolvedInstructionDataField = {
+    dependsOn: InstructionDependency[];
+    node: StructFieldTypeNode;
+    /** The field's full path within `instructionNode.data`, e.g. `config.bump`. */
+    path: PathString;
+    resolvedDefaultValue?: InstructionInputValueNode;
+};
+
+export type InstructionDependency = AccountValueNode | DataValueNode;
+
+/** An input in the dependency graph — an account, or a data field addressed by its path. */
+type InstructionInput = AccountInput | DataInput;
+type AccountInput = { key: IdentifierString; kind: 'account'; node: InstructionAccountNode };
+type DataInput = { key: PathString; kind: 'data'; node: StructFieldTypeNode };
+
+/**
+ * Resolve the default values of an instruction's accounts and data fields,
+ * returning them in dependency order.
+ *
+ * @param linkables - Used to follow a `definedTypeLinkNode` in the instruction's `data`.
+ * @param options.stack - The ancestry of the visited instruction. It must contain the
+ *   instruction's `programNode` for `definedTypeLinkNode` data to be followed; otherwise a
+ *   linked `data` type contributes no fields.
+ * @param options.scope - The providers enclosing the visited instruction (e.g. its parent
+ *   instructions). The instruction's own `provides` are added on top for the visit.
+ * @param options.includeDataValueNodes - Whether to include data fields whose resolved
+ *   default is a static value.
+ */
 export function getResolvedInstructionInputsVisitor(
-    options: { includeDataArgumentValueNodes?: boolean } = {},
+    linkables: LinkableDictionary,
+    options: { includeDataValueNodes?: boolean; scope?: ProvidedScope; stack?: NodeStack } = {},
 ): Visitor<ResolvedInstructionInput[], 'instructionNode'> {
-    const includeDataArgumentValueNodes = options.includeDataArgumentValueNodes ?? false;
-    let stack: InstructionInput[] = [];
+    const includeDataValueNodes = options.includeDataValueNodes ?? false;
+    const stack = options.stack ?? new NodeStack();
+    const scope = options.scope ?? new ProvidedScope();
+
+    // Per-visit state, reset at the start of every `instructionNode` visit.
+    let dfsStack: InstructionInput[] = [];
     let resolved: ResolvedInstructionInput[] = [];
-    let visitedAccounts = new Map<string, ResolvedInstructionAccount>();
-    let visitedArgs = new Map<string, ResolvedInstructionArgument>();
+    let visitedAccounts = new Map<IdentifierString, ResolvedInstructionAccount>();
+    let visitedData = new Map<PathString, ResolvedInstructionDataField>();
+    let dataFields: DataInput[] = [];
+    let dataDefaults = new Map<PathString, InstructionInputValueNode | undefined>();
+    let bumpAccounts = new Set<IdentifierString>();
+
+    // Resolves every injection within the default value, including nested
+    // ones (e.g. a PDA seed). A missing provider is not an error: a reusable
+    // data shape may offer an optional hook that this instruction does not fill.
+    function resolveDefaultValue(
+        defaultValue: InstructionInputValueNode | undefined,
+    ): InstructionInputValueNode | undefined {
+        if (defaultValue === undefined) return undefined;
+        return scope.resolve(defaultValue, { kinds: INSTRUCTION_INPUT_VALUE_NODES });
+    }
+
+    // Walk `instructionNode.data`, following defined-type links, and yield
+    // every struct field with its full path. Fields are only addressable
+    // where the data type resolves to a struct.
+    function collectDataFields(instruction: InstructionNode): DataInput[] {
+        const fields: DataInput[] = [];
+        const walkedDefinedTypes = new Set<string>();
+
+        const walk = (type: InstructionNode['data'], prefix: string): void => {
+            if (!type) return;
+            if (isNode(type, 'definedTypeLinkNode')) {
+                const linkedPath = linkables.getPath([...stack.getPath(), type]);
+                if (!linkedPath) return;
+                const definedType = getLastNodeFromPath(linkedPath);
+                if (walkedDefinedTypes.has(definedType.identifier)) return;
+                walkedDefinedTypes.add(definedType.identifier);
+                stack.pushPath(linkedPath);
+                walk(definedType.type, prefix);
+                stack.popPath();
+                return;
+            }
+            if (!isNode(type, 'structTypeNode')) return;
+            (type.fields ?? []).forEach(field => {
+                const path = (prefix ? `${prefix}.${field.identifier}` : field.identifier) as PathString;
+                fields.push({ key: path, kind: 'data', node: field });
+                if (isNode(field.type, 'structTypeNode') || isNode(field.type, 'definedTypeLinkNode')) {
+                    walk(field.type, path);
+                }
+            });
+        };
+
+        walk(instruction.data, '');
+        return fields;
+    }
 
     function resolveInstructionInput(instruction: InstructionNode, input: InstructionInput): void {
         // Ensure we don't visit the same input twice.
-        if (
-            (isNode(input, 'instructionAccountNode') && visitedAccounts.has(input.identifier)) ||
-            (isNode(input, 'instructionArgumentNode') && visitedArgs.has(input.identifier))
-        ) {
+        if (input.kind === 'account' ? visitedAccounts.has(input.key) : visitedData.has(input.key)) {
             return;
         }
 
         // Ensure we don't have a circular dependency.
-        const isCircular = stack.some(({ kind, identifier }) => kind === input.kind && identifier === input.identifier);
+        const isCircular = dfsStack.some(entry => entry.kind === input.kind && entry.key === input.key);
         if (isCircular) {
-            const cycle = [...stack, input];
+            const cycle = [...dfsStack, input];
             throw new CodamaError(
                 CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
                 {
-                    cycle,
-                    formattedCycle: cycle.map(({ identifier }) => identifier).join(' -> '),
+                    cycle: cycle.map(entry => entry.node),
+                    formattedCycle: cycle.map(entry => entry.key).join(' -> '),
                     instruction,
                     instructionName: instruction.identifier,
                 },
@@ -71,67 +155,64 @@ export function getResolvedInstructionInputsVisitor(
         }
 
         // Resolve whilst keeping track of the stack.
-        stack.push(input);
+        dfsStack.push(input);
         const localResolved =
-            input.kind === 'instructionAccountNode'
+            input.kind === 'account'
                 ? resolveInstructionAccount(instruction, input)
-                : resolveInstructionArgument(instruction, input);
-        stack.pop();
+                : resolveInstructionDataField(instruction, input);
+        dfsStack.pop();
 
         // Store the resolved input.
         resolved.push(localResolved);
-        if (localResolved.kind === 'instructionAccountNode') {
-            visitedAccounts.set(input.identifier, localResolved);
+        if (localResolved.node.kind === 'instructionAccountNode') {
+            visitedAccounts.set(input.key as IdentifierString, localResolved as ResolvedInstructionAccount);
         } else {
-            visitedArgs.set(input.identifier, localResolved);
+            visitedData.set(input.key as PathString, localResolved as ResolvedInstructionDataField);
         }
     }
 
-    function resolveInstructionAccount(
-        instruction: InstructionNode,
-        account: InstructionAccountNode,
-    ): ResolvedInstructionAccount {
+    function resolveInstructionAccount(instruction: InstructionNode, input: AccountInput): ResolvedInstructionAccount {
+        const account = input.node;
+        const resolvedDefaultValue = resolveDefaultValue(account.defaultValue);
+
         // Find and visit dependencies first.
-        const dependsOn = getInstructionDependencies(account);
-        resolveInstructionDependencies(instruction, account, dependsOn);
+        const dependsOn = getDependencies(resolvedDefaultValue);
+        resolveDependencies(instruction, input, dependsOn);
 
         const localResolved: ResolvedInstructionAccount = {
-            ...account,
             dependsOn,
-            isPda: getAllInstructionArguments(instruction).some(
-                argument =>
-                    isNode(argument.defaultValue, 'accountBumpValueNode') &&
-                    argument.defaultValue.identifier === account.identifier,
-            ),
+            isPda: bumpAccounts.has(account.identifier),
+            node: account,
+            ...(resolvedDefaultValue !== undefined && { resolvedDefaultValue }),
             resolvedIsOptional: !!account.isOptional,
             resolvedIsSigner: account.isSigner,
         };
 
-        switch (localResolved.defaultValue?.kind) {
-            case 'accountValueNode':
-                const defaultAccount = visitedAccounts.get(localResolved.defaultValue.identifier)!;
-                const resolvedIsPublicKey = account.isSigner === false && defaultAccount.isSigner === false;
-                const resolvedIsSigner = account.isSigner === true && defaultAccount.isSigner === true;
+        switch (resolvedDefaultValue?.kind) {
+            case 'accountValueNode': {
+                const defaultAccount = visitedAccounts.get(resolvedDefaultValue.identifier)!;
+                const resolvedIsPublicKey = account.isSigner === false && defaultAccount.node.isSigner === false;
+                const resolvedIsSigner = account.isSigner === true && defaultAccount.node.isSigner === true;
                 const resolvedIsOptionalSigner = !resolvedIsPublicKey && !resolvedIsSigner;
                 localResolved.resolvedIsSigner = resolvedIsOptionalSigner ? 'either' : resolvedIsSigner;
-                localResolved.resolvedIsOptional = !!defaultAccount.isOptional;
+                localResolved.resolvedIsOptional = !!defaultAccount.node.isOptional;
                 break;
+            }
             case 'publicKeyValueNode':
             case 'programLinkNode':
             case 'programIdValueNode':
                 localResolved.resolvedIsSigner = account.isSigner === false ? false : 'either';
                 localResolved.resolvedIsOptional = false;
                 break;
-            case 'pdaValueNode':
+            case 'pdaValueNode': {
                 localResolved.resolvedIsSigner = account.isSigner === false ? false : 'either';
                 localResolved.resolvedIsOptional = false;
-                const { seeds } = localResolved.defaultValue;
-                (seeds ?? []).forEach(seed => {
+                (resolvedDefaultValue.seeds ?? []).forEach(seed => {
                     if (!isNode(seed.value, 'accountValueNode')) return;
                     const dependency = visitedAccounts.get(seed.value.identifier)!;
                     if (dependency.resolvedIsOptional) {
                         throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
-                            instruction: instruction,
+                            instruction,
                             instructionAccount: account,
                             instructionAccountName: account.identifier,
                             instructionName: instruction.identifier,
@@ -143,9 +224,9 @@ export function getResolvedInstructionInputsVisitor(
                     }
                 });
                 break;
+            }
             case 'identityValueNode':
             case 'payerValueNode':
-            case 'resolverValueNode':
                 localResolved.resolvedIsOptional = false;
                 break;
             default:
@@ -155,18 +236,19 @@ export function getResolvedInstructionInputsVisitor(
         return localResolved;
     }
 
-    function resolveInstructionArgument(
-        instruction: InstructionNode,
-        argument: InstructionArgumentNode,
-    ): ResolvedInstructionArgument {
-        // Find and visit dependencies first.
-        const dependsOn = getInstructionDependencies(argument);
-        resolveInstructionDependencies(instruction, argument, dependsOn);
-
-        return { ...argument, dependsOn };
+    function resolveInstructionDataField(instruction: InstructionNode, input: DataInput): ResolvedInstructionDataField {
+        const resolvedDefaultValue = dataDefaults.get(input.key);
+        const dependsOn = getDependencies(resolvedDefaultValue);
+        resolveDependencies(instruction, input, dependsOn);
+        return {
+            dependsOn,
+            node: input.node,
+            path: input.key,
+            ...(resolvedDefaultValue !== undefined && { resolvedDefaultValue }),
+        };
     }
 
-    function resolveInstructionDependencies(
+    function resolveDependencies(
         instruction: InstructionNode,
         parent: InstructionInput,
         dependencies: InstructionDependency[],
@@ -178,35 +260,15 @@ export function getResolvedInstructionInputsVisitor(
                     a => a.identifier === dependency.identifier,
                 );
                 if (!dependencyAccount) {
-                    throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
-                        dependency,
-                        dependencyKind: dependency.kind,
-                        dependencyName: dependency.identifier,
-                        instruction,
-                        instructionName: instruction.identifier,
-                        parent,
-                        parentKind: parent.kind,
-                        parentName: parent.identifier,
-                    });
+                    throwInvalidDependency(instruction, parent, dependency, dependency.identifier);
                 }
-                input = { ...dependencyAccount };
-            } else if (isNode(dependency, 'argumentValueNode')) {
-                const dependencyArgument = getAllInstructionArguments(instruction).find(
-                    a => a.identifier === dependency.name,
-                );
-                if (!dependencyArgument) {
-                    throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
-                        dependency,
-                        dependencyKind: dependency.kind,
-                        dependencyName: dependency.name,
-                        instruction,
-                        instructionName: instruction.identifier,
-                        parent,
-                        parentKind: parent.kind,
-                        parentName: parent.identifier,
-                    });
+                input = { key: dependencyAccount.identifier, kind: 'account', node: dependencyAccount };
+            } else if (isNode(dependency, 'dataValueNode')) {
+                const dependencyField = findFieldByPath(dataFields, dependency.path);
+                if (!dependencyField) {
+                    throwInvalidDependency(instruction, parent, dependency, dependency.path);
                 }
-                input = { ...dependencyArgument };
+                input = dependencyField;
             }
             if (input) {
                 resolveInstructionInput(instruction, input);
@@ -214,90 +276,146 @@ export function getResolvedInstructionInputsVisitor(
         });
     }
 
-    return singleNodeVisitor('instructionNode', (node): ResolvedInstructionInput[] => {
+    function throwInvalidDependency(
+        instruction: InstructionNode,
+        parent: InstructionInput,
+        dependency: InstructionDependency,
+        dependencyName: IdentifierString | PathString,
+    ): never {
+        throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
+            dependency,
+            dependencyKind: dependency.kind,
+            dependencyName,
+            instruction,
+            instructionName: instruction.identifier,
+            parent: parent.node,
+            parentKind: parent.node.kind,
+            parentName: parent.key,
+        });
+    }
+
+    const visitor = singleNodeVisitor('instructionNode', (node): ResolvedInstructionInput[] => {
         // Ensure we always start with a clean slate.
-        stack = [];
+        dfsStack = [];
         resolved = [];
         visitedAccounts = new Map();
-        visitedArgs = new Map();
+        visitedData = new Map();
+
+        // The data fields and their resolved defaults are fixed for the
+        // duration of the visit, so compute them once.
+        dataFields = collectDataFields(node);
+        dataDefaults = new Map(
+            dataFields.map(field => [field.key, resolveDefaultValue(asInstructionInputValue(field.node.defaultValue))]),
+        );
+        bumpAccounts = new Set(
+            [...dataDefaults.values()].flatMap(value =>
+                isNode(value, 'accountBumpValueNode') ? [value.identifier] : [],
+            ),
+        );
+
+        const dataInputs = dataFields.filter(field => {
+            const value = dataDefaults.get(field.key);
+            if (!value) return false;
+            // Skip static value defaults unless explicitly requested — there's
+            // nothing to resolve for a plain literal.
+            return includeDataValueNodes || !isNode(value, VALUE_NODES);
+        });
 
         const inputs: InstructionInput[] = [
-            ...(node.accounts ?? []),
-            ...(node.arguments ?? []).filter(a => {
-                if (includeDataArgumentValueNodes) return a.defaultValue;
-                return a.defaultValue && !isNode(a.defaultValue, VALUE_NODES);
-            }),
-            ...(node.extraArguments ?? []).filter(a => a.defaultValue),
+            ...(node.accounts ?? []).map(account => ({
+                key: account.identifier,
+                kind: 'account' as const,
+                node: account,
+            })),
+            ...dataInputs,
         ];
 
-        // Visit all instruction accounts.
-        inputs.forEach(input => {
-            resolveInstructionInput(node, input);
-        });
+        inputs.forEach(input => resolveInstructionInput(node, input));
 
         return resolved;
     });
+
+    return pipe(
+        visitor,
+        // Opens the visited instruction's own `provides` frame on top of any
+        // frames the caller's scope already holds (e.g. parent instructions).
+        v => recordProvidedScopeVisitor(v, scope),
+        v => recordNodeStackVisitor(v, stack),
+    );
+}
+
+/**
+ * Match a `dataValueNode` path to a data field. A path deeper than the
+ * struct-field graph (e.g. into an array element like `config.fees[0]`)
+ * resolves to the longest field-path prefix that exists — the field that
+ * holds the referenced element.
+ */
+function findFieldByPath(fields: DataInput[], path: PathString): DataInput | undefined {
+    return fields
+        .filter(f => path === f.key || path.startsWith(`${f.key}.`) || path.startsWith(`${f.key}[`))
+        .sort((a, b) => b.key.length - a.key.length)[0];
+}
+
+/**
+ * A `structFieldTypeNode.defaultValue` is a `ValueNode`, a strict subset of
+ * `InstructionInputValueNode`. This narrows it for the shared resolution
+ * helpers.
+ */
+function asInstructionInputValue(
+    value: InstructionInputValueNode | StructFieldTypeNode['defaultValue'],
+): InstructionInputValueNode | undefined {
+    return value as InstructionInputValueNode | undefined;
 }
 
 export function deduplicateInstructionDependencies(dependencies: InstructionDependency[]): InstructionDependency[] {
-    const accounts = new Map<CamelCaseString, InstructionDependency>();
-    const args = new Map<CamelCaseString, InstructionDependency>();
+    const accounts = new Map<IdentifierString, InstructionDependency>();
+    const data = new Map<PathString, InstructionDependency>();
     dependencies.forEach(dependency => {
         if (isNode(dependency, 'accountValueNode')) {
             accounts.set(dependency.identifier, dependency);
-        } else if (isNode(dependency, 'argumentValueNode')) {
-            args.set(dependency.name, dependency);
+        } else if (isNode(dependency, 'dataValueNode')) {
+            data.set(dependency.path, dependency);
         }
     });
-    return [...accounts.values(), ...args.values()];
+    return [...accounts.values(), ...data.values()];
 }
 
-export function getInstructionDependencies(input: InstructionInput | InstructionNode): InstructionDependency[] {
-    if (isNode(input, 'instructionNode')) {
+/** The account/data references a default value depends on, resolved recursively. */
+export function getDependencies(defaultValue: InstructionInputValueNode | undefined): InstructionDependency[] {
+    if (!defaultValue) return [];
+
+    if (isNode(defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {
+        return [accountValueNode(defaultValue.identifier)];
+    }
+
+    if (isNode(defaultValue, 'accountDataValueNode')) {
+        return [accountValueNode(defaultValue.account)];
+    }
+
+    if (isNode(defaultValue, 'dataValueNode')) {
+        return [dataValueNode(defaultValue.path)];
+    }
+
+    if (isNode(defaultValue, 'pdaValueNode')) {
+        const dependencies: InstructionDependency[] = [];
+        (defaultValue.seeds ?? []).forEach(seed => {
+            if (isNode(seed.value, 'accountValueNode') || isNode(seed.value, 'dataValueNode')) {
+                dependencies.push({ ...seed.value });
+            }
+        });
         return deduplicateInstructionDependencies([
-            ...(input.accounts ?? []).flatMap(getInstructionDependencies),
-            ...(input.arguments ?? []).flatMap(getInstructionDependencies),
-            ...(input.extraArguments ?? []).flatMap(getInstructionDependencies),
+            ...dependencies,
+            ...(defaultValue.programId && isNode(defaultValue.programId, 'accountValueNode')
+                ? [defaultValue.programId]
+                : []),
         ]);
     }
 
-    if (!input.defaultValue) return [];
-
-    const getNestedDependencies = (defaultValue: InstructionInputValueNode | undefined): InstructionDependency[] => {
-        if (!defaultValue) return [];
-        return getInstructionDependencies({ ...input, defaultValue });
-    };
-
-    if (isNode(input.defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {
-        return [accountValueNode(input.defaultValue.identifier)];
-    }
-
-    if (isNode(input.defaultValue, ['argumentValueNode'])) {
-        return [argumentValueNode(input.defaultValue.name)];
-    }
-
-    if (isNode(input.defaultValue, 'pdaValueNode')) {
-        const dependencies = new Map<CamelCaseString, InstructionDependency>();
-        (input.defaultValue.seeds ?? []).forEach(seed => {
-            if (isNode(seed.value, ['accountValueNode', 'argumentValueNode'])) {
-                dependencies.set(seed.value.name, { ...seed.value });
-            }
-        });
-        return <InstructionDependency[]>[
-            ...dependencies.values(),
-            ...(input.defaultValue.programId ? ([input.defaultValue.programId] as const) : []),
-        ];
-    }
-
-    if (isNode(input.defaultValue, 'resolverValueNode')) {
-        return input.defaultValue.dependsOn ?? [];
-    }
-
-    if (isNode(input.defaultValue, 'conditionalValueNode')) {
+    if (isNode(defaultValue, 'conditionalValueNode')) {
         return deduplicateInstructionDependencies([
-            ...getNestedDependencies(input.defaultValue.condition),
-            ...getNestedDependencies(input.defaultValue.ifTrue),
-            ...getNestedDependencies(input.defaultValue.ifFalse),
+            ...getDependencies(defaultValue.condition),
+            ...getDependencies(defaultValue.ifTrue),
+            ...getDependencies(defaultValue.ifFalse),
         ]);
     }
 

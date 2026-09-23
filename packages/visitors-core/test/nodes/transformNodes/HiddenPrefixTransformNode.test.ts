@@ -1,4 +1,4 @@
-import { constantDiscriminatorNode, constantValueNodeFromBytes } from '@codama/nodes';
+import { constantValueNode, hiddenPrefixTransformNode, integerTypeNode, integerValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = constantDiscriminatorNode(constantValueNodeFromBytes('base16', '01020304'), { offset: 42 });
+const node = hiddenPrefixTransformNode([constantValueNode(integerTypeNode('u8'), integerValueNode('0'))]);
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 4);
@@ -19,17 +19,17 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[constantDiscriminatorNode]', null);
-    expectDeleteNodesVisitor(node, '[constantValueNode]', null);
+    expectDeleteNodesVisitor(node, '[hiddenPrefixTransformNode]', null);
+    expectDeleteNodesVisitor(node, '[constantValueNode]', hiddenPrefixTransformNode([]));
 });
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-constantDiscriminatorNode [offset:42]
+hiddenPrefixTransformNode
 |   constantValueNode
-|   |   bytesTypeNode
-|   |   bytesValueNode [base16.01020304]`,
+|   |   integerTypeNode [u8]
+|   |   integerValueNode [0]`,
     );
 });

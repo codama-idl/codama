@@ -1,4 +1,4 @@
-import { constantValueNodeFromBytes, sentinelTypeNode, stringTypeNode } from '@codama/nodes';
+import { constantValueNode, integerTypeNode, integerValueNode, sentinelTransformNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,10 +8,10 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = sentinelTypeNode(stringTypeNode('utf8'), constantValueNodeFromBytes('base16', 'ffff'));
+const node = sentinelTransformNode(constantValueNode(integerTypeNode('u8'), integerValueNode('0')));
 
 test('mergeVisitor', () => {
-    expectMergeVisitorCount(node, 5);
+    expectMergeVisitorCount(node, 4);
 });
 
 test('identityVisitor', () => {
@@ -19,8 +19,7 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[sentinelTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[stringTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[sentinelTransformNode]', null);
     expectDeleteNodesVisitor(node, '[constantValueNode]', null);
 });
 
@@ -28,10 +27,9 @@ test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-sentinelTypeNode
+sentinelTransformNode
 |   constantValueNode
-|   |   bytesTypeNode
-|   |   bytesValueNode [base16.ffff]
-|   stringTypeNode [utf8]`,
+|   |   integerTypeNode [u8]
+|   |   integerValueNode [0]`,
     );
 });

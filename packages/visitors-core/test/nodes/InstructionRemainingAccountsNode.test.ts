@@ -1,4 +1,4 @@
-import { argumentValueNode, instructionRemainingAccountsNode } from '@codama/nodes';
+import { instructionRemainingAccountsNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,13 +8,13 @@ import {
     expectMergeVisitorCount,
 } from './_setup';
 
-const node = instructionRemainingAccountsNode(argumentValueNode('remainingAccounts'), {
+const node = instructionRemainingAccountsNode('remainingAccounts', {
     isSigner: 'either',
     isWritable: true,
 });
 
 test('mergeVisitor', () => {
-    expectMergeVisitorCount(node, 2);
+    expectMergeVisitorCount(node, 1);
 });
 
 test('identityVisitor', () => {
@@ -23,14 +23,8 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[instructionRemainingAccountsNode]', null);
-    expectDeleteNodesVisitor(node, '[argumentValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(
-        node,
-        `
-instructionRemainingAccountsNode [writable.optionalSigner]
-|   argumentValueNode [remainingAccounts]`,
-    );
+    expectDebugStringVisitor(node, `instructionRemainingAccountsNode [writable.optionalSigner]`);
 });

@@ -1,7 +1,7 @@
 import {
     constantPdaSeedNode,
-    numberTypeNode,
-    numberValueNode,
+    integerTypeNode,
+    integerValueNode,
     pdaNode,
     publicKeyTypeNode,
     variablePdaSeedNode,
@@ -16,10 +16,10 @@ import {
 } from './_setup';
 
 const node = pdaNode({
-    name: 'associatedToken',
+    identifier: 'associatedToken',
     seeds: [
         variablePdaSeedNode('owner', publicKeyTypeNode()),
-        constantPdaSeedNode(numberTypeNode('u8'), numberValueNode(123456)),
+        constantPdaSeedNode(integerTypeNode('u8'), integerValueNode('123456')),
         variablePdaSeedNode('mint', publicKeyTypeNode()),
     ],
 });
@@ -37,7 +37,7 @@ test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, ['[variablePdaSeedNode]', '[constantPdaSeedNode]'], { ...node, seeds: undefined });
     expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', {
         ...node,
-        seeds: [constantPdaSeedNode(numberTypeNode('u8'), numberValueNode(123456))],
+        seeds: [constantPdaSeedNode(integerTypeNode('u8'), integerValueNode('123456'))],
     });
 });
 
@@ -49,8 +49,8 @@ pdaNode [associatedToken]
 |   variablePdaSeedNode [owner]
 |   |   publicKeyTypeNode
 |   constantPdaSeedNode
-|   |   numberTypeNode [u8]
-|   |   numberValueNode [123456]
+|   |   integerTypeNode [u8]
+|   |   integerValueNode [123456]
 |   variablePdaSeedNode [mint]
 |   |   publicKeyTypeNode`,
     );

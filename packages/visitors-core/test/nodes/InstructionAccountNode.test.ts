@@ -10,10 +10,10 @@ import {
 
 const node = instructionAccountNode({
     defaultValue: accountValueNode('authority'),
+    identifier: 'owner',
     isOptional: false,
     isSigner: 'either',
     isWritable: true,
-    name: 'owner',
 });
 
 test('mergeVisitor', () => {

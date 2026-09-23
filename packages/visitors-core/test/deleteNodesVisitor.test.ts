@@ -1,14 +1,14 @@
-import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { deleteNodesVisitor, visit } from '../src';
 
 test('it can delete nodes using selectors', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a visitor that deletes all number nodes.
-    const visitor = deleteNodesVisitor(['[numberTypeNode]']);
+    const visitor = deleteNodesVisitor(['[integerTypeNode]']);
 
     // When we visit the tree using that visitor.
     const result = visit(node, visitor);
@@ -19,12 +19,12 @@ test('it can delete nodes using selectors', () => {
 
 test('it can create partial visitors', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a visitor that deletes all number nodes and public key nodes
     // but does not support public key nodes.
-    const visitor = deleteNodesVisitor(['[numberTypeNode]', '[publicKeyTypeNode]'], {
-        keys: ['tupleTypeNode', 'numberTypeNode'],
+    const visitor = deleteNodesVisitor(['[integerTypeNode]', '[publicKeyTypeNode]'], {
+        keys: ['tupleTypeNode', 'integerTypeNode'],
     });
 
     // When we visit the tree using that visitor.

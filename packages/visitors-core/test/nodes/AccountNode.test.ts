@@ -1,6 +1,6 @@
 import {
     accountNode,
-    numberTypeNode,
+    integerTypeNode,
     pdaLinkNode,
     publicKeyTypeNode,
     sizeDiscriminatorNode,
@@ -18,12 +18,12 @@ import {
 
 const node = accountNode({
     data: structTypeNode([
-        structFieldTypeNode({ name: 'mint', type: publicKeyTypeNode() }),
-        structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() }),
-        structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') }),
+        structFieldTypeNode({ identifier: 'mint', type: publicKeyTypeNode() }),
+        structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() }),
+        structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') }),
     ]),
     discriminators: [sizeDiscriminatorNode(72)],
-    name: 'token',
+    identifier: 'token',
     pda: pdaLinkNode('associatedToken'),
     size: 72,
 });
@@ -52,7 +52,7 @@ accountNode [token]
 |   |   structFieldTypeNode [owner]
 |   |   |   publicKeyTypeNode
 |   |   structFieldTypeNode [amount]
-|   |   |   numberTypeNode [u64]
+|   |   |   integerTypeNode [u64]
 |   pdaLinkNode [associatedToken]
 |   sizeDiscriminatorNode [72]`,
     );

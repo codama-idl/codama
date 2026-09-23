@@ -1,4 +1,4 @@
-import { instructionByteDeltaNode, numberValueNode } from '@codama/nodes';
+import { instructionByteDeltaNode, integerValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from './_setup';
 
-const node = instructionByteDeltaNode(numberValueNode(42), {
+const node = instructionByteDeltaNode(integerValueNode('42'), {
     subtract: true,
 });
 
@@ -22,7 +22,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[instructionByteDeltaNode]', null);
-    expectDeleteNodesVisitor(node, '[numberValueNode]', null);
+    expectDeleteNodesVisitor(node, '[integerValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
@@ -30,6 +30,6 @@ test('debugStringVisitor', () => {
         node,
         `
 instructionByteDeltaNode [subtract.withHeader]
-|   numberValueNode [42]`,
+|   integerValueNode [42]`,
     );
 });

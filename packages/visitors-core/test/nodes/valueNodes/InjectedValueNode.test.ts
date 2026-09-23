@@ -23,5 +23,5 @@ test('deleteNodesVisitor', () => {
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `injectedValueNode`);
+    expectDebugStringVisitor(node, `injectedValueNode [decimals]`);
 });
