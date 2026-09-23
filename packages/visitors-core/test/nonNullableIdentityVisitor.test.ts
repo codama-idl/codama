@@ -1,11 +1,11 @@
-import { assertIsNode, Node, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { assertIsNode, Node, integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { nonNullableIdentityVisitor, visit } from '../src';
 
 test('it visits all nodes and returns different instances of the same nodes without returning null', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // When we visit it using the non-nullable identity visitor.
     const result = visit(node, nonNullableIdentityVisitor());

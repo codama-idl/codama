@@ -1,4 +1,4 @@
-import { numberValueNode, publicKeyValueNode, stringValueNode, tupleValueNode } from '@codama/nodes';
+import { integerValueNode, publicKeyValueNode, stringValueNode, tupleValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -10,7 +10,7 @@ import {
 
 const node = tupleValueNode([
     stringValueNode('Hello'),
-    numberValueNode(42),
+    integerValueNode('42'),
     publicKeyValueNode('9sL9D2kshFgZSHz98pUQxGphwVUbCNBGqhYGaWWNJags'),
 ]);
 
@@ -24,7 +24,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[tupleValueNode]', null);
-    expectDeleteNodesVisitor(node, ['[stringValueNode]', '[numberValueNode]', '[publicKeyValueNode]'], {
+    expectDeleteNodesVisitor(node, ['[stringValueNode]', '[integerValueNode]', '[publicKeyValueNode]'], {
         ...node,
         items: undefined,
     });
@@ -36,7 +36,7 @@ test('debugStringVisitor', () => {
         `
 tupleValueNode
 |   stringValueNode [Hello]
-|   numberValueNode [42]
+|   integerValueNode [42]
 |   publicKeyValueNode [9sL9D2kshFgZSHz98pUQxGphwVUbCNBGqhYGaWWNJags]`,
     );
 });

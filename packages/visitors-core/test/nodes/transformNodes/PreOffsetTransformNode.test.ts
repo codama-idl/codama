@@ -1,4 +1,4 @@
-import { accountFieldValueNode } from '@codama/nodes';
+import { preOffsetTransformNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = accountFieldValueNode({ account: 'mint', path: 'decimals' });
+const node = preOffsetTransformNode(4);
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[accountFieldValueNode]', null);
+    expectDeleteNodesVisitor(node, '[preOffsetTransformNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `accountFieldValueNode`);
+    expectDebugStringVisitor(node, `preOffsetTransformNode [4.relative]`);
 });

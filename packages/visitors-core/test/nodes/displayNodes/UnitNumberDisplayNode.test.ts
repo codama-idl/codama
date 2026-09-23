@@ -1,4 +1,4 @@
-import { numberTypeNode, prefixedCountNode } from '@codama/nodes';
+import { stringValueNode, unitNumberDisplayNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = prefixedCountNode(numberTypeNode('u64'));
+const node = unitNumberDisplayNode({ unit: stringValueNode('SOL') });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);
@@ -19,15 +19,15 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[prefixedCountNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[unitNumberDisplayNode]', null);
+    expectDeleteNodesVisitor(node, '[stringValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-prefixedCountNode
-|   numberTypeNode [u64]`,
+unitNumberDisplayNode
+|   stringValueNode [SOL]`,
     );
 });

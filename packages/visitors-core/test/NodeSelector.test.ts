@@ -3,15 +3,13 @@ import {
     booleanTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
-    enumEmptyVariantTypeNode,
-    enumStructVariantTypeNode,
     enumTypeNode,
+    enumVariantTypeNode,
     errorNode,
     instructionAccountNode,
-    instructionArgumentNode,
     instructionNode,
+    integerTypeNode,
     Node,
-    numberTypeNode,
     optionTypeNode,
     programNode,
     publicKeyTypeNode,
@@ -40,12 +38,12 @@ import {
 // rather than re-reading them back through the (optionally-typed) node graph.
 
 // splToken account fields.
-const tokenAccountOwnerField = structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() });
-const tokenAccountMintField = structFieldTypeNode({ name: 'mint', type: publicKeyTypeNode() });
-const tokenAccountAmountField = structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') });
-const tokenDelegatedAmountOption = optionTypeNode(numberTypeNode('u64'), { prefix: numberTypeNode('u32') });
+const tokenAccountOwnerField = structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() });
+const tokenAccountMintField = structFieldTypeNode({ identifier: 'mint', type: publicKeyTypeNode() });
+const tokenAccountAmountField = structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') });
+const tokenDelegatedAmountOption = optionTypeNode(integerTypeNode('u64'), { prefix: integerTypeNode('u32') });
 const tokenAccountDelegatedAmountField = structFieldTypeNode({
-    name: 'delegatedAmount',
+    identifier: 'delegatedAmount',
     type: tokenDelegatedAmountOption,
 });
 const tokenAccount = accountNode({
@@ -55,39 +53,42 @@ const tokenAccount = accountNode({
         tokenAccountAmountField,
         tokenAccountDelegatedAmountField,
     ]),
-    name: 'token',
+    identifier: 'token',
 });
 
 // splToken instruction.
-const mintTokenAmountArgument = instructionArgumentNode({ name: 'amount', type: numberTypeNode('u64') });
+const mintTokenAmountField = structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') });
 const mintTokenInstruction = instructionNode({
     accounts: [
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'token' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'mint' }),
-        instructionAccountNode({ isSigner: true, isWritable: false, name: 'mintAuthority' }),
+        instructionAccountNode({ identifier: 'token', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'mint', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'mintAuthority', isSigner: true, isWritable: false }),
     ],
-    arguments: [mintTokenAmountArgument],
-    name: 'mintToken',
+    data: structTypeNode([mintTokenAmountField]),
+    identifier: 'mintToken',
 });
 
 const splTokenProgram = programNode({
     accounts: [tokenAccount],
     errors: [
-        errorNode({ code: 0, message: 'Invalid program ID', name: 'invalidProgramId' }),
-        errorNode({ code: 1, message: 'Invalid token owner', name: 'invalidTokenOwner' }),
+        errorNode({ code: 0, identifier: 'invalidProgramId', message: 'Invalid program ID' }),
+        errorNode({ code: 1, identifier: 'invalidTokenOwner', message: 'Invalid token owner' }),
     ],
+    identifier: 'splToken',
     instructions: [mintTokenInstruction],
-    name: 'splToken',
     publicKey: '1111',
     version: '1.0.0',
 });
 
 // christmasProgram account fields.
-const giftAccountOwnerField = structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() });
-const giftAccountOpenedField = structFieldTypeNode({ name: 'opened', type: booleanTypeNode(numberTypeNode('u64')) });
-const giftAccountAmountField = structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') });
+const giftAccountOwnerField = structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() });
+const giftAccountOpenedField = structFieldTypeNode({
+    identifier: 'opened',
+    type: booleanTypeNode({ size: integerTypeNode('u64') }),
+});
+const giftAccountAmountField = structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') });
 const giftAccountWrappingPaperField = structFieldTypeNode({
-    name: 'wrappingPaper',
+    identifier: 'wrappingPaper',
     type: definedTypeLinkNode('wrappingPaper'),
 });
 const giftAccount = accountNode({
@@ -97,36 +98,38 @@ const giftAccount = accountNode({
         giftAccountAmountField,
         giftAccountWrappingPaperField,
     ]),
-    name: 'gift',
+    identifier: 'gift',
 });
 
 // christmasProgram wrappingPaper defined type.
-const wrappingPaperGoldOwnerField = structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() });
-const wrappingPaperBlueVariant = enumEmptyVariantTypeNode('blue');
-const wrappingPaperRedVariant = enumEmptyVariantTypeNode('red');
-const wrappingPaperEnumGold = enumStructVariantTypeNode('gold', structTypeNode([wrappingPaperGoldOwnerField]));
+const wrappingPaperGoldOwnerField = structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() });
+const wrappingPaperBlueVariant = enumVariantTypeNode('blue');
+const wrappingPaperRedVariant = enumVariantTypeNode('red');
+const wrappingPaperEnumGold = enumVariantTypeNode('gold', {
+    data: structTypeNode([wrappingPaperGoldOwnerField]),
+});
 const wrappingPaperEnum = enumTypeNode([wrappingPaperBlueVariant, wrappingPaperRedVariant, wrappingPaperEnumGold]);
-const wrappingPaper = definedTypeNode({ name: 'wrappingPaper', type: wrappingPaperEnum });
+const wrappingPaper = definedTypeNode({ identifier: 'wrappingPaper', type: wrappingPaperEnum });
 
 // christmasProgram instruction.
-const openGiftGiftAccount = instructionAccountNode({ isSigner: false, isWritable: true, name: 'gift' });
-const openGiftOwnerAccount = instructionAccountNode({ isSigner: true, isWritable: false, name: 'owner' });
+const openGiftGiftAccount = instructionAccountNode({ identifier: 'gift', isSigner: false, isWritable: true });
+const openGiftOwnerAccount = instructionAccountNode({ identifier: 'owner', isSigner: true, isWritable: false });
 const openGiftInstruction = instructionNode({
     accounts: [openGiftGiftAccount, openGiftOwnerAccount],
-    name: 'openGift',
+    identifier: 'openGift',
 });
 
 const christmasProgram = programNode({
     accounts: [giftAccount],
     definedTypes: [wrappingPaper],
-    errors: [errorNode({ code: 0, message: 'Invalid program ID', name: 'invalidProgramId' })],
+    errors: [errorNode({ code: 0, identifier: 'invalidProgramId', message: 'Invalid program ID' })],
+    identifier: 'christmasProgram',
     instructions: [openGiftInstruction],
-    name: 'christmasProgram',
     publicKey: '2222',
     version: '1.0.0',
 });
 
-const tree = rootNode(splTokenProgram, [christmasProgram]);
+const tree = rootNode(splTokenProgram, { additionalPrograms: [christmasProgram] });
 
 const macro = (selector: NodeSelector, expectedSelected: Node[]) => {
     const title =
@@ -165,29 +168,29 @@ const macro = (selector: NodeSelector, expectedSelected: Node[]) => {
  *     [accountNode] token > [structTypeNode]
  *         [structFieldTypeNode] owner > [publicKeyTypeNode]
  *         [structFieldTypeNode] mint > [publicKeyTypeNode]
- *         [structFieldTypeNode] amount > [numberTypeNode] (u64)
- *         [structFieldTypeNode] delegatedAmount > [optionTypeNode] (prefix: [numberTypeNode] (u32)) > [numberTypeNode] (u64)
+ *         [structFieldTypeNode] amount > [integerTypeNode] (u64)
+ *         [structFieldTypeNode] delegatedAmount > [optionTypeNode] (prefix: [integerTypeNode] (u32)) > [integerTypeNode] (u64)
  *     [instructionNode] mintToken
  *         [instructionAccountNode] token
  *         [instructionAccountNode] mint
  *         [instructionAccountNode] mintAuthority
- *         [instructionArgumentNode] amount
- *             [numberTypeNode] (u64)
+ *         [structTypeNode]
+ *             [structFieldTypeNode] amount > [integerTypeNode] (u64)
  *     [errorNode] invalidProgramId (0)
  *     [errorNode] invalidTokenOwner (1)
  * [programNode] christmasProgram
  *     [accountNode] gift > [structTypeNode]
  *         [structFieldTypeNode] owner > [publicKeyTypeNode]
- *         [structFieldTypeNode] opened > [booleanTypeNode] > [numberTypeNode] (u64)
- *         [structFieldTypeNode] amount > [numberTypeNode] (u64)
+ *         [structFieldTypeNode] opened > [booleanTypeNode] > [integerTypeNode] (u64)
+ *         [structFieldTypeNode] amount > [integerTypeNode] (u64)
  *         [structFieldTypeNode] wrappingPaper > [definedTypeLinkNode] wrappingPaper
  *     [instructionNode] openGift
  *         [instructionAccountNode] gift
  *         [instructionAccountNode] owner
  *     [definedTypeNode] wrappingPaper > [enumTypeNode]
- *         [enumEmptyVariantTypeNode] blue
- *         [enumEmptyVariantTypeNode] red
- *         [enumStructVariantTypeNode] gold > [structTypeNode]
+ *         [enumVariantTypeNode] blue
+ *         [enumVariantTypeNode] red
+ *         [enumVariantTypeNode] gold > [structTypeNode]
  *             [structFieldTypeNode] owner > [publicKeyTypeNode]
  *     [errorNode] invalidProgramId (0)
  */
@@ -205,7 +208,7 @@ macro('[instructionNode].owner', [openGiftOwnerAccount]);
 macro('[accountNode].owner', [tokenAccountOwnerField, giftAccountOwnerField]);
 macro('[accountNode]token.owner', [tokenAccountOwnerField]);
 macro('christmasProgram.[accountNode].owner', [giftAccountOwnerField]);
-macro('[programNode]christmasProgram.[definedTypeNode]wrappingPaper.[enumStructVariantTypeNode]gold.owner', [
+macro('[programNode]christmasProgram.[definedTypeNode]wrappingPaper.[enumVariantTypeNode]gold.owner', [
     wrappingPaperGoldOwnerField,
 ]);
 macro('christmasProgram.wrappingPaper.gold.owner', [wrappingPaperGoldOwnerField]);
@@ -218,14 +221,14 @@ macro('wrappingPaper.*', [
     wrappingPaperBlueVariant,
     wrappingPaperRedVariant,
     wrappingPaperEnumGold,
-    wrappingPaperEnumGold.struct,
+    wrappingPaperEnumGold.data!,
     wrappingPaperGoldOwnerField,
     wrappingPaperGoldOwnerField.type,
 ]);
 macro('wrappingPaper.[structFieldTypeNode]', [wrappingPaperGoldOwnerField]);
 macro('wrappingPaper.blue', [wrappingPaperBlueVariant]);
-macro('amount.*', [tokenAccountAmountField.type, mintTokenAmountArgument.type, giftAccountAmountField.type]);
-macro('[instructionNode].amount.*', [mintTokenAmountArgument.type]);
+macro('amount.*', [tokenAccountAmountField.type, mintTokenAmountField.type, giftAccountAmountField.type]);
+macro('[instructionNode].amount.*', [mintTokenAmountField.type]);
 macro('[structFieldTypeNode].*', [
     tokenAccountOwnerField.type,
     tokenAccountMintField.type,
@@ -233,6 +236,7 @@ macro('[structFieldTypeNode].*', [
     tokenAccountDelegatedAmountField.type,
     tokenDelegatedAmountOption.prefix,
     tokenDelegatedAmountOption.item,
+    mintTokenAmountField.type,
     giftAccountOwnerField.type,
     giftAccountOpenedField.type,
     giftAccountOpenedField.type.size,
@@ -254,6 +258,6 @@ macro('[accountNode]gift.[publicKeyTypeNode|booleanTypeNode]', [
 
 // Select using functions.
 macro(
-    path => isNodePath(path, 'numberTypeNode') && getLastNodeFromPath(path).format === 'u32',
+    path => isNodePath(path, 'integerTypeNode') && getLastNodeFromPath(path).format === 'u32',
     [tokenDelegatedAmountOption.prefix],
 );

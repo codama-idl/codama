@@ -1,7 +1,8 @@
 import {
+    addTypeNodeTransforms,
     definedTypeNode,
-    fixedSizeTypeNode,
-    numberTypeNode,
+    fixedSizeTransformNode,
+    integerTypeNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -16,13 +17,13 @@ import {
 } from './_setup';
 
 const node = definedTypeNode({
-    name: 'person',
+    identifier: 'person',
     type: structTypeNode([
         structFieldTypeNode({
-            name: 'name',
-            type: fixedSizeTypeNode(stringTypeNode('utf8'), 42),
+            identifier: 'name',
+            type: addTypeNodeTransforms(stringTypeNode('utf8'), [fixedSizeTransformNode(42)]),
         }),
-        structFieldTypeNode({ name: 'age', type: numberTypeNode('u64') }),
+        structFieldTypeNode({ identifier: 'age', type: integerTypeNode('u64') }),
     ]),
 });
 
@@ -46,9 +47,9 @@ test('debugStringVisitor', () => {
 definedTypeNode [person]
 |   structTypeNode
 |   |   structFieldTypeNode [name]
-|   |   |   fixedSizeTypeNode [42]
-|   |   |   |   stringTypeNode [utf8]
+|   |   |   stringTypeNode [utf8]
+|   |   |   |   fixedSizeTransformNode [42]
 |   |   structFieldTypeNode [age]
-|   |   |   numberTypeNode [u64]`,
+|   |   |   integerTypeNode [u64]`,
     );
 });

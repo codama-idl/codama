@@ -5,17 +5,15 @@ import {
     accountNode,
     definedTypeLinkNode,
     definedTypeNode,
+    identifierString,
     instructionAccountLinkNode,
     InstructionAccountNode,
     instructionAccountNode,
-    instructionArgumentLinkNode,
-    instructionArgumentNode,
     instructionLinkNode,
     instructionNode,
+    integerTypeNode,
     isNode,
-    numberTypeNode,
     pdaLinkNode,
-    camelCase,
     pdaNode,
     programLinkNode,
     programNode,
@@ -35,9 +33,9 @@ import {
 
 test('it records program nodes', () => {
     // Given the following root node containing multiple program nodes.
-    const node = rootNode(programNode({ name: 'programA', publicKey: '1111' }), [
-        programNode({ name: 'programB', publicKey: '2222' }),
-    ]);
+    const node = rootNode(programNode({ identifier: 'programA', publicKey: '1111' }), {
+        additionalPrograms: [programNode({ identifier: 'programB', publicKey: '2222' })],
+    });
 
     // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
     const linkables = new LinkableDictionary();
@@ -54,8 +52,8 @@ test('it records program nodes', () => {
 test('it records account nodes', () => {
     // Given the following program node containing multiple accounts nodes.
     const node = programNode({
-        accounts: [accountNode({ name: 'accountA' }), accountNode({ name: 'accountB' })],
-        name: 'myProgram',
+        accounts: [accountNode({ identifier: 'accountA' }), accountNode({ identifier: 'accountB' })],
+        identifier: 'myProgram',
         publicKey: '1111',
     });
 
@@ -67,18 +65,24 @@ test('it records account nodes', () => {
     visit(node, visitor);
 
     // Then we expect account paths to be recorded and retrievable.
-    expect(linkables.getPath([accountLinkNode('accountA', 'myProgram')])).toEqual([node, (node.accounts ?? [])[0]]);
-    expect(linkables.getPath([accountLinkNode('accountB', 'myProgram')])).toEqual([node, (node.accounts ?? [])[1]]);
+    expect(linkables.getPath([accountLinkNode('accountA', { program: programLinkNode('myProgram') })])).toEqual([
+        node,
+        (node.accounts ?? [])[0],
+    ]);
+    expect(linkables.getPath([accountLinkNode('accountB', { program: programLinkNode('myProgram') })])).toEqual([
+        node,
+        (node.accounts ?? [])[1],
+    ]);
 });
 
 test('it records defined type nodes', () => {
     // Given the following program node containing multiple defined type nodes.
     const node = programNode({
         definedTypes: [
-            definedTypeNode({ name: 'typeA', type: numberTypeNode('u32') }),
-            definedTypeNode({ name: 'typeB', type: numberTypeNode('u32') }),
+            definedTypeNode({ identifier: 'typeA', type: integerTypeNode('u32') }),
+            definedTypeNode({ identifier: 'typeB', type: integerTypeNode('u32') }),
         ],
-        name: 'myProgram',
+        identifier: 'myProgram',
         publicKey: '1111',
     });
 
@@ -90,11 +94,11 @@ test('it records defined type nodes', () => {
     visit(node, visitor);
 
     // Then we expect defined type paths to be recorded and retrievable.
-    expect(linkables.getPath([definedTypeLinkNode('typeA', 'myProgram')])).toEqual([
+    expect(linkables.getPath([definedTypeLinkNode('typeA', { program: programLinkNode('myProgram') })])).toEqual([
         node,
         (node.definedTypes ?? [])[0],
     ]);
-    expect(linkables.getPath([definedTypeLinkNode('typeB', 'myProgram')])).toEqual([
+    expect(linkables.getPath([definedTypeLinkNode('typeB', { program: programLinkNode('myProgram') })])).toEqual([
         node,
         (node.definedTypes ?? [])[1],
     ]);
@@ -103,8 +107,8 @@ test('it records defined type nodes', () => {
 test('it records pda nodes', () => {
     // Given the following program node containing multiple pda nodes.
     const node = programNode({
-        name: 'myProgram',
-        pdas: [pdaNode({ name: 'pdaA', seeds: [] }), pdaNode({ name: 'pdaB', seeds: [] })],
+        identifier: 'myProgram',
+        pdas: [pdaNode({ identifier: 'pdaA', seeds: [] }), pdaNode({ identifier: 'pdaB', seeds: [] })],
         publicKey: '1111',
     });
 
@@ -116,15 +120,24 @@ test('it records pda nodes', () => {
     visit(node, visitor);
 
     // Then we expect pda paths to be recorded and retrievable.
-    expect(linkables.getPath([pdaLinkNode('pdaA', 'myProgram')])).toEqual([node, (node.pdas ?? [])[0]]);
-    expect(linkables.getPath([pdaLinkNode('pdaB', 'myProgram')])).toEqual([node, (node.pdas ?? [])[1]]);
+    expect(linkables.getPath([pdaLinkNode('pdaA', { program: programLinkNode('myProgram') })])).toEqual([
+        node,
+        (node.pdas ?? [])[0],
+    ]);
+    expect(linkables.getPath([pdaLinkNode('pdaB', { program: programLinkNode('myProgram') })])).toEqual([
+        node,
+        (node.pdas ?? [])[1],
+    ]);
 });
 
 test('it records instruction nodes', () => {
     // Given the following program node containing multiple instruction nodes.
     const node = programNode({
-        instructions: [instructionNode({ name: 'instructionA' }), instructionNode({ name: 'instructionB' })],
-        name: 'myProgram',
+        identifier: 'myProgram',
+        instructions: [
+            instructionNode({ identifier: 'instructionA' }),
+            instructionNode({ identifier: 'instructionB' }),
+        ],
         publicKey: '1111',
     });
 
@@ -136,25 +149,23 @@ test('it records instruction nodes', () => {
     visit(node, visitor);
 
     // Then we expect instruction paths to be recorded and retrievable.
-    expect(linkables.getPath([instructionLinkNode('instructionA', 'myProgram')])).toEqual([
-        node,
-        (node.instructions ?? [])[0],
-    ]);
-    expect(linkables.getPath([instructionLinkNode('instructionB', 'myProgram')])).toEqual([
-        node,
-        (node.instructions ?? [])[1],
-    ]);
+    expect(linkables.getPath([instructionLinkNode('instructionA', { program: programLinkNode('myProgram') })])).toEqual(
+        [node, (node.instructions ?? [])[0]],
+    );
+    expect(linkables.getPath([instructionLinkNode('instructionB', { program: programLinkNode('myProgram') })])).toEqual(
+        [node, (node.instructions ?? [])[1]],
+    );
 });
 
 test('it records instruction account nodes', () => {
     // Given the following instruction node containing multiple accounts.
     const instructionAccounts = [
-        instructionAccountNode({ isSigner: true, isWritable: false, name: 'accountA' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
+        instructionAccountNode({ identifier: 'accountA', isSigner: true, isWritable: false }),
+        instructionAccountNode({ identifier: 'accountB', isSigner: false, isWritable: true }),
     ];
     const node = programNode({
-        instructions: [instructionNode({ accounts: instructionAccounts, name: 'myInstruction' })],
-        name: 'myProgram',
+        identifier: 'myProgram',
+        instructions: [instructionNode({ accounts: instructionAccounts, identifier: 'myInstruction' })],
         publicKey: '1111',
     });
 
@@ -166,57 +177,24 @@ test('it records instruction account nodes', () => {
     visit(node, visitor);
 
     // Then we expect instruction account paths to be recorded and retrievable.
-    const instruction = instructionLinkNode('myInstruction', 'myProgram');
-    expect(linkables.getPath([instructionAccountLinkNode('accountA', instruction)])).toEqual([
+    const instruction = instructionLinkNode('myInstruction', { program: programLinkNode('myProgram') });
+    expect(linkables.getPath([instructionAccountLinkNode('accountA', { instruction })])).toEqual([
         node,
         (node.instructions ?? [])[0],
         instructionAccounts[0],
     ]);
-    expect(linkables.getPath([instructionAccountLinkNode('accountB', instruction)])).toEqual([
+    expect(linkables.getPath([instructionAccountLinkNode('accountB', { instruction })])).toEqual([
         node,
         (node.instructions ?? [])[0],
         instructionAccounts[1],
     ]);
 });
 
-test('it records instruction argument nodes', () => {
-    // Given the following instruction node containing multiple arguments.
-    const instructionArguments = [
-        instructionArgumentNode({ name: 'argumentA', type: numberTypeNode('u32') }),
-        instructionArgumentNode({ name: 'argumentB', type: numberTypeNode('u32') }),
-    ];
-    const node = programNode({
-        instructions: [instructionNode({ arguments: instructionArguments, name: 'myInstruction' })],
-        name: 'myProgram',
-        publicKey: '1111',
-    });
-
-    // And a recordLinkablesOnFirstVisitVisitor extending any visitor.
-    const linkables = new LinkableDictionary();
-    const visitor = recordLinkablesOnFirstVisitVisitor(voidVisitor(), linkables);
-
-    // When we visit the tree.
-    visit(node, visitor);
-
-    // Then we expect instruction argument paths to be recorded and retrievable.
-    const instruction = instructionLinkNode('myInstruction', 'myProgram');
-    expect(linkables.getPath([instructionArgumentLinkNode('argumentA', instruction)])).toEqual([
-        node,
-        (node.instructions ?? [])[0],
-        instructionArguments[0],
-    ]);
-    expect(linkables.getPath([instructionArgumentLinkNode('argumentB', instruction)])).toEqual([
-        node,
-        (node.instructions ?? [])[0],
-        instructionArguments[1],
-    ]);
-});
-
 test('it records all linkable before the first visit of the base visitor', () => {
     // Given the following root node with two programs.
-    const node = rootNode(programNode({ name: 'programA', publicKey: '1111' }), [
-        programNode({ name: 'programB', publicKey: '2222' }),
-    ]);
+    const node = rootNode(programNode({ identifier: 'programA', publicKey: '1111' }), {
+        additionalPrograms: [programNode({ identifier: 'programB', publicKey: '2222' })],
+    });
 
     // And a recordLinkablesOnFirstVisitVisitor extending a base visitor that
     // stores the linkable programs available at every visit.
@@ -239,16 +217,16 @@ test('it records all linkable before the first visit of the base visitor', () =>
 test('it keeps track of the current program when extending a visitor', () => {
     // Given the following root node containing two program containing an account with the same name.
     const programA = programNode({
-        accounts: [accountNode({ name: 'someAccount' })],
-        name: 'programA',
+        accounts: [accountNode({ identifier: 'someAccount' })],
+        identifier: 'programA',
         publicKey: '1111',
     });
     const programB = programNode({
-        accounts: [accountNode({ name: 'someAccount' })],
-        name: 'programB',
+        accounts: [accountNode({ identifier: 'someAccount' })],
+        identifier: 'programB',
         publicKey: '2222',
     });
-    const node = rootNode(programA, [programB]);
+    const node = rootNode(programA, { additionalPrograms: [programB] });
 
     // And a recordLinkablesOnFirstVisitVisitor extending a base visitor that checks
     // the result of getting the linkable node with the same name for each program.
@@ -258,7 +236,7 @@ test('it keeps track of the current program when extending a visitor', () => {
     const baseVisitor = interceptVisitor(voidVisitor(), (node, next) => {
         stack.push(node);
         if (isNode(node, 'programNode')) {
-            dictionary[node.name] = linkables.getOrThrow([...stack.getPath(), accountLinkNode('someAccount')]);
+            dictionary[node.identifier] = linkables.getOrThrow([...stack.getPath(), accountLinkNode('someAccount')]);
         }
         next(node);
         stack.pop();
@@ -275,20 +253,20 @@ test('it keeps track of the current program when extending a visitor', () => {
 
 test('it keeps track of the current instruction when extending a visitor', () => {
     // Given the following program node containing two instructions each containing an account with the same name.
-    const accountA = instructionAccountNode({ isSigner: true, isWritable: false, name: 'someAccount' });
-    const accountB = instructionAccountNode({ isSigner: true, isWritable: false, name: 'someAccount' });
+    const accountA = instructionAccountNode({ identifier: 'someAccount', isSigner: true, isWritable: false });
+    const accountB = instructionAccountNode({ identifier: 'someAccount', isSigner: true, isWritable: false });
     const node = programNode({
+        identifier: 'myProgram',
         instructions: [
             instructionNode({
                 accounts: [accountA],
-                name: 'instructionA',
+                identifier: 'instructionA',
             }),
             instructionNode({
                 accounts: [accountB],
-                name: 'instructionB',
+                identifier: 'instructionB',
             }),
         ],
-        name: 'myProgram',
         publicKey: '1111',
     });
 
@@ -300,7 +278,7 @@ test('it keeps track of the current instruction when extending a visitor', () =>
     const baseVisitor = interceptVisitor(voidVisitor(), (node, next) => {
         stack.push(node);
         if (isNode(node, 'instructionNode')) {
-            dictionary[node.name] = linkables.getOrThrow([
+            dictionary[node.identifier] = linkables.getOrThrow([
                 ...stack.getPath(),
                 instructionAccountLinkNode('someAccount'),
             ]);
@@ -320,7 +298,7 @@ test('it keeps track of the current instruction when extending a visitor', () =>
 
 test('it does not record linkable types that are not under a program node', () => {
     // Given the following account node that is not under a program node.
-    const node = accountNode({ name: 'someAccount' });
+    const node = accountNode({ identifier: 'someAccount' });
 
     // And a recordLinkablesOnFirstVisitVisitor extending a void visitor.
     const linkables = new LinkableDictionary();
@@ -336,8 +314,8 @@ test('it does not record linkable types that are not under a program node', () =
 test('it can throw an exception when trying to retrieve a missing linked node', () => {
     // Given the following program node with one account.
     const node = programNode({
-        accounts: [accountNode({ name: 'myAccount' })],
-        name: 'myProgram',
+        accounts: [accountNode({ identifier: 'myAccount' })],
+        identifier: 'myProgram',
         publicKey: '1111',
     });
 
@@ -347,7 +325,7 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
     visit(node, visitor);
 
     // When we try to retrieve a missing account node.
-    const linkNode = accountLinkNode('missingAccount', 'myProgram');
+    const linkNode = accountLinkNode('missingAccount', { program: programLinkNode('myProgram') });
     const getMissingAccount = () => linkables.getOrThrow([node, linkNode]);
 
     // Then we expect an exception to be thrown.
@@ -355,7 +333,7 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
         new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
             kind: 'accountLinkNode',
             linkNode,
-            name: camelCase('missingAccount'),
+            name: identifierString('missingAccount'),
             path: [node, linkNode],
         }),
     );

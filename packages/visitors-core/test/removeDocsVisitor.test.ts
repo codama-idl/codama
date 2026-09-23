@@ -1,48 +1,45 @@
-import { numberTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { removeDocsVisitor, visit } from '../src';
 
-test('it empties the docs array of any node that contains docs', () => {
+test('it removes the docs from any node that contains docs', () => {
     // Given the following struct node with docs.
     const node = structTypeNode([
         structFieldTypeNode({
-            docs: ['The owner of the account.'],
-            name: 'owner',
+            docs: 'The owner of the account.',
+            identifier: 'owner',
             type: publicKeyTypeNode(),
         }),
         structFieldTypeNode({
-            docs: ['The wallet allowed to modify the account.'],
-            name: 'authority',
+            docs: 'The wallet allowed to modify the account.',
+            identifier: 'authority',
             type: publicKeyTypeNode(),
         }),
         structFieldTypeNode({
-            docs: ['The amount of tokens in basis points.'],
-            name: 'amount',
-            type: numberTypeNode('u64'),
+            docs: 'The amount of tokens in basis points.',
+            identifier: 'amount',
+            type: integerTypeNode('u64'),
         }),
     ]);
 
     // When we remove the docs from the node.
     const result = visit(node, removeDocsVisitor());
 
-    // Then we expect the following node.
+    // Then we expect the following node with no docs.
     expect(result).toEqual(
         structTypeNode([
             structFieldTypeNode({
-                docs: [],
-                name: 'owner',
+                identifier: 'owner',
                 type: publicKeyTypeNode(),
             }),
             structFieldTypeNode({
-                docs: [],
-                name: 'authority',
+                identifier: 'authority',
                 type: publicKeyTypeNode(),
             }),
             structFieldTypeNode({
-                docs: [],
-                name: 'amount',
-                type: numberTypeNode('u64'),
+                identifier: 'amount',
+                type: integerTypeNode('u64'),
             }),
         ]),
     );
@@ -52,8 +49,8 @@ test('it freezes the returned node', () => {
     // Given the following struct node with docs.
     const node = structTypeNode([
         structFieldTypeNode({
-            docs: ['The owner of the account.'],
-            name: 'owner',
+            docs: 'The owner of the account.',
+            identifier: 'owner',
             type: publicKeyTypeNode(),
         }),
     ]);
@@ -69,8 +66,8 @@ test('it can create partial visitors', () => {
     // Given the following struct node with docs.
     const node = structTypeNode([
         structFieldTypeNode({
-            docs: ['The owner of the account.'],
-            name: 'owner',
+            docs: 'The owner of the account.',
+            identifier: 'owner',
             type: publicKeyTypeNode(),
         }),
     ]);

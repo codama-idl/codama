@@ -1,4 +1,4 @@
-import { remainderCountNode } from '@codama/nodes';
+import { fixedSizeTransformNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = remainderCountNode();
+const node = fixedSizeTransformNode(32);
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[remainderCountNode]', null);
+    expectDeleteNodesVisitor(node, '[fixedSizeTransformNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `remainderCountNode`);
+    expectDebugStringVisitor(node, `fixedSizeTransformNode [32]`);
 });

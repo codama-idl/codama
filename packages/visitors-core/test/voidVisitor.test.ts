@@ -1,11 +1,11 @@
-import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { extendVisitor, visit, voidVisitor } from '../src';
 
 test('it visits all nodes and returns void', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a void visitor extended such that it counts the tuple nodes.
     let counter = 0;

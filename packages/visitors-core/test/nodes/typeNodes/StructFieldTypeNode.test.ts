@@ -10,7 +10,7 @@ import {
 
 const node = structFieldTypeNode({
     defaultValue: publicKeyValueNode('CzC5HidG6kR5J4haV7pKZmenYYVS7rw3SoBkqeStxZ9U'),
-    name: 'owner',
+    identifier: 'owner',
     type: publicKeyTypeNode(),
 });
 

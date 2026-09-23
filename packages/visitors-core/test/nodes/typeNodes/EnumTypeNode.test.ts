@@ -1,10 +1,9 @@
 import {
-    enumEmptyVariantTypeNode,
-    enumStructVariantTypeNode,
-    enumTupleVariantTypeNode,
+    addTypeNodeTransforms,
     enumTypeNode,
-    fixedSizeTypeNode,
-    numberTypeNode,
+    enumVariantTypeNode,
+    fixedSizeTransformNode,
+    integerTypeNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -21,17 +20,18 @@ import {
 
 const node = enumTypeNode(
     [
-        enumEmptyVariantTypeNode('quit'),
-        enumTupleVariantTypeNode('write', tupleTypeNode([fixedSizeTypeNode(stringTypeNode('utf8'), 32)])),
-        enumStructVariantTypeNode(
-            'move',
-            structTypeNode([
-                structFieldTypeNode({ name: 'x', type: numberTypeNode('u32') }),
-                structFieldTypeNode({ name: 'y', type: numberTypeNode('u32') }),
+        enumVariantTypeNode('quit'),
+        enumVariantTypeNode('write', {
+            data: tupleTypeNode([addTypeNodeTransforms(stringTypeNode('utf8'), [fixedSizeTransformNode(32)])]),
+        }),
+        enumVariantTypeNode('move', {
+            data: structTypeNode([
+                structFieldTypeNode({ identifier: 'x', type: integerTypeNode('u32') }),
+                structFieldTypeNode({ identifier: 'y', type: integerTypeNode('u32') }),
             ]),
-        ),
+        }),
     ],
-    { size: numberTypeNode('u64') },
+    { size: integerTypeNode('u64') },
 );
 
 test('mergeVisitor', () => {
@@ -44,17 +44,13 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[enumTypeNode]', null);
-    expectDeleteNodesVisitor(
-        node,
-        ['[enumEmptyVariantTypeNode]', '[enumTupleVariantTypeNode]', '[enumStructVariantTypeNode]'],
-        { ...node, variants: undefined },
-    );
+    expectDeleteNodesVisitor(node, '[enumVariantTypeNode]', { ...node, variants: undefined });
     expectDeleteNodesVisitor(node, ['[tupleTypeNode]', '[structFieldTypeNode]'], {
         ...node,
         variants: [
-            enumEmptyVariantTypeNode('quit'),
-            enumEmptyVariantTypeNode('write'),
-            enumEmptyVariantTypeNode('move'),
+            enumVariantTypeNode('quit'),
+            enumVariantTypeNode('write'),
+            enumVariantTypeNode('move', { data: structTypeNode([]) }),
         ],
     });
 });
@@ -64,17 +60,17 @@ test('debugStringVisitor', () => {
         node,
         `
 enumTypeNode
-|   numberTypeNode [u64]
-|   enumEmptyVariantTypeNode [quit]
-|   enumTupleVariantTypeNode [write]
+|   integerTypeNode [u64]
+|   enumVariantTypeNode [quit]
+|   enumVariantTypeNode [write]
 |   |   tupleTypeNode
-|   |   |   fixedSizeTypeNode [32]
-|   |   |   |   stringTypeNode [utf8]
-|   enumStructVariantTypeNode [move]
+|   |   |   stringTypeNode [utf8]
+|   |   |   |   fixedSizeTransformNode [32]
+|   enumVariantTypeNode [move]
 |   |   structTypeNode
 |   |   |   structFieldTypeNode [x]
-|   |   |   |   numberTypeNode [u32]
+|   |   |   |   integerTypeNode [u32]
 |   |   |   structFieldTypeNode [y]
-|   |   |   |   numberTypeNode [u32]`,
+|   |   |   |   integerTypeNode [u32]`,
     );
 });

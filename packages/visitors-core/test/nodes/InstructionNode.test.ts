@@ -1,15 +1,14 @@
 import {
     fieldDiscriminatorNode,
     instructionAccountNode,
-    instructionArgumentNode,
     instructionByteDeltaNode,
     instructionNode,
     instructionRemainingAccountsNode,
     instructionStatusNode,
-    numberTypeNode,
-    numberValueNode,
-    publicKeyTypeNode,
-    resolverValueNode,
+    integerTypeNode,
+    integerValueNode,
+    structFieldTypeNode,
+    structTypeNode,
 } from '@codama/nodes';
 import { test } from 'vitest';
 
@@ -23,32 +22,32 @@ import {
 const node = instructionNode({
     accounts: [
         instructionAccountNode({
+            identifier: 'source',
             isSigner: true,
             isWritable: true,
-            name: 'source',
         }),
         instructionAccountNode({
+            identifier: 'destination',
             isSigner: false,
             isWritable: true,
-            name: 'destination',
         }),
     ],
-    arguments: [
-        instructionArgumentNode({
-            name: 'discriminator',
-            type: numberTypeNode('u32'),
+    data: structTypeNode([
+        structFieldTypeNode({
+            identifier: 'discriminator',
+            type: integerTypeNode('u32'),
         }),
-        instructionArgumentNode({
-            name: 'amount',
-            type: numberTypeNode('u64'),
+        structFieldTypeNode({
+            identifier: 'amount',
+            type: integerTypeNode('u64'),
         }),
-    ],
+    ]),
     discriminators: [fieldDiscriminatorNode('discriminator')],
-    name: 'transferSol',
+    identifier: 'transferSol',
 });
 
 test('mergeVisitor', () => {
-    expectMergeVisitorCount(node, 8);
+    expectMergeVisitorCount(node, 9);
 });
 
 test('identityVisitor', () => {
@@ -58,7 +57,7 @@ test('identityVisitor', () => {
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[instructionNode]', null);
     expectDeleteNodesVisitor(node, '[instructionAccountNode]', { ...node, accounts: undefined });
-    expectDeleteNodesVisitor(node, '[instructionArgumentNode]', { ...node, arguments: undefined });
+    expectDeleteNodesVisitor(node, '[structTypeNode]', { ...node, data: undefined });
     expectDeleteNodesVisitor(node, '[fieldDiscriminatorNode]', { ...node, discriminators: undefined });
 });
 
@@ -69,43 +68,31 @@ test('debugStringVisitor', () => {
 instructionNode [transferSol]
 |   instructionAccountNode [source.writable.signer]
 |   instructionAccountNode [destination.writable]
-|   instructionArgumentNode [discriminator]
-|   |   numberTypeNode [u32]
-|   instructionArgumentNode [amount]
-|   |   numberTypeNode [u64]
+|   structTypeNode
+|   |   structFieldTypeNode [discriminator]
+|   |   |   integerTypeNode [u32]
+|   |   structFieldTypeNode [amount]
+|   |   |   integerTypeNode [u64]
 |   fieldDiscriminatorNode [discriminator]`,
     );
 });
 
-test('extra arguments', () => {
-    const nodeWithExtraArguments = instructionNode({
-        extraArguments: [
-            instructionArgumentNode({
-                name: 'myExtraArgument',
-                type: publicKeyTypeNode(),
-            }),
-        ],
-        name: 'myInstruction',
-    });
-
-    expectMergeVisitorCount(nodeWithExtraArguments, 3);
-    expectIdentityVisitor(nodeWithExtraArguments);
-});
-
 test('remaining accounts', () => {
     const nodeWithRemainingAccounts = instructionNode({
-        name: 'myInstruction',
-        remainingAccounts: [instructionRemainingAccountsNode(resolverValueNode('myResolver'))],
+        identifier: 'myInstruction',
+        remainingAccounts: [
+            instructionRemainingAccountsNode('remainingAccounts', { isSigner: 'either', isWritable: true }),
+        ],
     });
 
-    expectMergeVisitorCount(nodeWithRemainingAccounts, 3);
+    expectMergeVisitorCount(nodeWithRemainingAccounts, 2);
     expectIdentityVisitor(nodeWithRemainingAccounts);
 });
 
 test('byte deltas', () => {
     const nodeWithByteDeltas = instructionNode({
-        byteDeltas: [instructionByteDeltaNode(numberValueNode(42))],
-        name: 'myInstruction',
+        byteDeltas: [instructionByteDeltaNode(integerValueNode('42'))],
+        identifier: 'myInstruction',
     });
 
     expectMergeVisitorCount(nodeWithByteDeltas, 3);
@@ -114,10 +101,10 @@ test('byte deltas', () => {
 
 test('sub instructions', () => {
     const nodeWithSubInstructions = instructionNode({
-        name: 'myInstruction',
+        identifier: 'myInstruction',
         subInstructions: [
-            instructionNode({ name: 'mySubInstruction1' }),
-            instructionNode({ name: 'mySubInstruction2' }),
+            instructionNode({ identifier: 'mySubInstruction1' }),
+            instructionNode({ identifier: 'mySubInstruction2' }),
         ],
     });
 
@@ -127,8 +114,8 @@ test('sub instructions', () => {
 
 test('status mode', () => {
     const nodeWithStatus = instructionNode({
-        name: 'deprecatedInstruction',
-        status: instructionStatusNode('deprecated', 'Use newInstruction instead'),
+        identifier: 'deprecatedInstruction',
+        status: instructionStatusNode('deprecated', { message: 'Use newInstruction instead' }),
     });
 
     expectMergeVisitorCount(nodeWithStatus, 2);

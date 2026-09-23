@@ -1,6 +1,6 @@
 import {
     accountValueNode,
-    argumentValueNode,
+    dataValueNode,
     conditionalValueNode,
     enumValueNode,
     programIdValueNode,
@@ -15,7 +15,7 @@ import {
 } from '../_setup';
 
 const node = conditionalValueNode({
-    condition: argumentValueNode('tokenStandard'),
+    condition: dataValueNode('tokenStandard'),
     ifFalse: programIdValueNode(),
     ifTrue: accountValueNode('mint'),
     value: enumValueNode('tokenStandard', 'ProgrammableNonFungible'),
@@ -42,8 +42,8 @@ test('debugStringVisitor', () => {
         node,
         `
 conditionalValueNode
-|   argumentValueNode [tokenStandard]
-|   enumValueNode [programmableNonFungible]
+|   dataValueNode [tokenStandard]
+|   enumValueNode [ProgrammableNonFungible]
 |   |   definedTypeLinkNode [tokenStandard]
 |   accountValueNode [mint]
 |   programIdValueNode`,

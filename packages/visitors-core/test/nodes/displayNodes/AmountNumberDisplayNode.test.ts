@@ -1,4 +1,4 @@
-import { amountNumberDisplayNode, injectedValueNode, numberValueNode } from '@codama/nodes';
+import { amountNumberDisplayNode, injectedValueNode, integerValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -9,7 +9,7 @@ import {
 } from '../_setup';
 
 const node = amountNumberDisplayNode({
-    decimals: numberValueNode(6),
+    decimals: integerValueNode('6'),
     unit: injectedValueNode({ key: 'symbol' }),
 });
 
@@ -23,12 +23,9 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[amountNumberDisplayNode]', null);
-    expectDeleteNodesVisitor(
-        node,
-        '[numberValueNode]',
-        amountNumberDisplayNode({ unit: injectedValueNode({ key: 'symbol' }) }),
-    );
-    expectDeleteNodesVisitor(node, '[injectedValueNode]', amountNumberDisplayNode({ decimals: numberValueNode(6) }));
+    // `decimals` is required, so removing it removes the whole node.
+    expectDeleteNodesVisitor(node, '[integerValueNode]', null);
+    expectDeleteNodesVisitor(node, '[injectedValueNode]', amountNumberDisplayNode({ decimals: integerValueNode('6') }));
 });
 
 test('debugStringVisitor', () => {
@@ -36,7 +33,7 @@ test('debugStringVisitor', () => {
         node,
         `
 amountNumberDisplayNode
-|   numberValueNode [6]
-|   injectedValueNode`,
+|   integerValueNode [6]
+|   injectedValueNode [symbol]`,
     );
 });

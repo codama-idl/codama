@@ -2,11 +2,15 @@ import { Node, NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { getVisitFunctionName, GetVisitorFunctionName, Visitor } from './visitor';
 
-export type VisitorInterceptor<TReturn> = <TNode extends Node>(node: TNode, next: (node: TNode) => TReturn) => TReturn;
+export type VisitorInterceptor<TReturn, TNodeKind extends NodeKind = NodeKind> = <TNode extends Node>(
+    node: TNode,
+    next: (node: TNode) => TReturn,
+    self: Visitor<TReturn, TNodeKind>,
+) => TReturn;
 
 export function interceptVisitor<TReturn, TNodeKind extends NodeKind>(
     visitor: Visitor<TReturn, TNodeKind>,
-    interceptor: VisitorInterceptor<TReturn>,
+    interceptor: VisitorInterceptor<TReturn, TNodeKind>,
 ): Visitor<TReturn, TNodeKind> {
     const registeredVisitFunctions = REGISTERED_NODE_KINDS.map(getVisitFunctionName);
 
@@ -22,7 +26,7 @@ export function interceptVisitor<TReturn, TNodeKind extends NodeKind>(
                     castedKey,
                     function interceptedVisitNode<TNode extends Node>(this: Visitor<TReturn, TNodeKind>, node: TNode) {
                         const baseFunction = visitor[castedKey] as (node: TNode) => TReturn;
-                        return interceptor<TNode>(node, baseFunction.bind(this));
+                        return interceptor<TNode>(node, baseFunction.bind(this), this);
                     },
                 ],
             ];

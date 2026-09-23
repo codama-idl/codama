@@ -10,15 +10,17 @@ import {
 
 const node = rootNode(
     programNode({
-        name: 'splToken',
+        identifier: 'splToken',
         publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
     }),
-    [
-        programNode({
-            name: 'splAddressLookupTable',
-            publicKey: 'AddressLookupTab1e1111111111111111111111111',
-        }),
-    ],
+    {
+        additionalPrograms: [
+            programNode({
+                identifier: 'splAddressLookupTable',
+                publicKey: 'AddressLookupTab1e1111111111111111111111111',
+            }),
+        ],
+    },
 );
 
 test('mergeVisitor', () => {

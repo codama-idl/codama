@@ -1,4 +1,4 @@
-import { pdaLinkNode } from '@codama/nodes';
+import { pdaLinkNode, programLinkNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = pdaLinkNode('associatedToken', 'splToken');
+const node = pdaLinkNode('associatedToken', { program: programLinkNode('splToken') });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);

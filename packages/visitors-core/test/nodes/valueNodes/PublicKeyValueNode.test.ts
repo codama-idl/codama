@@ -25,7 +25,7 @@ test('deleteNodesVisitor', () => {
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(node, `publicKeyValueNode [HqJgWgvkn5wMGU8LpzkRw8389N5Suvu2nZcmpya9JyJB]`);
     expectDebugStringVisitor(
-        publicKeyValueNode('HqJgWgvkn5wMGU8LpzkRw8389N5Suvu2nZcmpya9JyJB', 'myIdentifier'),
+        publicKeyValueNode('HqJgWgvkn5wMGU8LpzkRw8389N5Suvu2nZcmpya9JyJB', { identifier: 'myIdentifier' }),
         `publicKeyValueNode [myIdentifier.HqJgWgvkn5wMGU8LpzkRw8389N5Suvu2nZcmpya9JyJB]`,
     );
 });

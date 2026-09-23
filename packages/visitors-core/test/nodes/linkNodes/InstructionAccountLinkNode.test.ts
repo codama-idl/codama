@@ -1,4 +1,4 @@
-import { instructionAccountLinkNode, instructionLinkNode } from '@codama/nodes';
+import { instructionAccountLinkNode, instructionLinkNode, programLinkNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,9 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = instructionAccountLinkNode('mint', instructionLinkNode('transferTokens', 'splToken'));
+const node = instructionAccountLinkNode('mint', {
+    instruction: instructionLinkNode('transferTokens', { program: programLinkNode('splToken') }),
+});
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 3);
@@ -21,7 +23,11 @@ test('identityVisitor', () => {
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[instructionAccountLinkNode]', null);
     expectDeleteNodesVisitor(node, '[instructionLinkNode]', instructionAccountLinkNode('mint'));
-    expectDeleteNodesVisitor(node, '[programLinkNode]', instructionAccountLinkNode('mint', 'transferTokens'));
+    expectDeleteNodesVisitor(
+        node,
+        '[programLinkNode]',
+        instructionAccountLinkNode('mint', { instruction: instructionLinkNode('transferTokens') }),
+    );
 });
 
 test('debugStringVisitor', () => {
