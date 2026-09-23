@@ -1,4 +1,4 @@
-import { fieldDiscriminatorNode } from '@codama/nodes';
+import { accountDataValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = fieldDiscriminatorNode('discriminator', { offset: 42 });
+const node = accountDataValueNode('authority', { path: 'balance' });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[fieldDiscriminatorNode]', null);
+    expectDeleteNodesVisitor(node, '[accountDataValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `fieldDiscriminatorNode [discriminator.offset:42]`);
+    expectDebugStringVisitor(node, `accountDataValueNode [authority.balance]`);
 });

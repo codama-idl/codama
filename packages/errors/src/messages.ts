@@ -59,6 +59,7 @@ import {
     CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
+    CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
     CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
     CodamaErrorCode,
 } from './codes';
@@ -151,5 +152,7 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: 'Invalid number wrapper kind [$wrapper].',
     [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]:
         'Invalid seed values for PDA [$pdaName] in instruction [$instructionName].',
+    [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]:
+        'The value provided for [$key] is a [$providedKind], expected one of [$expectedKinds].',
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: 'Cannot find key [$key] in RenderMap.',
 };

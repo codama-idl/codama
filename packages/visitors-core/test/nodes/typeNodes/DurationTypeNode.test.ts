@@ -1,4 +1,4 @@
-import { amountTypeNode, numberTypeNode } from '@codama/nodes';
+import { durationTypeNode, integerTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = amountTypeNode(numberTypeNode('u64'), 9, 'SOL');
+const node = durationTypeNode(integerTypeNode('i64'));
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);
@@ -19,15 +19,15 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[amountTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[durationTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-amountTypeNode [9.SOL]
-|   numberTypeNode [u64]`,
+durationTypeNode
+|   integerTypeNode [i64]`,
     );
 });

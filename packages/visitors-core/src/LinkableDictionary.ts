@@ -1,10 +1,9 @@
 import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
     AccountNode,
-    CamelCaseString,
     DefinedTypeNode,
+    IdentifierString,
     InstructionAccountNode,
-    InstructionArgumentNode,
     InstructionNode,
     isNode,
     LinkNode,
@@ -25,7 +24,6 @@ export type LinkableNode =
     | AccountNode
     | DefinedTypeNode
     | InstructionAccountNode
-    | InstructionArgumentNode
     | InstructionNode
     | PdaNode
     | ProgramNode;
@@ -34,7 +32,6 @@ export const LINKABLE_NODES: LinkableNode['kind'][] = [
     'accountNode',
     'definedTypeNode',
     'instructionAccountNode',
-    'instructionArgumentNode',
     'instructionNode',
     'pdaNode',
     'programNode',
@@ -44,7 +41,6 @@ export type GetLinkableFromLinkNode<TLinkNode extends LinkNode> = {
     accountLinkNode: AccountNode;
     definedTypeLinkNode: DefinedTypeNode;
     instructionAccountLinkNode: InstructionAccountNode;
-    instructionArgumentLinkNode: InstructionArgumentNode;
     instructionLinkNode: InstructionNode;
     pdaLinkNode: PdaNode;
     programLinkNode: ProgramNode;
@@ -60,7 +56,6 @@ type ProgramDictionary = {
 
 type InstructionDictionary = {
     accounts: Map<string, NodePath<InstructionAccountNode>>;
-    arguments: Map<string, NodePath<InstructionArgumentNode>>;
     instruction: NodePath<InstructionNode>;
 };
 
@@ -81,8 +76,6 @@ export class LinkableDictionary {
             programDictionary.pdas.set(linkableNode.identifier, linkablePath);
         } else if (instructionDictionary && isNodePath(linkablePath, 'instructionAccountNode')) {
             instructionDictionary.accounts.set(linkableNode.identifier, linkablePath);
-        } else if (instructionDictionary && isNodePath(linkablePath, 'instructionArgumentNode')) {
-            instructionDictionary.arguments.set(linkableNode.identifier, linkablePath);
         }
 
         return this;
@@ -121,8 +114,6 @@ export class LinkableDictionary {
             return programDictionary.definedTypes.get(linkNode.identifier) as LinkablePath;
         } else if (isNode(linkNode, 'instructionAccountLinkNode')) {
             return instructionDictionary?.accounts.get(linkNode.identifier) as LinkablePath;
-        } else if (isNode(linkNode, 'instructionArgumentLinkNode')) {
-            return instructionDictionary?.arguments.get(linkNode.name) as LinkablePath;
         } else if (isNode(linkNode, 'instructionLinkNode')) {
             return instructionDictionary?.instruction as LinkablePath;
         } else if (isNode(linkNode, 'pdaLinkNode')) {
@@ -155,8 +146,6 @@ export class LinkableDictionary {
             return programDictionary.definedTypes.has(linkNode.identifier);
         } else if (isNode(linkNode, 'instructionAccountLinkNode')) {
             return !!instructionDictionary && instructionDictionary.accounts.has(linkNode.identifier);
-        } else if (isNode(linkNode, 'instructionArgumentLinkNode')) {
-            return !!instructionDictionary && instructionDictionary.arguments.has(linkNode.name);
         } else if (isNode(linkNode, 'instructionLinkNode')) {
             return programDictionary.instructions.has(linkNode.identifier);
         } else if (isNode(linkNode, 'pdaLinkNode')) {
@@ -202,7 +191,6 @@ export class LinkableDictionary {
         if (!instructionDictionary) {
             instructionDictionary = {
                 accounts: new Map(),
-                arguments: new Map(),
                 instruction: getNodePathUntilLastNode(linkablePath, 'instructionNode')!,
             };
             programDictionary.instructions.set(instructionNode.identifier, instructionDictionary);
@@ -213,7 +201,7 @@ export class LinkableDictionary {
 
     private getProgramDictionary(linkPath: NodePath<LinkNode>): ProgramDictionary | undefined {
         const linkNode = getLastNodeFromPath(linkPath);
-        let programName: CamelCaseString | undefined = undefined;
+        let programName: IdentifierString | undefined = undefined;
         if (isNode(linkNode, 'programLinkNode')) {
             programName = linkNode.identifier;
         } else if ('program' in linkNode) {
@@ -231,7 +219,7 @@ export class LinkableDictionary {
         linkPath: NodePath<LinkNode>,
     ): InstructionDictionary | undefined {
         const linkNode = getLastNodeFromPath(linkPath);
-        let instructionName: CamelCaseString | undefined = undefined;
+        let instructionName: IdentifierString | undefined = undefined;
         if (isNode(linkNode, 'instructionLinkNode')) {
             instructionName = linkNode.identifier;
         } else if ('instruction' in linkNode) {

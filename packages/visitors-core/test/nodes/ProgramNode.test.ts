@@ -20,18 +20,18 @@ import {
 
 const node = programNode({
     accounts: [
-        accountNode({ data: structTypeNode([]), name: 'mint' }),
-        accountNode({ data: structTypeNode([]), name: 'token' }),
+        accountNode({ data: structTypeNode([]), identifier: 'mint' }),
+        accountNode({ data: structTypeNode([]), identifier: 'token' }),
     ],
-    definedTypes: [definedTypeNode({ name: 'tokenState', type: enumTypeNode([]) })],
+    definedTypes: [definedTypeNode({ identifier: 'tokenState', type: enumTypeNode([]) })],
     errors: [
-        errorNode({ code: 1, message: 'Invalid mint', name: 'invalidMint' }),
-        errorNode({ code: 2, message: 'Invalid token', name: 'invalidToken' }),
+        errorNode({ code: 1, identifier: 'invalidMint', message: 'Invalid mint' }),
+        errorNode({ code: 2, identifier: 'invalidToken', message: 'Invalid token' }),
     ],
-    events: [eventNode({ data: structTypeNode([]), name: 'transferEvent' })],
-    instructions: [instructionNode({ name: 'mintTokens' }), instructionNode({ name: 'transferTokens' })],
-    name: 'splToken',
-    pdas: [pdaNode({ name: 'associatedToken', seeds: [] })],
+    events: [eventNode({ data: structTypeNode([]), identifier: 'transferEvent' })],
+    identifier: 'splToken',
+    instructions: [instructionNode({ identifier: 'mintTokens' }), instructionNode({ identifier: 'transferTokens' })],
+    pdas: [pdaNode({ identifier: 'associatedToken', seeds: [] })],
     publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
     version: '1.2.3',
 });
@@ -70,7 +70,7 @@ programNode [splToken.TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA]
 |   instructionNode [transferTokens]
 |   definedTypeNode [tokenState]
 |   |   enumTypeNode
-|   |   |   numberTypeNode [u8]
+|   |   |   integerTypeNode [u8]
 |   errorNode [1.invalidMint]
 |   errorNode [2.invalidToken]`,
     );

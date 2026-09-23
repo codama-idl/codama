@@ -1,7 +1,9 @@
 import { CountNode, isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@codama/nodes';
 
+import { applyByteSizeTransforms, nodeHasTransforms } from './applyByteSizeTransforms';
 import { extendVisitor } from './extendVisitor';
 import { mergeVisitor } from './generated/mergeVisitor';
+import { interceptVisitor } from './interceptVisitor';
 import { LinkableDictionary } from './LinkableDictionary';
 import { getLastNodeFromPath } from './NodePath';
 import { NodeStack } from './NodeStack';
@@ -15,7 +17,6 @@ export type ByteSizeVisitorKeys =
     | 'constantValueNode'
     | 'definedTypeLinkNode'
     | 'definedTypeNode'
-    | 'instructionArgumentNode'
     | 'instructionNode';
 
 export function getByteSizeVisitor(
@@ -40,7 +41,6 @@ export function getByteSizeVisitor(
                 'constantValueNode',
                 'definedTypeLinkNode',
                 'definedTypeNode',
-                'instructionArgumentNode',
                 'instructionNode',
             ],
         },
@@ -56,6 +56,10 @@ export function getByteSizeVisitor(
 
                 visitArrayType(node, { self }) {
                     return getArrayLikeSize(node.count, visit(node.item, self), self);
+                },
+
+                visitBytesType() {
+                    return null;
                 },
 
                 visitConstantValue(node, { self }) {
@@ -102,10 +106,6 @@ export function getByteSizeVisitor(
                     return result;
                 },
 
-                visitEnumEmptyVariantType() {
-                    return 0;
-                },
-
                 visitEnumType(node, { self }) {
                     const prefix = visit(node.size, self);
                     if (prefix === null) return null;
@@ -117,16 +117,21 @@ export function getByteSizeVisitor(
                         : null;
                 },
 
-                visitFixedSizeType(node) {
-                    return node.size;
+                visitEnumVariantType(node, { self }) {
+                    return node.data ? visit(node.data, self) : 0;
+                },
+
+                visitFloatType(node) {
+                    return node.format === 'f32' ? 4 : 8;
                 },
 
                 visitInstruction(node, { self }) {
-                    return sumSizes((node.arguments ?? []).map(arg => visit(arg, self)));
+                    return node.data ? visit(node.data, self) : 0;
                 },
 
-                visitInstructionArgument(node, { self }) {
-                    return visit(node.type, self);
+                visitIntegerType(node) {
+                    if (node.format === 'shortU16') return null;
+                    return parseInt(node.format.slice(1), 10) / 8;
                 },
 
                 visitMapType(node, { self }) {
@@ -134,24 +139,9 @@ export function getByteSizeVisitor(
                     return getArrayLikeSize(node.count, innerSize, self);
                 },
 
-                visitNumberType(node) {
-                    if (node.format === 'shortU16') return null;
-                    return parseInt(node.format.slice(1), 10) / 8;
-                },
-
                 visitOptionType(node, { self }) {
                     if (!node.fixed) return null;
                     return sumSizes([visit(node.prefix, self), visit(node.item, self)]);
-                },
-
-                visitPostOffsetType(node, { self }) {
-                    const typeSize = visit(node.type, self);
-                    return node.strategy === 'padded' ? sumSizes([typeSize, node.offset]) : typeSize;
-                },
-
-                visitPreOffsetType(node, { self }) {
-                    const typeSize = visit(node.type, self);
-                    return node.strategy === 'padded' ? sumSizes([typeSize, node.offset]) : typeSize;
                 },
 
                 visitPublicKeyType() {
@@ -168,8 +158,6 @@ export function getByteSizeVisitor(
                 },
 
                 visitStringType() {
-                    // Strings have no fixed byte size; size is determined by an enclosing
-                    // wrapper such as `sizePrefixTypeNode` or `fixedSizeTypeNode`.
                     return null;
                 },
 
@@ -179,6 +167,17 @@ export function getByteSizeVisitor(
                     const zeroSize = visit(node.zeroValue, self);
                     return zeroSize === itemSize ? itemSize : null;
                 },
+            }),
+        // Layer each type node's flat `transforms` on top of its own size.
+        // The base merge visitor ignores transform children (their kinds
+        // aren't in the visitor keys), so `next` yields the untransformed
+        // size; `self` sizes the transforms' own children.
+        v =>
+            interceptVisitor(v, (node, next, self) => {
+                if (!nodeHasTransforms(node) || (node.transforms ?? []).length === 0) {
+                    return next(node);
+                }
+                return applyByteSizeTransforms(node, next(node), self);
             }),
         v => recordNodeStackVisitor(v, stack),
     );

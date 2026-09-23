@@ -1,7 +1,7 @@
 import {
     definedTypeLinkNode,
     enumValueNode,
-    numberValueNode,
+    integerValueNode,
     stringValueNode,
     structFieldValueNode,
     structValueNode,
@@ -15,14 +15,12 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = enumValueNode(
-    definedTypeLinkNode('entity'),
-    'person',
-    structValueNode([
+const node = enumValueNode(definedTypeLinkNode('entity'), 'person', {
+    value: structValueNode([
         structFieldValueNode('name', stringValueNode('Alice')),
-        structFieldValueNode('age', numberValueNode(42)),
+        structFieldValueNode('age', integerValueNode('42')),
     ]),
-);
+});
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 7);
@@ -48,6 +46,6 @@ enumValueNode [person]
 |   |   structFieldValueNode [name]
 |   |   |   stringValueNode [Alice]
 |   |   structFieldValueNode [age]
-|   |   |   numberValueNode [42]`,
+|   |   |   integerValueNode [42]`,
     );
 });

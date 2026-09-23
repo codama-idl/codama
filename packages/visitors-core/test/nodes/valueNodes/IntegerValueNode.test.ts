@@ -1,4 +1,4 @@
-import { numberTypeNode } from '@codama/nodes';
+import { integerValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = numberTypeNode('f64');
+const node = integerValueNode('42');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,10 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `numberTypeNode [f64]`);
-    expectDebugStringVisitor(numberTypeNode('f64', 'be'), `numberTypeNode [f64.bigEndian]`);
+    expectDebugStringVisitor(node, `integerValueNode [42]`);
 });

@@ -1,7 +1,8 @@
 import {
-    fixedSizeTypeNode,
+    addTypeNodeTransforms,
+    fixedSizeTransformNode,
+    integerTypeNode,
     mapTypeNode,
-    numberTypeNode,
     prefixedCountNode,
     publicKeyTypeNode,
     stringTypeNode,
@@ -16,9 +17,9 @@ import {
 } from '../_setup';
 
 const node = mapTypeNode(
-    fixedSizeTypeNode(stringTypeNode('utf8'), 32),
+    addTypeNodeTransforms(stringTypeNode('utf8'), [fixedSizeTransformNode(32)]),
     publicKeyTypeNode(),
-    prefixedCountNode(numberTypeNode('u8')),
+    prefixedCountNode(integerTypeNode('u8')),
 );
 
 test('mergeVisitor', () => {
@@ -42,9 +43,9 @@ test('debugStringVisitor', () => {
         `
 mapTypeNode
 |   prefixedCountNode
-|   |   numberTypeNode [u8]
-|   fixedSizeTypeNode [32]
-|   |   stringTypeNode [utf8]
+|   |   integerTypeNode [u8]
+|   stringTypeNode [utf8]
+|   |   fixedSizeTransformNode [32]
 |   publicKeyTypeNode`,
     );
 });

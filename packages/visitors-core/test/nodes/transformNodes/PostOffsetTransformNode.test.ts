@@ -1,4 +1,4 @@
-import { numberValueNode } from '@codama/nodes';
+import { postOffsetTransformNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = numberValueNode(42);
+const node = postOffsetTransformNode(4);
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[numberValueNode]', null);
+    expectDeleteNodesVisitor(node, '[postOffsetTransformNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `numberValueNode [42]`);
+    expectDebugStringVisitor(node, `postOffsetTransformNode [4.relative]`);
 });

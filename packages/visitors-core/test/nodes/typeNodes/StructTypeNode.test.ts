@@ -1,4 +1,4 @@
-import { numberTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -9,8 +9,8 @@ import {
 } from '../_setup';
 
 const node = structTypeNode([
-    structFieldTypeNode({ name: 'owner', type: publicKeyTypeNode() }),
-    structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') }),
+    structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() }),
+    structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') }),
 ]);
 
 test('mergeVisitor', () => {
@@ -24,7 +24,7 @@ test('identityVisitor', () => {
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[structTypeNode]', null);
     expectDeleteNodesVisitor(node, '[structFieldTypeNode]', { ...node, fields: undefined });
-    expectDeleteNodesVisitor(node, ['[publicKeyTypeNode]', '[numberTypeNode]'], { ...node, fields: undefined });
+    expectDeleteNodesVisitor(node, ['[publicKeyTypeNode]', '[integerTypeNode]'], { ...node, fields: undefined });
 });
 
 test('debugStringVisitor', () => {
@@ -35,6 +35,6 @@ structTypeNode
 |   structFieldTypeNode [owner]
 |   |   publicKeyTypeNode
 |   structFieldTypeNode [amount]
-|   |   numberTypeNode [u64]`,
+|   |   integerTypeNode [u64]`,
     );
 });

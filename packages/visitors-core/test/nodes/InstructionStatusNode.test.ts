@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from './_setup';
 
-const node = instructionStatusNode('live', 'Public release.');
+const node = instructionStatusNode('live', { message: 'Public release.' });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);

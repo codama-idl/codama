@@ -1,4 +1,4 @@
-import { booleanTypeNode, numberTypeNode } from '@codama/nodes';
+import { booleanTypeNode, integerTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = booleanTypeNode(numberTypeNode('u32'));
+const node = booleanTypeNode({ size: integerTypeNode('u32') });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);
@@ -20,7 +20,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[booleanTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
@@ -28,6 +28,6 @@ test('debugStringVisitor', () => {
         node,
         `
 booleanTypeNode
-|   numberTypeNode [u32]`,
+|   integerTypeNode [u32]`,
     );
 });

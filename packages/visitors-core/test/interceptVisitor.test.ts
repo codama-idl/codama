@@ -1,11 +1,11 @@
-import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { interceptVisitor, visit, voidVisitor } from '../src';
 
 test('it returns a new visitor that intercepts all visits of a visitor', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // And an intercepted void visitor that records the events that happened during each visit.
     const events: string[] = [];
@@ -22,8 +22,8 @@ test('it returns a new visitor that intercepts all visits of a visitor', () => {
     // Then we expect the following events to have happened.
     expect(events).toEqual([
         'down:tupleTypeNode',
-        'down:numberTypeNode',
-        'up:numberTypeNode',
+        'down:integerTypeNode',
+        'up:integerTypeNode',
         'down:publicKeyTypeNode',
         'up:publicKeyTypeNode',
         'up:tupleTypeNode',

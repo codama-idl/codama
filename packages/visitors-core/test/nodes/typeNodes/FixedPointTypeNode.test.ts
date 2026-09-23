@@ -1,4 +1,4 @@
-import { fixedSizeTypeNode, stringTypeNode } from '@codama/nodes';
+import { fixedPointTypeNode, integerTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = fixedSizeTypeNode(stringTypeNode('utf8'), 42);
+const node = fixedPointTypeNode(integerTypeNode('i64'), 9);
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);
@@ -19,15 +19,15 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[fixedSizeTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[stringTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[fixedPointTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-fixedSizeTypeNode [42]
-|   stringTypeNode [utf8]`,
+fixedPointTypeNode [scale:9]
+|   integerTypeNode [i64]`,
     );
 });

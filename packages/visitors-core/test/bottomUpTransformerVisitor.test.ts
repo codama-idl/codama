@@ -1,7 +1,7 @@
 import {
     definedTypeNode,
     isNode,
-    numberTypeNode,
+    integerTypeNode,
     programNode,
     publicKeyTypeNode,
     stringTypeNode,
@@ -20,11 +20,11 @@ import {
 
 test('it can transform nodes into other nodes', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a transformer visitor that transforms all number nodes into string nodes.
     const visitor = bottomUpTransformerVisitor([
-        node => (isNode(node, 'numberTypeNode') ? stringTypeNode('utf8') : node),
+        node => (isNode(node, 'integerTypeNode') ? stringTypeNode('utf8') : node),
     ]);
 
     // When we visit the tree using that visitor.
@@ -38,12 +38,12 @@ test('it can transform nodes into other nodes', () => {
 
 test('it can transform nodes using node selectors', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a transformer visitor that selects all number nodes and transforms them into string nodes.
     const visitor = bottomUpTransformerVisitor([
         {
-            select: '[numberTypeNode]',
+            select: '[integerTypeNode]',
             transform: () => stringTypeNode('utf8'),
         },
     ]);
@@ -59,12 +59,12 @@ test('it can transform nodes using node selectors', () => {
 
 test('it can create partial transformer visitors', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a transformer visitor that wraps every node into another tuple node
     // but that does not transform public key nodes.
     const visitor = bottomUpTransformerVisitor([node => (isNode(node, TYPE_NODES) ? tupleTypeNode([node]) : node)], {
-        keys: ['tupleTypeNode', 'numberTypeNode'],
+        keys: ['tupleTypeNode', 'integerTypeNode'],
     });
 
     // When we visit the tree using that visitor.
@@ -74,8 +74,8 @@ test('it can create partial transformer visitors', () => {
     expect(result).toEqual(
         tupleTypeNode([
             tupleTypeNode([
-                tupleTypeNode([numberTypeNode('u32')]),
-                tupleTypeNode([tupleTypeNode([tupleTypeNode([numberTypeNode('u32')]), publicKeyTypeNode()])]),
+                tupleTypeNode([integerTypeNode('u32')]),
+                tupleTypeNode([tupleTypeNode([tupleTypeNode([integerTypeNode('u32')]), publicKeyTypeNode()])]),
             ]),
         ]),
     );
@@ -87,10 +87,10 @@ test('it can create partial transformer visitors', () => {
 
 test('it can be used to delete nodes', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a transformer visitor that deletes all number nodes.
-    const visitor = bottomUpTransformerVisitor([{ select: '[numberTypeNode]', transform: () => null }]);
+    const visitor = bottomUpTransformerVisitor([{ select: '[integerTypeNode]', transform: () => null }]);
 
     // When we visit the tree using that visitor.
     const result = visit(node, visitor);
@@ -101,14 +101,14 @@ test('it can be used to delete nodes', () => {
 
 test('it can transform nodes using multiple node selectors', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a transformer visitor that uses two node selectors such that
     // - the first one selects all number nodes, and
     // - the second one selects all nodes with more than one ancestor.
     const visitor = bottomUpTransformerVisitor([
         {
-            select: ['[numberTypeNode]', path => path.length > 2],
+            select: ['[integerTypeNode]', path => path.length > 2],
             transform: () => stringTypeNode('utf8'),
         },
     ]);
@@ -118,24 +118,24 @@ test('it can transform nodes using multiple node selectors', () => {
 
     // Then we expect both node selectors to have been applied.
     expect(result).toEqual(
-        tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([stringTypeNode('utf8'), publicKeyTypeNode()])]),
+        tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([stringTypeNode('utf8'), publicKeyTypeNode()])]),
     );
 });
 
 test('it can start from an existing stack', () => {
     // Given the following tuple node inside a program node.
-    const tuple = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
-    const myTuple = definedTypeNode({ name: 'myTuple', type: tuple });
+    const tuple = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
+    const myTuple = definedTypeNode({ identifier: 'myTuple', type: tuple });
     const program = programNode({
         definedTypes: [myTuple],
-        name: 'myProgram',
+        identifier: 'myProgram',
         publicKey: '1111',
     });
 
     // And a transformer that removes all number nodes
     // from programs whose public key is '1111'.
     const transformer: BottomUpNodeTransformerWithSelector = {
-        select: ['[numberTypeNode]', path => findProgramNodeFromPath(path)?.publicKey === '1111'],
+        select: ['[integerTypeNode]', path => findProgramNodeFromPath(path)?.publicKey === '1111'],
         transform: () => null,
     };
 

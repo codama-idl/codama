@@ -1,4 +1,4 @@
-import { numberTypeNode, solAmountTypeNode } from '@codama/nodes';
+import { integerTypeNode, sizePrefixTransformNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = solAmountTypeNode(numberTypeNode('u64'));
+const node = sizePrefixTransformNode(integerTypeNode('u32'));
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);
@@ -19,15 +19,15 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[solAmountTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[sizePrefixTransformNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(
         node,
         `
-solAmountTypeNode
-|   numberTypeNode [u64]`,
+sizePrefixTransformNode
+|   integerTypeNode [u32]`,
     );
 });
