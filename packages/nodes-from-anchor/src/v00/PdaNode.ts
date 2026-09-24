@@ -1,7 +1,7 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
     booleanValueNode,
     bytesTypeNode,
-    camelCase,
     constantPdaSeedNode,
     constantPdaSeedNodeFromProgramId,
     numberValueNode,

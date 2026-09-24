@@ -1,8 +1,8 @@
 import { CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, CodamaError } from '@codama/errors';
+import { camelCase } from '@codama/fragments/casing';
 import {
     accountNode,
     assertIsNode,
-    camelCase,
     fieldDiscriminatorNode,
     resolveNestedTypeNode,
     structFieldTypeNode,

@@ -1,10 +1,10 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
     accountLinkNode,
     accountNode,
     AccountNodeInput,
     assertIsNode,
-    camelCase,
-    CamelCaseString,
+    IdentifierString,
     pdaLinkNode,
     PdaNode,
     pdaNode,
@@ -34,7 +34,7 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
                 typeof updates === 'object' && 'identifier' in updates && updates.identifier
                     ? camelCase(updates.identifier)
                     : undefined;
-            const pdasToUpsert = [] as { pda: PdaNode; program: CamelCaseString }[];
+            const pdasToUpsert = [] as { pda: PdaNode; program: IdentifierString }[];
 
             const transformers: BottomUpNodeTransformerWithSelector[] = [
                 {

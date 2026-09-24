@@ -1,7 +1,7 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
     bytesTypeNode,
     bytesValueNode,
-    camelCase,
     DiscriminatorNode,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,

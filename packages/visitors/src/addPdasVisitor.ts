@@ -1,5 +1,6 @@
 import { CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, CodamaError } from '@codama/errors';
-import { assertIsNode, camelCase, pdaNode, PdaNodeInput, programNode } from '@codama/nodes';
+import { camelCase } from '@codama/fragments/casing';
+import { assertIsNode, pdaNode, PdaNodeInput, programNode } from '@codama/nodes';
 import { bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export function addPdasVisitor(pdas: Record<string, Omit<PdaNodeInput, 'programId'>[]>) {

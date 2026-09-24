@@ -1,5 +1,5 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
-    camelCase,
     identityValueNode,
     InstructionAccountNode,
     InstructionInputValueNode,

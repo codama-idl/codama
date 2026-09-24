@@ -2,18 +2,23 @@
  * String-casing helpers used by code generators when emitting
  * identifiers. They normalise an arbitrary input string into a
  * conventional shape (camelCase, PascalCase, kebab-case, snake_case,
- * Title Case) by inserting word boundaries before uppercase letters and
- * splitting on any sequence of non-alphanumeric characters.
+ * Title Case).
  *
- * Returned values are plain `string`. This package deliberately does
- * not depend on `@codama/node-types`, so the branded `CamelCaseString`
- * / `PascalCaseString` / … types are not applied here. Consumers that
- * want the brand (e.g. `@codama/nodes`) can wrap these helpers and
- * apply the cast at their own boundary.
+ * Words follow the Codama spec's casing-collision rule, so every casing
+ * derived here is consistent with how identifiers are validated:
  *
+ * - any run of non-alphanumeric characters (including underscores)
+ *   separates words, and empty words are discarded;
+ * - a word also ends between a lowercase letter or digit and an
+ *   uppercase letter (`fooBar` → `foo|Bar`, `foo1Bar` → `foo1|Bar`);
+ * - and between an uppercase letter and an uppercase letter followed by
+ *   a lowercase letter, so acronyms stay whole (`HTTPServer` →
+ *   `HTTP|Server`).
+ *
+ * A digit never begins a new word on its own (`foo1bar` is one word).
  * The implementations all run through {@link titleCase} as a common
- * intermediate form, so a single deterministic word-splitting policy
- * is shared across every output shape.
+ * intermediate form, so this single word-splitting policy is shared
+ * across every output shape.
  */
 
 /**
@@ -27,18 +32,20 @@ export function capitalize(str: string): string {
 
 /**
  * Normalise an arbitrary string into Title Case — a space-separated
- * sequence of {@link capitalize}d words. Inserts a space before each
- * uppercase letter, then splits on any run of non-alphanumeric
- * characters and re-joins with single spaces. Uppercased snake_case
- * inputs (e.g. `FROM_UPPERCASED_SNAKE_CASE`) are treated as
- * underscore-delimited words rather than letter-by-letter.
+ * sequence of {@link capitalize}d words, split as described at the top
+ * of this module.
+ *
+ * @example
+ * ```ts
+ * titleCase('transfer_tokens'); // 'Transfer Tokens'
+ * titleCase('HTTPServer'); // 'Http Server'
+ * titleCase('MAX_SUPPLY'); // 'Max Supply'
+ * ```
  */
 export function titleCase(str: string): string {
-    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(str)) {
-        return str.toLowerCase().split('_').map(capitalize).join(' ');
-    }
     return str
-        .replace(/([A-Z])/g, ' $1')
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
         .split(/[^a-zA-Z0-9]+/)
         .filter(word => word.length > 0)
         .map(capitalize)

@@ -22,7 +22,8 @@
         "./dist/types",
         "./dist/index.*",
         "./dist/javascript.*",
-        "./dist/rust.*"
+        "./dist/rust.*",
+        "./dist/casing.*"
     ],
     "type": "commonjs",
     "sideEffects": false,
@@ -34,7 +35,9 @@
         "./dist/javascript.node.cjs": "./dist/javascript.browser.cjs",
         "./dist/javascript.node.mjs": "./dist/javascript.browser.mjs",
         "./dist/rust.node.cjs": "./dist/rust.browser.cjs",
-        "./dist/rust.node.mjs": "./dist/rust.browser.mjs"
+        "./dist/rust.node.mjs": "./dist/rust.browser.mjs",
+        "./dist/casing.node.cjs": "./dist/casing.browser.cjs",
+        "./dist/casing.node.mjs": "./dist/casing.browser.mjs"
     },
     "types": "./dist/types/index.d.ts",
     "typesVersions": {
@@ -44,6 +47,9 @@
             ],
             "rust": [
                 "./dist/types/rust/index.d.ts"
+            ],
+            "casing": [
+                "./dist/types/core/casing.d.ts"
             ]
         }
     },
@@ -59,6 +65,18 @@
             "node": {
                 "import": "./dist/index.node.mjs",
                 "require": "./dist/index.node.cjs"
+            }
+        },
+        "./casing": {
+            "types": "./dist/types/core/casing.d.ts",
+            "react-native": "./dist/casing.react-native.mjs",
+            "browser": {
+                "import": "./dist/casing.browser.mjs",
+                "require": "./dist/casing.browser.cjs"
+            },
+            "node": {
+                "import": "./dist/casing.node.mjs",
+                "require": "./dist/casing.node.cjs"
             }
         },
         "./javascript": {
@@ -90,7 +108,7 @@
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
         "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
-        "test:treeshakability": "for file in dist/index.*.mjs dist/javascript.*.mjs dist/rust.*.mjs; do agadoo $file; done",
+        "test:treeshakability": "for file in dist/index.*.mjs dist/casing.*.mjs dist/javascript.*.mjs dist/rust.*.mjs; do agadoo $file; done",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run"
     },
