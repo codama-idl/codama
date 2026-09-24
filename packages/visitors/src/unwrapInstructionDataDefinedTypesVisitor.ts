@@ -1,30 +1,44 @@
-import { assertIsNode, definedTypeLinkNode, IdentifierString, isNode } from '@codama/nodes';
+import {
+    assertIsNode,
+    DefinedTypeLinkNode,
+    definedTypeLinkNode,
+    IdentifierString,
+    isNode,
+    programLinkNode,
+} from '@codama/nodes';
 import { getRecordLinkablesVisitor, LinkableDictionary, rootNodeVisitor, visit } from '@codama/visitors-core';
 
 import { getDefinedTypeHistogramVisitor } from './getDefinedTypeHistogramVisitor';
 import { unwrapDefinedTypesVisitor } from './unwrapDefinedTypesVisitor';
 
-export function unwrapInstructionArgsDefinedTypesVisitor() {
+/**
+ * Inline the defined types that are used exactly once in the whole IDL,
+ * either as an instruction's `data` or as the type of one of its top-level
+ * data fields. Enums are kept as defined types.
+ */
+export function unwrapInstructionDataDefinedTypesVisitor() {
     return rootNodeVisitor(root => {
         const histogram = visit(root, getDefinedTypeHistogramVisitor());
         const linkables = new LinkableDictionary();
         visit(root, getRecordLinkablesVisitor(linkables));
 
         const definedTypesToInline = (Object.keys(histogram) as IdentifierString[])
-            // Get all defined types used exactly once as an instruction argument.
-            .filter(key => (histogram[key].total ?? 0) === 1 && (histogram[key].directlyAsInstructionArgs ?? 0) === 1)
+            // Get all defined types used exactly once, directly as instruction data.
+            .filter(key => histogram[key].total === 1 && histogram[key].directlyAsInstructionData === 1)
             // Filter out enums which are better defined as external types.
             .filter(key => {
-                const names = key.split('.');
-                const link = names.length == 2 ? definedTypeLinkNode(names[1], names[0]) : definedTypeLinkNode(key);
+                const [programName, typeName] = key.split('.');
+                const link: DefinedTypeLinkNode =
+                    typeName === undefined
+                        ? definedTypeLinkNode(programName)
+                        : definedTypeLinkNode(typeName, { program: programLinkNode(programName) });
                 const found = linkables.get([link]);
                 return found && !isNode(found.type, 'enumTypeNode');
             });
 
         // Inline the identified defined types if any.
         if (definedTypesToInline.length > 0) {
-            const inlineVisitor = unwrapDefinedTypesVisitor(definedTypesToInline);
-            const newRoot = visit(root, inlineVisitor);
+            const newRoot = visit(root, unwrapDefinedTypesVisitor(definedTypesToInline));
             assertIsNode(newRoot, 'rootNode');
             return newRoot;
         }

@@ -1,13 +1,12 @@
-import type { IdentifierString } from '@codama/nodes';
+import { IdentifierString, isNode, Node } from '@codama/nodes';
 import {
     extendVisitor,
     findProgramNodeFromPath,
-    interceptVisitor,
     mergeVisitor,
+    NodePath,
     NodeStack,
     pipe,
     recordNodeStackVisitor,
-    visit,
     Visitor,
 } from '@codama/visitors-core';
 
@@ -15,30 +14,32 @@ type DefinedTypeHistogramKey = IdentifierString | `${IdentifierString}.${Identif
 
 export type DefinedTypeHistogram = {
     [key: DefinedTypeHistogramKey]: {
-        directlyAsInstructionArgs: number;
+        /** Uses as an instruction's `data` itself or as the type of one of its top-level data fields. */
+        directlyAsInstructionData: number;
         inAccounts: number;
         inDefinedTypes: number;
         inEvents: number;
-        inInstructionArgs: number;
+        inInstructionData: number;
         total: number;
     };
 };
+
+type LinkUsage = { direct: boolean; mode: 'account' | 'definedType' | 'event' | 'instruction' | null };
 
 function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogram {
     const result: DefinedTypeHistogram = {};
 
     histograms.forEach(histogram => {
-        Object.keys(histogram).forEach(key => {
-            const mainCaseKey = key as IdentifierString;
-            if (result[mainCaseKey] === undefined) {
-                result[mainCaseKey] = histogram[mainCaseKey];
+        (Object.keys(histogram) as DefinedTypeHistogramKey[]).forEach(key => {
+            if (result[key] === undefined) {
+                result[key] = { ...histogram[key] };
             } else {
-                result[mainCaseKey].total += histogram[mainCaseKey].total;
-                result[mainCaseKey].inAccounts += histogram[mainCaseKey].inAccounts;
-                result[mainCaseKey].inDefinedTypes += histogram[mainCaseKey].inDefinedTypes;
-                result[mainCaseKey].inEvents += histogram[mainCaseKey].inEvents;
-                result[mainCaseKey].inInstructionArgs += histogram[mainCaseKey].inInstructionArgs;
-                result[mainCaseKey].directlyAsInstructionArgs += histogram[mainCaseKey].directlyAsInstructionArgs;
+                result[key].total += histogram[key].total;
+                result[key].inAccounts += histogram[key].inAccounts;
+                result[key].inDefinedTypes += histogram[key].inDefinedTypes;
+                result[key].inEvents += histogram[key].inEvents;
+                result[key].inInstructionData += histogram[key].inInstructionData;
+                result[key].directlyAsInstructionData += histogram[key].directlyAsInstructionData;
             }
         });
     });
@@ -46,10 +47,18 @@ function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogr
     return result;
 }
 
+/**
+ * Count the uses of every defined type, keyed by
+ * `programIdentifier.typeIdentifier` (or `typeIdentifier` outside of a
+ * program).
+ *
+ * Every `definedTypeLinkNode` counts towards `total`, including those in
+ * default values, PDA seeds or constants. The `in*` counters only track
+ * links inside an account's data, a defined type's type, an event's data or
+ * an instruction's data respectively.
+ */
 export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> {
     const stack = new NodeStack();
-    let mode: 'account' | 'definedType' | 'event' | 'instruction' | null = null;
-    let stackLevel = 0;
 
     return pipe(
         mergeVisitor(
@@ -57,63 +66,54 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
             (_, histograms) => mergeHistograms(histograms),
         ),
         v =>
-            interceptVisitor(v, (node, next) => {
-                stackLevel += 1;
-                const newNode = next(node);
-                stackLevel -= 1;
-                return newNode;
-            }),
-        v =>
             extendVisitor(v, {
-                visitAccount(node, { self }) {
-                    mode = 'account';
-                    stackLevel = 0;
-                    const histogram = visit(node.data, self);
-                    mode = null;
-                    return histogram;
-                },
-
-                visitDefinedType(node, { self }) {
-                    mode = 'definedType';
-                    stackLevel = 0;
-                    const histogram = visit(node.type, self);
-                    mode = null;
-                    return histogram;
-                },
-
                 visitDefinedTypeLink(node) {
-                    const program = findProgramNodeFromPath(stack.getPath());
+                    const path = stack.getPath();
+                    const program = node.program ?? findProgramNodeFromPath(path);
                     const key = program ? `${program.identifier}.${node.identifier}` : node.identifier;
+                    const { direct, mode } = getLinkUsage(path);
                     return {
                         [key]: {
-                            directlyAsInstructionArgs: Number(mode === 'instruction' && stackLevel <= 1),
+                            directlyAsInstructionData: Number(direct),
                             inAccounts: Number(mode === 'account'),
                             inDefinedTypes: Number(mode === 'definedType'),
                             inEvents: Number(mode === 'event'),
-                            inInstructionArgs: Number(mode === 'instruction'),
+                            inInstructionData: Number(mode === 'instruction'),
                             total: 1,
                         },
                     };
                 },
-
-                visitEvent(node, { self }) {
-                    mode = 'event';
-                    stackLevel = 0;
-                    const histogram = visit(node.data, self);
-                    mode = null;
-                    return histogram;
-                },
-
-                visitInstruction(node, { self }) {
-                    mode = 'instruction';
-                    stackLevel = 0;
-                    const dataHistograms = (node.arguments ?? []).map(arg => visit(arg, self));
-                    const extraHistograms = (node.extraArguments ?? []).map(arg => visit(arg, self));
-                    mode = null;
-                    const subHistograms = (node.subInstructions ?? []).map(ix => visit(ix, self));
-                    return mergeHistograms([...dataHistograms, ...extraHistograms, ...subHistograms]);
-                },
             }),
         v => recordNodeStackVisitor(v, stack),
     );
+}
+
+/**
+ * Locate a link, given its path, relative to its closest account, event,
+ * defined type or instruction: whether it sits under that node's data (or
+ * type) and, for instructions, whether it is used directly.
+ */
+function getLinkUsage(path: NodePath): LinkUsage {
+    const link = path[path.length - 1];
+    for (let index = path.length - 2; index >= 0; index--) {
+        const owner = path[index];
+        const child: Node | undefined = path[index + 1];
+        if (isNode(owner, 'accountNode')) return { direct: false, mode: child === owner.data ? 'account' : null };
+        if (isNode(owner, 'eventNode')) return { direct: false, mode: child === owner.data ? 'event' : null };
+        if (isNode(owner, 'definedTypeNode')) {
+            return { direct: false, mode: child === owner.type ? 'definedType' : null };
+        }
+        if (isNode(owner, 'instructionNode')) {
+            if (child !== owner.data) return { direct: false, mode: null };
+            const isData = path.length === index + 2;
+            const field = path[index + 2];
+            const isTopLevelFieldType =
+                isNode(child, 'structTypeNode') &&
+                path.length === index + 4 &&
+                isNode(field, 'structFieldTypeNode') &&
+                field.type === link;
+            return { direct: isData || isTopLevelFieldType, mode: 'instruction' };
+        }
+    }
+    return { direct: false, mode: null };
 }

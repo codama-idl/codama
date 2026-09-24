@@ -1,5 +1,4 @@
-import { camelCase } from '@codama/fragments/casing';
-import { assertIsNodeFilter, IdentifierString, programNode } from '@codama/nodes';
+import { assertIsNode, IdentifierString, programNode, TYPE_NODES } from '@codama/nodes';
 import {
     extendVisitor,
     findProgramNodeFromPath,
@@ -13,54 +12,62 @@ import {
     visit,
 } from '@codama/visitors-core';
 
+import { inlineDefinedType } from './inlineDefinedTypeHelpers';
+
+/**
+ * Replace links to the given defined types with the types themselves and
+ * remove the inlined defined types from their programs.
+ *
+ * Types are identified by `typeIdentifier` (in any program) or
+ * `programIdentifier.typeIdentifier`, matched exactly. Use `'*'` to inline
+ * every defined type.
+ *
+ * The link's own `transforms` are layered on top of the inlined type, and
+ * links inside a type inlined into another program are qualified with the
+ * type's original program.
+ */
 export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
-    const typesToInlineCamelCased = (typesToInline === '*' ? [] : typesToInline).map(fullPath => {
-        if (!fullPath.includes('.')) return camelCase(fullPath);
-        const [programName, typeName] = fullPath.split('.');
-        return `${camelCase(programName)}.${camelCase(typeName)}`;
-    });
     const shouldInline = (typeName: IdentifierString, programName: IdentifierString | undefined): boolean => {
         if (typesToInline === '*') return true;
-        const fullPath = `${programName}.${typeName}`;
-        if (!!programName && typesToInlineCamelCased.includes(fullPath)) return true;
-        return typesToInlineCamelCased.includes(typeName);
+        if (!!programName && typesToInline.includes(`${programName}.${typeName}`)) return true;
+        return typesToInline.includes(typeName);
     };
 
     return pipe(
         nonNullableIdentityVisitor(),
         v =>
             extendVisitor(v, {
-                visitDefinedTypeLink(linkType, { self }) {
-                    const programName =
-                        linkType.program?.identifier ?? findProgramNodeFromPath(stack.getPath())?.identifier;
-                    if (!shouldInline(linkType.identifier, programName)) {
-                        return linkType;
+                visitDefinedTypeLink(link, { self }) {
+                    const linkProgram = findProgramNodeFromPath(stack.getPath())?.identifier;
+                    const definedTypeProgram = link.program?.identifier ?? linkProgram;
+                    if (!shouldInline(link.identifier, definedTypeProgram)) {
+                        return link;
                     }
                     const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
                     const definedType = getLastNodeFromPath(definedTypePath);
 
                     stack.pushPath(definedTypePath);
-                    const result = visit(definedType.type, self);
+                    const type = visit(definedType.type, self);
                     stack.popPath();
-                    return result;
+                    assertIsNode(type, TYPE_NODES);
+
+                    return inlineDefinedType(link, type, {
+                        definedTypeProgram: findProgramNodeFromPath(definedTypePath)?.identifier,
+                        linkProgram,
+                    });
                 },
 
-                visitProgram(program, { self }) {
-                    return programNode({
-                        ...program,
-                        accounts: (program.accounts ?? [])
-                            .map(account => visit(account, self))
-                            .filter(assertIsNodeFilter('accountNode')),
-                        definedTypes: (program.definedTypes ?? [])
-                            .filter(definedType => !shouldInline(definedType.identifier, program.identifier))
-                            .map(type => visit(type, self))
-                            .filter(assertIsNodeFilter('definedTypeNode')),
-                        instructions: (program.instructions ?? [])
-                            .map(instruction => visit(instruction, self))
-                            .filter(assertIsNodeFilter('instructionNode')),
-                    });
+                visitProgram(program, { next }) {
+                    return next(
+                        programNode({
+                            ...program,
+                            definedTypes: (program.definedTypes ?? []).filter(
+                                definedType => !shouldInline(definedType.identifier, program.identifier),
+                            ),
+                        }),
+                    );
                 },
             }),
         v => recordNodeStackVisitor(v, stack),

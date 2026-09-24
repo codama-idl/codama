@@ -38,7 +38,7 @@ Let's go through all of them alphabetically.
 
 ### `addPdasVisitor`
 
-This visitor adds `PdaNodes` to the desired `ProgramNodes`. It accepts an object where the keys are the program names and the values are the `PdaNodes` to add within these programs.
+This visitor adds `PdaNodes` to the desired `ProgramNodes`. It accepts an object where the keys are the program identifiers (matched exactly) and the values are the `PdaNodes` to add within these programs. It throws if a new PDA shares a camelCase form with another PDA of the same program, since they would collide under the spec's casing-collision rule.
 
 ```ts
 codama.update(
@@ -46,7 +46,7 @@ codama.update(
         // Add a PDA to the 'token' program.
         token: [
             {
-                name: 'associatedToken',
+                identifier: 'associatedToken',
                 seeds: [
                     variablePdaSeedNode('mint', publicKeyTypeNode()),
                     constantPdaSeedNode(
@@ -60,11 +60,11 @@ codama.update(
         // Add two PDAs to the 'counter' program.
         counter: [
             {
-                name: 'counter',
+                identifier: 'counter',
                 seeds: [variablePdaSeedNode('authority', publicKeyTypeNode())],
             },
             {
-                name: 'counterConfig',
+                identifier: 'counterConfig',
                 seeds: [variablePdaSeedNode('counter', publicKeyTypeNode())],
             },
         ],
@@ -87,13 +87,15 @@ It is mainly useful at IDL-ingestion boundaries that bypass `createFromRoot`, su
 
 Note that older IDLs can be upgraded instead of rejected by using the [`@codama/upgrade`](../upgrade) package as a `before` visitor.
 
-### `createSubInstructionsFromEnumArgsVisitor`
+### `createSubInstructionsFromEnumDataVisitor`
 
-This visitor splits an instruction into multiple sub-instructions by using an enum argument such that each of its variants creates a different sub-instruction. It accepts an object where the keys are the instruction names and the values are the enum argument names that will be used to split the instruction.
+This visitor splits an instruction into multiple sub-instructions by using an enum field of its data such that each of its variants creates a different sub-instruction. It accepts an object where the keys are the instruction names and the values are the identifiers of the enum data fields that will be used to split the instruction.
+
+Each sub-instruction is named `${instruction}_${variant}`. In it, the enum field is replaced by a `${instruction}_${variant}_discriminator` field (using the enum's `size` and defaulting to the variant's discriminator) followed by the variant's payload, whose fields are inlined when it is a struct.
 
 ```ts
 codama.update(
-    createSubInstructionsFromEnumArgsVisitor({
+    createSubInstructionsFromEnumDataVisitor({
         mint: 'mintArgs',
         transfer: 'transferArgs',
         burn: 'burnArgs',
@@ -103,7 +105,7 @@ codama.update(
 
 ### `deduplicateIdenticalDefinedTypesVisitor`
 
-This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Codama IDL and removes any duplicates. A `DefinedTypeNode` is considered a duplicate if it has the same name and data structure as another `DefinedTypeNode`. This is useful when you have multiple programs that share the same types.
+This visitor goes through the `DefinedTypeNodes` of all `ProgramNodes` inside the Codama IDL and removes any duplicates, keeping the copy from the first program and repointing links to the removed copies at it. A `DefinedTypeNode` is considered a duplicate if it has the same identifier and data structure (ignoring docs) as another `DefinedTypeNode`, and if every defined type it links to without an explicit program is itself deduplicated across the same programs. This is useful when you have multiple programs that share the same types.
 
 ```ts
 codama.update(deduplicateIdenticalDefinedTypesVisitor());
@@ -125,17 +127,19 @@ Note that this visitor is mainly used for internal purposes.
 codama.update(fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, strictMode));
 ```
 
-### `flattenInstructionDataArgumentsVisitor`
+### `flattenInstructionDataVisitor`
 
-This visitor flattens any instruction arguments of type `StructTypeNode` such that their fields are no longer nested. This can be useful to simplify the data structure of an instruction.
+This visitor flattens the fields of type `StructTypeNode` inside the `data` of every instruction such that their fields are no longer nested. This can be useful to simplify the data structure of an instruction. Linked data is left untouched since the defined type may be shared; use `unwrapInstructionDataDefinedTypesVisitor` first to flatten it.
 
 ```ts
-codama.update(flattenInstructionDataArgumentsVisitor());
+codama.update(flattenInstructionDataVisitor());
 ```
 
 ### `flattenStructVisitor`
 
-This visitor flattens any struct fields that are also structs such that their fields are no longer nested. It accepts an object such that the keys are the struct names and the values are the field names to flatten or `"*"` to flatten all struct fields.
+This visitor flattens any struct fields that are also structs such that their fields are no longer nested. It accepts an object such that the keys are the struct names and the values are the field identifiers to flatten (matched exactly) or `"*"` to flatten all struct fields.
+
+Structs carrying `transforms` are not inlined, since that would change their wire format. Flattening throws if a struct to inline carries `plugins`, since they would be lost, or if two resulting fields share a camelCase form.
 
 ```ts
 codama.update(
@@ -154,22 +158,22 @@ This visitor goes through all `DefinedTypeNodes` and outputs a histogram of how 
 const histogram = codama.accept(getDefinedTypeHistogramVisitor());
 ```
 
-The returned histogram is an object such that the keys are the names of visited `DefinedTypeNodes` and the values are objects with properties described below.
+The returned histogram is an object such that the keys are the identifiers of the linked `DefinedTypeNodes`, prefixed by the identifier of their program, and the values are objects with properties described below.
 
 ```ts
 export type DefinedTypeHistogram = {
-    [key: CamelCaseString | `${CamelCaseString}.${CamelCaseString}`]: {
-        // The number of times the type is used as a direct instruction argument.
-        directlyAsInstructionArgs: number;
+    [key: IdentifierString | `${IdentifierString}.${IdentifierString}`]: {
+        // The number of times the type is used as an instruction's data or as the type of one of its top-level data fields.
+        directlyAsInstructionData: number;
         // The number of times the type is used in account data.
         inAccounts: number;
         // The number of times the type is used in other defined types.
         inDefinedTypes: number;
         // The number of times the type is used in event payloads.
         inEvents: number;
-        // The number of times the type is used in instruction arguments.
-        inInstructionArgs: number;
-        // The number of times the type is used in total.
+        // The number of times the type is used in instruction data.
+        inInstructionData: number;
+        // The number of times the type is used in total, including default values, PDA seeds and constants.
         total: number;
     };
 };
@@ -179,14 +183,14 @@ This histogram is used internally in other visitors to understand how types are 
 
 ### `setAccountDiscriminatorFromFieldVisitor`
 
-This visitor helps set account discriminators based on a field in the account data and the value it should take. This is typically used on the very first field of the account data which usually refers to a discriminator value that helps distinguish between multiple accounts in a program.
+This visitor helps set account discriminators based on a field in the account data and the value it should take. This is typically used on the very first field of the account data which usually refers to a discriminator value that helps distinguish between multiple accounts in a program. The account data must be an inline `StructTypeNode`, since changing a linked defined type would affect every node that uses it.
 
 ```ts
 codama.update(
     setAccountDiscriminatorFromFieldVisitor({
-        counter: { field: 'discriminator', value: k.enumValueNode('accountState', 'counter') },
-        escrow: { field: 'discriminator', value: k.enumValueNode('accountState', 'escrow') },
-        vault: { field: 'discriminator', value: k.enumValueNode('accountState', 'vault') },
+        counter: { field: 'discriminator', value: enumValueNode(definedTypeLinkNode('accountState'), 'counter') },
+        escrow: { field: 'discriminator', value: enumValueNode(definedTypeLinkNode('accountState'), 'escrow') },
+        vault: { field: 'discriminator', value: enumValueNode(definedTypeLinkNode('accountState'), 'vault') },
     }),
 );
 ```
@@ -250,25 +254,27 @@ codama.update(
 
 ### `setStructDefaultValuesVisitor`
 
-This visitor sets default values for all provided fields of a struct. It accepts an object where the keys are the struct names and the values are objects that map field names to their new default values.
+This visitor sets default values for all provided fields of a struct. It accepts an object where the keys select the nodes containing the structs (e.g. defined types, accounts or instructions with inline `data`) and the values are objects that map field identifiers (matched exactly) to their new default values. A `null` value removes the default value of a field.
 
 ```ts
 codama.update(
     setStructDefaultValuesVisitor({
         person: {
-            age: numberValueNode(42),
+            age: integerValueNode('42'),
             dateOfBirth: noneValueNode(),
         },
         counter: {
-            count: numberValueNode(0),
+            count: { strategy: 'omitted', value: integerValueNode('0') },
         },
     }),
 );
 ```
 
+Contextual default values of instruction data fields, such as the bump of an account, are expressed with an `injectedValueNode` whose key is provided by the instruction's `provides` attribute.
+
 ### `transformDefinedTypesIntoAccountsVisitor`
 
-This visitor transforms `DefinedTypeNodes` matching the provided names into `AccountNodes` within the same `ProgramNode`.
+This visitor transforms `DefinedTypeNodes` matching the provided identifiers into `AccountNodes` within the same `ProgramNode`, using the type of each `DefinedTypeNode` as the account data.
 
 ```ts
 codama.update(transformDefinedTypesIntoAccountsVisitor(['counter', 'escrow']));
@@ -276,33 +282,33 @@ codama.update(transformDefinedTypesIntoAccountsVisitor(['counter', 'escrow']));
 
 ### `transformU8ArraysToBytesVisitor`
 
-This visitor transforms any fixed-size array of `u8` numbers into a fixed-size `BytesTypeNode`.
+This visitor transforms any fixed-size array of plain `u8` integers into a `BytesTypeNode` with a `FixedSizeTransformNode`. By default, it transforms arrays of any size, but you can provide an array of sizes to only transform specific ones.
 
 ```ts
-codama.update(transformU8ArraysToBytesVisitor());
+codama.update(transformU8ArraysToBytesVisitor([32, 64]));
 ```
 
 ### `unwrapDefinedTypesVisitor`
 
-This visitor replaces any `DefinedTypeLinkNode` with the actual `DefinedTypeNode` it points to. By default, it unwraps all defined types, but you can provide an array of names to only unwrap specific types.
+This visitor replaces any `DefinedTypeLinkNode` with the type of the `DefinedTypeNode` it points to and removes the inlined `DefinedTypeNodes` from their programs. By default, it unwraps all defined types, but you can provide an array of identifiers, optionally prefixed by a program identifier, to only unwrap specific types.
 
-Note that if multiple link nodes point to the same defined type, each link node will be replaced by a copy of the defined type.
+Note that if multiple link nodes point to the same defined type, each link node will be replaced by a copy of the defined type. The `transforms` of each link are applied on top of the inlined type.
 
 ```ts
-codama.update(unwrapDefinedTypesVisitor(['counter', 'escrow']));
+codama.update(unwrapDefinedTypesVisitor(['counter', 'splToken.escrow']));
 ```
 
-### `unwrapInstructionArgsDefinedTypesVisitor`
+### `unwrapInstructionDataDefinedTypesVisitor`
 
-This visitor replaces `DefinedTypeLinkNodes` used only once inside an instruction argument with the actual `DefinedTypeNodes` they refer to.
+This visitor inlines the `DefinedTypeNodes` that are used exactly once in the Codama IDL, either as the `data` of an instruction or as the type of one of its top-level data fields. Enums are kept as defined types.
 
 ```ts
-codama.update(unwrapInstructionArgsDefinedTypesVisitor());
+codama.update(unwrapInstructionDataDefinedTypesVisitor());
 ```
 
 ### `unwrapTupleEnumWithSingleStructVisitor`
 
-This visitor transforms `EnumTupleVariantTypeNodes` with a single `StructTypeNode` item into `EnumStructVariantTypeNodes`. By default, it will unwrap all tuple variants matching that criteria, but you can provide an array of names to only unwrap specific variants.
+This visitor transforms `EnumVariantTypeNodes` whose data is a `TupleTypeNode` with a single `StructTypeNode` item (or a link to one) such that their data becomes the struct itself. By default, it will unwrap all variants matching that criteria, but you can provide an array of `NodeSelectors` to only unwrap specific variants. Linked defined types that are no longer used afterwards are removed.
 
 ```ts
 codama.update(unwrapTupleEnumWithSingleStructVisitor());
@@ -310,7 +316,7 @@ codama.update(unwrapTupleEnumWithSingleStructVisitor());
 
 ### `unwrapTypeDefinedLinksVisitor`
 
-This visitor replaces any `DefinedTypeLinkNode` matching the provided `NodeSelectors` with the actual `DefinedTypeNode` it points to.
+This visitor replaces any `DefinedTypeLinkNode` matching the provided `NodeSelectors` with the type of the `DefinedTypeNode` it points to, applying the `transforms` of the link on top of it.
 
 Contrary to the `unwrapDefinedTypesVisitor` though, it only replaces the requested `DefinedTypeLinkNodes` and does not remove the associated `DefinedTypeNode` from its `ProgramNode`.
 
