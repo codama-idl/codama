@@ -3,6 +3,7 @@ import {
     CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
     CodamaError,
 } from '@codama/errors';
+import { pascalCase } from '@codama/fragments/casing';
 import {
     AccountLinkNode,
     AccountNode,
@@ -17,7 +18,6 @@ import {
     InstructionNode,
     isNode,
     NumberFormat,
-    pascalCase,
     RegisteredTypeNode,
     structFieldTypeNode,
     structFieldTypeNodeFromInstructionArgumentNode,

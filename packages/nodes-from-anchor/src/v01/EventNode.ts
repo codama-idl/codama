@@ -1,7 +1,7 @@
 import { CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, CodamaError } from '@codama/errors';
+import { camelCase } from '@codama/fragments/casing';
 import {
     bytesTypeNode,
-    camelCase,
     constantDiscriminatorNode,
     constantValueNode,
     EventNode,

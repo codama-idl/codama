@@ -1,4 +1,4 @@
-import { CamelCaseString } from '@codama/nodes';
+import type { IdentifierString } from '@codama/nodes';
 import {
     extendVisitor,
     findProgramNodeFromPath,
@@ -11,7 +11,7 @@ import {
     Visitor,
 } from '@codama/visitors-core';
 
-type DefinedTypeHistogramKey = CamelCaseString | `${CamelCaseString}.${CamelCaseString}`;
+type DefinedTypeHistogramKey = IdentifierString | `${IdentifierString}.${IdentifierString}`;
 
 export type DefinedTypeHistogram = {
     [key: DefinedTypeHistogramKey]: {
@@ -29,7 +29,7 @@ function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogr
 
     histograms.forEach(histogram => {
         Object.keys(histogram).forEach(key => {
-            const mainCaseKey = key as CamelCaseString;
+            const mainCaseKey = key as IdentifierString;
             if (result[mainCaseKey] === undefined) {
                 result[mainCaseKey] = histogram[mainCaseKey];
             } else {

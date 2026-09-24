@@ -2,7 +2,7 @@
  * Hand-written branded string types used throughout the generated
  * node-type surface to mark strings that must conform to a specific
  * spec constraint (identifiers, namespaces, path expressions,
- * string-encoded numbers) or casing convention.
+ * string-encoded numbers).
  *
  * These types live outside `./generated/` because they're static — they
  * never change with the spec — so there's nothing to regenerate. The
@@ -18,7 +18,7 @@
  * A string asserted to be a Codama identifier: `[A-Za-z_][A-Za-z0-9_]*`.
  * No casing is mandated — `transferTokens`, `transfer_tokens` and
  * `TransferTokens` are all valid — but identifiers sharing a scope must
- * remain unique after case-folding and stripping underscores.
+ * not have the same camelCase form (the spec's casing-collision rule).
  */
 export type IdentifierString = string & {
     readonly ['__string:codama']: 'identifier';
@@ -56,29 +56,4 @@ export type IntegerString = string & {
  */
 export type DecimalString = string & {
     readonly ['__string:codama']: 'decimal';
-};
-
-/** A string asserted to be in camelCase form. */
-export type CamelCaseString = string & {
-    readonly ['__stringCase:codama']: 'camelCase';
-};
-
-/** A string asserted to be in kebabCase form. */
-export type KebabCaseString = string & {
-    readonly ['__stringCase:codama']: 'kebabCase';
-};
-
-/** A string asserted to be in pascalCase form. */
-export type PascalCaseString = string & {
-    readonly ['__stringCase:codama']: 'pascalCase';
-};
-
-/** A string asserted to be in snakeCase form. */
-export type SnakeCaseString = string & {
-    readonly ['__stringCase:codama']: 'snakeCase';
-};
-
-/** A string asserted to be in titleCase form. */
-export type TitleCaseString = string & {
-    readonly ['__stringCase:codama']: 'titleCase';
 };

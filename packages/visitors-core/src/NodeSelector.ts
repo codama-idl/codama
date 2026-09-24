@@ -1,4 +1,5 @@
-import { camelCase, CamelCaseString, Node } from '@codama/nodes';
+import { camelCase } from '@codama/fragments/casing';
+import { Node } from '@codama/nodes';
 
 import { NodePath } from './NodePath';
 
@@ -27,8 +28,8 @@ export const getNodeSelectorFunction = (selector: NodeSelector): NodeSelectorFun
         const [, kinds, name] = matches;
 
         // Check kinds.
-        const kindArray = kinds ? kinds.split('|').map(camelCase) : [];
-        if (kindArray.length > 0 && !kindArray.includes(node.kind as CamelCaseString)) {
+        const kindArray: string[] = kinds ? kinds.split('|').map(kind => camelCase(kind)) : [];
+        if (kindArray.length > 0 && !kindArray.includes(node.kind)) {
             return false;
         }
 

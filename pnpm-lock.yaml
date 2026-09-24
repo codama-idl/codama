@@ -173,6 +173,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -271,6 +274,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -297,6 +303,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -371,6 +380,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -383,6 +395,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -395,6 +410,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes

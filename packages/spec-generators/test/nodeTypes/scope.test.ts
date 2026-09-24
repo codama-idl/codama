@@ -134,11 +134,14 @@ describe('buildRenderScope', () => {
         // The scope still carries entries so renderers can resolve
         // symbolic imports against them.
         const scope = buildRenderScope(buildSpec([]), options);
-        expect(scope.symbolicModules.get('brand:CamelCaseString')).toBe('../brands');
-        expect(scope.symbolicModules.get('brand:KebabCaseString')).toBe('../brands');
-        expect(scope.symbolicModules.get('brand:PascalCaseString')).toBe('../brands');
-        expect(scope.symbolicModules.get('brand:SnakeCaseString')).toBe('../brands');
-        expect(scope.symbolicModules.get('brand:TitleCaseString')).toBe('../brands');
+        for (const brand of ['IdentifierString', 'NamespaceString', 'PathString', 'IntegerString', 'DecimalString']) {
+            expect(scope.symbolicModules.get(`brand:${brand}`)).toBe('../brands');
+        }
+    });
+
+    it('no longer registers casing brands', () => {
+        const scope = buildRenderScope(buildSpec([]), options);
+        expect(scope.symbolicModules.get('brand:CamelCaseString')).toBeUndefined();
     });
 
     it('points docs:Docs at the hand-written ../Docs sibling', () => {

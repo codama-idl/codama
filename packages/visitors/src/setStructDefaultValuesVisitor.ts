@@ -1,6 +1,6 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
     assertIsNode,
-    camelCase,
     InstructionArgumentNode,
     instructionArgumentNode,
     instructionNode,

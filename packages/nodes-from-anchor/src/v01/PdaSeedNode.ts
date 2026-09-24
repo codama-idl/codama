@@ -3,11 +3,11 @@ import {
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     CodamaError,
 } from '@codama/errors';
+import { camelCase } from '@codama/fragments/casing';
 import {
     accountValueNode,
     argumentValueNode,
     bytesTypeNode,
-    camelCase,
     constantPdaSeedNodeFromBytes,
     InstructionArgumentNode,
     isNode,

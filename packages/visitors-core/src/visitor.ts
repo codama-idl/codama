@@ -1,5 +1,6 @@
 import { CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, CodamaError } from '@codama/errors';
-import { type GetNodeFromKind, type Node, type NodeKind, pascalCase, REGISTERED_NODE_KINDS } from '@codama/nodes';
+import { pascalCase } from '@codama/fragments/casing';
+import { type GetNodeFromKind, type Node, type NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 export type Visitor<TReturn, TNodeKind extends NodeKind = NodeKind> = {
     [K in TNodeKind as GetVisitorFunctionName<K>]: (node: GetNodeFromKind<K>) => TReturn;

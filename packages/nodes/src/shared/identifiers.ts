@@ -34,8 +34,9 @@ function assertMatches<T extends string>(value: string, regex: RegExp, expected:
  * Validate and brand a Codama identifier (`[A-Za-z_][A-Za-z0-9_]*`).
  *
  * v2 identifiers preserve their casing — `transferTokens`,
- * `transfer_tokens` and `TransferTokens` are all valid; uniqueness within
- * a scope is resolved by case-folding, not enforced here.
+ * `transfer_tokens` and `TransferTokens` are all valid. Identifiers sharing
+ * a scope must not have the same camelCase form (the spec's
+ * casing-collision rule); that is checked by validators, not here.
  */
 export function identifierString(value: string): IdentifierString {
     return assertMatches(value, IDENTIFIER_REGEX, 'identifier (letters, digits and underscores; no leading digit)');
