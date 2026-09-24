@@ -1,9 +1,9 @@
 import {
     assertIsNode,
-    CamelCaseString,
     DefinedTypeNode,
     enumStructVariantTypeNode,
     getAllDefinedTypes,
+    IdentifierString,
     isNode,
     REGISTERED_NODE_KINDS,
     resolveNestedTypeNode,
@@ -67,7 +67,7 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
 
         const histogram = visit(newRoot, getDefinedTypeHistogramVisitor());
         const typesToUnwrap = typesToPotentiallyUnwrap.filter(
-            type => !histogram[type as CamelCaseString] || histogram[type as CamelCaseString].total === 0,
+            type => !histogram[type as IdentifierString] || histogram[type as IdentifierString].total === 0,
         );
 
         newRoot = visit(newRoot, unwrapDefinedTypesVisitor(typesToUnwrap));

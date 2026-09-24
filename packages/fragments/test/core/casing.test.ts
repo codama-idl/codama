@@ -22,7 +22,7 @@ describe('capitalize', () => {
 describe('snakeCase', () => {
     test('casing', () => {
         expect(snakeCase('lowercased')).toBe('lowercased');
-        expect(snakeCase('UPPERCASED')).toBe('u_p_p_e_r_c_a_s_e_d');
+        expect(snakeCase('UPPERCASED')).toBe('uppercased');
         expect(snakeCase('Capitalized')).toBe('capitalized');
     });
     test('numbers', () => {
@@ -48,7 +48,7 @@ describe('snakeCase', () => {
     test('from title case', () => {
         expect(snakeCase('from lowercased title case')).toBe('from_lowercased_title_case');
         expect(snakeCase('From Capitalized Title Case')).toBe('from_capitalized_title_case');
-        expect(snakeCase('FROM UPPERCASED TITLE CASE')).toBe('f_r_o_m_u_p_p_e_r_c_a_s_e_d_t_i_t_l_e_c_a_s_e');
+        expect(snakeCase('FROM UPPERCASED TITLE CASE')).toBe('from_uppercased_title_case');
         expect(snakeCase('Fr0m T1tl3 C4s3 W1th 42n Numb3r5')).toBe('fr0m_t1tl3_c4s3_w1th_42n_numb3r5');
         expect(snakeCase('Frøm Title Case W:th $peçia! Ch*rs')).toBe('fr_m_title_case_w_th_pe_ia_ch_rs');
         expect(snakeCase(snakeCase('Frøm D0ubl3 Title C*se'))).toBe('fr_m_d0ubl3_title_c_se');
@@ -75,7 +75,7 @@ describe('snakeCase', () => {
 describe('titleCase', () => {
     test('casing', () => {
         expect(titleCase('lowercased')).toBe('Lowercased');
-        expect(titleCase('UPPERCASED')).toBe('U P P E R C A S E D');
+        expect(titleCase('UPPERCASED')).toBe('Uppercased');
         expect(titleCase('Capitalized')).toBe('Capitalized');
     });
     test('numbers', () => {
@@ -101,7 +101,7 @@ describe('titleCase', () => {
     test('from title case', () => {
         expect(titleCase('from lowercased title case')).toBe('From Lowercased Title Case');
         expect(titleCase('From Capitalized Title Case')).toBe('From Capitalized Title Case');
-        expect(titleCase('FROM UPPERCASED TITLE CASE')).toBe('F R O M U P P E R C A S E D T I T L E C A S E');
+        expect(titleCase('FROM UPPERCASED TITLE CASE')).toBe('From Uppercased Title Case');
         expect(titleCase('Fr0m T1tl3 C4s3 W1th 42n Numb3r5')).toBe('Fr0m T1tl3 C4s3 W1th 42n Numb3r5');
         expect(titleCase('Frøm Title Case W:th $peçia! Ch*rs')).toBe('Fr M Title Case W Th Pe Ia Ch Rs');
         expect(titleCase(titleCase('Frøm D0ubl3 Title C*se'))).toBe('Fr M D0ubl3 Title C Se');
@@ -128,7 +128,7 @@ describe('titleCase', () => {
 describe('camelCase', () => {
     test('casing', () => {
         expect(camelCase('lowercased')).toBe('lowercased');
-        expect(camelCase('UPPERCASED')).toBe('uPPERCASED');
+        expect(camelCase('UPPERCASED')).toBe('uppercased');
         expect(camelCase('Capitalized')).toBe('capitalized');
     });
     test('numbers', () => {
@@ -149,27 +149,27 @@ describe('camelCase', () => {
         expect(camelCase('FROM_UPPERCASED_SNAKE_CASE')).toBe('fromUppercasedSnakeCase');
         expect(camelCase('fr0m_5nak3_c4s3_w1th_42n_numb3r5')).toBe('fr0m5nak3C4s3W1th42nNumb3r5');
         expect(camelCase('frøm_snake_case_w:th_$peçia!_ch*rs')).toBe('frMSnakeCaseWThPeIaChRs');
-        expect(camelCase(camelCase('frøm_d0ubl3_Snake_c*se'))).toBe('frMD0ubl3SnakeCSe');
+        expect(camelCase(camelCase('frøm_d0ubl3_Snake_c*se'))).toBe('frMd0ubl3SnakeCSe');
     });
     test('from title case', () => {
         expect(camelCase('from lowercased title case')).toBe('fromLowercasedTitleCase');
         expect(camelCase('From Capitalized Title Case')).toBe('fromCapitalizedTitleCase');
-        expect(camelCase('FROM UPPERCASED TITLE CASE')).toBe('fROMUPPERCASEDTITLECASE');
+        expect(camelCase('FROM UPPERCASED TITLE CASE')).toBe('fromUppercasedTitleCase');
         expect(camelCase('Fr0m T1tl3 C4s3 W1th 42n Numb3r5')).toBe('fr0mT1tl3C4s3W1th42nNumb3r5');
         expect(camelCase('Frøm Title Case W:th $peçia! Ch*rs')).toBe('frMTitleCaseWThPeIaChRs');
-        expect(camelCase(camelCase('Frøm D0ubl3 Title C*se'))).toBe('frMD0ubl3TitleCSe');
+        expect(camelCase(camelCase('Frøm D0ubl3 Title C*se'))).toBe('frMd0ubl3TitleCSe');
     });
     test('from pascal case', () => {
         expect(camelCase('FromPascaleCase')).toBe('fromPascaleCase');
         expect(camelCase('Fr0mP45c4l3C4s3W1th42nNumb3r5')).toBe('fr0mP45c4l3C4s3W1th42nNumb3r5');
         expect(camelCase('FrømPascaleCaseW:th$peçia!Ch*rs')).toBe('frMPascaleCaseWThPeIaChRs');
-        expect(camelCase(camelCase('FrømD0ubl3PascaleC*se'))).toBe('frMD0ubl3PascaleCSe');
+        expect(camelCase(camelCase('FrømD0ubl3PascaleC*se'))).toBe('frMd0ubl3PascaleCSe');
     });
     test('from camel case', () => {
         expect(camelCase('FromCamelCase')).toBe('fromCamelCase');
         expect(camelCase('Fr0mC4m3lC4s3W1th42nNumb3r5')).toBe('fr0mC4m3lC4s3W1th42nNumb3r5');
         expect(camelCase('FrømCamelCaseW:th$peçia!Ch*rs')).toBe('frMCamelCaseWThPeIaChRs');
-        expect(camelCase(camelCase('FrømD0ubl3CamelC*se'))).toBe('frMD0ubl3CamelCSe');
+        expect(camelCase(camelCase('FrømD0ubl3CamelC*se'))).toBe('frMd0ubl3CamelCSe');
     });
     test('from paths', () => {
         expect(camelCase('crate::my_module::my_type')).toBe('crateMyModuleMyType');
@@ -184,7 +184,7 @@ describe('camelCase', () => {
 describe('pascalCase', () => {
     test('casing', () => {
         expect(pascalCase('lowercased')).toBe('Lowercased');
-        expect(pascalCase('UPPERCASED')).toBe('UPPERCASED');
+        expect(pascalCase('UPPERCASED')).toBe('Uppercased');
         expect(pascalCase('Capitalized')).toBe('Capitalized');
     });
     test('joins title-cased words without separators', () => {
@@ -211,7 +211,7 @@ describe('pascalCase', () => {
 describe('kebabCase', () => {
     test('casing', () => {
         expect(kebabCase('lowercased')).toBe('lowercased');
-        expect(kebabCase('UPPERCASED')).toBe('u-p-p-e-r-c-a-s-e-d');
+        expect(kebabCase('UPPERCASED')).toBe('uppercased');
         expect(kebabCase('Capitalized')).toBe('capitalized');
     });
     test('joins title-cased words with dashes and lowercases', () => {
@@ -232,5 +232,38 @@ describe('kebabCase', () => {
     });
     test('idempotent on its own output', () => {
         expect(kebabCase(kebabCase('FromCamelCase'))).toBe('from-camel-case');
+    });
+});
+
+describe('word splitting', () => {
+    test.each([
+        ['MAX_SUPPLY', ['max', 'supply']],
+        ['HTTPServer', ['http', 'server']],
+        ['getURL', ['get', 'url']],
+        ['_foo', ['foo']],
+        ['foo__bar', ['foo', 'bar']],
+        ['foo1bar', ['foo1bar']],
+        ['foo1Bar', ['foo1', 'bar']],
+        ['group__sub_group__name', ['group', 'sub', 'group', 'name']],
+    ])('splits %s into the words of the spec casing-collision rule', (input, words) => {
+        expect(snakeCase(input)).toBe(words.join('_'));
+        expect(kebabCase(input)).toBe(words.join('-'));
+        expect(camelCase(input)).toBe(words.map((word, index) => (index === 0 ? word : capitalize(word))).join(''));
+        expect(pascalCase(input)).toBe(words.map(capitalize).join(''));
+    });
+    test.each([
+        ['fooBar', 'foo_bar'],
+        ['foo1', 'foo_1'],
+        ['getURL', 'get_url'],
+        ['HTTPServer', 'httpServer'],
+        ['_foo', 'foo'],
+    ])('derives the same camelCase form for %s and %s', (first, second) => {
+        expect(camelCase(first)).toBe(camelCase(second));
+    });
+    test.each([
+        ['foo_dart', 'food_art'],
+        ['foo1bar', 'foo1_bar'],
+    ])('keeps %s and %s distinct', (first, second) => {
+        expect(camelCase(first)).not.toBe(camelCase(second));
     });
 });

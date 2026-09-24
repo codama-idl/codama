@@ -1,7 +1,7 @@
 import { CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND, CodamaError } from '@codama/errors';
+import { camelCase } from '@codama/fragments/casing';
 import {
     assertIsNode,
-    camelCase,
     EnumTypeNode,
     instructionArgumentNode,
     InstructionNode,

@@ -1,8 +1,9 @@
 import { logWarn } from '@codama/errors';
+import { camelCase } from '@codama/fragments/casing';
 import {
     assertIsNode,
-    camelCase,
-    type CamelCaseString,
+    identifierString,
+    IdentifierString,
     instructionAccountNode,
     type InstructionNode,
     instructionNode,
@@ -21,13 +22,13 @@ function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): Fingerprint
     return visit(pdaNode({ ...pda, identifier: '' }), hashVisitor);
 }
 
-function getUniquePdaName(name: CamelCaseString, usedNames: Set<CamelCaseString>): CamelCaseString {
+function getUniquePdaName(name: IdentifierString, usedNames: Set<IdentifierString>): IdentifierString {
     if (!usedNames.has(name)) return name;
     let suffix = 2;
-    let candidate = camelCase(`${name}${suffix}`);
+    let candidate = identifierString(camelCase(`${name}${suffix}`));
     while (usedNames.has(candidate)) {
         suffix++;
-        candidate = camelCase(`${name}${suffix}`);
+        candidate = identifierString(camelCase(`${name}${suffix}`));
     }
     return candidate;
 }
@@ -47,8 +48,8 @@ export function extractPdasVisitor() {
 export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
     const hashVisitor = getUniqueHashStringVisitor();
     const pdaMap = new Map<Fingerprint, PdaNode>();
-    const usedNames = new Set<CamelCaseString>((program.pdas ?? []).map(p => p.identifier));
-    const nameToFingerprint = new Map<CamelCaseString, Fingerprint>();
+    const usedNames = new Set<IdentifierString>((program.pdas ?? []).map(p => p.identifier));
+    const nameToFingerprint = new Map<IdentifierString, Fingerprint>();
 
     const rewrittenInstructions = (program.instructions ?? []).map(instruction => {
         const rewrittenAccounts = (instruction.accounts ?? []).map(account => {
@@ -70,7 +71,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
                 const existingFingerprint = nameToFingerprint.get(resolvedName);
 
                 if (existingFingerprint !== undefined && existingFingerprint !== fingerprint) {
-                    resolvedName = camelCase(`${instruction.identifier}_${pda.identifier}`);
+                    resolvedName = identifierString(camelCase(`${instruction.identifier}_${pda.identifier}`));
                     logWarn(
                         `PDA name collision: "${pda.identifier}" has different seeds across instructions. ` +
                             `Renaming to "${resolvedName}".`,

@@ -1,12 +1,6 @@
 import { CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, CodamaError } from '@codama/errors';
-import {
-    assertIsNode,
-    camelCase,
-    InstructionArgumentNode,
-    instructionArgumentNode,
-    instructionNode,
-    isNode,
-} from '@codama/nodes';
+import { camelCase } from '@codama/fragments/casing';
+import { assertIsNode, InstructionArgumentNode, instructionArgumentNode, instructionNode, isNode } from '@codama/nodes';
 import { bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export function flattenInstructionDataArgumentsVisitor() {

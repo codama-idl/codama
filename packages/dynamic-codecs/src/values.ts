@@ -3,7 +3,8 @@ import {
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
     CodamaError,
 } from '@codama/errors';
-import { assertIsNode, bytesTypeNode, isNode, pascalCase, ValueNode } from '@codama/nodes';
+import { pascalCase } from '@codama/fragments/casing';
+import { assertIsNode, bytesTypeNode, isNode, ValueNode } from '@codama/nodes';
 import { LinkableDictionary, NodeStack, pipe, recordNodeStackVisitor, visit, Visitor } from '@codama/visitors-core';
 
 import { CodecVisitorOptions, getNodeCodecVisitor } from './codecs';

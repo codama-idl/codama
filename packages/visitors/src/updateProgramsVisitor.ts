@@ -1,4 +1,5 @@
-import { assertIsNode, camelCase, programLinkNode, programNode, ProgramNodeInput } from '@codama/nodes';
+import { camelCase } from '@codama/fragments/casing';
+import { assertIsNode, programLinkNode, programNode, ProgramNodeInput } from '@codama/nodes';
 import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 export type ProgramUpdates =

@@ -1,10 +1,10 @@
 import { CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, CodamaError } from '@codama/errors';
+import { camelCase } from '@codama/fragments/casing';
 import {
     AccountNode,
     accountNode,
     assertIsNode,
     bytesTypeNode,
-    camelCase,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,
     structFieldTypeNode,

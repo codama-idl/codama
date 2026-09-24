@@ -60,6 +60,7 @@
     "dependencies": {
         "@codama/cli": "workspace:*",
         "@codama/errors": "workspace:*",
+        "@codama/fragments": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/validators": "workspace:*",
         "@codama/visitors": "workspace:*"

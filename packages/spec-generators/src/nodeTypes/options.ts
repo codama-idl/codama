@@ -61,11 +61,6 @@ const BRAND_NAMES: readonly string[] = [
     'PathString',
     'IntegerString',
     'DecimalString',
-    'CamelCaseString',
-    'KebabCaseString',
-    'PascalCaseString',
-    'SnakeCaseString',
-    'TitleCaseString',
 ];
 
 export function buildRenderScope(spec: Spec, options: RenderOptions): RenderScope {

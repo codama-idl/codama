@@ -1,5 +1,5 @@
 import { getNodeCodec, ReadonlyUint8Array } from '@codama/dynamic-codecs';
-import { AccountNode, CamelCaseString, EventNode, GetNodeFromKind, InstructionNode, RootNode } from '@codama/nodes';
+import { AccountNode, EventNode, GetNodeFromKind, IdentifierString, InstructionNode, RootNode } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 import type {
     AccountLookupMeta,
@@ -70,7 +70,7 @@ export function parseData<TKind extends ParsableNodeKind>(
 /**
  * The parsed accounts of an instruction, each pairing its on-chain `AccountMeta` with its node name.
  */
-export type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { name: CamelCaseString }>;
+export type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { name: IdentifierString }>;
 
 /**
  * A parsed instruction: its decoded data and node path, plus its resolved {@link ParsedInstructionAccounts}.

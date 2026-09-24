@@ -1,4 +1,5 @@
-import { camelCase, InstructionAccountNode, instructionAccountNode } from '@codama/nodes';
+import { camelCase } from '@codama/fragments/casing';
+import { InstructionAccountNode, instructionAccountNode } from '@codama/nodes';
 
 import { IdlV00Account, IdlV00AccountItem } from './idl';
 
@@ -46,9 +47,9 @@ export function instructionAccountNodeFromAnchorV00(idl: IdlV00Account, prefix?:
     const desc = idl.desc ? [idl.desc] : undefined;
     return instructionAccountNode({
         docs: idl.docs ?? desc ?? [],
+        identifier: prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? ''),
         isOptional,
         isSigner: idl.isOptionalSigner ? 'either' : (idl.isSigner ?? false),
         isWritable: idl.isMut ?? false,
-        identifier: prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? ''),
     });
 }

@@ -1,6 +1,6 @@
 import { CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, CodamaError } from '@codama/errors';
+import { camelCase } from '@codama/fragments/casing';
 import {
-    camelCase,
     constantPdaSeedNodeFromProgramId,
     constantPdaSeedNodeFromString,
     pdaNode,
