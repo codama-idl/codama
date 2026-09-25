@@ -339,3 +339,30 @@ test('it unwraps and removes generic types', () => {
         }),
     );
 });
+
+test('it follows the program defined types in nested argument seeds', () => {
+    // Given an instruction whose PDA is seeded by a nested field of an argument using a defined type.
+    const node = programNodeFromAnchorV01({
+        address: '1111',
+        instructions: [
+            {
+                accounts: [{ name: 'vault', pda: { seeds: [{ kind: 'arg', path: 'params.seed' }] } }],
+                args: [{ name: 'params', type: { defined: { name: 'Params' } } }],
+                discriminator: [1, 2, 3, 4, 5, 6, 7, 8],
+                name: 'initialize',
+            },
+        ],
+        metadata: { name: 'my_program', spec: '0.1.0', version: '1.2.3' },
+        types: [{ name: 'Params', type: { fields: [{ name: 'seed', type: 'u16' }], kind: 'struct' } }],
+    });
+
+    // Then the PDA seed uses the type of that nested field.
+    expect(node.instructions?.[0].accounts?.[0].defaultValue).toEqual(
+        pdaValueNode(
+            pdaNode({ identifier: 'vault', seeds: [variablePdaSeedNode('params_seed', integerTypeNode('u16'))] }),
+            {
+                seeds: [pdaSeedValueNode('params_seed', dataValueNode('params.seed'))],
+            },
+        ),
+    );
+});

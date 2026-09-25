@@ -9,13 +9,18 @@ import { eventNodeFromAnchorV00 } from './EventNode';
 import { IdlV00 } from './idl';
 import { instructionNodeFromAnchorV00 } from './InstructionNode';
 import { pdaNodeFromAnchorV00 } from './PdaNode';
+import { typeNodeFromAnchorV00 } from './typeNodes';
 
 export function programNodeFromAnchorV00(idl: IdlV00): ProgramNode {
     const origin = (idl?.metadata as { origin?: 'anchor' | 'shank' })?.origin ?? 'anchor';
     const pdas = (idl.accounts ?? []).filter(account => (account.seeds ?? []).length > 0).map(pdaNodeFromAnchorV00);
     const accounts = (idl.accounts ?? []).map(a => accountNodeFromAnchorV00(a, origin));
+    const definedTypeMap = new Map([
+        ...(idl.types ?? []).map(type => [type.name, typeNodeFromAnchorV00(type.type)] as const),
+        ...(idl.accounts ?? []).map(account => [account.name, typeNodeFromAnchorV00(account.type)] as const),
+    ]);
     const instructions = (idl.instructions ?? []).map((instruction, index) =>
-        instructionNodeFromAnchorV00(instruction, index, origin),
+        instructionNodeFromAnchorV00(instruction, index, origin, definedTypeMap),
     );
     const events = origin === 'anchor' ? (idl.events ?? []).map(eventNodeFromAnchorV00) : [];
     return programNode({

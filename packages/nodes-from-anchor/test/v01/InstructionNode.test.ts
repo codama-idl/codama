@@ -47,24 +47,7 @@ test('it creates instruction nodes', () => {
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    // TODO: Handle seeds with nested paths. (Needs a path in the IDL but should we?)
-                    // defaultValue: pdaValueNode(
-                    //     pdaNode({
-                    //         identifier: 'distribution',
-                    //         seeds: [
-                    //             constantPdaSeedNodeFromBytes('base58', 'F9bS'),
-                    //             variablePdaSeedNode('distribution_group_mint', publicKeyTypeNode()),
-                    //         ],
-                    //     }),
-                    //     {
-                    //         seeds: [
-                    //             pdaSeedValueNode(
-                    //                 'distribution_group_mint',
-                    //                 accountValueNode('distribution', 'group_mint'),
-                    //             ),
-                    //         ],
-                    //     },
-                    // ),
+                    // No default value: the seed reads a field of an account, which would require fetching it.
                     identifier: 'distribution',
                     isSigner: false,
                     isWritable: true,
