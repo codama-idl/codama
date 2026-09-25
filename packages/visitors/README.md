@@ -205,11 +205,14 @@ codama.update(setFixedAccountSizesVisitor());
 
 ### `setInstructionAccountDefaultValuesVisitor`
 
-This visitor helps set the default values of instruction accounts in bulk. It accepts an array of "rule" objects that must contain the default value to set and the name of the instruction account to set it on. The account name may also be a regular expression to match more complex patterns.
+This visitor helps set the default values of instruction accounts in bulk, including the accounts of sub-instructions. It accepts an array of "rule" objects that must contain the default value to set and the identifier of the instruction account to set it on (matched exactly). The account identifier may also be a regular expression to match more complex patterns. Rules restricted to an `instruction` take precedence over the others, and `ignoreIfOptional` leaves optional or already defaulted accounts untouched.
+
+Missing seeds of `PdaValueNode` default values are filled using the `fillDefaultPdaSeedValuesVisitor`; a rule whose seeds cannot all be filled is skipped for that account. The `getCommonInstructionAccountDefaultRules` function returns rules for common accounts such as payers, authorities, well-known programs and sysvars, matching both their camelCase and snake_case identifiers.
 
 ```ts
 codama.update(
     setInstructionAccountDefaultValuesVisitor([
+        ...getCommonInstructionAccountDefaultRules(),
         {
             // Set this public key as default value to any account named 'counterProgram'.
             account: 'counterProgram',
@@ -226,28 +229,42 @@ codama.update(
 
 ### `setInstructionDiscriminatorsVisitor`
 
-This visitor adds a new instruction argument to each of the provided instruction names. The new argument is added before any existing argument and marked as a discriminator of the instruction. This is useful if your Codama IDL is missing discriminators in the instruction data.
+This visitor adds a discriminator to the data of each of the provided instructions. This is useful if your Codama IDL is missing discriminators in the instruction data.
+
+- When the instruction data is an inline `StructTypeNode` without transforms (or absent), the discriminator is added as its first field (named `discriminator` by default) and a `FieldDiscriminatorNode` pointing to it is added.
+- Otherwise, such as when the data links to a defined type or carries transforms, the discriminator is added as a `HiddenPrefixTransformNode` on the data, leaving the defined type untouched, and a `ConstantDiscriminatorNode` is added.
+
+The discriminator type defaults to `u8` and must have a fixed size, since the offsets of existing discriminators are shifted by it.
 
 ```ts
 codama.update(
     setInstructionDiscriminatorsVisitor({
-        mint: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(0) },
-        transfer: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(1) },
-        burn: { name: 'discriminator', type: numberTypeNode('u8'), value: numberValueNode(2) },
+        mint: { value: integerValueNode('0') },
+        transfer: { value: integerValueNode('1') },
+        burn: { identifier: 'kind', type: integerTypeNode('u32'), value: integerValueNode('2') },
     }),
 );
 ```
 
 ### `setNumberWrappersVisitor`
 
-This visitor helps wrap `NumberTypeNodes` matching a given name with a specific number wrapper.
+This visitor gives semantic meaning to the numbers matching the provided `NodeSelectors`, using the following wrappers:
+
+- `FixedPoint` and `SolAmount` wrap an integer in a `FixedPointTypeNode`, `SolAmount` being a fixed point of scale 9 in `SOL`.
+- `DateTime` and `Duration` wrap an integer in a `DateTimeTypeNode` or a `DurationTypeNode`.
+- `Unit` sets the `unit` of an integer or a float.
+- `AmountDisplay` and `UnitDisplay` set the `display` of an integer to an `AmountNumberDisplayNode` or a `UnitNumberDisplayNode`. `UnitDisplay` also applies to floats.
+
+Wrappers carry the transforms of the number they wrap. Integers used as sizes or prefixes, and numbers within the type of a constant, are left untouched.
 
 ```ts
 codama.update(
     setNumberWrappersVisitor({
         lamports: { kind: 'SolAmount' },
         timestamp: { kind: 'DateTime' },
-        percent: { decimals: 2, kind: 'Amount', unit: '%' },
+        'mint.supply': { kind: 'FixedPoint', scale: 6, unit: 'USDC' },
+        'transfer.amount': { decimals: injectedValueNode({ key: 'decimals' }), kind: 'AmountDisplay' },
+        percent: { kind: 'Unit', unit: '%' },
     }),
 );
 ```
