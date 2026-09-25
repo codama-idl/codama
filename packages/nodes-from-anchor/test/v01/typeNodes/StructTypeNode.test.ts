@@ -1,10 +1,10 @@
 import { CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, CodamaError } from '@codama/errors';
 import {
     arrayTypeNode,
-    numberTypeNode,
+    integerTypeNode,
     prefixedCountNode,
     publicKeyTypeNode,
-    sizePrefixTypeNode,
+    sizePrefixTransformNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -32,11 +32,11 @@ test('it creates struct type nodes', () => {
     expect(node).toEqual(
         structTypeNode([
             structFieldTypeNode({
-                name: 'name',
-                type: sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u32')),
+                identifier: 'name',
+                type: stringTypeNode('utf8', { transforms: [sizePrefixTransformNode(integerTypeNode('u32'))] }),
             }),
-            structFieldTypeNode({ name: 'age', type: numberTypeNode('u8') }),
-            structFieldTypeNode({ name: 'createdAt', type: numberTypeNode('u8') }),
+            structFieldTypeNode({ identifier: 'age', type: integerTypeNode('u8') }),
+            structFieldTypeNode({ identifier: 'created_at', type: integerTypeNode('u8') }),
         ]),
     );
 });
@@ -52,8 +52,8 @@ test('it creates tuple type nodes when unnamed fields are provided', () => {
 
     expect(node).toEqual(
         tupleTypeNode([
-            numberTypeNode('u8'),
-            arrayTypeNode(publicKeyTypeNode(), prefixedCountNode(numberTypeNode('u32'))),
+            integerTypeNode('u8'),
+            arrayTypeNode(publicKeyTypeNode(), prefixedCountNode(integerTypeNode('u32'))),
         ]),
     );
 });

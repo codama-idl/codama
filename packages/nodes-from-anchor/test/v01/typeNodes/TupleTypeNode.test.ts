@@ -1,4 +1,4 @@
-import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { GenericsV01, typeNodeFromAnchorV01 } from '../../../src';
@@ -14,5 +14,5 @@ test('it creates tuple type nodes', () => {
         generics,
     );
 
-    expect(node).toEqual(tupleTypeNode([numberTypeNode('u8'), publicKeyTypeNode()]));
+    expect(node).toEqual(tupleTypeNode([integerTypeNode('u8'), publicKeyTypeNode()]));
 });

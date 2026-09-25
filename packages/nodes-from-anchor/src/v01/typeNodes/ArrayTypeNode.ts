@@ -1,4 +1,4 @@
-import { ArrayTypeNode, arrayTypeNode, fixedCountNode, numberTypeNode, prefixedCountNode } from '@codama/nodes';
+import { ArrayTypeNode, arrayTypeNode, fixedCountNode, integerTypeNode, prefixedCountNode } from '@codama/nodes';
 
 import type { IdlV01TypeArray, IdlV01TypeVec } from '../idl';
 import type { GenericsV01 } from '../unwrapGenerics';
@@ -14,5 +14,5 @@ export function arrayTypeNodeFromAnchorV01(idl: IdlV01TypeArray | IdlV01TypeVec,
 
     const item = typeNodeFromAnchorV01(idl.vec, generics);
 
-    return arrayTypeNode(item, prefixedCountNode(numberTypeNode('u32')));
+    return arrayTypeNode(item, prefixedCountNode(integerTypeNode('u32')));
 }

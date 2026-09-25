@@ -1,20 +1,23 @@
-import { numberTypeNode } from '@codama/nodes';
+import { floatTypeNode, integerTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV00 } from '../../../src';
 
-test('it creates number type nodes', () => {
-    expect(typeNodeFromAnchorV00('f32')).toEqual(numberTypeNode('f32'));
-    expect(typeNodeFromAnchorV00('f64')).toEqual(numberTypeNode('f64'));
-    expect(typeNodeFromAnchorV00('i8')).toEqual(numberTypeNode('i8'));
-    expect(typeNodeFromAnchorV00('i16')).toEqual(numberTypeNode('i16'));
-    expect(typeNodeFromAnchorV00('i32')).toEqual(numberTypeNode('i32'));
-    expect(typeNodeFromAnchorV00('i64')).toEqual(numberTypeNode('i64'));
-    expect(typeNodeFromAnchorV00('i128')).toEqual(numberTypeNode('i128'));
-    expect(typeNodeFromAnchorV00('shortU16')).toEqual(numberTypeNode('shortU16'));
-    expect(typeNodeFromAnchorV00('u8')).toEqual(numberTypeNode('u8'));
-    expect(typeNodeFromAnchorV00('u16')).toEqual(numberTypeNode('u16'));
-    expect(typeNodeFromAnchorV00('u32')).toEqual(numberTypeNode('u32'));
-    expect(typeNodeFromAnchorV00('u64')).toEqual(numberTypeNode('u64'));
-    expect(typeNodeFromAnchorV00('u128')).toEqual(numberTypeNode('u128'));
+test('it creates float type nodes', () => {
+    expect(typeNodeFromAnchorV00('f32')).toEqual(floatTypeNode('f32'));
+    expect(typeNodeFromAnchorV00('f64')).toEqual(floatTypeNode('f64'));
+});
+
+test('it creates integer type nodes', () => {
+    expect(typeNodeFromAnchorV00('i8')).toEqual(integerTypeNode('i8'));
+    expect(typeNodeFromAnchorV00('i16')).toEqual(integerTypeNode('i16'));
+    expect(typeNodeFromAnchorV00('i32')).toEqual(integerTypeNode('i32'));
+    expect(typeNodeFromAnchorV00('i64')).toEqual(integerTypeNode('i64'));
+    expect(typeNodeFromAnchorV00('i128')).toEqual(integerTypeNode('i128'));
+    expect(typeNodeFromAnchorV00('shortU16')).toEqual(integerTypeNode('shortU16'));
+    expect(typeNodeFromAnchorV00('u8')).toEqual(integerTypeNode('u8'));
+    expect(typeNodeFromAnchorV00('u16')).toEqual(integerTypeNode('u16'));
+    expect(typeNodeFromAnchorV00('u32')).toEqual(integerTypeNode('u32'));
+    expect(typeNodeFromAnchorV00('u64')).toEqual(integerTypeNode('u64'));
+    expect(typeNodeFromAnchorV00('u128')).toEqual(integerTypeNode('u128'));
 });

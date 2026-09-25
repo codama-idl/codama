@@ -1,11 +1,12 @@
 import { CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING, CodamaError } from '@codama/errors';
-import { constantDiscriminatorNode, constantValueNode } from '@codama/nodes';
 import {
     bytesTypeNode,
+    constantDiscriminatorNode,
+    constantValueNode,
     eventNode,
-    fixedSizeTypeNode,
-    hiddenPrefixTypeNode,
-    numberTypeNode,
+    fixedSizeTransformNode,
+    hiddenPrefixTransformNode,
+    integerTypeNode,
     structFieldTypeNode,
     structTypeNode,
     tupleTypeNode,
@@ -15,6 +16,10 @@ import { expect, test } from 'vitest';
 import { eventNodeFromAnchorV01, GenericsV01, getAnchorDiscriminatorV01 } from '../../src';
 
 const generics = {} as GenericsV01;
+const discriminator = constantValueNode(
+    bytesTypeNode({ transforms: [fixedSizeTransformNode(8)] }),
+    getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+);
 
 test('it creates event nodes with anchor discriminators', () => {
     const node = eventNodeFromAnchorV01(
@@ -42,24 +47,11 @@ test('it creates event nodes with anchor discriminators', () => {
 
     expect(node).toEqual(
         eventNode({
-            data: hiddenPrefixTypeNode(
-                structTypeNode([structFieldTypeNode({ name: 'amount', type: numberTypeNode('u32') })]),
-                [
-                    constantValueNode(
-                        fixedSizeTypeNode(bytesTypeNode(), 8),
-                        getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
-                    ),
-                ],
-            ),
-            discriminators: [
-                constantDiscriminatorNode(
-                    constantValueNode(
-                        fixedSizeTypeNode(bytesTypeNode(), 8),
-                        getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
-                    ),
-                ),
-            ],
-            name: 'myEvent',
+            data: structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u32') })], {
+                transforms: [hiddenPrefixTransformNode([discriminator])],
+            }),
+            discriminators: [constantDiscriminatorNode(discriminator)],
+            identifier: 'MyEvent',
         }),
     );
 });
@@ -85,21 +77,37 @@ test('it creates tuple event nodes with anchor discriminators', () => {
 
     expect(node).toEqual(
         eventNode({
-            data: hiddenPrefixTypeNode(tupleTypeNode([numberTypeNode('u32'), numberTypeNode('u64')]), [
-                constantValueNode(
-                    fixedSizeTypeNode(bytesTypeNode(), 8),
-                    getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
-                ),
-            ]),
-            discriminators: [
-                constantDiscriminatorNode(
-                    constantValueNode(
-                        fixedSizeTypeNode(bytesTypeNode(), 8),
-                        getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
-                    ),
-                ),
-            ],
-            name: 'tupleEvent',
+            data: tupleTypeNode([integerTypeNode('u32'), integerTypeNode('u64')], {
+                transforms: [hiddenPrefixTransformNode([discriminator])],
+            }),
+            discriminators: [constantDiscriminatorNode(discriminator)],
+            identifier: 'TupleEvent',
+        }),
+    );
+});
+
+test('it includes the docs of the event type', () => {
+    const node = eventNodeFromAnchorV01(
+        {
+            discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+            name: 'MyEvent',
+        },
+        [
+            {
+                docs: ['My event.', 'With two lines.'],
+                name: 'MyEvent',
+                type: { fields: [], kind: 'struct' },
+            },
+        ],
+        generics,
+    );
+
+    expect(node).toEqual(
+        eventNode({
+            data: structTypeNode([], { transforms: [hiddenPrefixTransformNode([discriminator])] }),
+            discriminators: [constantDiscriminatorNode(discriminator)],
+            docs: 'My event.\nWith two lines.',
+            identifier: 'MyEvent',
         }),
     );
 });

@@ -1,10 +1,9 @@
-import { camelCase } from '@codama/fragments/casing';
 import {
     booleanValueNode,
     bytesTypeNode,
     constantPdaSeedNode,
     constantPdaSeedNodeFromProgramId,
-    numberValueNode,
+    integerValueNode,
     PdaNode,
     pdaNode,
     PdaSeedNode,
@@ -18,22 +17,20 @@ import { IdlV00PdaDef, IdlV00Type } from './idl';
 import { typeNodeFromAnchorV00 } from './typeNodes';
 
 export function pdaNodeFromAnchorV00(idl: IdlV00PdaDef): PdaNode {
-    const name = camelCase(idl.name ?? '');
+    const name = idl.name ?? '';
     const seeds = (idl.seeds ?? []).map((seed): PdaSeedNode => {
         if (seed.kind === 'constant') {
             const value = (() => {
                 if (typeof seed.value === 'string') return stringValueNode(seed.value);
-                if (typeof seed.value === 'number') return numberValueNode(seed.value);
+                if (typeof seed.value === 'number') return integerValueNode(String(seed.value));
                 return booleanValueNode(seed.value);
             })();
             return constantPdaSeedNode(pdaSeedTypeNodeFromAnchorV00(seed.type), value);
         }
         if (seed.kind === 'variable') {
-            return variablePdaSeedNode(
-                seed.name,
-                pdaSeedTypeNodeFromAnchorV00(seed.type),
-                seed.description ? [seed.description] : [],
-            );
+            return variablePdaSeedNode(seed.name, pdaSeedTypeNodeFromAnchorV00(seed.type), {
+                docs: seed.description || undefined,
+            });
         }
         return constantPdaSeedNodeFromProgramId();
     });

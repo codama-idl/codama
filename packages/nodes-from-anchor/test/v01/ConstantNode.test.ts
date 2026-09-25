@@ -5,8 +5,10 @@ import {
     bytesValueNode,
     constantNode,
     definedTypeLinkNode,
-    numberTypeNode,
-    numberValueNode,
+    floatTypeNode,
+    floatValueNode,
+    integerTypeNode,
+    integerValueNode,
     publicKeyTypeNode,
     publicKeyValueNode,
     stringTypeNode,
@@ -28,8 +30,8 @@ test('it parses constant with number type and value', () => {
         generics,
     );
 
-    expect(node).toEqual(constantNode('maxSize', numberTypeNode('u64'), numberValueNode(1000)));
-    expect(node.name).toBe('maxSize');
+    expect(node).toEqual(constantNode('MAX_SIZE', integerTypeNode('u64'), integerValueNode('1000')));
+    expect(node.identifier).toBe('MAX_SIZE');
 });
 
 test('it parses constant with bytes type and value', () => {
@@ -42,7 +44,7 @@ test('it parses constant with bytes type and value', () => {
         generics,
     );
 
-    expect(node).toEqual(constantNode('seedPrefix', bytesTypeNode(), bytesValueNode('base16', '74657374')));
+    expect(node).toEqual(constantNode('seed_prefix', bytesTypeNode(), bytesValueNode('base16', '74657374')));
 });
 
 test('it parses constant with negative numeric value', () => {
@@ -55,7 +57,7 @@ test('it parses constant with negative numeric value', () => {
         generics,
     );
 
-    expect(node).toEqual(constantNode('negConst', numberTypeNode('i8'), numberValueNode(-5)));
+    expect(node).toEqual(constantNode('neg_const', integerTypeNode('i8'), integerValueNode('-5')));
 });
 
 test('it parses constant with boolean type and value', () => {
@@ -68,7 +70,7 @@ test('it parses constant with boolean type and value', () => {
         generics,
     );
 
-    expect(node).toEqual(constantNode('isActive', booleanTypeNode(), booleanValueNode(true)));
+    expect(node).toEqual(constantNode('is_active', booleanTypeNode(), booleanValueNode(true)));
 });
 
 test('it parses constant with pubkey type and value', () => {
@@ -82,7 +84,7 @@ test('it parses constant with pubkey type and value', () => {
     );
 
     expect(node).toEqual(
-        constantNode('adminKey', publicKeyTypeNode(), publicKeyValueNode('11111111111111111111111111111111')),
+        constantNode('admin_key', publicKeyTypeNode(), publicKeyValueNode('11111111111111111111111111111111')),
     );
 });
 
@@ -96,7 +98,7 @@ test('it resolves linked defined types as raw string values', () => {
         generics,
     );
 
-    expect(node).toEqual(constantNode('appName', definedTypeLinkNode('String'), stringValueNode('MyApp')));
+    expect(node).toEqual(constantNode('app_name', definedTypeLinkNode('String'), stringValueNode('MyApp')));
 });
 
 test('it handles malformed JSON in value gracefully', () => {
@@ -109,7 +111,7 @@ test('it handles malformed JSON in value gracefully', () => {
         generics,
     );
 
-    expect(node).toEqual(constantNode('badConstant', stringTypeNode('utf8'), stringValueNode('[invalid json')));
+    expect(node).toEqual(constantNode('bad_constant', stringTypeNode('utf8'), stringValueNode('[invalid json')));
 });
 
 test.each([
@@ -130,7 +132,50 @@ test.each([
         generics,
     );
 
-    expect(node).toEqual(constantNode('badBytes', stringTypeNode('utf8'), stringValueNode(value)));
+    expect(node).toEqual(constantNode('bad_bytes', stringTypeNode('utf8'), stringValueNode(value)));
+});
+
+test('it parses 64-bit and 128-bit integer constants losslessly', () => {
+    const u64 = constantNodeFromAnchorV01({ name: 'MAX_U64', type: 'u64', value: '18446744073709551615' }, generics);
+    const i128 = constantNodeFromAnchorV01(
+        { name: 'MIN_I128', type: 'i128', value: '-170141183460469231731687303715884105728' },
+        generics,
+    );
+
+    expect(u64).toEqual(constantNode('MAX_U64', integerTypeNode('u64'), integerValueNode('18446744073709551615')));
+    expect(i128).toEqual(
+        constantNode('MIN_I128', integerTypeNode('i128'), integerValueNode('-170141183460469231731687303715884105728')),
+    );
+});
+
+test('it normalises integer constants', () => {
+    const node = constantNodeFromAnchorV01({ name: 'padded', type: 'u8', value: '007' }, generics);
+
+    expect(node).toEqual(constantNode('padded', integerTypeNode('u8'), integerValueNode('7')));
+});
+
+test('it falls back to string for non-integer values of integer constants', () => {
+    const node = constantNodeFromAnchorV01({ name: 'expr', type: 'u64', value: '10 * 1000' }, generics);
+
+    expect(node).toEqual(constantNode('expr', stringTypeNode('utf8'), stringValueNode('10 * 1000')));
+});
+
+test('it parses float constants', () => {
+    const node = constantNodeFromAnchorV01({ name: 'ratio', type: 'f64', value: '1.50' }, generics);
+
+    expect(node).toEqual(constantNode('ratio', floatTypeNode('f64'), floatValueNode('1.5')));
+});
+
+test('it falls back to string for non-decimal values of float constants', () => {
+    const node = constantNodeFromAnchorV01({ name: 'ratio', type: 'f32', value: '1e3' }, generics);
+
+    expect(node).toEqual(constantNode('ratio', stringTypeNode('utf8'), stringValueNode('1e3')));
+});
+
+test('it falls back to string for non-boolean values of boolean constants', () => {
+    const node = constantNodeFromAnchorV01({ name: 'flag', type: 'bool', value: 'yes' }, generics);
+
+    expect(node).toEqual(constantNode('flag', stringTypeNode('utf8'), stringValueNode('yes')));
 });
 
 test('it parses constants in full program', () => {
@@ -153,8 +198,23 @@ test('it parses constants in full program', () => {
     });
 
     expect(node.constants).toHaveLength(2);
-    expect((node.constants ?? [])[0]).toEqual(constantNode('maxItems', numberTypeNode('u32'), numberValueNode(100)));
-    expect((node.constants ?? [])[1]).toEqual(
-        constantNode('seedPrefix', bytesTypeNode(), bytesValueNode('base16', '616263')),
+    expect((node.constants ?? [])[0]).toEqual(
+        constantNode('max_items', integerTypeNode('u32'), integerValueNode('100')),
     );
+    expect((node.constants ?? [])[1]).toEqual(
+        constantNode('seed_prefix', bytesTypeNode(), bytesValueNode('base16', '616263')),
+    );
+});
+
+test.each([
+    ['007.50', '7.5'],
+    ['0.0000001', '0.0000001'],
+    ['3.14159265358979323846', '3.14159265358979323846'],
+    ['123456789012345678901.5', '123456789012345678901.5'],
+])('it canonicalises float constants without losing precision (%s)', (value, expected) => {
+    // When we convert a float constant.
+    const node = constantNodeFromAnchorV01({ name: 'ratio', type: 'f64', value }, generics);
+
+    // Then we expect its textually canonical value.
+    expect(node).toEqual(constantNode('ratio', floatTypeNode('f64'), floatValueNode(expected)));
 });

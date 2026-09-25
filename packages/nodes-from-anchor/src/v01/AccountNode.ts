@@ -1,17 +1,15 @@
 import { CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING, CodamaError } from '@codama/errors';
-import { camelCase } from '@codama/fragments/casing';
 import {
     AccountNode,
     accountNode,
     assertIsNode,
-    bytesTypeNode,
     fieldDiscriminatorNode,
-    fixedSizeTypeNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
 
-import { getAnchorDiscriminatorV01 } from './../discriminators';
+import { getAnchorDiscriminatorV01 } from '../discriminators';
+import { docsFromAnchor, fixedSizeBytesTypeNode } from '../utils';
 import type { IdlV01Account, IdlV01TypeDef } from './idl';
 import { typeNodeFromAnchorV01 } from './typeNodes';
 import type { GenericsV01 } from './unwrapGenerics';
@@ -21,7 +19,6 @@ export function accountNodeFromAnchorV01(
     types: IdlV01TypeDef[],
     generics: GenericsV01,
 ): AccountNode {
-    const name = camelCase(idl.name);
     const type = types.find(({ name }) => name === idl.name);
 
     if (!type) {
@@ -35,12 +32,13 @@ export function accountNodeFromAnchorV01(
         defaultValue: getAnchorDiscriminatorV01(idl.discriminator),
         defaultValueStrategy: 'omitted',
         identifier: 'discriminator',
-        type: fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
+        type: fixedSizeBytesTypeNode(idl.discriminator.length),
     });
 
     return accountNode({
         data: structTypeNode([discriminator, ...(data.fields ?? [])]),
         discriminators: [fieldDiscriminatorNode('discriminator')],
-        identifier: name,
+        docs: docsFromAnchor(type.docs),
+        identifier: idl.name,
     });
 }

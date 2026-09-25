@@ -1,15 +1,15 @@
 import {
     accountValueNode,
-    argumentValueNode,
     constantPdaSeedNodeFromBytes,
+    dataValueNode,
     instructionAccountNode,
-    instructionArgumentNode,
-    numberTypeNode,
+    integerTypeNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
     publicKeyTypeNode,
     publicKeyValueNode,
+    structFieldTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -34,11 +34,11 @@ test('it creates instruction account nodes', () => {
 
     expect(node).toEqual(
         instructionAccountNode({
-            docs: ['my docs'],
+            docs: 'my docs',
+            identifier: 'MyInstructionAccount',
             isOptional: true,
             isSigner: false,
             isWritable: true,
-            name: 'myInstructionAccount',
         }),
     );
 });
@@ -84,38 +84,40 @@ test('it flattens nested instruction accounts without prefixing when no duplicat
             },
             { name: 'account_d', signer: true, writable: true },
         ],
-        [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
+        [structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u8') })],
     );
 
     expect(nodes).toEqual([
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'accountA' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
+        instructionAccountNode({ identifier: 'accountA', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'account_b', isSigner: false, isWritable: true }),
         instructionAccountNode({
             defaultValue: pdaValueNode(
                 pdaNode({
-                    name: 'accountC',
+                    identifier: 'account_c',
                     seeds: [
                         constantPdaSeedNodeFromBytes('base58', '1Ldp'),
-                        variablePdaSeedNode('accountB', publicKeyTypeNode()),
-                        variablePdaSeedNode('amount', numberTypeNode('u8')),
+                        variablePdaSeedNode('account_b', publicKeyTypeNode()),
+                        variablePdaSeedNode('amount', integerTypeNode('u8')),
                     ],
                 }),
-                [
-                    pdaSeedValueNode('accountB', accountValueNode('accountB')),
-                    pdaSeedValueNode('amount', argumentValueNode('amount')),
-                ],
+                {
+                    seeds: [
+                        pdaSeedValueNode('account_b', accountValueNode('account_b')),
+                        pdaSeedValueNode('amount', dataValueNode('amount')),
+                    ],
+                },
             ),
+            identifier: 'account_c',
             isSigner: true,
             isWritable: false,
-            name: 'accountC',
         }),
         instructionAccountNode({
-            defaultValue: publicKeyValueNode('11111111111111111111111111111111', 'systemProgram'),
+            defaultValue: publicKeyValueNode('11111111111111111111111111111111', { identifier: 'system_program' }),
+            identifier: 'system_program',
             isSigner: false,
             isWritable: false,
-            name: 'systemProgram',
         }),
-        instructionAccountNode({ isSigner: true, isWritable: true, name: 'accountD' }),
+        instructionAccountNode({ identifier: 'account_d', isSigner: true, isWritable: true }),
     ]);
 });
 
@@ -141,10 +143,10 @@ test('it prevents duplicate names by prefixing nested accounts with different pa
     );
 
     expect(nodes).toEqual([
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgramMint' }),
-        instructionAccountNode({ isSigner: true, isWritable: false, name: 'tokenProgramAuthority' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMint' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMetadata' }),
+        instructionAccountNode({ identifier: 'tokenProgram_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'tokenProgram_authority', isSigner: true, isWritable: false }),
+        instructionAccountNode({ identifier: 'nftProgram_mint', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'nftProgram_metadata', isSigner: false, isWritable: true }),
     ]);
 });
 
@@ -173,13 +175,13 @@ test('it handles nested accounts with more complex duplicate scenarios', () => {
     );
 
     expect(nodes).toEqual([
-        instructionAccountNode({ isSigner: true, isWritable: false, name: 'authority' }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramMint' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'sourceProgramVault' }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramAuthority' }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'destinationProgramMint' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramEscrow' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramMetadata' }),
+        instructionAccountNode({ identifier: 'authority', isSigner: true, isWritable: false }),
+        instructionAccountNode({ identifier: 'sourceProgram_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'sourceProgram_vault', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'sourceProgram_authority', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'destinationProgram_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'destinationProgram_escrow', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'destinationProgram_metadata', isSigner: false, isWritable: true }),
     ]);
 });
 
@@ -214,15 +216,19 @@ test('it handles depth-2 nested accounts with naming conflicts', () => {
     const nodes = instructionAccountNodesFromAnchorV01(items, []);
 
     expect(nodes).toEqual([
-        instructionAccountNode({ isSigner: true, isWritable: false, name: 'authority' }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramMint' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'sourceProgramVault' }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramAuthority' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'sourceProgramDeepProgramAuthority' }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'sourceProgramDeepProgramMint' }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'destinationProgramMint' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramEscrow' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'destinationProgramMetadata' }),
+        instructionAccountNode({ identifier: 'authority', isSigner: true, isWritable: false }),
+        instructionAccountNode({ identifier: 'sourceProgram_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'sourceProgram_vault', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'sourceProgram_authority', isSigner: false, isWritable: false }),
+        instructionAccountNode({
+            identifier: 'sourceProgram_deepProgram_authority',
+            isSigner: false,
+            isWritable: true,
+        }),
+        instructionAccountNode({ identifier: 'sourceProgram_deepProgram_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'destinationProgram_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'destinationProgram_escrow', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'destinationProgram_metadata', isSigner: false, isWritable: true }),
     ]);
 });
 
@@ -262,31 +268,31 @@ test('it correctly prefixes PDA seed account references in nested groups', () =>
     );
 
     expect(nodes).toEqual([
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgramMint' }),
+        instructionAccountNode({ identifier: 'tokenProgram_mint', isSigner: false, isWritable: false }),
         instructionAccountNode({
             defaultValue: pdaValueNode(
                 pdaNode({
-                    name: 'tokenProgramVault',
-                    seeds: [variablePdaSeedNode('tokenProgramMint', publicKeyTypeNode())],
+                    identifier: 'tokenProgram_vault',
+                    seeds: [variablePdaSeedNode('tokenProgram_mint', publicKeyTypeNode())],
                 }),
-                [pdaSeedValueNode('tokenProgramMint', accountValueNode('tokenProgramMint'))],
+                { seeds: [pdaSeedValueNode('tokenProgram_mint', accountValueNode('tokenProgram_mint'))] },
             ),
+            identifier: 'tokenProgram_vault',
             isSigner: false,
             isWritable: true,
-            name: 'tokenProgramVault',
         }),
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'nftProgramMint' }),
+        instructionAccountNode({ identifier: 'nftProgram_mint', isSigner: false, isWritable: false }),
         instructionAccountNode({
             defaultValue: pdaValueNode(
                 pdaNode({
-                    name: 'nftProgramEscrow',
-                    seeds: [variablePdaSeedNode('nftProgramMint', publicKeyTypeNode())],
+                    identifier: 'nftProgram_escrow',
+                    seeds: [variablePdaSeedNode('nftProgram_mint', publicKeyTypeNode())],
                 }),
-                [pdaSeedValueNode('nftProgramMint', accountValueNode('nftProgramMint'))],
+                { seeds: [pdaSeedValueNode('nftProgram_mint', accountValueNode('nftProgram_mint'))] },
             ),
+            identifier: 'nftProgram_escrow',
             isSigner: false,
             isWritable: true,
-            name: 'nftProgramEscrow',
         }),
     ]);
 });
@@ -295,11 +301,10 @@ test('it ignores PDA default values if at least one seed as a path of length gre
     const nodes = instructionAccountNodesFromAnchorV01(
         // [
         //     accountNode({
-        //         data: sizePrefixTypeNode(
-        //             structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
-        //             numberTypeNode('u32'),
-        //         ),
-        //         name: 'mint',
+        //         data: structTypeNode([structFieldTypeNode({ identifier: 'authority', type: publicKeyTypeNode() })], {
+        //             transforms: [sizePrefixTransformNode(integerTypeNode('u32'))],
+        //         }),
+        //         identifier: 'mint',
         //     }),
         // ],
         [
@@ -323,9 +328,9 @@ test('it ignores PDA default values if at least one seed as a path of length gre
 
     expect(nodes).toEqual([
         instructionAccountNode({
+            identifier: 'somePdaAccount',
             isSigner: false,
             isWritable: false,
-            name: 'somePdaAccount',
         }),
     ]);
 });
@@ -362,15 +367,14 @@ test('it handles PDAs with a constant program id', () => {
         instructionAccountNode({
             defaultValue: pdaValueNode(
                 pdaNode({
-                    name: 'programData',
+                    identifier: 'program_data',
                     programId: 'BPFLoaderUpgradeab1e11111111111111111111111',
                     seeds: [constantPdaSeedNodeFromBytes('base58', 'CDfyUBS8ZuL1L3kEy6mHVyAx1s9E97KNAwTfMfvhCriN')],
                 }),
-                [],
             ),
+            identifier: 'program_data',
             isSigner: false,
             isWritable: false,
-            name: 'programData',
         }),
     ]);
 });
@@ -393,15 +397,13 @@ test('it handles PDAs with a program id that points to another account', () => {
         instructionAccountNode({
             defaultValue: pdaValueNode(
                 pdaNode({
-                    name: 'myPda',
-                    seeds: [],
+                    identifier: 'my_pda',
                 }),
-                [],
-                accountValueNode('myProgram'),
+                { programId: accountValueNode('my_program') },
             ),
+            identifier: 'my_pda',
             isSigner: false,
             isWritable: false,
-            name: 'myPda',
         }),
     ]);
 });
@@ -410,11 +412,10 @@ test.skip('it handles account data paths of length 2', () => {
     const nodes = instructionAccountNodesFromAnchorV01(
         // [
         //     accountNode({
-        //         data: sizePrefixTypeNode(
-        //             structTypeNode([structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() })]),
-        //             numberTypeNode('u32'),
-        //         ),
-        //         name: 'mint',
+        //         data: structTypeNode([structFieldTypeNode({ identifier: 'authority', type: publicKeyTypeNode() })], {
+        //             transforms: [sizePrefixTransformNode(integerTypeNode('u32'))],
+        //         }),
+        //         identifier: 'mint',
         //     }),
         // ],
         [
@@ -440,14 +441,13 @@ test.skip('it handles account data paths of length 2', () => {
         instructionAccountNode({
             defaultValue: pdaValueNode(
                 pdaNode({
-                    name: 'somePdaAccount',
-                    seeds: [variablePdaSeedNode('mintAuthority', publicKeyTypeNode())],
+                    identifier: 'somePdaAccount',
+                    seeds: [variablePdaSeedNode('mint_authority', publicKeyTypeNode())],
                 }),
-                [],
             ),
+            identifier: 'somePdaAccount',
             isSigner: false,
             isWritable: false,
-            name: 'somePdaAccount',
         }),
     ]);
 });
