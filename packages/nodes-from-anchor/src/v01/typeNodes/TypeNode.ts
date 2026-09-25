@@ -101,6 +101,11 @@ export const typeNodeFromAnchorV01 = (idlType: IdlV01Type | IdlV01TypeDefTy, gen
         return typeNodeFromAnchorV01(idlType.value, generics);
     }
 
+    // Type alias (e.g. `pub type Amount = u64;`).
+    if ('kind' in idlType && idlType.kind === 'type' && 'alias' in idlType) {
+        return typeNodeFromAnchorV01(idlType.alias, generics);
+    }
+
     // Option.
     if ('option' in idlType) {
         return optionTypeNodeFromAnchorV01(idlType, generics);

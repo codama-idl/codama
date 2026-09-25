@@ -35,7 +35,7 @@ export function instructionNodeFromAnchorV00(
     }
 
     return instructionNode({
-        accounts: instructionAccountNodesFromAnchorV00(idl.accounts ?? []),
+        accounts: instructionAccountNodesFromAnchorV00(idl.accounts ?? [], dataFields),
         data: structTypeNode(dataFields),
         discriminators,
         docs: docsFromAnchor(idl.docs),
