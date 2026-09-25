@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CodamaError } from '@codama/errors';
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, CodamaError } from '@codama/errors';
 import {
     AccountNode,
     DefinedTypeNode,
@@ -132,6 +132,50 @@ export class LinkableDictionary {
     get<TLinkNode extends LinkNode>(linkPath: NodePath<TLinkNode>): GetLinkableFromLinkNode<TLinkNode> | undefined {
         const path = this.getPath(linkPath);
         return path ? getLastNodeFromPath(path) : undefined;
+    }
+
+    /**
+     * List the paths of every recorded linkable node of the given kind, in
+     * recording order, across all programs.
+     *
+     * Only nodes recorded beforehand (via `recordPath` or the
+     * `getRecordLinkablesVisitor`) are returned: the tree itself is not
+     * traversed.
+     *
+     * @example
+     * ```ts
+     * linkables.getRecordedPathsOfKind('accountNode'); // [[root, programA, accountA], [root, programB, accountB]]
+     * ```
+     */
+    getRecordedPathsOfKind<TKind extends LinkableNode['kind']>(
+        kind: TKind,
+    ): NodePath<Extract<LinkableNode, { kind: TKind }>>[] {
+        type Paths = NodePath<Extract<LinkableNode, { kind: TKind }>>[];
+        const programs = [...this.programs.values()];
+        const linkableKind: LinkableNode['kind'] = kind;
+        switch (linkableKind) {
+            case 'programNode':
+                return programs.map(program => program.program) as Paths;
+            case 'accountNode':
+                return programs.flatMap(program => [...program.accounts.values()]) as Paths;
+            case 'definedTypeNode':
+                return programs.flatMap(program => [...program.definedTypes.values()]) as Paths;
+            case 'pdaNode':
+                return programs.flatMap(program => [...program.pdas.values()]) as Paths;
+            case 'instructionNode':
+                return programs.flatMap(program =>
+                    [...program.instructions.values()].map(instruction => instruction.instruction),
+                ) as Paths;
+            case 'instructionAccountNode':
+                return programs.flatMap(program =>
+                    [...program.instructions.values()].flatMap(instruction => [...instruction.accounts.values()]),
+                ) as Paths;
+            default: {
+                // Fails to type-check if a linkable kind is not handled above.
+                const unhandledKind: never = linkableKind;
+                throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, { kind: unhandledKind });
+            }
+        }
     }
 
     has(linkPath: NodePath<LinkNode>): boolean {

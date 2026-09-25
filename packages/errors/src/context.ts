@@ -7,6 +7,7 @@ import {
     AccountNode,
     AccountValueNode,
     DataValueNode,
+    DefinedTypeNode,
     EnumTypeNode,
     IdentifierString,
     InstructionAccountNode,
@@ -74,13 +75,17 @@ import {
     CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK,
     CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND,
     CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE,
+    CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
     CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
     CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
     CodamaErrorCode,
 } from './codes';
 
@@ -294,9 +299,24 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         instruction: InstructionNode;
         instructionName: IdentifierString;
     };
+    [CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND]: {
+        definedType: DefinedTypeNode;
+        missingMember: string;
+        name: IdentifierString;
+    };
     [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: {
         formattedHistogram: string;
         validationItems: readonly ValidationItem[];
+    };
+    [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]: {
+        accountName: string;
+        instruction: InstructionNode;
+        instructionName: IdentifierString;
+    };
+    [CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND]: {
+        instruction: InstructionNode;
+        instructionName: IdentifierString;
+        path: string;
     };
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND]: {
         fieldName: IdentifierString;
@@ -330,6 +350,11 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: {
         key: string;
+    };
+    [CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS]: {
+        allowedKeys: string[];
+        selector: string;
+        unrecognizedKeys: string[];
     };
 }>;
 

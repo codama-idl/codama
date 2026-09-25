@@ -7,6 +7,7 @@ export * from './extendVisitor';
 export * from './generated';
 export * from './getByteSizeVisitor';
 export * from './getDebugStringVisitor';
+export * from './getInstructionDataFields';
 export * from './getMaxByteSizeVisitor';
 export * from './getResolvedInstructionInputsVisitor';
 export * from './getUniqueHashStringVisitor';
