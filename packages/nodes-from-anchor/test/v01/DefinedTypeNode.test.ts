@@ -1,5 +1,13 @@
 /* eslint-disable sort-keys */
-import { definedTypeNode, integerTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@codama/nodes';
+import {
+    arrayTypeNode,
+    definedTypeNode,
+    fixedCountNode,
+    integerTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
+    tupleTypeNode,
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { definedTypeNodeFromAnchorV01, GenericsV01 } from '../../src';
@@ -117,6 +125,22 @@ test('it includes the docs of the defined type', () => {
             docs: 'My type.\nWith two lines.',
             identifier: 'MyType',
             type: structTypeNode([]),
+        }),
+    );
+});
+
+test('it unwraps type aliases', () => {
+    // When we convert a defined type declared as `pub type TickArrayBitmap = [u64; 8];`.
+    const node = definedTypeNodeFromAnchorV01(
+        { name: 'TickArrayBitmap', type: { kind: 'type', alias: { array: ['u64', 8] } } },
+        {} as GenericsV01,
+    );
+
+    // Then we expect the aliased type.
+    expect(node).toEqual(
+        definedTypeNode({
+            identifier: 'TickArrayBitmap',
+            type: arrayTypeNode(integerTypeNode('u64'), fixedCountNode(8)),
         }),
     );
 });

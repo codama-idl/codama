@@ -1,5 +1,8 @@
 import {
     booleanValueNode,
+    PluginNode,
+    pluginNode,
+    StructFieldTypeNode,
     BytesTypeNode,
     bytesTypeNode,
     bytesValueNode,
@@ -109,4 +112,47 @@ export function parseConstantValue(valueString: string, type: TypeNode): { type:
     }
 
     return { type, value: stringValueNode(valueString) };
+}
+
+/** Defined types of a program, keyed by identifier, used to follow `definedTypeLinkNode`s. */
+export type DefinedTypeMap = ReadonlyMap<string, TypeNode>;
+
+/**
+ * The type found at the end of the given field path (e.g. `["params",
+ * "seed"]`) within struct fields, following links to the given defined
+ * types, or `undefined` if the path cannot be followed through structs.
+ */
+export function getFieldPathType(
+    fields: StructFieldTypeNode[],
+    path: string[],
+    definedTypes: DefinedTypeMap,
+): TypeNode | undefined {
+    const [identifier, ...rest] = path;
+    const field = fields.find(candidate => candidate.identifier === identifier);
+    if (!field) return undefined;
+    if (rest.length === 0) return field.type;
+    const struct = resolveDefinedTypeLinks(field.type, definedTypes);
+    if (!struct || !isNode(struct, 'structTypeNode')) return undefined;
+    return getFieldPathType(struct.fields ?? [], rest, definedTypes);
+}
+
+function resolveDefinedTypeLinks(type: TypeNode, definedTypes: DefinedTypeMap): TypeNode | undefined {
+    const visited = new Set<string>();
+    let resolved: TypeNode | undefined = type;
+    while (resolved && isNode(resolved, 'definedTypeLinkNode')) {
+        // Links to other programs cannot be followed, and cycles cannot be walked.
+        if (resolved.program || visited.has(resolved.identifier)) return undefined;
+        visited.add(resolved.identifier);
+        resolved = definedTypes.get(resolved.identifier);
+    }
+    return resolved;
+}
+
+/**
+ * The `anchor.relations` plugin of an instruction account, listing the
+ * identifiers of the instruction accounts that must hold its address in
+ * their data (i.e. Anchor's `has_one` constraints targeting it).
+ */
+export function anchorRelationsPluginNode(relations: string[]): PluginNode[] | undefined {
+    return relations.length > 0 ? [pluginNode('anchor.relations', relations)] : undefined;
 }

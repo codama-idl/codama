@@ -6,18 +6,15 @@ import {
     instructionAccountNode,
     isNode,
     pdaNode,
-    PdaSeedNode,
-    PdaSeedValueNode,
     PdaValueNode,
     pdaValueNode,
-    PublicKeyValueNode,
     publicKeyValueNode,
     StructFieldTypeNode,
 } from '@codama/nodes';
 
-import { docsFromAnchor } from '../utils';
-import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Seed } from './idl';
-import { pdaSeedNodeFromAnchorV01 } from './PdaSeedNode';
+import { anchorRelationsPluginNode, docsFromAnchor } from '../utils';
+import { IdlV01InstructionAccount, IdlV01InstructionAccountItem, IdlV01Pda } from './idl';
+import { pdaSeedNodeFromAnchorV01, PdaSeedNodeFromAnchorV01Options } from './PdaSeedNode';
 
 /**
  * Whether flattening nested account groups would produce accounts whose
@@ -47,79 +44,93 @@ function hasDuplicateAccountNames(idl: IdlV01InstructionAccountItem[]): boolean 
     return checkDuplicates(idl);
 }
 
+export type InstructionAccountNodeFromAnchorV01Options = PdaSeedNodeFromAnchorV01Options;
+
 export function instructionAccountNodesFromAnchorV01(
     idl: IdlV01InstructionAccountItem[],
     dataFields: StructFieldTypeNode[],
-    prefix?: string,
+    options: InstructionAccountNodeFromAnchorV01Options = {},
 ): InstructionAccountNode[] {
+    const { prefix } = options;
     const shouldPrefix = prefix !== undefined || hasDuplicateAccountNames(idl);
 
     return idl.flatMap(account =>
         'accounts' in account
-            ? instructionAccountNodesFromAnchorV01(
-                  account.accounts,
-                  dataFields,
-                  shouldPrefix ? (prefix ? `${prefix}_${account.name}` : account.name) : undefined,
-              )
-            : [instructionAccountNodeFromAnchorV01(account, dataFields, shouldPrefix ? prefix : undefined)],
+            ? instructionAccountNodesFromAnchorV01(account.accounts, dataFields, {
+                  ...options,
+                  prefix: shouldPrefix ? (prefix ? `${prefix}_${account.name}` : account.name) : undefined,
+              })
+            : [
+                  instructionAccountNodeFromAnchorV01(account, dataFields, {
+                      ...options,
+                      prefix: shouldPrefix ? prefix : undefined,
+                  }),
+              ],
     );
 }
 
+/**
+ * Convert an Anchor instruction account, including its fixed address or
+ * PDA default value, and its `relations` as an `anchor.relations` plugin.
+ *
+ * A PDA default value is only set when all of its seeds can be expressed
+ * statically (see `pdaSeedNodeFromAnchorV01`).
+ */
 export function instructionAccountNodeFromAnchorV01(
     idl: IdlV01InstructionAccount,
     dataFields: StructFieldTypeNode[],
-    prefix?: string,
+    options: InstructionAccountNodeFromAnchorV01Options = {},
 ): InstructionAccountNode {
-    const isOptional = idl.optional ?? false;
-    const docs = docsFromAnchor(idl.docs);
-    const isSigner = idl.signer ?? false;
-    const isWritable = idl.writable ?? false;
-    const name = prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? '');
-    let defaultValue: PdaValueNode | PublicKeyValueNode | undefined;
+    const { prefix } = options;
+    const withPrefix = (accountName: string) => (prefix ? `${prefix}_${accountName}` : accountName);
+    const name = withPrefix(idl.name ?? '');
 
-    if (idl.address) {
-        defaultValue = publicKeyValueNode(idl.address, { identifier: name });
-    } else if (idl.pda) {
-        // TODO: Handle seeds with nested paths.
-        // Currently, we gracefully ignore PDA default values if we encounter seeds with nested paths.
-        const seedsWithNestedPaths = idl.pda.seeds.some(seed => 'path' in seed && seed.path.includes('.'));
-        if (!seedsWithNestedPaths) {
-            const [seedDefinitions, seedValues] = idl.pda.seeds.reduce(
-                ([seeds, lookups], seed: IdlV01Seed) => {
-                    const { definition, value } = pdaSeedNodeFromAnchorV01(seed, dataFields, prefix);
-                    return [[...seeds, definition], value ? [...lookups, value] : lookups];
-                },
-                <[PdaSeedNode[], PdaSeedValueNode[]]>[[], []],
-            );
+    return instructionAccountNode({
+        defaultValue: idl.address
+            ? publicKeyValueNode(idl.address, { identifier: name })
+            : idl.pda
+              ? pdaDefaultValueFromAnchorV01(name, idl.pda, dataFields, options)
+              : undefined,
+        docs: docsFromAnchor(idl.docs),
+        identifier: name,
+        isOptional: idl.optional ?? false,
+        isSigner: idl.signer ?? false,
+        isWritable: idl.writable ?? false,
+        // Relations are siblings within the same account group.
+        plugins: anchorRelationsPluginNode((idl.relations ?? []).map(withPrefix)),
+    });
+}
 
-            let programId: string | undefined;
-            let programIdValue: AccountValueNode | DataValueNode | undefined;
-            if (idl.pda.program !== undefined) {
-                const { definition, value } = pdaSeedNodeFromAnchorV01(idl.pda.program, dataFields, prefix);
-                if (
-                    isNode(definition, 'constantPdaSeedNode') &&
-                    isNode(definition.value, 'bytesValueNode') &&
-                    definition.value.encoding === 'base58'
-                ) {
-                    programId = definition.value.data;
-                } else if (value && isNode(value.value, ['accountValueNode', 'dataValueNode'])) {
-                    programIdValue = value.value;
-                }
-            }
+function pdaDefaultValueFromAnchorV01(
+    name: string,
+    pda: IdlV01Pda,
+    dataFields: StructFieldTypeNode[],
+    options: InstructionAccountNodeFromAnchorV01Options,
+): PdaValueNode | undefined {
+    const seeds = pda.seeds.map(seed => pdaSeedNodeFromAnchorV01(seed, dataFields, options));
+    if (seeds.some(seed => seed === undefined)) return undefined;
+    const seedDefinitions = seeds.map(seed => seed!.definition);
+    const seedValues = seeds.flatMap(seed => (seed!.value ? [seed!.value] : []));
 
-            defaultValue = pdaValueNode(pdaNode({ identifier: name, programId, seeds: seedDefinitions }), {
-                programId: programIdValue,
-                seeds: seedValues,
-            });
+    let programId: string | undefined;
+    let programIdValue: AccountValueNode | DataValueNode | undefined;
+    if (pda.program !== undefined) {
+        const program = pdaSeedNodeFromAnchorV01(pda.program, dataFields, options);
+        if (!program) return undefined;
+        const { definition, value } = program;
+        if (
+            isNode(definition, 'constantPdaSeedNode') &&
+            isNode(definition.value, 'bytesValueNode') &&
+            definition.value.encoding === 'base58'
+        ) {
+            programId = definition.value.data;
+        } else if (value && isNode(value.value, ['accountValueNode', 'dataValueNode'])) {
+            programIdValue = value.value;
         }
     }
 
-    return instructionAccountNode({
-        defaultValue,
-        docs,
-        identifier: name,
-        isOptional,
-        isSigner,
-        isWritable,
+    return pdaValueNode(pdaNode({ identifier: name, programId, seeds: seedDefinitions }), {
+        programId: programIdValue,
+        seeds: seedValues,
     });
 }

@@ -2,14 +2,17 @@ import {
     accountValueNode,
     constantPdaSeedNodeFromBytes,
     dataValueNode,
+    definedTypeLinkNode,
     instructionAccountNode,
     integerTypeNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
+    pluginNode,
     publicKeyTypeNode,
     publicKeyValueNode,
     structFieldTypeNode,
+    structTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -297,28 +300,13 @@ test('it correctly prefixes PDA seed account references in nested groups', () =>
     ]);
 });
 
-test('it ignores PDA default values if at least one seed as a path of length greater than 1', () => {
+test('it ignores PDA default values if a seed has a nested account path', () => {
+    // Given a PDA seeded by a field of another account, which requires fetching that account.
     const nodes = instructionAccountNodesFromAnchorV01(
-        // [
-        //     accountNode({
-        //         data: structTypeNode([structFieldTypeNode({ identifier: 'authority', type: publicKeyTypeNode() })], {
-        //             transforms: [sizePrefixTransformNode(integerTypeNode('u32'))],
-        //         }),
-        //         identifier: 'mint',
-        //     }),
-        // ],
         [
             {
                 name: 'somePdaAccount',
-                pda: {
-                    seeds: [
-                        {
-                            account: 'mint',
-                            kind: 'account',
-                            path: 'mint.authority',
-                        },
-                    ],
-                },
+                pda: { seeds: [{ account: 'Mint', kind: 'account', path: 'mint.authority' }] },
                 signer: false,
                 writable: false,
             },
@@ -326,12 +314,9 @@ test('it ignores PDA default values if at least one seed as a path of length gre
         [],
     );
 
+    // Then we expect no default value.
     expect(nodes).toEqual([
-        instructionAccountNode({
-            identifier: 'somePdaAccount',
-            isSigner: false,
-            isWritable: false,
-        }),
+        instructionAccountNode({ identifier: 'somePdaAccount', isSigner: false, isWritable: false }),
     ]);
 });
 
@@ -408,46 +393,68 @@ test('it handles PDAs with a program id that points to another account', () => {
     ]);
 });
 
-test.skip('it handles account data paths of length 2', () => {
+test('it handles PDA seeds with nested argument paths', () => {
+    // Given a PDA seeded by a nested field of an argument whose type links to a defined type.
+    const dataFields = [structFieldTypeNode({ identifier: 'params', type: definedTypeLinkNode('Params') })];
+    const definedTypes = new Map([
+        ['Params', structTypeNode([structFieldTypeNode({ identifier: 'seed', type: integerTypeNode('u64') })])],
+    ]);
+
+    // When we convert the instruction account.
     const nodes = instructionAccountNodesFromAnchorV01(
-        // [
-        //     accountNode({
-        //         data: structTypeNode([structFieldTypeNode({ identifier: 'authority', type: publicKeyTypeNode() })], {
-        //             transforms: [sizePrefixTransformNode(integerTypeNode('u32'))],
-        //         }),
-        //         identifier: 'mint',
-        //     }),
-        // ],
+        [{ name: 'vault', pda: { seeds: [{ kind: 'arg', path: 'params.seed' }] }, writable: true }],
+        dataFields,
+        { definedTypes },
+    );
+
+    // Then the PDA seed points to the nested argument path.
+    expect(nodes).toEqual([
+        instructionAccountNode({
+            defaultValue: pdaValueNode(
+                pdaNode({ identifier: 'vault', seeds: [variablePdaSeedNode('params_seed', integerTypeNode('u64'))] }),
+                { seeds: [pdaSeedValueNode('params_seed', dataValueNode('params.seed'))] },
+            ),
+            identifier: 'vault',
+            isSigner: false,
+            isWritable: true,
+        }),
+    ]);
+});
+
+test('it records relations as a plugin, prefixed within nested account groups', () => {
+    // Given accounts with relations at the top level and within a nested group sharing the same names.
+    const nodes = instructionAccountNodesFromAnchorV01(
         [
+            { name: 'my_account', relations: ['account'] },
+            { name: 'account' },
             {
-                name: 'somePdaAccount',
-                pda: {
-                    seeds: [
-                        {
-                            account: 'mint',
-                            kind: 'account',
-                            path: 'mint.authority',
-                        },
-                    ],
-                },
-                signer: false,
-                writable: false,
+                accounts: [
+                    { name: 'my_account', relations: ['account', 'other'] },
+                    { name: 'account' },
+                    { name: 'other' },
+                ],
+                name: 'nested',
             },
         ],
         [],
     );
 
+    // Then we expect the relations to be recorded using the flattened account identifiers.
     expect(nodes).toEqual([
         instructionAccountNode({
-            defaultValue: pdaValueNode(
-                pdaNode({
-                    identifier: 'somePdaAccount',
-                    seeds: [variablePdaSeedNode('mint_authority', publicKeyTypeNode())],
-                }),
-            ),
-            identifier: 'somePdaAccount',
+            identifier: 'my_account',
             isSigner: false,
             isWritable: false,
+            plugins: [pluginNode('anchor.relations', ['account'])],
         }),
+        instructionAccountNode({ identifier: 'account', isSigner: false, isWritable: false }),
+        instructionAccountNode({
+            identifier: 'nested_my_account',
+            isSigner: false,
+            isWritable: false,
+            plugins: [pluginNode('anchor.relations', ['nested_account', 'nested_other'])],
+        }),
+        instructionAccountNode({ identifier: 'nested_account', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'nested_other', isSigner: false, isWritable: false }),
     ]);
 });

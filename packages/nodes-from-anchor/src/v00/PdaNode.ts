@@ -37,7 +37,8 @@ export function pdaNodeFromAnchorV00(idl: IdlV00PdaDef): PdaNode {
     return pdaNode({ identifier: name, seeds });
 }
 
-function pdaSeedTypeNodeFromAnchorV00(type: IdlV00Type): TypeNode {
+/** The type of a PDA seed, i.e. strings and byte arrays without their Borsh size prefix. */
+export function pdaSeedTypeNodeFromAnchorV00(type: IdlV00Type): TypeNode {
     // Anchor derives PDA seeds from raw bytes, so strings and byte
     // arrays lose their Borsh size prefix when used as seeds.
     if (type === 'string') return stringTypeNode('utf8');

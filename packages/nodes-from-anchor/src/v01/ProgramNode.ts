@@ -8,6 +8,7 @@ import { errorNodeFromAnchorV01 } from './ErrorNode';
 import { eventNodeFromAnchorV01 } from './EventNode';
 import { IdlV01 } from './idl';
 import { instructionNodeFromAnchorV01 } from './InstructionNode';
+import { typeNodeFromAnchorV01 } from './typeNodes';
 import { extractGenerics } from './unwrapGenerics';
 
 export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
@@ -23,6 +24,7 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
             !accounts.some(account => account.name === type.name) && !events.some(event => event.name === type.name),
     );
     const definedTypes = filteredTypes.map(type => definedTypeNodeFromAnchorV01(type, generics));
+    const definedTypeMap = new Map(types.map(type => [type.name, typeNodeFromAnchorV01(type.type, generics)]));
     const accountNodes = accounts.map(account => accountNodeFromAnchorV01(account, types, generics));
 
     return programNode({
@@ -33,7 +35,9 @@ export function programNodeFromAnchorV01(idl: IdlV01): ProgramNode {
         errors: errors.map(errorNodeFromAnchorV01),
         events: events.map(event => eventNodeFromAnchorV01(event, types, generics)),
         identifier: idl.metadata.name,
-        instructions: instructions.map(instruction => instructionNodeFromAnchorV01(instruction, generics)),
+        instructions: instructions.map(instruction =>
+            instructionNodeFromAnchorV01(instruction, generics, definedTypeMap),
+        ),
         publicKey: idl.address,
         version: idl.metadata.version as Version,
     });
