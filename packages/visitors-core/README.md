@@ -750,6 +750,9 @@ const accountPath: NodePath<AccountNode> | undefined = linkables.getPath([...som
 
 // Get the path of a linkable node using the full path of a link node, or throw an error if it is not found.
 const accountPath: NodePath<AccountNode> = linkables.getPathOrThrow([...somePath, accountLinkNode]);
+
+// List the paths of every recorded linkable node of a given kind, across all programs.
+const accountPaths: NodePath<AccountNode>[] = linkables.getRecordedPathsOfKind('accountNode');
 ```
 
 Note that:

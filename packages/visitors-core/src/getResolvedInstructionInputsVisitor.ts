@@ -21,8 +21,8 @@ import {
     VALUE_NODES,
 } from '@codama/nodes';
 
+import { getInstructionDataFields } from './getInstructionDataFields';
 import { LinkableDictionary } from './LinkableDictionary';
-import { getLastNodeFromPath } from './NodePath';
 import { NodeStack } from './NodeStack';
 import { pipe } from './pipe';
 import { ProvidedScope } from './ProvidedScope';
@@ -97,40 +97,6 @@ export function getResolvedInstructionInputsVisitor(
     ): InstructionInputValueNode | undefined {
         if (defaultValue === undefined) return undefined;
         return scope.resolve(defaultValue, { kinds: INSTRUCTION_INPUT_VALUE_NODES });
-    }
-
-    // Walk `instructionNode.data`, following defined-type links, and yield
-    // every struct field with its full path. Fields are only addressable
-    // where the data type resolves to a struct.
-    function collectDataFields(instruction: InstructionNode): DataInput[] {
-        const fields: DataInput[] = [];
-        const walkedDefinedTypes = new Set<string>();
-
-        const walk = (type: InstructionNode['data'], prefix: string): void => {
-            if (!type) return;
-            if (isNode(type, 'definedTypeLinkNode')) {
-                const linkedPath = linkables.getPath([...stack.getPath(), type]);
-                if (!linkedPath) return;
-                const definedType = getLastNodeFromPath(linkedPath);
-                if (walkedDefinedTypes.has(definedType.identifier)) return;
-                walkedDefinedTypes.add(definedType.identifier);
-                stack.pushPath(linkedPath);
-                walk(definedType.type, prefix);
-                stack.popPath();
-                return;
-            }
-            if (!isNode(type, 'structTypeNode')) return;
-            (type.fields ?? []).forEach(field => {
-                const path = (prefix ? `${prefix}.${field.identifier}` : field.identifier) as PathString;
-                fields.push({ key: path, kind: 'data', node: field });
-                if (isNode(field.type, 'structTypeNode') || isNode(field.type, 'definedTypeLinkNode')) {
-                    walk(field.type, path);
-                }
-            });
-        };
-
-        walk(instruction.data, '');
-        return fields;
     }
 
     function resolveInstructionInput(instruction: InstructionNode, input: InstructionInput): void {
@@ -303,7 +269,11 @@ export function getResolvedInstructionInputsVisitor(
 
         // The data fields and their resolved defaults are fixed for the
         // duration of the visit, so compute them once.
-        dataFields = collectDataFields(node);
+        // The stack already contains the visited instruction since this visitor is
+        // wrapped in `recordNodeStackVisitor` (see the `pipe` below).
+        dataFields = getInstructionDataFields(stack.getPath('instructionNode'), linkables).map(
+            ({ field, path }): DataInput => ({ key: path, kind: 'data', node: field }),
+        );
         dataDefaults = new Map(
             dataFields.map(field => [field.key, resolveDefaultValue(asInstructionInputValue(field.node.defaultValue))]),
         );

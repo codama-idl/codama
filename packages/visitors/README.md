@@ -115,8 +115,8 @@ codama.update(deduplicateIdenticalDefinedTypesVisitor());
 
 This visitor fills any missing `PdaSeedValueNodes` from `PdaValueNodes` using the provided `NodePath<InstructionNode>` such that:
 
-- If a `VariablePdaSeedNode` is of type `PublicKeyTypeNode` and the name of the seed matches the name of an account in the `InstructionNode`, then a new `PdaSeedValueNode` will be added with the matching account.
-- Otherwise, if a `VariablePdaSeedNode` is of any other type and the name of the seed matches the name of an argument in the `InstructionNode`, then a new `PdaSeedValueNode` will be added with the matching argument.
+- If a `VariablePdaSeedNode` is of type `PublicKeyTypeNode` and its identifier matches the identifier of an account in the `InstructionNode`, then a new `PdaSeedValueNode` will be added with an `AccountValueNode` pointing to that account.
+- Otherwise, if its identifier matches a top-level field of the instruction's `data` (following defined type links), then a new `PdaSeedValueNode` will be added with a `DataValueNode` pointing to that field.
 - Otherwise, no `PdaSeedValueNode` will be added.
 
 It also requires a [`LinkableDictionary`](../visitors-core/README.md#linkable-dictionary) to resolve any link nodes and an optional `strictMode` boolean to throw an error if seeds are still missing after the visitor has run.
@@ -326,14 +326,16 @@ codama.update(unwrapTypeDefinedLinksVisitor(['[accountNode]counter.data', '[inst
 
 ### `updateAccountsVisitor`
 
-This visitor allows us to update various aspects of `AccountNodes` and/or delete them. It accepts an object where the keys are the account names and the values are the operations to apply to these accounts.
+This visitor allows us to update various aspects of `AccountNodes` and/or delete them. It accepts an object where the keys are the account identifiers (matched exactly, optionally prefixed by a program identifier) and the values are the operations to apply to these accounts. Unknown update keys, such as the `name` key of Codama v1, throw an error rather than being silently ignored.
+
+Renames are propagated to every reference: renaming an account renames the `AccountLinkNodes` pointing to it, as well as the `PdaNode` of the same program sharing its identifier and its `PdaLinkNodes`. Renaming the fields of its data repoints every path going through them, such as its `FieldDiscriminatorNodes` and the `AccountDataValueNodes` of instruction accounts linked to it.
 
 ```ts
 codama.update(
     updateAccountsVisitor({
         vault: {
             // Rename the 'vault' account to 'safe'.
-            name: 'safe',
+            identifier: 'safe',
             // Rename the 'owner' field to 'authority'.
             data: { owner: 'authority' },
             // Create a new PDA node and link it to this account.
@@ -349,14 +351,16 @@ codama.update(
 
 ### `updateDefinedTypesVisitor`
 
-This visitor allows us to update various aspects of `DefinedTypeNode` and/or delete them. It accepts an object where the keys are the defined type names and the values are the operations to apply to these types.
+This visitor allows us to update various aspects of `DefinedTypeNode` and/or delete them. It accepts an object where the keys are the defined type identifiers (matched exactly, optionally prefixed by a program identifier) and the values are the operations to apply to these types. Unknown update keys, such as the `name` key of Codama v1, throw an error rather than being silently ignored.
+
+Renames are propagated to every reference: renaming a defined type renames the `DefinedTypeLinkNodes` pointing to it, renaming the fields of a struct type repoints every path going through them (e.g. `DataValueNodes` of instructions whose data links to the type), and renaming the variants of an enum type repoints the `EnumValueNodes` of that type.
 
 ```ts
 codama.update(
     updateDefinedTypesVisitor({
         options: {
             // Rename the 'options' type to 'configs'.
-            name: 'configs',
+            identifier: 'configs',
             // Rename the 'sol' field to 'lamports'.
             data: { sol: 'lamports' },
         },
@@ -370,14 +374,14 @@ codama.update(
 
 ### `updateErrorsVisitor`
 
-This visitor allows us to update various aspects of `ErrorNodes` and/or delete them. It accepts an object where the keys are the error names and the values are the operations to apply to these errors.
+This visitor allows us to update various aspects of `ErrorNodes` and/or delete them. It accepts an object where the keys are the error identifiers (matched exactly, optionally prefixed by a program identifier) and the values are the operations to apply to these errors. Unknown update keys, such as the `name` key of Codama v1, throw an error rather than being silently ignored.
 
 ```ts
 codama.update(
     updateErrorsVisitor({
         invalidPda: {
             // Rename the 'invalidPda' error to 'invalidProgramDerivedAddress'.
-            name: 'invalidProgramDerivedAddress',
+            identifier: 'invalidProgramDerivedAddress',
             // Change the error message.
             message: 'The program-derived address is invalid.',
             // Change the error code.
@@ -393,17 +397,23 @@ codama.update(
 
 ### `updateInstructionsVisitor`
 
-This visitor allows us to update various aspects of `InstructionNodes` and/or delete them. It accepts an object where the keys are the instruction names and the values are the operations to apply to these instructions.
+This visitor allows us to update various aspects of `InstructionNodes` and/or delete them. It accepts an object where the keys are the instruction identifiers (matched exactly, optionally prefixed by a program identifier) and the values are the operations to apply to these instructions. Unknown update keys, such as the `name` key of Codama v1, throw an error rather than being silently ignored.
+
+- `accounts` updates existing instruction accounts, keyed by identifier. New PDA default values get their missing seeds filled using the `fillDefaultPdaSeedValuesVisitor`.
+- `data` updates existing fields of the instruction's inline `data`, keyed by path (e.g. `amount` or `config.fee`). Fields behind a `DefinedTypeLinkNode` cannot be updated since the defined type may be shared; unwrap it first. Default values must be `ValueNodes`: contextual defaults, such as the bump of an account, are expressed with an `InjectedValueNode` and a matching entry in `provides`.
+- `provides` is merged by identifier with the instruction's `ProvidedNodes`; a `null` value removes an entry.
+
+Updates from every entry matching an instruction are merged and applied at once, keyed by the original identifiers of its accounts and data fields. Nodes supplied by the updates, such as default values or provided nodes, must use the new identifiers since they refer to the updated instruction. Updating an account or a data field that does not exist throws an error. Renames are propagated to every reference within the instruction: renaming an account repoints the `AccountValueNodes`, `AccountBumpValueNodes`, `AccountDataValueNodes` and `${accounts.…}` placeholders pointing to it, and renaming a data field repoints the `DataValueNodes`, `FieldDiscriminatorNodes` and `${data.…}` placeholders going through it.
 
 ```ts
 codama.update(
     updateInstructionsVisitor({
         send: {
             // Rename the 'send' instruction to 'transfer'.
-            name: 'transfer',
+            identifier: 'transfer',
             accounts: {
                 // Rename the 'owner' instruction account to 'authority'.
-                owner: { name: 'authority' },
+                owner: { identifier: 'authority' },
                 // Set a default value for the 'associatedToken' instruction account.
                 associatedToken: { defaultValue: pdaValueNode('associatedToken') },
                 // Update the signer status of the 'payer' instruction account to `true`.
@@ -411,12 +421,15 @@ codama.update(
                 // Mark the 'mint' instruction account as optional.
                 mint: { isOptional: true },
             },
-            arguments: {
-                // Set a default value for the 'amount' instruction argument to 1.
-                amount: { defaultValue: numberValueNode(1) },
-                // Rename the 'decimals' instruction argument to 'mintDecimals'.
-                decimals: { name: 'mintDecimals' },
+            data: {
+                // Set a default value for the 'amount' data field to 1.
+                amount: { defaultValue: integerValueNode('1') },
+                // Rename the nested 'config.decimals' data field to 'mintDecimals'.
+                'config.decimals': { identifier: 'mintDecimals' },
+                // Default the 'bump' data field to the bump of the 'associatedToken' account.
+                bump: { defaultValue: injectedValueNode({ key: 'bump' }) },
             },
+            provides: { bump: accountBumpValueNode('associatedToken') },
         },
         burn: {
             // Delete the 'burn' instruction.
@@ -428,14 +441,14 @@ codama.update(
 
 ### `updateProgramsVisitor`
 
-This visitor allows us to update various aspects of `ProgramNodes` and/or delete them. It accepts an object where the keys are the program names and the values are the operations to apply to these programs.
+This visitor allows us to update various aspects of `ProgramNodes` and/or delete them. It accepts an object where the keys are the program identifiers (matched exactly) and the values are the operations to apply to these programs. Unknown update keys, such as the `name` key of Codama v1, throw an error rather than being silently ignored. Renaming a program renames every `ProgramLinkNode` pointing to it.
 
 ```ts
 codama.update(
     updateProgramsVisitor({
         splToken: {
             // Rename the 'splToken' program to 'token'.
-            name: 'token',
+            identifier: 'token',
             // Change the program version.
             version: '3.0.0',
             // Change the program's public key.
