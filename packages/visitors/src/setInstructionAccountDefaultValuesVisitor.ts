@@ -1,7 +1,10 @@
-import { camelCase } from '@codama/fragments/casing';
+import { CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, isCodamaError } from '@codama/errors';
+import { snakeCase } from '@codama/fragments/casing';
 import {
+    assertIsNode,
     identityValueNode,
     InstructionAccountNode,
+    instructionAccountNode,
     InstructionInputValueNode,
     InstructionNode,
     instructionNode,
@@ -10,192 +13,247 @@ import {
     publicKeyValueNode,
 } from '@codama/nodes';
 import {
-    extendVisitor,
+    bottomUpTransformerVisitor,
     LinkableDictionary,
-    NodeStack,
-    nonNullableIdentityVisitor,
+    NodePath,
     pipe,
     recordLinkablesOnFirstVisitVisitor,
-    recordNodeStackVisitor,
     visit,
 } from '@codama/visitors-core';
 
 import { fillDefaultPdaSeedValuesVisitor } from './fillDefaultPdaSeedValuesVisitor';
 
 export type InstructionAccountDefaultRule = {
-    /** The name of the instruction account or a pattern to match on it. */
+    /** The identifier of the instruction account (matched exactly) or a pattern to match on it. */
     account: RegExp | string;
     /** The default value to assign to it. */
     defaultValue: InstructionInputValueNode;
-    /** @defaultValue `false`. */
+    /**
+     * Whether to leave the account untouched when it is optional or
+     * already has a default value.
+     * @defaultValue `false`.
+     */
     ignoreIfOptional?: boolean;
-    /** @defaultValue Defaults to searching accounts on all instructions. */
+    /**
+     * The identifier of the instruction to restrict the rule to (matched exactly).
+     * @defaultValue Defaults to searching accounts on all instructions.
+     */
     instruction?: string;
 };
 
+/**
+ * Match any of the given camelCase identifiers, as is or in snake_case,
+ * since identifiers keep the casing of the program they come from.
+ */
+function anyIdentifierOf(...identifiers: string[]): RegExp {
+    const alternatives = [...new Set(identifiers.flatMap(identifier => [identifier, snakeCase(identifier)]))];
+    return new RegExp(`^(${alternatives.join('|')})$`);
+}
+
+/**
+ * Default value rules for commonly used accounts (payers, authorities,
+ * well-known programs and sysvars), matching their camelCase and
+ * snake_case identifiers.
+ */
 export const getCommonInstructionAccountDefaultRules = (): InstructionAccountDefaultRule[] => [
     {
-        account: /^(payer|feePayer)$/,
+        account: anyIdentifierOf('payer', 'feePayer'),
         defaultValue: payerValueNode(),
         ignoreIfOptional: true,
     },
     {
-        account: /^(authority)$/,
+        account: anyIdentifierOf('authority'),
         defaultValue: identityValueNode(),
         ignoreIfOptional: true,
     },
     {
-        account: /^(programId)$/,
+        account: anyIdentifierOf('programId'),
         defaultValue: programIdValueNode(),
         ignoreIfOptional: true,
     },
     {
-        account: /^(systemProgram|splSystemProgram)$/,
-        defaultValue: publicKeyValueNode('11111111111111111111111111111111', 'splSystem'),
+        account: anyIdentifierOf('systemProgram', 'splSystemProgram'),
+        defaultValue: publicKeyValueNode('11111111111111111111111111111111', { identifier: 'splSystem' }),
         ignoreIfOptional: true,
     },
     {
-        account: /^(tokenProgram|splTokenProgram)$/,
-        defaultValue: publicKeyValueNode('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'splToken'),
+        account: anyIdentifierOf('tokenProgram', 'splTokenProgram'),
+        defaultValue: publicKeyValueNode('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', { identifier: 'splToken' }),
         ignoreIfOptional: true,
     },
     {
-        account: /^(ataProgram|splAtaProgram)$/,
-        defaultValue: publicKeyValueNode('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL', 'splAssociatedToken'),
+        account: anyIdentifierOf('ataProgram', 'splAtaProgram'),
+        defaultValue: publicKeyValueNode('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL', {
+            identifier: 'splAssociatedToken',
+        }),
         ignoreIfOptional: true,
     },
     {
-        account: /^(tokenMetadataProgram|mplTokenMetadataProgram)$/,
-        defaultValue: publicKeyValueNode('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s', 'mplTokenMetadata'),
+        account: anyIdentifierOf('tokenMetadataProgram', 'mplTokenMetadataProgram'),
+        defaultValue: publicKeyValueNode('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s', {
+            identifier: 'mplTokenMetadata',
+        }),
         ignoreIfOptional: true,
     },
     {
-        account: /^(tokenAuth|mplTokenAuth|authorization|mplAuthorization|auth|mplAuth)RulesProgram$/,
-        defaultValue: publicKeyValueNode('auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg', 'mplTokenAuthRules'),
+        account: anyIdentifierOf(
+            'tokenAuthRulesProgram',
+            'mplTokenAuthRulesProgram',
+            'authorizationRulesProgram',
+            'mplAuthorizationRulesProgram',
+            'authRulesProgram',
+            'mplAuthRulesProgram',
+        ),
+        defaultValue: publicKeyValueNode('auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg', {
+            identifier: 'mplTokenAuthRules',
+        }),
         ignoreIfOptional: true,
     },
     {
-        account: /^(candyMachineProgram|mplCandyMachineProgram)$/,
-        defaultValue: publicKeyValueNode('CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR', 'mplCandyMachine'),
+        account: anyIdentifierOf('candyMachineProgram', 'mplCandyMachineProgram'),
+        defaultValue: publicKeyValueNode('CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR', {
+            identifier: 'mplCandyMachine',
+        }),
         ignoreIfOptional: true,
     },
     {
-        account: /^(candyGuardProgram|mplCandyGuardProgram)$/,
-        defaultValue: publicKeyValueNode('Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g', 'mplCandyGuard'),
+        account: anyIdentifierOf('candyGuardProgram', 'mplCandyGuardProgram'),
+        defaultValue: publicKeyValueNode('Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g', {
+            identifier: 'mplCandyGuard',
+        }),
         ignoreIfOptional: true,
     },
     {
-        account: /^(clockSysvar|sysvarClock)$/,
+        account: anyIdentifierOf('clockSysvar', 'sysvarClock'),
         defaultValue: publicKeyValueNode('SysvarC1ock11111111111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(epochScheduleSysvar|sysvarEpochSchedule)$/,
+        account: anyIdentifierOf('epochScheduleSysvar', 'sysvarEpochSchedule'),
         defaultValue: publicKeyValueNode('SysvarEpochSchedu1e111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(instructions?Sysvar|sysvarInstructions?)(Account)?$/,
+        account: anyIdentifierOf(
+            ...['instructionSysvar', 'instructionsSysvar', 'sysvarInstruction', 'sysvarInstructions'].flatMap(
+                identifier => [identifier, `${identifier}Account`],
+            ),
+        ),
         defaultValue: publicKeyValueNode('Sysvar1nstructions1111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(recentBlockhashesSysvar|sysvarRecentBlockhashes)$/,
+        account: anyIdentifierOf('recentBlockhashesSysvar', 'sysvarRecentBlockhashes'),
         defaultValue: publicKeyValueNode('SysvarRecentB1ockHashes11111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(rent|rentSysvar|sysvarRent)$/,
+        account: anyIdentifierOf('rent', 'rentSysvar', 'sysvarRent'),
         defaultValue: publicKeyValueNode('SysvarRent111111111111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(rewardsSysvar|sysvarRewards)$/,
+        account: anyIdentifierOf('rewardsSysvar', 'sysvarRewards'),
         defaultValue: publicKeyValueNode('SysvarRewards111111111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(slotHashesSysvar|sysvarSlotHashes)$/,
+        account: anyIdentifierOf('slotHashesSysvar', 'sysvarSlotHashes'),
         defaultValue: publicKeyValueNode('SysvarS1otHashes111111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(slotHistorySysvar|sysvarSlotHistory)$/,
+        account: anyIdentifierOf('slotHistorySysvar', 'sysvarSlotHistory'),
         defaultValue: publicKeyValueNode('SysvarS1otHistory11111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(stakeHistorySysvar|sysvarStakeHistory)$/,
+        account: anyIdentifierOf('stakeHistorySysvar', 'sysvarStakeHistory'),
         defaultValue: publicKeyValueNode('SysvarStakeHistory1111111111111111111111111'),
         ignoreIfOptional: true,
     },
     {
-        account: /^(mplCoreProgram)$/,
-        defaultValue: publicKeyValueNode('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d', 'mplCore'),
+        account: anyIdentifierOf('mplCoreProgram'),
+        defaultValue: publicKeyValueNode('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d', { identifier: 'mplCore' }),
         ignoreIfOptional: true,
     },
 ];
 
+/**
+ * Set the default values of instruction accounts, including those of
+ * sub-instructions, in bulk using the given rules.
+ *
+ * Rules restricted to an instruction take precedence over the others;
+ * otherwise, the first matching rule wins. Missing seeds of PDA default
+ * values are filled from the instruction's accounts and data (see
+ * `fillDefaultPdaSeedValuesVisitor`): a rule whose PDA seeds cannot all be
+ * filled is skipped for that account.
+ *
+ * @example
+ * ```ts
+ * setInstructionAccountDefaultValuesVisitor([
+ *     ...getCommonInstructionAccountDefaultRules(),
+ *     { account: 'counterProgram', defaultValue: publicKeyValueNode('MyCounterProgram11111111111111111111111111') },
+ *     { account: /^(associatedToken|ata)$/, defaultValue: pdaValueNode('associatedToken') },
+ * ]);
+ * ```
+ */
 export function setInstructionAccountDefaultValuesVisitor(rules: InstructionAccountDefaultRule[]) {
     const linkables = new LinkableDictionary();
-    const stack = new NodeStack();
 
-    // Place the rules with instructions first.
-    const sortedRules = rules.sort((a, b) => {
-        const ia = 'instruction' in a;
-        const ib = 'instruction' in b;
-        if ((ia && ib) || (!a && !ib)) return 0;
-        return ia ? -1 : 1;
-    });
+    // Place the rules with instructions first, without mutating the given rules.
+    const sortedRules = [
+        ...rules.filter(rule => rule.instruction !== undefined),
+        ...rules.filter(rule => rule.instruction === undefined),
+    ];
 
-    function matchRule(
+    const matchRule = (
         instruction: InstructionNode,
         account: InstructionAccountNode,
-    ): InstructionAccountDefaultRule | undefined {
-        return sortedRules.find(rule => {
-            if ('instruction' in rule && rule.instruction && camelCase(rule.instruction) !== instruction.identifier) {
-                return false;
-            }
+    ): InstructionAccountDefaultRule | undefined =>
+        sortedRules.find(rule => {
+            if (rule.instruction !== undefined && rule.instruction !== instruction.identifier) return false;
             return typeof rule.account === 'string'
-                ? camelCase(rule.account) === account.identifier
+                ? rule.account === account.identifier
                 : rule.account.test(account.identifier);
         });
-    }
+
+    const applyRule = (
+        account: InstructionAccountNode,
+        rule: InstructionAccountDefaultRule,
+        instructionPath: NodePath<InstructionNode>,
+    ): InstructionAccountNode => {
+        if ((rule.ignoreIfOptional ?? false) && (account.isOptional || !!account.defaultValue)) return account;
+        try {
+            const defaultValue = visit(
+                rule.defaultValue,
+                fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, true),
+            );
+            return instructionAccountNode({ ...account, defaultValue });
+        } catch (error) {
+            // The rule does not apply when its PDA seeds cannot all be filled.
+            if (isCodamaError(error, CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES)) return account;
+            throw error;
+        }
+    };
 
     return pipe(
-        nonNullableIdentityVisitor({ keys: ['rootNode', 'programNode', 'instructionNode'] }),
-        v =>
-            extendVisitor(v, {
-                visitInstruction(node) {
+        bottomUpTransformerVisitor([
+            {
+                select: '[instructionNode]',
+                transform: (node, stack) => {
+                    assertIsNode(node, 'instructionNode');
                     const instructionPath = stack.getPath('instructionNode');
-                    const instructionAccounts = (node.accounts ?? []).map((account): InstructionAccountNode => {
-                        const rule = matchRule(node, account);
-                        if (!rule) return account;
-
-                        if ((rule.ignoreIfOptional ?? false) && (account.isOptional || !!account.defaultValue)) {
-                            return account;
-                        }
-
-                        try {
-                            return {
-                                ...account,
-                                defaultValue: visit(
-                                    rule.defaultValue,
-                                    fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, true),
-                                ),
-                            };
-                        } catch {
-                            return account;
-                        }
-                    });
-
                     return instructionNode({
                         ...node,
-                        accounts: instructionAccounts,
+                        accounts: (node.accounts ?? []).map(account => {
+                            const rule = matchRule(node, account);
+                            return rule ? applyRule(account, rule, instructionPath) : account;
+                        }),
                     });
                 },
-            }),
-        v => recordNodeStackVisitor(v, stack),
+            },
+        ]),
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }

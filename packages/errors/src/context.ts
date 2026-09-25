@@ -73,6 +73,7 @@ import {
     CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
     CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS,
     CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK,
+    CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR,
     CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
     CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND,
@@ -284,6 +285,11 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK]: {
         path: readonly Node[];
     };
+    [CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR]: {
+        instruction: InstructionNode;
+        instructionName: IdentifierString;
+        reason: string;
+    };
     [CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE]: {
         instruction: InstructionNode;
         instructionAccount: InstructionAccountNode;
@@ -334,7 +340,9 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         parentName: IdentifierString | PathString;
     };
     [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: {
-        wrapper: string;
+        kind: string;
+        reason: string;
+        wrapper: object;
     };
     [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]: {
         instruction: InstructionNode;
