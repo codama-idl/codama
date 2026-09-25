@@ -242,7 +242,7 @@ In the example below, we rename the `vault` account to `safe` and update the `au
     "args": [
         {
             "vault": {
-                "name": "safe"
+                "identifier": "safe"
             },
             "bank": {
                 "data": { "authority": "treasury" }

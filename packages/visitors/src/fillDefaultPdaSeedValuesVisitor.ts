@@ -1,9 +1,8 @@
 import { CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, CodamaError } from '@codama/errors';
 import {
     accountValueNode,
-    argumentValueNode,
     assertIsNode,
-    getAllInstructionArguments,
+    dataValueNode,
     INSTRUCTION_INPUT_VALUE_NODES,
     InstructionInputValueNode,
     InstructionNode,
@@ -16,6 +15,7 @@ import {
 } from '@codama/nodes';
 import {
     extendVisitor,
+    getInstructionDataFields,
     getLastNodeFromPath,
     identityVisitor,
     LinkableDictionary,
@@ -26,15 +26,17 @@ import {
 
 /**
  * Fills in default values for variable PDA seeds that are not explicitly provided.
- * Namely, public key seeds are filled with an accountValueNode using the seed name
- * and other types of seeds are filled with an argumentValueNode using the seed name.
+ * Namely, public key seeds are filled with an `accountValueNode` when the
+ * instruction has an account with the seed's identifier, and other seeds are
+ * filled with a `dataValueNode` when the instruction's data has a top-level
+ * field with the seed's identifier.
  *
- * An instruction and linkable dictionary are required to determine which seeds are
- * valids and to find the pdaLinkNode for the seed respectively. Any invalid default
- * seed won't be filled in.
+ * An instruction path and linkable dictionary are required to determine which
+ * seeds are valid, to follow linked instruction data and to find the PDA of
+ * `pdaLinkNode`s. Any invalid default seed won't be filled in.
  *
  * Strict mode goes one step further and will throw an error if the final array of
- * pdaSeedValueNodes contains invalid seeds or if there aren't enough variable seeds.
+ * `pdaSeedValueNode`s contains invalid seeds or if there aren't enough variable seeds.
  */
 export function fillDefaultPdaSeedValuesVisitor(
     instructionPath: NodePath<InstructionNode>,
@@ -42,6 +44,9 @@ export function fillDefaultPdaSeedValuesVisitor(
     strictMode: boolean = false,
 ) {
     const instruction = getLastNodeFromPath(instructionPath);
+    const dataPaths = new Set<string>(getInstructionDataFields(instructionPath, linkables).map(({ path }) => path));
+    const accountIdentifiers = new Set<string>((instruction.accounts ?? []).map(account => account.identifier));
+
     return pipe(identityVisitor({ keys: INSTRUCTION_INPUT_VALUE_NODES }), v =>
         extendVisitor(v, {
             visitPdaValue(node, { next }) {
@@ -51,8 +56,13 @@ export function fillDefaultPdaSeedValuesVisitor(
                     ? visitedNode.pda
                     : linkables.get([...instructionPath, visitedNode.pda]);
                 if (!foundPda) return visitedNode;
-                const seeds = addDefaultSeedValuesFromPdaWhenMissing(instruction, foundPda, visitedNode.seeds ?? []);
-                if (strictMode && !allSeedsAreValid(instruction, foundPda, seeds)) {
+                const seeds = addDefaultSeedValuesFromPdaWhenMissing(
+                    foundPda,
+                    visitedNode.seeds ?? [],
+                    accountIdentifiers,
+                    dataPaths,
+                );
+                if (strictMode && !allSeedsAreValid(foundPda, seeds, accountIdentifiers, dataPaths)) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, {
                         instruction,
                         instructionName: instruction.identifier,
@@ -60,54 +70,55 @@ export function fillDefaultPdaSeedValuesVisitor(
                         pdaName: foundPda.identifier,
                     });
                 }
-                return pdaValueNode(visitedNode.pda, seeds);
+                return pdaValueNode(visitedNode.pda, { ...visitedNode, seeds });
             },
         }),
     ) as Visitor<InstructionInputValueNode, InstructionInputValueNode['kind']>;
 }
 
 function addDefaultSeedValuesFromPdaWhenMissing(
-    instruction: InstructionNode,
     pda: PdaNode,
     existingSeeds: PdaSeedValueNode[],
+    accountIdentifiers: Set<string>,
+    dataPaths: Set<string>,
 ): PdaSeedValueNode[] {
-    const existingSeedNames = new Set(existingSeeds.map(seed => seed.identifier));
-    const defaultSeeds = getDefaultSeedValuesFromPda(instruction, pda).filter(
+    const existingSeedNames = new Set<string>(existingSeeds.map(seed => seed.identifier));
+    const defaultSeeds = getDefaultSeedValuesFromPda(pda, accountIdentifiers, dataPaths).filter(
         seed => !existingSeedNames.has(seed.identifier),
     );
     return [...existingSeeds, ...defaultSeeds];
 }
 
-function getDefaultSeedValuesFromPda(instruction: InstructionNode, pda: PdaNode): PdaSeedValueNode[] {
+function getDefaultSeedValuesFromPda(
+    pda: PdaNode,
+    accountIdentifiers: Set<string>,
+    dataPaths: Set<string>,
+): PdaSeedValueNode[] {
     return (pda.seeds ?? []).flatMap((seed): PdaSeedValueNode[] => {
         if (!isNode(seed, 'variablePdaSeedNode')) return [];
 
-        const hasMatchingAccount = (instruction.accounts ?? []).some(a => a.identifier === seed.identifier);
-        if (isNode(seed.type, 'publicKeyTypeNode') && hasMatchingAccount) {
+        if (isNode(seed.type, 'publicKeyTypeNode') && accountIdentifiers.has(seed.identifier)) {
             return [pdaSeedValueNode(seed.identifier, accountValueNode(seed.identifier))];
         }
 
-        const hasMatchingArgument = getAllInstructionArguments(instruction).some(a => a.identifier === seed.identifier);
-        if (hasMatchingArgument) {
-            return [pdaSeedValueNode(seed.identifier, argumentValueNode(seed.identifier))];
+        if (dataPaths.has(seed.identifier)) {
+            return [pdaSeedValueNode(seed.identifier, dataValueNode(seed.identifier))];
         }
 
         return [];
     });
 }
 
-function allSeedsAreValid(instruction: InstructionNode, foundPda: PdaNode, seeds: PdaSeedValueNode[]) {
-    const hasAllVariableSeeds =
-        (foundPda.seeds ?? []).filter(isNodeFilter('variablePdaSeedNode')).length === seeds.length;
-    const allAccountsName = (instruction.accounts ?? []).map(a => a.identifier);
-    const allArgumentsName = getAllInstructionArguments(instruction).map(a => a.identifier);
+function allSeedsAreValid(
+    pda: PdaNode,
+    seeds: PdaSeedValueNode[],
+    accountIdentifiers: Set<string>,
+    dataPaths: Set<string>,
+): boolean {
+    const hasAllVariableSeeds = (pda.seeds ?? []).filter(isNodeFilter('variablePdaSeedNode')).length === seeds.length;
     const validSeeds = seeds.every(seed => {
-        if (isNode(seed.value, 'accountValueNode')) {
-            return allAccountsName.includes(seed.value.identifier);
-        }
-        if (isNode(seed.value, 'argumentValueNode')) {
-            return allArgumentsName.includes(seed.value.name);
-        }
+        if (isNode(seed.value, 'accountValueNode')) return accountIdentifiers.has(seed.value.identifier);
+        if (isNode(seed.value, 'dataValueNode')) return dataPaths.has(seed.value.path);
         return true;
     });
 
