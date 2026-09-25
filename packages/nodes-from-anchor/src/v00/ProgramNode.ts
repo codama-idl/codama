@@ -1,5 +1,6 @@
 import { ProgramNode, programNode, Version } from '@codama/nodes';
 
+import { docsFromAnchor } from '../utils';
 import { accountNodeFromAnchorV00 } from './AccountNode';
 import { constantNodeFromAnchorV00 } from './ConstantNode';
 import { definedTypeNodeFromAnchorV00 } from './DefinedTypeNode';
@@ -21,11 +22,11 @@ export function programNodeFromAnchorV00(idl: IdlV00): ProgramNode {
         accounts,
         constants: (idl?.constants ?? []).map(constantNodeFromAnchorV00),
         definedTypes: (idl?.types ?? []).map(definedTypeNodeFromAnchorV00),
+        docs: docsFromAnchor(idl.docs),
         errors: (idl?.errors ?? []).map(errorNodeFromAnchorV00),
         events,
-        instructions,
         identifier: idl?.name ?? '',
-        origin,
+        instructions,
         pdas,
         publicKey: (idl?.metadata as { address?: string })?.address ?? '',
         version: idl.version as Version,

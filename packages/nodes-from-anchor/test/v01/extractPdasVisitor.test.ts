@@ -17,8 +17,8 @@ import { extractPdasFromProgram } from '../../src/extractPdasVisitor';
 
 function makeProgram(instructions: ReturnType<typeof instructionNode>[]) {
     return programNode({
+        identifier: 'testProgram',
         instructions,
-        name: 'testProgram',
         publicKey: '1111',
     });
 }
@@ -30,17 +30,16 @@ test('it extracts a single PDA to program level', () => {
                 instructionAccountNode({
                     defaultValue: pdaValueNode(
                         pdaNode({
-                            name: 'myPda',
+                            identifier: 'myPda',
                             seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
                         }),
-                        [],
                     ),
+                    identifier: 'myPda',
                     isSigner: false,
                     isWritable: false,
-                    name: 'myPda',
                 }),
             ],
-            name: 'myInstruction',
+            identifier: 'myInstruction',
         }),
     ]);
 
@@ -48,11 +47,11 @@ test('it extracts a single PDA to program level', () => {
 
     expect(result.pdas).toEqual([
         pdaNode({
-            name: 'myPda',
+            identifier: 'myPda',
             seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
         }),
     ]);
-    expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(pdaValueNode(pdaLinkNode('myPda'), []));
+    expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(pdaValueNode(pdaLinkNode('myPda')));
 });
 
 test('it deduplicates the same PDA across two instructions', () => {
@@ -61,30 +60,30 @@ test('it deduplicates the same PDA across two instructions', () => {
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    defaultValue: pdaValueNode(pdaNode({ name: 'myPda', seeds }), [
-                        pdaSeedValueNode('owner', accountValueNode('owner')),
-                    ]),
+                    defaultValue: pdaValueNode(pdaNode({ identifier: 'myPda', seeds }), {
+                        seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))],
+                    }),
+                    identifier: 'myPda',
                     isSigner: false,
                     isWritable: false,
-                    name: 'myPda',
                 }),
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'owner' }),
+                instructionAccountNode({ identifier: 'owner', isSigner: false, isWritable: false }),
             ],
-            name: 'instructionA',
+            identifier: 'instructionA',
         }),
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    defaultValue: pdaValueNode(pdaNode({ name: 'myPda', seeds }), [
-                        pdaSeedValueNode('owner', accountValueNode('owner')),
-                    ]),
+                    defaultValue: pdaValueNode(pdaNode({ identifier: 'myPda', seeds }), {
+                        seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))],
+                    }),
+                    identifier: 'myPda',
                     isSigner: false,
                     isWritable: false,
-                    name: 'myPda',
                 }),
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'owner' }),
+                instructionAccountNode({ identifier: 'owner', isSigner: false, isWritable: false }),
             ],
-            name: 'instructionB',
+            identifier: 'instructionB',
         }),
     ]);
 
@@ -92,18 +91,18 @@ test('it deduplicates the same PDA across two instructions', () => {
 
     // Only one PDA extracted.
     expect(result.pdas).toHaveLength(1);
-    expect((result.pdas ?? [])[0].name).toBe('myPda');
+    expect((result.pdas ?? [])[0].identifier).toBe('myPda');
 
     // Both instructions use pdaLinkNode.
     for (const ix of result.instructions ?? []) {
         const account = (ix.accounts ?? [])[0];
         expect(account.defaultValue).toEqual(
-            pdaValueNode(pdaLinkNode('myPda'), [pdaSeedValueNode('owner', accountValueNode('owner'))]),
+            pdaValueNode(pdaLinkNode('myPda'), { seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))] }),
         );
     }
 });
 
-test('it handles name collisions with different seeds by suffixing', () => {
+test('it handles name collisions with different seeds by prefixing the raw instruction identifier', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const program = makeProgram([
@@ -112,42 +111,40 @@ test('it handles name collisions with different seeds by suffixing', () => {
                 instructionAccountNode({
                     defaultValue: pdaValueNode(
                         pdaNode({
-                            name: 'authority',
+                            identifier: 'authority',
                             seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
                         }),
-                        [],
                     ),
+                    identifier: 'authority',
                     isSigner: false,
                     isWritable: false,
-                    name: 'authority',
                 }),
             ],
-            name: 'instructionA',
+            identifier: 'instruction_a',
         }),
         instructionNode({
             accounts: [
                 instructionAccountNode({
                     defaultValue: pdaValueNode(
                         pdaNode({
-                            name: 'authority',
+                            identifier: 'authority',
                             seeds: [constantPdaSeedNodeFromBytes('base58', 'AAAA')],
                         }),
-                        [],
                     ),
+                    identifier: 'authority',
                     isSigner: false,
                     isWritable: false,
-                    name: 'authority',
                 }),
             ],
-            name: 'instructionB',
+            identifier: 'instruction_b',
         }),
     ]);
 
     const result = extractPdasFromProgram(program);
 
     expect(result.pdas).toHaveLength(2);
-    expect((result.pdas ?? [])[0].name).toBe('authority');
-    expect((result.pdas ?? [])[1].name).toBe('instructionBAuthority');
+    expect((result.pdas ?? [])[0].identifier).toBe('authority');
+    expect((result.pdas ?? [])[1].identifier).toBe('instruction_b_authority');
     expect(warnSpy).toHaveBeenCalledOnce();
 
     warnSpy.mockRestore();
@@ -160,18 +157,17 @@ test('it excludes foreign-program PDAs', () => {
                 instructionAccountNode({
                     defaultValue: pdaValueNode(
                         pdaNode({
-                            name: 'ata',
+                            identifier: 'ata',
                             programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
                             seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
                         }),
-                        [],
                     ),
+                    identifier: 'ata',
                     isSigner: false,
                     isWritable: false,
-                    name: 'ata',
                 }),
             ],
-            name: 'myInstruction',
+            identifier: 'myInstruction',
         }),
     ]);
 
@@ -182,11 +178,10 @@ test('it excludes foreign-program PDAs', () => {
     expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(
         pdaValueNode(
             pdaNode({
-                name: 'ata',
+                identifier: 'ata',
                 programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
                 seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')],
             }),
-            [],
         ),
     );
     // Nothing changed on the node at all.
@@ -200,20 +195,22 @@ test('it keeps dynamic programId on pdaValueNode, not on PdaNode', () => {
                 instructionAccountNode({
                     defaultValue: pdaValueNode(
                         pdaNode({
-                            name: 'dynamicPda',
+                            identifier: 'dynamicPda',
                             seeds: [variablePdaSeedNode('owner', publicKeyTypeNode())],
                         }),
-                        [pdaSeedValueNode('owner', accountValueNode('owner'))],
-                        accountValueNode('tokenProgram'),
+                        {
+                            programId: accountValueNode('tokenProgram'),
+                            seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))],
+                        },
                     ),
+                    identifier: 'dynamicPda',
                     isSigner: false,
                     isWritable: false,
-                    name: 'dynamicPda',
                 }),
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'owner' }),
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgram' }),
+                instructionAccountNode({ identifier: 'owner', isSigner: false, isWritable: false }),
+                instructionAccountNode({ identifier: 'tokenProgram', isSigner: false, isWritable: false }),
             ],
-            name: 'myInstruction',
+            identifier: 'myInstruction',
         }),
     ]);
 
@@ -225,11 +222,10 @@ test('it keeps dynamic programId on pdaValueNode, not on PdaNode', () => {
     // pdaValueNode still has the dynamic programId.
     const defaultValue = (result.instructions ?? [])[0].accounts?.[0]!.defaultValue;
     expect(defaultValue).toEqual(
-        pdaValueNode(
-            pdaLinkNode('dynamicPda'),
-            [pdaSeedValueNode('owner', accountValueNode('owner'))],
-            accountValueNode('tokenProgram'),
-        ),
+        pdaValueNode(pdaLinkNode('dynamicPda'), {
+            programId: accountValueNode('tokenProgram'),
+            seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))],
+        }),
     );
 });
 
@@ -239,70 +235,69 @@ test('it deduplicates same seeds with different account names using first name',
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    defaultValue: pdaValueNode(pdaNode({ name: 'authority', seeds }), [
-                        pdaSeedValueNode('owner', accountValueNode('owner')),
-                    ]),
+                    defaultValue: pdaValueNode(pdaNode({ identifier: 'authority', seeds }), {
+                        seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))],
+                    }),
+                    identifier: 'authority',
                     isSigner: false,
                     isWritable: false,
-                    name: 'authority',
                 }),
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'owner' }),
+                instructionAccountNode({ identifier: 'owner', isSigner: false, isWritable: false }),
             ],
-            name: 'instructionA',
+            identifier: 'instructionA',
         }),
         instructionNode({
             accounts: [
                 instructionAccountNode({
-                    defaultValue: pdaValueNode(pdaNode({ name: 'admin', seeds }), [
-                        pdaSeedValueNode('owner', accountValueNode('owner')),
-                    ]),
+                    defaultValue: pdaValueNode(pdaNode({ identifier: 'admin', seeds }), {
+                        seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))],
+                    }),
+                    identifier: 'admin',
                     isSigner: false,
                     isWritable: false,
-                    name: 'admin',
                 }),
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'owner' }),
+                instructionAccountNode({ identifier: 'owner', isSigner: false, isWritable: false }),
             ],
-            name: 'instructionB',
+            identifier: 'instructionB',
         }),
     ]);
 
     const result = extractPdasFromProgram(program);
 
     expect(result.pdas).toHaveLength(1);
-    expect((result.pdas ?? [])[0].name).toBe('authority');
+    expect((result.pdas ?? [])[0].identifier).toBe('authority');
 
     // Both instructions link to the first-encountered name.
     expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(
-        pdaValueNode(pdaLinkNode('authority'), [pdaSeedValueNode('owner', accountValueNode('owner'))]),
+        pdaValueNode(pdaLinkNode('authority'), { seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))] }),
     );
     expect((result.instructions ?? [])[1].accounts?.[0]!.defaultValue).toEqual(
-        pdaValueNode(pdaLinkNode('authority'), [pdaSeedValueNode('owner', accountValueNode('owner'))]),
+        pdaValueNode(pdaLinkNode('authority'), { seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))] }),
     );
 });
 
 test('it preserves existing program-level PDAs', () => {
     const existingPda = pdaNode({
-        name: 'existingPda',
+        identifier: 'existingPda',
         seeds: [constantPdaSeedNodeFromBytes('base58', 'ZZZZ')],
     });
     const program = programNode({
+        identifier: 'testProgram',
         instructions: [
             instructionNode({
                 accounts: [
                     instructionAccountNode({
                         defaultValue: pdaValueNode(
-                            pdaNode({ name: 'newPda', seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')] }),
-                            [],
+                            pdaNode({ identifier: 'newPda', seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')] }),
                         ),
+                        identifier: 'newPda',
                         isSigner: false,
                         isWritable: false,
-                        name: 'newPda',
                     }),
                 ],
-                name: 'myInstruction',
+                identifier: 'myInstruction',
             }),
         ],
-        name: 'testProgram',
         pdas: [existingPda],
         publicKey: '1111',
     });
@@ -311,17 +306,17 @@ test('it preserves existing program-level PDAs', () => {
 
     expect(result.pdas).toHaveLength(2);
     expect((result.pdas ?? [])[0]).toEqual(existingPda);
-    expect((result.pdas ?? [])[1].name).toBe('newPda');
+    expect((result.pdas ?? [])[1].identifier).toBe('newPda');
 });
 
 test('it returns empty pdas when no PDA accounts exist', () => {
     const program = makeProgram([
         instructionNode({
             accounts: [
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'owner' }),
-                instructionAccountNode({ isSigner: false, isWritable: false, name: 'payer' }),
+                instructionAccountNode({ identifier: 'owner', isSigner: false, isWritable: false }),
+                instructionAccountNode({ identifier: 'payer', isSigner: false, isWritable: false }),
             ],
-            name: 'myInstruction',
+            identifier: 'myInstruction',
         }),
     ]);
 
@@ -329,4 +324,39 @@ test('it returns empty pdas when no PDA accounts exist', () => {
     expect(result.pdas ?? []).toEqual([]);
     // Nothing changed on the node at all.
     expect(result).toEqual(program);
+});
+
+test('it suffixes extracted PDA names that are already used by program-level PDAs', () => {
+    const existingPda = pdaNode({
+        identifier: 'my_pda',
+        seeds: [constantPdaSeedNodeFromBytes('base58', 'ZZZZ')],
+    });
+    const program = programNode({
+        identifier: 'testProgram',
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({
+                        defaultValue: pdaValueNode(
+                            pdaNode({ identifier: 'my_pda', seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')] }),
+                        ),
+                        identifier: 'my_pda',
+                        isSigner: false,
+                        isWritable: false,
+                    }),
+                ],
+                identifier: 'my_instruction',
+            }),
+        ],
+        pdas: [existingPda],
+        publicKey: '1111',
+    });
+
+    const result = extractPdasFromProgram(program);
+
+    expect(result.pdas).toEqual([
+        existingPda,
+        pdaNode({ identifier: 'my_pda2', seeds: [constantPdaSeedNodeFromBytes('base58', 'F9bS')] }),
+    ]);
+    expect((result.instructions ?? [])[0].accounts?.[0]!.defaultValue).toEqual(pdaValueNode(pdaLinkNode('my_pda2')));
 });

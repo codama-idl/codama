@@ -1,5 +1,6 @@
 import { ErrorNode, errorNode } from '@codama/nodes';
 
+import { docsFromAnchor } from '../utils';
 import { IdlV00ErrorCode } from './idl';
 
 export function errorNodeFromAnchorV00(idl: Partial<IdlV00ErrorCode>): ErrorNode {
@@ -7,8 +8,8 @@ export function errorNodeFromAnchorV00(idl: Partial<IdlV00ErrorCode>): ErrorNode
     const msg = idl.msg ?? '';
     return errorNode({
         code: idl.code ?? -1,
-        docs: idl.docs ?? [msg ? `${name}: ${msg}` : `${name}`],
-        message: msg,
+        docs: docsFromAnchor(idl.docs) ?? (msg ? `${name}: ${msg}` : name),
         identifier: name,
+        message: msg,
     });
 }

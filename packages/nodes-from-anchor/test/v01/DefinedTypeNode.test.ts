@@ -1,5 +1,5 @@
 /* eslint-disable sort-keys */
-import { definedTypeNode, numberTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@codama/nodes';
+import { definedTypeNode, integerTypeNode, structFieldTypeNode, structTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { definedTypeNodeFromAnchorV01, GenericsV01 } from '../../src';
@@ -18,11 +18,11 @@ test('it creates defined type nodes', () => {
 
     expect(node).toEqual(
         definedTypeNode({
-            name: 'myType',
+            identifier: 'MyType',
             type: structTypeNode([
                 structFieldTypeNode({
-                    name: 'myField',
-                    type: numberTypeNode('u64'),
+                    identifier: 'my_field',
+                    type: integerTypeNode('u64'),
                 }),
             ]),
         }),
@@ -47,11 +47,11 @@ test('it unwraps generic arguments', () => {
 
     expect(node).toEqual(
         definedTypeNode({
-            name: 'buffer',
+            identifier: 'Buffer',
             type: structTypeNode([
                 structFieldTypeNode({
-                    name: 'data',
-                    type: numberTypeNode('u64'),
+                    identifier: 'data',
+                    type: integerTypeNode('u64'),
                 }),
             ]),
         }),
@@ -91,13 +91,32 @@ test('it unwraps nested generic types', () => {
 
     expect(node).toEqual(
         definedTypeNode({
-            name: 'buffer',
+            identifier: 'Buffer',
             type: structTypeNode([
                 structFieldTypeNode({
-                    name: 'data',
-                    type: tupleTypeNode([numberTypeNode('u64'), numberTypeNode('u8')]),
+                    identifier: 'data',
+                    type: tupleTypeNode([integerTypeNode('u64'), integerTypeNode('u8')]),
                 }),
             ]),
+        }),
+    );
+});
+
+test('it includes the docs of the defined type', () => {
+    const node = definedTypeNodeFromAnchorV01(
+        {
+            docs: ['My type.', 'With two lines.'],
+            name: 'MyType',
+            type: { fields: [], kind: 'struct' },
+        },
+        {} as GenericsV01,
+    );
+
+    expect(node).toEqual(
+        definedTypeNode({
+            docs: 'My type.\nWith two lines.',
+            identifier: 'MyType',
+            type: structTypeNode([]),
         }),
     );
 });

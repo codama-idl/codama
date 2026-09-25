@@ -1,28 +1,10 @@
-import { EnumTypeNode, enumTypeNode, EnumVariantTypeNode, NumberTypeNode, numberTypeNode } from '@codama/nodes';
+import { EnumTypeNode, enumTypeNode, integerTypeNode } from '@codama/nodes';
 
-import { IdlV00EnumFieldsNamed, IdlV00EnumFieldsTuple, IdlV00EnumVariant, IdlV00TypeDefTyEnum } from '../idl';
-import { enumEmptyVariantTypeNodeFromAnchorV00 } from './EnumEmptyVariantTypeNode';
-import { enumStructVariantTypeNodeFromAnchorV00 } from './EnumStructVariantTypeNode';
-import { enumTupleVariantTypeNodeFromAnchorV00 } from './EnumTupleVariantTypeNode';
+import type { IdlV00TypeDefTyEnum } from '../idl';
+import { enumVariantTypeNodeFromAnchorV00 } from './EnumVariantTypeNode';
 
-export function enumTypeNodeFromAnchorV00(
-    idl: IdlV00TypeDefTyEnum,
-): EnumTypeNode<EnumVariantTypeNode[], NumberTypeNode> {
-    const variants = idl.variants.map((variant): EnumVariantTypeNode => {
-        if (!variant.fields || variant.fields.length <= 0) {
-            return enumEmptyVariantTypeNodeFromAnchorV00(variant);
-        }
-        if (isStructVariant(variant)) {
-            return enumStructVariantTypeNodeFromAnchorV00(variant);
-        }
-        return enumTupleVariantTypeNodeFromAnchorV00(variant as IdlV00EnumVariant & { fields: IdlV00EnumFieldsTuple });
+export function enumTypeNodeFromAnchorV00(idl: IdlV00TypeDefTyEnum): EnumTypeNode {
+    return enumTypeNode(idl.variants.map(enumVariantTypeNodeFromAnchorV00), {
+        size: idl.size ? integerTypeNode(idl.size) : undefined,
     });
-    return enumTypeNode(variants, {
-        size: idl.size ? numberTypeNode(idl.size) : undefined,
-    });
-}
-
-function isStructVariant(variant: IdlV00EnumVariant): variant is IdlV00EnumVariant & { fields: IdlV00EnumFieldsNamed } {
-    const field = variant.fields![0];
-    return typeof field === 'object' && 'name' in field && 'type' in field;
 }

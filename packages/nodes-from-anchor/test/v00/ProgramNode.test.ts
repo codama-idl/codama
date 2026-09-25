@@ -6,12 +6,12 @@ import {
     definedTypeNode,
     errorNode,
     fieldDiscriminatorNode,
-    fixedSizeTypeNode,
-    instructionArgumentNode,
+    fixedSizeTransformNode,
     instructionNode,
     pdaLinkNode,
     pdaNode,
     programNode,
+    structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
@@ -19,45 +19,67 @@ import { expect, test } from 'vitest';
 import { programNodeFromAnchorV00 } from '../../src';
 
 test('it creates program nodes', () => {
+    // When we convert a Shank program.
     const node = programNodeFromAnchorV00({
-        accounts: [{ name: 'myAccount', seeds: [{ kind: 'programId' }], type: { fields: [], kind: 'struct' } }],
-        errors: [{ code: 42, msg: 'my error message', name: 'myError' }],
-        instructions: [{ accounts: [], args: [], name: 'myInstruction' }],
+        accounts: [{ name: 'my_account', seeds: [{ kind: 'programId' }], type: { fields: [], kind: 'struct' } }],
+        errors: [{ code: 42, msg: 'my error message', name: 'MyError' }],
+        instructions: [{ accounts: [], args: [], name: 'my_instruction' }],
         metadata: { address: '1111', origin: 'shank' },
-        name: 'myProgram',
-        types: [{ name: 'myType', type: { fields: [], kind: 'struct' } }],
+        name: 'my_program',
+        types: [{ name: 'MyType', type: { fields: [], kind: 'struct' } }],
         version: '1.2.3',
     });
 
+    // Then we expect a program node that keeps the IDL casing and uses Shank discriminators.
     expect(node).toEqual(
         programNode({
-            accounts: [accountNode({ name: 'myAccount', pda: pdaLinkNode('myAccount') })],
-            definedTypes: [definedTypeNode({ name: 'myType', type: structTypeNode([]) })],
+            accounts: [accountNode({ identifier: 'my_account', pda: pdaLinkNode('my_account') })],
+            definedTypes: [definedTypeNode({ identifier: 'MyType', type: structTypeNode([]) })],
             errors: [
                 errorNode({
                     code: 42,
-                    docs: ['myError: my error message'],
+                    docs: 'MyError: my error message',
+                    identifier: 'MyError',
                     message: 'my error message',
-                    name: 'myError',
                 }),
             ],
+            identifier: 'my_program',
             instructions: [
                 instructionNode({
-                    arguments: [
-                        instructionArgumentNode({
-                            defaultValue: bytesValueNode('base16', (0).toString(16)),
+                    data: structTypeNode([
+                        structFieldTypeNode({
+                            defaultValue: bytesValueNode('base16', '00'),
                             defaultValueStrategy: 'omitted',
-                            name: 'discriminator',
-                            type: fixedSizeTypeNode(bytesTypeNode(), 1),
+                            identifier: 'discriminator',
+                            type: bytesTypeNode({ transforms: [fixedSizeTransformNode(1)] }),
                         }),
-                    ],
+                    ]),
                     discriminators: [fieldDiscriminatorNode('discriminator')],
-                    name: 'myInstruction',
+                    identifier: 'my_instruction',
                 }),
             ],
-            name: 'myProgram',
-            origin: 'shank',
-            pdas: [pdaNode({ name: 'myAccount', seeds: [constantPdaSeedNodeFromProgramId()] })],
+            pdas: [pdaNode({ identifier: 'my_account', seeds: [constantPdaSeedNodeFromProgramId()] })],
+            publicKey: '1111',
+            version: '1.2.3',
+        }),
+    );
+});
+
+test('it creates program nodes with docs', () => {
+    // When we convert a program with multiple lines of docs.
+    const node = programNodeFromAnchorV00({
+        docs: ['First line.', 'Second line.'],
+        instructions: [],
+        metadata: { address: '1111' },
+        name: 'my_program',
+        version: '1.2.3',
+    });
+
+    // Then we expect the docs to be joined into a single string.
+    expect(node).toEqual(
+        programNode({
+            docs: 'First line.\nSecond line.',
+            identifier: 'my_program',
             publicKey: '1111',
             version: '1.2.3',
         }),
