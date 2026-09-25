@@ -2,8 +2,8 @@ import {
     bytesTypeNode,
     constantPdaSeedNode,
     constantPdaSeedNodeFromProgramId,
-    numberTypeNode,
-    numberValueNode,
+    integerTypeNode,
+    integerValueNode,
     pdaNode,
     stringTypeNode,
     variablePdaSeedNode,
@@ -13,41 +13,49 @@ import { expect, test } from 'vitest';
 import { pdaNodeFromAnchorV00 } from '../../src';
 
 test('it creates PDA nodes', () => {
+    // When we convert an account with seeds into a PDA.
     const node = pdaNodeFromAnchorV00({
-        name: 'myPda',
+        name: 'my_pda',
         seeds: [
             { kind: 'programId' },
             { kind: 'constant', type: 'u8', value: 42 },
-            { description: 'seed description', kind: 'variable', name: 'myVariableSeed', type: 'u16' },
+            { description: 'seed description', kind: 'variable', name: 'my_variable_seed', type: 'u16' },
         ],
     });
 
+    // Then we expect a PDA node that keeps the IDL casing.
     expect(node).toEqual(
         pdaNode({
-            name: 'myPda',
+            identifier: 'my_pda',
             seeds: [
                 constantPdaSeedNodeFromProgramId(),
-                constantPdaSeedNode(numberTypeNode('u8'), numberValueNode(42)),
-                variablePdaSeedNode('myVariableSeed', numberTypeNode('u16'), 'seed description'),
+                constantPdaSeedNode(integerTypeNode('u8'), integerValueNode('42')),
+                variablePdaSeedNode('my_variable_seed', integerTypeNode('u16'), { docs: 'seed description' }),
             ],
         }),
     );
 });
 
 test('it removes the string prefix from variable seeds', () => {
+    // When we convert a PDA with a string variable seed.
     const node = pdaNodeFromAnchorV00({
         name: 'myPda',
         seeds: [{ description: '', kind: 'variable', name: 'label', type: 'string' }],
     });
 
-    expect(node).toEqual(pdaNode({ name: 'myPda', seeds: [variablePdaSeedNode('label', stringTypeNode('utf8'))] }));
+    // Then we expect the seed to be an unprefixed string without docs.
+    expect(node).toEqual(
+        pdaNode({ identifier: 'myPda', seeds: [variablePdaSeedNode('label', stringTypeNode('utf8'))] }),
+    );
 });
 
 test('it removes the bytes prefix from variable seeds', () => {
+    // When we convert a PDA with a bytes variable seed.
     const node = pdaNodeFromAnchorV00({
         name: 'myPda',
         seeds: [{ description: '', kind: 'variable', name: 'seedData', type: 'bytes' }],
     });
 
-    expect(node).toEqual(pdaNode({ name: 'myPda', seeds: [variablePdaSeedNode('seedData', bytesTypeNode())] }));
+    // Then we expect the seed to be unprefixed bytes without docs.
+    expect(node).toEqual(pdaNode({ identifier: 'myPda', seeds: [variablePdaSeedNode('seedData', bytesTypeNode())] }));
 });

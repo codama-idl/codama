@@ -3,7 +3,7 @@ import {
     fixedCountNode,
     MapTypeNode,
     mapTypeNode,
-    numberTypeNode,
+    integerTypeNode,
     prefixedCountNode,
     remainderCountNode,
 } from '@codama/nodes';
@@ -19,7 +19,7 @@ export function mapTypeNodeFromAnchorV00(idl: IdlV00TypeMap): MapTypeNode {
     } else if (typeof idl.size === 'number') {
         size = fixedCountNode(idl.size);
     } else {
-        size = prefixedCountNode(numberTypeNode(idl.size ?? 'u32'));
+        size = prefixedCountNode(integerTypeNode(idl.size ?? 'u32'));
     }
     return mapTypeNode(typeNodeFromAnchorV00(key), typeNodeFromAnchorV00(value), size);
 }

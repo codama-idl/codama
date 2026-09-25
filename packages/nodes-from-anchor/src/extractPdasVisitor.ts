@@ -1,5 +1,4 @@
 import { logWarn } from '@codama/errors';
-import { camelCase } from '@codama/fragments/casing';
 import {
     assertIsNode,
     identifierString,
@@ -18,17 +17,18 @@ import { bottomUpTransformerVisitor, getUniqueHashStringVisitor, visit, type Vis
 
 type Fingerprint = string;
 
+/** Hash a PDA regardless of its identifier, so identical PDAs from different accounts are deduplicated. */
 function pdaFingerprint(pda: PdaNode, hashVisitor: Visitor<string>): Fingerprint {
-    return visit(pdaNode({ ...pda, identifier: '' }), hashVisitor);
+    return visit(pdaNode({ ...pda, identifier: '_' }), hashVisitor);
 }
 
 function getUniquePdaName(name: IdentifierString, usedNames: Set<IdentifierString>): IdentifierString {
     if (!usedNames.has(name)) return name;
     let suffix = 2;
-    let candidate = identifierString(camelCase(`${name}${suffix}`));
+    let candidate = identifierString(`${name}${suffix}`);
     while (usedNames.has(candidate)) {
         suffix++;
-        candidate = identifierString(camelCase(`${name}${suffix}`));
+        candidate = identifierString(`${name}${suffix}`);
     }
     return candidate;
 }
@@ -71,7 +71,7 @@ export function extractPdasFromProgram(program: ProgramNode): ProgramNode {
                 const existingFingerprint = nameToFingerprint.get(resolvedName);
 
                 if (existingFingerprint !== undefined && existingFingerprint !== fingerprint) {
-                    resolvedName = identifierString(camelCase(`${instruction.identifier}_${pda.identifier}`));
+                    resolvedName = identifierString(`${instruction.identifier}_${pda.identifier}`);
                     logWarn(
                         `PDA name collision: "${pda.identifier}" has different seeds across instructions. ` +
                             `Renaming to "${resolvedName}".`,

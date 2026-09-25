@@ -1,10 +1,8 @@
 import {
     booleanTypeNode,
-    enumEmptyVariantTypeNode,
-    enumStructVariantTypeNode,
-    enumTupleVariantTypeNode,
     enumTypeNode,
-    numberTypeNode,
+    enumVariantTypeNode,
+    integerTypeNode,
     structFieldTypeNode,
     structTypeNode,
     tupleTypeNode,
@@ -30,12 +28,11 @@ test('it creates enum type nodes', () => {
 
     expect(node).toEqual(
         enumTypeNode([
-            enumEmptyVariantTypeNode('variantA'),
-            enumTupleVariantTypeNode('variantB', tupleTypeNode([numberTypeNode('u16'), booleanTypeNode()])),
-            enumStructVariantTypeNode(
-                'variantC',
-                structTypeNode([structFieldTypeNode({ name: 'age', type: numberTypeNode('u8') })]),
-            ),
+            enumVariantTypeNode('variantA'),
+            enumVariantTypeNode('variantB', { data: tupleTypeNode([integerTypeNode('u16'), booleanTypeNode()]) }),
+            enumVariantTypeNode('variantC', {
+                data: structTypeNode([structFieldTypeNode({ identifier: 'age', type: integerTypeNode('u8') })]),
+            }),
         ]),
     );
 });

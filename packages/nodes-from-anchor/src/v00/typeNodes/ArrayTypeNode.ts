@@ -2,7 +2,7 @@ import {
     ArrayTypeNode,
     arrayTypeNode,
     fixedCountNode,
-    numberTypeNode,
+    integerTypeNode,
     prefixedCountNode,
     remainderCountNode,
 } from '@codama/nodes';
@@ -17,5 +17,5 @@ export function arrayTypeNodeFromAnchorV00(idl: IdlV00TypeArray | IdlV00TypeVec)
     }
     const item = typeNodeFromAnchorV00(idl.vec);
     if (idl.size === 'remainder') return arrayTypeNode(item, remainderCountNode());
-    return arrayTypeNode(item, prefixedCountNode(numberTypeNode(idl.size ?? 'u32')));
+    return arrayTypeNode(item, prefixedCountNode(integerTypeNode(idl.size ?? 'u32')));
 }

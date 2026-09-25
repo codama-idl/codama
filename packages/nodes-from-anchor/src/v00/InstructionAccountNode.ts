@@ -1,8 +1,14 @@
 import { camelCase } from '@codama/fragments/casing';
 import { InstructionAccountNode, instructionAccountNode } from '@codama/nodes';
 
+import { docsFromAnchor } from '../utils';
 import { IdlV00Account, IdlV00AccountItem } from './idl';
 
+/**
+ * Whether flattening nested account groups would produce accounts whose
+ * identifiers collide under the casing-collision rule, in which case
+ * nested accounts are prefixed by their group identifiers.
+ */
 function hasDuplicateAccountNames(idl: IdlV00AccountItem[]): boolean {
     const seenNames = new Set<string>();
 
@@ -44,9 +50,8 @@ export function instructionAccountNodesFromAnchorV00(
 
 export function instructionAccountNodeFromAnchorV00(idl: IdlV00Account, prefix?: string): InstructionAccountNode {
     const isOptional = idl.optional ?? idl.isOptional ?? false;
-    const desc = idl.desc ? [idl.desc] : undefined;
     return instructionAccountNode({
-        docs: idl.docs ?? desc ?? [],
+        docs: docsFromAnchor(idl.docs) ?? (idl.desc || undefined),
         identifier: prefix ? `${prefix}_${idl.name ?? ''}` : (idl.name ?? ''),
         isOptional,
         isSigner: idl.isOptionalSigner ? 'either' : (idl.isSigner ?? false),

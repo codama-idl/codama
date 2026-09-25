@@ -1,6 +1,6 @@
 import {
     fixedCountNode,
-    numberTypeNode,
+    integerTypeNode,
     prefixedCountNode,
     remainderCountNode,
     SetTypeNode,
@@ -18,7 +18,7 @@ export function setTypeNodeFromAnchorV00(idl: IdlV00TypeSet): SetTypeNode {
     } else if (typeof idl.size === 'number') {
         size = fixedCountNode(idl.size);
     } else {
-        size = prefixedCountNode(numberTypeNode(idl.size ?? 'u32'));
+        size = prefixedCountNode(integerTypeNode(idl.size ?? 'u32'));
     }
     return setTypeNode(typeNodeFromAnchorV00(child), size);
 }

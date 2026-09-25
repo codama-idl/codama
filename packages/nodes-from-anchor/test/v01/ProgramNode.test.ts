@@ -1,27 +1,25 @@
 import {
     accountNode,
     accountValueNode,
-    argumentValueNode,
     arrayTypeNode,
     bytesTypeNode,
     constantDiscriminatorNode,
     constantPdaSeedNodeFromBytes,
     constantValueNode,
+    dataValueNode,
     definedTypeLinkNode,
     definedTypeNode,
-    enumEmptyVariantTypeNode,
-    enumTupleVariantTypeNode,
     enumTypeNode,
+    enumVariantTypeNode,
     errorNode,
     eventNode,
     fieldDiscriminatorNode,
     fixedCountNode,
-    fixedSizeTypeNode,
-    hiddenPrefixTypeNode,
+    fixedSizeTransformNode,
+    hiddenPrefixTransformNode,
     instructionAccountNode,
-    instructionArgumentNode,
     instructionNode,
-    numberTypeNode,
+    integerTypeNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
@@ -40,6 +38,7 @@ test('it creates program nodes', () => {
     const node = programNodeFromAnchorV01({
         accounts: [{ discriminator: [246, 28, 6, 87, 251, 45, 50, 42], name: 'MyAccount' }],
         address: '1111',
+        docs: ['My program.', 'With two lines.'],
         errors: [{ code: 42, msg: 'my error message', name: 'myError' }],
         events: [{ discriminator: [1, 2, 3, 4, 5, 6, 7, 8], name: 'MyEvent' }],
         instructions: [
@@ -74,116 +73,119 @@ test('it creates program nodes', () => {
         ],
         metadata: { name: 'my_program', spec: '0.1.0', version: '1.2.3' },
         types: [
-            { name: 'MyAccount', type: { fields: [{ name: 'delegate', type: 'pubkey' }], kind: 'struct' } },
-            { name: 'MyEvent', type: { fields: [{ name: 'amount', type: 'u64' }], kind: 'struct' } },
+            {
+                docs: ['My account.'],
+                name: 'MyAccount',
+                type: { fields: [{ name: 'delegate', type: 'pubkey' }], kind: 'struct' },
+            },
+            {
+                docs: ['My event.'],
+                name: 'MyEvent',
+                type: { fields: [{ name: 'amount', type: 'u64' }], kind: 'struct' },
+            },
         ],
     });
 
+    const accountDiscriminator = getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]);
+    const eventDiscriminator = constantValueNode(
+        bytesTypeNode({ transforms: [fixedSizeTransformNode(8)] }),
+        getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
+    );
     expect(node).toEqual(
         programNode({
             accounts: [
                 accountNode({
                     data: structTypeNode([
                         structFieldTypeNode({
-                            defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+                            defaultValue: accountDiscriminator,
                             defaultValueStrategy: 'omitted',
-                            name: 'discriminator',
-                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
+                            identifier: 'discriminator',
+                            type: bytesTypeNode({ transforms: [fixedSizeTransformNode(8)] }),
                         }),
                         structFieldTypeNode({
-                            name: 'delegate',
+                            identifier: 'delegate',
                             type: publicKeyTypeNode(),
                         }),
                     ]),
                     discriminators: [fieldDiscriminatorNode('discriminator')],
-                    name: 'myAccount',
+                    docs: 'My account.',
+                    identifier: 'MyAccount',
                 }),
             ],
-            definedTypes: [],
+            docs: 'My program.\nWith two lines.',
             errors: [
                 errorNode({
                     code: 42,
-                    docs: ['myError: my error message'],
+                    docs: 'myError: my error message',
+                    identifier: 'myError',
                     message: 'my error message',
-                    name: 'myError',
                 }),
             ],
             events: [
                 eventNode({
-                    data: hiddenPrefixTypeNode(
-                        structTypeNode([
-                            structFieldTypeNode({
-                                name: 'amount',
-                                type: numberTypeNode('u64'),
-                            }),
-                        ]),
+                    data: structTypeNode(
                         [
-                            constantValueNode(
-                                fixedSizeTypeNode(bytesTypeNode(), 8),
-                                getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
-                            ),
+                            structFieldTypeNode({
+                                identifier: 'amount',
+                                type: integerTypeNode('u64'),
+                            }),
                         ],
+                        { transforms: [hiddenPrefixTransformNode([eventDiscriminator])] },
                     ),
-                    discriminators: [
-                        constantDiscriminatorNode(
-                            constantValueNode(
-                                fixedSizeTypeNode(bytesTypeNode(), 8),
-                                getAnchorDiscriminatorV01([1, 2, 3, 4, 5, 6, 7, 8]),
-                            ),
-                        ),
-                    ],
-                    name: 'myEvent',
+                    discriminators: [constantDiscriminatorNode(eventDiscriminator)],
+                    docs: 'My event.',
+                    identifier: 'MyEvent',
                 }),
             ],
+            identifier: 'my_program',
             instructions: [
                 instructionNode({
                     accounts: [
                         instructionAccountNode({
                             defaultValue: pdaValueNode(
                                 pdaNode({
-                                    name: 'authority',
+                                    identifier: 'authority',
                                     seeds: [
                                         constantPdaSeedNodeFromBytes('base58', 'F9bS'),
                                         variablePdaSeedNode('owner', publicKeyTypeNode()),
-                                        variablePdaSeedNode('amount', numberTypeNode('u8')),
+                                        variablePdaSeedNode('amount', integerTypeNode('u8')),
                                     ],
                                 }),
-                                [
-                                    pdaSeedValueNode('owner', accountValueNode('owner')),
-                                    pdaSeedValueNode('amount', argumentValueNode('amount')),
-                                ],
+                                {
+                                    seeds: [
+                                        pdaSeedValueNode('owner', accountValueNode('owner')),
+                                        pdaSeedValueNode('amount', dataValueNode('amount')),
+                                    ],
+                                },
                             ),
+                            identifier: 'authority',
                             isSigner: false,
                             isWritable: false,
-                            name: 'authority',
                         }),
                         instructionAccountNode({
+                            identifier: 'owner',
                             isSigner: false,
                             isWritable: false,
-                            name: 'owner',
                         }),
                         instructionAccountNode({
+                            identifier: 'some_account',
                             isSigner: false,
                             isWritable: false,
-                            name: 'someAccount',
                         }),
                     ],
-                    arguments: [
-                        instructionArgumentNode({
-                            defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+                    data: structTypeNode([
+                        structFieldTypeNode({
+                            defaultValue: accountDiscriminator,
                             defaultValueStrategy: 'omitted',
-                            name: 'discriminator',
-                            type: fixedSizeTypeNode(bytesTypeNode(), 8),
+                            identifier: 'discriminator',
+                            type: bytesTypeNode({ transforms: [fixedSizeTransformNode(8)] }),
                         }),
-                        instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') }),
-                    ],
+                        structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u8') }),
+                    ]),
                     discriminators: [fieldDiscriminatorNode('discriminator')],
-                    name: 'myInstruction',
+                    identifier: 'my_instruction',
                 }),
             ],
-            name: 'myProgram',
-            origin: 'anchor',
-            pdas: [],
             publicKey: '1111',
             version: '1.2.3',
         }),
@@ -274,69 +276,64 @@ test('it unwraps and removes generic types', () => {
         programNode({
             definedTypes: [
                 definedTypeNode({
-                    name: 'AccountData',
+                    identifier: 'AccountData',
                     type: enumTypeNode([
-                        enumEmptyVariantTypeNode('unknown'),
-                        enumTupleVariantTypeNode(
-                            'timelock',
-                            tupleTypeNode([
+                        enumVariantTypeNode('Unknown'),
+                        enumVariantTypeNode('Timelock', {
+                            data: tupleTypeNode([
                                 structTypeNode([
                                     structFieldTypeNode({
-                                        name: 'state',
-                                        type: arrayTypeNode(definedTypeLinkNode('itemState'), fixedCountNode(1000)),
+                                        identifier: 'state',
+                                        type: arrayTypeNode(definedTypeLinkNode('ItemState'), fixedCountNode(1000)),
                                     }),
                                     structFieldTypeNode({
-                                        name: 'data',
+                                        identifier: 'data',
                                         type: arrayTypeNode(
-                                            definedTypeLinkNode('virtualTimelockAccount'),
+                                            definedTypeLinkNode('VirtualTimelockAccount'),
                                             fixedCountNode(1000),
                                         ),
                                     }),
                                 ]),
                             ]),
-                        ),
-                        enumTupleVariantTypeNode(
-                            'nonce',
-                            tupleTypeNode([
+                        }),
+                        enumVariantTypeNode('Nonce', {
+                            data: tupleTypeNode([
                                 structTypeNode([
                                     structFieldTypeNode({
-                                        name: 'state',
-                                        type: arrayTypeNode(definedTypeLinkNode('itemState'), fixedCountNode(500)),
+                                        identifier: 'state',
+                                        type: arrayTypeNode(definedTypeLinkNode('ItemState'), fixedCountNode(500)),
                                     }),
                                     structFieldTypeNode({
-                                        name: 'data',
+                                        identifier: 'data',
                                         type: arrayTypeNode(
-                                            definedTypeLinkNode('virtualDurableNonce'),
+                                            definedTypeLinkNode('VirtualDurableNonce'),
                                             fixedCountNode(500),
                                         ),
                                     }),
                                 ]),
                             ]),
-                        ),
-                        enumTupleVariantTypeNode(
-                            'relay',
-                            tupleTypeNode([
+                        }),
+                        enumVariantTypeNode('Relay', {
+                            data: tupleTypeNode([
                                 structTypeNode([
                                     structFieldTypeNode({
-                                        name: 'state',
-                                        type: arrayTypeNode(definedTypeLinkNode('itemState'), fixedCountNode(250)),
+                                        identifier: 'state',
+                                        type: arrayTypeNode(definedTypeLinkNode('ItemState'), fixedCountNode(250)),
                                     }),
                                     structFieldTypeNode({
-                                        name: 'data',
+                                        identifier: 'data',
                                         type: arrayTypeNode(
-                                            definedTypeLinkNode('virtualRelayAccount'),
+                                            definedTypeLinkNode('VirtualRelayAccount'),
                                             fixedCountNode(250),
                                         ),
                                     }),
                                 ]),
                             ]),
-                        ),
+                        }),
                     ]),
                 }),
             ],
-            name: 'myProgram',
-            origin: 'anchor',
-            pdas: [],
+            identifier: 'my_program',
             publicKey: '1111',
             version: '1.2.3',
         }),

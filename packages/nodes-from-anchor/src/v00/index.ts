@@ -4,7 +4,6 @@ export * from './DefinedTypeNode';
 export * from './ErrorNode';
 export * from './EventNode';
 export * from './InstructionAccountNode';
-export * from './InstructionArgumentNode';
 export * from './InstructionNode';
 export * from './PdaNode';
 export * from './ProgramNode';

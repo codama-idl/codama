@@ -1,9 +1,16 @@
-import { numberTypeNode, sizePrefixTypeNode, stringTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
+import {
+    integerTypeNode,
+    sizePrefixTransformNode,
+    stringTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
+} from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { typeNodeFromAnchorV00 } from '../../../src';
 
 test('it creates struct type nodes', () => {
+    // When we convert the Anchor type.
     const node = typeNodeFromAnchorV00({
         fields: [
             { name: 'name', type: 'string' },
@@ -12,13 +19,14 @@ test('it creates struct type nodes', () => {
         kind: 'struct',
     });
 
+    // Then we expect the equivalent Codama type node.
     expect(node).toEqual(
         structTypeNode([
             structFieldTypeNode({
-                name: 'name',
-                type: sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u32')),
+                identifier: 'name',
+                type: stringTypeNode('utf8', { transforms: [sizePrefixTransformNode(integerTypeNode('u32'))] }),
             }),
-            structFieldTypeNode({ name: 'age', type: numberTypeNode('u8') }),
+            structFieldTypeNode({ identifier: 'age', type: integerTypeNode('u8') }),
         ]),
     );
 });

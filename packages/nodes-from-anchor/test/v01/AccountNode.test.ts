@@ -2,8 +2,8 @@ import {
     accountNode,
     bytesTypeNode,
     fieldDiscriminatorNode,
-    fixedSizeTypeNode,
-    numberTypeNode,
+    fixedSizeTransformNode,
+    integerTypeNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
@@ -43,16 +43,49 @@ test('it creates account nodes with anchor discriminators', () => {
                 structFieldTypeNode({
                     defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
                     defaultValueStrategy: 'omitted',
-                    name: 'discriminator',
-                    type: fixedSizeTypeNode(bytesTypeNode(), 8),
+                    identifier: 'discriminator',
+                    type: bytesTypeNode({ transforms: [fixedSizeTransformNode(8)] }),
                 }),
                 structFieldTypeNode({
-                    name: 'name',
-                    type: numberTypeNode('u32'),
+                    identifier: 'name',
+                    type: integerTypeNode('u32'),
                 }),
             ]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'myAccount',
+            identifier: 'MyAccount',
+        }),
+    );
+});
+
+test('it includes the docs of the account type', () => {
+    const node = accountNodeFromAnchorV01(
+        {
+            discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+            name: 'MyAccount',
+        },
+        [
+            {
+                docs: ['My account.', 'With two lines.'],
+                name: 'MyAccount',
+                type: { fields: [], kind: 'struct' },
+            },
+        ],
+        generics,
+    );
+
+    expect(node).toEqual(
+        accountNode({
+            data: structTypeNode([
+                structFieldTypeNode({
+                    defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+                    defaultValueStrategy: 'omitted',
+                    identifier: 'discriminator',
+                    type: bytesTypeNode({ transforms: [fixedSizeTransformNode(8)] }),
+                }),
+            ]),
+            discriminators: [fieldDiscriminatorNode('discriminator')],
+            docs: 'My account.\nWith two lines.',
+            identifier: 'MyAccount',
         }),
     );
 });

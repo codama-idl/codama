@@ -1,15 +1,14 @@
 import { CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE, CodamaError } from '@codama/errors';
 import {
     booleanTypeNode,
-    bytesTypeNode,
     definedTypeLinkNode,
-    numberTypeNode,
+    floatTypeNode,
+    integerTypeNode,
     publicKeyTypeNode,
-    sizePrefixTypeNode,
-    stringTypeNode,
     TypeNode,
 } from '@codama/nodes';
 
+import { borshSizePrefixedTypeNode } from '../../utils';
 import { IdlV00Type, IdlV00TypeDefTy, IdlV00TypeMap, IdlV00TypeSet } from '../idl';
 import { arrayTypeNodeFromAnchorV00 } from './ArrayTypeNode';
 import { enumTypeNodeFromAnchorV00 } from './EnumTypeNode';
@@ -44,9 +43,9 @@ export const typeNodeFromAnchorV00 = (idlType: IdlV00Type | IdlV00TypeDefTy): Ty
     if (typeof idlType === 'string' && IDL_V00_TYPE_LEAVES.includes(idlType)) {
         if (idlType === 'bool') return booleanTypeNode();
         if (idlType === 'publicKey') return publicKeyTypeNode();
-        if (idlType === 'string') return sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u32'));
-        if (idlType === 'bytes') return sizePrefixTypeNode(bytesTypeNode(), numberTypeNode('u32'));
-        return numberTypeNode(idlType);
+        if (idlType === 'string' || idlType === 'bytes') return borshSizePrefixedTypeNode(idlType);
+        if (idlType === 'f32' || idlType === 'f64') return floatTypeNode(idlType);
+        return integerTypeNode(idlType);
     }
 
     // Ensure eveything else is an object.

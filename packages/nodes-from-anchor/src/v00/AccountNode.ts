@@ -1,28 +1,21 @@
-import { camelCase } from '@codama/fragments/casing';
 import {
     AccountNode,
     accountNode,
     assertIsNode,
-    bytesTypeNode,
     DiscriminatorNode,
     fieldDiscriminatorNode,
-    fixedSizeTypeNode,
     pdaLinkNode,
     structFieldTypeNode,
-    StructTypeNode,
     structTypeNode,
 } from '@codama/nodes';
 
 import { getAnchorAccountDiscriminatorV00 } from '../discriminators';
+import { docsFromAnchor, fixedSizeBytesTypeNode } from '../utils';
 import { IdlV00AccountDef } from './idl';
 import { structTypeNodeFromAnchorV00 } from './typeNodes';
 
-export function accountNodeFromAnchorV00(
-    idl: IdlV00AccountDef,
-    origin?: 'anchor' | 'shank',
-): AccountNode<StructTypeNode> {
-    const idlName = idl.name ?? '';
-    const name = camelCase(idlName);
+export function accountNodeFromAnchorV00(idl: IdlV00AccountDef, origin?: 'anchor' | 'shank'): AccountNode {
+    const name = idl.name ?? '';
     const idlStruct = idl.type ?? { fields: [], kind: 'struct' };
     let data = structTypeNodeFromAnchorV00(idlStruct);
     assertIsNode(data, 'structTypeNode');
@@ -32,10 +25,10 @@ export function accountNodeFromAnchorV00(
     let discriminators: DiscriminatorNode[] | undefined;
     if (origin === 'anchor') {
         const discriminator = structFieldTypeNode({
-            defaultValue: getAnchorAccountDiscriminatorV00(idlName),
+            defaultValue: getAnchorAccountDiscriminatorV00(name),
             defaultValueStrategy: 'omitted',
             identifier: 'discriminator',
-            type: fixedSizeTypeNode(bytesTypeNode(), 8),
+            type: fixedSizeBytesTypeNode(8),
         });
         data = structTypeNode([discriminator, ...(data.fields ?? [])]);
         discriminators = [fieldDiscriminatorNode('discriminator')];
@@ -44,7 +37,7 @@ export function accountNodeFromAnchorV00(
     return accountNode({
         data,
         discriminators,
-        docs: idl.docs ?? [],
+        docs: docsFromAnchor(idl.docs),
         identifier: name,
         pda: hasSeeds ? pdaLinkNode(name) : undefined,
         size: idl.size,

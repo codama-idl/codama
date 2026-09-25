@@ -1,5 +1,6 @@
 import { DefinedTypeNode, definedTypeNode } from '@codama/nodes';
 
+import { docsFromAnchor } from '../utils';
 import type { IdlV01TypeDef } from './idl';
 import { typeNodeFromAnchorV01 } from './typeNodes';
 import type { GenericsV01 } from './unwrapGenerics';
@@ -8,5 +9,5 @@ export function definedTypeNodeFromAnchorV01(idl: Partial<IdlV01TypeDef>, generi
     const name = idl.name ?? '';
     const idlType = idl.type ?? { fields: [], kind: 'struct' };
     const type = typeNodeFromAnchorV01(idlType, generics);
-    return definedTypeNode({ docs: idl.docs, identifier: name, type });
+    return definedTypeNode({ docs: docsFromAnchor(idl.docs), identifier: name, type });
 }

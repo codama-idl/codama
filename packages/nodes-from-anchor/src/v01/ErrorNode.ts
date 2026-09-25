@@ -7,8 +7,8 @@ export function errorNodeFromAnchorV01(idl: Partial<IdlV01ErrorCode>): ErrorNode
     const msg = idl.msg ?? '';
     return errorNode({
         code: idl.code ?? -1,
-        docs: `${name}: ${msg}`,
-        message: msg,
+        docs: msg ? `${name}: ${msg}` : name,
         identifier: name,
+        message: msg,
     });
 }
