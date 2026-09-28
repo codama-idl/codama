@@ -3,35 +3,36 @@ import {
     CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
     CodamaError,
 } from '@codama/errors';
-import { pascalCase } from '@codama/fragments/casing';
 import {
     AccountLinkNode,
     AccountNode,
     BytesEncoding,
+    ConstantValueNode,
     CountNode,
     DefinedTypeLinkNode,
     DefinedTypeNode,
     EventNode,
-    InstructionArgumentLinkNode,
-    InstructionArgumentNode,
+    FloatTypeNode,
     InstructionLinkNode,
     InstructionNode,
+    IntegerTypeNode,
     isNode,
-    NumberFormat,
     RegisteredTypeNode,
-    structFieldTypeNode,
-    structFieldTypeNodeFromInstructionArgumentNode,
-    structTypeNode,
-    structTypeNodeFromInstructionArgumentNodes,
+    TransformNode,
+    TYPE_NODE_KINDS,
+    ValueNode,
 } from '@codama/nodes';
 import {
     getLastNodeFromPath,
     getRecordLinkablesVisitor,
+    interceptVisitor,
     LinkableDictionary,
     NodePath,
     NodeStack,
     pipe,
+    ProvidedScope,
     recordNodeStackVisitor,
+    recordProvidedScopeVisitor,
     visit,
     Visitor,
 } from '@codama/visitors-core';
@@ -41,14 +42,15 @@ import {
     assertIsFixedSize,
     Codec,
     createCodec,
+    Endian,
     fixCodecSize,
+    FixedSizeNumberCodec,
     getArrayCodec,
     getBase16Codec,
     getBase58Codec,
     getBase64Codec,
     getBooleanCodec,
     getConstantCodec,
-    getUnionCodec,
     getF32Codec,
     getF64Codec,
     getHiddenPrefixCodec,
@@ -58,7 +60,6 @@ import {
     getI32Codec,
     getI64Codec,
     getI128Codec,
-    getMapCodec,
     getOptionCodec,
     getShortU16Codec,
     getStructCodec,
@@ -68,83 +69,183 @@ import {
     getU32Codec,
     getU64Codec,
     getU128Codec,
+    getUnionCodec,
     getUnitCodec,
     getUtf8Codec,
     NumberCodec,
     offsetCodec,
     padLeftCodec,
     padRightCodec,
+    ReadonlyUint8Array,
     transformCodec,
 } from '@solana/codecs';
 
 import { getValueNodeVisitor } from './values';
 
+/** The node kinds a codec can be created for. */
 export type EncodableNodes =
     | AccountLinkNode
     | AccountNode
     | DefinedTypeLinkNode
     | DefinedTypeNode
     | EventNode
-    | InstructionArgumentLinkNode
-    | InstructionArgumentNode
     | InstructionLinkNode
     | InstructionNode
     | RegisteredTypeNode;
 
+/** Options shared by {@link getNodeValueCodec} and {@link getNodeValueCodecVisitor}. */
 export type CodecVisitorOptions = {
+    /** The encoding used to decode plain bytes, e.g. `["base64", "SGVsbG8="]`. Defaults to `base64`. */
     bytesEncoding?: BytesEncoding;
 };
 
-export function getNodeCodec(path: NodePath<EncodableNodes>, options: CodecVisitorOptions = {}): Codec<unknown> {
+/** The decoded value of an enum variant, e.g. `{ __kind: 'move', __discriminator: 2, data: { x: 1n } }`. */
+type EnumVariantValue = { __discriminator?: number; __kind: string; data?: unknown };
+
+/**
+ * Get a codec for the node at the end of the given path. Values are raw JavaScript
+ * values, e.g. integers are `bigint`s and enums are `{ __kind, __discriminator, data }`.
+ *
+ * The full path, from the root node, is needed to resolve link nodes and injected
+ * values, e.g. `[root, program, definedType]`.
+ *
+ * @example
+ * ```ts
+ * const codec = getNodeValueCodec([root, program, definedType]);
+ * const bytes = codec.encode({ amount: 42n });
+ * const value = codec.decode(bytes);
+ * ```
+ */
+export function getNodeValueCodec(path: NodePath<EncodableNodes>, options: CodecVisitorOptions = {}): Codec<unknown> {
     const linkables = new LinkableDictionary();
     visit(path[0], getRecordLinkablesVisitor(linkables));
 
+    // Open a frame for every enclosing instruction, so the ones `provides` resolve injected values.
+    const ancestors = path.slice(0, -1);
+    const frames = ancestors.flatMap(node => (isNode(node, 'instructionNode') ? [node.provides ?? []] : []));
+
     return visit(
         getLastNodeFromPath(path),
-        getNodeCodecVisitor(linkables, {
-            stack: new NodeStack(path.slice(0, -1)),
+        getNodeValueCodecVisitor(linkables, {
             ...options,
+            scope: new ProvidedScope(...frames),
+            stack: new NodeStack(ancestors),
         }),
     );
 }
 
-export function getNodeCodecVisitor(
+/**
+ * A visitor that returns a codec for the visited node, as described by {@link getNodeValueCodec}.
+ *
+ * The `stack` must hold the ancestors of the visited node to resolve link nodes, and the
+ * `scope` must hold the `provides` of its enclosing instructions to resolve injected values.
+ */
+export function getNodeValueCodecVisitor(
     linkables: LinkableDictionary,
-    options: CodecVisitorOptions & { stack?: NodeStack } = {},
+    options: CodecVisitorOptions & { scope?: ProvidedScope; stack?: NodeStack } = {},
 ): Visitor<Codec<unknown>, EncodableNodes['kind']> {
     const stack = options.stack ?? new NodeStack();
+    const scope = options.scope ?? new ProvidedScope();
     const bytesEncoding = options.bytesEncoding ?? 'base64';
-    const valueNodeVisitor = getValueNodeVisitor(linkables, {
-        codecVisitorFactory: () => visitor,
-        stack,
-    });
+    const valueVisitor = getValueNodeVisitor(linkables, { codecVisitorFactory: () => visitor, scope, stack });
+    const getConstantBytes = (node: ConstantValueNode) => getConstantValueBytes(node, visitor, valueVisitor);
+
+    const visitLinkedNode = <TLinkNode extends AccountLinkNode | DefinedTypeLinkNode | InstructionLinkNode>(
+        node: TLinkNode,
+    ) => {
+        const path = linkables.getPathOrThrow(stack.getPath(node.kind) as NodePath<TLinkNode>);
+        stack.pushPath(path);
+        try {
+            return visit(getLastNodeFromPath(path), visitor);
+        } finally {
+            stack.popPath();
+        }
+    };
+
+    const getCollectionCodec = (item: Codec<unknown>, count: CountNode): Codec<unknown[]> => {
+        switch (count.kind) {
+            case 'fixedCountNode':
+                return getArrayCodec(item, { size: count.value });
+            case 'prefixedCountNode':
+                return getArrayCodec(item, { size: visit(count.prefix, visitor) as NumberCodec });
+            case 'remainderCountNode':
+                return getArrayCodec(item, { size: 'remainder' });
+            case 'sentinelCountNode': {
+                const sentinel = getConstantBytes(count.sentinel);
+                return getArrayCodec(item, { size: { __kind: 'sentinel', sentinel, strategy: count.strategy } });
+            }
+        }
+    };
+
+    const applyTransform = (codec: Codec<unknown>, transform: TransformNode): Codec<unknown> => {
+        switch (transform.kind) {
+            case 'fixedSizeTransformNode':
+                return fixCodecSize(codec, transform.size);
+            case 'sizePrefixTransformNode':
+                return addCodecSizePrefix(codec, visit(transform.prefix, visitor) as NumberCodec);
+            case 'sentinelTransformNode':
+                return addCodecSentinel(codec, getConstantBytes(transform.sentinel));
+            case 'hiddenPrefixTransformNode':
+                return getHiddenPrefixCodec(
+                    codec,
+                    (transform.prefix ?? []).map(constant => getConstantCodec(getConstantBytes(constant))),
+                );
+            case 'hiddenSuffixTransformNode':
+                return getHiddenSuffixCodec(
+                    codec,
+                    (transform.suffix ?? []).map(constant => getConstantCodec(getConstantBytes(constant))),
+                );
+            case 'preOffsetTransformNode': {
+                const { offset } = transform;
+                switch (transform.strategy) {
+                    case 'padded':
+                        return padLeftCodec(codec, offset);
+                    case 'absolute':
+                        return offsetCodec(codec, {
+                            preOffset: ({ wrapBytes }) => (offset < 0 ? wrapBytes(offset) : offset),
+                        });
+                    case 'relative':
+                        return offsetCodec(codec, { preOffset: ({ preOffset }) => preOffset + offset });
+                }
+                break;
+            }
+            case 'postOffsetTransformNode': {
+                const { offset } = transform;
+                switch (transform.strategy) {
+                    case 'padded':
+                        return padRightCodec(codec, offset);
+                    case 'absolute':
+                        return offsetCodec(codec, {
+                            postOffset: ({ wrapBytes }) => (offset < 0 ? wrapBytes(offset) : offset),
+                        });
+                    case 'preOffset':
+                        return offsetCodec(codec, { postOffset: ({ preOffset }) => preOffset + offset });
+                    case 'relative':
+                        return offsetCodec(codec, { postOffset: ({ postOffset }) => postOffset + offset });
+                }
+                break;
+            }
+        }
+        return codec;
+    };
 
     const baseVisitor: Visitor<Codec<unknown>, EncodableNodes['kind']> = {
         visitAccount(node) {
             return visit(node.data, this);
         },
         visitAccountLink(node) {
-            const path = linkables.getPathOrThrow(stack.getPath(node.kind));
-            stack.pushPath(path);
-            const result = visit(getLastNodeFromPath(path), this);
-            stack.popPath();
-            return result;
-        },
-        visitAmountType(node) {
-            return visit(node.number, this);
+            return visitLinkedNode(node);
         },
         visitArrayType(node) {
-            const item = visit(node.item, this);
-            const size = getSizeFromCountNode(node.count, this);
-            return getArrayCodec(item, { size }) as Codec<unknown>;
+            return getCollectionCodec(visit(node.item, this), node.count) as Codec<unknown>;
         },
         visitBooleanType(node) {
-            const size = visit(node.size, this) as NumberCodec;
+            const size = visit(node.size, this) as FixedSizeNumberCodec;
             return getBooleanCodec({ size }) as Codec<unknown>;
         },
         visitBytesType() {
-            // Note we use a format like `["base64", "someData"]` to encode bytes,
-            // instead of using `Uint8Arrays` in order to be compatible with JSON.
+            // Bytes are represented as `[encoding, data]` tuples, e.g. `["base64", "SGVsbG8="]`,
+            // rather than `Uint8Arrays` in order to be compatible with JSON.
             return createCodec<[BytesEncoding, string]>({
                 getSizeFromValue: ([encoding, value]) => {
                     return getCodecFromBytesEncoding(encoding).getSizeFromValue(value);
@@ -165,188 +266,88 @@ export function getNodeCodecVisitor(
             return visit(node.type, this);
         },
         visitDefinedTypeLink(node) {
-            const path = linkables.getPathOrThrow(stack.getPath(node.kind));
-            stack.pushPath(path);
-            const result = visit(getLastNodeFromPath(path), this);
-            stack.popPath();
-            return result;
+            return visitLinkedNode(node);
         },
-        visitEnumEmptyVariantType() {
-            return getUnitCodec() as Codec<unknown>;
-        },
-        visitEnumStructVariantType(node) {
-            return visit(node.struct, this);
-        },
-        visitEnumTupleVariantType(node) {
-            const tupleAsStruct = structTypeNode([structFieldTypeNode({ identifier: 'fields', type: node.tuple })]);
-            return visit(tupleAsStruct, this);
+        visitDurationType(node) {
+            return visit(node.number, this);
         },
         visitEnumType(node) {
             const size = visit(node.size, this) as NumberCodec;
-            // All enums are decoded as discriminated unions carrying their wire
-            // discriminator, e.g. `{ __kind: 'Up', __discriminator: 0 }` or
-            // `{ __kind: 'Move', __discriminator: 1, x: 10, y: 20 }`. The wire
-            // byte honors `variant.discriminator`, falling back to the position.
             const variants = node.variants ?? [];
+            // An omitted discriminator is the variant's position, not the previous discriminator plus one.
             const discriminators = variants.map((variant, index) => variant.discriminator ?? index);
             const variantCodecs = variants.map((variant, index) => {
-                const kind = pascalCase(variant.identifier);
-                const discriminator = discriminators[index];
-                const payload = getHiddenPrefixCodec(visit(variant, this) as Codec<unknown>, [
-                    getConstantCodec(size.encode(discriminator)),
-                ]);
+                const __kind = variant.identifier;
+                const __discriminator = discriminators[index];
+                const prefix = getConstantCodec(size.encode(__discriminator));
+                const codec = getHiddenPrefixCodec(visit(variant, this), [prefix]);
+                if (variant.data === undefined) {
+                    return transformCodec(
+                        codec,
+                        (_: EnumVariantValue) => undefined,
+                        (): EnumVariantValue => ({ __discriminator, __kind }),
+                    );
+                }
                 return transformCodec(
-                    payload,
-                    (value: unknown) => {
-                        if (typeof value !== 'object' || value === null) return value;
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        const { __discriminator: _d, __kind: _k, ...rest } = value as Record<string, unknown>;
-                        return rest;
-                    },
-                    (decoded: unknown) => ({
-                        __discriminator: discriminator,
-                        __kind: kind,
-                        ...(typeof decoded === 'object' && decoded !== null ? decoded : {}),
-                    }),
+                    codec,
+                    (value: EnumVariantValue) => value.data,
+                    (data): EnumVariantValue => ({ __discriminator, __kind, data }),
                 );
             });
             return getUnionCodec(
                 variantCodecs,
-                value => {
-                    const kind = (value as { __kind?: unknown } | null)?.__kind;
-                    return variants.findIndex(variant => pascalCase(variant.identifier) === kind);
-                },
-                (bytes, offset) => {
-                    const [discriminator] = size.read(bytes, offset);
-                    return discriminators.indexOf(Number(discriminator));
-                },
-            ) as unknown as Codec<unknown>;
+                value => variants.findIndex(variant => variant.identifier === value.__kind),
+                (bytes, offset) => discriminators.indexOf(Number(size.read(bytes, offset)[0])),
+            ) as Codec<unknown>;
+        },
+        visitEnumVariantType(node) {
+            return node.data ? visit(node.data, this) : (getUnitCodec() as Codec<unknown>);
         },
         visitEvent(node) {
             return visit(node.data, this);
         },
-        visitFixedSizeType(node) {
-            const type = visit(node.type, this);
-            return fixCodecSize(type, node.size);
+        visitFixedPointType(node) {
+            return visit(node.number, this);
         },
-        visitHiddenPrefixType(node) {
-            const type = visit(node.type, this);
-            const constants = (node.prefix ?? []).map(constant => {
-                const constantCodec = visit(constant.type, this);
-                const constantValue = visit(constant.value, valueNodeVisitor);
-                return getConstantCodec(constantCodec.encode(constantValue));
-            });
-            return getHiddenPrefixCodec(type, constants);
-        },
-        visitHiddenSuffixType(node) {
-            const type = visit(node.type, this);
-            const constants = (node.suffix ?? []).map(constant => {
-                const constantCodec = visit(constant.type, this);
-                const constantValue = visit(constant.value, valueNodeVisitor);
-                return getConstantCodec(constantCodec.encode(constantValue));
-            });
-            return getHiddenSuffixCodec(type, constants);
+        visitFloatType(node) {
+            return getFloatCodec(node) as Codec<unknown>;
         },
         visitInstruction(node) {
-            return visit(structTypeNodeFromInstructionArgumentNodes(node.arguments ?? []), this);
-        },
-        visitInstructionArgument(node) {
-            return visit(structFieldTypeNodeFromInstructionArgumentNode(node), this);
-        },
-        visitInstructionArgumentLink(node) {
-            const path = linkables.getPathOrThrow(stack.getPath(node.kind));
-            stack.pushPath(path);
-            const result = visit(getLastNodeFromPath(path), this);
-            stack.popPath();
-            return result;
+            return node.data ? visit(node.data, this) : (getUnitCodec() as Codec<unknown>);
         },
         visitInstructionLink(node) {
-            const path = linkables.getPathOrThrow(stack.getPath(node.kind));
-            stack.pushPath(path);
-            const result = visit(getLastNodeFromPath(path), this);
-            stack.popPath();
-            return result;
+            return visitLinkedNode(node);
+        },
+        visitIntegerType(node) {
+            return getIntegerCodec(node) as Codec<unknown>;
         },
         visitMapType(node) {
-            const key = visit(node.key, this);
-            const value = visit(node.value, this);
-            const size = getSizeFromCountNode(node.count, this);
-            // Note we transform maps as objects to be compatible with JSON.
+            const entry = getTupleCodec([visit(node.key, this), visit(node.value, this)]);
+            // Maps are represented as objects in order to be compatible with JSON.
             return transformCodec(
-                getMapCodec(key, value, { size }),
-                (value: object) => new Map(Object.entries(value)),
-                (map: Map<unknown, unknown>) => Object.fromEntries(map) as object,
+                getCollectionCodec(entry as Codec<unknown>, node.count),
+                (value: object) => Object.entries(value),
+                entries => Object.fromEntries(entries as [PropertyKey, unknown][]),
             ) as Codec<unknown>;
-        },
-        visitNumberType(node) {
-            return getCodecFromNumberFormat(node.format) as Codec<unknown>;
         },
         visitOptionType(node) {
             const item = visit(node.item, this);
             const prefix = visit(node.prefix, this) as NumberCodec;
             if (node.fixed) {
                 assertIsFixedSize(item);
-                return getOptionCodec(item, { noneValue: 'zeroes', prefix });
+                return getOptionCodec(item, { noneValue: 'zeroes', prefix }) as Codec<unknown>;
             }
-            return getOptionCodec(item, { prefix });
-        },
-        visitPostOffsetType(node) {
-            const type = visit(node.type, this);
-            switch (node.strategy) {
-                case 'padded':
-                    return padRightCodec(type, node.offset);
-                case 'absolute':
-                    return offsetCodec(type, {
-                        postOffset: ({ wrapBytes }) => (node.offset < 0 ? wrapBytes(node.offset) : node.offset),
-                    });
-                case 'preOffset':
-                    return offsetCodec(type, { postOffset: ({ preOffset }) => preOffset + node.offset });
-                case 'relative':
-                default:
-                    return offsetCodec(type, { postOffset: ({ postOffset }) => postOffset + node.offset });
-            }
-        },
-        visitPreOffsetType(node) {
-            const type = visit(node.type, this);
-            switch (node.strategy) {
-                case 'padded':
-                    return padLeftCodec(type, node.offset);
-                case 'absolute':
-                    return offsetCodec(type, {
-                        preOffset: ({ wrapBytes }) => (node.offset < 0 ? wrapBytes(node.offset) : node.offset),
-                    });
-                case 'relative':
-                default:
-                    return offsetCodec(type, { preOffset: ({ preOffset }) => preOffset + node.offset });
-            }
+            return getOptionCodec(item, { prefix }) as Codec<unknown>;
         },
         visitPublicKeyType() {
             return fixCodecSize(getBase58Codec(), 32) as Codec<unknown>;
         },
         visitRemainderOptionType(node) {
-            const item = visit(node.item, this);
-            return getOptionCodec(item, { prefix: null });
-        },
-        visitSentinelType(node) {
-            const type = visit(node.type, this);
-            const sentinelCodec = visit(node.sentinel.type, this);
-            const sentinelValue = visit(node.sentinel.value, valueNodeVisitor);
-            const sentinelBytes = sentinelCodec.encode(sentinelValue);
-            return addCodecSentinel(type, sentinelBytes);
+            return getOptionCodec(visit(node.item, this), { prefix: null }) as Codec<unknown>;
         },
         visitSetType(node) {
-            const item = visit(node.item, this);
-            const size = getSizeFromCountNode(node.count, this);
-            // Note we use the array codecs since it is compatible with the JSON format.
-            return getArrayCodec(item, { size }) as Codec<unknown>;
-        },
-        visitSizePrefixType(node) {
-            const type = visit(node.type, this);
-            const prefix = visit(node.prefix, this) as NumberCodec;
-            return addCodecSizePrefix(type, prefix);
-        },
-        visitSolAmountType(node) {
-            return visit(node.number, this);
+            // Sets are represented as arrays in order to be compatible with JSON.
+            return getCollectionCodec(visit(node.item, this), node.count) as Codec<unknown>;
         },
         visitStringType(node) {
             return getCodecFromBytesEncoding(node.encoding) as Codec<unknown>;
@@ -359,24 +360,42 @@ export function getNodeCodecVisitor(
             return getStructCodec(fields) as Codec<unknown>;
         },
         visitTupleType(node) {
-            const items = (node.items ?? []).map(item => visit(item, this));
-            return getTupleCodec(items) as Codec<unknown>;
+            return getTupleCodec((node.items ?? []).map(item => visit(item, this))) as Codec<unknown>;
         },
         visitZeroableOptionType(node) {
             const item = visit(node.item, this);
             assertIsFixedSize(item);
             if (node.zeroValue) {
-                const noneCodec = visit(node.zeroValue.type, this);
-                const noneValue = visit(node.zeroValue.value, valueNodeVisitor);
-                const noneBytes = noneCodec.encode(noneValue);
-                return getOptionCodec(item, { noneValue: noneBytes, prefix: null });
+                const noneValue = getConstantBytes(node.zeroValue);
+                return getOptionCodec(item, { noneValue, prefix: null }) as Codec<unknown>;
             }
-            return getOptionCodec(item, { noneValue: 'zeroes', prefix: null });
+            return getOptionCodec(item, { noneValue: 'zeroes', prefix: null }) as Codec<unknown>;
         },
     };
 
-    const visitor = pipe(baseVisitor, v => recordNodeStackVisitor(v, stack));
+    const visitor: Visitor<Codec<unknown>, EncodableNodes['kind']> = pipe(
+        baseVisitor,
+        // Layer each type node's transforms, innermost first, on top of its own codec.
+        // For link nodes, they apply on top of the linked type's own transforms.
+        v =>
+            interceptVisitor(v, (node, next) => {
+                const codec = next(node);
+                if (!isNode(node, TYPE_NODE_KINDS)) return codec;
+                return (node.transforms ?? []).reduce(applyTransform, codec);
+            }),
+        v => recordProvidedScopeVisitor(v, scope),
+        v => recordNodeStackVisitor(v, stack),
+    );
     return visitor;
+}
+
+/** Encode a constant value node using its own type, e.g. to get the bytes of a sentinel. */
+export function getConstantValueBytes(
+    node: ConstantValueNode,
+    codecVisitor: Visitor<Codec<unknown>, EncodableNodes['kind']>,
+    valueVisitor: Visitor<unknown, ValueNode['kind']>,
+): ReadonlyUint8Array {
+    return visit(node.type, codecVisitor).encode(visit(node.value, valueVisitor));
 }
 
 function getCodecFromBytesEncoding(encoding: BytesEncoding) {
@@ -396,50 +415,55 @@ function getCodecFromBytesEncoding(encoding: BytesEncoding) {
     }
 }
 
-function getCodecFromNumberFormat(format: NumberFormat) {
-    switch (format) {
+/** Integers always decode as `bigint`s, whatever their size, and encode from `number`s or `bigint`s. */
+function getIntegerCodec(node: IntegerTypeNode): Codec<bigint | number, bigint> {
+    const config = { endian: node.endian === 'be' ? Endian.Big : Endian.Little };
+    const toBigInt = (codec: Codec<bigint | number, number>) =>
+        transformCodec(
+            codec,
+            (value: bigint | number) => value,
+            value => BigInt(value),
+        );
+    switch (node.format) {
         case 'u8':
-            return getU8Codec();
+            return toBigInt(getU8Codec());
         case 'u16':
-            return getU16Codec();
+            return toBigInt(getU16Codec(config));
         case 'u32':
-            return getU32Codec();
+            return toBigInt(getU32Codec(config));
         case 'u64':
-            return getU64Codec();
+            return getU64Codec(config);
         case 'u128':
-            return getU128Codec();
+            return getU128Codec(config);
         case 'i8':
-            return getI8Codec();
+            return toBigInt(getI8Codec());
         case 'i16':
-            return getI16Codec();
+            return toBigInt(getI16Codec(config));
         case 'i32':
-            return getI32Codec();
+            return toBigInt(getI32Codec(config));
         case 'i64':
-            return getI64Codec();
+            return getI64Codec(config);
         case 'i128':
-            return getI128Codec();
-        case 'f32':
-            return getF32Codec();
-        case 'f64':
-            return getF64Codec();
+            return getI128Codec(config);
         case 'shortU16':
-            return getShortU16Codec();
+            return toBigInt(getShortU16Codec());
         default:
             throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT, {
-                format: format satisfies never,
+                format: node.format satisfies never,
             });
     }
 }
 
-function getSizeFromCountNode(
-    node: CountNode,
-    visitor: Visitor<unknown, EncodableNodes['kind']>,
-): NumberCodec | number | 'remainder' {
-    if (isNode(node, 'prefixedCountNode')) {
-        return visit(node.prefix, visitor) as NumberCodec;
+function getFloatCodec(node: FloatTypeNode): Codec<bigint | number, number> {
+    const config = { endian: node.endian === 'be' ? Endian.Big : Endian.Little };
+    switch (node.format) {
+        case 'f32':
+            return getF32Codec(config);
+        case 'f64':
+            return getF64Codec(config);
+        default:
+            throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT, {
+                format: node.format satisfies never,
+            });
     }
-    if (isNode(node, 'fixedCountNode')) {
-        return node.value;
-    }
-    return 'remainder';
 }

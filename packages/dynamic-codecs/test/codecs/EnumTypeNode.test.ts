@@ -1,10 +1,8 @@
 import {
-    enumEmptyVariantTypeNode,
-    enumStructVariantTypeNode,
-    enumTupleVariantTypeNode,
     enumTypeNode,
-    fixedSizeTypeNode,
-    numberTypeNode,
+    enumVariantTypeNode,
+    fixedSizeTransformNode,
+    integerTypeNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -12,126 +10,124 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getNodeCodec } from '../../src';
+import { getNodeValueCodec } from '../../src';
 import { hex } from '../_setup';
 
 test('it encodes scalar enums as discriminated unions', () => {
-    const codec = getNodeCodec([enumTypeNode([enumEmptyVariantTypeNode('up'), enumEmptyVariantTypeNode('down')])]);
-    expect(codec.encode({ __kind: 'Up' })).toStrictEqual(hex('00'));
-    expect(codec.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'Up' });
-    expect(codec.encode({ __kind: 'Down' })).toStrictEqual(hex('01'));
-    expect(codec.decode(hex('01'))).toStrictEqual({ __discriminator: 1, __kind: 'Down' });
+    const codec = getNodeValueCodec([enumTypeNode([enumVariantTypeNode('up'), enumVariantTypeNode('down')])]);
+    expect(codec.encode({ __kind: 'up' })).toStrictEqual(hex('00'));
+    expect(codec.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'up' });
+    expect(codec.encode({ __kind: 'down' })).toStrictEqual(hex('01'));
+    expect(codec.decode(hex('01'))).toStrictEqual({ __discriminator: 1, __kind: 'down' });
+});
+
+test('it uses the raw variant identifiers', () => {
+    const codec = getNodeValueCodec([enumTypeNode([enumVariantTypeNode('my_variant')])]);
+    expect(codec.encode({ __kind: 'my_variant' })).toStrictEqual(hex('00'));
+    expect(codec.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'my_variant' });
 });
 
 test('it encodes scalar enums with custom sizes', () => {
-    const codec = getNodeCodec([
-        enumTypeNode([enumEmptyVariantTypeNode('up'), enumEmptyVariantTypeNode('down')], {
-            size: numberTypeNode('u16'),
-        }),
+    const codec = getNodeValueCodec([
+        enumTypeNode([enumVariantTypeNode('up'), enumVariantTypeNode('down')], { size: integerTypeNode('u16') }),
     ]);
-    expect(codec.encode({ __kind: 'Up' })).toStrictEqual(hex('0000'));
-    expect(codec.decode(hex('0000'))).toStrictEqual({ __discriminator: 0, __kind: 'Up' });
-    expect(codec.encode({ __kind: 'Down' })).toStrictEqual(hex('0100'));
-    expect(codec.decode(hex('0100'))).toStrictEqual({ __discriminator: 1, __kind: 'Down' });
+    expect(codec.encode({ __kind: 'up' })).toStrictEqual(hex('0000'));
+    expect(codec.decode(hex('0000'))).toStrictEqual({ __discriminator: 0, __kind: 'up' });
+    expect(codec.encode({ __kind: 'down' })).toStrictEqual(hex('0100'));
+    expect(codec.decode(hex('0100'))).toStrictEqual({ __discriminator: 1, __kind: 'down' });
 });
 
-test('it decodes empty variants the same way in scalar and data enums', () => {
-    const scalar = getNodeCodec([enumTypeNode([enumEmptyVariantTypeNode('quit'), enumEmptyVariantTypeNode('stay')])]);
-    const data = getNodeCodec([
+test('it encodes enums with big-endian sizes', () => {
+    const codec = getNodeValueCodec([
+        enumTypeNode([enumVariantTypeNode('up'), enumVariantTypeNode('down')], {
+            size: integerTypeNode('u16', { endian: 'be' }),
+        }),
+    ]);
+    expect(codec.encode({ __kind: 'down' })).toStrictEqual(hex('0001'));
+    expect(codec.decode(hex('0001'))).toStrictEqual({ __discriminator: 1, __kind: 'down' });
+});
+
+test('it decodes variants without data the same way in scalar and data enums', () => {
+    const scalar = getNodeValueCodec([enumTypeNode([enumVariantTypeNode('quit'), enumVariantTypeNode('stay')])]);
+    const data = getNodeValueCodec([
         enumTypeNode([
-            enumEmptyVariantTypeNode('quit'),
-            enumStructVariantTypeNode(
-                'move',
-                structTypeNode([structFieldTypeNode({ name: 'x', type: numberTypeNode('u8') })]),
-            ),
+            enumVariantTypeNode('quit'),
+            enumVariantTypeNode('move', {
+                data: structTypeNode([structFieldTypeNode({ identifier: 'x', type: integerTypeNode('u8') })]),
+            }),
         ]),
     ]);
-    expect(scalar.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'Quit' });
-    expect(data.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'Quit' });
+    expect(scalar.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'quit' });
+    expect(data.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'quit' });
 });
 
 test('it encodes data enums', () => {
-    const codec = getNodeCodec([
+    const codec = getNodeValueCodec([
         enumTypeNode([
-            enumEmptyVariantTypeNode('quit'),
-            enumTupleVariantTypeNode('write', tupleTypeNode([fixedSizeTypeNode(stringTypeNode('utf8'), 5)])),
-            enumStructVariantTypeNode(
-                'move',
-                structTypeNode([
-                    structFieldTypeNode({ name: 'x', type: numberTypeNode('u8') }),
-                    structFieldTypeNode({ name: 'y', type: numberTypeNode('u8') }),
+            enumVariantTypeNode('quit'),
+            enumVariantTypeNode('write', {
+                data: tupleTypeNode([stringTypeNode('utf8', { transforms: [fixedSizeTransformNode(5)] })]),
+            }),
+            enumVariantTypeNode('move', {
+                data: structTypeNode([
+                    structFieldTypeNode({ identifier: 'x', type: integerTypeNode('u8') }),
+                    structFieldTypeNode({ identifier: 'y', type: integerTypeNode('u8') }),
                 ]),
-            ),
+            }),
+            enumVariantTypeNode('amount', { data: integerTypeNode('u32') }),
         ]),
     ]);
-    const quitVariant = { __kind: 'Quit' };
-    expect(codec.encode(quitVariant)).toStrictEqual(hex('00'));
-    expect(codec.decode(hex('00'))).toStrictEqual({ __discriminator: 0, ...quitVariant });
-    const writeVariant = { __kind: 'Write', fields: ['Hello'] };
-    expect(codec.encode(writeVariant)).toStrictEqual(hex('0148656c6c6f'));
-    expect(codec.decode(hex('0148656c6c6f'))).toStrictEqual({ __discriminator: 1, ...writeVariant });
-    const moveVariant = { __kind: 'Move', x: 10, y: 20 };
-    expect(codec.encode(moveVariant)).toStrictEqual(hex('020a14'));
-    expect(codec.decode(hex('020a14'))).toStrictEqual({ __discriminator: 2, ...moveVariant });
+    expect(codec.encode({ __kind: 'quit' })).toStrictEqual(hex('00'));
+    expect(codec.decode(hex('00'))).toStrictEqual({ __discriminator: 0, __kind: 'quit' });
+    expect(codec.encode({ __kind: 'write', data: ['Hello'] })).toStrictEqual(hex('0148656c6c6f'));
+    expect(codec.decode(hex('0148656c6c6f'))).toStrictEqual({ __discriminator: 1, __kind: 'write', data: ['Hello'] });
+    expect(codec.encode({ __kind: 'move', data: { x: 10, y: 20 } })).toStrictEqual(hex('020a14'));
+    expect(codec.decode(hex('020a14'))).toStrictEqual({
+        __discriminator: 2,
+        __kind: 'move',
+        data: { x: 10n, y: 20n },
+    });
+    expect(codec.encode({ __kind: 'amount', data: 42 })).toStrictEqual(hex('032a000000'));
+    expect(codec.decode(hex('032a000000'))).toStrictEqual({ __discriminator: 3, __kind: 'amount', data: 42n });
 });
 
-test('it encodes data enums with custom sizes', () => {
-    const codec = getNodeCodec([
-        enumTypeNode(
-            [
-                enumEmptyVariantTypeNode('quit'),
-                enumTupleVariantTypeNode('write', tupleTypeNode([fixedSizeTypeNode(stringTypeNode('utf8'), 5)])),
-            ],
-            { size: numberTypeNode('u16') },
-        ),
-    ]);
-    const quitVariant = { __kind: 'Quit' };
-    expect(codec.encode(quitVariant)).toStrictEqual(hex('0000'));
-    expect(codec.decode(hex('0000'))).toStrictEqual({ __discriminator: 0, ...quitVariant });
-    const writeVariant = { __kind: 'Write', fields: ['Hello'] };
-    expect(codec.encode(writeVariant)).toStrictEqual(hex('010048656c6c6f'));
-    expect(codec.decode(hex('010048656c6c6f'))).toStrictEqual({ __discriminator: 1, ...writeVariant });
-});
-
-test('it honors custom variant discriminators on the wire', () => {
-    const codec = getNodeCodec([
+test('it honours custom variant discriminators on the wire', () => {
+    const codec = getNodeValueCodec([
         enumTypeNode([
-            enumEmptyVariantTypeNode('info', 10),
-            enumEmptyVariantTypeNode('warning', 20),
-            enumStructVariantTypeNode(
-                'critical',
-                structTypeNode([structFieldTypeNode({ name: 'code', type: numberTypeNode('u8') })]),
-                30,
-            ),
+            enumVariantTypeNode('info', { discriminator: 10 }),
+            enumVariantTypeNode('warning', { discriminator: 20 }),
+            enumVariantTypeNode('critical', { data: integerTypeNode('u8'), discriminator: 30 }),
         ]),
     ]);
-    expect(codec.encode({ __kind: 'Info' })).toStrictEqual(hex('0a'));
-    expect(codec.decode(hex('0a'))).toStrictEqual({ __discriminator: 10, __kind: 'Info' });
-    expect(codec.encode({ __kind: 'Critical', code: 7 })).toStrictEqual(hex('1e07'));
-    expect(codec.decode(hex('1e07'))).toStrictEqual({ __discriminator: 30, __kind: 'Critical', code: 7 });
+    expect(codec.encode({ __kind: 'info' })).toStrictEqual(hex('0a'));
+    expect(codec.decode(hex('0a'))).toStrictEqual({ __discriminator: 10, __kind: 'info' });
+    expect(codec.encode({ __kind: 'critical', data: 7 })).toStrictEqual(hex('1e07'));
+    expect(codec.decode(hex('1e07'))).toStrictEqual({ __discriminator: 30, __kind: 'critical', data: 7n });
 });
 
 test('it re-encodes its own decoded output', () => {
-    const codec = getNodeCodec([
-        enumTypeNode([enumEmptyVariantTypeNode('up', 5), enumEmptyVariantTypeNode('down', 9)]),
+    const codec = getNodeValueCodec([
+        enumTypeNode([
+            enumVariantTypeNode('up', { discriminator: 5 }),
+            enumVariantTypeNode('down', { data: integerTypeNode('u8'), discriminator: 9 }),
+        ]),
     ]);
-    const decoded = codec.decode(hex('09'));
-    expect(codec.encode(decoded)).toStrictEqual(hex('09'));
+    expect(codec.encode(codec.decode(hex('05')))).toStrictEqual(hex('05'));
+    expect(codec.encode(codec.decode(hex('092a')))).toStrictEqual(hex('092a'));
 });
 
 test('it infers omitted discriminators from the variant position', () => {
-    // Mixed explicit and implicit discriminators: an omitted one is the
-    // variant's position, not the previous explicit value plus one.
-    const codec = getNodeCodec([
+    // An omitted discriminator is the variant's position, not the previous explicit value plus one.
+    const codec = getNodeValueCodec([
         enumTypeNode([
-            enumEmptyVariantTypeNode('first', 5),
-            enumEmptyVariantTypeNode('second'),
-            enumEmptyVariantTypeNode('third', 9),
+            enumVariantTypeNode('first', { discriminator: 5 }),
+            enumVariantTypeNode('second'),
+            enumVariantTypeNode('third', { discriminator: 9 }),
         ]),
     ]);
-    expect(codec.encode({ __kind: 'First' })).toStrictEqual(hex('05'));
-    expect(codec.encode({ __kind: 'Second' })).toStrictEqual(hex('01'));
-    expect(codec.encode({ __kind: 'Third' })).toStrictEqual(hex('09'));
-    expect(codec.decode(hex('01'))).toStrictEqual({ __discriminator: 1, __kind: 'Second' });
-    expect(codec.decode(hex('09'))).toStrictEqual({ __discriminator: 9, __kind: 'Third' });
+    expect(codec.encode({ __kind: 'first' })).toStrictEqual(hex('05'));
+    expect(codec.encode({ __kind: 'second' })).toStrictEqual(hex('01'));
+    expect(codec.encode({ __kind: 'third' })).toStrictEqual(hex('09'));
+    expect(codec.decode(hex('01'))).toStrictEqual({ __discriminator: 1, __kind: 'second' });
+    expect(codec.decode(hex('09'))).toStrictEqual({ __discriminator: 9, __kind: 'third' });
 });

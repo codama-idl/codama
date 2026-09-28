@@ -49,8 +49,11 @@ export function getInstructionDataFields(
             if (walkedDefinedTypes.has(definedType)) return;
             walkedDefinedTypes.add(definedType);
             stack.pushPath(linkedPath);
-            walk(definedType.type, prefix);
-            stack.popPath();
+            try {
+                walk(definedType.type, prefix);
+            } finally {
+                stack.popPath();
+            }
             return;
         }
         if (!isNode(type, 'structTypeNode')) return;

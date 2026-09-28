@@ -10,6 +10,7 @@ import {
     DefinedTypeNode,
     EnumTypeNode,
     IdentifierString,
+    InjectedValueNode,
     InstructionAccountNode,
     InstructionNode,
     LinkNode,
@@ -55,6 +56,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY,
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
+    CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
     CODAMA_ERROR__INVALID_BRANDED_STRING,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
@@ -214,6 +216,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         enum: EnumTypeNode;
         enumName: IdentifierString;
         variant: IdentifierString;
+    };
+    [CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED]: {
+        injectedValue: InjectedValueNode;
+        key: IdentifierString;
     };
     [CODAMA_ERROR__INVALID_BRANDED_STRING]: {
         actual: string;

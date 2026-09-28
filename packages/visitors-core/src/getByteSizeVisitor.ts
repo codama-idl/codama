@@ -101,9 +101,11 @@ export function getByteSizeVisitor(
                     if (definedTypeStack.includes(linkedDefinedType.identifier)) return null;
 
                     stack.pushPath(linkedDefinedPath);
-                    const result = visit(linkedDefinedType, self);
-                    stack.popPath();
-                    return result;
+                    try {
+                        return visit(linkedDefinedType, self);
+                    } finally {
+                        stack.popPath();
+                    }
                 },
 
                 visitEnumType(node, { self }) {

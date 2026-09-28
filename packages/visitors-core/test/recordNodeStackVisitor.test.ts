@@ -54,3 +54,26 @@ test('it includes the current node when applied last', () => {
     expect(numberStacks.length).toBe(1);
     expect(numberStacks[0].getPath()).toEqual([node, node.type, ((node.type as TupleTypeNode).items ?? [])[0]]);
 });
+
+test('it restores the node stack when the visit throws', () => {
+    // Given a tree and a visitor that throws when it reaches a nested node.
+    const node = definedTypeNode({
+        identifier: 'myType',
+        type: tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]),
+    });
+    const stack = new NodeStack();
+    const visitor = pipe(
+        voidVisitor(),
+        v => recordNodeStackVisitor(v, stack),
+        v =>
+            tapVisitor(v, 'integerTypeNode', () => {
+                throw new Error('boom');
+            }),
+    );
+
+    // When the visit throws.
+    expect(() => visit(node, visitor)).toThrow('boom');
+
+    // Then the node stack is empty again.
+    expect(stack.isEmpty()).toBe(true);
+});

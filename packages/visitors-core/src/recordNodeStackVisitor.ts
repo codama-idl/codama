@@ -10,8 +10,10 @@ export function recordNodeStackVisitor<TReturn, TNodeKind extends NodeKind>(
 ): Visitor<TReturn, TNodeKind> {
     return interceptVisitor(visitor, (node, next) => {
         stack.push(node);
-        const newNode = next(node);
-        stack.pop();
-        return newNode;
+        try {
+            return next(node);
+        } finally {
+            stack.pop();
+        }
     });
 }
