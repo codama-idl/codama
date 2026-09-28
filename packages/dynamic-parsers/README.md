@@ -31,6 +31,13 @@ type ParsedData<TNode extends AccountNode | EventNode | InstructionNode> = {
 };
 ```
 
+The `data` is decoded using [`getNodeValueCodec`](../dynamic-codecs) from `@codama/dynamic-codecs`, so it uses the same value format. For instance, integers are `bigint`s, struct keys are the raw field identifiers and enums are `{ __kind, __discriminator, data }` objects.
+
+```ts
+const parsedData = parseAccountData(rootNode, bytes);
+parsedData?.data; // { discriminator: 1n, owner: '9BbW...ftkT', amount: 42n }
+```
+
 ## Functions
 
 ### `parseAccountData(rootNode, bytes)`
@@ -89,6 +96,14 @@ if (parsedData) {
 ```
 
 Note that it uses the instruction's `programAddress` to restrict the search to the matching program — including any of the root node's `additionalPrograms`. When no program of the root matches that address, nothing is parsed: matching an unknown program against another program's candidates would confidently misattribute the data, which matters when the result is displayed to end users (e.g. clear signing).
+
+## Discriminators
+
+Accounts, events and instructions are identified using their `discriminators`, which must all match the provided bytes.
+
+- `constantDiscriminatorNode`: the bytes contain the encoded constant at the given offset.
+- `fieldDiscriminatorNode`: the bytes contain the encoded default value of the field at the given `path` and offset. The path is relative to the node's `data` and follows linked types, e.g. `header.kind`. Injected default values are resolved using the `provides` of the instruction.
+- `sizeDiscriminatorNode`: the bytes have exactly the given size.
 
 ## Program selection
 

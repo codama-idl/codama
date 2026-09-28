@@ -1,16 +1,13 @@
-import { CodecAndValueVisitors, getCodecAndValueVisitors, ReadonlyUint8Array } from '@codama/dynamic-codecs';
+import { getCodecAndValueVisitors, ReadonlyUint8Array } from '@codama/dynamic-codecs';
 import {
     AccountNode,
     EventNode,
     getAllPrograms,
     GetNodeFromKind,
     InstructionNode,
-    isNode,
     isNodeFilter,
     ProgramNode,
-    resolveNestedTypeNode,
     RootNode,
-    structTypeNodeFromInstructionArgumentNodes,
 } from '@codama/nodes';
 import {
     getRecordLinkablesVisitor,
@@ -18,12 +15,16 @@ import {
     NodePath,
     NodeStack,
     pipe,
+    ProvidedScope,
     recordNodeStackVisitor,
+    recordProvidedScopeVisitor,
     visit,
     Visitor,
 } from '@codama/visitors-core';
 
-import { matchDiscriminators } from './discriminators';
+import { DiscriminatorContext, matchDiscriminators } from './discriminators';
+
+export type { DiscriminatorContext };
 
 type IdentifiableNodeKind = 'accountNode' | 'eventNode' | 'instructionNode';
 
@@ -72,14 +73,12 @@ export function identifyData<TKind extends IdentifiableNodeKind>(
     const kinds = kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]);
 
     const stack = new NodeStack();
+    const scope = new ProvidedScope();
     const linkables = new LinkableDictionary();
     visit(root, getRecordLinkablesVisitor(linkables));
 
-    const codecAndValueVisitors = getCodecAndValueVisitors(linkables, { stack });
-    const visitor = getByteIdentificationVisitor(kinds, bytes, codecAndValueVisitors, {
-        programAddress: options.programAddress,
-        stack,
-    });
+    const context = { ...getCodecAndValueVisitors(linkables, { scope, stack }), linkables, scope, stack };
+    const visitor = getByteIdentificationVisitor(kinds, bytes, context, { programAddress: options.programAddress });
 
     const identified = visit(root, visitor);
     if (identified) return identified;
@@ -99,23 +98,27 @@ export function identifyData<TKind extends IdentifiableNodeKind>(
     return undefined;
 }
 
+/**
+ * A visitor that returns the path of the first account, event or instruction
+ * whose discriminators match the given bytes.
+ *
+ * The codec and value visitors of the `context` must share its `stack` and
+ * its `scope`, which this visitor keeps in sync with the traversal.
+ */
 export function getByteIdentificationVisitor<TKind extends IdentifiableNodeKind>(
     kind: TKind | TKind[],
     bytes: ReadonlyUint8Array | Uint8Array,
-    codecAndValueVisitors: CodecAndValueVisitors,
-    options: IdentifyDataOptions & { stack?: NodeStack } = {},
+    context: DiscriminatorContext,
+    options: IdentifyDataOptions = {},
 ) {
-    const stack = options.stack ?? new NodeStack();
+    const { scope, stack } = context;
     const programAddress = options.programAddress;
 
-    // Accounts, events, and instructions identify identically: match the bytes against the
-    // candidate's discriminators over its data struct (arguments, for instructions).
+    // Accounts, events, and instructions identify identically: match the bytes
+    // against the candidate's discriminators over its data.
     const identifyCandidate = (node: AccountNode | EventNode | InstructionNode) => {
         if (!node.discriminators) return undefined;
-        const struct = isNode(node, 'instructionNode')
-            ? structTypeNodeFromInstructionArgumentNodes(node.arguments ?? [])
-            : resolveNestedTypeNode(node.data);
-        const match = matchDiscriminators(bytes, node.discriminators, struct, codecAndValueVisitors);
+        const match = matchDiscriminators(bytes, node.discriminators, node.data, context);
         return match ? stack.getPath(node.kind) : undefined;
     };
 
@@ -140,6 +143,7 @@ export function getByteIdentificationVisitor<TKind extends IdentifiableNodeKind>
             NodePath<GetNodeFromKind<TKind>> | undefined,
             'accountNode' | 'eventNode' | 'instructionNode' | 'programNode' | 'rootNode'
         >,
+        v => recordProvidedScopeVisitor(v, scope),
         v => recordNodeStackVisitor(v, stack),
     );
 }
