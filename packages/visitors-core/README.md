@@ -510,6 +510,17 @@ stack.pushPath([rootNode, programNode, linkableNode]);
 const previousPath = stack.popPath();
 ```
 
+Prefer the `withPath` and `visitPath` helpers, which restore the previous path even if an error is thrown. `withPath` runs a callback with the given path as the current path, whereas `visitPath` visits the last node of the given path using the rest of that path as the current path. Since `visitPath` relies on the visitor to record the visited node, the visitor must record its nodes on the same stack (e.g. using `recordNodeStackVisitor`). Otherwise, use `withPath` instead.
+
+```ts
+// Run a callback with another path as the current path.
+const fields = stack.withPath([rootNode, programNode, definedType], () => getFields(definedType.type));
+
+// Visit a linked node with its own path as the current path.
+const linkedPath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
+const result = stack.visitPath(linkedPath, visitor);
+```
+
 ### `recordNodeStackVisitor`
 
 The `recordNodeStackVisitor` function gives us a convenient way to record the stack of each node currently being visited. It accepts a base visitor and an empty `NodeStack` instance that will automatically be pushed and popped as the visitor traverses the nodes. This means that we can inject the `NodeStack` instance into another extension of the visitor to access the stack whilst visiting the nodes.
