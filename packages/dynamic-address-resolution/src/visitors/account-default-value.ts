@@ -1,227 +1,111 @@
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
-    CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING,
-    CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING,
-    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
-    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
-    CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
-    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CodamaError,
 } from '@codama/errors';
 import type { Address } from '@solana/addresses';
-import { address } from '@solana/addresses';
-import type { Visitor } from 'codama';
-import type {
-    AccountBumpValueNode,
-    AccountValueNode,
-    ArgumentValueNode,
-    ConditionalValueNode,
-    IdentityValueNode,
-    InstructionAccountNode,
-    PayerValueNode,
-    PdaValueNode,
-    ProgramIdValueNode,
-    PublicKeyValueNode,
-    ResolverValueNode,
+import {
+    INSTRUCTION_INPUT_VALUE_NODE_KINDS,
+    type InstructionAccountNode,
+    type Node,
+    type Visitor,
+    visitOrElse,
 } from 'codama';
-import { visitOrElse } from 'codama';
 
+import { getInstruction, getProgramAddress, getRequiredDataValue } from '../resolvers/context';
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import { resolveConditionalValueNodeCondition } from '../resolvers/resolve-conditional';
-import { resolvePDAAddress } from '../resolvers/resolve-pda-address';
-import type { BaseResolutionContext } from '../resolvers/types';
-import { isAddressConvertible, toAddress } from '../shared/address';
-import type { AccountsInput, ArgumentsInput, ResolverFnInput, ResolversInput } from '../shared/types';
-import { formatValueType, safeStringify } from '../shared/util';
-
-type AccountDefaultValueVisitorContext<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
-> = BaseResolutionContext<TAccounts, TArgs, TResolvers> & {
-    ixAccountNode: InstructionAccountNode;
-};
+import { resolvePdaAddress } from '../resolvers/resolve-pda-address';
+import type { ResolutionContext } from '../resolvers/types';
+import { toAddress, toAddressOrThrow } from '../shared/address';
 
 export const ACCOUNT_DEFAULT_VALUE_SUPPORTED_NODE_KINDS = [
     'accountBumpValueNode',
+    'accountDataValueNode',
     'accountValueNode',
-    'argumentValueNode',
     'conditionalValueNode',
+    'dataValueNode',
     'identityValueNode',
+    'injectedValueNode',
     'payerValueNode',
     'pdaValueNode',
     'programIdValueNode',
+    'programLinkNode',
     'publicKeyValueNode',
-    'resolverValueNode',
 ] as const;
 
 type AccountDefaultValueSupportedNodeKind = (typeof ACCOUNT_DEFAULT_VALUE_SUPPORTED_NODE_KINDS)[number];
 
-/**
- * Visitor for resolving InstructionInputValueNode types to Address values for account resolution.
- */
-export function createAccountDefaultValueVisitor<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
->(
-    ctx: AccountDefaultValueVisitorContext<TAccounts, TArgs, TResolvers>,
+export function unexpectedAccountDefaultValueNode(node: Node): never {
+    throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+        expectedKinds: [...ACCOUNT_DEFAULT_VALUE_SUPPORTED_NODE_KINDS],
+        kind: node.kind,
+        node,
+    });
+}
+
+/** Visitor resolving the default value of an instruction account to its address. */
+export function createAccountDefaultValueVisitor(
+    ixAccountNode: InstructionAccountNode,
+    ctx: ResolutionContext,
 ): Visitor<Promise<Address | null>, AccountDefaultValueSupportedNodeKind> {
-    const { root, ixNode, ixAccountNode, argumentsInput, accountsInput, resolversInput, resolutionPath } = ctx;
-    const accountAddressInput = accountsInput?.[ixAccountNode.identifier];
-
-    return {
-        visitAccountBumpValue: async (_node: AccountBumpValueNode) => {
-            return await Promise.reject(
-                new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, {
-                    nodeKind: 'accountBumpValueNode',
-                }),
-            );
-        },
-
-        visitAccountValue: async (node: AccountValueNode) => {
-            return await resolveAccountValueNodeAddress(node, {
-                accountsInput,
-                argumentsInput,
-                ixNode,
-                resolutionPath,
-                resolversInput,
-                root,
+    const accountAddressInput = ctx.accountsInput?.[ixAccountNode.identifier];
+    const requireProvidedAccount = () => {
+        if (accountAddressInput === undefined || accountAddressInput === null) {
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
+                accountName: ixAccountNode.identifier,
+                instructionName: getInstruction(ctx).identifier,
             });
-        },
-
-        visitArgumentValue: async (node: ArgumentValueNode) => {
-            const argValue = argumentsInput?.[node.name];
-            if (argValue === undefined || argValue === null) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
-                    argumentName: node.name,
-                    instructionName: ixNode.identifier,
-                });
-            }
-
-            if (!isAddressConvertible(argValue)) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                    accountName: ixAccountNode.identifier,
-                    actualType: formatValueType(argValue),
-                    expectedType: 'Address | PublicKey',
-                });
-            }
-
-            return await Promise.resolve(toAddress(argValue));
-        },
-
-        visitConditionalValue: async (conditionalValueNode: ConditionalValueNode) => {
-            // ifTrue or ifFalse branch of ConditionalValueNode.
-            const resolvedInputValueNode = await resolveConditionalValueNodeCondition({
-                accountsInput,
-                argumentsInput,
-                conditionalValueNode,
-                ixAccountNode,
-                ixNode,
-                resolutionPath,
-                resolversInput,
-                root,
-            });
-
-            if (resolvedInputValueNode === undefined) {
-                // No matching branch (e.g. conditional with no ifFalse and falsy condition).
-                // Return null to signal "unresolved" to apply optionalAccountStrategy.
-                if (ixAccountNode.isOptional) {
-                    return null;
-                }
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.identifier,
-                    instructionName: ixNode.identifier,
-                });
-            }
-            // Recursively resolve the chosen branch.
-            const visitor = createAccountDefaultValueVisitor(ctx);
-            const addressValue = await visitOrElse(resolvedInputValueNode, visitor, innerNode => {
-                throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-                    expectedKinds: [...ACCOUNT_DEFAULT_VALUE_SUPPORTED_NODE_KINDS],
-                    kind: innerNode.kind,
-                    node: innerNode,
-                });
-            });
-            return addressValue;
-        },
-
-        visitIdentityValue: async (_node: IdentityValueNode) => {
-            if (accountAddressInput === undefined || accountAddressInput === null) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.identifier,
-                    instructionName: ixNode.identifier,
-                });
-            }
-            return await Promise.resolve(toAddress(accountAddressInput));
-        },
-
-        visitPayerValue: async (_node: PayerValueNode) => {
-            if (accountAddressInput === undefined || accountAddressInput === null) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.identifier,
-                    instructionName: ixNode.identifier,
-                });
-            }
-            return await Promise.resolve(toAddress(accountAddressInput));
-        },
-
-        visitPdaValue: async (node: PdaValueNode) => {
-            const pda = await resolvePDAAddress({
-                accountsInput,
-                argumentsInput,
-                ixNode,
-                pdaValueNode: node,
-                resolutionPath,
-                resolversInput,
-                root,
-            });
-            if (pda === null) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, {
-                    accountName: ixAccountNode.identifier,
-                });
-            }
-            return pda[0];
-        },
-
-        visitProgramIdValue: async (_node: ProgramIdValueNode) => {
-            return await Promise.resolve(address(root.program.publicKey));
-        },
-
-        visitPublicKeyValue: async (node: PublicKeyValueNode) => {
-            return await Promise.resolve(address(node.publicKey));
-        },
-
-        visitResolverValue: async (node: ResolverValueNode) => {
-            const resolverFn = resolversInput?.[node.name];
-            if (!resolverFn) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING, {
-                    accountName: ixAccountNode.identifier,
-                    resolverName: node.name,
-                });
-            }
-            let result: unknown;
-            try {
-                result = await resolverFn(argumentsInput ?? {}, accountsInput ?? {});
-            } catch (error) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER, {
-                    cause: error,
-                    resolverName: node.name,
-                    targetKind: 'instructionAccountNode',
-                    targetName: ixAccountNode.identifier,
-                });
-            }
-
-            if (!isAddressConvertible(result)) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS, {
-                    accountName: ixAccountNode.identifier,
-                    value: safeStringify(result),
-                });
-            }
-
-            return toAddress(result);
-        },
+        }
+        return Promise.resolve(toAddress(accountAddressInput));
     };
+    const unsupported = (nodeKind: AccountDefaultValueSupportedNodeKind) =>
+        Promise.reject(new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind }));
+
+    const visitor: Visitor<Promise<Address | null>, AccountDefaultValueSupportedNodeKind> = {
+        visitAccountBumpValue: () => unsupported('accountBumpValueNode'),
+
+        // Resolving account data would require fetching the account.
+        visitAccountDataValue: () => unsupported('accountDataValueNode'),
+
+        visitAccountValue: async node => await resolveAccountValueNodeAddress(node, ctx),
+
+        visitConditionalValue: async node => {
+            const branch = await resolveConditionalValueNodeCondition(node, ixAccountNode, ctx);
+            if (branch === undefined) {
+                // No matching branch: optional accounts resolve using the optional account strategy.
+                if (ixAccountNode.isOptional) return null;
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
+                    accountName: ixAccountNode.identifier,
+                    instructionName: getInstruction(ctx).identifier,
+                });
+            }
+            return await visitOrElse(branch, visitor, unexpectedAccountDefaultValueNode);
+        },
+
+        visitDataValue: node =>
+            Promise.resolve(toAddressOrThrow(getRequiredDataValue(ctx, node.path), ixAccountNode.identifier)),
+
+        visitIdentityValue: requireProvidedAccount,
+
+        visitInjectedValue: async node => {
+            const resolved = ctx.scope.resolveOrThrow(node, { kinds: INSTRUCTION_INPUT_VALUE_NODE_KINDS });
+            return await visitOrElse(resolved, visitor, unexpectedAccountDefaultValueNode);
+        },
+
+        visitPayerValue: requireProvidedAccount,
+
+        visitPdaValue: async node => (await resolvePdaAddress(node, ctx, ixAccountNode.identifier))[0],
+
+        visitProgramIdValue: () => Promise.resolve(getProgramAddress(ctx.instructionPath)),
+
+        visitProgramLink: node => {
+            const program = ctx.linkables.getOrThrow([...ctx.instructionPath, ixAccountNode, node]);
+            return Promise.resolve(toAddress(program.publicKey));
+        },
+
+        visitPublicKeyValue: node => Promise.resolve(toAddress(node.publicKey)),
+    };
+    return visitor;
 }

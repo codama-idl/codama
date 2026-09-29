@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/dynamic-address-resolution.svg?style=flat&label=%40codama%2Fdynamic-address-resolution
 [npm-url]: https://www.npmjs.com/package/@codama/dynamic-address-resolution
 
-This package provides the address resolution functionality for instruction accounts of a Codama IDL. It powers [`@codama/dynamic-client`](../dynamic-client/README.md).
+This package resolves the addresses of instruction accounts from a Codama IDL, e.g. by deriving PDAs from their seeds. It powers [`@codama/dynamic-client`](../dynamic-client/README.md).
 
 ## Installation
 
@@ -18,15 +18,88 @@ pnpm install @codama/dynamic-address-resolution
 > [!NOTE]
 > This package is **not** included in the main [`codama`](../library) package.
 
-## Types
+## Usage
 
-- `AccountsInput`, `ArgumentsInput` — user-input shapes for accounts and arguments.
-- `ResolverFn`, `ResolversInput`, `ResolverFnInput` — user-supplied custom resolver functions.
-- `AddressInput`, `PublicKeyLike` — accepted address-like inputs (modern `Address` strings, base58 strings, or legacy `PublicKey`-like objects with `.toBase58()`).
+Give `resolveInstructionAccountAddress` the path of an instruction account, from the root node, along with the accounts and data provided for the instruction.
+
+```ts
+import { resolveInstructionAccountAddress } from '@codama/dynamic-address-resolution';
+
+const address = await resolveInstructionAccountAddress({
+    accountsInput: { authority },
+    dataInput: { amount: 1_000_000_000n },
+    path: [root, root.program, instruction, vaultAccount],
+});
+```
+
+The path is needed to follow links, e.g. to PDAs of other programs, and to resolve injected values from the `provides` of the instruction and its parents.
+
+The `dataInput` uses the value format of [`@codama/dynamic-codecs`](../dynamic-codecs/README.md), e.g. `bigint` integers and `{ __kind, data }` enums.
+
+## Resolution rules
+
+A provided address is always used. Otherwise, the account resolves from its `defaultValue`, or from the `optionalAccountStrategy` of its instruction when it is optional and provided as `null`.
+
+| Account                                    | `undefined`               | `null`                    |
+| ------------------------------------------ | ------------------------- | ------------------------- |
+| Required, without `defaultValue`           | Throws                    | Throws                    |
+| Required, with `defaultValue`              | Resolves from its default | Resolves from its default |
+| Optional (`isOptional: true`), without one | Throws                    | Optional account strategy |
+| Optional, with `defaultValue`              | Resolves from its default | Optional account strategy |
+
+Default values resolve as follows.
+
+| Default value          | Resolves to                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `publicKeyValueNode`   | The given address.                                                                                           |
+| `programIdValueNode`   | The address of the program of the instruction.                                                               |
+| `programLinkNode`      | The address of the linked program.                                                                           |
+| `accountValueNode`     | The address of another account of the instruction, resolved recursively.                                     |
+| `dataValueNode`        | The address at the given path of the data, e.g. `config.owner`, using default values of fields when missing. |
+| `pdaValueNode`         | The derived PDA. See [PDAs](#pdas).                                                                          |
+| `conditionalValueNode` | One of its branches. See [Conditions](#conditions).                                                          |
+| `injectedValueNode`    | Its provided value, resolved like any other default value.                                                   |
+| `payerValueNode`       | The provided address, which is required.                                                                     |
+| `identityValueNode`    | The provided address, which is required.                                                                     |
+
+`accountBumpValueNode` and `accountDataValueNode` defaults are not supported, since they require fetching accounts.
+
+### PDAs
+
+Each seed is encoded using its declared type: constant seeds use their value, and variable seeds use the value provided by the `pdaValueNode`, from an account, the instruction data or a value node. Missing `remainderOptionTypeNode` seeds encode to zero bytes.
+
+```ts
+// seeds: [constant('vault'), variable('owner', publicKey), variable('name', string)]
+pdaValueNode(pdaLinkNode('vault'), {
+    seeds: [
+        pdaSeedValueNode('owner', accountValueNode('owner')),
+        pdaSeedValueNode('name', dataValueNode('config.name')),
+    ],
+});
+```
+
+The PDA is derived using the `programId` of the `pdaValueNode` if any, then the `programId` of the PDA, then the address of the program defining it.
+
+### Conditions
+
+With a `value`, a `conditionalValueNode` takes its `ifTrue` branch when its condition equals that value. Integers compare by value whether they are numbers or bigints, and enum variants compare by identifier, e.g. `'slow'` equals `enumValueNode('mode', 'slow')`. Without a `value`, it takes its `ifTrue` branch when the referenced account or data exists.
+
+When no branch matches, optional accounts resolve using the optional account strategy and required accounts throw.
+
+## `resolveStandalonePda(input)`
+
+Derives a PDA outside of any instruction, from its path and the values of its variable seeds.
+
+```ts
+const [address, bump] = await resolveStandalonePda({
+    path: [root, root.program, metadataPda],
+    seedsInput: { authority, seed: 'idl' },
+});
+```
 
 ## Types generation
 
-This package can emit TypeScript the input types required for address resolution of each instruction — `${Name}Args`, `${Name}Accounts`, `${Name}Resolvers`.
+This package can generate the TypeScript input types of each instruction: `${Name}InstructionDataArgs` for its data, `${Name}Accounts` for its accounts, including remaining accounts as named `Address[]` lists, and `${Pda}Seeds` for the variable seeds of each PDA.
 
 ### CLI
 
@@ -44,128 +117,21 @@ import { generateTypes } from '@codama/dynamic-address-resolution/codegen';
 const source = generateTypes(idl);
 ```
 
-## Functions
-
-### `resolveInstructionAccountAddress(input)`
-
-Resolves the on-chain `Address` for a single `InstructionAccountNode` of an instruction, applying default values, PDA derivation, conditional resolution, and any user-supplied custom resolvers. Returns `null` for optional accounts that resolve to "omitted".
-
-**Untyped:**
+The generated types can narrow the inputs of `resolveInstructionAccountAddress`.
 
 ```ts
-const address = await resolveInstructionAccountAddress({
-    accountsInput: { authority: ownerAddress },
-    argumentsInput: { amount: 1_000_000_000n },
-    ixAccountNode,
-    ixNode,
-    root,
+import type { TransferAccounts, TransferInstructionDataArgs } from './generated/my-program-address-resolution-types';
+
+const address = await resolveInstructionAccountAddress<TransferAccounts, TransferInstructionDataArgs>({
+    accountsInput: { destination, source },
+    dataInput: { amount: 1_000_000_000n },
+    path,
 });
 ```
 
-**Typed:**
+## Helpers
 
-```ts
-import type { TransferSolAccounts, TransferSolArgs } from './generated/system-program-idl-address-resolution-types';
-
-const address = await resolveInstructionAccountAddress<TransferSolAccounts, TransferSolArgs>({
-    accountsInput: { source, destination },
-    argumentsInput: { amount: 1_000_000_000n },
-    ixAccountNode,
-    ixNode,
-    root,
-});
-```
-
-#### Automatic resolution rules
-
-Accounts (PDAs, program ids, constants) with a `defaultValue` are resolved automatically and may be omitted from `accountsInput`.
-
-| Account scenario                                                | Type in `accountsInput`        | Auto resolution                                                                              |
-| --------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
-| Required account without `defaultValue`                         | `{ system: Address }`          | No                                                                                           |
-| Required account with `defaultValue`<br>(PDA, programId, etc.)  | `{ system?: Address }`         | Auto-resolved to `defaultValue` if omitted                                                   |
-| Optional account (`isOptional: true`)<br>without `defaultValue` | `{ system: Address \| null }`  | Resolved via `optionalAccountStrategy`,<br>if provided as `null`                             |
-| Optional account (`isOptional: true`)<br>with `defaultValue`    | `{ system?: Address \| null }` | - `null` resolves via `optionalAccountStrategy`<br>- `undefined` resolves via `defaultValue` |
-
-Auto-resolved kinds include:
-
-- **PDA accounts** — derived from seeds defined in the IDL (`pdaValueNode`).
-- **Program IDs** — known program addresses (e.g. System Program, Token Program).
-- **Constants** — `constantValueNode` defaults.
-- **Conditional values** — `conditionalValueNode` defaults.
-- **Custom resolvers** — `resolverValueNode` defaults supplied via `resolversInput`.
-
-### `resolveStandalonePda(root, pdaNode, seedInputs?)`
-
-Derives a `ProgramDerivedAddress` for a `PdaNode` outside any instruction context — seeds are supplied directly as a `Record<string, unknown>`.
-
-```ts
-const pdaNode = root.program.pdas.find(p => p.name === 'metadata')!;
-const [pda, bump] = await resolveStandalonePda(root, pdaNode, {
-    authority: ownerAddress,
-    seed: 'idl',
-});
-```
-
-### `createCodecInputTransformer(typeNode, root, options?)`
-
-Returns a function that transforms user-supplied input into the codec-compatible shape expected by [`@codama/dynamic-codecs`](../dynamic-codecs/README.md) — e.g. `Uint8Array` → `[encoding, hex]`.
-
-```ts
-import { bytesTypeNode } from 'codama';
-
-const transform = createCodecInputTransformer(bytesTypeNode(), root, {
-    bytesEncoding: 'base16',
-});
-
-transform(new Uint8Array([72, 101, 108, 108, 111]));
-// => ['base16', '48656c6c6f']
-```
-
-### `createDefaultValueEncoderVisitor(codec)`
-
-Returns a `Visitor<ReadonlyUint8Array>` that encodes default `ValueNode`s.
-
-```ts
-import { getNodeCodec } from '@codama/dynamic-codecs';
-import { bytesValueNode, visit } from 'codama';
-
-const codec = getNodeCodec([root, root.program, argNode]);
-const encoder = createDefaultValueEncoderVisitor(codec);
-const bytes = visit(bytesValueNode('base16', 'a1b2c3'), encoder);
-```
-
-### Helpers
-
-#### `toAddress(input)`
-
-Normalizes any `AddressInput` (modern `Address` string, base58 string, or legacy `PublicKey`-like object with `.toBase58()`) into an `Address`.
-
-```ts
-const a1 = toAddress('11111111111111111111111111111111');
-const a2 = toAddress(new PublicKey());
-```
-
-#### `isPublicKeyLike(value)`
-
-Duck-typed guard for legacy `PublicKey` objects.
-
-```ts
-if (isPublicKeyLike(value)) {
-    const addr = toAddress(value);
-}
-```
-
-#### `isAddressConvertible(value)`
-
-Returns `true` if `value` is a string `Address` or a `PublicKeyLike` object — i.e. safe to pass to `toAddress`.
-
-```ts
-if (isAddressConvertible(input)) {
-    return toAddress(input);
-}
-```
-
-#### Constants
-
-- `OPTIONAL_NODE_KINDS` — type-node kinds treated as optional.
+- `toAddress(input)` normalises any `AddressInput`, i.e. an `Address`, a base58 string, or a legacy `PublicKey`-like object with `.toBase58()`, into an `Address`.
+- `isPublicKeyLike(value)` is a duck-typed guard for legacy `PublicKey` objects.
+- `isAddressConvertible(value)` returns `true` when `value` can be passed to `toAddress`.
+- `OPTIONAL_NODE_KINDS` lists the type node kinds treated as optional.

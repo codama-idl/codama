@@ -1,117 +1,103 @@
-import { camelCase, type DefinedTypeNode } from 'codama';
+import {
+    arrayTypeNode,
+    booleanTypeNode,
+    bytesTypeNode,
+    dateTimeTypeNode,
+    definedTypeLinkNode,
+    definedTypeNode,
+    durationTypeNode,
+    enumTypeNode,
+    enumVariantTypeNode,
+    fixedPointTypeNode,
+    fixedSizeTransformNode,
+    floatTypeNode,
+    integerTypeNode,
+    integerValueNode,
+    optionTypeNode,
+    prefixedCountNode,
+    publicKeyTypeNode,
+    stringTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
+    tupleTypeNode,
+} from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { codamaTypeToTS } from '../../src/codegen/codama-type-to-ts';
 
-const NO_DEFINED: DefinedTypeNode[] = [];
-
 describe('codamaTypeToTS', () => {
-    test('should map numeric format to number or bigint', () => {
-        expect(codamaTypeToTS({ endian: 'le', format: 'u32', kind: 'numberTypeNode' }, NO_DEFINED)).toBe('number');
-        expect(codamaTypeToTS({ endian: 'le', format: 'u64', kind: 'numberTypeNode' }, NO_DEFINED)).toBe(
-            'number | bigint',
-        );
-        expect(codamaTypeToTS({ endian: 'le', format: 'i128', kind: 'numberTypeNode' }, NO_DEFINED)).toBe(
-            'number | bigint',
-        );
+    test('it maps numbers', () => {
+        expect(codamaTypeToTS(integerTypeNode('u8'), [])).toBe('number | bigint');
+        expect(codamaTypeToTS(integerTypeNode('i128'), [])).toBe('number | bigint');
+        expect(codamaTypeToTS(fixedPointTypeNode(integerTypeNode('u64'), 6), [])).toBe('number | bigint');
+        expect(codamaTypeToTS(dateTimeTypeNode(integerTypeNode('i64')), [])).toBe('number | bigint');
+        expect(codamaTypeToTS(durationTypeNode(integerTypeNode('u32')), [])).toBe('number | bigint');
+        expect(codamaTypeToTS(floatTypeNode('f64'), [])).toBe('number');
     });
 
-    test('should map primitive types to TS scalars', () => {
-        expect(codamaTypeToTS({ kind: 'publicKeyTypeNode' }, NO_DEFINED)).toBe('Address');
-        expect(codamaTypeToTS({ encoding: 'utf8', kind: 'stringTypeNode' }, NO_DEFINED)).toBe('string');
-        expect(
-            codamaTypeToTS(
-                { kind: 'booleanTypeNode', size: { endian: 'le', format: 'u8', kind: 'numberTypeNode' } },
-                NO_DEFINED,
-            ),
-        ).toBe('boolean');
-        expect(codamaTypeToTS({ kind: 'bytesTypeNode' }, NO_DEFINED)).toBe('Uint8Array');
+    test('it maps scalars', () => {
+        expect(codamaTypeToTS(publicKeyTypeNode(), [])).toBe('Address');
+        expect(codamaTypeToTS(stringTypeNode('utf8'), [])).toBe('string');
+        expect(codamaTypeToTS(booleanTypeNode(), [])).toBe('boolean');
+        expect(codamaTypeToTS(bytesTypeNode(), [])).toBe('Uint8Array');
     });
 
-    test('should append | null for option types', () => {
-        expect(
-            codamaTypeToTS(
-                {
-                    item: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
-                    kind: 'optionTypeNode',
-                    prefix: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
-                },
-                NO_DEFINED,
-            ),
-        ).toBe('number | null');
+    test('it ignores transforms', () => {
+        const type = stringTypeNode('utf8', { transforms: [fixedSizeTransformNode(32)] });
+        expect(codamaTypeToTS(type, [])).toBe('string');
     });
 
-    test('should parenthesize union item types in arrays', () => {
-        expect(
-            codamaTypeToTS(
-                {
-                    count: { kind: 'fixedCountNode', value: 4 },
-                    item: {
-                        item: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
-                        kind: 'optionTypeNode',
-                        prefix: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
-                    },
-                    kind: 'arrayTypeNode',
-                },
-                NO_DEFINED,
-            ),
-        ).toBe('(number | null)[]');
+    test('it appends null to options', () => {
+        expect(codamaTypeToTS(optionTypeNode(publicKeyTypeNode()), [])).toBe('Address | null');
     });
 
-    test('should emit field unions for struct types', () => {
-        const result = codamaTypeToTS(
-            {
-                fields: [
-                    {
-                        kind: 'structFieldTypeNode',
-                        name: camelCase('a'),
-                        type: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
-                    },
-                    {
-                        kind: 'structFieldTypeNode',
-                        name: camelCase('b'),
-                        type: { encoding: 'utf8', kind: 'stringTypeNode' },
-                    },
-                ],
-                kind: 'structTypeNode',
-            },
-            NO_DEFINED,
-        );
-        expect(result).toBe('{ a: number; b: string }');
+    test('it parenthesises union items in arrays', () => {
+        const type = arrayTypeNode(optionTypeNode(publicKeyTypeNode()), prefixedCountNode(integerTypeNode('u32')));
+        expect(codamaTypeToTS(type, [])).toBe('(Address | null)[]');
     });
 
-    test('should emit a string union for all-empty enums', () => {
-        expect(
-            codamaTypeToTS(
-                {
-                    kind: 'enumTypeNode',
-                    size: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
-                    variants: [
-                        { kind: 'enumEmptyVariantTypeNode', name: camelCase('one') },
-                        { kind: 'enumEmptyVariantTypeNode', name: camelCase('two') },
-                    ],
-                },
-                NO_DEFINED,
-            ),
-        ).toBe("'one' | 'two'");
+    test('it maps structs, marking fields with default values as optional and skipping omitted ones', () => {
+        const type = structTypeNode([
+            structFieldTypeNode({
+                defaultValue: integerValueNode('1'),
+                defaultValueStrategy: 'omitted',
+                identifier: 'discriminator',
+                type: integerTypeNode('u8'),
+            }),
+            structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() }),
+            structFieldTypeNode({
+                defaultValue: integerValueNode('5'),
+                identifier: 'fee',
+                type: integerTypeNode('u16'),
+            }),
+            structFieldTypeNode({ identifier: 'memo', type: optionTypeNode(stringTypeNode('utf8')) }),
+        ]);
+        expect(codamaTypeToTS(type, [])).toBe('{ owner: Address; fee?: number | bigint; memo?: string | null }');
     });
 
-    test('should resolve definedTypeLinkNode through definedTypes', () => {
-        const definedTypes: DefinedTypeNode[] = [
-            {
-                docs: [],
-                kind: 'definedTypeNode',
-                name: camelCase('amount'),
-                type: { endian: 'le', format: 'u64', kind: 'numberTypeNode' },
-            },
-        ];
-        expect(codamaTypeToTS({ kind: 'definedTypeLinkNode', name: camelCase('amount') }, definedTypes)).toBe(
-            'number | bigint',
-        );
+    test('it maps tuples', () => {
+        expect(codamaTypeToTS(tupleTypeNode([publicKeyTypeNode(), booleanTypeNode()]), [])).toBe('[Address, boolean]');
     });
 
-    test('should fall back to unknown for unknown definedTypeLinkNode', () => {
-        expect(codamaTypeToTS({ kind: 'definedTypeLinkNode', name: camelCase('missing') }, NO_DEFINED)).toBe(
+    test('it maps enums without data to their identifiers', () => {
+        const type = enumTypeNode([enumVariantTypeNode('frozen'), enumVariantTypeNode('initialized')]);
+        expect(codamaTypeToTS(type, [])).toBe("'frozen' | 'initialized'");
+    });
+
+    test('it maps enums with data to discriminated unions', () => {
+        const type = enumTypeNode([
+            enumVariantTypeNode('quit'),
+            enumVariantTypeNode('move', {
+                data: structTypeNode([structFieldTypeNode({ identifier: 'x', type: integerTypeNode('u8') })]),
+            }),
+        ]);
+        expect(codamaTypeToTS(type, [])).toBe("{ __kind: 'quit' } | { __kind: 'move'; data: { x: number | bigint } }");
+    });
+
+    test('it resolves defined type links', () => {
+        const definedTypes = [definedTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })];
+        expect(codamaTypeToTS(definedTypeLinkNode('amount'), definedTypes)).toBe('number | bigint');
+        expect(codamaTypeToTS(definedTypeLinkNode('missing'), [])).toBe(
             'unknown /** DefinedTypeNode not found for definedTypeLinkNode */',
         );
     });

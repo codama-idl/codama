@@ -1,109 +1,34 @@
-import { getNodeCodec } from '@codama/dynamic-codecs';
-import {
-    CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING,
-    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE,
-    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
-    CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
-    CodamaError,
-} from '@codama/errors';
-import type { Address, ProgramDerivedAddress } from '@solana/addresses';
-import { getProgramDerivedAddress } from '@solana/addresses';
-import type { ReadonlyUint8Array } from '@solana/codecs';
-import type { PdaNode, RegisteredPdaSeedNode, RootNode, VariablePdaSeedNode } from 'codama';
-import { camelCase, isNode } from 'codama';
+import type { ProgramDerivedAddress } from '@solana/addresses';
+import type { NodePath, PdaNode } from 'codama';
+import { ProvidedScope } from 'codama';
 
-import { toAddress } from '../shared/address';
-import { getMemoizedUtf8Encoder } from '../shared/codecs';
-import { formatValueType, getMaybeNodeKind } from '../shared/util';
-import { createCodecInputTransformer } from '../visitors/codec-input-transformer';
-import { resolveConstantPdaSeedValue } from './resolve-constant-pda-seed-value';
+import { getLinkables } from './context';
+import { derivePda, getPdaProgramAddress } from './resolve-pda-address';
+
+export type ResolveStandalonePdaInput = {
+    /** The path of the PDA from the root node, e.g. `[root, program, pda]`. */
+    path: NodePath<PdaNode>;
+    /** The values of the variable seeds of the PDA, keyed by seed identifier. */
+    seedsInput?: Record<string, unknown>;
+};
 
 /**
- * Derives a PDA from a standalone `PdaNode` and user-supplied seed values,
- * without requiring an instruction context.
+ * Derive a PDA from its seed values, outside of any instruction.
+ *
+ * @example
+ * ```ts
+ * const [address, bump] = await resolveStandalonePda({
+ *     path: [root, root.program, metadataPda],
+ *     seedsInput: { authority, seed: 'idl' },
+ * });
+ * ```
  */
-export async function resolveStandalonePda(
-    root: RootNode,
-    pdaNode: PdaNode,
-    seedInputs: Record<string, unknown> = {},
-): Promise<ProgramDerivedAddress> {
-    const programAddress = toAddress(pdaNode.programId || root.program.publicKey);
-    const seedValues = await Promise.all(
-        (pdaNode.seeds ?? []).map(async (seedNode): Promise<ReadonlyUint8Array> => {
-            if (seedNode.kind === 'constantPdaSeedNode') {
-                return await resolveStandaloneConstantSeed(programAddress, seedNode);
-            }
-            if (seedNode.kind === 'variablePdaSeedNode') {
-                return await resolveStandaloneVariableSeed(root, seedNode, seedInputs);
-            }
-            throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, {
-                kind: getMaybeNodeKind(seedNode) ?? 'unknown',
-            });
-        }),
+export async function resolveStandalonePda({
+    path,
+    seedsInput = {},
+}: ResolveStandalonePdaInput): Promise<ProgramDerivedAddress> {
+    const ctx = { linkables: getLinkables(path), scope: new ProvidedScope() };
+    return await derivePda(path, getPdaProgramAddress(path), ctx, seedNode =>
+        Promise.resolve(seedsInput[seedNode.identifier]),
     );
-
-    return await getProgramDerivedAddress({ programAddress, seeds: seedValues });
-}
-
-function resolveStandaloneConstantSeed(
-    programAddress: Address,
-    seedNode: RegisteredPdaSeedNode,
-): Promise<ReadonlyUint8Array> {
-    if (!isNode(seedNode, 'constantPdaSeedNode')) {
-        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-            expectedKinds: ['constantPdaSeedNode'],
-            kind: seedNode.kind,
-            node: seedNode,
-        });
-    }
-    return resolveConstantPdaSeedValue(seedNode.value, { programId: programAddress });
-}
-
-function resolveStandaloneVariableSeed(
-    root: RootNode,
-    seedNode: VariablePdaSeedNode,
-    seedInputs: Record<string, unknown>,
-): Promise<ReadonlyUint8Array> {
-    const input = seedInputs[seedNode.identifier];
-    const typeNode = seedNode.type;
-
-    // remainderOptionTypeNode seeds are optional — null means zero bytes.
-    if (input === undefined || input === null) {
-        if (isNode(typeNode, 'remainderOptionTypeNode')) {
-            return Promise.resolve(new Uint8Array(0));
-        }
-        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
-            argumentName: seedNode.identifier,
-            instructionName: camelCase('standaloneSeedNode'),
-        });
-    }
-
-    // For simple string seeds encode directly with UTF-8 (no length prefix)
-    if (isNode(typeNode, 'stringTypeNode')) {
-        if (typeof input !== 'string') {
-            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
-                actualType: formatValueType(input),
-                expectedType: 'string',
-                nodeKind: 'stringTypeNode',
-            });
-        }
-        return Promise.resolve(getMemoizedUtf8Encoder().encode(input));
-    }
-
-    // Create a synthetic instructionArgumentNode so getNodeCodec can resolve the type.
-    // The seed's declared type is used directly (no size-prefix wrapper).
-    const syntheticArgNode = createSyntheticArgNode(seedNode);
-    const codec = getNodeCodec([root, root.program, syntheticArgNode]);
-    const transformer = createCodecInputTransformer(typeNode, root, { bytesEncoding: 'base16' });
-    const transformedInput = transformer(input);
-    return Promise.resolve(codec.encode(transformedInput));
-}
-
-function createSyntheticArgNode(seedNode: VariablePdaSeedNode) {
-    return {
-        docs: [] as string[],
-        kind: 'instructionArgumentNode' as const,
-        identifier: seedNode.identifier,
-        type: seedNode.type,
-    };
 }

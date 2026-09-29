@@ -1,239 +1,119 @@
 import {
-    CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
-    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
-    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
-    CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
+    CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
     CodamaError,
 } from '@codama/errors';
 import type { Address, ProgramDerivedAddress } from '@solana/addresses';
-import { address, getProgramDerivedAddress } from '@solana/addresses';
+import { getProgramDerivedAddress } from '@solana/addresses';
 import type { ReadonlyUint8Array } from '@solana/codecs';
-import type { Node, PdaNode, PdaSeedValueNode, PdaValueNode, RegisteredPdaSeedNode, VariablePdaSeedNode } from 'codama';
-import { isNode, visitOrElse } from 'codama';
+import {
+    getLastNodeFromPath,
+    type IdentifierString,
+    isNode,
+    type NodePath,
+    type PdaNode,
+    type PdaValueNode,
+    type VariablePdaSeedNode,
+} from 'codama';
 
-import type { AccountsInput, ArgumentsInput, ResolverFnInput, ResolversInput } from '../shared/types';
-import { getMaybeNodeKind } from '../shared/util';
-import { createPdaSeedValueVisitor, PDA_SEED_VALUE_SUPPORTED_NODE_KINDS } from '../visitors/pda-seed-value';
-import type { BaseResolutionContext } from './types';
-
-export type ResolvePDAAddressContext<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
-> = BaseResolutionContext<TAccounts, TArgs, TResolvers> & {
-    pdaValueNode: PdaValueNode;
-};
+import { toAddress, toAddressOrThrow } from '../shared/address';
+import { OPTIONAL_NODE_KINDS } from '../shared/nodes';
+import { resolvePdaSeedValue } from '../visitors/pda-seed-value';
+import { encodeValue, getInstruction, getProgramAddress, getRequiredDataValue, getValue } from './context';
+import { resolveAccountValueNodeAddress } from './resolve-account-value-node-address';
+import type { ResolutionContext } from './types';
 
 /**
- * Derives a PDA from a PdaValueNode.
- * Encodes each seed (ConstantPdaSeedNode and VariablePdaSeedNode) into bytes and computes the address.
+ * Derive the PDA of a `pdaValueNode`, using the program address it provides,
+ * or the one of the PDA, or the address of the program defining the PDA.
  */
-export async function resolvePDAAddress<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
->({
-    root,
-    ixNode,
-    argumentsInput,
-    accountsInput,
-    pdaValueNode,
-    resolutionPath,
-    resolversInput,
-}: ResolvePDAAddressContext<TAccounts, TArgs, TResolvers>): Promise<ProgramDerivedAddress | null> {
-    if (!isNode(pdaValueNode, 'pdaValueNode')) {
-        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-            expectedKinds: ['pdaValueNode'],
-            kind: getMaybeNodeKind(pdaValueNode),
-            node: pdaValueNode,
-        });
-    }
+export async function resolvePdaAddress(
+    node: PdaValueNode,
+    ctx: ResolutionContext,
+    accountName: IdentifierString,
+): Promise<ProgramDerivedAddress> {
+    const pdaPath = getPdaPath(node, ctx);
+    const programAddress = node.programId
+        ? await resolvePdaProgramAddress(node.programId, ctx, accountName)
+        : getPdaProgramAddress(pdaPath);
 
-    const pdaNode = resolvePdaNode(pdaValueNode, root.program.pdas ?? []);
-    const programId = address(pdaNode.programId || root.program.publicKey);
-
-    const seedValues = await Promise.all(
-        (pdaNode.seeds ?? []).map(async seedNode => {
-            if (seedNode.kind === 'constantPdaSeedNode') {
-                return await resolveConstantPdaSeed({
-                    accountsInput,
-                    argumentsInput,
-                    ixNode,
-                    programId,
-                    resolutionPath,
-                    resolversInput,
-                    root,
-                    seedNode,
-                });
-            }
-
-            if (seedNode.kind === 'variablePdaSeedNode') {
-                const variableSeedValueNodes = pdaValueNode.seeds ?? [];
-                const seedName = seedNode.identifier;
-                const variableSeedValueNode = variableSeedValueNodes.find(node => node.identifier === seedName);
-
-                if (!variableSeedValueNode) {
-                    throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-                        instructionName: ixNode.identifier,
-                        referencedName: seedName,
-                    });
-                }
-
-                return await resolveVariablePdaSeed({
-                    accountsInput,
-                    argumentsInput,
-                    ixNode,
-                    programId,
-                    resolutionPath,
-                    resolversInput,
-                    root,
-                    seedNode,
-                    variableSeedValueNode,
-                });
-            }
-
-            throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, {
-                kind: getMaybeNodeKind(seedNode) ?? 'unknown',
-            });
-        }),
-    );
-
-    return await getProgramDerivedAddress({
-        programAddress: programId,
-        seeds: seedValues,
-    });
-}
-
-function resolvePdaNode(pdaDefaultValue: PdaValueNode, pdas: PdaNode[]): PdaNode {
-    if (isNode(pdaDefaultValue.pda, 'pdaLinkNode')) {
-        const linkedPda = pdas.find(p => p.identifier === pdaDefaultValue.pda.identifier);
-        if (!linkedPda) {
-            throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-                kind: 'pdaLinkNode',
-                linkNode: pdaDefaultValue.pda,
-                name: pdaDefaultValue.pda.identifier,
-                path: [],
+    return await derivePda(pdaPath, programAddress, ctx, async seedNode => {
+        const seedValueNode = (node.seeds ?? []).find(seed => seed.identifier === seedNode.identifier);
+        if (!seedValueNode) {
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
+                instructionName: getInstruction(ctx).identifier,
+                referencedName: seedNode.identifier,
             });
         }
-        return linkedPda;
-    }
-
-    if (isNode(pdaDefaultValue.pda, 'pdaNode')) {
-        return pdaDefaultValue.pda;
-    }
-
-    throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-        expectedKinds: ['pdaLinkNode', 'pdaNode'],
-        kind: getMaybeNodeKind(pdaDefaultValue.pda),
-        node: pdaDefaultValue.pda,
+        return await resolvePdaSeedValue(seedValueNode.value, ctx);
     });
 }
 
-type ResolvePdaSeedContext<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
-> = BaseResolutionContext<TAccounts, TArgs, TResolvers> & {
-    programId: Address;
-    seedNode: VariablePdaSeedNode;
-    variableSeedValueNode: PdaSeedValueNode;
-};
-function resolveVariablePdaSeed<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
->({
-    accountsInput,
-    argumentsInput,
-    ixNode,
-    programId,
-    resolutionPath,
-    resolversInput,
-    root,
-    seedNode,
-    variableSeedValueNode,
-}: ResolvePdaSeedContext<TAccounts, TArgs, TResolvers>): Promise<ReadonlyUint8Array> {
-    if (!isNode(variableSeedValueNode, 'pdaSeedValueNode')) {
-        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-            expectedKinds: ['pdaSeedValueNode'],
-            kind: getMaybeNodeKind(variableSeedValueNode),
-            node: variableSeedValueNode as Node,
-        });
+/** The path of the PDA of a `pdaValueNode`, following links. Inline PDAs belong to the program of the instruction. */
+function getPdaPath(node: PdaValueNode, ctx: ResolutionContext): NodePath<PdaNode> {
+    if (isNode(node.pda, 'pdaLinkNode')) {
+        return ctx.linkables.getPathOrThrow([...ctx.instructionPath, node, node.pda]);
     }
-
-    if (seedNode.identifier !== variableSeedValueNode.identifier) {
-        // Sanity check: this should not happen.
-        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION, {
-            message: `Mismatched PDA seed names: expected [${seedNode.identifier}], got [${variableSeedValueNode.identifier}]`,
-        });
-    }
-
-    const visitor = createPdaSeedValueVisitor({
-        accountsInput,
-        argumentsInput,
-        ixNode,
-        programId,
-        resolutionPath,
-        resolversInput,
-        root,
-        seedTypeNode: seedNode.type,
-    });
-
-    return visitOrElse(variableSeedValueNode.value, visitor, node => {
-        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-            expectedKinds: [...PDA_SEED_VALUE_SUPPORTED_NODE_KINDS],
-            kind: node.kind,
-            node,
-        });
-    });
+    return [...ctx.instructionPath, node, node.pda];
 }
 
-type ResolveConstantPdaSeedContext<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
-> = BaseResolutionContext<TAccounts, TArgs, TResolvers> & {
-    programId: Address;
-    seedNode: RegisteredPdaSeedNode;
-};
-function resolveConstantPdaSeed<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
->({
-    accountsInput,
-    argumentsInput,
-    ixNode,
-    programId,
-    resolutionPath,
-    resolversInput,
-    root,
-    seedNode,
-}: ResolveConstantPdaSeedContext<TAccounts, TArgs, TResolvers>): Promise<ReadonlyUint8Array> {
-    if (!isNode(seedNode, 'constantPdaSeedNode')) {
-        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-            expectedKinds: ['constantPdaSeedNode'],
-            kind: seedNode.kind,
-            node: seedNode,
+/** The program address used to derive a PDA when its value does not provide one. */
+export function getPdaProgramAddress(pdaPath: NodePath<PdaNode>): Address {
+    const pdaNode = getLastNodeFromPath(pdaPath);
+    return pdaNode.programId ? toAddress(pdaNode.programId) : getProgramAddress(pdaPath);
+}
+
+async function resolvePdaProgramAddress(
+    programId: NonNullable<PdaValueNode['programId']>,
+    ctx: ResolutionContext,
+    accountName: IdentifierString,
+): Promise<Address> {
+    if (isNode(programId, 'dataValueNode')) {
+        return toAddressOrThrow(getRequiredDataValue(ctx, programId.path), accountName);
+    }
+    const address = await resolveAccountValueNodeAddress(programId, ctx);
+    if (address === null) {
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, {
+            accountName: programId.identifier,
         });
     }
+    return address;
+}
 
-    const visitor = createPdaSeedValueVisitor({
-        accountsInput,
-        argumentsInput,
-        ixNode,
-        programId,
-        resolutionPath,
-        resolversInput,
-        root,
-        seedTypeNode: seedNode.type,
-    });
-    return visitOrElse(seedNode.value, visitor, node => {
-        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-            expectedKinds: [...PDA_SEED_VALUE_SUPPORTED_NODE_KINDS],
-            kind: node.kind,
-            node,
-        });
-    });
+/**
+ * Derive a PDA by encoding each of its seeds using its declared type.
+ * Constant seeds use their value, and variable seeds use the value returned by `getVariableSeedValue`.
+ */
+export async function derivePda(
+    pdaPath: NodePath<PdaNode>,
+    programAddress: Address,
+    ctx: Pick<ResolutionContext, 'linkables' | 'scope'>,
+    getVariableSeedValue: (seedNode: VariablePdaSeedNode) => Promise<unknown>,
+): Promise<ProgramDerivedAddress> {
+    const pdaNode = getLastNodeFromPath(pdaPath);
+    const seeds = await Promise.all(
+        (pdaNode.seeds ?? []).map(async (seedNode): Promise<ReadonlyUint8Array> => {
+            const seedPath = [...pdaPath, seedNode];
+            if (isNode(seedNode, 'constantPdaSeedNode')) {
+                const value = isNode(seedNode.value, 'programIdValueNode')
+                    ? programAddress
+                    : getValue(ctx, seedPath, seedNode.value);
+                return encodeValue(ctx, seedPath, seedNode.type, value);
+            }
+            const value = await getVariableSeedValue(seedNode);
+            if (value === undefined || value === null) {
+                // Missing option seeds encode as `None`, e.g. to zero bytes for remainder options.
+                if (OPTIONAL_NODE_KINDS.includes(seedNode.type.kind)) {
+                    return encodeValue(ctx, seedPath, seedNode.type, null);
+                }
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, {
+                    pdaName: pdaNode.identifier,
+                    seedName: seedNode.identifier,
+                });
+            }
+            return encodeValue(ctx, seedPath, seedNode.type, value);
+        }),
+    );
+    return await getProgramDerivedAddress({ programAddress, seeds });
 }

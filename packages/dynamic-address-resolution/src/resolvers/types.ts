@@ -1,23 +1,22 @@
-import type { InstructionNode, RootNode } from 'codama';
+import type { InstructionNode, LinkableDictionary, NodePath, ProvidedScope } from 'codama';
 
-import type { AccountsInput, ArgumentsInput, ResolverFnInput, ResolversInput } from '../shared/types';
+import type { AccountsInput, DataInput } from '../shared/types';
 
-// Array of node names being resolved to detect circular dependencies.
+/** The identifiers of the accounts being resolved, used to detect circular dependencies. */
 export type ResolutionPath = readonly string[];
 
 /**
- * Shared context threaded through the account/PDA resolution pipeline.
- * Individual resolvers/visitors extend this with domain-specific fields.
+ * Shared context threaded through the account and PDA resolution pipeline.
+ * Individual resolvers and visitors extend it with domain-specific fields.
  */
-export type BaseResolutionContext<
-    TAccounts extends AccountsInput = AccountsInput,
-    TArgs extends ArgumentsInput = ArgumentsInput,
-    TResolvers extends ResolverFnInput = ResolversInput,
-> = {
+export type ResolutionContext<TAccounts extends AccountsInput = AccountsInput, TData extends DataInput = DataInput> = {
     accountsInput: TAccounts | undefined;
-    argumentsInput: TArgs | undefined;
-    ixNode: InstructionNode;
+    dataInput: TData | undefined;
+    /** The path of the instruction whose accounts are resolved, from the root node. */
+    instructionPath: NodePath<InstructionNode>;
+    /** Used to follow links, e.g. to PDAs, defined types or programs. */
+    linkables: LinkableDictionary;
     resolutionPath: ResolutionPath;
-    resolversInput: TResolvers | undefined;
-    root: RootNode;
+    /** The values provided by the instruction and its parents, used to resolve injected values. */
+    scope: ProvidedScope;
 };

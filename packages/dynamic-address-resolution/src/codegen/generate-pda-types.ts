@@ -4,7 +4,7 @@ import { codamaTypeToTS } from './codama-type-to-ts';
 import { collectPdaNodesFromIdl } from './collect-pda-nodes';
 
 /**
- * Generate `${Pda}PdaSeeds` types and the aggregate `${Program}Pdas` map type.
+ * Generate `${Pda}Seeds` types and the aggregate `${Program}Pdas` map type.
  *
  * Returns the type block with the aggregate map type name. `mapTypeName` is `null` when the program has no PDAs.
  */
@@ -23,7 +23,7 @@ export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; t
         const variableSeeds = getVariableSeedNodes(pdaNode);
         if (variableSeeds.length === 0) continue;
         const typeName = pascalCase(pdaName);
-        output += `export type ${typeName}PdaSeeds = {\n`;
+        output += `export type ${typeName}Seeds = {\n`;
         for (const seed of variableSeeds) {
             const tsType = seed.type
                 ? codamaTypeToTS(seed.type, definedTypes)
@@ -39,7 +39,7 @@ export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; t
     for (const [pdaName, pdaNode] of pdaMap) {
         const typeName = pascalCase(pdaName);
         const seedsParam =
-            getVariableSeedNodes(pdaNode).length > 0 ? `seeds: ${typeName}PdaSeeds` : `seeds?: Record<string, unknown>`;
+            getVariableSeedNodes(pdaNode).length > 0 ? `seeds: ${typeName}Seeds` : `seeds?: Record<string, unknown>`;
         output += `    ${pdaName}: (${seedsParam}) => Promise<ProgramDerivedAddress>;\n`;
     }
     output += '};\n\n';
