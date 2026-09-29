@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, CodamaError } from '@codama/errors';
 import {
     enumTypeNode,
     enumVariantTypeNode,
@@ -130,4 +131,41 @@ test('it infers omitted discriminators from the variant position', () => {
     expect(codec.encode({ __kind: 'third' })).toStrictEqual(hex('09'));
     expect(codec.decode(hex('01'))).toStrictEqual({ __discriminator: 1, __kind: 'second' });
     expect(codec.decode(hex('09'))).toStrictEqual({ __discriminator: 9, __kind: 'third' });
+});
+
+test('it encodes variants without data from their identifier', () => {
+    const codec = getNodeValueCodec([
+        enumTypeNode([enumVariantTypeNode('frozen'), enumVariantTypeNode('initialized')]),
+    ]);
+    expect(codec.encode('initialized')).toStrictEqual(hex('01'));
+    expect(codec.encode({ __kind: 'initialized' })).toStrictEqual(hex('01'));
+});
+
+test('it throws when encoding an unknown variant', () => {
+    const codec = getNodeValueCodec([
+        enumTypeNode([enumVariantTypeNode('frozen'), enumVariantTypeNode('initialized')]),
+    ]);
+    expect(() => codec.encode('Frozen')).toThrow(
+        new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+            actualType: "variant 'Frozen'",
+            expectedType: 'one of [frozen, initialized]',
+            nodeKind: 'enumTypeNode',
+        }),
+    );
+    expect(() => codec.encode({ __kind: 'thawed' })).toThrow(/variant 'thawed'/);
+});
+
+test('it throws when encoding a variant with data without its data', () => {
+    const codec = getNodeValueCodec([
+        enumTypeNode([enumVariantTypeNode('quit'), enumVariantTypeNode('move', { data: integerTypeNode('u8') })]),
+    ]);
+    const error = new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+        actualType: "variant 'move' without data",
+        expectedType: "{ __kind: 'move', data }",
+        nodeKind: 'enumVariantTypeNode',
+    });
+    expect(() => codec.encode('move')).toThrow(error);
+    expect(() => codec.encode({ __kind: 'move' })).toThrow(error);
+    expect(() => codec.encode({ __kind: 'move', data: undefined })).toThrow(error);
+    expect(codec.encode({ __kind: 'move', data: 7 })).toStrictEqual(hex('0107'));
 });

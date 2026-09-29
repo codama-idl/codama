@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, CodamaError, isCodamaError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, CodamaError } from '@codama/errors';
 import {
     amountNumberDisplayNode,
     assertIsNode,
@@ -115,15 +115,12 @@ test('it does not wrap numbers that are already wrapped', () => {
 });
 
 test('it throws on invalid wrappers', () => {
-    const expectInvalid = (fn: () => unknown) => {
-        let error: unknown;
-        try {
-            fn();
-        } catch (e) {
-            error = e;
-        }
-        expect(isCodamaError(error, CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER)).toBe(true);
-    };
+    const expectInvalid = (fn: () => unknown) =>
+        expect(fn).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER }),
+            }),
+        );
 
     // An unknown kind or a zero scale throws when creating the visitor.
     expectInvalid(() => setNumberWrappersVisitor({ value: { kind: 'Amount' } as never }));

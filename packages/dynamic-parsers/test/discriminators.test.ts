@@ -5,7 +5,6 @@ import {
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CodamaError,
-    isCodamaError,
 } from '@codama/errors';
 import {
     accountNode,
@@ -377,16 +376,21 @@ describe('matchDiscriminators', () => {
         test('it reports the unresolvable segment as the cause of a missing field', () => {
             const discriminator = fieldDiscriminatorNode('header.kind');
             const data = structTypeNode([structFieldTypeNode({ identifier: 'header', type: integerTypeNode('u8') })]);
-            let error: unknown;
-            try {
-                matchDiscriminators(hex('00'), [discriminator], data, context);
-            } catch (caught) {
-                error = caught;
-            }
-            expect(isCodamaError(error, CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND)).toBe(true);
-            const cause = (error as Error).cause;
-            expect(isCodamaError(cause, CODAMA_ERROR__CANNOT_RESOLVE_PATH)).toBe(true);
-            expect((cause as CodamaError<typeof CODAMA_ERROR__CANNOT_RESOLVE_PATH>).context.segment).toBe('kind');
+            expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
+                expect.objectContaining({
+                    cause: expect.objectContaining({
+                        context: expect.objectContaining({
+                            __code: CODAMA_ERROR__CANNOT_RESOLVE_PATH,
+                            path: pathString('header.kind'),
+                            segment: 'kind',
+                        }),
+                    }),
+                    context: expect.objectContaining({
+                        __code: CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
+                        field: pathString('header.kind'),
+                    }),
+                }),
+            );
         });
 
         test('it throws when the path points to a tuple item rather than a struct field', () => {

@@ -1,4 +1,6 @@
 import {
+    CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE,
     CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
     CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
     CodamaError,
@@ -102,6 +104,13 @@ export type CodecVisitorOptions = {
 /** The decoded value of an enum variant, e.g. `{ __kind: 'move', __discriminator: 2, data: { x: 1n } }`. */
 type EnumVariantValue = { __discriminator?: number; __kind: string; data?: unknown };
 
+/** Bytes as `[encoding, data]` tuples, e.g. `["base16", "0102"]`, or as raw bytes when encoding. */
+type BytesValue = ReadonlyUint8Array | Uint8Array | [BytesEncoding, string];
+
+function isUint8Array(value: unknown): value is ReadonlyUint8Array | Uint8Array {
+    return value instanceof Uint8Array;
+}
+
 /**
  * Get a codec for the node at the end of the given path. Values are raw JavaScript
  * values, e.g. integers are `bigint`s and enums are `{ __kind, __discriminator, data }`.
@@ -149,6 +158,22 @@ export function getNodeValueCodecVisitor(
     const bytesEncoding = options.bytesEncoding ?? 'base64';
     const valueVisitor = getValueNodeVisitor(linkables, { codecVisitorFactory: () => visitor, scope, stack });
     const getConstantBytes = (node: ConstantValueNode) => getConstantValueBytes(node, visitor, valueVisitor);
+
+    // Default values are only evaluated when needed, e.g. an injected default only throws if
+    // the input does not provide the field. Since they are evaluated when encoding, by which
+    // point the live `stack` and `scope` have unwound, they cannot reuse `valueVisitor`: they
+    // get their own value visitor, and thus codec visitor for constants, bound to clones of
+    // the `stack` and `scope` taken when the codec is created, so links and injections resolve
+    // from where the default value is defined.
+    const getDefaultValueGetter = (defaultValue: ValueNode): (() => unknown) => {
+        const defaultValueVisitor = getValueNodeVisitor(linkables, {
+            codecVisitorOptions: { bytesEncoding },
+            scope: scope.clone(),
+            stack: stack.clone(),
+        });
+        let resolved: { value: unknown } | undefined;
+        return () => (resolved ??= { value: visit(defaultValue, defaultValueVisitor) }).value;
+    };
 
     const visitLinkedNode = <TLinkNode extends AccountLinkNode | DefinedTypeLinkNode | InstructionLinkNode>(
         node: TLinkNode,
@@ -239,18 +264,25 @@ export function getNodeValueCodecVisitor(
             return getBooleanCodec({ size }) as Codec<unknown>;
         },
         visitBytesType() {
-            // Bytes are represented as `[encoding, data]` tuples, e.g. `["base64", "SGVsbG8="]`,
-            // rather than `Uint8Arrays` in order to be compatible with JSON.
-            return createCodec<[BytesEncoding, string]>({
-                getSizeFromValue: ([encoding, value]) => {
-                    return getCodecFromBytesEncoding(encoding).getSizeFromValue(value);
+            // Bytes decode as `[encoding, data]` tuples, e.g. `["base64", "SGVsbG8="]`, rather
+            // than `Uint8Arrays` in order to be compatible with JSON. Both encode.
+            return createCodec<BytesValue, [BytesEncoding, string]>({
+                getSizeFromValue: value => {
+                    if (isUint8Array(value)) return value.length;
+                    const [encoding, data] = value;
+                    return getCodecFromBytesEncoding(encoding).getSizeFromValue(data);
                 },
                 read: (bytes, offset) => {
                     const [value, newOffset] = getCodecFromBytesEncoding(bytesEncoding).read(bytes, offset);
                     return [[bytesEncoding, value], newOffset];
                 },
-                write: ([encoding, value], bytes, offset) => {
-                    return getCodecFromBytesEncoding(encoding).write(value, bytes, offset);
+                write: (value, bytes, offset) => {
+                    if (isUint8Array(value)) {
+                        bytes.set(value, offset);
+                        return offset + value.length;
+                    }
+                    const [encoding, data] = value;
+                    return getCodecFromBytesEncoding(encoding).write(data, bytes, offset);
                 },
             }) as Codec<unknown>;
         },
@@ -269,34 +301,66 @@ export function getNodeValueCodecVisitor(
         visitEnumType(node) {
             const size = visit(node.size, this) as NumberCodec;
             const variants = node.variants ?? [];
-            // An omitted discriminator is the variant's position, not the previous discriminator plus one.
+            // Each variant codec encodes its own discriminator prefix, see `visitEnumVariantType`.
             const discriminators = variants.map((variant, index) => variant.discriminator ?? index);
-            const variantCodecs = variants.map((variant, index) => {
-                const __kind = variant.identifier;
-                const __discriminator = discriminators[index];
-                const prefix = getConstantCodec(size.encode(__discriminator));
-                const codec = getHiddenPrefixCodec(visit(variant, this), [prefix]);
-                if (variant.data === undefined) {
-                    return transformCodec(
-                        codec,
-                        (_: EnumVariantValue) => undefined,
-                        (): EnumVariantValue => ({ __discriminator, __kind }),
-                    );
-                }
-                return transformCodec(
-                    codec,
-                    (value: EnumVariantValue) => value.data,
-                    (data): EnumVariantValue => ({ __discriminator, __kind, data }),
-                );
-            });
-            return getUnionCodec(
-                variantCodecs,
-                value => variants.findIndex(variant => variant.identifier === value.__kind),
+            const union = getUnionCodec(
+                variants.map(variant => visit(variant, this) as Codec<EnumVariantValue>),
+                (value: EnumVariantValue) => {
+                    const index = variants.findIndex(variant => variant.identifier === value.__kind);
+                    if (index < 0) {
+                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+                            actualType: `variant '${String(value.__kind)}'`,
+                            expectedType: `one of [${variants.map(variant => variant.identifier).join(', ')}]`,
+                            nodeKind: 'enumTypeNode',
+                        });
+                    }
+                    return index;
+                },
                 (bytes, offset) => discriminators.indexOf(Number(size.read(bytes, offset)[0])),
+            );
+            // Variants without data may also be encoded from their identifier, e.g. `'frozen'`.
+            return transformCodec(union, (value: EnumVariantValue | string) =>
+                typeof value === 'string' ? { __kind: value } : value,
             ) as Codec<unknown>;
         },
         visitEnumVariantType(node) {
-            return node.data ? visit(node.data, this) : (getUnitCodec() as Codec<unknown>);
+            const __kind = node.identifier;
+            const payload = node.data ? visit(node.data, this) : (getUnitCodec() as Codec<unknown>);
+            const codec = transformCodec(
+                payload,
+                (value: EnumVariantValue) => {
+                    if (node.data === undefined) return undefined;
+                    if (value.data === undefined) {
+                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+                            actualType: `variant '${__kind}' without data`,
+                            expectedType: `{ __kind: '${__kind}', data }`,
+                            nodeKind: 'enumVariantTypeNode',
+                        });
+                    }
+                    return value.data;
+                },
+                (data): EnumVariantValue => (node.data === undefined ? { __kind } : { __kind, data }),
+            );
+
+            // Within an enum, i.e. when the parent enum is on the stack, the variant also
+            // encodes its discriminator as a prefix and decodes it as `__discriminator`.
+            const path = stack.getPath();
+            const parent = path[path.length - 2];
+            if (!isNode(parent, 'enumTypeNode')) return codec as Codec<unknown>;
+            const index = (parent.variants ?? []).findIndex(variant => variant.identifier === node.identifier);
+            if (index < 0 && node.discriminator === undefined) {
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION, {
+                    message: `Enum variant [${__kind}] is not a variant of its parent enum.`,
+                });
+            }
+            // An omitted discriminator is the variant's position, not the previous discriminator plus one.
+            const __discriminator = node.discriminator ?? index;
+            const prefix = getConstantCodec((visit(parent.size, this) as NumberCodec).encode(__discriminator));
+            return transformCodec(
+                getHiddenPrefixCodec(codec, [prefix]),
+                (value: EnumVariantValue) => value,
+                (value: EnumVariantValue): EnumVariantValue => ({ __discriminator, ...value }),
+            ) as Codec<unknown>;
         },
         visitEvent(node) {
             return visit(node.data, this);
@@ -348,7 +412,15 @@ export function getNodeValueCodecVisitor(
             return getCodecFromBytesEncoding(node.encoding) as Codec<unknown>;
         },
         visitStructFieldType(node) {
-            return visit(node.type, this);
+            const codec = visit(node.type, this);
+            if (node.defaultValue === undefined) return codec;
+            const getDefaultValue = getDefaultValueGetter(node.defaultValue);
+            const omitted = node.defaultValueStrategy === 'omitted';
+            // Omitted fields always encode their default value, and other fields encode it
+            // when missing, i.e. when their value is `undefined`.
+            return transformCodec(codec, (value: unknown) =>
+                omitted || value === undefined ? getDefaultValue() : value,
+            );
         },
         visitStructType(node) {
             const fields = (node.fields ?? []).map(field => [field.identifier, visit(field, this)] as const);

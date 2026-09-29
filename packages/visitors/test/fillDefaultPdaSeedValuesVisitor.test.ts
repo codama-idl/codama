@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, isCodamaError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES } from '@codama/errors';
 import {
     accountValueNode,
     conditionalValueNode,
@@ -162,11 +162,9 @@ test('it throws in strict mode when a seed references a missing data field', () 
     });
 
     // When we fill the PDA seeds in strict mode, then we expect an error.
-    let error: unknown;
-    try {
-        visit(node, fillDefaultPdaSeedValuesVisitor(path, linkables, true));
-    } catch (e) {
-        error = e;
-    }
-    expect(isCodamaError(error, CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES)).toBe(true);
+    expect(() => visit(node, fillDefaultPdaSeedValuesVisitor(path, linkables, true))).toThrow(
+        expect.objectContaining({
+            context: expect.objectContaining({ __code: CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES }),
+        }),
+    );
 });

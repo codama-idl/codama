@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS, isCodamaError } from '@codama/errors';
+import { CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS } from '@codama/errors';
 import { assertIsNode, errorNode, programNode, rootNode } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
@@ -49,11 +49,9 @@ test('it updates errors within a specific program', () => {
 
 test('it throws on unrecognized update keys', () => {
     // When we use the v1 `name` key, then we expect an error when creating the visitor.
-    let error: unknown;
-    try {
-        updateErrorsVisitor({ invalidMint: { name: 'badMint' } as never });
-    } catch (e) {
-        error = e;
-    }
-    expect(isCodamaError(error, CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS)).toBe(true);
+    expect(() => updateErrorsVisitor({ invalidMint: { name: 'badMint' } as never })).toThrow(
+        expect.objectContaining({
+            context: expect.objectContaining({ __code: CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS }),
+        }),
+    );
 });

@@ -67,7 +67,7 @@ const codec = getNodeValueCodec([root, program, definedType], { bytesEncoding: '
 
 ## Value format
 
-Values are raw JavaScript values that stay close to the bytes. For instance, a fixed point decodes to its raw integer, not to a decimal number. Types such as `Uint8Array`, `Set` or `Map` are avoided to keep values JSON compatible, with the exception of `bigint`.
+Values are raw JavaScript values that stay close to the bytes. For instance, a fixed point decodes to its raw integer, not to a decimal number. Types such as `Uint8Array`, `Set` or `Map` are avoided in decoded values to keep them JSON compatible, with the exception of `bigint`. When encoding, a few more inputs are accepted for convenience, as described in the notes below.
 
 | Node                                                                                                                | Example                                                      | Notes                                                                                   |
 | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
@@ -78,11 +78,11 @@ Values are raw JavaScript values that stay close to the bytes. For instance, a f
 | [`DurationTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/DurationTypeNode.md)               | `1500n`                                                      | The raw integer, in ticks.                                                              |
 | [`BooleanTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/BooleanTypeNode.md)                 | `true`                                                       |                                                                                         |
 | [`StringTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/StringTypeNode.md)                   | `"Hello World"`                                              | Uses the encoding of the node.                                                          |
-| [`BytesTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/BytesTypeNode.md)                     | `["base64", "SGVsbG8="]`                                     | Encodes using the given encoding and decodes using the `bytesEncoding` option.          |
+| [`BytesTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/BytesTypeNode.md)                     | `["base64", "SGVsbG8="]`                                     | Also encodes from a `Uint8Array`. Decodes using the `bytesEncoding` option.             |
 | [`PublicKeyTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/PublicKeyTypeNode.md)             | `"9BbWp6tcX9MEGSUEpNXfspYxYsWCxE9FgRkAc3RpftkT"`             | A base58 string.                                                                        |
-| [`StructTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/StructTypeNode.md)                   | `{ first_name: "John", age: 42n }`                           | Keys are the raw field identifiers.                                                     |
+| [`StructTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/StructTypeNode.md)                   | `{ first_name: "John", age: 42n }`                           | Keys are the raw field identifiers. See [Default values](#default-values).              |
 | [`TupleTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/TupleTypeNode.md)                     | `["John", 42n]`                                              |                                                                                         |
-| [`EnumTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/EnumTypeNode.md)                       | `{ __kind: "move", __discriminator: 2, data: { x: 1n } }`    | See [Enums](#enums).                                                                    |
+| [`EnumTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/EnumTypeNode.md)                       | `{ __kind: "move", __discriminator: 2, data: { x: 1n } }`    | See [Enums](#enums). Variants without data also encode from their identifier.           |
 | [`ArrayTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/ArrayTypeNode.md)                     | `[1n, 2n, 3n]`                                               |                                                                                         |
 | [`SetTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/SetTypeNode.md)                         | `[1n, 2n, 3n]`                                               | Same as arrays.                                                                         |
 | [`MapTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/MapTypeNode.md)                         | `{ key1: "value1", key2: "value2" }`                         | An object.                                                                              |
@@ -90,7 +90,7 @@ Values are raw JavaScript values that stay close to the bytes. For instance, a f
 | [`RemainderOptionTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/RemainderOptionTypeNode.md) | `{ __option: "Some", value: 42n }` or `{ __option: "None" }` | Same as options.                                                                        |
 | [`ZeroableOptionTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/ZeroableOptionTypeNode.md)   | `{ __option: "Some", value: 42n }` or `{ __option: "None" }` | Same as options.                                                                        |
 | [`StructFieldTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/StructFieldTypeNode.md)         | -                                                            | Same as `node.type`.                                                                    |
-| [`EnumVariantTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/EnumVariantTypeNode.md)         | -                                                            | Same as `node.data`, without the enum discriminator.                                    |
+| [`EnumVariantTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/EnumVariantTypeNode.md)         | -                                                            | `{ __kind, data }`, prefixed by the enum discriminator when the path includes the enum. |
 | [`DefinedTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/DefinedTypeNode.md)                           | -                                                            | Same as `node.type`.                                                                    |
 | [`AccountNode`](https://github.com/codama-idl/spec/blob/main/docs/AccountNode.md)                                   | -                                                            | Same as `node.data`.                                                                    |
 | [`EventNode`](https://github.com/codama-idl/spec/blob/main/docs/EventNode.md)                                       | -                                                            | Same as `node.data`.                                                                    |
@@ -101,7 +101,7 @@ Values are raw JavaScript values that stay close to the bytes. For instance, a f
 
 ### Enums
 
-Every enum decodes to an object with the raw variant identifier as `__kind` and the variant discriminator as `__discriminator`. Variants with data carry it under `data`, whatever its type. When encoding, only `__kind` and `data` are read.
+Every enum decodes to an object with the raw variant identifier as `__kind` and the variant discriminator as `__discriminator`. Variants with data carry it under `data`, whatever its type. When encoding, only `__kind` and `data` are read, and variants without data may also be encoded from their identifier alone. Identifiers must match exactly, and variants with data must provide it.
 
 ```ts
 const codec = getNodeValueCodec([
@@ -117,7 +117,33 @@ const codec = getNodeValueCodec([
 codec.decode(hex('00')); // { __kind: 'quit', __discriminator: 0 }
 codec.decode(hex('012a000000')); // { __kind: 'amount', __discriminator: 1, data: 42n }
 codec.decode(hex('020a')); // { __kind: 'move', __discriminator: 2, data: { x: 10n } }
+
+codec.encode('quit'); // 0x00, same as { __kind: 'quit' }
 ```
+
+### Default values
+
+Struct fields with a `defaultValue` do not need to be provided when encoding. Fields whose `defaultValueStrategy` is `omitted`, such as discriminators, always encode their default value, even if a value is provided. Other fields encode their default value when missing from the input.
+
+```ts
+const codec = getNodeValueCodec([
+    structTypeNode([
+        structFieldTypeNode({
+            defaultValue: integerValueNode('3'),
+            defaultValueStrategy: 'omitted',
+            identifier: 'discriminator',
+            type: integerTypeNode('u8'),
+        }),
+        structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u16') }),
+        structFieldTypeNode({ defaultValue: integerValueNode('5'), identifier: 'fee', type: integerTypeNode('u8') }),
+    ]),
+]);
+
+codec.encode({ amount: 42 }); // 0x032a0005
+codec.encode({ amount: 42, fee: 9 }); // 0x032a0009
+```
+
+Default values are only evaluated when needed. For instance, an `injectedValueNode` default only throws when it is not provided and the field is missing from the input.
 
 ### Transforms
 

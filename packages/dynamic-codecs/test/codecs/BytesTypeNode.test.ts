@@ -1,4 +1,4 @@
-import { bytesTypeNode } from '@codama/nodes';
+import { bytesTypeNode, integerTypeNode, sizePrefixTransformNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { getNodeValueCodec } from '../../src';
@@ -20,4 +20,15 @@ test('the first tuple item is always used when encoding the data', () => {
     const codec = getNodeValueCodec([bytesTypeNode()], { bytesEncoding: 'base64' });
     expect(codec.encode(['base16', 'deadb0d1e5'])).toStrictEqual(hex('deadb0d1e5'));
     expect(codec.decode(hex('deadb0d1e5'))).toStrictEqual(['base64', '3q2w0eU=']);
+});
+
+test('it encodes raw bytes', () => {
+    const codec = getNodeValueCodec([bytesTypeNode()]);
+    expect(codec.encode(new Uint8Array([1, 2, 255]))).toStrictEqual(hex('0102ff'));
+    expect(codec.decode(hex('0102ff'))).toStrictEqual(['base64', 'AQL/']);
+});
+
+test('it encodes raw bytes within size-prefixed types', () => {
+    const codec = getNodeValueCodec([bytesTypeNode({ transforms: [sizePrefixTransformNode(integerTypeNode('u8'))] })]);
+    expect(codec.encode(new Uint8Array([1, 2]))).toStrictEqual(hex('020102'));
 });
