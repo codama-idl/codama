@@ -28,6 +28,7 @@ export * from './recordLinkablesVisitor';
 export * from './recordNodeStackVisitor';
 export * from './recordProvidedScopeVisitor';
 export * from './removeDocsVisitor';
+export * from './resolveTypePath';
 export * from './singleNodeVisitor';
 export * from './staticVisitor';
 export * from './tapVisitor';

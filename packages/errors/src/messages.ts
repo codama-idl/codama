@@ -12,6 +12,7 @@ import {
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING,
     CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
@@ -88,6 +89,7 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]: 'Seed kind [$kind] is not implemented.',
     [CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING]: 'Field type is missing for path [$path] in [$idlType].',
     [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
+    [CODAMA_ERROR__CANNOT_RESOLVE_PATH]: 'Cannot resolve segment [$segment] of path [$path].',
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: 'Discriminator field [$field] has no default value.',
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND]: 'Could not find discriminator field [$field]',
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]:

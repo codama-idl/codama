@@ -1,9 +1,11 @@
 import { getCodecAndValueVisitors } from '@codama/dynamic-codecs';
 import {
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CodamaError,
+    isCodamaError,
 } from '@codama/errors';
 import {
     accountNode,
@@ -24,6 +26,7 @@ import {
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
+    tupleTypeNode,
 } from '@codama/nodes';
 import { getRecordLinkablesVisitor, LinkableDictionary, NodeStack, ProvidedScope, visit } from '@codama/visitors-core';
 import { beforeEach, describe, expect, test } from 'vitest';
@@ -366,6 +369,33 @@ describe('matchDiscriminators', () => {
             const data = structTypeNode([structFieldTypeNode({ identifier: 'header', type: integerTypeNode('u8') })]);
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
                 new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('header.kind') }),
+            );
+        });
+    });
+
+    describe('field discriminator errors', () => {
+        test('it reports the unresolvable segment as the cause of a missing field', () => {
+            const discriminator = fieldDiscriminatorNode('header.kind');
+            const data = structTypeNode([structFieldTypeNode({ identifier: 'header', type: integerTypeNode('u8') })]);
+            let error: unknown;
+            try {
+                matchDiscriminators(hex('00'), [discriminator], data, context);
+            } catch (caught) {
+                error = caught;
+            }
+            expect(isCodamaError(error, CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND)).toBe(true);
+            const cause = (error as Error).cause;
+            expect(isCodamaError(cause, CODAMA_ERROR__CANNOT_RESOLVE_PATH)).toBe(true);
+            expect((cause as CodamaError<typeof CODAMA_ERROR__CANNOT_RESOLVE_PATH>).context.segment).toBe('kind');
+        });
+
+        test('it throws when the path points to a tuple item rather than a struct field', () => {
+            const discriminator = fieldDiscriminatorNode('pair[0]');
+            const data = structTypeNode([
+                structFieldTypeNode({ identifier: 'pair', type: tupleTypeNode([integerTypeNode('u8')]) }),
+            ]);
+            expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('pair[0]') }),
             );
         });
     });

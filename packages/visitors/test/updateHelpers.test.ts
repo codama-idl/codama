@@ -36,7 +36,6 @@ import {
     getRenames,
     getUpdateVisitor,
     mergeUpdateRecords,
-    parsePath,
     RenamePlan,
     toRenameMap,
 } from '../src/updateHelpers';
@@ -237,18 +236,6 @@ describe('applyDataUpdates', () => {
         expect(applyDataUpdates(withDefault, { a: { defaultValue: null } }).type).toStrictEqual(
             structTypeNode([u8Field('a')]),
         );
-    });
-});
-
-describe('parsePath', () => {
-    test('it parses field and index segments', () => {
-        expect(parsePath('config.fees[0].amount')).toStrictEqual([
-            { identifier: 'config', kind: 'field' },
-            { identifier: 'fees', kind: 'field' },
-            { index: 0, kind: 'index' },
-            { identifier: 'amount', kind: 'field' },
-        ]);
-        expect(parsePath('[12]')).toStrictEqual([{ index: 12, kind: 'index' }]);
     });
 });
 
