@@ -54,7 +54,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
-    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY,
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
@@ -213,10 +213,13 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         actualType: string;
         expectedType: string;
     };
-    [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE]: {
+    [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]: {
         actualType: string;
         expectedType: string;
+        /** The kind of the node that rejected the value. */
         nodeKind: NodeKind;
+        /** The path of the node that rejected the value, from the root. */
+        nodePath: readonly Node[];
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: {
         nodeKind: NodeKind;

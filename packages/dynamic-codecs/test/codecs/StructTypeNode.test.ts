@@ -9,7 +9,9 @@ import {
     stringTypeNode,
     stringValueNode,
     structFieldTypeNode,
+    structFieldValueNode,
     structTypeNode,
+    structValueNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
@@ -67,6 +69,27 @@ test('it encodes the default value of optional fields when missing', () => {
         expect(codec.encode({})).toStrictEqual(hex('0500'));
         expect(codec.encode({ fee: 9 })).toStrictEqual(hex('0900'));
     }
+});
+
+test('it encodes missing structs as structs with missing fields', () => {
+    const codec = getNodeValueCodec([
+        structTypeNode([
+            structFieldTypeNode({
+                defaultValue: integerValueNode('3'),
+                defaultValueStrategy: 'omitted',
+                identifier: 'discriminator',
+                type: integerTypeNode('u8'),
+            }),
+            structFieldTypeNode({
+                defaultValue: structValueNode([structFieldValueNode('fee', integerValueNode('5'))]),
+                identifier: 'config',
+                type: structTypeNode([structFieldTypeNode({ identifier: 'fee', type: integerTypeNode('u16') })]),
+            }),
+        ]),
+    ]);
+    expect(codec.encode(undefined)).toStrictEqual(hex('030500'));
+    expect(codec.encode({ config: undefined })).toStrictEqual(hex('030500'));
+    expect(() => codec.encode({ config: {} })).toThrow();
 });
 
 test('it encodes default values of any kind', () => {

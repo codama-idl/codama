@@ -1,6 +1,6 @@
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
-    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
     CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
     CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
     CodamaError,
@@ -38,6 +38,7 @@ import {
     visit,
     Visitor,
 } from '@codama/visitors-core';
+import { isAddress } from '@solana/addresses';
 import {
     addCodecSentinel,
     addCodecSizePrefix,
@@ -82,6 +83,7 @@ import {
     transformCodec,
 } from '@solana/codecs';
 
+import { assertValueType, formatValueType, getUnexpectedValueTypeError, isObjectRecord } from './validation';
 import { getValueNodeVisitor } from './values';
 
 /** The node kinds a codec can be created for. */
@@ -107,8 +109,27 @@ type EnumVariantValue = { __discriminator?: number; __kind: string; data?: unkno
 /** Bytes as `[encoding, data]` tuples, e.g. `["base16", "0102"]`, or as raw bytes when encoding. */
 type BytesValue = ReadonlyUint8Array | Uint8Array | [BytesEncoding, string];
 
+// Derived from a record so that adding a bytes encoding without listing it here is a type error.
+const BYTES_ENCODINGS: readonly unknown[] = Object.keys({
+    base16: true,
+    base58: true,
+    base64: true,
+    utf8: true,
+} satisfies Record<BytesEncoding, true>);
+
 function isUint8Array(value: unknown): value is ReadonlyUint8Array | Uint8Array {
     return value instanceof Uint8Array;
+}
+
+function isBytesValue(value: unknown): value is BytesValue {
+    if (isUint8Array(value)) return true;
+    return (
+        Array.isArray(value) && value.length === 2 && BYTES_ENCODINGS.includes(value[0]) && typeof value[1] === 'string'
+    );
+}
+
+function isInteger(value: unknown): value is bigint | number {
+    return typeof value === 'bigint' || (typeof value === 'number' && Number.isInteger(value));
 }
 
 /**
@@ -117,6 +138,12 @@ function isUint8Array(value: unknown): value is ReadonlyUint8Array | Uint8Array 
  *
  * The full path, from the root node, is needed to resolve link nodes and injected
  * values, e.g. `[root, program, definedType]`.
+ *
+ * Encoding rejects values of the wrong type, e.g. a string for an integer, with a
+ * `DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error whose `nodePath` is the path of the
+ * node that rejected the value. Missing values are only accepted by options, which
+ * encode them as `None`, structs, whose fields then use their default values, and
+ * struct fields with default values.
  *
  * @example
  * ```ts
@@ -181,6 +208,16 @@ export function getNodeValueCodecVisitor(
         const path = linkables.getPathOrThrow(stack.getPath(node.kind) as NodePath<TLinkNode>);
         return stack.visitPath(path, visitor);
     };
+
+    // Arrays and sets are encoded from arrays.
+    const getArrayLikeCodec = (item: Codec<unknown>, count: CountNode): Codec<unknown> =>
+        assertValueType(getCollectionCodec(item, count) as Codec<unknown>, stack.getPath(), 'array', value =>
+            Array.isArray(value),
+        );
+
+    // Options encode missing values as `None`, like `null`.
+    const encodeMissingAsNone = (codec: Codec<unknown>): Codec<unknown> =>
+        transformCodec<unknown, unknown, unknown>(codec, value => (value === undefined ? null : value));
 
     const getCollectionCodec = (item: Codec<unknown>, count: CountNode): Codec<unknown[]> => {
         switch (count.kind) {
@@ -257,16 +294,17 @@ export function getNodeValueCodecVisitor(
             return visitLinkedNode(node);
         },
         visitArrayType(node) {
-            return getCollectionCodec(visit(node.item, this), node.count) as Codec<unknown>;
+            return getArrayLikeCodec(visit(node.item, this), node.count);
         },
         visitBooleanType(node) {
             const size = visit(node.size, this) as FixedSizeNumberCodec;
-            return getBooleanCodec({ size }) as Codec<unknown>;
+            const codec = getBooleanCodec({ size }) as Codec<unknown>;
+            return assertValueType(codec, stack.getPath(), 'boolean', value => typeof value === 'boolean');
         },
         visitBytesType() {
             // Bytes decode as `[encoding, data]` tuples, e.g. `["base64", "SGVsbG8="]`, rather
             // than `Uint8Arrays` in order to be compatible with JSON. Both encode.
-            return createCodec<BytesValue, [BytesEncoding, string]>({
+            const codec = createCodec<BytesValue, [BytesEncoding, string]>({
                 getSizeFromValue: value => {
                     if (isUint8Array(value)) return value.length;
                     const [encoding, data] = value;
@@ -285,6 +323,7 @@ export function getNodeValueCodecVisitor(
                     return getCodecFromBytesEncoding(encoding).write(data, bytes, offset);
                 },
             }) as Codec<unknown>;
+            return assertValueType(codec, stack.getPath(), 'Uint8Array | [BytesEncoding, string]', isBytesValue);
         },
         visitDateTimeType(node) {
             return visit(node.number, this);
@@ -303,15 +342,17 @@ export function getNodeValueCodecVisitor(
             const variants = node.variants ?? [];
             // Each variant codec encodes its own discriminator prefix, see `visitEnumVariantType`.
             const discriminators = variants.map((variant, index) => variant.discriminator ?? index);
+            const nodePath = stack.getPath();
             const union = getUnionCodec(
                 variants.map(variant => visit(variant, this) as Codec<EnumVariantValue>),
                 (value: EnumVariantValue) => {
                     const index = variants.findIndex(variant => variant.identifier === value.__kind);
                     if (index < 0) {
-                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
                             actualType: `variant '${String(value.__kind)}'`,
                             expectedType: `one of [${variants.map(variant => variant.identifier).join(', ')}]`,
                             nodeKind: 'enumTypeNode',
+                            nodePath,
                         });
                     }
                     return index;
@@ -319,22 +360,40 @@ export function getNodeValueCodecVisitor(
                 (bytes, offset) => discriminators.indexOf(Number(size.read(bytes, offset)[0])),
             );
             // Variants without data may also be encoded from their identifier, e.g. `'frozen'`.
-            return transformCodec(union, (value: EnumVariantValue | string) =>
-                typeof value === 'string' ? { __kind: value } : value,
-            ) as Codec<unknown>;
+            return transformCodec(union, (value: unknown): EnumVariantValue => {
+                if (typeof value === 'string') return { __kind: value };
+                if (isObjectRecord(value) && typeof value.__kind === 'string') return value as EnumVariantValue;
+                throw getUnexpectedValueTypeError(nodePath, 'string | { __kind: string }', value);
+            }) as Codec<unknown>;
         },
         visitEnumVariantType(node) {
             const __kind = node.identifier;
+            const nodePath = stack.getPath();
             const payload = node.data ? visit(node.data, this) : (getUnitCodec() as Codec<unknown>);
             const codec = transformCodec(
                 payload,
                 (value: EnumVariantValue) => {
+                    // Within an enum, the enum already ensures the value is an object of this variant.
+                    if (!isObjectRecord(value) || value.__kind !== __kind) {
+                        const expectedType =
+                            node.data === undefined ? `{ __kind: '${__kind}' }` : `{ __kind: '${__kind}', data }`;
+                        const actualType = isObjectRecord(value)
+                            ? `variant '${String(value.__kind)}'`
+                            : formatValueType(value);
+                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
+                            actualType,
+                            expectedType,
+                            nodeKind: 'enumVariantTypeNode',
+                            nodePath,
+                        });
+                    }
                     if (node.data === undefined) return undefined;
                     if (value.data === undefined) {
-                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+                        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
                             actualType: `variant '${__kind}' without data`,
                             expectedType: `{ __kind: '${__kind}', data }`,
                             nodeKind: 'enumVariantTypeNode',
+                            nodePath,
                         });
                     }
                     return value.data;
@@ -369,7 +428,10 @@ export function getNodeValueCodecVisitor(
             return visit(node.number, this);
         },
         visitFloatType(node) {
-            return getFloatCodec(node) as Codec<unknown>;
+            const codec = getFloatCodec(node) as Codec<unknown>;
+            return assertValueType(codec, stack.getPath(), 'number | bigint', value =>
+                ['bigint', 'number'].includes(typeof value),
+            );
         },
         visitInstruction(node) {
             return node.data ? visit(node.data, this) : (getUnitCodec() as Codec<unknown>);
@@ -378,38 +440,47 @@ export function getNodeValueCodecVisitor(
             return visitLinkedNode(node);
         },
         visitIntegerType(node) {
-            return getIntegerCodec(node) as Codec<unknown>;
+            const codec = getIntegerCodec(node) as Codec<unknown>;
+            return assertValueType(codec, stack.getPath(), 'integer (number | bigint)', isInteger);
         },
         visitMapType(node) {
             const entry = getTupleCodec([visit(node.key, this), visit(node.value, this)]);
             // Maps are represented as objects in order to be compatible with JSON.
-            return transformCodec(
+            const codec = transformCodec(
                 getCollectionCodec(entry as Codec<unknown>, node.count),
                 (value: object) => Object.entries(value),
                 entries => Object.fromEntries(entries as [PropertyKey, unknown][]),
             ) as Codec<unknown>;
+            return assertValueType(codec, stack.getPath(), 'object', isObjectRecord);
         },
         visitOptionType(node) {
             const item = visit(node.item, this);
             const prefix = visit(node.prefix, this) as NumberCodec;
             if (node.fixed) {
                 assertIsFixedSize(item);
-                return getOptionCodec(item, { noneValue: 'zeroes', prefix }) as Codec<unknown>;
+                return encodeMissingAsNone(getOptionCodec(item, { noneValue: 'zeroes', prefix }) as Codec<unknown>);
             }
-            return getOptionCodec(item, { prefix }) as Codec<unknown>;
+            return encodeMissingAsNone(getOptionCodec(item, { prefix }) as Codec<unknown>);
         },
         visitPublicKeyType() {
-            return fixCodecSize(getBase58Codec(), 32) as Codec<unknown>;
+            const codec = fixCodecSize(getBase58Codec(), 32) as Codec<unknown>;
+            return assertValueType(
+                codec,
+                stack.getPath(),
+                'Address',
+                value => typeof value === 'string' && isAddress(value),
+            );
         },
         visitRemainderOptionType(node) {
-            return getOptionCodec(visit(node.item, this), { prefix: null }) as Codec<unknown>;
+            return encodeMissingAsNone(getOptionCodec(visit(node.item, this), { prefix: null }) as Codec<unknown>);
         },
         visitSetType(node) {
             // Sets are represented as arrays in order to be compatible with JSON.
-            return getCollectionCodec(visit(node.item, this), node.count) as Codec<unknown>;
+            return getArrayLikeCodec(visit(node.item, this), node.count);
         },
         visitStringType(node) {
-            return getCodecFromBytesEncoding(node.encoding) as Codec<unknown>;
+            const codec = getCodecFromBytesEncoding(node.encoding) as Codec<unknown>;
+            return assertValueType(codec, stack.getPath(), 'string', value => typeof value === 'string');
         },
         visitStructFieldType(node) {
             const codec = visit(node.type, this);
@@ -424,19 +495,27 @@ export function getNodeValueCodecVisitor(
         },
         visitStructType(node) {
             const fields = (node.fields ?? []).map(field => [field.identifier, visit(field, this)] as const);
-            return getStructCodec(fields) as Codec<unknown>;
+            const codec = assertValueType(
+                getStructCodec(fields) as Codec<unknown>,
+                stack.getPath(),
+                'object',
+                isObjectRecord,
+            );
+            // A missing struct encodes all its fields as missing, so their default values apply.
+            return transformCodec<unknown, unknown, unknown>(codec, value => (value === undefined ? {} : value));
         },
         visitTupleType(node) {
-            return getTupleCodec((node.items ?? []).map(item => visit(item, this))) as Codec<unknown>;
+            const codec = getTupleCodec((node.items ?? []).map(item => visit(item, this))) as Codec<unknown>;
+            return assertValueType(codec, stack.getPath(), 'array', value => Array.isArray(value));
         },
         visitZeroableOptionType(node) {
             const item = visit(node.item, this);
             assertIsFixedSize(item);
             if (node.zeroValue) {
                 const noneValue = getConstantBytes(node.zeroValue);
-                return getOptionCodec(item, { noneValue, prefix: null }) as Codec<unknown>;
+                return encodeMissingAsNone(getOptionCodec(item, { noneValue, prefix: null }) as Codec<unknown>);
             }
-            return getOptionCodec(item, { noneValue: 'zeroes', prefix: null }) as Codec<unknown>;
+            return encodeMissingAsNone(getOptionCodec(item, { noneValue: 'zeroes', prefix: null }) as Codec<unknown>);
         },
     };
 
