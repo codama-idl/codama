@@ -3,45 +3,50 @@ import type {
     InstructionAccountDisplayNode,
     InstructionAccountNode,
     InstructionInputValueNode,
+    PluginNode,
+    TextNode,
 } from '@codama/node-types';
 
-import { camelCase, DocsInput, parseDocs } from '../shared';
+import { identifierString } from '../shared';
 
 export type InstructionAccountNodeInput<
+    TDocs extends string | TextNode | undefined = string | TextNode | undefined,
     TDefaultValue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
     TAccountLink extends AccountLinkNode | undefined = AccountLinkNode | undefined,
     TDisplay extends InstructionAccountDisplayNode | undefined = InstructionAccountDisplayNode | undefined,
-> = Omit<InstructionAccountNode<TDefaultValue, TAccountLink, TDisplay>, 'docs' | 'kind' | 'name'> & {
-    readonly name: string;
-    readonly docs?: DocsInput;
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
+> = Omit<InstructionAccountNode<TDocs, TDefaultValue, TAccountLink, TDisplay, TPlugins>, 'identifier' | 'kind'> & {
+    readonly identifier: string;
 };
 
 /**
- * An account participating in an instruction, with its name, signing/writability flags, and an optional default value.
+ * An account participating in an instruction, with its identifier, signing/writability flags, and an optional default value.
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/4656a08b-2f89-49c2-b428-5378cb1a0b9e)
  */
 export function instructionAccountNode<
+    const TDocs extends string | TextNode | undefined = undefined,
     const TDefaultValue extends InstructionInputValueNode | undefined = undefined,
     const TAccountLink extends AccountLinkNode | undefined = undefined,
     const TDisplay extends InstructionAccountDisplayNode | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
-    input: InstructionAccountNodeInput<TDefaultValue, TAccountLink, TDisplay>,
-): InstructionAccountNode<TDefaultValue, TAccountLink, TDisplay> {
-    const parsedDocs = parseDocs(input.docs);
+    input: InstructionAccountNodeInput<TDocs, TDefaultValue, TAccountLink, TDisplay, TPlugins>,
+): InstructionAccountNode<TDocs, TDefaultValue, TAccountLink, TDisplay, TPlugins> {
     return Object.freeze({
         kind: 'instructionAccountNode',
 
         // Data.
-        name: camelCase(input.name),
+        identifier: identifierString(input.identifier),
         isWritable: input.isWritable,
         isSigner: input.isSigner,
         isOptional: input.isOptional ?? false,
-        ...(parsedDocs.length > 0 && { docs: parsedDocs }),
 
         // Children.
+        ...(input.docs !== undefined && { docs: input.docs }),
         ...(input.defaultValue !== undefined && { defaultValue: input.defaultValue }),
         ...(input.accountLink !== undefined && { accountLink: input.accountLink }),
         ...(input.display !== undefined && { display: input.display }),
+        ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

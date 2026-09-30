@@ -28,10 +28,12 @@ export const UNION_ALIAS_NAMES: ReadonlyMap<string, string> = new Map([
     ['contextualValueNode', 'CONTEXTUAL_VALUE_NODES'],
     ['countNode', 'COUNT_NODES'],
     ['discriminatorNode', 'DISCRIMINATOR_NODES'],
-    ['enumVariantTypeNode', 'ENUM_VARIANT_TYPE_NODES'],
     ['instructionInputValueNode', 'INSTRUCTION_INPUT_VALUE_NODES'],
     ['linkNode', 'LINK_NODES'],
     ['pdaSeedNode', 'PDA_SEED_NODES'],
+    // `transformNode` is a new v2 union with no v1 legacy plural alias;
+    // reference its canonical generated kinds array directly.
+    ['transformNode', 'TRANSFORM_NODE_KINDS'],
     ['typeNode', 'TYPE_NODES'],
     ['valueNode', 'VALUE_NODES'],
 ]);
@@ -48,31 +50,27 @@ export const UNION_ALIAS_NAMES: ReadonlyMap<string, string> = new Map([
  * missing, no extras — otherwise generation fails.
  */
 export const MERGE_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]> = new Map([
-    ['programNode', ['pdas', 'accounts', 'events', 'instructions', 'definedTypes', 'errors', 'constants']],
+    ['programNode', ['docs', 'pdas', 'accounts', 'events', 'instructions', 'definedTypes', 'errors', 'constants']],
     [
         'instructionNode',
         [
+            'docs',
             'status',
             'accounts',
-            'arguments',
-            'extraArguments',
+            'data',
             'remainingAccounts',
             'byteDeltas',
             'discriminators',
             'subInstructions',
             'provides',
             'display',
-            'plugins',
         ],
     ],
-    ['arrayTypeNode', ['count', 'item']],
-    ['enumTypeNode', ['size', 'variants']],
-    ['mapTypeNode', ['count', 'key', 'value']],
-    ['optionTypeNode', ['prefix', 'item']],
-    ['setTypeNode', ['count', 'item']],
-    ['sizePrefixTypeNode', ['prefix', 'type']],
-    ['sentinelTypeNode', ['sentinel', 'type']],
-    ['hiddenPrefixTypeNode', ['prefix', 'type']],
+    ['arrayTypeNode', ['count', 'item', 'transforms']],
+    ['enumTypeNode', ['size', 'variants', 'transforms']],
+    ['mapTypeNode', ['count', 'key', 'value', 'transforms']],
+    ['optionTypeNode', ['prefix', 'item', 'transforms']],
+    ['setTypeNode', ['count', 'item', 'transforms']],
 ]);
 
 /**
@@ -88,21 +86,20 @@ export const MERGE_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]> = 
  * Each entry must enumerate exactly the node's child attributes.
  */
 export const IDENTITY_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]> = new Map([
-    ['programNode', ['accounts', 'constants', 'definedTypes', 'errors', 'events', 'instructions', 'pdas']],
+    ['programNode', ['accounts', 'constants', 'definedTypes', 'docs', 'errors', 'events', 'instructions', 'pdas']],
     [
         'instructionNode',
         [
             'status',
             'accounts',
-            'arguments',
+            'data',
             'byteDeltas',
             'discriminators',
-            'extraArguments',
+            'docs',
             'remainingAccounts',
             'subInstructions',
             'provides',
             'display',
-            'plugins',
         ],
     ],
 ]);

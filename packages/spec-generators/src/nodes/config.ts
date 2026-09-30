@@ -8,10 +8,9 @@
  * string-coercions, and bespoke body expressions.
  *
  * A node with no entry uses the default rules: a single
- * `input: XxxNodeInput` object param, `camelCase` on the `name`
- * attribute, drop-if-empty for `docs`, conditional spread for every
- * other optional attribute, and pass-through (with shorthand) for
- * required ones.
+ * `input: XxxNodeInput` object param, `identifierString` brand-cast on
+ * the `identifier` attribute, conditional spread for every optional
+ * attribute, and pass-through (with shorthand) for required ones.
  */
 
 import { type Fragment, fragment, use } from '@codama/fragments/javascript';
@@ -77,15 +76,13 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
             },
         },
     ],
-    ['constantNode', { positionalArgs: ['name', 'type', 'value', 'docs'] }],
+    ['constantNode', { positionalArgs: ['identifier', 'type', 'value'] }],
     ['instructionAccountNode', { attributes: { isOptional: { default: fragment`false` } } }],
     [
         'instructionByteDeltaNode',
         {
             attributes: {
-                withHeader: {
-                    value: fragment`options.withHeader ?? !${use('isNode', 'shared:isNode')}(value, 'resolverValueNode')`,
-                },
+                withHeader: { default: fragment`true` },
             },
             positionalArgs: ['value'],
         },
@@ -95,14 +92,13 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
         {
             attributes: {
                 accounts: { default: fragment`[]` },
-                arguments: { default: fragment`[]` },
                 optionalAccountStrategy: { default: fragment`'programId'` },
             },
         },
     ],
-    ['instructionRemainingAccountsNode', { positionalArgs: ['value'] }],
-    ['instructionStatusNode', { positionalArgs: ['lifecycle', 'message'] }],
-    ['pluginNode', { positionalArgs: ['name', 'payload'] }],
+    ['instructionRemainingAccountsNode', { positionalArgs: ['identifier'] }],
+    ['instructionStatusNode', { positionalArgs: ['lifecycle'] }],
+    ['pluginNode', { positionalArgs: ['namespace', 'payload'] }],
     [
         'programNode',
         {
@@ -126,89 +122,95 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                 standard: { default: fragment`'codama'`, hidden: true },
                 version: { default: use('CODAMA_VERSION', 'generated:CodamaVersion'), hidden: true },
             },
-            positionalArgs: ['program', 'additionalPrograms'],
+            positionalArgs: ['program'],
         },
     ],
 
-    ['amountTypeNode', { positionalArgs: ['number', 'decimals', 'unit'] }],
     ['arrayTypeNode', { positionalArgs: ['item', 'count'] }],
     [
         'booleanTypeNode',
         {
             attributes: {
                 size: {
-                    default: fragment`${use('numberTypeNode', 'constructor:numberTypeNode')}('u8')`,
-                    genericDefault: fragment`${use('type NumberTypeNode', '@codama/node-types')}<'u8'>`,
+                    default: fragment`${use('integerTypeNode', 'constructor:integerTypeNode')}('u8')`,
+                    genericDefault: fragment`${use('type IntegerTypeNode', '@codama/node-types')}<'u8'>`,
                 },
             },
-            positionalArgs: ['size'],
+            positionalArgs: [],
         },
     ],
     ['bytesTypeNode', { positionalArgs: [] }],
     ['dateTimeTypeNode', { positionalArgs: ['number'] }],
-    ['enumEmptyVariantTypeNode', { positionalArgs: ['name', 'discriminator'] }],
-    ['enumStructVariantTypeNode', { positionalArgs: ['name', 'struct', 'discriminator'] }],
-    ['enumTupleVariantTypeNode', { positionalArgs: ['name', 'tuple', 'discriminator'] }],
+    ['durationTypeNode', { positionalArgs: ['number'] }],
     [
         'enumTypeNode',
         {
             attributes: {
                 size: {
-                    default: fragment`${use('numberTypeNode', 'constructor:numberTypeNode')}('u8')`,
-                    genericDefault: fragment`${use('type NumberTypeNode', '@codama/node-types')}<'u8'>`,
+                    default: fragment`${use('integerTypeNode', 'constructor:integerTypeNode')}('u8')`,
+                    genericDefault: fragment`${use('type IntegerTypeNode', '@codama/node-types')}<'u8'>`,
                 },
             },
             positionalArgs: ['variants'],
         },
     ],
-    ['fixedSizeTypeNode', { positionalArgs: ['type', 'size'] }],
-    ['hiddenPrefixTypeNode', { positionalArgs: ['type', 'prefix'] }],
-    ['hiddenSuffixTypeNode', { positionalArgs: ['type', 'suffix'] }],
-    ['mapTypeNode', { positionalArgs: ['key', 'value', 'count'] }],
+    ['enumVariantTypeNode', { positionalArgs: ['identifier'] }],
+    ['fixedPointTypeNode', { positionalArgs: ['number', 'scale'] }],
     [
-        'numberTypeNode',
+        'floatTypeNode',
         {
             attributes: { endian: { default: fragment`'le'` } },
-            positionalArgs: ['format', 'endian'],
+            positionalArgs: ['format'],
         },
     ],
+    [
+        'integerTypeNode',
+        {
+            attributes: { endian: { default: fragment`'le'` } },
+            positionalArgs: ['format'],
+        },
+    ],
+    ['mapTypeNode', { positionalArgs: ['key', 'value', 'count'] }],
     [
         'optionTypeNode',
         {
             attributes: {
                 fixed: { default: fragment`false` },
                 prefix: {
-                    default: fragment`${use('numberTypeNode', 'constructor:numberTypeNode')}('u8')`,
-                    genericDefault: fragment`${use('type NumberTypeNode', '@codama/node-types')}<'u8'>`,
+                    default: fragment`${use('integerTypeNode', 'constructor:integerTypeNode')}('u8')`,
+                    genericDefault: fragment`${use('type IntegerTypeNode', '@codama/node-types')}<'u8'>`,
                 },
             },
             positionalArgs: ['item'],
         },
     ],
-    [
-        'postOffsetTypeNode',
-        {
-            attributes: { strategy: { default: fragment`'relative'` } },
-            positionalArgs: ['type', 'offset', 'strategy'],
-        },
-    ],
-    [
-        'preOffsetTypeNode',
-        {
-            attributes: { strategy: { default: fragment`'relative'` } },
-            positionalArgs: ['type', 'offset', 'strategy'],
-        },
-    ],
     ['publicKeyTypeNode', { positionalArgs: [] }],
     ['remainderOptionTypeNode', { positionalArgs: ['item'] }],
-    ['sentinelTypeNode', { positionalArgs: ['type', 'sentinel'] }],
     ['setTypeNode', { positionalArgs: ['item', 'count'] }],
-    ['sizePrefixTypeNode', { positionalArgs: ['type', 'prefix'] }],
-    ['solAmountTypeNode', { positionalArgs: ['number'] }],
     ['stringTypeNode', { positionalArgs: ['encoding'] }],
     ['structTypeNode', { positionalArgs: ['fields'] }],
     ['tupleTypeNode', { positionalArgs: ['items'] }],
-    ['zeroableOptionTypeNode', { positionalArgs: ['item', 'zeroValue'] }],
+    ['zeroableOptionTypeNode', { positionalArgs: ['item'] }],
+
+    ['fixedSizeTransformNode', { positionalArgs: ['size'] }],
+    ['hiddenPrefixTransformNode', { positionalArgs: ['prefix'] }],
+    ['hiddenSuffixTransformNode', { positionalArgs: ['suffix'] }],
+    [
+        'postOffsetTransformNode',
+        {
+            attributes: { strategy: { default: fragment`'relative'` } },
+            positionalArgs: ['offset'],
+        },
+    ],
+    [
+        'preOffsetTransformNode',
+        {
+            attributes: { strategy: { default: fragment`'relative'` } },
+            positionalArgs: ['offset'],
+        },
+    ],
+    ['sentinelTransformNode', { positionalArgs: ['sentinel'] }],
+    ['sizePrefixTransformNode', { positionalArgs: ['prefix'] }],
 
     ['arrayValueNode', { positionalArgs: ['items'] }],
     ['booleanValueNode', { positionalArgs: ['boolean'] }],
@@ -223,30 +225,32 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                     paramName: 'enumLink',
                 },
             },
-            positionalArgs: ['enum', 'variant', 'value'],
+            positionalArgs: ['enum', 'variant'],
         },
     ],
+    ['floatValueNode', { positionalArgs: ['value'] }],
+    ['integerValueNode', { positionalArgs: ['value'] }],
     ['mapEntryValueNode', { positionalArgs: ['key', 'value'] }],
     ['mapValueNode', { positionalArgs: ['entries'] }],
     ['noneValueNode', { positionalArgs: [] }],
-    ['numberValueNode', { positionalArgs: ['number'] }],
-    ['publicKeyValueNode', { positionalArgs: ['publicKey', 'identifier'] }],
+    ['publicKeyValueNode', { positionalArgs: ['publicKey'] }],
     ['setValueNode', { positionalArgs: ['items'] }],
     ['someValueNode', { positionalArgs: ['value'] }],
     ['stringValueNode', { positionalArgs: ['string'] }],
-    ['structFieldValueNode', { positionalArgs: ['name', 'value'] }],
+    ['structFieldValueNode', { positionalArgs: ['identifier', 'value'] }],
     ['structValueNode', { positionalArgs: ['fields'] }],
     ['tupleValueNode', { positionalArgs: ['items'] }],
 
-    ['accountBumpValueNode', { positionalArgs: ['name'] }],
-    ['accountValueNode', { positionalArgs: ['name'] }],
-    ['argumentValueNode', { positionalArgs: ['name'] }],
+    ['accountBumpValueNode', { positionalArgs: ['identifier'] }],
+    ['accountDataValueNode', { positionalArgs: ['account'] }],
+    ['accountValueNode', { positionalArgs: ['identifier'] }],
+    ['dataValueNode', { positionalArgs: ['path'] }],
     // `conditionalValueNode` falls through to the default object-input
     // rendering with no overrides — its shape is `{ condition,
-    // ifTrue?, ifFalse?, value? }` with no `name`/`docs` field.
+    // ifTrue?, ifFalse?, value? }` with no `identifier`/`docs` field.
     ['identityValueNode', { positionalArgs: [] }],
     ['payerValueNode', { positionalArgs: [] }],
-    ['pdaSeedValueNode', { positionalArgs: ['name', 'value'] }],
+    ['pdaSeedValueNode', { positionalArgs: ['identifier', 'value'] }],
     [
         'pdaValueNode',
         {
@@ -256,28 +260,28 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                 },
                 seeds: { default: fragment`[]` },
             },
-            positionalArgs: ['pda', 'seeds', 'programId'],
+            positionalArgs: ['pda'],
         },
     ],
     ['programIdValueNode', { positionalArgs: [] }],
-    ['resolverValueNode', { positionalArgs: ['name'] }],
 
     ['fixedCountNode', { positionalArgs: ['value'] }],
     ['prefixedCountNode', { positionalArgs: ['prefix'] }],
     ['remainderCountNode', { positionalArgs: [] }],
+    ['sentinelCountNode', { positionalArgs: ['sentinel'] }],
 
     [
         'constantDiscriminatorNode',
         {
             attributes: { offset: { default: fragment`0` } },
-            positionalArgs: ['constant', 'offset'],
+            positionalArgs: ['constant'],
         },
     ],
     [
         'fieldDiscriminatorNode',
         {
             attributes: { offset: { default: fragment`0` } },
-            positionalArgs: ['name', 'offset'],
+            positionalArgs: ['path'],
         },
     ],
     ['sizeDiscriminatorNode', { positionalArgs: ['size'] }],
@@ -290,7 +294,7 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                     coerce: fragment`typeof program === 'string' ? ${use('programLinkNode', 'constructor:programLinkNode')}(program) : program`,
                 },
             },
-            positionalArgs: ['name', 'program'],
+            positionalArgs: ['identifier'],
         },
     ],
     [
@@ -301,7 +305,7 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                     coerce: fragment`typeof program === 'string' ? ${use('programLinkNode', 'constructor:programLinkNode')}(program) : program`,
                 },
             },
-            positionalArgs: ['name', 'program'],
+            positionalArgs: ['identifier'],
         },
     ],
     [
@@ -312,18 +316,7 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                     coerce: fragment`typeof instruction === 'string' ? ${use('instructionLinkNode', 'constructor:instructionLinkNode')}(instruction) : instruction`,
                 },
             },
-            positionalArgs: ['name', 'instruction'],
-        },
-    ],
-    [
-        'instructionArgumentLinkNode',
-        {
-            attributes: {
-                instruction: {
-                    coerce: fragment`typeof instruction === 'string' ? ${use('instructionLinkNode', 'constructor:instructionLinkNode')}(instruction) : instruction`,
-                },
-            },
-            positionalArgs: ['name', 'instruction'],
+            positionalArgs: ['identifier'],
         },
     ],
     [
@@ -334,7 +327,7 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                     coerce: fragment`typeof program === 'string' ? ${use('programLinkNode', 'constructor:programLinkNode')}(program) : program`,
                 },
             },
-            positionalArgs: ['name', 'program'],
+            positionalArgs: ['identifier'],
         },
     ],
     [
@@ -345,10 +338,10 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                     coerce: fragment`typeof program === 'string' ? ${use('programLinkNode', 'constructor:programLinkNode')}(program) : program`,
                 },
             },
-            positionalArgs: ['name', 'program'],
+            positionalArgs: ['identifier'],
         },
     ],
-    ['programLinkNode', { positionalArgs: ['name'] }],
+    ['programLinkNode', { positionalArgs: ['identifier'] }],
 
     [
         'providedNode',
@@ -359,12 +352,12 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
                 // parameter that every visitor receives.
                 node: { paramName: 'value' },
             },
-            positionalArgs: ['name', 'node'],
+            positionalArgs: ['identifier', 'node'],
         },
     ],
 
     ['constantPdaSeedNode', { positionalArgs: ['type', 'value'] }],
-    ['variablePdaSeedNode', { positionalArgs: ['name', 'type', 'docs'] }],
+    ['variablePdaSeedNode', { positionalArgs: ['identifier', 'type'] }],
 ]);
 
 /**

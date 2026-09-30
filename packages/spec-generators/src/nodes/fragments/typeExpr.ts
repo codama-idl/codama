@@ -2,13 +2,13 @@
  * Render a spec {@link TypeExpr} as a TypeScript type expression
  * suitable for an `XxxNodeInput` declaration in `@codama/nodes`.
  *
- * Named references (`node`, `union`, `enumeration`, `nestedUnion`) and
- * brand-flavoured strings all resolve to identifiers exported from
- * `@codama/node-types`. Array types render as `Array<T>` rather than
- * `T[]` to keep the renderer free of precedence-aware parenthesisation.
+ * Named references (`node`, `union`, `enumeration`) and brand-flavoured
+ * strings all resolve to identifiers exported from `@codama/node-types`.
+ * Array types render as `Array<T>` rather than `T[]` to keep the
+ * renderer free of precedence-aware parenthesisation.
  */
 
-import { type Fragment, fragment, mergeFragments, pascalCase, use } from '@codama/fragments/javascript';
+import { type Fragment, fragment, pascalCase, use } from '@codama/fragments/javascript';
 import type { TypeExpr } from '@codama/spec';
 
 const NODE_TYPES_PACKAGE = '@codama/node-types';
@@ -22,7 +22,6 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
         case 'string':
             return getStringExprFragment(expr);
         case 'integer':
-        case 'float':
             return fragment`number`;
         case 'boolean':
             return fragment`boolean`;
@@ -35,37 +34,40 @@ export function getTypeExprFragment(expr: TypeExpr): Fragment {
         case 'codamaVersion':
             return use('type CodamaVersion', NODE_TYPES_PACKAGE);
         case 'docs':
-            return use('type Docs', NODE_TYPES_PACKAGE);
+        case 'text': {
+            // `docs` and `text` are the same shape — the union `string |
+            // textNode`. `docs` is a documentation-intent-tagged `text`.
+            const textNode = use('type TextNode', NODE_TYPES_PACKAGE);
+            return fragment`string | ${textNode}`;
+        }
         case 'enumeration':
         case 'node':
         case 'union':
             return use(`type ${pascalCase(expr.name)}`, NODE_TYPES_PACKAGE);
-        case 'nestedUnion': {
-            const wrapper = use(`type ${pascalCase(expr.alias)}`, NODE_TYPES_PACKAGE);
-            const inner = use(`type ${pascalCase(expr.name)}`, NODE_TYPES_PACKAGE);
-            return fragment`${wrapper}<${inner}>`;
-        }
         case 'array': {
             const inner = getTypeExprFragment(expr.of);
             return fragment`Array<${inner}>`;
-        }
-        case 'tuple': {
-            if (expr.items.length === 0) return fragment`[]`;
-            const items = expr.items.map(item => getTypeExprFragment(item));
-            return mergeFragments(items, parts => `[${parts.join(', ')}]`);
         }
     }
 }
 
 function getStringExprFragment(expr: Extract<TypeExpr, { kind: 'string' }>): Fragment {
-    if (!expr.constraint) return fragment`string`;
-    if (expr.constraint === 'identifier') {
-        return use('type CamelCaseString', NODE_TYPES_PACKAGE);
+    switch (expr.constraint) {
+        case 'identifier':
+            return use('type IdentifierString', NODE_TYPES_PACKAGE);
+        case 'namespace':
+            return use('type NamespaceString', NODE_TYPES_PACKAGE);
+        case 'path':
+            return use('type PathString', NODE_TYPES_PACKAGE);
+        case 'integer':
+            return use('type IntegerString', NODE_TYPES_PACKAGE);
+        case 'decimal':
+            return use('type DecimalString', NODE_TYPES_PACKAGE);
+        case 'version':
+            return use('type Version', NODE_TYPES_PACKAGE);
+        case undefined:
+            return fragment`string`;
     }
-    if (expr.constraint === 'version') {
-        return use('type Version', NODE_TYPES_PACKAGE);
-    }
-    return fragment`string`;
 }
 
 function literalToTs(value: boolean | number | string): string {

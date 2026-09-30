@@ -1,7 +1,5 @@
 export * from './AmountNumberDisplayNode';
-export * from './DateTimeNumberDisplayNode';
 export * from './DisplayNode';
-export * from './DurationNumberDisplayNode';
 export * from './EnumVariantDisplayNode';
 export * from './InstructionAccountDisplayNode';
 export * from './InstructionDisplayNode';
@@ -9,3 +7,4 @@ export * from './NumberDisplayNode';
 export * from './RegisteredDisplayNode';
 export * from './StringDisplayNode';
 export * from './StructFieldDisplayNode';
+export * from './UnitNumberDisplayNode';

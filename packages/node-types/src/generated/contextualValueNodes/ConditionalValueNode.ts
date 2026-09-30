@@ -1,3 +1,4 @@
+import type { PluginNode } from '../PluginNode';
 import type { ValueNode } from '../valueNodes/ValueNode';
 import type { ConditionalValueCondition } from './ConditionalValueCondition';
 import type { InstructionInputValueNode } from './InstructionInputValueNode';
@@ -11,6 +12,7 @@ export interface ConditionalValueNode<
     TValue extends ValueNode | undefined = ValueNode | undefined,
     TIfTrue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
     TIfFalse extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'conditionalValueNode';
 
@@ -19,11 +21,16 @@ export interface ConditionalValueNode<
     readonly condition: TCondition;
     /**
      * When present, the condition result is compared for equality against this value.
-     * When omitted, the condition passes if the referenced account or argument exists in the current context, regardless of its value.
+     * When omitted, the condition passes if the referenced account or data value exists in the current context, regardless of its value.
      */
     readonly value?: TValue;
     /** The value used when the condition passes — i.e. it matches `value` or, without a `value`, exists. */
     readonly ifTrue?: TIfTrue;
     /** The value used when the condition fails — i.e. it does not match `value` or, without a `value`, does not exist. */
     readonly ifFalse?: TIfFalse;
+    /**
+     * Namespaced plugins with custom structured data.
+     * The universal extension point for renderer-specific or not-yet-standardised metadata.
+     */
+    readonly plugins?: TPlugins;
 }

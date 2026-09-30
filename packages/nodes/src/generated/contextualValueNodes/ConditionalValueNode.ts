@@ -2,6 +2,7 @@ import type {
     ConditionalValueCondition,
     ConditionalValueNode,
     InstructionInputValueNode,
+    PluginNode,
     ValueNode,
 } from '@codama/node-types';
 
@@ -10,7 +11,8 @@ export type ConditionalValueNodeInput<
     TValue extends ValueNode | undefined = ValueNode | undefined,
     TIfTrue extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
     TIfFalse extends InstructionInputValueNode | undefined = InstructionInputValueNode | undefined,
-> = Omit<ConditionalValueNode<TCondition, TValue, TIfTrue, TIfFalse>, 'kind'>;
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
+> = Omit<ConditionalValueNode<TCondition, TValue, TIfTrue, TIfFalse, TPlugins>, 'kind'>;
 
 /**
  * A branching contextual value.
@@ -21,9 +23,10 @@ export function conditionalValueNode<
     const TValue extends ValueNode | undefined = undefined,
     const TIfTrue extends InstructionInputValueNode | undefined = undefined,
     const TIfFalse extends InstructionInputValueNode | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
-    input: ConditionalValueNodeInput<TCondition, TValue, TIfTrue, TIfFalse>,
-): ConditionalValueNode<TCondition, TValue, TIfTrue, TIfFalse> {
+    input: ConditionalValueNodeInput<TCondition, TValue, TIfTrue, TIfFalse, TPlugins>,
+): ConditionalValueNode<TCondition, TValue, TIfTrue, TIfFalse, TPlugins> {
     return Object.freeze({
         kind: 'conditionalValueNode',
 
@@ -32,5 +35,6 @@ export function conditionalValueNode<
         ...(input.value !== undefined && { value: input.value }),
         ...(input.ifTrue !== undefined && { ifTrue: input.ifTrue }),
         ...(input.ifFalse !== undefined && { ifFalse: input.ifFalse }),
+        ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

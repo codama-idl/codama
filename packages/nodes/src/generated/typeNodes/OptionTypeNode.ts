@@ -1,18 +1,22 @@
-import type { NestedTypeNode, NumberTypeNode, OptionTypeNode, TypeNode } from '@codama/node-types';
+import type { IntegerTypeNode, OptionTypeNode, PluginNode, TransformNode, TypeNode } from '@codama/node-types';
 
-import { numberTypeNode } from './NumberTypeNode';
+import { integerTypeNode } from './IntegerTypeNode';
 
 /** A value that may be present or absent (Some/None), with an explicit numeric prefix indicating presence. */
 export function optionTypeNode<
     const TItem extends TypeNode,
-    const TPrefix extends NestedTypeNode<NumberTypeNode> = NumberTypeNode<'u8'>,
+    const TPrefix extends IntegerTypeNode = IntegerTypeNode<'u8'>,
+    const TTransforms extends Array<TransformNode> | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     item: TItem,
     options: {
         fixed?: boolean;
         prefix?: TPrefix;
+        transforms?: TTransforms;
+        plugins?: TPlugins;
     } = {},
-): OptionTypeNode<TItem, TPrefix> {
+): OptionTypeNode<TItem, TPrefix, TTransforms, TPlugins> {
     return Object.freeze({
         kind: 'optionTypeNode',
 
@@ -21,6 +25,9 @@ export function optionTypeNode<
 
         // Children.
         item,
-        prefix: (options.prefix ?? numberTypeNode('u8')) as TPrefix,
+        prefix: (options.prefix ?? integerTypeNode('u8')) as TPrefix,
+        ...(options.transforms !== undefined &&
+            options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

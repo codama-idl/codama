@@ -1,17 +1,18 @@
 /**
- * Per-package default options for the v1 spec, shared by the
- * `nodeTypes` and `nodes` generators so the interface and constructor
- * sides stay in lockstep. Future spec versions can ship their own
- * defaults alongside these without breaking v1 callers.
+ * Per-package default options shared by the `nodeTypes` and `nodes`
+ * generators so the interface and constructor sides stay in lockstep.
+ * Future spec versions can ship their own defaults alongside these
+ * without breaking existing callers.
  */
 
 /**
  * Data attributes that surface as type parameters even though the
  * spec classifies them as data. Each entry preserves a narrowing form
- * (e.g. `NumberTypeNode<'u32'>`) that downstream code relies on.
+ * (e.g. `IntegerTypeNode<'u32'>`) that downstream code relies on.
  */
 export const NARROWABLE_DATA_ATTRIBUTES: ReadonlySet<string> = new Set([
-    'numberTypeNode:format',
+    'integerTypeNode:format',
+    'floatTypeNode:format',
     'stringTypeNode:encoding',
 ]);
 
@@ -21,17 +22,21 @@ export const NARROWABLE_DATA_ATTRIBUTES: ReadonlySet<string> = new Set([
  * parameters for the node — no missing, no extras — otherwise both
  * generators throw at startup rather than silently drop or reorder
  * type parameters.
+ *
+ * In v2 `docs` is a `string | textNode` child attribute, so it now
+ * surfaces as a leading type parameter on every documented node; the
+ * remaining order mirrors v1's emission order to minimise downstream
+ * churn beyond that addition.
  */
 export const GENERIC_PARAM_ORDER: ReadonlyMap<string, readonly string[]> = new Map([
-    ['programNode', ['pdas', 'accounts', 'instructions', 'definedTypes', 'errors', 'events', 'constants']],
+    ['programNode', ['docs', 'pdas', 'accounts', 'instructions', 'definedTypes', 'errors', 'events', 'constants']],
     ['pdaValueNode', ['seeds', 'programId', 'pda']],
-    ['instructionArgumentNode', ['defaultValue', 'type', 'display']],
     [
         'instructionNode',
         [
+            'docs',
             'accounts',
-            'arguments',
-            'extraArguments',
+            'data',
             'remainingAccounts',
             'byteDeltas',
             'discriminators',
@@ -39,7 +44,6 @@ export const GENERIC_PARAM_ORDER: ReadonlyMap<string, readonly string[]> = new M
             'status',
             'provides',
             'display',
-            'plugins',
         ],
     ],
 ]);
@@ -58,6 +62,7 @@ export const CATEGORY_DIRECTORIES: ReadonlyMap<string, string> = new Map([
     ['pdaSeed', 'pdaSeedNodes'],
     ['shared', 'shared'],
     ['topLevel', ''],
+    ['transform', 'transformNodes'],
     ['type', 'typeNodes'],
     ['value', 'valueNodes'],
 ]);

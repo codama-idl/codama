@@ -9,27 +9,28 @@ import { type ResolvedRenderOptions } from './options';
  *
  *   - `data`        — not a child reference; pass through unchanged.
  *   - `node`        — `node('<kind>')`. Walk once, assert `<kind>`.
- *   - `nestedNode`  — `nestedUnion('<alias>', '<kind>')`. Walk once,
- *                     assert nested `<kind>`.
  *   - `union`       — `union('<Name>')`. Walk once, assert against the
  *                     resolved kind-list.
  *   - `anyNode`     — `anyNode()`. Walk once, assert against the full
  *                     registered-node kind-list.
+ *   - `text`        — `string | textNode` (`text`/`docs`). Visit only
+ *                     when the value is a `textNode`; a bare string
+ *                     passes through unchanged.
  *   - `arrayNode`   — `array(node('<kind>'))`. Walk each, filter.
  *   - `arrayUnion`  — `array(union('<Name>'))`. Walk each, filter
  *                     against the resolved kind-list.
  *
  * Anything else (nested arrays of arrays, tuples-of-nodes) is not
- * expected in the v1 spec; extending the visitor for such shapes
- * would need a new variant here.
+ * expected in the spec; extending the visitor for such shapes would
+ * need a new variant here.
  */
 export type ChildShape =
     | { readonly kind: 'anyNode' }
     | { readonly kind: 'arrayNode'; readonly nodeKind: string }
     | { readonly kind: 'arrayUnion'; readonly unionName: string }
     | { readonly kind: 'data' }
-    | { readonly kind: 'nestedNode'; readonly nodeKind: string }
     | { readonly kind: 'node'; readonly nodeKind: string }
+    | { readonly kind: 'text' }
     | { readonly kind: 'union'; readonly unionName: string };
 
 /** Classify a {@link TypeExpr} into the matching {@link ChildShape}. */
@@ -39,10 +40,11 @@ export function getChildShape(typeExpr: TypeExpr): ChildShape {
             return { kind: 'anyNode' };
         case 'node':
             return { kind: 'node', nodeKind: typeExpr.name };
-        case 'nestedUnion':
-            return { kind: 'nestedNode', nodeKind: typeExpr.name };
         case 'union':
             return { kind: 'union', unionName: typeExpr.name };
+        case 'docs':
+        case 'text':
+            return { kind: 'text' };
         case 'array': {
             const inner = typeExpr.of;
             if (inner.kind === 'node') return { kind: 'arrayNode', nodeKind: inner.name };
@@ -99,16 +101,20 @@ function resolveWalkOrder(
     const override = table.get(node.kind);
     if (!override) return children;
 
+    // The override enumerates the node's *declared* children. Base
+    // attributes (e.g. the universal `plugins`) are appended to every
+    // node last and are deliberately absent from the override maps —
+    // resolve the override over the children it names, then force-append
+    // any remaining children (the base attributes) in declaration order.
     const byName = new Map(children.map(c => [c.name, c]));
-    const declared = new Set(byName.keys());
     const overrideSet = new Set(override);
-    const missing = [...declared].filter(n => !overrideSet.has(n));
-    const unknown = override.filter(n => !declared.has(n));
-    if (missing.length > 0 || unknown.length > 0) {
-        const parts: string[] = [];
-        if (missing.length > 0) parts.push(`missing child attribute(s) ${JSON.stringify(missing)}`);
-        if (unknown.length > 0) parts.push(`unknown attribute(s) ${JSON.stringify(unknown)}`);
-        throw new Error(`${tableName} for "${node.kind}" is out of sync with the spec: ${parts.join('; ')}.`);
+    const unknown = override.filter(n => !byName.has(n));
+    if (unknown.length > 0) {
+        throw new Error(
+            `${tableName} for "${node.kind}" is out of sync with the spec: unknown attribute(s) ${JSON.stringify(unknown)}.`,
+        );
     }
-    return override.map(name => byName.get(name)!);
+    const ordered = override.map(name => byName.get(name)!);
+    const trailing = children.filter(c => !overrideSet.has(c.name));
+    return [...ordered, ...trailing];
 }

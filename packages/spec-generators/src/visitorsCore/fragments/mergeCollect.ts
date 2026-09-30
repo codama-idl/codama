@@ -9,8 +9,10 @@ import { getChildShape } from '../walkStep';
  * and a `...spread` fragment for child references — either a direct
  * `...visit(this)(node.<name>)` for required single-node attrs, a
  * `...(node.<name> ? visit(this)(node.<name>) : [])` guard for
- * optional ones, or a `...(node.<name> ?? []).flatMap(visit(this))`
- * spread for arrays.
+ * optional ones, a `...(node.<name> ?? []).flatMap(visit(this))`
+ * spread for arrays, or a `typeof … !== 'string'` guard for
+ * `text`/`docs` children (only a `textNode` value contributes; a bare
+ * string does not).
  */
 export function getMergeCollectFragment(attr: AttributeSpec): Fragment | undefined {
     const fieldAccess = `node.${attr.name}`;
@@ -24,12 +26,14 @@ export function getMergeCollectFragment(attr: AttributeSpec): Fragment | undefin
 
         case 'anyNode':
         case 'node':
-        case 'nestedNode':
         case 'union':
             if (optional) {
                 return fragment`...(${fieldAccess} ? ${visitThis}(${fieldAccess}) : [])`;
             }
             return fragment`...${visitThis}(${fieldAccess})`;
+
+        case 'text':
+            return fragment`...(${fieldAccess} !== undefined && typeof ${fieldAccess} !== 'string' ? ${visitThis}(${fieldAccess}) : [])`;
 
         case 'arrayNode':
         case 'arrayUnion':

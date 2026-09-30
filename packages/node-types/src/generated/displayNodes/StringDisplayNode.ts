@@ -1,8 +1,10 @@
+import type { PluginNode } from '../PluginNode';
+
 /**
  * Display metadata for a string value.
  * The string's wire encoding is carried by `stringTypeNode.encoding`; this node only addresses presentation.
  */
-export interface StringDisplayNode {
+export interface StringDisplayNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'stringDisplayNode';
 
     // Data.
@@ -16,4 +18,11 @@ export interface StringDisplayNode {
      * Indices apply to the decoded character sequence.
      */
     readonly sliceEnd?: number;
+
+    // Children.
+    /**
+     * Namespaced plugins with custom structured data.
+     * The universal extension point for renderer-specific or not-yet-standardised metadata.
+     */
+    readonly plugins?: TPlugins;
 }

@@ -1,40 +1,53 @@
-import type { AccountNode, DiscriminatorNode, NestedTypeNode, PdaLinkNode, StructTypeNode } from '@codama/node-types';
+import type {
+    AccountNode,
+    DiscriminatorNode,
+    PdaLinkNode,
+    PluginNode,
+    StructTypeNode,
+    TextNode,
+    TypeNode,
+} from '@codama/node-types';
 
-import { camelCase, DocsInput, parseDocs } from '../shared';
+import { identifierString } from '../shared';
 import { structTypeNode } from './typeNodes/StructTypeNode';
 
 export type AccountNodeInput<
-    TData extends NestedTypeNode<StructTypeNode> = NestedTypeNode<StructTypeNode>,
+    TDocs extends string | TextNode | undefined = string | TextNode | undefined,
+    TData extends TypeNode = TypeNode,
     TPda extends PdaLinkNode | undefined = PdaLinkNode | undefined,
     TDiscriminators extends Array<DiscriminatorNode> | undefined = Array<DiscriminatorNode> | undefined,
-> = Omit<Partial<AccountNode<TData, TPda, TDiscriminators>>, 'docs' | 'kind' | 'name'> & {
-    readonly name: string;
-    readonly docs?: DocsInput;
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
+> = Omit<Partial<AccountNode<TDocs, TData, TPda, TDiscriminators, TPlugins>>, 'identifier' | 'kind'> & {
+    readonly identifier: string;
 };
 
 /**
- * An on-chain account: its name, data structure, optional fixed size, optional PDA, and optional discriminators.
+ * An on-chain account: its identifier, data type, optional fixed size, optional PDA, and optional discriminators.
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/77974dad-212e-49b1-8e41-5d466c273a02)
  */
 export function accountNode<
-    const TData extends NestedTypeNode<StructTypeNode> = StructTypeNode<[]>,
+    const TDocs extends string | TextNode | undefined = undefined,
+    const TData extends TypeNode = StructTypeNode<[]>,
     const TPda extends PdaLinkNode | undefined = undefined,
     const TDiscriminators extends Array<DiscriminatorNode> | undefined = undefined,
->(input: AccountNodeInput<TData, TPda, TDiscriminators>): AccountNode<TData, TPda, TDiscriminators> {
-    const parsedDocs = parseDocs(input.docs);
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
+>(
+    input: AccountNodeInput<TDocs, TData, TPda, TDiscriminators, TPlugins>,
+): AccountNode<TDocs, TData, TPda, TDiscriminators, TPlugins> {
     return Object.freeze({
         kind: 'accountNode',
 
         // Data.
-        name: camelCase(input.name),
+        identifier: identifierString(input.identifier),
         ...(input.size !== undefined && { size: input.size }),
-        ...(parsedDocs.length > 0 && { docs: parsedDocs }),
 
         // Children.
+        ...(input.docs !== undefined && { docs: input.docs }),
         data: (input.data ?? structTypeNode([])) as TData,
         ...(input.pda !== undefined && { pda: input.pda }),
         ...(input.discriminators !== undefined &&
             input.discriminators.length > 0 && { discriminators: input.discriminators as TDiscriminators }),
+        ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

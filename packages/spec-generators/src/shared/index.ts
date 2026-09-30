@@ -1,3 +1,4 @@
+export * from './baseAttributes';
 export * from './defaults';
 export * from './fragments';
 export * from './options';

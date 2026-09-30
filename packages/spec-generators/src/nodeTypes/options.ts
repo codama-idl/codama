@@ -35,10 +35,10 @@ export type ResolvedRenderOptions = Required<RenderOptions>;
  *
  * Symbolic-module flavours emitted by this generator:
  *
- *   - `node:<nodeKind>`, `union:<UnionName>`, `enumeration:<EnumName>`,
- *     `nestedUnion:<AliasName>` — derived from the spec.
- *   - `brand:<BrandName>`, `docs:Docs`, `version:Version`,
- *     `version:CodamaVersion` — hand-written sibling files.
+ *   - `node:<nodeKind>`, `union:<UnionName>`, `enumeration:<EnumName>` —
+ *     derived from the spec.
+ *   - `brand:<BrandName>`, `version:Version`, `version:CodamaVersion` —
+ *     hand-written sibling files.
  *   - `registry:Node` / `registry:NodeKind` / `registry:GetNodeFromKind` —
  *     identifiers from the top-level `Node.ts` registry file.
  */
@@ -56,6 +56,11 @@ export function validateRenderOptions(spec: Spec, options: RenderOptions): void 
 
 /** Hand-written branded-string types, living above `generated/`. */
 const BRAND_NAMES: readonly string[] = [
+    'IdentifierString',
+    'NamespaceString',
+    'PathString',
+    'IntegerString',
+    'DecimalString',
     'CamelCaseString',
     'KebabCaseString',
     'PascalCaseString',
@@ -81,15 +86,11 @@ export function buildRenderScope(spec: Spec, options: RenderOptions): RenderScop
         for (const enumeration of category.enumerations) {
             symbolicModules.set(`enumeration:${enumeration.name}`, joinPath(folder, camelCase(enumeration.name)));
         }
-        for (const nestedUnion of category.nestedUnions) {
-            symbolicModules.set(`nestedUnion:${nestedUnion.name}`, joinPath(folder, pascalCase(nestedUnion.name)));
-        }
     }
 
     for (const brand of BRAND_NAMES) {
         symbolicModules.set(`brand:${brand}`, '../brands');
     }
-    symbolicModules.set('docs:Docs', '../Docs');
     symbolicModules.set('version:Version', '../Version');
 
     const sharedDir = resolved.categoryDirectories.get('shared') ?? 'shared';

@@ -1,4 +1,4 @@
-import type { ProgramNode, RootNode } from '@codama/node-types';
+import type { PluginNode, ProgramNode, RootNode } from '@codama/node-types';
 
 import { CODAMA_VERSION } from './codamaVersion';
 
@@ -11,10 +11,14 @@ import { CODAMA_VERSION } from './codamaVersion';
 export function rootNode<
     const TProgram extends ProgramNode,
     const TAdditionalPrograms extends Array<ProgramNode> | undefined = [],
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     program: TProgram,
-    additionalPrograms: TAdditionalPrograms = [] as Array<ProgramNode> as TAdditionalPrograms,
-): RootNode<TProgram, TAdditionalPrograms> {
+    options: {
+        additionalPrograms?: TAdditionalPrograms;
+        plugins?: TPlugins;
+    } = {},
+): RootNode<TProgram, TAdditionalPrograms, TPlugins> {
     return Object.freeze({
         kind: 'rootNode',
 
@@ -24,7 +28,10 @@ export function rootNode<
 
         // Children.
         program,
-        ...(additionalPrograms !== undefined &&
-            additionalPrograms.length > 0 && { additionalPrograms: additionalPrograms as TAdditionalPrograms }),
+        ...(options.additionalPrograms !== undefined &&
+            options.additionalPrograms.length > 0 && {
+                additionalPrograms: options.additionalPrograms as TAdditionalPrograms,
+            }),
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

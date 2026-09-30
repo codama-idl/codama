@@ -2,7 +2,6 @@ export * from './attributeBodyLine';
 export * from './codamaVersion';
 export * from './enumeration';
 export * from './kindLine';
-export * from './nestedUnion';
 export * from './node';
 export * from './nodeRegistry';
 export * from './typeExpr';

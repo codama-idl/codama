@@ -1,37 +1,43 @@
 import type {
     InstructionAccountDisplayNode,
     InstructionRemainingAccountsNode,
-    InstructionRemainingAccountsValue,
+    PluginNode,
+    TextNode,
 } from '@codama/node-types';
 
-import { DocsInput, parseDocs } from '../shared';
+import { identifierString } from '../shared';
 
-/** A "remaining accounts" slot in an instruction — a variable-length tail of accounts derived from a value. */
+/**
+ * A "remaining accounts" slot in an instruction — a variable-length tail of accounts appended after the named account slots.
+ * Like `instructionAccountNode`, it declares a client input: the identifier names the account-list input exposed to callers. Renderers with matching plugins may fill it automatically.
+ */
 export function instructionRemainingAccountsNode<
-    const TValue extends InstructionRemainingAccountsValue,
+    const TDocs extends string | TextNode | undefined = undefined,
     const TDisplay extends InstructionAccountDisplayNode | undefined = undefined,
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
-    value: TValue,
+    identifier: string,
     options: {
         isOptional?: boolean;
         isSigner?: boolean | 'either';
         isWritable?: boolean;
-        docs?: DocsInput;
+        docs?: TDocs;
         display?: TDisplay;
+        plugins?: TPlugins;
     } = {},
-): InstructionRemainingAccountsNode<TValue, TDisplay> {
-    const parsedDocs = parseDocs(options.docs);
+): InstructionRemainingAccountsNode<TDocs, TDisplay, TPlugins> {
     return Object.freeze({
         kind: 'instructionRemainingAccountsNode',
 
         // Data.
+        identifier: identifierString(identifier),
         ...(options.isOptional !== undefined && { isOptional: options.isOptional }),
         ...(options.isSigner !== undefined && { isSigner: options.isSigner }),
         ...(options.isWritable !== undefined && { isWritable: options.isWritable }),
-        ...(parsedDocs.length > 0 && { docs: parsedDocs }),
 
         // Children.
-        value,
+        ...(options.docs !== undefined && { docs: options.docs }),
         ...(options.display !== undefined && { display: options.display }),
+        ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

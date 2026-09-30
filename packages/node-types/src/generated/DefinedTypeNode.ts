@@ -1,5 +1,6 @@
-import type { CamelCaseString } from '../brands';
-import type { Docs } from '../Docs';
+import type { IdentifierString } from '../brands';
+import type { PluginNode } from './PluginNode';
+import type { TextNode } from './TextNode';
 import type { TypeNode } from './typeNodes/TypeNode';
 
 /**
@@ -7,16 +8,25 @@ import type { TypeNode } from './typeNodes/TypeNode';
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/6049cf77-9a70-4915-8276-dd571d2f8828)
  */
-export interface DefinedTypeNode<TType extends TypeNode = TypeNode> {
+export interface DefinedTypeNode<
+    TDocs extends string | TextNode | undefined = string | TextNode | undefined,
+    TType extends TypeNode = TypeNode,
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
+> {
     readonly kind: 'definedTypeNode';
 
     // Data.
-    /** The name of the defined type. */
-    readonly name: CamelCaseString;
-    /** Markdown documentation for the type. */
-    readonly docs?: Docs;
+    /** The identifier of the defined type. */
+    readonly identifier: IdentifierString;
 
     // Children.
+    /** Markdown documentation for the type. */
+    readonly docs?: TDocs;
     /** The type definition. */
     readonly type: TType;
+    /**
+     * Namespaced plugins with custom structured data.
+     * The universal extension point for renderer-specific or not-yet-standardised metadata.
+     */
+    readonly plugins?: TPlugins;
 }

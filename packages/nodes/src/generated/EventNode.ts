@@ -1,31 +1,34 @@
-import type { DiscriminatorNode, EventNode, TypeNode } from '@codama/node-types';
+import type { DiscriminatorNode, EventNode, PluginNode, TextNode, TypeNode } from '@codama/node-types';
 
-import { camelCase, DocsInput, parseDocs } from '../shared';
+import { identifierString } from '../shared';
 
 export type EventNodeInput<
+    TDocs extends string | TextNode | undefined = string | TextNode | undefined,
     TData extends TypeNode = TypeNode,
     TDiscriminators extends Array<DiscriminatorNode> | undefined = Array<DiscriminatorNode> | undefined,
-> = Omit<EventNode<TData, TDiscriminators>, 'docs' | 'kind' | 'name'> & {
-    readonly name: string;
-    readonly docs?: DocsInput;
+    TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
+> = Omit<EventNode<TDocs, TData, TDiscriminators, TPlugins>, 'identifier' | 'kind'> & {
+    readonly identifier: string;
 };
 
 /** A program event: its data shape and optional discriminators used to identify it on the wire. */
 export function eventNode<
-    const TData extends TypeNode,
+    const TDocs extends string | TextNode | undefined = undefined,
+    const TData extends TypeNode = TypeNode,
     const TDiscriminators extends Array<DiscriminatorNode> | undefined = undefined,
->(input: EventNodeInput<TData, TDiscriminators>): EventNode<TData, TDiscriminators> {
-    const parsedDocs = parseDocs(input.docs);
+    const TPlugins extends Array<PluginNode> | undefined = undefined,
+>(input: EventNodeInput<TDocs, TData, TDiscriminators, TPlugins>): EventNode<TDocs, TData, TDiscriminators, TPlugins> {
     return Object.freeze({
         kind: 'eventNode',
 
         // Data.
-        name: camelCase(input.name),
-        ...(parsedDocs.length > 0 && { docs: parsedDocs }),
+        identifier: identifierString(input.identifier),
 
         // Children.
+        ...(input.docs !== undefined && { docs: input.docs }),
         data: input.data,
         ...(input.discriminators !== undefined &&
             input.discriminators.length > 0 && { discriminators: input.discriminators as TDiscriminators }),
+        ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }
