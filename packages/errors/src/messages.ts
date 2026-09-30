@@ -55,13 +55,17 @@ import {
     CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK,
     CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND,
     CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE,
+    CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
     CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
     CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
     CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
     CodamaErrorCode,
 } from './codes';
 
@@ -147,7 +151,13 @@ export const CodamaErrorMessages: Readonly<{
         'Cannot use optional account [$seedValueName] as the [$seedName] PDA seed for the [$instructionAccountName] account of the [$instructionName] instruction.',
     [CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES]:
         'Circular dependency detected when resolving the default values of the [$instructionName] instruction. Got the following dependency cycle [$formattedCycle].',
+    [CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND]:
+        'Defined type [$name] does not have a field or variant named [$missingMember].',
     [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate the given node [$formattedHistogram].',
+    [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]:
+        'Cannot find account [$accountName] in instruction [$instructionName].',
+    [CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND]:
+        'Cannot find the data field [$path] of instruction [$instructionName]. Note that fields behind a defined type link cannot be updated directly: unwrap the defined type first.',
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND]:
         'Could not find an enum data field named [$fieldName] for instruction [$instructionName].',
     [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]:
@@ -158,4 +168,6 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]:
         'The value provided for [$key] is a [$providedKind], expected one of [$expectedKinds].',
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: 'Cannot find key [$key] in RenderMap.',
+    [CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS]:
+        'Unrecognized update keys [$unrecognizedKeys] for [$selector]. Expected any of [$allowedKeys].',
 };
