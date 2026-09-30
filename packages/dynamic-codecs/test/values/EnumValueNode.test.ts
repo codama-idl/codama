@@ -1,13 +1,12 @@
+import { CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
     definedTypeNode,
-    enumEmptyVariantTypeNode,
-    enumStructVariantTypeNode,
-    enumTupleVariantTypeNode,
     enumTypeNode,
     enumValueNode,
-    fixedSizeTypeNode,
-    numberTypeNode,
-    numberValueNode,
+    enumVariantTypeNode,
+    fixedSizeTransformNode,
+    integerTypeNode,
+    integerValueNode,
     programNode,
     rootNode,
     stringTypeNode,
@@ -24,83 +23,85 @@ import { expect, test } from 'vitest';
 
 import { getValueNodeVisitor } from '../../src';
 
-test('it returns scalar enum values as discriminated unions', () => {
-    // Given a program with a scalar enum.
-    const definedType = definedTypeNode({
-        name: 'direction',
-        type: enumTypeNode([
-            enumEmptyVariantTypeNode('up'),
-            enumEmptyVariantTypeNode('right'),
-            enumEmptyVariantTypeNode('down'),
-            enumEmptyVariantTypeNode('left'),
-        ]),
-    });
-    const root = rootNode(programNode({ definedTypes: [definedType], name: 'myProgram', publicKey: '1111' }));
-
-    // And a LinkableDictionary that recorded the enum.
+function getVisitorForEnum(type: ReturnType<typeof enumTypeNode>, identifier: string) {
+    const definedType = definedTypeNode({ identifier, type });
+    const root = rootNode(programNode({ definedTypes: [definedType], identifier: 'myProgram', publicKey: '1111' }));
     const linkables = new LinkableDictionary();
     linkables.recordPath([root, root.program, definedType]);
+    return getValueNodeVisitor(linkables, { stack: new NodeStack([root, root.program]) });
+}
 
-    // And a value node visitor that's under the same program.
-    const stack = new NodeStack([root, root.program]);
-    const visitor = getValueNodeVisitor(linkables, { stack });
+test('it returns scalar enum values as discriminated unions', () => {
+    // Given a value visitor under a program with a scalar enum.
+    const visitor = getVisitorForEnum(
+        enumTypeNode([
+            enumVariantTypeNode('up'),
+            enumVariantTypeNode('right'),
+            enumVariantTypeNode('down'),
+            enumVariantTypeNode('left'),
+        ]),
+        'direction',
+    );
 
     // When we visit enum value nodes for this enum type.
     const resultUp = visit(enumValueNode('direction', 'up'), visitor);
-    const resultRight = visit(enumValueNode('direction', 'right'), visitor);
-    const resultDown = visit(enumValueNode('direction', 'down'), visitor);
     const resultLeft = visit(enumValueNode('direction', 'left'), visitor);
 
-    // Then we expect the values to be resolved from the linkable type as discriminated unions.
-    expect(resultUp).toStrictEqual({ __discriminator: 0, __kind: 'Up' });
-    expect(resultRight).toStrictEqual({ __discriminator: 1, __kind: 'Right' });
-    expect(resultDown).toStrictEqual({ __discriminator: 2, __kind: 'Down' });
-    expect(resultLeft).toStrictEqual({ __discriminator: 3, __kind: 'Left' });
+    // Then we expect the values to be resolved from the linked type as discriminated unions.
+    expect(resultUp).toStrictEqual({ __discriminator: 0, __kind: 'up' });
+    expect(resultLeft).toStrictEqual({ __discriminator: 3, __kind: 'left' });
 });
 
-test('it returns data enum values as objects', () => {
-    // Given a program with a data enum.
-    const definedType = definedTypeNode({
-        name: 'action',
-        type: enumTypeNode([
-            enumEmptyVariantTypeNode('quit'),
-            enumTupleVariantTypeNode('write', tupleTypeNode([fixedSizeTypeNode(stringTypeNode('utf8'), 5)])),
-            enumStructVariantTypeNode(
-                'move',
-                structTypeNode([
-                    structFieldTypeNode({ name: 'x', type: numberTypeNode('u8') }),
-                    structFieldTypeNode({ name: 'y', type: numberTypeNode('u8') }),
+test('it returns data enum values with their data', () => {
+    // Given a value visitor under a program with a data enum.
+    const visitor = getVisitorForEnum(
+        enumTypeNode([
+            enumVariantTypeNode('quit'),
+            enumVariantTypeNode('write', {
+                data: tupleTypeNode([stringTypeNode('utf8', { transforms: [fixedSizeTransformNode(5)] })]),
+            }),
+            enumVariantTypeNode('move', {
+                data: structTypeNode([
+                    structFieldTypeNode({ identifier: 'x', type: integerTypeNode('u8') }),
+                    structFieldTypeNode({ identifier: 'y', type: integerTypeNode('u8') }),
                 ]),
-            ),
+                discriminator: 5,
+            }),
         ]),
-    });
-    const root = rootNode(programNode({ definedTypes: [definedType], name: 'myProgram', publicKey: '1111' }));
-
-    // And a LinkableDictionary that recorded the enum.
-    const linkables = new LinkableDictionary();
-    linkables.recordPath([root, root.program, definedType]);
-
-    // And a value node visitor that's under the same program.
-    const stack = new NodeStack([root, root.program]);
-    const visitor = getValueNodeVisitor(linkables, { stack });
+        'action',
+    );
 
     // When we visit enum value nodes for this enum type.
     const resultQuit = visit(enumValueNode('action', 'quit'), visitor);
-    const resultWrite = visit(enumValueNode('action', 'write', tupleValueNode([stringValueNode('Hello')])), visitor);
+    const resultWrite = visit(
+        enumValueNode('action', 'write', { value: tupleValueNode([stringValueNode('Hello')]) }),
+        visitor,
+    );
     const resultMove = visit(
-        enumValueNode(
-            'action',
-            'move',
-            structValueNode([
-                structFieldValueNode('x', numberValueNode(10)),
-                structFieldValueNode('y', numberValueNode(20)),
+        enumValueNode('action', 'move', {
+            value: structValueNode([
+                structFieldValueNode('x', integerValueNode('10')),
+                structFieldValueNode('y', integerValueNode('20')),
             ]),
-        ),
+        }),
         visitor,
     );
 
-    // Then we expect the values to be resolved from the linkable type as numbers.
-    expect(resultQuit).toStrictEqual({ __discriminator: 0, __kind: 'Quit' });
-    expect(resultWrite).toStrictEqual({ __discriminator: 1, __kind: 'Write', fields: ['Hello'] });
-    expect(resultMove).toStrictEqual({ __discriminator: 2, __kind: 'Move', x: 10, y: 20 });
+    // Then we expect the data to be nested under `data`.
+    expect(resultQuit).toStrictEqual({ __discriminator: 0, __kind: 'quit' });
+    expect(resultWrite).toStrictEqual({ __discriminator: 1, __kind: 'write', data: ['Hello'] });
+    expect(resultMove).toStrictEqual({ __discriminator: 5, __kind: 'move', data: { x: 10n, y: 20n } });
+});
+
+test('it throws when the variant does not exist', () => {
+    const enumType = enumTypeNode([enumVariantTypeNode('up')]);
+    const visitor = getVisitorForEnum(enumType, 'direction');
+    const node = enumValueNode('direction', 'sideways');
+    expect(() => visit(node, visitor)).toThrow(
+        new CodamaError(CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, {
+            enum: enumType,
+            enumName: node.enum.identifier,
+            variant: node.variant,
+        }),
+    );
 });

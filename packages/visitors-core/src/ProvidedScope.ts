@@ -1,4 +1,8 @@
-import { CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
+    CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
+    CodamaError,
+} from '@codama/errors';
 import {
     assertIsNode,
     type GetNodeFromKind,
@@ -15,6 +19,9 @@ import { visit } from './visitor';
 
 /** A node an injection resolved to, with the frame depth its own injections resolve against. */
 type Resolution = { depth: number; node: Node; provider?: ProvidedNode };
+
+/** The outcome of resolving a node: the resolved node, or the first injection that resolved to nothing. */
+type Outcome = { missing: InjectedValueNode } | { node: Node };
 
 /**
  * The lexical scope of `providedNode`s visible at a point of the tree,
@@ -73,26 +80,56 @@ export class ProvidedScope {
         node: Node,
         options: { kinds: TKind[] },
     ): Exclude<GetNodeFromKind<TKind>, InjectedValueNode> | undefined {
+        const outcome = this.resolveOutcome(node, options.kinds);
+        if ('missing' in outcome) return undefined;
+        return outcome.node as Exclude<GetNodeFromKind<TKind>, InjectedValueNode>;
+    }
+
+    /**
+     * Same as {@link ProvidedScope.resolve}, but throws
+     * `CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED` instead of returning
+     * `undefined`. The error names the first injection that resolves to nothing.
+     *
+     * Use it where the value is required, e.g. to encode a constant. Where an
+     * absent value is acceptable, e.g. an optional display attribute or an
+     * injection within a defined type used outside of any instruction, use
+     * {@link ProvidedScope.resolve} instead.
+     */
+    public resolveOrThrow<TKind extends NodeKind>(
+        node: Node,
+        options: { kinds: TKind[] },
+    ): Exclude<GetNodeFromKind<TKind>, InjectedValueNode> {
+        const outcome = this.resolveOutcome(node, options.kinds);
+        if ('missing' in outcome) {
+            throw new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, {
+                injectedValue: outcome.missing,
+                key: outcome.missing.key,
+            });
+        }
+        return outcome.node as Exclude<GetNodeFromKind<TKind>, InjectedValueNode>;
+    }
+
+    public clone(): ProvidedScope {
+        return new ProvidedScope(...this.frames);
+    }
+
+    /** Shared implementation of {@link ProvidedScope.resolve} and {@link ProvidedScope.resolveOrThrow}. */
+    private resolveOutcome<TKind extends NodeKind>(node: Node, kinds: TKind[]): Outcome {
         const depth = this.frames.length;
         const resolution = isNode(node, 'injectedValueNode') ? this.lookup(node, depth) : { depth, node };
-        if (!resolution) return undefined;
-        if (!isNode(resolution.node, options.kinds)) {
+        if (!resolution) return { missing: node as InjectedValueNode };
+        if (!isNode(resolution.node, kinds)) {
             if (resolution.provider) {
                 throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, {
-                    expectedKinds: options.kinds,
+                    expectedKinds: kinds,
                     key: resolution.provider.identifier,
                     providedKind: resolution.node.kind,
                     provider: resolution.provider,
                 });
             }
-            assertIsNode(resolution.node, options.kinds);
+            assertIsNode(resolution.node, kinds);
         }
-        const resolved = this.resolveWithin(resolution.node, resolution.depth);
-        return (resolved ?? undefined) as Exclude<GetNodeFromKind<TKind>, InjectedValueNode> | undefined;
-    }
-
-    public clone(): ProvidedScope {
-        return new ProvidedScope(...this.frames);
+        return this.resolveWithin(resolution.node, resolution.depth);
     }
 
     /** Find the node an injection stands for, searching frames strictly below `depth`. */
@@ -114,25 +151,32 @@ export class ProvidedScope {
 
     /**
      * Replace every injection nested within `node`, resolving against frames
-     * strictly below `depth`. Returns `null` when any of them is unresolvable,
-     * and `node` itself when it contains none.
+     * strictly below `depth`. Returns the first injection that resolves to
+     * nothing, if any, and `node` itself when it contains no injection.
      */
-    private resolveWithin(node: Node, depth: number): Node | null {
+    private resolveWithin(node: Node, depth: number): Outcome {
         let replaced = false;
-        let unresolvable = false;
+        let missing: InjectedValueNode | undefined;
         const visitor = bottomUpTransformerVisitor([
             child => {
-                if (unresolvable || !isNode(child, 'injectedValueNode')) return child;
+                if (missing || !isNode(child, 'injectedValueNode')) return child;
                 replaced = true;
                 const resolution = this.lookup(child, depth);
-                const resolved = resolution ? this.resolveWithin(resolution.node, resolution.depth) : null;
-                if (resolved === null) unresolvable = true;
-                return resolved;
+                if (!resolution) {
+                    missing = child;
+                    return null;
+                }
+                const outcome = this.resolveWithin(resolution.node, resolution.depth);
+                if ('missing' in outcome) {
+                    missing = outcome.missing;
+                    return null;
+                }
+                return outcome.node;
             },
         ]);
         const result = visit(node, visitor);
-        if (unresolvable) return null;
-        return replaced ? result : node;
+        if (missing) return { missing };
+        return { node: replaced ? (result as Node) : node };
     }
 
     /** Search frames strictly below `depth`, innermost first. */

@@ -1,11 +1,11 @@
-import { booleanTypeNode, numberTypeNode } from '@codama/nodes';
+import { booleanTypeNode, integerTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getNodeCodec } from '../../src';
+import { getNodeValueCodec } from '../../src';
 import { hex } from '../_setup';
 
 test('default', () => {
-    const codec = getNodeCodec([booleanTypeNode()]);
+    const codec = getNodeValueCodec([booleanTypeNode()]);
     expect(codec.encode(true)).toStrictEqual(hex('01'));
     expect(codec.decode(hex('01'))).toBe(true);
     expect(codec.encode(false)).toStrictEqual(hex('00'));
@@ -13,9 +13,15 @@ test('default', () => {
 });
 
 test('custom number', () => {
-    const codec = getNodeCodec([booleanTypeNode(numberTypeNode('u32'))]);
+    const codec = getNodeValueCodec([booleanTypeNode({ size: integerTypeNode('u32') })]);
     expect(codec.encode(true)).toStrictEqual(hex('01000000'));
     expect(codec.decode(hex('01000000'))).toBe(true);
     expect(codec.encode(false)).toStrictEqual(hex('00000000'));
     expect(codec.decode(hex('00000000'))).toBe(false);
+});
+
+test('big-endian number', () => {
+    const codec = getNodeValueCodec([booleanTypeNode({ size: integerTypeNode('u16', { endian: 'be' }) })]);
+    expect(codec.encode(true)).toStrictEqual(hex('0001'));
+    expect(codec.decode(hex('0001'))).toBe(true);
 });

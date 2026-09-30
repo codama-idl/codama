@@ -35,6 +35,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY,
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
+    CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
     CODAMA_ERROR__INVALID_BRANDED_STRING,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
@@ -122,6 +123,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY]:
         'Unsupported optional account strategy [$strategy] for account [$accountName] in [$instructionName].',
     [CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND]: 'Enum variant [$variant] not found in enum type [$enumName].',
+    [CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED]:
+        'Injected value [$key] is not provided and has no fallback. Values injected into a defined type are provided by the instruction that uses it.',
     [CODAMA_ERROR__INVALID_BRANDED_STRING]: 'Expected a valid [$expected], got [$actual].',
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not find linked node [$name] from [$kind].',
     [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
