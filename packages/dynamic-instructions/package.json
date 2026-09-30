@@ -82,8 +82,7 @@
         "@solana/codecs": "^8.4.0",
         "@solana/instructions": "^8.4.0",
         "codama": "workspace:*",
-        "commander": "^15.0.0",
-        "superstruct": "^2.0.2"
+        "commander": "^15.0.0"
     },
     "devDependencies": {
         "@solana/kit": "8.4.0"

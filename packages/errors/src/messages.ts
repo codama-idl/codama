@@ -22,12 +22,12 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
-    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_ARGUMENT,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT,
     CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
-    CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ARGUMENT_INPUT,
+    CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
@@ -103,16 +103,15 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING]:
         'Default value is missing for argument [$argumentName] in [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]: 'Failed to derive PDA for account [$accountName].',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_ARGUMENT]:
-        'Failed to encode argument [$argumentName] in [$instructionName].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA]: 'Failed to encode the data of [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER]:
         'Resolver [$resolverName] threw an error while resolving [$targetKind] [$targetName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT]: 'Failed to validate input: [$message].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]:
         'Instruction [$instructionName] not found in IDL. Available: [$availableIxs].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: 'Invalid account address [$accountName]: [$value].',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ARGUMENT_INPUT]:
-        'Invalid argument input [$argumentName]: [$value]. Expected [$expectedType].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT]:
+        'Invalid input for account [$accountName]: [$value]. Expected [$expectedType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION]: 'Internal invariant violation: [$message].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]:
         'Referenced node [$referencedName] not found in [$instructionName].',

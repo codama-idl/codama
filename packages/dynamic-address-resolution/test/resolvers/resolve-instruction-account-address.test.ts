@@ -73,6 +73,19 @@ describe('provided accounts', () => {
         await expectCodamaError(resolveInstructionAccountAddress({ path }), error);
         await expectCodamaError(resolveInstructionAccountAddress({ accountsInput: { myAccount: null }, path }), error);
     });
+
+    test('it throws when a list of addresses is provided for an account', async () => {
+        const address = await generateAddress();
+        const { path } = getAccountPath(account('myAccount'));
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ accountsInput: { myAccount: [address] }, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
+                accountName: path[3].identifier,
+                actualType: 'array (length 1)',
+                expectedType: 'Address | PublicKey',
+            }),
+        );
+    });
 });
 
 describe('optional accounts', () => {

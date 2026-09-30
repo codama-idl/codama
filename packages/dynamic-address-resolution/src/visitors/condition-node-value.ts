@@ -1,7 +1,7 @@
 import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, CodamaError } from '@codama/errors';
 import type { Node, Visitor } from 'codama';
 
-import { getDataValue, getInstruction } from '../resolvers/context';
+import { getAccountInput, getDataValue, getInstruction } from '../resolvers/context';
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import type { ResolutionContext } from '../resolvers/types';
 
@@ -24,7 +24,7 @@ export function createConditionNodeValueVisitor(
     return {
         visitAccountValue: async node => {
             // An account explicitly provided as null does not exist.
-            const input = ctx.accountsInput?.[node.identifier];
+            const input = getAccountInput(ctx, node.identifier);
             if (input === null) return null;
             // Neither does an account that is not provided and cannot be resolved from a default value.
             const account = (getInstruction(ctx).accounts ?? []).find(

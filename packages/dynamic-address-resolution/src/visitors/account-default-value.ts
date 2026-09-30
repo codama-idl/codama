@@ -13,7 +13,7 @@ import {
     visitOrElse,
 } from 'codama';
 
-import { getInstruction, getProgramAddress, getRequiredDataValue } from '../resolvers/context';
+import { getAccountInput, getInstruction, getProgramAddress, getRequiredDataValue } from '../resolvers/context';
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import { resolveConditionalValueNodeCondition } from '../resolvers/resolve-conditional';
 import { resolvePdaAddress } from '../resolvers/resolve-pda-address';
@@ -50,7 +50,7 @@ export function createAccountDefaultValueVisitor(
     ixAccountNode: InstructionAccountNode,
     ctx: ResolutionContext,
 ): Visitor<Promise<Address | null>, AccountDefaultValueSupportedNodeKind> {
-    const accountAddressInput = ctx.accountsInput?.[ixAccountNode.identifier];
+    const accountAddressInput = getAccountInput(ctx, ixAccountNode.identifier);
     const requireProvidedAccount = () => {
         if (accountAddressInput === undefined || accountAddressInput === null) {
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {

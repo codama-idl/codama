@@ -2,17 +2,17 @@ import { instructionAccountNode, instructionNode } from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { generateSignerTypes, getInstructionSignerRef } from '../../src/codegen/generate-signer-types';
-import { makeRoot } from '../test-utils';
+import { makeRoot } from '../_setup';
 
 describe('generateSignerTypes', () => {
     test('should generate Signers type when isSigner: "either" exists', () => {
         const root = makeRoot([
             instructionNode({
                 accounts: [
-                    instructionAccountNode({ isSigner: 'either', isWritable: false, name: 'authority' }),
-                    instructionAccountNode({ isSigner: false, isWritable: true, name: 'source' }),
+                    instructionAccountNode({ identifier: 'authority', isSigner: 'either', isWritable: false }),
+                    instructionAccountNode({ identifier: 'source', isSigner: false, isWritable: true }),
                 ],
-                name: 'transfer',
+                identifier: 'transfer',
             }),
         ]);
         const output = generateSignerTypes(root);
@@ -22,8 +22,8 @@ describe('generateSignerTypes', () => {
     test('should not generate Signers block when there are no isSigner: "either" accounts', () => {
         const root = makeRoot([
             instructionNode({
-                accounts: [instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' })],
-                name: 'noEither',
+                accounts: [instructionAccountNode({ identifier: 'payer', isSigner: true, isWritable: true })],
+                identifier: 'noEither',
             }),
         ]);
         const output = generateSignerTypes(root);
@@ -34,9 +34,8 @@ describe('generateSignerTypes', () => {
 describe('getInstructionSignerRef', () => {
     test('should return ${Name}Signers when an account has isSigner: "either"', () => {
         const ix = instructionNode({
-            accounts: [instructionAccountNode({ isSigner: 'either', isWritable: false, name: 'authority' })],
-            arguments: [],
-            name: 'transfer',
+            accounts: [instructionAccountNode({ identifier: 'authority', isSigner: 'either', isWritable: false })],
+            identifier: 'transfer',
         });
         const ref = getInstructionSignerRef(ix);
         expect(ref.signersRef).toBe('TransferSigners');
@@ -45,9 +44,8 @@ describe('getInstructionSignerRef', () => {
 
     test('should return null signersRef when no account has isSigner: "either"', () => {
         const ix = instructionNode({
-            accounts: [instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' })],
-            arguments: [],
-            name: 'pay',
+            accounts: [instructionAccountNode({ identifier: 'payer', isSigner: true, isWritable: true })],
+            identifier: 'pay',
         });
         const ref = getInstructionSignerRef(ix);
         expect(ref.signersRef).toBeNull();

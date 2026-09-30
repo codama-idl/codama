@@ -5,7 +5,6 @@ import {
 } from '@codama/errors';
 import type { Address } from '@solana/addresses';
 import { address, isAddress } from '@solana/addresses';
-import type { IdentifierString } from 'codama';
 
 import { formatValueType, safeStringify } from './util';
 
@@ -33,9 +32,10 @@ export function toAddress(input: AddressInput): Address {
 
 /**
  * Convert a value to the address of the given account, throwing
- * `UNEXPECTED_ADDRESS_TYPE` when it is not address convertible.
+ * `UNEXPECTED_ADDRESS_TYPE` when it is not address convertible. The account
+ * name may locate an item of remaining accounts, e.g. `signers[1]`.
  */
-export function toAddressOrThrow(value: unknown, accountName: IdentifierString): Address {
+export function toAddressOrThrow(value: unknown, accountName: string): Address {
     if (!isAddressConvertible(value)) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
             accountName,

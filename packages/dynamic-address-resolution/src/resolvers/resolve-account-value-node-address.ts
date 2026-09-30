@@ -7,7 +7,7 @@ import type { Address } from '@solana/addresses';
 import type { AccountValueNode } from 'codama';
 
 import { toAddress } from '../shared/address';
-import { getInstruction } from './context';
+import { getAccountInput, getInstruction } from './context';
 import { resolveAccountAddress } from './resolve-account-address';
 import type { ResolutionContext, ResolutionPath } from './types';
 
@@ -19,7 +19,7 @@ export async function resolveAccountValueNodeAddress(
     node: AccountValueNode,
     ctx: ResolutionContext,
 ): Promise<Address | null> {
-    const providedAddress = ctx.accountsInput?.[node.identifier];
+    const providedAddress = getAccountInput(ctx, node.identifier);
     if (providedAddress !== undefined && providedAddress !== null) {
         return toAddress(providedAddress);
     }

@@ -1,18 +1,15 @@
-export { createAccountMeta } from './accounts';
-export { encodeInstructionArguments } from './arguments';
+export { createAccountMetas, type CreateAccountMetasInput } from './accounts';
+export { createInstructionDataEncoder, encodeInstructionData } from './data';
 export * from './display';
 export { createInstructionsBuilder } from './instructions-builder';
-export type { InstructionsBuilderFn, EitherSigners } from './shared/types';
+export type { EitherSigners, InstructionInput, InstructionsBuilderFn } from './shared/types';
 
 // Re-exports
 export {
     type AccountsInput,
     type AddressInput,
-    type ArgumentsInput,
+    type DataInput,
     isPublicKeyLike,
     type PublicKeyLike,
-    type ResolverFn,
-    type ResolverFnInput,
-    type ResolversInput,
     toAddress,
 } from '@codama/dynamic-address-resolution';
