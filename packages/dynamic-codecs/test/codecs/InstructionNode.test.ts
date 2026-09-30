@@ -1,5 +1,10 @@
 import {
     constantValueNode,
+    definedTypeLinkNode,
+    definedTypeNode,
+    enumTypeNode,
+    enumValueNode,
+    enumVariantTypeNode,
     hiddenPrefixTransformNode,
     injectedValueNode,
     instructionNode,
@@ -57,4 +62,30 @@ test('it resolves injected values from the instruction and its ancestors', () =>
     // Then both injected values are resolved.
     expect(codec.encode(42)).toStrictEqual(hex('01022a00'));
     expect(codec.decode(hex('01022a00'))).toBe(42n);
+});
+
+test('it encodes enum default values using the linked enum', () => {
+    // Given an instruction whose data defaults a field to a variant of a program enum.
+    const state = definedTypeNode({
+        identifier: 'state',
+        type: enumTypeNode([enumVariantTypeNode('initialized'), enumVariantTypeNode('frozen')]),
+    });
+    const instruction = instructionNode({
+        data: structTypeNode([
+            structFieldTypeNode({
+                defaultValue: enumValueNode('state', 'frozen'),
+                identifier: 'state',
+                type: definedTypeLinkNode('state'),
+            }),
+        ]),
+        identifier: 'initialize',
+    });
+    const root = rootNode(
+        programNode({ definedTypes: [state], identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }),
+    );
+
+    // Then the default is encoded when the field is missing, and can be overridden by identifier.
+    const codec = getNodeValueCodec([root, root.program, instruction]);
+    expect(codec.encode({})).toStrictEqual(hex('01'));
+    expect(codec.encode({ state: 'initialized' })).toStrictEqual(hex('00'));
 });

@@ -7,9 +7,9 @@ import {
     injectedValueNode,
     instructionNode,
     integerTypeNode,
+    integerValueNode,
     programNode,
     providedNode,
-    integerValueNode,
     rootNode,
     structFieldTypeNode,
     structTypeNode,
@@ -89,4 +89,53 @@ test('it resolves injected values from the instruction using the type', () => {
     const codec = getNodeValueCodec([root, root.program, instruction]);
     expect(codec.encode(42)).toStrictEqual(hex('072a00'));
     expect(codec.decode(hex('072a00'))).toBe(42n);
+});
+
+test('it only resolves injected default values when they are needed', () => {
+    // Given a standalone defined type whose field defaults to an injected value that nothing provides.
+    const decimals = injectedValueNode({ key: 'decimals' });
+    const definedType = definedTypeNode({
+        identifier: 'mint',
+        type: structTypeNode([
+            structFieldTypeNode({ defaultValue: decimals, identifier: 'decimals', type: integerTypeNode('u8') }),
+        ]),
+    });
+    const codec = getNodeValueCodec([definedType]);
+
+    // Then encoding only throws when the default value is needed.
+    expect(codec.encode({ decimals: 6 })).toStrictEqual(hex('06'));
+    expect(() => codec.encode({})).toThrow(
+        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: decimals, key: decimals.key }),
+    );
+});
+
+test('it resolves injected default values from the instruction using the type', () => {
+    // Given a defined type whose field defaults to an injected value, used by an instruction providing it.
+    const definedType = definedTypeNode({
+        identifier: 'mint',
+        type: structTypeNode([
+            structFieldTypeNode({
+                defaultValue: injectedValueNode({ key: 'decimals' }),
+                identifier: 'decimals',
+                type: integerTypeNode('u8'),
+            }),
+        ]),
+    });
+    const instruction = instructionNode({
+        data: definedTypeLinkNode('mint'),
+        identifier: 'initialize',
+        provides: [providedNode('decimals', integerValueNode('9'))],
+    });
+    const root = rootNode(
+        programNode({
+            definedTypes: [definedType],
+            identifier: 'myProgram',
+            instructions: [instruction],
+            publicKey: '1111',
+        }),
+    );
+
+    // Then the provided value is used when the field is missing.
+    const codec = getNodeValueCodec([root, root.program, instruction]);
+    expect(codec.encode({})).toStrictEqual(hex('09'));
 });

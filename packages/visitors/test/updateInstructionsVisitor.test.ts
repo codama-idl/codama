@@ -4,7 +4,6 @@ import {
     CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
     CodamaError,
-    isCodamaError,
 } from '@codama/errors';
 import {
     accountBumpValueNode,
@@ -398,22 +397,18 @@ test('it throws when updating missing accounts or data fields', () => {
 
 test('it throws on unrecognized keys and contextual data defaults', () => {
     // When we use the v1 `arguments` key, then we expect an error when creating the visitor.
-    let error: unknown;
-    try {
-        updateInstructionsVisitor({ ix: { arguments: {} } as never });
-    } catch (e) {
-        error = e;
-    }
-    expect(isCodamaError(error, CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS)).toBe(true);
+    expect(() => updateInstructionsVisitor({ ix: { arguments: {} } as never })).toThrow(
+        expect.objectContaining({
+            context: expect.objectContaining({ __code: CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS }),
+        }),
+    );
 
     // When we set a contextual default value on a data field, then we expect an error too.
-    error = undefined;
-    try {
-        updateInstructionsVisitor({ ix: { data: { bump: { defaultValue: accountBumpValueNode('pda') as never } } } });
-    } catch (e) {
-        error = e;
-    }
-    expect(isCodamaError(error, CODAMA_ERROR__UNEXPECTED_NODE_KIND)).toBe(true);
+    expect(() =>
+        updateInstructionsVisitor({ ix: { data: { bump: { defaultValue: accountBumpValueNode('pda') as never } } } }),
+    ).toThrow(
+        expect.objectContaining({ context: expect.objectContaining({ __code: CODAMA_ERROR__UNEXPECTED_NODE_KIND }) }),
+    );
 });
 
 test('it renames a data field and one of its nested fields in the same update', () => {

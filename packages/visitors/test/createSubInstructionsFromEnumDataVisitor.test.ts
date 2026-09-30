@@ -2,7 +2,6 @@ import {
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND,
     CodamaError,
-    isCodamaError,
 } from '@codama/errors';
 import {
     assertIsNode,
@@ -205,14 +204,8 @@ test('it throws when the instruction data links to a missing defined type', () =
         publicKey: '1111',
     });
 
-    // When we create sub-instructions from it.
-    let error: unknown;
-    try {
-        visit(node, createSubInstructionsFromEnumDataVisitor({ act: 'action' }));
-    } catch (e) {
-        error = e;
-    }
-
-    // Then we expect a linked node error rather than a missing field error.
-    expect(isCodamaError(error, CODAMA_ERROR__LINKED_NODE_NOT_FOUND)).toBe(true);
+    // When we create sub-instructions from it, then we expect a linked node error rather than a missing field error.
+    expect(() => visit(node, createSubInstructionsFromEnumDataVisitor({ act: 'action' }))).toThrow(
+        expect.objectContaining({ context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }) }),
+    );
 });

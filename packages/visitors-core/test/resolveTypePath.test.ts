@@ -25,14 +25,7 @@ import { getRecordLinkablesVisitor, LinkableDictionary, parsePath, resolveTypePa
 
 /** Assert the callback throws a Codama error with exactly the context of the expected one. */
 function expectCodamaError(callback: () => unknown, expected: CodamaError): void {
-    let error: unknown;
-    try {
-        callback();
-    } catch (caught) {
-        error = caught;
-    }
-    expect(error).toBeInstanceOf(CodamaError);
-    expect((error as CodamaError).context).toStrictEqual(expected.context);
+    expect(callback).toThrow(expect.objectContaining({ context: expected.context }));
 }
 
 function getLinkables(root: ReturnType<typeof rootNode>): LinkableDictionary {

@@ -1,7 +1,13 @@
 import {
+    bytesTypeNode,
+    bytesValueNode,
     fixedSizeTransformNode,
     integerTypeNode,
+    integerValueNode,
+    optionTypeNode,
+    someValueNode,
     stringTypeNode,
+    stringValueNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
@@ -30,4 +36,54 @@ test('it uses the raw field identifiers', () => {
     ]);
     expect(codec.encode({ my_field: 42 })).toStrictEqual(hex('2a'));
     expect(codec.decode(hex('2a'))).toStrictEqual({ my_field: 42n });
+});
+
+test('it always encodes the default value of omitted fields', () => {
+    const codec = getNodeValueCodec([
+        structTypeNode([
+            structFieldTypeNode({
+                defaultValue: integerValueNode('3'),
+                defaultValueStrategy: 'omitted',
+                identifier: 'discriminator',
+                type: integerTypeNode('u8'),
+            }),
+            structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u16') }),
+        ]),
+    ]);
+    expect(codec.encode({ amount: 42 })).toStrictEqual(hex('032a00'));
+    expect(codec.encode({ amount: 42, discriminator: 7 })).toStrictEqual(hex('032a00'));
+    expect(codec.decode(hex('032a00'))).toStrictEqual({ amount: 42n, discriminator: 3n });
+});
+
+test('it encodes the default value of optional fields when missing', () => {
+    const fee = structFieldTypeNode({
+        defaultValue: integerValueNode('5'),
+        identifier: 'fee',
+        type: integerTypeNode('u16'),
+    });
+    const explicitFee = structFieldTypeNode({ ...fee, defaultValueStrategy: 'optional' });
+    for (const field of [fee, explicitFee]) {
+        const codec = getNodeValueCodec([structTypeNode([field])]);
+        expect(codec.encode({})).toStrictEqual(hex('0500'));
+        expect(codec.encode({ fee: 9 })).toStrictEqual(hex('0900'));
+    }
+});
+
+test('it encodes default values of any kind', () => {
+    const codec = getNodeValueCodec([
+        structTypeNode([
+            structFieldTypeNode({
+                defaultValue: bytesValueNode('base16', 'e445a52e'),
+                defaultValueStrategy: 'omitted',
+                identifier: 'discriminator',
+                type: bytesTypeNode({ transforms: [fixedSizeTransformNode(4)] }),
+            }),
+            structFieldTypeNode({
+                defaultValue: someValueNode(stringValueNode('Hi')),
+                identifier: 'memo',
+                type: optionTypeNode(stringTypeNode('utf8', { transforms: [fixedSizeTransformNode(2)] })),
+            }),
+        ]),
+    ]);
+    expect(codec.encode({})).toStrictEqual(hex('e445a52e014869'));
 });
