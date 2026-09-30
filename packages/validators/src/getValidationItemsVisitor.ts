@@ -1,4 +1,5 @@
-import { camelCase, getAllInstructionArguments, isNode } from '@codama/nodes';
+import { CodamaError } from '@codama/errors';
+import { isNode, REGISTERED_NODE_KINDS } from '@codama/nodes';
 import {
     extendVisitor,
     getResolvedInstructionInputsVisitor,
@@ -6,17 +7,22 @@ import {
     mergeVisitor,
     NodeStack,
     pipe,
+    ProvidedScope,
     recordLinkablesOnFirstVisitVisitor,
     recordNodeStackVisitor,
+    recordProvidedScopeVisitor,
+    ResolvedInstructionInput,
     visit,
     Visitor,
 } from '@codama/visitors-core';
 
+import { getIdentifierCollisionItems } from './identifierCollisions';
 import { ValidationItem, validationItem } from './ValidationItem';
 
 export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> {
     const linkables = new LinkableDictionary();
     const stack = new NodeStack();
+    const scope = new ProvidedScope();
 
     return pipe(
         mergeVisitor(
@@ -28,7 +34,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitAccount(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Account has no name.', node, stack));
+                        items.push(validationItem('error', 'Account has no identifier.', node, stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -36,7 +42,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitDefinedType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Defined type has no name.', node, stack));
+                        items.push(validationItem('error', 'Defined type has no identifier.', node, stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -44,7 +50,9 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitDefinedTypeLink(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Pointing to a defined type with no name.', node, stack));
+                        items.push(
+                            validationItem('error', 'Pointing to a defined type with no identifier.', node, stack),
+                        );
                     } else if (!linkables.has(stack.getPath(node.kind))) {
                         items.push(
                             validationItem(
@@ -58,48 +66,28 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     return [...items, ...next(node)];
                 },
 
-                visitEnumEmptyVariantType(node, { next }) {
-                    const items = [] as ValidationItem[];
-                    if (!node.identifier) {
-                        items.push(validationItem('error', 'Enum variant has no name.', node, stack));
-                    }
-                    return [...items, ...next(node)];
-                },
-
-                visitEnumStructVariantType(node, { next }) {
-                    const items = [] as ValidationItem[];
-                    if (!node.identifier) {
-                        items.push(validationItem('error', 'Enum variant has no name.', node, stack));
-                    }
-                    return [...items, ...next(node)];
-                },
-
-                visitEnumTupleVariantType(node, { next }) {
-                    const items = [] as ValidationItem[];
-                    if (!node.identifier) {
-                        items.push(validationItem('error', 'Enum variant has no name.', node, stack));
-                    }
-                    return [...items, ...next(node)];
-                },
-
                 visitEnumType(node, { next }) {
                     const items = [] as ValidationItem[];
                     const variants = node.variants ?? [];
                     if (variants.length === 0) {
                         items.push(validationItem('warn', 'Enum has no variants.', node, stack));
                     }
-                    variants.forEach(variant => {
-                        if (!variant.identifier) {
-                            items.push(validationItem('error', 'Enum variant has no name.', node, stack));
-                        }
-                    });
+                    items.push(...getIdentifierCollisionItems(variants, 'Enum variant', '', stack));
+                    return [...items, ...next(node)];
+                },
+
+                visitEnumVariantType(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    if (!node.identifier) {
+                        items.push(validationItem('error', 'Enum variant has no identifier.', node, stack));
+                    }
                     return [...items, ...next(node)];
                 },
 
                 visitError(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Error has no name.', node, stack));
+                        items.push(validationItem('error', 'Error has no identifier.', node, stack));
                     }
                     if (typeof node.code !== 'number') {
                         items.push(validationItem('error', 'Error has no code.', node, stack));
@@ -110,27 +98,86 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     return [...items, ...next(node)];
                 },
 
-                visitInstruction(node, { next }) {
+                visitInjectedValue(node, { next }) {
                     const items = [] as ValidationItem[];
-                    if (!node.identifier) {
-                        items.push(validationItem('error', 'Instruction has no name.', node, stack));
-                    }
-
-                    // Check for duplicate account names.
-                    const accountNameHistogram = new Map<string, number>();
-                    (node.accounts ?? []).forEach(account => {
-                        if (!account.identifier) {
-                            items.push(validationItem('error', 'Instruction account has no name.', node, stack));
-                            return;
-                        }
-                        const count = (accountNameHistogram.get(account.identifier) ?? 0) + 1;
-                        accountNameHistogram.set(account.identifier, count);
-                        // Only throw an error once per duplicated names.
-                        if (count === 2) {
+                    // Only injections consumed within an instruction have a
+                    // known final context to resolve against. Injections
+                    // within a provided node or another injection's fallback
+                    // are resolved as part of the value that consumes them.
+                    const ancestors = stack.getPath().slice(0, -1);
+                    const isWithinInstruction = ancestors.some(ancestor => isNode(ancestor, 'instructionNode'));
+                    const isNested = ancestors.some(ancestor =>
+                        isNode(ancestor, ['providedNode', 'injectedValueNode']),
+                    );
+                    if (isWithinInstruction && !isNested) {
+                        if (scope.resolve(node, { kinds: REGISTERED_NODE_KINDS }) === undefined) {
                             items.push(
                                 validationItem(
                                     'error',
-                                    `Account name "${account.identifier}" is not unique in instruction "${node.identifier}".`,
+                                    `Injected value "${node.key}" is not provided and has no fallback.`,
+                                    node,
+                                    stack,
+                                ),
+                            );
+                        }
+                    }
+                    return [...items, ...next(node)];
+                },
+
+                visitInstruction(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    if (!node.identifier) {
+                        items.push(validationItem('error', 'Instruction has no identifier.', node, stack));
+                    }
+                    (node.accounts ?? []).forEach(account => {
+                        if (!account.identifier) {
+                            items.push(validationItem('error', 'Instruction account has no identifier.', node, stack));
+                        }
+                    });
+
+                    // Check for identifier collisions within the instruction.
+                    const context = ` in instruction "${node.identifier}"`;
+                    items.push(
+                        ...getIdentifierCollisionItems(node.accounts ?? [], 'Instruction account', context, stack),
+                        ...getIdentifierCollisionItems(
+                            node.remainingAccounts ?? [],
+                            'Instruction remaining accounts',
+                            context,
+                            stack,
+                        ),
+                        ...getIdentifierCollisionItems(node.provides ?? [], 'Provided value', context, stack),
+                        ...getIdentifierCollisionItems(node.subInstructions ?? [], 'Sub-instruction', context, stack),
+                    );
+
+                    // Resolve the default values of the instruction's inputs,
+                    // reporting cycles and invalid dependencies. The resolver
+                    // records the instruction itself onto its stack and scope,
+                    // so it receives the instruction's ancestors only.
+                    const outerScope = scope.clone();
+                    if ((node.provides ?? []).length > 0) outerScope.pop();
+                    const resolverVisitor = getResolvedInstructionInputsVisitor(linkables, {
+                        scope: outerScope,
+                        stack: new NodeStack(stack.getPath().slice(0, -1)),
+                    });
+                    let inputs: ResolvedInstructionInput[] = [];
+                    try {
+                        inputs = visit(node, resolverVisitor);
+                    } catch (error) {
+                        if (!(error instanceof CodamaError)) throw error;
+                        items.push(validationItem('error', error.message, node, stack));
+                    }
+
+                    // A bump can only be derived from an account that is not a signer.
+                    inputs.forEach(input => {
+                        if (!('path' in input) || !isNode(input.resolvedDefaultValue, 'accountBumpValueNode')) return;
+                        const bumpAccount = input.resolvedDefaultValue.identifier;
+                        const account = (node.accounts ?? []).find(a => a.identifier === bumpAccount);
+                        if (account && account.isSigner !== false) {
+                            items.push(
+                                validationItem(
+                                    'error',
+                                    `Data field "${input.path}" cannot default to the bump of the "${bumpAccount}" ` +
+                                        'account as it may be a signer.',
                                     node,
                                     stack,
                                 ),
@@ -138,59 +185,19 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                         }
                     });
 
-                    // Check for cyclic dependencies in account defaults.
-                    const cyclicCheckVisitor = getResolvedInstructionInputsVisitor();
-                    try {
-                        visit(node, cyclicCheckVisitor);
-                    } catch (error) {
-                        items.push(validationItem('error', (error as Error).message, node, stack));
-                    }
-
-                    // Check args.
-                    const names = getAllInstructionArguments(node).map(({ name }) => camelCase(name));
-                    const duplicates = names.filter((e, i, a) => a.indexOf(e) !== i);
-                    const uniqueDuplicates = [...new Set(duplicates)];
-                    const hasConflictingNames = uniqueDuplicates.length > 0;
-                    if (hasConflictingNames) {
-                        items.push(
-                            validationItem(
-                                'error',
-                                `The names of the following instruction arguments are conflicting: ` +
-                                    `[${uniqueDuplicates.join(', ')}].`,
-                                node,
-                                stack,
-                            ),
-                        );
-                    }
-
-                    // Check arg defaults.
-                    getAllInstructionArguments(node).forEach(argument => {
-                        const { defaultValue } = argument;
-                        if (isNode(defaultValue, 'accountBumpValueNode')) {
-                            const defaultAccount = (node.accounts ?? []).find(
-                                account => account.identifier === defaultValue.identifier,
-                            );
-                            if (defaultAccount && defaultAccount.isSigner !== false) {
-                                items.push(
-                                    validationItem(
-                                        'error',
-                                        `Argument ${argument.identifier} cannot default to the bump attribute of ` +
-                                            `the [${defaultValue.identifier}] account as it may be a Signer.`,
-                                        node,
-                                        stack,
-                                    ),
-                                );
-                            }
-                        }
-                    });
-
                     return [...items, ...next(node)];
+                },
+
+                visitPda(node, { next }) {
+                    const seeds = (node.seeds ?? []).filter(seed => isNode(seed, 'variablePdaSeedNode'));
+                    const context = ` in PDA "${node.identifier}"`;
+                    return [...getIdentifierCollisionItems(seeds, 'PDA seed', context, stack), ...next(node)];
                 },
 
                 visitProgram(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Program has no name.', node, stack));
+                        items.push(validationItem('error', 'Program has no identifier.', node, stack));
                     }
                     if (!node.publicKey) {
                         items.push(validationItem('error', 'Program has no public key.', node, stack));
@@ -198,41 +205,53 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     if (!node.version) {
                         items.push(validationItem('warn', 'Program has no version.', node, stack));
                     }
-                    if (!node.origin) {
-                        items.push(validationItem('info', 'Program has no origin.', node, stack));
-                    }
+
+                    // Check for identifier collisions within each collection of the program.
+                    const context = ` in program "${node.identifier}"`;
+                    items.push(
+                        ...getIdentifierCollisionItems(node.accounts ?? [], 'Account', context, stack),
+                        ...getIdentifierCollisionItems(node.instructions ?? [], 'Instruction', context, stack),
+                        ...getIdentifierCollisionItems(node.definedTypes ?? [], 'Defined type', context, stack),
+                        ...getIdentifierCollisionItems(node.pdas ?? [], 'PDA', context, stack),
+                        ...getIdentifierCollisionItems(node.events ?? [], 'Event', context, stack),
+                        ...getIdentifierCollisionItems(node.errors ?? [], 'Error', context, stack),
+                        ...getIdentifierCollisionItems(node.constants ?? [], 'Constant', context, stack),
+                    );
                     return [...items, ...next(node)];
+                },
+
+                visitRoot(node, { next }) {
+                    const programs = [node.program, ...(node.additionalPrograms ?? [])];
+                    return [...getIdentifierCollisionItems(programs, 'Program', '', stack), ...next(node)];
                 },
 
                 visitStructFieldType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Struct field has no name.', node, stack));
+                        items.push(validationItem('error', 'Struct field has no identifier.', node, stack));
                     }
                     return [...items, ...next(node)];
                 },
 
                 visitStructType(node, { next }) {
-                    const items = [] as ValidationItem[];
+                    return [
+                        ...getIdentifierCollisionItems(node.fields ?? [], 'Struct field', '', stack),
+                        ...next(node),
+                    ];
+                },
 
-                    // Check for duplicate field names.
-                    const fieldNameHistogram = new Map<string, number>();
-                    (node.fields ?? []).forEach(field => {
-                        if (!field.identifier) return; // Handled by TypeStructField
-                        const count = (fieldNameHistogram.get(field.identifier) ?? 0) + 1;
-                        fieldNameHistogram.set(field.identifier, count);
-                        // Only throw an error once per duplicated names.
-                        if (count === 2) {
-                            items.push(
-                                validationItem(
-                                    'error',
-                                    `Struct field name "${field.identifier}" is not unique.`,
-                                    field,
-                                    stack,
-                                ),
-                            );
-                        }
-                    });
+                visitText(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    if ((node.plugins ?? []).length === 0) {
+                        items.push(
+                            validationItem(
+                                'info',
+                                'Text node has no plugins; use a plain string instead.',
+                                node,
+                                stack,
+                            ),
+                        );
+                    }
                     return [...items, ...next(node)];
                 },
 
@@ -246,9 +265,10 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
             }),
         // Pipe stages run outermost-first, i.e. in reverse of their listing here:
         //   pipe(init, g, h, i) => i(h(g(init)))   -- i is the outer layer, runs first
-        // so these record the node (onto the stack, and into linkables) BEFORE the
-        // extendVisitor logic above runs and reads that state to validate the node.
+        // so these record the node (onto the stack and scope, and into linkables)
+        // BEFORE the extendVisitor logic above runs and reads that state.
         v => recordNodeStackVisitor(v, stack),
+        v => recordProvidedScopeVisitor(v, scope),
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
 }
