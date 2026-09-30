@@ -11,19 +11,16 @@ export * from './shared';
 export * from './ConstantPdaSeedNode';
 export * from './ConstantValueNode';
 export * from './EnumTypeNode';
-export * from './InstructionArgumentNode';
 export * from './InstructionNode';
-export * from './NestedTypeNode';
 export * from './Node';
-export * from './NumberTypeNode';
 export * from './ProgramNode';
+export * from './TypeNode';
 
 // Legacy plural-noun aliases preserved for API stability. Each maps to
 // the canonical `*_NODE_KINDS` name generated from the matching spec
 // union.
 export {
     CONTEXTUAL_VALUE_NODE_KINDS as CONTEXTUAL_VALUE_NODES,
-    ENUM_VARIANT_TYPE_NODE_KINDS as ENUM_VARIANT_TYPE_NODES,
     INSTRUCTION_INPUT_VALUE_NODE_KINDS as INSTRUCTION_INPUT_VALUE_NODES,
     REGISTERED_COUNT_NODE_KINDS as COUNT_NODES,
     REGISTERED_DISCRIMINATOR_NODE_KINDS as DISCRIMINATOR_NODES,

@@ -3,9 +3,9 @@ import { describe, expect, test } from 'vitest';
 import {
     assertIsNode,
     assertIsNodeFilter,
+    integerTypeNode,
     isNode,
     isNodeFilter,
-    numberTypeNode,
     publicKeyTypeNode,
     removeNullAndAssertIsNodeFilter,
     tupleTypeNode,
@@ -21,7 +21,7 @@ describe('isNode', () => {
     test('it checks if a given node is part of the given kinds', () => {
         expect(isNode(tupleTypeNode([]), ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(true);
         expect(isNode(publicKeyTypeNode(), ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(true);
-        expect(isNode(numberTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(false);
+        expect(isNode(integerTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(false);
         expect(isNode(null, ['tupleTypeNode', 'publicKeyTypeNode'])).toBe(false);
     });
 });
@@ -40,8 +40,8 @@ describe('assertIsNode', () => {
     test('it asserts that a given node is part of the given kinds', () => {
         expect(() => assertIsNode(tupleTypeNode([]), ['tupleTypeNode', 'publicKeyTypeNode'])).not.toThrow();
         expect(() => assertIsNode(publicKeyTypeNode(), ['tupleTypeNode', 'publicKeyTypeNode'])).not.toThrow();
-        expect(() => assertIsNode(numberTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode'])).toThrowError(
-            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+        expect(() => assertIsNode(integerTypeNode('u8'), ['tupleTypeNode', 'publicKeyTypeNode'])).toThrowError(
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [integerTypeNode].',
         );
         expect(() => assertIsNode(null, ['tupleTypeNode', 'publicKeyTypeNode'])).toThrowError(
             'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].',
@@ -61,7 +61,7 @@ describe('isNodeFilter', () => {
         const filter = isNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
         expect(filter(tupleTypeNode([]))).toBe(true);
         expect(filter(publicKeyTypeNode())).toBe(true);
-        expect(filter(numberTypeNode('u8'))).toBe(false);
+        expect(filter(integerTypeNode('u8'))).toBe(false);
         expect(filter(null)).toBe(false);
     });
 });
@@ -80,8 +80,8 @@ describe('assertIsNodeFilter', () => {
         const filter = assertIsNodeFilter(['tupleTypeNode', 'publicKeyTypeNode']);
         expect(() => filter(tupleTypeNode([]))).not.toThrow();
         expect(() => filter(publicKeyTypeNode())).not.toThrow();
-        expect(() => filter(numberTypeNode('u8'))).toThrowError(
-            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+        expect(() => filter(integerTypeNode('u8'))).toThrowError(
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [integerTypeNode].',
         );
         expect(() => filter(null)).toThrowError('Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].');
     });
@@ -102,8 +102,8 @@ describe('removeNullAndAssertIsNodeFilter', () => {
             tupleTypeNode([]),
             publicKeyTypeNode(),
         ]);
-        expect(() => [tupleTypeNode([]), numberTypeNode('u8'), null].filter(filter)).toThrowError(
-            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [numberTypeNode].',
+        expect(() => [tupleTypeNode([]), integerTypeNode('u8'), null].filter(filter)).toThrowError(
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [integerTypeNode].',
         );
     });
 });
