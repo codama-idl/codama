@@ -1,6 +1,11 @@
-import { accountNode, assertIsNode, programNode } from '@codama/nodes';
+import { accountNode, programNode } from '@codama/nodes';
 import { extendVisitor, nonNullableIdentityVisitor, pipe } from '@codama/visitors-core';
 
+/**
+ * Move the given defined types (matched exactly by identifier) out of
+ * their programs' `definedTypes` and into new accounts whose data is the
+ * defined type's type.
+ */
 export function transformDefinedTypesIntoAccountsVisitor(definedTypes: string[]) {
     return pipe(nonNullableIdentityVisitor({ keys: ['rootNode', 'programNode'] }), v =>
         extendVisitor(v, {
@@ -13,15 +18,14 @@ export function transformDefinedTypesIntoAccountsVisitor(definedTypes: string[])
                     node => !definedTypes.includes(node.identifier),
                 );
 
-                const newAccounts = typesToExtract.map(node => {
-                    assertIsNode(node.type, 'structTypeNode');
-                    return accountNode({
-                        ...node,
+                const newAccounts = typesToExtract.map(node =>
+                    accountNode({
                         data: node.type,
-                        discriminators: [],
-                        size: undefined,
-                    });
-                });
+                        docs: node.docs,
+                        identifier: node.identifier,
+                        plugins: node.plugins,
+                    }),
+                );
 
                 return programNode({
                     ...program,

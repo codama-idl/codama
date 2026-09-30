@@ -1,39 +1,41 @@
 import {
-    enumEmptyVariantTypeNode,
-    enumStructVariantTypeNode,
-    enumTupleVariantTypeNode,
     EnumTypeNode,
     enumTypeNode,
-    EnumVariantTypeNode,
-    isNode,
+    enumVariantTypeNode,
     structFieldTypeNode,
     StructTypeNode,
     structTypeNode,
 } from '@codama/nodes';
 
+/**
+ * Rename the fields of a struct using a map from current to new
+ * identifiers. Identifiers are matched exactly; the struct's transforms and
+ * plugins are preserved.
+ */
 export function renameStructNode(node: StructTypeNode, map: Record<string, string>): StructTypeNode {
+    const renames = new Map(Object.entries(map));
     return structTypeNode(
-        (node.fields ?? []).map(field =>
-            map[field.identifier] ? structFieldTypeNode({ ...field, identifier: map[field.identifier] }) : field,
-        ),
-    );
-}
-
-export function renameEnumNode(node: EnumTypeNode, map: Record<string, string>): EnumTypeNode {
-    return enumTypeNode(
-        (node.variants ?? []).map(variant =>
-            map[variant.identifier] ? renameEnumVariant(variant, map[variant.identifier]) : variant,
-        ),
+        (node.fields ?? []).map(field => {
+            const newIdentifier = renames.get(field.identifier);
+            return newIdentifier ? structFieldTypeNode({ ...field, identifier: newIdentifier }) : field;
+        }),
         { ...node },
     );
 }
 
-function renameEnumVariant(variant: EnumVariantTypeNode, newName: string) {
-    if (isNode(variant, 'enumStructVariantTypeNode')) {
-        return enumStructVariantTypeNode(newName, variant.struct);
-    }
-    if (isNode(variant, 'enumTupleVariantTypeNode')) {
-        return enumTupleVariantTypeNode(newName, variant.tuple);
-    }
-    return enumEmptyVariantTypeNode(newName);
+/**
+ * Rename the variants of an enum using a map from current to new
+ * identifiers. Identifiers are matched exactly; every other attribute of
+ * the enum and its variants (discriminators, data, transforms, etc.) is
+ * preserved.
+ */
+export function renameEnumNode(node: EnumTypeNode, map: Record<string, string>): EnumTypeNode {
+    const renames = new Map(Object.entries(map));
+    return enumTypeNode(
+        (node.variants ?? []).map(variant => {
+            const newIdentifier = renames.get(variant.identifier);
+            return newIdentifier ? enumVariantTypeNode(newIdentifier, { ...variant }) : variant;
+        }),
+        { ...node },
+    );
 }

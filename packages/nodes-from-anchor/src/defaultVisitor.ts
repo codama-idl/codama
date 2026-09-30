@@ -1,13 +1,13 @@
 import { assertIsNode, Node, RootNode } from '@codama/nodes';
 import {
     deduplicateIdenticalDefinedTypesVisitor,
-    flattenInstructionDataArgumentsVisitor,
+    flattenInstructionDataVisitor,
     getCommonInstructionAccountDefaultRules,
     rootNodeVisitor,
     setFixedAccountSizesVisitor,
     setInstructionAccountDefaultValuesVisitor,
     transformU8ArraysToBytesVisitor,
-    unwrapInstructionArgsDefinedTypesVisitor,
+    unwrapInstructionDataDefinedTypesVisitor,
     visit,
     Visitor,
 } from '@codama/visitors';
@@ -34,8 +34,8 @@ export function defaultVisitor() {
 
         // Instructions.
         updateRoot(setInstructionAccountDefaultValuesVisitor(getCommonInstructionAccountDefaultRules()));
-        updateRoot(unwrapInstructionArgsDefinedTypesVisitor());
-        updateRoot(flattenInstructionDataArgumentsVisitor());
+        updateRoot(unwrapInstructionDataDefinedTypesVisitor());
+        updateRoot(flattenInstructionDataVisitor());
 
         // Extras.
         updateRoot(transformU8ArraysToBytesVisitor());
