@@ -1,3 +1,4 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
     booleanValueNode,
     BytesTypeNode,
@@ -8,11 +9,14 @@ import {
     integerTypeNode,
     integerValueNode,
     isNode,
+    PluginNode,
+    pluginNode,
     publicKeyValueNode,
     sizePrefixTransformNode,
     StringTypeNode,
     stringTypeNode,
     stringValueNode,
+    StructFieldTypeNode,
     TypeNode,
     ValueNode,
 } from '@codama/nodes';
@@ -109,4 +113,71 @@ export function parseConstantValue(valueString: string, type: TypeNode): { type:
     }
 
     return { type, value: stringValueNode(valueString) };
+}
+
+/** Defined types of a program, keyed by identifier, used to follow `definedTypeLinkNode`s. */
+export type DefinedTypeMap = ReadonlyMap<string, TypeNode>;
+
+/** The result of resolving a field path within struct fields (see `resolveFieldPath`). */
+export type FieldPathResolution =
+    /** The path was found: `path` holds the matched field identifiers and `type` the type of the last field. */
+    | { kind: 'found'; path: string[]; type: TypeNode }
+    /** A segment of the path matches no field of the struct it goes through. */
+    | { kind: 'missing'; segment: string }
+    /** The path goes through a type that is not a struct (or cannot be followed), so it cannot be addressed. */
+    | { kind: 'unreachable' };
+
+/**
+ * Resolve a field path (e.g. `["params", "seed"]`) within struct fields,
+ * following links to the given defined types.
+ *
+ * Segments are matched against field identifiers using `matches`, which
+ * defaults to exact equality. Legacy IDLs, for instance, camelCase field
+ * names but keep the Rust casing in seed paths.
+ */
+export function resolveFieldPath(
+    fields: StructFieldTypeNode[],
+    path: string[],
+    definedTypes: DefinedTypeMap,
+    matches: (identifier: string, segment: string) => boolean = (identifier, segment) => identifier === segment,
+): FieldPathResolution {
+    const [segment, ...rest] = path;
+    const field = fields.find(candidate => matches(candidate.identifier, segment));
+    if (!field) return { kind: 'missing', segment };
+    if (rest.length === 0) return { kind: 'found', path: [field.identifier], type: field.type };
+    const struct = resolveDefinedTypeLinks(field.type, definedTypes);
+    if (!struct || !isNode(struct, 'structTypeNode')) return { kind: 'unreachable' };
+    const resolution = resolveFieldPath(struct.fields ?? [], rest, definedTypes, matches);
+    return resolution.kind === 'found' ? { ...resolution, path: [field.identifier, ...resolution.path] } : resolution;
+}
+
+/** Whether two identifiers share a camelCase form, e.g. `seed_a` and `seedA`. */
+export function haveSameCamelCase(left: string, right: string): boolean {
+    return camelCase(left) === camelCase(right);
+}
+
+/** A type guard excluding `undefined`, e.g. to narrow arrays with `every`. */
+export function isDefined<T>(value: T | undefined): value is T {
+    return value !== undefined;
+}
+
+function resolveDefinedTypeLinks(type: TypeNode, definedTypes: DefinedTypeMap): TypeNode | undefined {
+    const visited = new Set<string>();
+    let resolved: TypeNode | undefined = type;
+    while (resolved && isNode(resolved, 'definedTypeLinkNode')) {
+        // Links to other programs cannot be followed, and cycles cannot be walked.
+        if (resolved.program || visited.has(resolved.identifier)) return undefined;
+        visited.add(resolved.identifier);
+        resolved = definedTypes.get(resolved.identifier);
+    }
+    return resolved;
+}
+
+/**
+ * The `anchor.relations` plugin of an instruction account, listing the
+ * identifiers of the instruction accounts that must hold its address in
+ * their data (i.e. Anchor's `has_one` constraints targeting it).
+ */
+export function anchorRelationsPluginNode(relations: string[]): PluginNode[] | undefined {
+    return relations.length > 0 ? [pluginNode('anchor.relations', relations)] : undefined;
 }

@@ -13,7 +13,7 @@ import {
 } from '@codama/nodes';
 
 import { getAnchorInstructionDiscriminatorV00 } from '../discriminators';
-import { docsFromAnchor, fixedSizeBytesTypeNode } from '../utils';
+import { DefinedTypeMap, docsFromAnchor, fixedSizeBytesTypeNode } from '../utils';
 import { IdlV00Instruction } from './idl';
 import { instructionAccountNodesFromAnchorV00 } from './InstructionAccountNode';
 import { structFieldTypeNodeFromAnchorV00, typeNodeFromAnchorV00 } from './typeNodes';
@@ -22,6 +22,7 @@ export function instructionNodeFromAnchorV00(
     idl: IdlV00Instruction,
     ixIndex: number,
     origin?: 'anchor' | 'shank',
+    definedTypes: DefinedTypeMap = new Map(),
 ): InstructionNode {
     const name = idl.name ?? '';
     let dataFields = (idl.args ?? []).map(structFieldTypeNodeFromAnchorV00);
@@ -35,7 +36,7 @@ export function instructionNodeFromAnchorV00(
     }
 
     return instructionNode({
-        accounts: instructionAccountNodesFromAnchorV00(idl.accounts ?? []),
+        accounts: instructionAccountNodesFromAnchorV00(idl.accounts ?? [], dataFields, { definedTypes }),
         data: structTypeNode(dataFields),
         discriminators,
         docs: docsFromAnchor(idl.docs),
