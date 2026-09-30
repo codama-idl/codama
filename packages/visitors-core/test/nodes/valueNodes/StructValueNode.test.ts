@@ -1,4 +1,4 @@
-import { numberValueNode, stringValueNode, structFieldValueNode, structValueNode } from '@codama/nodes';
+import { integerValueNode, stringValueNode, structFieldValueNode, structValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -10,7 +10,7 @@ import {
 
 const node = structValueNode([
     structFieldValueNode('name', stringValueNode('Alice')),
-    structFieldValueNode('age', numberValueNode(42)),
+    structFieldValueNode('age', integerValueNode('42')),
 ]);
 
 test('mergeVisitor', () => {
@@ -34,6 +34,6 @@ structValueNode
 |   structFieldValueNode [name]
 |   |   stringValueNode [Alice]
 |   structFieldValueNode [age]
-|   |   numberValueNode [42]`,
+|   |   integerValueNode [42]`,
     );
 });

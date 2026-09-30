@@ -1,4 +1,4 @@
-import { constantNode, numberTypeNode, numberValueNode } from '@codama/nodes';
+import { constantNode, integerTypeNode, integerValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from './_setup';
 
-const node = constantNode('maxItems', numberTypeNode('u64'), numberValueNode(1000));
+const node = constantNode('maxItems', integerTypeNode('u64'), integerValueNode('1000'));
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 3);
@@ -20,8 +20,8 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[constantNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
-    expectDeleteNodesVisitor(node, '[numberValueNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
@@ -29,7 +29,7 @@ test('debugStringVisitor', () => {
         node,
         `
 constantNode [maxItems]
-|   numberTypeNode [u64]
-|   numberValueNode [1000]`,
+|   integerTypeNode [u64]
+|   integerValueNode [1000]`,
     );
 });

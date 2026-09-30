@@ -18,10 +18,12 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = pdaValueNode(pdaLinkNode('associatedToken'), [
-    pdaSeedValueNode('mint', accountValueNode('mint')),
-    pdaSeedValueNode('owner', publicKeyValueNode('8sphVBHQxufE4Jc1HMuWwWdKgoDjncQyPHwxYhfATRtF')),
-]);
+const node = pdaValueNode(pdaLinkNode('associatedToken'), {
+    seeds: [
+        pdaSeedValueNode('mint', accountValueNode('mint')),
+        pdaSeedValueNode('owner', publicKeyValueNode('8sphVBHQxufE4Jc1HMuWwWdKgoDjncQyPHwxYhfATRtF')),
+    ],
+});
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 6);
@@ -33,7 +35,7 @@ test('identityVisitor', () => {
 
 test('identityVisitor with inlined PdaNode', () => {
     const inlinedPdaNode = pdaNode({
-        name: 'associatedToken',
+        identifier: 'associatedToken',
         seeds: [
             variablePdaSeedNode('mint', publicKeyTypeNode()),
             constantPdaSeedNode(
@@ -43,10 +45,12 @@ test('identityVisitor with inlined PdaNode', () => {
             variablePdaSeedNode('owner', publicKeyTypeNode()),
         ],
     });
-    const inlinedPdaValueNode = pdaValueNode(inlinedPdaNode, [
-        pdaSeedValueNode('mint', accountValueNode('mint')),
-        pdaSeedValueNode('owner', publicKeyValueNode('8sphVBHQxufE4Jc1HMuWwWdKgoDjncQyPHwxYhfATRtF')),
-    ]);
+    const inlinedPdaValueNode = pdaValueNode(inlinedPdaNode, {
+        seeds: [
+            pdaSeedValueNode('mint', accountValueNode('mint')),
+            pdaSeedValueNode('owner', publicKeyValueNode('8sphVBHQxufE4Jc1HMuWwWdKgoDjncQyPHwxYhfATRtF')),
+        ],
+    });
     expectIdentityVisitor(inlinedPdaValueNode);
 });
 

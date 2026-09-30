@@ -1,11 +1,11 @@
-import { assertIsNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { assertIsNode, integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { identityVisitor, interceptVisitor, visit } from '../src';
 
 test('it visits all nodes and returns different instances of the same nodes', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // When we visit it using the identity visitor.
     const result = visit(node, identityVisitor());
@@ -22,7 +22,7 @@ test('it visits all nodes and returns different instances of the same nodes', ()
 
 test('it can remove nodes by returning null', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // And given an identity visitor overidden to remove all public key nodes.
     const visitor = identityVisitor();
@@ -32,17 +32,17 @@ test('it can remove nodes by returning null', () => {
     const result = visit(node, visitor);
 
     // Then we expect the following tree back.
-    expect(result).toEqual(tupleTypeNode([numberTypeNode('u32')]));
+    expect(result).toEqual(tupleTypeNode([integerTypeNode('u32')]));
 });
 
 test('it can create partial visitors', () => {
     // Given the following 3-nodes tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // And an identity visitor that only supports 2 of these nodes
     // whilst using an interceptor to record the events that happened.
     const events: string[] = [];
-    const visitor = interceptVisitor(identityVisitor({ keys: ['tupleTypeNode', 'numberTypeNode'] }), (node, next) => {
+    const visitor = interceptVisitor(identityVisitor({ keys: ['tupleTypeNode', 'integerTypeNode'] }), (node, next) => {
         events.push(`visiting:${node.kind}`);
         return next(node);
     });
@@ -58,7 +58,7 @@ test('it can create partial visitors', () => {
     expect((result.items ?? [])[1]).not.toBe((node.items ?? [])[1]);
 
     // But the unsupported node was not visited.
-    expect(events).toEqual(['visiting:tupleTypeNode', 'visiting:numberTypeNode']);
+    expect(events).toEqual(['visiting:tupleTypeNode', 'visiting:integerTypeNode']);
 
     // And the unsupported node cannot be visited.
     // @ts-expect-error PublicKeyTypeNode is not supported.

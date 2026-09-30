@@ -1,43 +1,42 @@
 import {
     accountNode,
-    amountTypeNode,
+    addTypeNodeTransforms,
     arrayTypeNode,
     booleanTypeNode,
     bytesTypeNode,
     bytesValueNode,
     constantValueNode,
     constantValueNodeFromString,
-    dateTimeTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
-    enumEmptyVariantTypeNode,
-    enumTupleVariantTypeNode,
+    durationTypeNode,
     enumTypeNode,
+    enumVariantTypeNode,
     fixedCountNode,
-    fixedSizeTypeNode,
+    fixedPointTypeNode,
+    fixedSizeTransformNode,
+    floatTypeNode,
     GetNodeFromKind,
-    hiddenPrefixTypeNode,
-    hiddenSuffixTypeNode,
-    instructionArgumentNode,
+    hiddenPrefixTransformNode,
+    hiddenSuffixTransformNode,
+    integerTypeNode,
+    integerValueNode,
+    IntegerFormat,
     instructionNode,
     mapTypeNode,
-    NumberFormat,
-    numberTypeNode,
-    numberValueNode,
     optionTypeNode,
-    postOffsetTypeNode,
+    postOffsetTransformNode,
+    preOffsetTransformNode,
     prefixedCountNode,
-    preOffsetTypeNode,
     programLinkNode,
     programNode,
     publicKeyTypeNode,
     remainderCountNode,
     remainderOptionTypeNode,
     rootNode,
-    sentinelTypeNode,
+    sentinelTransformNode,
     setTypeNode,
-    sizePrefixTypeNode,
-    solAmountTypeNode,
+    sizePrefixTransformNode,
     someValueNode,
     stringTypeNode,
     stringValueNode,
@@ -84,37 +83,30 @@ describe('accountNode', () => {
         expectMaxSize(
             accountNode({
                 data: structTypeNode([
-                    structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() }),
-                    structFieldTypeNode({ name: 'maxSupply', type: optionTypeNode(numberTypeNode('u64')) }),
+                    structFieldTypeNode({ identifier: 'authority', type: publicKeyTypeNode() }),
+                    structFieldTypeNode({ identifier: 'maxSupply', type: optionTypeNode(integerTypeNode('u64')) }),
                 ]),
-                name: 'mint',
+                identifier: 'mint',
             }),
             32 + 9,
         );
     });
 });
 
-describe('amountTypeNode', () => {
-    test('it delegates to the underlying number type', () => {
-        expectMaxSize(amountTypeNode(numberTypeNode('u64'), 2, 'GBP'), 8);
-        expectMaxSize(amountTypeNode(numberTypeNode('shortU16'), 2, 'GBP'), 3);
-    });
-});
-
 describe('arrayTypeNode', () => {
     test('it multiplies the max size of the inner item with the fixed count', () => {
-        expectMaxSize(arrayTypeNode(optionTypeNode(numberTypeNode('u32')), fixedCountNode(3)), 5 * 3);
+        expectMaxSize(arrayTypeNode(optionTypeNode(integerTypeNode('u32')), fixedCountNode(3)), 5 * 3);
     });
     test('it returns 0 if the count is 0 and the inner type is unsized', () => {
         expectMaxSize(arrayTypeNode(stringTypeNode('utf8'), fixedCountNode(0)), 0);
     });
     test('it returns null if the count is not fixed', () => {
-        expectMaxSize(arrayTypeNode(numberTypeNode('u16'), prefixedCountNode(numberTypeNode('u8'))), null);
-        expectMaxSize(arrayTypeNode(numberTypeNode('u16'), remainderCountNode()), null);
+        expectMaxSize(arrayTypeNode(integerTypeNode('u16'), prefixedCountNode(integerTypeNode('u8'))), null);
+        expectMaxSize(arrayTypeNode(integerTypeNode('u16'), remainderCountNode()), null);
     });
     test('it returns null if the inner type has no max size', () => {
         expectMaxSize(arrayTypeNode(stringTypeNode('utf8'), fixedCountNode(3)), null);
-        expectMaxSize(arrayTypeNode(stringTypeNode('utf8'), prefixedCountNode(numberTypeNode('u8'))), null);
+        expectMaxSize(arrayTypeNode(stringTypeNode('utf8'), prefixedCountNode(integerTypeNode('u8'))), null);
         expectMaxSize(arrayTypeNode(stringTypeNode('utf8'), remainderCountNode()), null);
     });
     test('it returns 0 if the inner type max size is 0 and the count is fixed', () => {
@@ -124,8 +116,8 @@ describe('arrayTypeNode', () => {
         expectMaxSize(arrayTypeNode(tupleTypeNode([]), remainderCountNode()), 0);
     });
     test('it returns the prefix max size if the inner type size is 0 and the count is prefixed', () => {
-        expectMaxSize(arrayTypeNode(tupleTypeNode([]), prefixedCountNode(numberTypeNode('u32'))), 4);
-        expectMaxSize(arrayTypeNode(tupleTypeNode([]), prefixedCountNode(numberTypeNode('shortU16'))), 3);
+        expectMaxSize(arrayTypeNode(tupleTypeNode([]), prefixedCountNode(integerTypeNode('u32'))), 4);
+        expectMaxSize(arrayTypeNode(tupleTypeNode([]), prefixedCountNode(integerTypeNode('shortU16'))), 3);
     });
 });
 
@@ -134,8 +126,8 @@ describe('booleanTypeNode', () => {
         expectMaxSize(booleanTypeNode(), 1);
     });
     test('it delegates to the custom boolean size otherwise', () => {
-        expectMaxSize(booleanTypeNode(numberTypeNode('u64')), 8);
-        expectMaxSize(booleanTypeNode(numberTypeNode('shortU16')), 3);
+        expectMaxSize(booleanTypeNode({ size: integerTypeNode('u64') }), 8);
+        expectMaxSize(booleanTypeNode({ size: integerTypeNode('shortU16') }), 3);
     });
 });
 
@@ -147,8 +139,17 @@ describe('bytesTypeNode', () => {
 
 describe('constantValueNode', () => {
     test('it returns the type size if it has a max size', () => {
-        expectMaxSize(constantValueNode(optionTypeNode(numberTypeNode('u32')), someValueNode(numberValueNode(42))), 5);
-        expectMaxSize(constantValueNode(fixedSizeTypeNode(stringTypeNode('utf8'), 42), stringValueNode('Hello')), 42);
+        expectMaxSize(
+            constantValueNode(optionTypeNode(integerTypeNode('u32')), someValueNode(integerValueNode('42'))),
+            5,
+        );
+        expectMaxSize(
+            constantValueNode(
+                addTypeNodeTransforms(stringTypeNode('utf8'), [fixedSizeTransformNode(42)]),
+                stringValueNode('Hello'),
+            ),
+            42,
+        );
     });
     test('it returns the size of byte value nodes when used with a base16 encoding', () => {
         expectMaxSize(constantValueNode(bytesTypeNode(), bytesValueNode('base16', '11223344')), 4);
@@ -158,25 +159,32 @@ describe('constantValueNode', () => {
     });
 });
 
-describe('dateTimeTypeNode', () => {
+describe('durationTypeNode', () => {
     test('it delegates to the underlying number type', () => {
-        expectMaxSize(dateTimeTypeNode(numberTypeNode('u64')), 8);
-        expectMaxSize(dateTimeTypeNode(numberTypeNode('shortU16')), 3);
+        expectMaxSize(durationTypeNode(integerTypeNode('u64')), 8);
+        expectMaxSize(durationTypeNode(integerTypeNode('shortU16')), 3);
+    });
+});
+
+describe('fixedPointTypeNode', () => {
+    test('it delegates to the underlying number type', () => {
+        expectMaxSize(fixedPointTypeNode(integerTypeNode('u64'), 9), 8);
+        expectMaxSize(fixedPointTypeNode(integerTypeNode('shortU16'), 9), 3);
     });
 });
 
 describe('definedTypeNode', () => {
     test('it returns the size of the inner type', () => {
-        expectMaxSize(definedTypeNode({ name: 'withMaxSize', type: numberTypeNode('shortU16') }), 3);
-        expectMaxSize(definedTypeNode({ name: 'withoutMaxSize', type: stringTypeNode('utf8') }), null);
+        expectMaxSize(definedTypeNode({ identifier: 'withMaxSize', type: integerTypeNode('shortU16') }), 3);
+        expectMaxSize(definedTypeNode({ identifier: 'withoutMaxSize', type: stringTypeNode('utf8') }), null);
     });
 });
 
 describe('definedTypeLinkNode', () => {
     test('it returns the max size of the type being linked', () => {
         const context = programNode({
-            definedTypes: [definedTypeNode({ name: 'myType', type: numberTypeNode('shortU16') })],
-            name: 'myProgram',
+            definedTypes: [definedTypeNode({ identifier: 'myType', type: integerTypeNode('shortU16') })],
+            identifier: 'myProgram',
             publicKey: '1111',
         });
 
@@ -184,21 +192,21 @@ describe('definedTypeLinkNode', () => {
     });
     test('it returns null if the linked type has no max size', () => {
         const context = programNode({
-            definedTypes: [definedTypeNode({ name: 'myType', type: stringTypeNode('utf8') })],
-            name: 'myProgram',
+            definedTypes: [definedTypeNode({ identifier: 'myType', type: stringTypeNode('utf8') })],
+            identifier: 'myProgram',
             publicKey: '1111',
         });
 
         expectMaxSizeWithContext([context, definedTypeLinkNode('myType')], null);
     });
     test('it returns null if the linked type cannot be found', () => {
-        const context = programNode({ name: 'myProgram', publicKey: '1111' });
+        const context = programNode({ identifier: 'myProgram', publicKey: '1111' });
         expectMaxSizeWithContext([context, definedTypeLinkNode('myMissingType')], null);
     });
     test('it returns null if the linked type is circular', () => {
         const context = programNode({
-            definedTypes: [definedTypeNode({ name: 'myType', type: definedTypeLinkNode('myType') })],
-            name: 'myProgram',
+            definedTypes: [definedTypeNode({ identifier: 'myType', type: definedTypeLinkNode('myType') })],
+            identifier: 'myProgram',
             publicKey: '1111',
         });
 
@@ -206,23 +214,23 @@ describe('definedTypeLinkNode', () => {
     });
     test('it follows linked nodes using the correct paths when jumping between programs', () => {
         const typeA = definedTypeNode({
-            name: 'typeA',
-            type: definedTypeLinkNode('typeB1', programLinkNode('programB')),
+            identifier: 'typeA',
+            type: definedTypeLinkNode('typeB1', { program: programLinkNode('programB') }),
         });
         const programA = programNode({
             definedTypes: [typeA],
-            name: 'programA',
+            identifier: 'programA',
             publicKey: '1111',
         });
         const programB = programNode({
             definedTypes: [
-                definedTypeNode({ name: 'typeB1', type: definedTypeLinkNode('typeB2') }),
-                definedTypeNode({ name: 'typeB2', type: numberTypeNode('shortU16') }),
+                definedTypeNode({ identifier: 'typeB1', type: definedTypeLinkNode('typeB2') }),
+                definedTypeNode({ identifier: 'typeB2', type: integerTypeNode('shortU16') }),
             ],
-            name: 'programB',
+            identifier: 'programB',
             publicKey: '2222',
         });
-        const context = rootNode(programA, [programB]);
+        const context = rootNode(programA, { additionalPrograms: [programB] });
 
         expectMaxSizeWithContext([context, programA, typeA], 3);
     });
@@ -230,17 +238,13 @@ describe('definedTypeLinkNode', () => {
 
 describe('enumTypeNode', () => {
     test('it returns 1 by default for scalar enums', () => {
-        expectMaxSize(
-            enumTypeNode([enumEmptyVariantTypeNode('A'), enumEmptyVariantTypeNode('B'), enumEmptyVariantTypeNode('C')]),
-            1,
-        );
+        expectMaxSize(enumTypeNode([enumVariantTypeNode('A'), enumVariantTypeNode('B'), enumVariantTypeNode('C')]), 1);
     });
     test('it returns the custom size for scalar enums', () => {
         expectMaxSize(
-            enumTypeNode(
-                [enumEmptyVariantTypeNode('A'), enumEmptyVariantTypeNode('B'), enumEmptyVariantTypeNode('C')],
-                { size: numberTypeNode('shortU16') },
-            ),
+            enumTypeNode([enumVariantTypeNode('A'), enumVariantTypeNode('B'), enumVariantTypeNode('C')], {
+                size: integerTypeNode('shortU16'),
+            }),
             3,
         );
     });
@@ -248,105 +252,108 @@ describe('enumTypeNode', () => {
         expectMaxSize(
             enumTypeNode(
                 [
-                    enumTupleVariantTypeNode('A', tupleTypeNode([numberTypeNode('u16')])), // 2 bytes
-                    enumTupleVariantTypeNode('B', tupleTypeNode([numberTypeNode('u32')])), // 4 bytes
+                    enumVariantTypeNode('A', { data: tupleTypeNode([integerTypeNode('u16')]) }), // 2 bytes
+                    enumVariantTypeNode('B', { data: tupleTypeNode([integerTypeNode('u32')]) }), // 4 bytes
                 ],
-                { size: numberTypeNode('u64') },
+                { size: integerTypeNode('u64') },
             ),
             8 + 4,
         );
     });
     test('it returns null if at least one variant has no max size', () => {
-        expectMaxSize(enumTypeNode([enumTupleVariantTypeNode('A', tupleTypeNode([stringTypeNode('utf8')]))]), null);
+        expectMaxSize(
+            enumTypeNode([enumVariantTypeNode('A', { data: tupleTypeNode([stringTypeNode('utf8')]) })]),
+            null,
+        );
     });
 });
 
-describe('fixedSizeTypeNode', () => {
-    test('it returns the fixed size assigned on the node', () => {
-        expectMaxSize(fixedSizeTypeNode(numberTypeNode('u8'), 32), 32);
-        expectMaxSize(fixedSizeTypeNode(stringTypeNode('utf8'), 32), 32);
+describe('fixedSizeTransformNode', () => {
+    test('it returns the fixed size assigned by the transform', () => {
+        expectMaxSize(addTypeNodeTransforms(integerTypeNode('u8'), [fixedSizeTransformNode(32)]), 32);
+        expectMaxSize(addTypeNodeTransforms(stringTypeNode('utf8'), [fixedSizeTransformNode(32)]), 32);
     });
 });
 
-describe('hiddenPrefixTypeNode', () => {
+describe('hiddenPrefixTransformNode', () => {
     test('it returns the sum of all prefixes and the inner item if all of them have a max size', () => {
         const prefix1 = constantValueNodeFromString('base16', '2222');
         const prefix2 = constantValueNodeFromString('base16', '333333');
-        expectMaxSize(hiddenPrefixTypeNode(numberTypeNode('shortU16'), [prefix1, prefix2]), 2 + 3 + 3);
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [hiddenPrefixTransformNode([prefix1, prefix2])]),
+            2 + 3 + 3,
+        );
     });
     test('it returns null if the inner item has no max size', () => {
         const prefix = constantValueNodeFromString('base16', 'ffff');
-        expectMaxSize(hiddenPrefixTypeNode(stringTypeNode('utf8'), [prefix]), null);
+        expectMaxSize(addTypeNodeTransforms(stringTypeNode('utf8'), [hiddenPrefixTransformNode([prefix])]), null);
     });
 });
 
-describe('hiddenSuffixTypeNode', () => {
+describe('hiddenSuffixTransformNode', () => {
     test('it returns the sum of all suffixes and the inner item if all of them have a max size', () => {
         const suffix1 = constantValueNodeFromString('base16', '2222');
         const suffix2 = constantValueNodeFromString('base16', '333333');
-        expectMaxSize(hiddenSuffixTypeNode(numberTypeNode('shortU16'), [suffix1, suffix2]), 3 + 2 + 3);
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [hiddenSuffixTransformNode([suffix1, suffix2])]),
+            3 + 2 + 3,
+        );
     });
     test('it returns null if the inner item has no max size', () => {
         const suffix = constantValueNodeFromString('base16', 'ffff');
-        expectMaxSize(hiddenSuffixTypeNode(stringTypeNode('utf8'), [suffix]), null);
+        expectMaxSize(addTypeNodeTransforms(stringTypeNode('utf8'), [hiddenSuffixTransformNode([suffix])]), null);
     });
 });
 
 describe('instructionNode', () => {
-    test('it returns the total max size of all arguments in the instruction', () => {
+    test('it returns the total max size of all data fields in the instruction', () => {
         expectMaxSize(
             instructionNode({
-                arguments: [
-                    instructionArgumentNode({ name: 'lamports', type: optionTypeNode(numberTypeNode('u64')) }),
-                    instructionArgumentNode({ name: 'space', type: numberTypeNode('shortU16') }),
-                ],
-                name: 'createAccount',
+                data: structTypeNode([
+                    structFieldTypeNode({ identifier: 'lamports', type: optionTypeNode(integerTypeNode('u64')) }),
+                    structFieldTypeNode({ identifier: 'space', type: integerTypeNode('shortU16') }),
+                ]),
+                identifier: 'createAccount',
             }),
             9 + 3,
         );
     });
-    test('it returns null if any argument has no max size', () => {
+    test('it returns null if any data field has no max size', () => {
         expectMaxSize(
             instructionNode({
-                arguments: [
-                    instructionArgumentNode({ name: 'lamports', type: numberTypeNode('u64') }),
-                    instructionArgumentNode({ name: 'name', type: stringTypeNode('utf8') }),
-                ],
-                name: 'createAccount',
+                data: structTypeNode([
+                    structFieldTypeNode({ identifier: 'lamports', type: integerTypeNode('u64') }),
+                    structFieldTypeNode({ identifier: 'name', type: stringTypeNode('utf8') }),
+                ]),
+                identifier: 'createAccount',
             }),
             null,
         );
     });
 });
 
-describe('instructionArgumentNode', () => {
-    test('it returns the max size of the argument type', () => {
-        expectMaxSize(instructionArgumentNode({ name: 'lamports', type: numberTypeNode('shortU16') }), 3);
-    });
-});
-
 describe('mapTypeNode', () => {
     test('it multiplies the max size of the inner item with the fixed count', () => {
-        const key = numberTypeNode('u8');
-        const value = optionTypeNode(numberTypeNode('u16'));
+        const key = integerTypeNode('u8');
+        const value = optionTypeNode(integerTypeNode('u16'));
         expectMaxSize(mapTypeNode(key, value, fixedCountNode(4)), (1 + 3) * 4);
     });
     test('it returns 0 if the count is 0 and the inner type is unsized', () => {
         const key = stringTypeNode('utf8');
-        const value = numberTypeNode('u16');
+        const value = integerTypeNode('u16');
         expectMaxSize(mapTypeNode(key, value, fixedCountNode(0)), 0);
     });
     test('it returns null if the count is not fixed', () => {
-        const key = numberTypeNode('u8');
-        const value = numberTypeNode('u16');
-        expectMaxSize(mapTypeNode(key, value, prefixedCountNode(numberTypeNode('u8'))), null);
+        const key = integerTypeNode('u8');
+        const value = integerTypeNode('u16');
+        expectMaxSize(mapTypeNode(key, value, prefixedCountNode(integerTypeNode('u8'))), null);
         expectMaxSize(mapTypeNode(key, value, remainderCountNode()), null);
     });
     test('it returns null if the inner type has no max size', () => {
-        const key = numberTypeNode('u8');
+        const key = integerTypeNode('u8');
         const value = stringTypeNode('utf8');
         expectMaxSize(mapTypeNode(key, value, fixedCountNode(3)), null);
-        expectMaxSize(mapTypeNode(key, value, prefixedCountNode(numberTypeNode('u8'))), null);
+        expectMaxSize(mapTypeNode(key, value, prefixedCountNode(integerTypeNode('u8'))), null);
         expectMaxSize(mapTypeNode(key, value, remainderCountNode()), null);
     });
     test('it returns 0 if the inner type max size is 0 and the count is fixed', () => {
@@ -359,12 +366,12 @@ describe('mapTypeNode', () => {
     });
     test('it returns the prefix max size if the inner type size is 0 and the count is prefixed', () => {
         const zeroSizeType = tupleTypeNode([]);
-        expectMaxSize(mapTypeNode(zeroSizeType, zeroSizeType, prefixedCountNode(numberTypeNode('u32'))), 4);
-        expectMaxSize(mapTypeNode(zeroSizeType, zeroSizeType, prefixedCountNode(numberTypeNode('shortU16'))), 3);
+        expectMaxSize(mapTypeNode(zeroSizeType, zeroSizeType, prefixedCountNode(integerTypeNode('u32'))), 4);
+        expectMaxSize(mapTypeNode(zeroSizeType, zeroSizeType, prefixedCountNode(integerTypeNode('shortU16'))), 3);
     });
 });
 
-describe('numberTypeNode', () => {
+describe('integerTypeNode', () => {
     test.each([
         ['u8', 1],
         ['i8', 1],
@@ -376,64 +383,115 @@ describe('numberTypeNode', () => {
         ['i64', 8],
         ['u128', 16],
         ['i128', 16],
-        ['f32', 4],
-        ['f64', 8],
         ['shortU16', 3],
-    ])('it returns the size of %s numbers', (format, expectedSize) => {
-        expectMaxSize(numberTypeNode(format as NumberFormat), expectedSize);
+    ] as const)('it returns the size of %s numbers', (format, expectedSize) => {
+        expectMaxSize(integerTypeNode(format as IntegerFormat), expectedSize);
+    });
+});
+
+describe('floatTypeNode', () => {
+    test('it returns the size of f32 numbers', () => {
+        expectMaxSize(floatTypeNode('f32'), 4);
+    });
+    test('it returns the size of f64 numbers', () => {
+        expectMaxSize(floatTypeNode('f64'), 8);
     });
 });
 
 describe('optionTypeNode', () => {
     test('it returns the max size of the inner item plus 1 by default', () => {
-        expectMaxSize(optionTypeNode(numberTypeNode('u32')), 1 + 4);
-        expectMaxSize(optionTypeNode(numberTypeNode('u32'), { fixed: true }), 1 + 4);
+        expectMaxSize(optionTypeNode(integerTypeNode('u32')), 1 + 4);
+        expectMaxSize(optionTypeNode(integerTypeNode('u32'), { fixed: true }), 1 + 4);
     });
     test('it returns the sum of the prefix and inner item max sizes', () => {
-        expectMaxSize(optionTypeNode(numberTypeNode('u32'), { prefix: numberTypeNode('u16') }), 2 + 4);
-        expectMaxSize(optionTypeNode(numberTypeNode('u32'), { fixed: true, prefix: numberTypeNode('u16') }), 2 + 4);
+        expectMaxSize(optionTypeNode(integerTypeNode('u32'), { prefix: integerTypeNode('u16') }), 2 + 4);
+        expectMaxSize(optionTypeNode(integerTypeNode('u32'), { fixed: true, prefix: integerTypeNode('u16') }), 2 + 4);
     });
 });
 
-describe('postOffsetTypeNode', () => {
+describe('postOffsetTransformNode', () => {
     test('it increases the max size by the offset when using a padded offset', () => {
-        expectMaxSize(postOffsetTypeNode(numberTypeNode('shortU16'), 10, 'padded'), 13);
-    });
-    test('it returns null if the inner item is has no max size', () => {
-        expectMaxSize(postOffsetTypeNode(stringTypeNode('utf8'), 4, 'padded'), null);
-    });
-    test('it returns the max size of the inner item for other offset strategies', () => {
-        // Fixed.
-        expectMaxSize(postOffsetTypeNode(numberTypeNode('shortU16'), 42), 3);
-        expectMaxSize(postOffsetTypeNode(numberTypeNode('shortU16'), 42, 'absolute'), 3);
-        expectMaxSize(postOffsetTypeNode(numberTypeNode('shortU16'), 42, 'preOffset'), 3);
-        expectMaxSize(postOffsetTypeNode(numberTypeNode('shortU16'), 42, 'relative'), 3);
-
-        // Variable.
-        expectMaxSize(postOffsetTypeNode(stringTypeNode('utf8'), 42), null);
-        expectMaxSize(postOffsetTypeNode(stringTypeNode('utf8'), 42, 'absolute'), null);
-        expectMaxSize(postOffsetTypeNode(stringTypeNode('utf8'), 42, 'preOffset'), null);
-        expectMaxSize(postOffsetTypeNode(stringTypeNode('utf8'), 42, 'relative'), null);
-    });
-});
-
-describe('preOffsetTypeNode', () => {
-    test('it increases the max size by the offset when using a padded offset', () => {
-        expectMaxSize(preOffsetTypeNode(numberTypeNode('shortU16'), 10, 'padded'), 13);
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [postOffsetTransformNode(10, { strategy: 'padded' })]),
+            13,
+        );
     });
     test('it returns null if the inner item has no max size', () => {
-        expectMaxSize(preOffsetTypeNode(stringTypeNode('utf8'), 4, 'padded'), null);
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [postOffsetTransformNode(4, { strategy: 'padded' })]),
+            null,
+        );
     });
     test('it returns the max size of the inner item for other offset strategies', () => {
         // Fixed.
-        expectMaxSize(preOffsetTypeNode(numberTypeNode('shortU16'), 42), 3);
-        expectMaxSize(preOffsetTypeNode(numberTypeNode('shortU16'), 42, 'absolute'), 3);
-        expectMaxSize(preOffsetTypeNode(numberTypeNode('shortU16'), 42, 'relative'), 3);
+        expectMaxSize(addTypeNodeTransforms(integerTypeNode('shortU16'), [postOffsetTransformNode(42)]), 3);
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [postOffsetTransformNode(42, { strategy: 'absolute' })]),
+            3,
+        );
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [
+                postOffsetTransformNode(42, { strategy: 'preOffset' }),
+            ]),
+            3,
+        );
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [postOffsetTransformNode(42, { strategy: 'relative' })]),
+            3,
+        );
 
         // Variable.
-        expectMaxSize(preOffsetTypeNode(stringTypeNode('utf8'), 42), null);
-        expectMaxSize(preOffsetTypeNode(stringTypeNode('utf8'), 42, 'absolute'), null);
-        expectMaxSize(preOffsetTypeNode(stringTypeNode('utf8'), 42, 'relative'), null);
+        expectMaxSize(addTypeNodeTransforms(stringTypeNode('utf8'), [postOffsetTransformNode(42)]), null);
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [postOffsetTransformNode(42, { strategy: 'absolute' })]),
+            null,
+        );
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [postOffsetTransformNode(42, { strategy: 'preOffset' })]),
+            null,
+        );
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [postOffsetTransformNode(42, { strategy: 'relative' })]),
+            null,
+        );
+    });
+});
+
+describe('preOffsetTransformNode', () => {
+    test('it increases the max size by the offset when using a padded offset', () => {
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [preOffsetTransformNode(10, { strategy: 'padded' })]),
+            13,
+        );
+    });
+    test('it returns null if the inner item has no max size', () => {
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [preOffsetTransformNode(4, { strategy: 'padded' })]),
+            null,
+        );
+    });
+    test('it returns the max size of the inner item for other offset strategies', () => {
+        // Fixed.
+        expectMaxSize(addTypeNodeTransforms(integerTypeNode('shortU16'), [preOffsetTransformNode(42)]), 3);
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [preOffsetTransformNode(42, { strategy: 'absolute' })]),
+            3,
+        );
+        expectMaxSize(
+            addTypeNodeTransforms(integerTypeNode('shortU16'), [preOffsetTransformNode(42, { strategy: 'relative' })]),
+            3,
+        );
+
+        // Variable.
+        expectMaxSize(addTypeNodeTransforms(stringTypeNode('utf8'), [preOffsetTransformNode(42)]), null);
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [preOffsetTransformNode(42, { strategy: 'absolute' })]),
+            null,
+        );
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [preOffsetTransformNode(42, { strategy: 'relative' })]),
+            null,
+        );
     });
 });
 
@@ -448,36 +506,36 @@ describe('remainderOptionTypeNode', () => {
         expectMaxSize(remainderOptionTypeNode(tupleTypeNode([])), 0);
     });
     test('it returns null in all other cases', () => {
-        expectMaxSize(remainderOptionTypeNode(numberTypeNode('u16')), null);
+        expectMaxSize(remainderOptionTypeNode(integerTypeNode('u16')), null);
         expectMaxSize(remainderOptionTypeNode(stringTypeNode('utf8')), null);
     });
 });
 
-describe('sentinelTypeNode', () => {
+describe('sentinelTransformNode', () => {
     test('it returns the sum of the inner type and the sentinel max sizes if both of them exist', () => {
         const sentinel = constantValueNodeFromString('base16', 'ffff');
-        expectMaxSize(sentinelTypeNode(numberTypeNode('shortU16'), sentinel), 2 + 3);
+        expectMaxSize(addTypeNodeTransforms(integerTypeNode('shortU16'), [sentinelTransformNode(sentinel)]), 2 + 3);
     });
     test('it returns null if the inner type has no max size', () => {
         const sentinel = constantValueNodeFromString('base16', 'ffff');
-        expectMaxSize(sentinelTypeNode(stringTypeNode('utf8'), sentinel), null);
+        expectMaxSize(addTypeNodeTransforms(stringTypeNode('utf8'), [sentinelTransformNode(sentinel)]), null);
     });
 });
 
 describe('setTypeNode', () => {
     test('it multiplies the max size of the inner item with the fixed count', () => {
-        expectMaxSize(setTypeNode(optionTypeNode(numberTypeNode('u32')), fixedCountNode(3)), 5 * 3);
+        expectMaxSize(setTypeNode(optionTypeNode(integerTypeNode('u32')), fixedCountNode(3)), 5 * 3);
     });
     test('it returns 0 if the count is 0 and the inner type is unsized', () => {
         expectMaxSize(setTypeNode(stringTypeNode('utf8'), fixedCountNode(0)), 0);
     });
     test('it returns null if the count is not fixed', () => {
-        expectMaxSize(setTypeNode(numberTypeNode('u16'), prefixedCountNode(numberTypeNode('u8'))), null);
-        expectMaxSize(setTypeNode(numberTypeNode('u16'), remainderCountNode()), null);
+        expectMaxSize(setTypeNode(integerTypeNode('u16'), prefixedCountNode(integerTypeNode('u8'))), null);
+        expectMaxSize(setTypeNode(integerTypeNode('u16'), remainderCountNode()), null);
     });
     test('it returns null if the inner type has no max size', () => {
         expectMaxSize(setTypeNode(stringTypeNode('utf8'), fixedCountNode(3)), null);
-        expectMaxSize(setTypeNode(stringTypeNode('utf8'), prefixedCountNode(numberTypeNode('u8'))), null);
+        expectMaxSize(setTypeNode(stringTypeNode('utf8'), prefixedCountNode(integerTypeNode('u8'))), null);
         expectMaxSize(setTypeNode(stringTypeNode('utf8'), remainderCountNode()), null);
     });
     test('it returns 0 if the inner type max size is 0 and the count is fixed', () => {
@@ -487,27 +545,31 @@ describe('setTypeNode', () => {
         expectMaxSize(setTypeNode(tupleTypeNode([]), remainderCountNode()), 0);
     });
     test('it returns the prefix max size if the inner type size is 0 and the count is prefixed', () => {
-        expectMaxSize(setTypeNode(tupleTypeNode([]), prefixedCountNode(numberTypeNode('u32'))), 4);
-        expectMaxSize(setTypeNode(tupleTypeNode([]), prefixedCountNode(numberTypeNode('shortU16'))), 3);
+        expectMaxSize(setTypeNode(tupleTypeNode([]), prefixedCountNode(integerTypeNode('u32'))), 4);
+        expectMaxSize(setTypeNode(tupleTypeNode([]), prefixedCountNode(integerTypeNode('shortU16'))), 3);
     });
 });
 
-describe('sizePrefixTypeNode', () => {
+describe('sizePrefixTransformNode', () => {
     test('it returns the max size of the prefix if the inner type size is 0', () => {
-        expectMaxSize(sizePrefixTypeNode(tupleTypeNode([]), numberTypeNode('shortU16')), 3);
+        expectMaxSize(
+            addTypeNodeTransforms(tupleTypeNode([]), [sizePrefixTransformNode(integerTypeNode('shortU16'))]),
+            3,
+        );
     });
     test('it returns the sum of the prefix and the inner type max sizes if they both exist', () => {
-        expectMaxSize(sizePrefixTypeNode(optionTypeNode(publicKeyTypeNode()), numberTypeNode('shortU16')), 3 + 33);
+        expectMaxSize(
+            addTypeNodeTransforms(optionTypeNode(publicKeyTypeNode()), [
+                sizePrefixTransformNode(integerTypeNode('shortU16')),
+            ]),
+            3 + 33,
+        );
     });
     test('it returns null if the inner type has no max size', () => {
-        expectMaxSize(sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u32')), null);
-    });
-});
-
-describe('solAmountTypeNode', () => {
-    test('it delegates to the underlying number type', () => {
-        expectMaxSize(solAmountTypeNode(numberTypeNode('u64')), 8);
-        expectMaxSize(solAmountTypeNode(numberTypeNode('shortU16')), 3);
+        expectMaxSize(
+            addTypeNodeTransforms(stringTypeNode('utf8'), [sizePrefixTransformNode(integerTypeNode('u32'))]),
+            null,
+        );
     });
 });
 
@@ -522,8 +584,8 @@ describe('stringTypeNode', () => {
 
 describe('structFieldTypeNode', () => {
     test('it returns the max size of the inner type', () => {
-        expectMaxSize(structFieldTypeNode({ name: 'withMaxSize', type: numberTypeNode('shortU16') }), 3);
-        expectMaxSize(structFieldTypeNode({ name: 'withoutMaxSize', type: stringTypeNode('utf8') }), null);
+        expectMaxSize(structFieldTypeNode({ identifier: 'withMaxSize', type: integerTypeNode('shortU16') }), 3);
+        expectMaxSize(structFieldTypeNode({ identifier: 'withoutMaxSize', type: stringTypeNode('utf8') }), null);
     });
 });
 
@@ -531,10 +593,10 @@ describe('structTypeNode', () => {
     test('it returns the sum of the field max sizes if they all have one', () => {
         expectMaxSize(
             structTypeNode([
-                structFieldTypeNode({ name: 'age', type: numberTypeNode('shortU16') }),
+                structFieldTypeNode({ identifier: 'age', type: integerTypeNode('shortU16') }),
                 structFieldTypeNode({
-                    name: 'firstname',
-                    type: optionTypeNode(fixedSizeTypeNode(stringTypeNode('utf8'), 42)),
+                    identifier: 'firstname',
+                    type: optionTypeNode(addTypeNodeTransforms(stringTypeNode('utf8'), [fixedSizeTransformNode(42)])),
                 }),
             ]),
             3 + 43,
@@ -543,8 +605,8 @@ describe('structTypeNode', () => {
     test('it returns null if any field has no max size', () => {
         expectMaxSize(
             structTypeNode([
-                structFieldTypeNode({ name: 'age', type: numberTypeNode('u32') }),
-                structFieldTypeNode({ name: 'firstname', type: stringTypeNode('utf8') }),
+                structFieldTypeNode({ identifier: 'age', type: integerTypeNode('u32') }),
+                structFieldTypeNode({ identifier: 'firstname', type: stringTypeNode('utf8') }),
             ]),
             null,
         );
@@ -553,23 +615,23 @@ describe('structTypeNode', () => {
 
 describe('tupleTypeNode', () => {
     test('it returns the sum of all max sizes if all items have one', () => {
-        expectMaxSize(tupleTypeNode([numberTypeNode('shortU16'), optionTypeNode(numberTypeNode('u32'))]), 3 + 5);
+        expectMaxSize(tupleTypeNode([integerTypeNode('shortU16'), optionTypeNode(integerTypeNode('u32'))]), 3 + 5);
     });
     test('it returns null if any item has no max size', () => {
-        expectMaxSize(tupleTypeNode([numberTypeNode('u16'), stringTypeNode('utf8')]), null);
+        expectMaxSize(tupleTypeNode([integerTypeNode('u16'), stringTypeNode('utf8')]), null);
     });
 });
 
 describe('zeroableOptionTypeNode', () => {
     test('it returns the inner item max size if is has one', () => {
-        expectMaxSize(zeroableOptionTypeNode(numberTypeNode('shortU16')), 3);
+        expectMaxSize(zeroableOptionTypeNode(integerTypeNode('shortU16')), 3);
     });
     test('it returns null if the inner item has no max size', () => {
         expectMaxSize(zeroableOptionTypeNode(stringTypeNode('utf8')), null);
     });
     test('it returns the maximum value between the inner item max size and the zero value when provided', () => {
         const zeroValue = (bytes: number) => constantValueNodeFromString('base16', 'ff'.repeat(bytes));
-        expectMaxSize(zeroableOptionTypeNode(numberTypeNode('u32'), zeroValue(2)), 4);
-        expectMaxSize(zeroableOptionTypeNode(numberTypeNode('u32'), zeroValue(42)), 42);
+        expectMaxSize(zeroableOptionTypeNode(integerTypeNode('u32'), { zeroValue: zeroValue(2) }), 4);
+        expectMaxSize(zeroableOptionTypeNode(integerTypeNode('u32'), { zeroValue: zeroValue(42) }), 42);
     });
 });

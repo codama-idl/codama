@@ -5,15 +5,15 @@ import { Visitor } from './visitor';
 
 export function interceptFirstVisitVisitor<TReturn, TNodeKind extends NodeKind>(
     visitor: Visitor<TReturn, TNodeKind>,
-    interceptor: VisitorInterceptor<TReturn>,
+    interceptor: VisitorInterceptor<TReturn, TNodeKind>,
 ): Visitor<TReturn, TNodeKind> {
     let isFirstVisit = true;
 
-    return interceptVisitor(visitor, (node, next) => {
+    return interceptVisitor(visitor, (node, next, self) => {
         try {
             if (isFirstVisit) {
                 isFirstVisit = false;
-                const result = interceptor(node, next);
+                const result = interceptor(node, next, self);
                 isFirstVisit = true;
                 return result;
             }

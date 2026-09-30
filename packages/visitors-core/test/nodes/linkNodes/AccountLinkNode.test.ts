@@ -1,4 +1,4 @@
-import { accountLinkNode } from '@codama/nodes';
+import { accountLinkNode, programLinkNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = accountLinkNode('token', 'splToken');
+const node = accountLinkNode('token', { program: programLinkNode('splToken') });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);

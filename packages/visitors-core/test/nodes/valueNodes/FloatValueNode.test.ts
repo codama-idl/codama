@@ -1,4 +1,4 @@
-import { argumentValueNode } from '@codama/nodes';
+import { floatValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = argumentValueNode('space');
+const node = floatValueNode('1.5');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[argumentValueNode]', null);
+    expectDeleteNodesVisitor(node, '[floatValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `argumentValueNode [space]`);
+    expectDebugStringVisitor(node, `floatValueNode [1.5]`);
 });

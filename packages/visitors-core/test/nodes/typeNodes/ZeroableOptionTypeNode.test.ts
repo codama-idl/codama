@@ -8,7 +8,9 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = zeroableOptionTypeNode(publicKeyTypeNode(), constantValueNodeFromBytes('base16', 'ff'.repeat(32)));
+const node = zeroableOptionTypeNode(publicKeyTypeNode(), {
+    zeroValue: constantValueNodeFromBytes('base16', 'ff'.repeat(32)),
+});
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 5);

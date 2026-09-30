@@ -1,4 +1,4 @@
-import { durationNumberDisplayNode } from '@codama/nodes';
+import { dataValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = durationNumberDisplayNode({ ticksPerSecond: 1 });
+const node = dataValueNode('config.bump');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[durationNumberDisplayNode]', null);
+    expectDeleteNodesVisitor(node, '[dataValueNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `durationNumberDisplayNode`);
+    expectDebugStringVisitor(node, `dataValueNode [config.bump]`);
 });

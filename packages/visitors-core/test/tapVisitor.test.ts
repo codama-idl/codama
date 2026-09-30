@@ -1,11 +1,11 @@
-import { NumberTypeNode, numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { IntegerTypeNode, integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { mergeVisitor, tapVisitor, visit } from '../src';
 
 test('it returns a new instance of the same visitor whilst tapping into one of its visits', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a sum visitor that counts the nodes.
     const visitor = mergeVisitor(
@@ -13,10 +13,10 @@ test('it returns a new instance of the same visitor whilst tapping into one of i
         (_, values) => values.reduce((a, b) => a + b, 1),
     );
 
-    // And a tap visitor that taps into the numberTypeNode visit and counts them.
+    // And a tap visitor that taps into the integerTypeNode visit and counts them.
     let numberOfNumberNodes = 0;
-    const tappedVisitor = tapVisitor(visitor, 'numberTypeNode', node => {
-        node satisfies NumberTypeNode;
+    const tappedVisitor = tapVisitor(visitor, 'integerTypeNode', node => {
+        node satisfies IntegerTypeNode;
         numberOfNumberNodes++;
     });
 

@@ -1,4 +1,4 @@
-import { definedTypeNode, numberTypeNode, publicKeyTypeNode, TupleTypeNode, tupleTypeNode } from '@codama/nodes';
+import { definedTypeNode, integerTypeNode, publicKeyTypeNode, TupleTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { NodeStack, pipe, recordNodeStackVisitor, tapVisitor, visit, voidVisitor } from '../src';
@@ -6,8 +6,8 @@ import { NodeStack, pipe, recordNodeStackVisitor, tapVisitor, visit, voidVisitor
 test('it records the current node stack of a visit', () => {
     // Given the following tree.
     const node = definedTypeNode({
-        name: 'myType',
-        type: tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]),
+        identifier: 'myType',
+        type: tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]),
     });
 
     // And a visitor that records the current node stack and stores the number stacks in an array.
@@ -16,7 +16,7 @@ test('it records the current node stack of a visit', () => {
     const visitor = pipe(
         voidVisitor(),
         v => recordNodeStackVisitor(v, stack),
-        v => tapVisitor(v, 'numberTypeNode', () => numberStacks.push(stack.clone())),
+        v => tapVisitor(v, 'integerTypeNode', () => numberStacks.push(stack.clone())),
     );
 
     // When we visit the tree.
@@ -33,8 +33,8 @@ test('it records the current node stack of a visit', () => {
 test('it includes the current node when applied last', () => {
     // Given the following tree.
     const node = definedTypeNode({
-        name: 'myType',
-        type: tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]),
+        identifier: 'myType',
+        type: tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]),
     });
 
     // And a visitor that records the current node stack as the last visitor modifier.
@@ -42,7 +42,7 @@ test('it includes the current node when applied last', () => {
     const numberStacks: NodeStack[] = [];
     const visitor = pipe(
         voidVisitor(),
-        v => tapVisitor(v, 'numberTypeNode', () => numberStacks.push(stack.clone())),
+        v => tapVisitor(v, 'integerTypeNode', () => numberStacks.push(stack.clone())),
         v => recordNodeStackVisitor(v, stack),
     );
 

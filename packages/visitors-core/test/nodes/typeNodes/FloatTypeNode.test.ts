@@ -1,4 +1,4 @@
-import { dateTimeNumberDisplayNode } from '@codama/nodes';
+import { floatTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = dateTimeNumberDisplayNode({ ticksPerSecond: 1000 });
+const node = floatTypeNode('f64');
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 1);
@@ -19,9 +19,9 @@ test('identityVisitor', () => {
 });
 
 test('deleteNodesVisitor', () => {
-    expectDeleteNodesVisitor(node, '[dateTimeNumberDisplayNode]', null);
+    expectDeleteNodesVisitor(node, '[floatTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
-    expectDebugStringVisitor(node, `dateTimeNumberDisplayNode`);
+    expectDebugStringVisitor(node, `floatTypeNode [f64]`);
 });

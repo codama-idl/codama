@@ -1,4 +1,4 @@
-import { numberTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = tupleTypeNode([publicKeyTypeNode(), numberTypeNode('u64')]);
+const node = tupleTypeNode([publicKeyTypeNode(), integerTypeNode('u64')]);
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 3);
@@ -20,7 +20,7 @@ test('identityVisitor', () => {
 
 test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[tupleTypeNode]', null);
-    expectDeleteNodesVisitor(node, ['[publicKeyTypeNode]', '[numberTypeNode]'], { ...node, items: undefined });
+    expectDeleteNodesVisitor(node, ['[publicKeyTypeNode]', '[integerTypeNode]'], { ...node, items: undefined });
 });
 
 test('debugStringVisitor', () => {
@@ -29,6 +29,6 @@ test('debugStringVisitor', () => {
         `
 tupleTypeNode
 |   publicKeyTypeNode
-|   numberTypeNode [u64]`,
+|   integerTypeNode [u64]`,
     );
 });

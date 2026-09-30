@@ -7,10 +7,10 @@ export type NodeSelector = NodeSelectorFunction | NodeSelectorPath;
 /**
  * A string that can be used to select a node in a Codama tree.
  * - `*` matches any node.
- * - `someText` matches the name of a node, if any.
+ * - `someText` matches the identifier of a node, if any.
  * - `[someNode]` matches a node of the given kind.
  * - `[someNode|someOtherNode]` matches a node with any of the given kind.
- * - `[someNode]someText` matches both the kind and the name of a node.
+ * - `[someNode]someText` matches both the kind and the identifier of a node.
  * - `a.b.c` matches a node `c` such that its ancestors contains `a` and `b` in order (but not necessarily subsequent).
  */
 export type NodeSelectorPath = string;
@@ -32,12 +32,8 @@ export const getNodeSelectorFunction = (selector: NodeSelector): NodeSelectorFun
             return false;
         }
 
-        // Check names.
-        // NOTE: v2 identifiers are no longer camelCase-normalised, so comparing a
-        // camelCased selector against `node.identifier` is not quite right — the
-        // case-fold/underscore-strip comparison is a follow-up. Cast to `string`
-        // for now to keep the mechanical rename compiling without changing behaviour.
-        if (name && (!('identifier' in node) || camelCase(name) !== (node.identifier as string))) {
+        // Check identifiers.
+        if (name && (!('identifier' in node) || node.identifier !== name)) {
             return false;
         }
 

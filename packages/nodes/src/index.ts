@@ -14,6 +14,7 @@ export * from './EnumTypeNode';
 export * from './InstructionNode';
 export * from './Node';
 export * from './ProgramNode';
+export * from './TextNode';
 export * from './TypeNode';
 
 // Legacy plural-noun aliases preserved for API stability. Each maps to

@@ -1,4 +1,4 @@
-import { arrayTypeNode, numberTypeNode, prefixedCountNode, publicKeyTypeNode } from '@codama/nodes';
+import { arrayTypeNode, integerTypeNode, prefixedCountNode, publicKeyTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = arrayTypeNode(publicKeyTypeNode(), prefixedCountNode(numberTypeNode('u64')));
+const node = arrayTypeNode(publicKeyTypeNode(), prefixedCountNode(integerTypeNode('u64')));
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 4);
@@ -22,7 +22,7 @@ test('deleteNodesVisitor', () => {
     expectDeleteNodesVisitor(node, '[arrayTypeNode]', null);
     expectDeleteNodesVisitor(node, '[publicKeyTypeNode]', null);
     expectDeleteNodesVisitor(node, '[prefixedCountNode]', null);
-    expectDeleteNodesVisitor(node, '[numberTypeNode]', null);
+    expectDeleteNodesVisitor(node, '[integerTypeNode]', null);
 });
 
 test('debugStringVisitor', () => {
@@ -31,7 +31,7 @@ test('debugStringVisitor', () => {
         `
 arrayTypeNode
 |   prefixedCountNode
-|   |   numberTypeNode [u64]
+|   |   integerTypeNode [u64]
 |   publicKeyTypeNode`,
     );
 });

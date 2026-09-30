@@ -1,6 +1,6 @@
 import {
-    NumberTypeNode,
-    numberTypeNode,
+    IntegerTypeNode,
+    integerTypeNode,
     PublicKeyTypeNode,
     publicKeyTypeNode,
     TupleTypeNode,
@@ -12,18 +12,18 @@ import { visit, Visitor, visitOrElse } from '../src';
 
 test('it can create visitors as plain objects', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()])]);
+    const node = tupleTypeNode([integerTypeNode('u32'), tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()])]);
 
     // And a plain object visitor that counts the nodes with different weights.
-    const visitor: Visitor<number, 'numberTypeNode' | 'publicKeyTypeNode' | 'tupleTypeNode'> = {
-        visitNumberType() {
+    const visitor: Visitor<number, 'integerTypeNode' | 'publicKeyTypeNode' | 'tupleTypeNode'> = {
+        visitIntegerType() {
             return 1;
         },
         visitPublicKeyType() {
             return 2;
         },
         visitTupleType(node) {
-            const castedChildren = node.items as (NumberTypeNode | PublicKeyTypeNode | TupleTypeNode)[];
+            const castedChildren = node.items as (IntegerTypeNode | PublicKeyTypeNode | TupleTypeNode)[];
             return castedChildren.map(child => visit(child, this)).reduce((a, b) => a + b, 10);
         },
     };
@@ -37,12 +37,12 @@ test('it can create visitors as plain objects', () => {
 
 test('it can use visitOrElse to fallback if a nested node is not supported by the visitor', () => {
     // Given the following tree.
-    const node = tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]);
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
 
     // And a plain object visitor that counts the tuples and numbers nodes only
     // Such that it falls back to 42 for any other node.
-    const visitor: Visitor<number, 'numberTypeNode' | 'tupleTypeNode'> = {
-        visitNumberType() {
+    const visitor: Visitor<number, 'integerTypeNode' | 'tupleTypeNode'> = {
+        visitIntegerType() {
             return 1;
         },
         visitTupleType(node) {

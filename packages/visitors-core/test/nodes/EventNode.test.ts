@@ -1,6 +1,6 @@
 import {
     eventNode,
-    numberTypeNode,
+    integerTypeNode,
     publicKeyTypeNode,
     sizeDiscriminatorNode,
     structFieldTypeNode,
@@ -17,11 +17,11 @@ import {
 
 const node = eventNode({
     data: structTypeNode([
-        structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() }),
-        structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') }),
+        structFieldTypeNode({ identifier: 'authority', type: publicKeyTypeNode() }),
+        structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') }),
     ]),
     discriminators: [sizeDiscriminatorNode(40)],
-    name: 'transferEvent',
+    identifier: 'transferEvent',
 });
 
 test('mergeVisitor', () => {
@@ -45,7 +45,7 @@ eventNode [transferEvent]
 |   |   structFieldTypeNode [authority]
 |   |   |   publicKeyTypeNode
 |   |   structFieldTypeNode [amount]
-|   |   |   numberTypeNode [u64]
+|   |   |   integerTypeNode [u64]
 |   sizeDiscriminatorNode [40]`,
     );
 });
