@@ -1,4 +1,4 @@
-import { getNodeCodec, ReadonlyUint8Array } from '@codama/dynamic-codecs';
+import { getNodeValueCodec, ReadonlyUint8Array } from '@codama/dynamic-codecs';
 import { AccountNode, EventNode, GetNodeFromKind, IdentifierString, InstructionNode, RootNode } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
 import type {
@@ -56,7 +56,7 @@ export function parseData<TKind extends ParsableNodeKind>(
         options,
     );
     if (!path) return undefined;
-    const codec = getNodeCodec(path as NodePath<ParsableNode>);
+    const codec = getNodeValueCodec(path as NodePath<ParsableNode>);
     try {
         return { data: codec.decode(bytes), path };
     } catch {

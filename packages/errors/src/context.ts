@@ -127,10 +127,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         idlType: string;
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: {
-        field: IdentifierString;
+        field: PathString;
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND]: {
-        field: IdentifierString;
+        field: PathString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]: {
         accountName: IdentifierString;

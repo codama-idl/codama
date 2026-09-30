@@ -1,23 +1,21 @@
 import {
     accountNode,
-    argumentValueNode,
     bytesTypeNode,
     constantDiscriminatorNode,
     constantValueNode,
     constantValueNodeFromBytes,
     eventNode,
     fieldDiscriminatorNode,
-    fixedSizeTypeNode,
-    hiddenPrefixTypeNode,
+    fixedSizeTransformNode,
+    hiddenPrefixTransformNode,
     instructionAccountNode,
-    instructionArgumentNode,
     instructionNode,
     instructionRemainingAccountsNode,
-    numberTypeNode,
-    numberValueNode,
+    integerTypeNode,
+    integerValueNode,
     programNode,
     rootNode,
-    sizePrefixTypeNode,
+    sizePrefixTransformNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -34,32 +32,32 @@ describe('parseAccountData', () => {
         const account = accountNode({
             data: structTypeNode([
                 structFieldTypeNode({
-                    defaultValue: numberValueNode(9),
-                    name: 'discriminator',
-                    type: numberTypeNode('u8'),
+                    defaultValue: integerValueNode('9'),
+                    identifier: 'discriminator',
+                    type: integerTypeNode('u8'),
                 }),
                 structFieldTypeNode({
-                    name: 'firstname',
-                    type: sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u16')),
+                    identifier: 'firstname',
+                    type: stringTypeNode('utf8', { transforms: [sizePrefixTransformNode(integerTypeNode('u16'))] }),
                 }),
                 structFieldTypeNode({
-                    name: 'age',
-                    type: numberTypeNode('u8'),
+                    identifier: 'age',
+                    type: integerTypeNode('u8'),
                 }),
             ]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'myAccount',
+            identifier: 'myAccount',
         });
         const root = rootNode(
             programNode({
                 accounts: [account],
-                name: 'myProgram',
+                identifier: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = parseAccountData(root, hex('090500416c6963652a'));
         expect(result).toStrictEqual({
-            data: { age: 42, discriminator: 9, firstname: 'Alice' },
+            data: { age: 42n, discriminator: 9n, firstname: 'Alice' },
             path: [root, root.program, account],
         });
     });
@@ -67,13 +65,13 @@ describe('parseAccountData', () => {
     test('it decodes a single account without discriminator', () => {
         // Given a program with exactly one account without discriminator.
         const account = accountNode({
-            data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
-            name: 'myAccount',
+            data: structTypeNode([structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u32') })]),
+            identifier: 'myAccount',
         });
         const root = rootNode(
             programNode({
                 accounts: [account],
-                name: 'myProgram',
+                identifier: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -81,7 +79,7 @@ describe('parseAccountData', () => {
         const result = parseAccountData(root, hex('2a000000'));
         // Then we expect the single account to be decoded via the fallback.
         expect(result).toStrictEqual({
-            data: { value: 42 },
+            data: { value: 42n },
             path: [root, root.program, account],
         });
     });
@@ -90,34 +88,34 @@ describe('parseAccountData', () => {
 describe('parseInstructionData', () => {
     test('it parses some instruction data from a root node', () => {
         const instruction = instructionNode({
-            arguments: [
-                instructionArgumentNode({
-                    defaultValue: numberValueNode(9),
-                    name: 'discriminator',
-                    type: numberTypeNode('u8'),
+            data: structTypeNode([
+                structFieldTypeNode({
+                    defaultValue: integerValueNode('9'),
+                    identifier: 'discriminator',
+                    type: integerTypeNode('u8'),
                 }),
-                instructionArgumentNode({
-                    name: 'firstname',
-                    type: sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u16')),
+                structFieldTypeNode({
+                    identifier: 'firstname',
+                    type: stringTypeNode('utf8', { transforms: [sizePrefixTransformNode(integerTypeNode('u16'))] }),
                 }),
-                instructionArgumentNode({
-                    name: 'age',
-                    type: numberTypeNode('u8'),
+                structFieldTypeNode({
+                    identifier: 'age',
+                    type: integerTypeNode('u8'),
                 }),
-            ],
+            ]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'myInstruction',
+            identifier: 'myInstruction',
         });
         const root = rootNode(
             programNode({
+                identifier: 'myProgram',
                 instructions: [instruction],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = parseInstructionData(root, hex('090500416c6963652a'));
         expect(result).toStrictEqual({
-            data: { age: 42, discriminator: 9, firstname: 'Alice' },
+            data: { age: 42n, discriminator: 9n, firstname: 'Alice' },
             path: [root, root.program, instruction],
         });
     });
@@ -125,13 +123,13 @@ describe('parseInstructionData', () => {
     test('it decodes a single instruction without discriminator', () => {
         // Given a program with exactly one instruction that has no discriminator (Memo-shaped).
         const instruction = instructionNode({
-            arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
-            name: 'memo',
+            data: structTypeNode([structFieldTypeNode({ identifier: 'message', type: stringTypeNode('utf8') })]),
+            identifier: 'memo',
         });
         const root = rootNode(
             programNode({
+                identifier: 'myProgram',
                 instructions: [instruction],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -150,17 +148,21 @@ describe('parseInstructionData', () => {
         // Given a program with two instructions without discriminator.
         const root = rootNode(
             programNode({
+                identifier: 'myProgram',
                 instructions: [
                     instructionNode({
-                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
-                        name: 'instructionA',
+                        data: structTypeNode([
+                            structFieldTypeNode({ identifier: 'message', type: stringTypeNode('utf8') }),
+                        ]),
+                        identifier: 'instructionA',
                     }),
                     instructionNode({
-                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
-                        name: 'instructionB',
+                        data: structTypeNode([
+                            structFieldTypeNode({ identifier: 'message', type: stringTypeNode('utf8') }),
+                        ]),
+                        identifier: 'instructionB',
                     }),
                 ],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -176,20 +178,20 @@ describe('parseInstructionData', () => {
         // Given a program with one instruction that declares a discriminator field.
         const root = rootNode(
             programNode({
+                identifier: 'myProgram',
                 instructions: [
                     instructionNode({
-                        arguments: [
-                            instructionArgumentNode({
-                                defaultValue: numberValueNode(42),
-                                name: 'discriminator',
-                                type: numberTypeNode('u8'),
+                        data: structTypeNode([
+                            structFieldTypeNode({
+                                defaultValue: integerValueNode('42'),
+                                identifier: 'discriminator',
+                                type: integerTypeNode('u8'),
                             }),
-                        ],
+                        ]),
                         discriminators: [fieldDiscriminatorNode('discriminator')],
-                        name: 'myInstruction',
+                        identifier: 'myInstruction',
                     }),
                 ],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -205,24 +207,26 @@ describe('parseInstructionData', () => {
         // Given a program with instruction with discriminator and instruction without discriminator.
         const root = rootNode(
             programNode({
+                identifier: 'myProgram',
                 instructions: [
                     instructionNode({
-                        arguments: [
-                            instructionArgumentNode({
-                                defaultValue: numberValueNode(9),
-                                name: 'discriminator',
-                                type: numberTypeNode('u8'),
+                        data: structTypeNode([
+                            structFieldTypeNode({
+                                defaultValue: integerValueNode('9'),
+                                identifier: 'discriminator',
+                                type: integerTypeNode('u8'),
                             }),
-                        ],
+                        ]),
                         discriminators: [fieldDiscriminatorNode('discriminator')],
-                        name: 'instructionWithDiscriminator',
+                        identifier: 'instructionWithDiscriminator',
                     }),
                     instructionNode({
-                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
-                        name: 'instructionWithoutDiscriminator',
+                        data: structTypeNode([
+                            structFieldTypeNode({ identifier: 'message', type: stringTypeNode('utf8') }),
+                        ]),
+                        identifier: 'instructionWithoutDiscriminator',
                     }),
                 ],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -238,60 +242,67 @@ describe('parseEventData', () => {
         const event = eventNode({
             data: structTypeNode([
                 structFieldTypeNode({
-                    defaultValue: numberValueNode(9),
-                    name: 'discriminator',
-                    type: numberTypeNode('u8'),
+                    defaultValue: integerValueNode('9'),
+                    identifier: 'discriminator',
+                    type: integerTypeNode('u8'),
                 }),
                 structFieldTypeNode({
-                    name: 'firstname',
-                    type: sizePrefixTypeNode(stringTypeNode('utf8'), numberTypeNode('u16')),
+                    identifier: 'firstname',
+                    type: stringTypeNode('utf8', { transforms: [sizePrefixTransformNode(integerTypeNode('u16'))] }),
                 }),
                 structFieldTypeNode({
-                    name: 'age',
-                    type: numberTypeNode('u8'),
+                    identifier: 'age',
+                    type: integerTypeNode('u8'),
                 }),
             ]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'myEvent',
+            identifier: 'myEvent',
         });
         const root = rootNode(
             programNode({
                 events: [event],
-                name: 'myProgram',
+                identifier: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = parseEventData(root, hex('090500416c6963652a'));
         expect(result).toStrictEqual({
-            data: { age: 42, discriminator: 9, firstname: 'Alice' },
+            data: { age: 42n, discriminator: 9n, firstname: 'Alice' },
             path: [root, root.program, event],
         });
     });
     test('it parses tuple event data from a root node', () => {
         const event = eventNode({
-            data: hiddenPrefixTypeNode(tupleTypeNode([numberTypeNode('u32')]), [
-                constantValueNode(fixedSizeTypeNode(bytesTypeNode(), 2), constantValueNodeFromBytes('base16', '0102')),
-            ]),
+            data: tupleTypeNode([integerTypeNode('u32')], {
+                transforms: [
+                    hiddenPrefixTransformNode([
+                        constantValueNode(
+                            bytesTypeNode({ transforms: [fixedSizeTransformNode(2)] }),
+                            constantValueNodeFromBytes('base16', '0102'),
+                        ),
+                    ]),
+                ],
+            }),
             discriminators: [
                 constantDiscriminatorNode(
                     constantValueNode(
-                        fixedSizeTypeNode(bytesTypeNode(), 2),
+                        bytesTypeNode({ transforms: [fixedSizeTransformNode(2)] }),
                         constantValueNodeFromBytes('base16', '0102'),
                     ),
                 ),
             ],
-            name: 'tupleEvent',
+            identifier: 'tupleEvent',
         });
         const root = rootNode(
             programNode({
                 events: [event],
-                name: 'myProgram',
+                identifier: 'myProgram',
                 publicKey: '1111',
             }),
         );
         const result = parseEventData(root, hex('01022a000000'));
         expect(result).toStrictEqual({
-            data: [42],
+            data: [42n],
             path: [root, root.program, event],
         });
     });
@@ -299,13 +310,13 @@ describe('parseEventData', () => {
     test('it decodes a single event without discriminator', () => {
         // Given a program with exactly one non-discriminated event.
         const event = eventNode({
-            data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
-            name: 'myEvent',
+            data: structTypeNode([structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u32') })]),
+            identifier: 'myEvent',
         });
         const root = rootNode(
             programNode({
                 events: [event],
-                name: 'myProgram',
+                identifier: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -313,7 +324,7 @@ describe('parseEventData', () => {
         const result = parseEventData(root, hex('2a000000'));
         // Then we expect the event to be decoded via the fallback.
         expect(result).toStrictEqual({
-            data: { value: 42 },
+            data: { value: 42n },
             path: [root, root.program, event],
         });
     });
@@ -323,14 +334,14 @@ describe('parseInstruction', () => {
     test('it parses a single instruction without discriminator', () => {
         // Given a Memo-shaped program: one instruction without discriminator with a single signer account.
         const memoInstruction = instructionNode({
-            accounts: [instructionAccountNode({ isSigner: true, isWritable: false, name: 'signer' })],
-            arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
-            name: 'memo',
+            accounts: [instructionAccountNode({ identifier: 'signer', isSigner: true, isWritable: false })],
+            data: structTypeNode([structFieldTypeNode({ identifier: 'message', type: stringTypeNode('utf8') })]),
+            identifier: 'memo',
         });
         const root = rootNode(
             programNode({
+                identifier: 'myProgram',
                 instructions: [memoInstruction],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -357,14 +368,12 @@ describe('parseInstruction', () => {
     test('it captures account metas beyond the named accounts as remaining accounts', () => {
         // Given an instruction with one named account and a remaining-accounts group.
         const instruction = instructionNode({
-            accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'source' })],
-            arguments: [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') })],
-            name: 'transfer',
-            remainingAccounts: [
-                instructionRemainingAccountsNode(argumentValueNode('multiSigners'), { isSigner: true }),
-            ],
+            accounts: [instructionAccountNode({ identifier: 'source', isSigner: false, isWritable: true })],
+            data: structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u8') })]),
+            identifier: 'transfer',
+            remainingAccounts: [instructionRemainingAccountsNode('multiSigners', { isSigner: true })],
         });
-        const root = rootNode(programNode({ instructions: [instruction], name: 'myProgram', publicKey: '1111' }));
+        const root = rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }));
 
         // When we parse a concrete instruction carrying two metas beyond the named account.
         const result = parseInstruction(root, {
@@ -388,39 +397,41 @@ describe('parseInstruction', () => {
         // Given a token-shaped main program and an ATA-shaped additional program whose
         // instructions share the same one-byte field discriminator.
         const discriminator = (defaultValue: number) =>
-            instructionArgumentNode({
-                defaultValue: numberValueNode(defaultValue),
-                name: 'discriminator',
-                type: numberTypeNode('u8'),
+            structFieldTypeNode({
+                defaultValue: integerValueNode(String(defaultValue)),
+                identifier: 'discriminator',
+                type: integerTypeNode('u8'),
             });
         const additionalInstruction = instructionNode({
             accounts: [
-                instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' }),
-                instructionAccountNode({ isSigner: false, isWritable: true, name: 'ata' }),
+                instructionAccountNode({ identifier: 'payer', isSigner: true, isWritable: true }),
+                instructionAccountNode({ identifier: 'ata', isSigner: false, isWritable: true }),
             ],
-            arguments: [discriminator(1)],
+            data: structTypeNode([discriminator(1)]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'createAssociatedTokenIdempotent',
+            identifier: 'createAssociatedTokenIdempotent',
         });
         const additionalProgram = programNode({
+            identifier: 'associatedToken',
             instructions: [additionalInstruction],
-            name: 'associatedToken',
             publicKey: '2222',
         });
         const root = rootNode(
             programNode({
+                identifier: 'token',
                 instructions: [
                     instructionNode({
-                        accounts: [instructionAccountNode({ isSigner: false, isWritable: true, name: 'account' })],
-                        arguments: [discriminator(1)],
+                        accounts: [
+                            instructionAccountNode({ identifier: 'account', isSigner: false, isWritable: true }),
+                        ],
+                        data: structTypeNode([discriminator(1)]),
                         discriminators: [fieldDiscriminatorNode('discriminator')],
-                        name: 'initializeAccount',
+                        identifier: 'initializeAccount',
                     }),
                 ],
-                name: 'token',
                 publicKey: '1111',
             }),
-            [additionalProgram],
+            { additionalPrograms: [additionalProgram] },
         );
 
         // And a concrete instruction targeting the additional program's address.
@@ -442,7 +453,7 @@ describe('parseInstruction', () => {
                 { address: 'payer111', name: 'payer', role: AccountRole.WRITABLE_SIGNER },
                 { address: 'ata11111', name: 'ata', role: AccountRole.WRITABLE },
             ],
-            data: { discriminator: 1 },
+            data: { discriminator: 1n },
             path: [root, additionalProgram, additionalInstruction],
             remainingAccounts: [],
         });
@@ -451,19 +462,19 @@ describe('parseInstruction', () => {
         // Given an instruction whose discriminator matches one-byte data but whose full
         // arguments require more bytes than provided.
         const instruction = instructionNode({
-            arguments: [
-                instructionArgumentNode({
-                    defaultValue: numberValueNode(1),
+            data: structTypeNode([
+                structFieldTypeNode({
+                    defaultValue: integerValueNode('1'),
                     defaultValueStrategy: 'omitted',
-                    name: 'discriminator',
-                    type: numberTypeNode('u8'),
+                    identifier: 'discriminator',
+                    type: integerTypeNode('u8'),
                 }),
-                instructionArgumentNode({ name: 'amount', type: numberTypeNode('u64') }),
-            ],
+                structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') }),
+            ]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'myInstruction',
+            identifier: 'myInstruction',
         });
-        const root = rootNode(programNode({ instructions: [instruction], name: 'myProgram', publicKey: '1111' }));
+        const root = rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }));
 
         // When we parse truncated data: the discriminator matches but `amount` cannot decode.
         const result = parseInstruction(root, {
@@ -479,13 +490,15 @@ describe('parseInstruction', () => {
     test('it does not parse an instruction whose program is not part of the root', () => {
         const root = rootNode(
             programNode({
+                identifier: 'myProgram',
                 instructions: [
                     instructionNode({
-                        arguments: [instructionArgumentNode({ name: 'value', type: numberTypeNode('u8') })],
-                        name: 'myInstruction',
+                        data: structTypeNode([
+                            structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') }),
+                        ]),
+                        identifier: 'myInstruction',
                     }),
                 ],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -502,19 +515,21 @@ describe('parseData', () => {
     test('it decodes via fallback a single node without discriminator', () => {
         // Given a program with one account without discriminator.
         const account = accountNode({
-            data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
-            name: 'myAccount',
+            data: structTypeNode([structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u32') })]),
+            identifier: 'myAccount',
         });
         const root = rootNode(
             programNode({
                 accounts: [account],
+                identifier: 'myProgram',
                 instructions: [
                     instructionNode({
-                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
-                        name: 'myInstruction',
+                        data: structTypeNode([
+                            structFieldTypeNode({ identifier: 'message', type: stringTypeNode('utf8') }),
+                        ]),
+                        identifier: 'myInstruction',
                     }),
                 ],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
@@ -522,7 +537,7 @@ describe('parseData', () => {
         const result = parseData(root, hex('2a000000'), 'accountNode');
         // Then we expect the single account to be decoded via the fallback.
         expect(result).toStrictEqual({
-            data: { value: 42 },
+            data: { value: 42n },
             path: [root, root.program, account],
         });
     });
@@ -533,17 +548,21 @@ describe('parseData', () => {
             programNode({
                 accounts: [
                     accountNode({
-                        data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u32') })]),
-                        name: 'accountWithoutDiscriminator',
+                        data: structTypeNode([
+                            structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u32') }),
+                        ]),
+                        identifier: 'accountWithoutDiscriminator',
                     }),
                 ],
+                identifier: 'myProgram',
                 instructions: [
                     instructionNode({
-                        arguments: [instructionArgumentNode({ name: 'message', type: stringTypeNode('utf8') })],
-                        name: 'instructionWithoutDiscriminator',
+                        data: structTypeNode([
+                            structFieldTypeNode({ identifier: 'message', type: stringTypeNode('utf8') }),
+                        ]),
+                        identifier: 'instructionWithoutDiscriminator',
                     }),
                 ],
-                name: 'myProgram',
                 publicKey: '1111',
             }),
         );
