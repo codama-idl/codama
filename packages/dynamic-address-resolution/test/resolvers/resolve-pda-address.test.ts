@@ -4,6 +4,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
     CodamaError,
 } from '@codama/errors';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
@@ -257,6 +258,24 @@ describe('variable seeds', () => {
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, {
                 pdaName: ownerPda.identifier,
                 seedName: ownerPda.seeds![0].identifier,
+            }),
+        );
+    });
+
+    test('it throws when a seed value has the wrong type rather than deriving another PDA', async () => {
+        const data = structTypeNode([structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() })]);
+        const defaultValue = pdaValueNode(pdaLinkNode('vault'), {
+            seeds: [pdaSeedValueNode('owner', dataValueNode('owner'))],
+        });
+        const { path } = getAccountPath(account('vault', { defaultValue }), { data }, { pdas: [ownerPda] });
+        await expect(resolveInstructionAccountAddress({ dataInput: { owner: 42 }, path })).rejects.toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({
+                    __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
+                    actualType: 'number (42)',
+                    expectedType: 'Address',
+                    nodeKind: 'publicKeyTypeNode',
+                }),
             }),
         );
     });

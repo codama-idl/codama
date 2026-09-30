@@ -1,6 +1,6 @@
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
-    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
     CodamaError,
 } from '@codama/errors';
 import {
@@ -72,15 +72,18 @@ test('it throws when the variant is not part of its parent enum', () => {
 });
 
 test('it throws when a variant with data is encoded without data', () => {
-    const codec = getNodeValueCodec([enumVariantTypeNode('move', { data: integerTypeNode('u8') })]);
-    const expected = expect.objectContaining({
-        context: {
-            __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE,
-            actualType: "variant 'move' without data",
-            expectedType: "{ __kind: 'move', data }",
-            nodeKind: 'enumVariantTypeNode',
-        },
-    });
-    expect(() => codec.encode({ __kind: 'move', data: undefined })).toThrow(expected);
-    expect(() => codec.encode('move')).toThrow(expected);
+    const move = enumVariantTypeNode('move', { data: integerTypeNode('u8') });
+    const codec = getNodeValueCodec([move]);
+    const context = {
+        __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
+        actualType: "variant 'move' without data",
+        expectedType: "{ __kind: 'move', data }",
+        nodeKind: 'enumVariantTypeNode',
+        nodePath: [move],
+    };
+    expect(() => codec.encode({ __kind: 'move', data: undefined })).toThrow(expect.objectContaining({ context }));
+    // Unlike enums, standalone variants are not encoded from their identifier.
+    expect(() => codec.encode('move')).toThrow(
+        expect.objectContaining({ context: { ...context, actualType: 'string' } }),
+    );
 });

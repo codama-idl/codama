@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, CodamaError } from '@codama/errors';
+import { CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, CodamaError } from '@codama/errors';
 import {
     enumTypeNode,
     enumVariantTypeNode,
@@ -142,27 +142,28 @@ test('it encodes variants without data from their identifier', () => {
 });
 
 test('it throws when encoding an unknown variant', () => {
-    const codec = getNodeValueCodec([
-        enumTypeNode([enumVariantTypeNode('frozen'), enumVariantTypeNode('initialized')]),
-    ]);
+    const enumType = enumTypeNode([enumVariantTypeNode('frozen'), enumVariantTypeNode('initialized')]);
+    const codec = getNodeValueCodec([enumType]);
     expect(() => codec.encode('Frozen')).toThrow(
-        new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+        new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
             actualType: "variant 'Frozen'",
             expectedType: 'one of [frozen, initialized]',
             nodeKind: 'enumTypeNode',
+            nodePath: [enumType],
         }),
     );
     expect(() => codec.encode({ __kind: 'thawed' })).toThrow(/variant 'thawed'/);
 });
 
 test('it throws when encoding a variant with data without its data', () => {
-    const codec = getNodeValueCodec([
-        enumTypeNode([enumVariantTypeNode('quit'), enumVariantTypeNode('move', { data: integerTypeNode('u8') })]),
-    ]);
-    const error = new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
+    const move = enumVariantTypeNode('move', { data: integerTypeNode('u8') });
+    const enumType = enumTypeNode([enumVariantTypeNode('quit'), move]);
+    const codec = getNodeValueCodec([enumType]);
+    const error = new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
         actualType: "variant 'move' without data",
         expectedType: "{ __kind: 'move', data }",
         nodeKind: 'enumVariantTypeNode',
+        nodePath: [enumType, move],
     });
     expect(() => codec.encode('move')).toThrow(error);
     expect(() => codec.encode({ __kind: 'move' })).toThrow(error);
