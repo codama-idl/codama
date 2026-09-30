@@ -618,7 +618,7 @@ const visitor = bottomUpTransformerVisitor([
             '[accountNode]',
             path => {
                 const node = getLastNodeFromPath(path);
-                return 'name' in node && node.name.startsWith('m');
+                return 'identifier' in node && node.identifier.startsWith('m');
             },
         ],
         transform: () => null,

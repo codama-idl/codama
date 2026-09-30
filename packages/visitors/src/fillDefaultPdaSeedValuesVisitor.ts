@@ -55,9 +55,9 @@ export function fillDefaultPdaSeedValuesVisitor(
                 if (strictMode && !allSeedsAreValid(instruction, foundPda, seeds)) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, {
                         instruction,
-                        instructionName: instruction.name,
+                        instructionName: instruction.identifier,
                         pda: foundPda,
-                        pdaName: foundPda.name,
+                        pdaName: foundPda.identifier,
                     });
                 }
                 return pdaValueNode(visitedNode.pda, seeds);
@@ -71,9 +71,9 @@ function addDefaultSeedValuesFromPdaWhenMissing(
     pda: PdaNode,
     existingSeeds: PdaSeedValueNode[],
 ): PdaSeedValueNode[] {
-    const existingSeedNames = new Set(existingSeeds.map(seed => seed.name));
+    const existingSeedNames = new Set(existingSeeds.map(seed => seed.identifier));
     const defaultSeeds = getDefaultSeedValuesFromPda(instruction, pda).filter(
-        seed => !existingSeedNames.has(seed.name),
+        seed => !existingSeedNames.has(seed.identifier),
     );
     return [...existingSeeds, ...defaultSeeds];
 }
@@ -82,14 +82,14 @@ function getDefaultSeedValuesFromPda(instruction: InstructionNode, pda: PdaNode)
     return (pda.seeds ?? []).flatMap((seed): PdaSeedValueNode[] => {
         if (!isNode(seed, 'variablePdaSeedNode')) return [];
 
-        const hasMatchingAccount = (instruction.accounts ?? []).some(a => a.name === seed.name);
+        const hasMatchingAccount = (instruction.accounts ?? []).some(a => a.identifier === seed.identifier);
         if (isNode(seed.type, 'publicKeyTypeNode') && hasMatchingAccount) {
-            return [pdaSeedValueNode(seed.name, accountValueNode(seed.name))];
+            return [pdaSeedValueNode(seed.identifier, accountValueNode(seed.identifier))];
         }
 
-        const hasMatchingArgument = getAllInstructionArguments(instruction).some(a => a.name === seed.name);
+        const hasMatchingArgument = getAllInstructionArguments(instruction).some(a => a.identifier === seed.identifier);
         if (hasMatchingArgument) {
-            return [pdaSeedValueNode(seed.name, argumentValueNode(seed.name))];
+            return [pdaSeedValueNode(seed.identifier, argumentValueNode(seed.identifier))];
         }
 
         return [];
@@ -99,11 +99,11 @@ function getDefaultSeedValuesFromPda(instruction: InstructionNode, pda: PdaNode)
 function allSeedsAreValid(instruction: InstructionNode, foundPda: PdaNode, seeds: PdaSeedValueNode[]) {
     const hasAllVariableSeeds =
         (foundPda.seeds ?? []).filter(isNodeFilter('variablePdaSeedNode')).length === seeds.length;
-    const allAccountsName = (instruction.accounts ?? []).map(a => a.name);
-    const allArgumentsName = getAllInstructionArguments(instruction).map(a => a.name);
+    const allAccountsName = (instruction.accounts ?? []).map(a => a.identifier);
+    const allArgumentsName = getAllInstructionArguments(instruction).map(a => a.identifier);
     const validSeeds = seeds.every(seed => {
         if (isNode(seed.value, 'accountValueNode')) {
-            return allAccountsName.includes(seed.value.name);
+            return allAccountsName.includes(seed.value.identifier);
         }
         if (isNode(seed.value, 'argumentValueNode')) {
             return allArgumentsName.includes(seed.value.name);

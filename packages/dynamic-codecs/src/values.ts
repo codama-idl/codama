@@ -43,11 +43,11 @@ export function getValueNodeVisitor(
             const enumType = linkables.getOrThrow([...stack.getPath(node.kind), node.enum]).type;
             assertIsNode(enumType, 'enumTypeNode');
             const variants = enumType.variants ?? [];
-            const variantIndex = variants.findIndex(variant => variant.name === node.variant);
+            const variantIndex = variants.findIndex(variant => variant.identifier === node.variant);
             if (variantIndex < 0) {
                 throw new CodamaError(CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, {
                     enum: enumType,
-                    enumName: node.enum.name,
+                    enumName: node.enum.identifier,
                     variant: node.variant,
                 });
             }
@@ -105,7 +105,7 @@ export function getValueNodeVisitor(
         visitStructValue(node) {
             return Object.fromEntries(
                 (node.fields ?? []).map(field => {
-                    const name = field.name;
+                    const name = field.identifier;
                     const value = visit(field.value, this);
                     return [name, value];
                 }),

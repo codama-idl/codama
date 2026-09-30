@@ -40,7 +40,7 @@ export async function getInstructionDisplayFromParsedInstruction(
     const displayContext = await buildDisplayContext(root, parsedInstruction, options);
     const instruction = getLastNodeFromPath(displayContext.parsedInstruction.path);
 
-    const intent = instruction.display?.intent ?? titleCase(instruction.name);
+    const intent = instruction.display?.intent ?? titleCase(instruction.identifier);
     const [interpolatedIntent, fields] = await Promise.all([
         interpolateIntent(displayContext),
         listFallback(displayContext),

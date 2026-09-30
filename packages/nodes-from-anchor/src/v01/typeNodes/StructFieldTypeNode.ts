@@ -17,7 +17,7 @@ export function structFieldTypeNodeFromAnchorV01(
 
     return structFieldTypeNode({
         docs: idl.docs ?? [],
-        name: idl.name,
+        identifier: idl.name,
         type: typeNodeFromAnchorV01(idl.type, generics),
     });
 }

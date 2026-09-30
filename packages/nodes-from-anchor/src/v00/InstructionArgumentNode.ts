@@ -6,7 +6,7 @@ import { typeNodeFromAnchorV00 } from './typeNodes';
 export function instructionArgumentNodeFromAnchorV00(idl: IdlV00Field): InstructionArgumentNode {
     return instructionArgumentNode({
         docs: idl.docs ?? [],
-        name: idl.name ?? '',
+        identifier: idl.name ?? '',
         type: typeNodeFromAnchorV00(idl.type),
     });
 }

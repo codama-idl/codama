@@ -64,7 +64,7 @@ function resolveStandaloneVariableSeed(
     seedNode: VariablePdaSeedNode,
     seedInputs: Record<string, unknown>,
 ): Promise<ReadonlyUint8Array> {
-    const input = seedInputs[seedNode.name];
+    const input = seedInputs[seedNode.identifier];
     const typeNode = seedNode.type;
 
     // remainderOptionTypeNode seeds are optional — null means zero bytes.
@@ -73,7 +73,7 @@ function resolveStandaloneVariableSeed(
             return Promise.resolve(new Uint8Array(0));
         }
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING, {
-            argumentName: seedNode.name,
+            argumentName: seedNode.identifier,
             instructionName: camelCase('standaloneSeedNode'),
         });
     }
@@ -103,7 +103,7 @@ function createSyntheticArgNode(seedNode: VariablePdaSeedNode) {
     return {
         docs: [] as string[],
         kind: 'instructionArgumentNode' as const,
-        name: seedNode.name,
+        identifier: seedNode.identifier,
         type: seedNode.type,
     };
 }

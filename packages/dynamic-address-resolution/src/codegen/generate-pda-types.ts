@@ -9,7 +9,7 @@ import { collectPdaNodesFromIdl } from './collect-pda-nodes';
  * Returns the type block with the aggregate map type name. `mapTypeName` is `null` when the program has no PDAs.
  */
 export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; typeBlock: string } {
-    const programName = pascalCase(idl.program.name);
+    const programName = pascalCase(idl.program.identifier);
     const definedTypes = idl.program.definedTypes ?? [];
     const pdaMap = collectPdaNodesFromIdl(idl);
 
@@ -28,7 +28,7 @@ export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; t
             const tsType = seed.type
                 ? codamaTypeToTS(seed.type, definedTypes)
                 : 'unknown/** missing type in variablePdaSeedNode */';
-            output += `    ${seed.name}: ${tsType};\n`;
+            output += `    ${seed.identifier}: ${tsType};\n`;
         }
         output += '};\n\n';
     }

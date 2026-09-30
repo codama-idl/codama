@@ -60,13 +60,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         overrides.visitEnumStructVariantType = function visitEnumStructVariantType(node, { self }) {
             const newStruct = visit(self)(node.struct);
             if (!newStruct) {
-                return enumEmptyVariantTypeNode(node.name);
+                return enumEmptyVariantTypeNode(node.identifier);
             }
             assertIsNode(newStruct, 'structTypeNode');
             if ((newStruct.fields ?? []).length === 0) {
-                return enumEmptyVariantTypeNode(node.name);
+                return enumEmptyVariantTypeNode(node.identifier);
             }
-            return enumStructVariantTypeNode(node.name, newStruct, node.discriminator);
+            return enumStructVariantTypeNode(node.identifier, newStruct, node.discriminator);
         };
     }
 
@@ -74,13 +74,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         overrides.visitEnumTupleVariantType = function visitEnumTupleVariantType(node, { self }) {
             const newTuple = visit(self)(node.tuple);
             if (!newTuple) {
-                return enumEmptyVariantTypeNode(node.name);
+                return enumEmptyVariantTypeNode(node.identifier);
             }
             assertIsNode(newTuple, 'tupleTypeNode');
             if ((newTuple.items ?? []).length === 0) {
-                return enumEmptyVariantTypeNode(node.name);
+                return enumEmptyVariantTypeNode(node.identifier);
             }
-            return enumTupleVariantTypeNode(node.name, newTuple, node.discriminator);
+            return enumTupleVariantTypeNode(node.identifier, newTuple, node.discriminator);
         };
     }
 

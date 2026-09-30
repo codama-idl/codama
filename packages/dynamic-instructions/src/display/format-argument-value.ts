@@ -118,13 +118,13 @@ function formatEnumValue(enumType: EnumTypeNode, value: unknown): string {
     if (decodedName === null) return rawValue(value);
 
     // Codecs disagree on name casing, so compare through a common PascalCase form.
-    const variant = variants.find(candidate => pascalCase(candidate.name) === pascalCase(decodedName));
+    const variant = variants.find(candidate => pascalCase(candidate.identifier) === pascalCase(decodedName));
     return variant ? variantLabel(variant) : rawValue(value);
 }
 
 /** The label shown for a variant: its display label, or its title-cased name. */
 function variantLabel(variant: NonNullable<EnumTypeNode['variants']>[number]): string {
-    return variant.display?.label ?? titleCase(variant.name);
+    return variant.display?.label ?? titleCase(variant.identifier);
 }
 
 /** Extracts the variant name from a decoded enum value (scalar name string or data enum `__kind`). */

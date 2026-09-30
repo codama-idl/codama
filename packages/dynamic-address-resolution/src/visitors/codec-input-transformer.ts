@@ -113,12 +113,12 @@ export function createCodecInputTransformerVisitor(
         },
 
         visitDefinedTypeLink(node) {
-            const definedType = (root.program.definedTypes ?? []).find(dt => dt.name === node.name);
+            const definedType = (root.program.definedTypes ?? []).find(dt => dt.identifier === node.identifier);
             if (!definedType) {
                 throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
                     kind: 'definedTypeLinkNode',
                     linkNode: node,
-                    name: node.name,
+                    name: node.identifier,
                     path: [],
                 });
             }
@@ -135,9 +135,9 @@ export function createCodecInputTransformerVisitor(
                     const variantNode =
                         typeof input === 'number'
                             ? (node.variants ?? [])[input]
-                            : (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(input));
+                            : (node.variants ?? []).find(v => pascalCase(v.identifier) === pascalCase(input));
                     if (variantNode && isNode(variantNode, 'enumEmptyVariantTypeNode')) {
-                        return { __kind: pascalCase(variantNode.name) };
+                        return { __kind: pascalCase(variantNode.identifier) };
                     }
                     return input;
                 }
@@ -153,10 +153,12 @@ export function createCodecInputTransformerVisitor(
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { __discriminator: _d, __kind, ...rest } = input as Record<string, unknown> & { __kind: unknown };
                 const kindObj = { __kind: pascalCase(String(__kind)) };
-                const variantNode = (node.variants ?? []).find(v => pascalCase(v.name) === pascalCase(String(__kind)));
+                const variantNode = (node.variants ?? []).find(
+                    v => pascalCase(v.identifier) === pascalCase(String(__kind)),
+                );
 
                 if (!variantNode) {
-                    const availableVariants = (node.variants ?? []).map(v => v.name).join(', ');
+                    const availableVariants = (node.variants ?? []).map(v => v.identifier).join(', ');
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE, {
                         actualType: `variant '${String(__kind)}'`,
                         expectedType: `one of [${availableVariants}]`,
@@ -299,7 +301,7 @@ export function createCodecInputTransformerVisitor(
         visitStructType(node) {
             const fieldTransformers = (node.fields ?? []).map(field => {
                 const transform = visitOrElse(field, visitor, unexpectedNodeFallback);
-                return { name: field.name, transform };
+                return { name: field.identifier, transform };
             });
             return (input: unknown) => {
                 if (!isObjectRecord(input)) {

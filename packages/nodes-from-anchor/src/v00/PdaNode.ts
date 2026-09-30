@@ -37,7 +37,7 @@ export function pdaNodeFromAnchorV00(idl: IdlV00PdaDef): PdaNode {
         }
         return constantPdaSeedNodeFromProgramId();
     });
-    return pdaNode({ name, seeds });
+    return pdaNode({ identifier: name, seeds });
 }
 
 function pdaSeedTypeNodeFromAnchorV00(type: IdlV00Type): TypeNode {

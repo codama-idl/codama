@@ -7,7 +7,7 @@ import type { GenericsV01 } from './unwrapGenerics';
 export function instructionArgumentNodeFromAnchorV01(idl: IdlV01Field, generics: GenericsV01): InstructionArgumentNode {
     return instructionArgumentNode({
         docs: idl.docs ?? [],
-        name: idl.name,
+        identifier: idl.name,
         type: typeNodeFromAnchorV01(idl.type, generics),
     });
 }

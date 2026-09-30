@@ -20,7 +20,9 @@ export function updateDefinedTypesVisitor(map: Record<string, DefinedTypeUpdates
     return bottomUpTransformerVisitor(
         Object.entries(map).flatMap(([selector, updates]): BottomUpNodeTransformerWithSelector[] => {
             const newName =
-                typeof updates === 'object' && 'name' in updates && updates.name ? camelCase(updates.name) : undefined;
+                typeof updates === 'object' && 'identifier' in updates && updates.identifier
+                    ? camelCase(updates.identifier)
+                    : undefined;
 
             const transformers: BottomUpNodeTransformerWithSelector[] = [
                 {
@@ -40,7 +42,7 @@ export function updateDefinedTypesVisitor(map: Record<string, DefinedTypeUpdates
                         return definedTypeNode({
                             ...node,
                             ...otherUpdates,
-                            name: newName ?? node.name,
+                            identifier: newName ?? node.identifier,
                             type: newType,
                         });
                     },

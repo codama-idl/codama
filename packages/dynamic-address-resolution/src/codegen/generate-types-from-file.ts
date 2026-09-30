@@ -50,7 +50,7 @@ export function generateTypesFromFile(opts: GenerateTypesFromFileOptions): void 
 
     let types: string;
     try {
-        console.log(`Generating types for program: ${idl.program.name}`);
+        console.log(`Generating types for program: ${idl.program.identifier}`);
         types = generate(idl);
     } catch (err) {
         throw new Error(`Cannot generate types for IDL: ${idlPath}`, {
