@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
-import { formatValueType, isObjectRecord, safeStringify } from '../../src/shared/util';
+import { formatValueType, isObjectRecord, isValueEqual, safeStringify } from '../../src/shared/util';
 
 describe('isObjectRecord', () => {
     test('should return true for plain objects', () => {
@@ -101,5 +101,40 @@ describe('safeStringify', () => {
 
     test('should always return a string', () => {
         expectTypeOf(safeStringify).returns.toBeString();
+    });
+});
+
+describe('isValueEqual', () => {
+    test('it compares integers regardless of their JavaScript type', () => {
+        expect(isValueEqual(2, 2n)).toBe(true);
+        expect(isValueEqual(2n, 2)).toBe(true);
+        expect(isValueEqual(2, 3n)).toBe(false);
+        expect(isValueEqual(1.5, 1.5)).toBe(true);
+    });
+
+    test('it compares enum variants by identifier', () => {
+        expect(isValueEqual('slow', { __discriminator: 1, __kind: 'slow' })).toBe(true);
+        expect(isValueEqual({ __kind: 'slow' }, { __discriminator: 1, __kind: 'slow' })).toBe(true);
+        expect(isValueEqual('fast', { __discriminator: 1, __kind: 'slow' })).toBe(false);
+        expect(isValueEqual('move', { __discriminator: 1, __kind: 'move', data: 1n })).toBe(false);
+        expect(isValueEqual({ __kind: 'move', data: 1 }, { __discriminator: 1, __kind: 'move', data: 1n })).toBe(true);
+    });
+
+    test('it compares arrays and objects deeply', () => {
+        expect(isValueEqual([1, { a: 2 }], [1n, { a: 2n }])).toBe(true);
+        expect(isValueEqual([1], [1, 2])).toBe(false);
+        expect(isValueEqual({ a: 1 }, { a: 1n, b: 2n })).toBe(false);
+    });
+
+    test('it compares bytes by content', () => {
+        expect(isValueEqual(new Uint8Array([1, 2]), ['base16', '0102'])).toBe(true);
+        expect(isValueEqual(['base64', 'AQI='], ['base16', '0102'])).toBe(true);
+        expect(isValueEqual(new Uint8Array([1, 2]), ['base16', '0103'])).toBe(false);
+    });
+
+    test('it compares other values strictly', () => {
+        expect(isValueEqual('a', 'a')).toBe(true);
+        expect(isValueEqual(true, true)).toBe(true);
+        expect(isValueEqual(null, undefined)).toBe(false);
     });
 });

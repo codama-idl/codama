@@ -1,14 +1,22 @@
 import type { DefinedTypeNode, TypeNode } from 'codama';
 
+import { OPTIONAL_NODE_KINDS } from '../shared/nodes';
+
 /**
- * Convert Codama type to TypeScript type string.
+ * Convert a Codama type to the TypeScript type of the values its codec
+ * encodes, e.g. `integerTypeNode('u64')` gives `number | bigint`.
  */
 export function codamaTypeToTS(type: TypeNode | undefined, definedTypes: DefinedTypeNode[]): string {
     if (!type || typeof type !== 'object') return 'unknown';
 
     switch (type.kind) {
-        case 'numberTypeNode':
-            return ['u64', 'u128', 'i64', 'i128'].includes(type.format) ? 'number | bigint' : 'number';
+        case 'integerTypeNode':
+        case 'fixedPointTypeNode':
+        case 'dateTimeTypeNode':
+        case 'durationTypeNode':
+            return 'number | bigint';
+        case 'floatTypeNode':
+            return 'number';
         case 'publicKeyTypeNode':
             return 'Address';
         case 'stringTypeNode':
@@ -16,56 +24,39 @@ export function codamaTypeToTS(type: TypeNode | undefined, definedTypes: Defined
         case 'booleanTypeNode':
             return 'boolean';
         case 'optionTypeNode':
-            return `${codamaTypeToTS(type.item, definedTypes)} | null`;
         case 'remainderOptionTypeNode':
         case 'zeroableOptionTypeNode':
             return `${codamaTypeToTS(type.item, definedTypes)} | null`;
         case 'bytesTypeNode':
             return 'Uint8Array';
-        case 'fixedSizeTypeNode':
-        case 'sizePrefixTypeNode':
-        case 'hiddenPrefixTypeNode':
-        case 'preOffsetTypeNode':
-        case 'postOffsetTypeNode':
-        case 'hiddenSuffixTypeNode':
-        case 'sentinelTypeNode':
-            return codamaTypeToTS(type.type, definedTypes);
-        case 'amountTypeNode':
-        case 'solAmountTypeNode':
-            return 'number | bigint';
         case 'structTypeNode': {
-            if (!type.fields || type.fields.length === 0) return '{}';
-            const fields = type.fields
-                .filter(f => f.defaultValueStrategy !== 'omitted')
-                .map(f => `${f.identifier}: ${codamaTypeToTS(f.type, definedTypes)}`);
-            if (fields.length === 0) return '{}';
-            return `{ ${fields.join('; ')} }`;
+            // Omitted fields always encode their default value, and fields with a default value may be omitted.
+            const fields = (type.fields ?? [])
+                .filter(field => field.defaultValueStrategy !== 'omitted' || field.defaultValue === undefined)
+                .map(field => {
+                    const isOptional =
+                        field.defaultValue !== undefined || OPTIONAL_NODE_KINDS.includes(field.type.kind);
+                    return `${field.identifier}${isOptional ? '?' : ''}: ${codamaTypeToTS(field.type, definedTypes)}`;
+                });
+            return fields.length === 0 ? '{}' : `{ ${fields.join('; ')} }`;
         }
         case 'enumTypeNode': {
-            if (!type.variants || type.variants.length === 0) return 'unknown /** empty variants in enumTypeNode */';
-            const allEmpty = type.variants.every(v => v.kind === 'enumEmptyVariantTypeNode');
-            if (allEmpty) {
-                return type.variants.map(v => `'${v.identifier}'`).join(' | ');
+            const variants = type.variants ?? [];
+            if (variants.length === 0) return 'unknown /** empty variants in enumTypeNode */';
+            // Variants without data may be encoded from their identifier.
+            if (variants.every(variant => variant.data === undefined)) {
+                return variants.map(variant => `'${variant.identifier}'`).join(' | ');
             }
-            const variantTypes = type.variants.map(v => {
-                if (v.kind === 'enumEmptyVariantTypeNode') {
-                    return `{ __kind: '${v.identifier}' }`;
-                }
-                if (v.kind === 'enumStructVariantTypeNode' && v.struct) {
-                    const inner = codamaTypeToTS(v.struct, definedTypes);
-                    return `{ __kind: '${v.identifier}' } & ${inner}`;
-                }
-                if (v.kind === 'enumTupleVariantTypeNode' && v.tuple) {
-                    const inner = codamaTypeToTS(v.tuple, definedTypes);
-                    return `{ __kind: '${v.identifier}'; fields: ${inner} }`;
-                }
-                return `{ __kind: '${v.identifier}' }`;
-            });
-            return variantTypes.join(' | ');
+            return variants
+                .map(variant =>
+                    variant.data === undefined
+                        ? `{ __kind: '${variant.identifier}' }`
+                        : `{ __kind: '${variant.identifier}'; data: ${codamaTypeToTS(variant.data, definedTypes)} }`,
+                )
+                .join(' | ');
         }
         case 'tupleTypeNode': {
-            if (!type.items || type.items.length === 0) return '[]';
-            const items = type.items.map(i => codamaTypeToTS(i, definedTypes));
+            const items = (type.items ?? []).map(item => codamaTypeToTS(item, definedTypes));
             return `[${items.join(', ')}]`;
         }
         case 'arrayTypeNode':
@@ -74,18 +65,12 @@ export function codamaTypeToTS(type: TypeNode | undefined, definedTypes: Defined
             const needsParens = itemType.includes(' | ') || itemType.includes(' & ');
             return needsParens ? `(${itemType})[]` : `${itemType}[]`;
         }
-        case 'mapTypeNode': {
-            const v = codamaTypeToTS(type.value, definedTypes);
-            return `Record<string, ${v}>`;
-        }
+        case 'mapTypeNode':
+            return `Record<string, ${codamaTypeToTS(type.value, definedTypes)}>`;
         case 'definedTypeLinkNode': {
-            if (!type.identifier) return 'unknown /** name missing in definedTypeLinkNode */';
-            const def = definedTypes.find(d => d.identifier === type.identifier);
-            if (!def) return 'unknown /** DefinedTypeNode not found for definedTypeLinkNode */';
-            return codamaTypeToTS(def.type, definedTypes);
-        }
-        case 'dateTimeTypeNode': {
-            return codamaTypeToTS(type.number, definedTypes);
+            const definedType = definedTypes.find(definedType => definedType.identifier === type.identifier);
+            if (!definedType) return 'unknown /** DefinedTypeNode not found for definedTypeLinkNode */';
+            return codamaTypeToTS(definedType.type, definedTypes);
         }
         default:
             type['kind'] satisfies never;

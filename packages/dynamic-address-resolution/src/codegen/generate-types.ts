@@ -6,7 +6,7 @@ import { generateResolutionInputTypes } from './generate-resolution-input-types'
 /**
  * Generate a self-contained TypeScript file with all address-resolution types for a Codama IDL:
  * - PDA seed types, `${Program}Pdas` map,
- * - Per-instruction `${Name}Args`, `${Name}Accounts`, `${Name}Resolvers`.
+ * - Per-instruction `${Name}InstructionDataArgs` and `${Name}Accounts`.
  */
 export function generateTypes(idl: RootNode): string {
     const { typeBlock: pdaBlock, mapTypeName } = generatePdaTypes(idl);

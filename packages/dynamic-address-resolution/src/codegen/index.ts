@@ -1,6 +1,5 @@
 export { codamaTypeToTS } from './codama-type-to-ts';
 export { collectPdaNodesFromIdl } from './collect-pda-nodes';
-export { collectResolverNames } from './collect-resolver-names';
 export { generatePdaTypes } from './generate-pda-types';
 export { generateResolutionInputTypes } from './generate-resolution-input-types';
 export { generateTypes } from './generate-types';

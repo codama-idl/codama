@@ -17,9 +17,9 @@ import {
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING,
-    CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS,
     CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
+    CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_ARGUMENT,
@@ -31,6 +31,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
+    CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
@@ -96,9 +97,9 @@ export const CodamaErrorMessages: Readonly<{
         'Missing account [$accountName] in [$instructionName] instruction.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]:
         'Resolver [$resolverName] not provided for account [$accountName].',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING]: 'Missing argument [$argumentName] in [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: 'Cannot convert value to Address: [$value].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]: 'Circular dependency detected: [$chain].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]: 'Missing data [$path] in [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING]:
         'Default value is missing for argument [$argumentName] in [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]: 'Failed to derive PDA for account [$accountName].',
@@ -116,6 +117,7 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]:
         'Referenced node [$referencedName] not found in [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]: 'PDA [$pdaName] not found in IDL. Available: [$available].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: 'Missing seed [$seedName] to derive PDA [$pdaName].',
 
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]:
         'Expected [$expectedType] for account [$accountName], but received [$actualType].',

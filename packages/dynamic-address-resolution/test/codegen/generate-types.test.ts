@@ -16,9 +16,9 @@ describe('generateTypes', () => {
     test('should include ProgramDerivedAddress in the header when PDAs are present', () => {
         const root = rootNode(
             programNode({
+                identifier: 'p',
                 instructions: [],
-                name: 'p',
-                pdas: [pdaNode({ name: 'cfg', seeds: [constantPdaSeedNodeFromString('utf8', 'cfg')] })],
+                pdas: [pdaNode({ identifier: 'cfg', seeds: [constantPdaSeedNodeFromString('utf8', 'cfg')] })],
                 publicKey: '11111111111111111111111111111111',
             }),
         );

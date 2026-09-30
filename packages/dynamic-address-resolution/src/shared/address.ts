@@ -1,8 +1,13 @@
-import { CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
+    CodamaError,
+} from '@codama/errors';
 import type { Address } from '@solana/addresses';
 import { address, isAddress } from '@solana/addresses';
+import type { IdentifierString } from 'codama';
 
-import { safeStringify } from './util';
+import { formatValueType, safeStringify } from './util';
 
 /**
  * Accept both modern Address strings and legacy PublicKey-like objects.
@@ -24,6 +29,21 @@ export function toAddress(input: AddressInput): Address {
     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS, {
         value: safeStringify(input),
     });
+}
+
+/**
+ * Convert a value to the address of the given account, throwing
+ * `UNEXPECTED_ADDRESS_TYPE` when it is not address convertible.
+ */
+export function toAddressOrThrow(value: unknown, accountName: IdentifierString): Address {
+    if (!isAddressConvertible(value)) {
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
+            accountName,
+            actualType: formatValueType(value),
+            expectedType: 'Address | PublicKey',
+        });
+    }
+    return toAddress(value);
 }
 
 export function isAddressConvertible(value: unknown): value is AddressInput {

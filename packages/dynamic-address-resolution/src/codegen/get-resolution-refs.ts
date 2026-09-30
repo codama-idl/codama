@@ -1,7 +1,6 @@
-import { type InstructionNode, pascalCase } from 'codama';
+import { type DefinedTypeNode, type InstructionNode, isNode, pascalCase, type TypeNode } from 'codama';
 
 import { OPTIONAL_NODE_KINDS } from '../shared/nodes';
-import { collectResolverNames } from './collect-resolver-names';
 
 /**
  * Symbol registry for the resolvable surface of an instruction.
@@ -10,8 +9,6 @@ import { collectResolverNames } from './collect-resolver-names';
  * (and downstream consumers) should reference when emitting types tied
  * to address resolution. `null` means "this symbol is not emitted for
  * this instruction" — callers pick their own fallback at the use site.
- *
- * Lives here because resolution rules decide which of these symbols exist.
  */
 export type ResolutionRefs = {
     /** Identifier of the emitted `${Name}Accounts` type (strict, IDL-named keys only). */
@@ -21,39 +18,37 @@ export type ResolutionRefs = {
      * Widened with `Record<string, Address | null | undefined>`.
      */
     accountsWithDataRef: string;
-    /** Identifier of the emitted `${Name}Args` type, or `null` if no args type is emitted. */
-    argsRef: string | null;
-    /** `true` when the instruction has any arguments (mirrors `argsRef !== null`). */
-    hasArgs: boolean;
-    /** `true` when at least one argument is non-optional. */
-    hasRequiredArgs: boolean;
-    /** `true` when at least one remaining-account argument is non-optional. */
-    hasRequiredRemainingAccounts: boolean;
-    /** `true` when the instruction has any custom resolvers (mirrors `resolversRef !== null`). */
-    hasResolvers: boolean;
-    /** Identifier of the emitted `${Name}Resolvers` type, or `null` if no resolvers type is emitted. */
-    resolversRef: string | null;
+    /** Identifier of the emitted `${Name}InstructionDataArgs` type, or `null` if there is no data to provide. */
+    dataRef: string | null;
+    /** `true` when the instruction has data to provide (mirrors `dataRef !== null`). */
+    hasData: boolean;
+    /** `true` when some of the instruction data must be provided. */
+    hasRequiredData: boolean;
 };
 
-export function getResolutionRefs(ix: InstructionNode): ResolutionRefs {
+export function getResolutionRefs(ix: InstructionNode, definedTypes: DefinedTypeNode[] = []): ResolutionRefs {
     const typeName = pascalCase(ix.identifier);
-
-    const args = (ix.arguments ?? []).filter(arg => arg.defaultValueStrategy !== 'omitted');
-    const remainingAccountArgs = (ix.remainingAccounts ?? []).filter(ra => ra.value.kind === 'argumentValueNode');
-    const hasArgs = args.length > 0 || remainingAccountArgs.length > 0;
-    const hasRequiredArgs = args.some(arg => !OPTIONAL_NODE_KINDS.includes(arg.type.kind));
-    const hasRequiredRemainingAccounts = remainingAccountArgs.some(ra => !ra.isOptional);
-
-    const hasResolvers = collectResolverNames(ix).size > 0;
+    const data = resolveType(ix.data, definedTypes);
+    // Omitted fields always encode their default value, so they are never provided.
+    const fields = isNode(data, 'structTypeNode')
+        ? (data.fields ?? []).filter(field => field.defaultValueStrategy !== 'omitted' || !field.defaultValue)
+        : undefined;
+    const hasData = data !== undefined && (fields === undefined || fields.length > 0);
+    const hasRequiredData = fields
+        ? fields.some(field => field.defaultValue === undefined && !OPTIONAL_NODE_KINDS.includes(field.type.kind))
+        : data !== undefined && !OPTIONAL_NODE_KINDS.includes(data.kind);
 
     return {
         accountsRef: `${typeName}Accounts`,
         accountsWithDataRef: `${typeName}AccountsWithData`,
-        argsRef: hasArgs ? `${typeName}Args` : null,
-        hasArgs,
-        hasRequiredArgs,
-        hasRequiredRemainingAccounts,
-        hasResolvers,
-        resolversRef: hasResolvers ? `${typeName}Resolvers` : null,
+        dataRef: hasData ? `${typeName}InstructionDataArgs` : null,
+        hasData,
+        hasRequiredData,
     };
+}
+
+/** Resolve a link to its defined type when found, keeping unresolved links as data of unknown shape. */
+function resolveType(type: TypeNode | undefined, definedTypes: DefinedTypeNode[]): TypeNode | undefined {
+    if (!isNode(type, 'definedTypeLinkNode')) return type;
+    return definedTypes.find(definedType => definedType.identifier === type.identifier)?.type ?? type;
 }

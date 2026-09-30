@@ -17,7 +17,7 @@ import { makeRoot } from '../test-utils';
 describe('collectPdaNodesFromIdl', () => {
     test('should collect inline PDA from instruction account default', () => {
         const inline = pdaNode({
-            name: 'inline',
+            identifier: 'inline',
             seeds: [variablePdaSeedNode('mint', publicKeyTypeNode())],
         });
         const root = makeRoot([
@@ -25,12 +25,12 @@ describe('collectPdaNodesFromIdl', () => {
                 accounts: [
                     instructionAccountNode({
                         defaultValue: pdaValueNode(inline),
+                        identifier: 'acc',
                         isSigner: false,
                         isWritable: false,
-                        name: 'acc',
                     }),
                 ],
-                name: 'test',
+                identifier: 'test',
             }),
         ]);
 
@@ -41,30 +41,30 @@ describe('collectPdaNodesFromIdl', () => {
 
     test('should prefer program.pdas over inline duplicate of the same name', () => {
         const topLevel = pdaNode({
-            name: 'shared',
+            identifier: 'shared',
             seeds: [constantPdaSeedNodeFromString('utf8', 'top')],
         });
         const inline = pdaNode({
-            name: 'shared',
+            identifier: 'shared',
             seeds: [constantPdaSeedNodeFromString('utf8', 'inline')],
         });
 
         const root = rootNode(
             programNode({
+                identifier: 'program',
                 instructions: [
                     instructionNode({
                         accounts: [
                             instructionAccountNode({
                                 defaultValue: pdaValueNode(inline),
+                                identifier: 'acc',
                                 isSigner: false,
                                 isWritable: false,
-                                name: 'acc',
                             }),
                         ],
-                        name: 'test',
+                        identifier: 'test',
                     }),
                 ],
-                name: 'program',
                 pdas: [topLevel],
                 publicKey: '11111111111111111111111111111111',
             }),

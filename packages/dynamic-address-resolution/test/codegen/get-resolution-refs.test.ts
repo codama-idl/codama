@@ -1,119 +1,94 @@
 import {
-    argumentValueNode,
     booleanTypeNode,
-    instructionAccountNode,
-    instructionArgumentNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     instructionNode,
-    instructionRemainingAccountsNode,
+    integerTypeNode,
+    integerValueNode,
     optionTypeNode,
-    resolverValueNode,
+    structFieldTypeNode,
+    structTypeNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { getResolutionRefs } from '../../src/codegen/get-resolution-refs';
 
 describe('getResolutionRefs', () => {
-    test('should return null argsRef when there are no non-omitted arguments and no argument-valued remaining accounts', () => {
-        const ix = instructionNode({ accounts: [], arguments: [], name: 'noop' });
-        const refs = getResolutionRefs(ix);
-        expect(refs.argsRef).toBeNull();
-        expect(refs.hasArgs).toBe(false);
-        expect(refs.accountsRef).toBe('NoopAccounts');
+    test('it names the accounts types', () => {
+        const refs = getResolutionRefs(instructionNode({ identifier: 'transfer' }));
+        expect(refs.accountsRef).toBe('TransferAccounts');
+        expect(refs.accountsWithDataRef).toBe('TransferAccountsWithData');
     });
 
-    test('should return ${Name}Args when an argument exists', () => {
-        const ix = instructionNode({
-            accounts: [],
-            arguments: [instructionArgumentNode({ name: 'flag', type: booleanTypeNode() })],
-            name: 'setFlag',
-        });
-        const refs = getResolutionRefs(ix);
-        expect(refs.argsRef).toBe('SetFlagArgs');
-        expect(refs.hasArgs).toBe(true);
+    test('it returns no data type for instructions without data to provide', () => {
+        const withoutData = getResolutionRefs(instructionNode({ identifier: 'noop' }));
+        const withOmittedData = getResolutionRefs(
+            instructionNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        defaultValue: integerValueNode('1'),
+                        defaultValueStrategy: 'omitted',
+                        identifier: 'discriminator',
+                        type: integerTypeNode('u8'),
+                    }),
+                ]),
+                identifier: 'noop',
+            }),
+        );
+        for (const refs of [withoutData, withOmittedData]) {
+            expect(refs.dataRef).toBeNull();
+            expect(refs.hasData).toBe(false);
+            expect(refs.hasRequiredData).toBe(false);
+        }
     });
 
-    test('should ignore arguments with defaultValueStrategy "omitted"', () => {
-        const ix = instructionNode({
-            accounts: [],
-            arguments: [
-                instructionArgumentNode({
-                    defaultValueStrategy: 'omitted',
-                    name: 'discriminator',
-                    type: booleanTypeNode(),
-                }),
-            ],
-            name: 'omitted',
-        });
-        const refs = getResolutionRefs(ix);
-        expect(refs.argsRef).toBeNull();
+    test('it names the data type after the renderers-js convention', () => {
+        const refs = getResolutionRefs(
+            instructionNode({
+                data: structTypeNode([structFieldTypeNode({ identifier: 'flag', type: booleanTypeNode() })]),
+                identifier: 'setFlag',
+            }),
+        );
+        expect(refs.dataRef).toBe('SetFlagInstructionDataArgs');
+        expect(refs.hasData).toBe(true);
+        expect(refs.hasRequiredData).toBe(true);
     });
 
-    test('should treat argumentValueNode remaining accounts as args', () => {
-        const ix = instructionNode({
-            accounts: [],
-            arguments: [],
-            name: 'extra',
-            remainingAccounts: [instructionRemainingAccountsNode(argumentValueNode('extras'))],
-        });
-        const refs = getResolutionRefs(ix);
-        expect(refs.argsRef).toBe('ExtraArgs');
-        expect(refs.hasArgs).toBe(true);
+    test('it does not require data fields with default values or optional types', () => {
+        const refs = getResolutionRefs(
+            instructionNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        defaultValue: integerValueNode('5'),
+                        identifier: 'fee',
+                        type: integerTypeNode('u8'),
+                    }),
+                    structFieldTypeNode({ identifier: 'memo', type: optionTypeNode(booleanTypeNode()) }),
+                ]),
+                identifier: 'pay',
+            }),
+        );
+        expect(refs.hasData).toBe(true);
+        expect(refs.hasRequiredData).toBe(false);
     });
 
-    test('should report hasRequiredArgs true when at least one non-optional argument exists', () => {
-        const ix = instructionNode({
-            accounts: [],
-            arguments: [instructionArgumentNode({ name: 'flag', type: booleanTypeNode() })],
-            name: 'setFlag',
-        });
-        const refs = getResolutionRefs(ix);
-        expect(refs.hasRequiredArgs).toBe(true);
-        expect(refs.hasRequiredRemainingAccounts).toBe(false);
+    test('it follows linked data', () => {
+        const definedTypes = [
+            definedTypeNode({
+                identifier: 'args',
+                type: structTypeNode([structFieldTypeNode({ identifier: 'flag', type: booleanTypeNode() })]),
+            }),
+        ];
+        const refs = getResolutionRefs(
+            instructionNode({ data: definedTypeLinkNode('args'), identifier: 'set' }),
+            definedTypes,
+        );
+        expect(refs.hasRequiredData).toBe(true);
     });
 
-    test('should report hasRequiredArgs false when every argument is optional-kinded', () => {
-        const ix = instructionNode({
-            accounts: [],
-            arguments: [instructionArgumentNode({ name: 'maybeFlag', type: optionTypeNode(booleanTypeNode()) })],
-            name: 'setMaybeFlag',
-        });
-        const refs = getResolutionRefs(ix);
-        expect(refs.hasArgs).toBe(true);
-        expect(refs.hasRequiredArgs).toBe(false);
-    });
-
-    test('should report hasRequiredRemainingAccounts based on the remaining-account argument isOptional flag', () => {
-        const required = instructionNode({
-            accounts: [],
-            arguments: [],
-            name: 'requiredExtras',
-            remainingAccounts: [instructionRemainingAccountsNode(argumentValueNode('extras'), { isOptional: false })],
-        });
-        const optional = instructionNode({
-            accounts: [],
-            arguments: [],
-            name: 'optionalExtras',
-            remainingAccounts: [instructionRemainingAccountsNode(argumentValueNode('extras'), { isOptional: true })],
-        });
-        expect(getResolutionRefs(required).hasRequiredRemainingAccounts).toBe(true);
-        expect(getResolutionRefs(optional).hasRequiredRemainingAccounts).toBe(false);
-    });
-
-    test('should emit resolversRef when an account default is a resolverValueNode', () => {
-        const ix = instructionNode({
-            accounts: [
-                instructionAccountNode({
-                    defaultValue: resolverValueNode('resolveOwner'),
-                    isSigner: false,
-                    isWritable: false,
-                    name: 'owner',
-                }),
-            ],
-            arguments: [],
-            name: 'doStuff',
-        });
-        const refs = getResolutionRefs(ix);
-        expect(refs.resolversRef).toBe('DoStuffResolvers');
-        expect(refs.hasResolvers).toBe(true);
+    test('it keeps unresolved linked data as required data', () => {
+        const refs = getResolutionRefs(instructionNode({ data: definedTypeLinkNode('unknown'), identifier: 'set' }));
+        expect(refs.dataRef).toBe('SetInstructionDataArgs');
+        expect(refs.hasRequiredData).toBe(true);
     });
 });
