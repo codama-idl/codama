@@ -1,7 +1,7 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
     AccountValueNode,
     ArgumentValueNode,
-    camelCase,
     InstructionAccountNode,
     instructionAccountNode,
     InstructionArgumentNode,
@@ -112,9 +112,9 @@ export function instructionAccountNodeFromAnchorV01(
     return instructionAccountNode({
         defaultValue,
         docs,
+        identifier: name,
         isOptional,
         isSigner,
         isWritable,
-        identifier: name,
     });
 }

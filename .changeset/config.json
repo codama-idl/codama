@@ -9,6 +9,7 @@
         [
             "codama",
             "@codama/errors",
+            "@codama/fragments",
             "@codama/node-types",
             "@codama/nodes",
             "@codama/validators",

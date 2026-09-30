@@ -1,7 +1,8 @@
-import { BytesValueNode, bytesValueNode, pascalCase, snakeCase } from '@codama/nodes';
+import { BytesValueNode, bytesValueNode } from '@codama/nodes';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { getUtf8Codec } from '@solana/codecs';
 
+import { getAnchorInstructionName, getAnchorStructName } from './anchorCasing';
 import { hex } from './utils';
 
 export const getAnchorDiscriminatorV01 = (discriminator: number[]): BytesValueNode => {
@@ -9,19 +10,19 @@ export const getAnchorDiscriminatorV01 = (discriminator: number[]): BytesValueNo
 };
 
 export const getAnchorInstructionDiscriminatorV00 = (idlName: string): BytesValueNode => {
-    const bytes = getUtf8Codec().encode(`global:${snakeCase(idlName)}`);
+    const bytes = getUtf8Codec().encode(`global:${getAnchorInstructionName(idlName)}`);
     const hash = sha256(bytes as Uint8Array).slice(0, 8);
     return bytesValueNode('base16', hex(hash));
 };
 
 export const getAnchorAccountDiscriminatorV00 = (idlName: string): BytesValueNode => {
-    const bytes = getUtf8Codec().encode(`account:${pascalCase(idlName)}`);
+    const bytes = getUtf8Codec().encode(`account:${getAnchorStructName(idlName)}`);
     const hash = sha256(bytes as Uint8Array).slice(0, 8);
     return bytesValueNode('base16', hex(hash));
 };
 
 export const getAnchorEventDiscriminatorV00 = (idlName: string): BytesValueNode => {
-    const bytes = getUtf8Codec().encode(`event:${pascalCase(idlName)}`);
+    const bytes = getUtf8Codec().encode(`event:${getAnchorStructName(idlName)}`);
     const hash = sha256(bytes as Uint8Array).slice(0, 8);
     return bytesValueNode('base16', hex(hash));
 };

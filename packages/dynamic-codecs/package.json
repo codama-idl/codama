@@ -53,6 +53,7 @@
     },
     "dependencies": {
         "@codama/errors": "workspace:*",
+        "@codama/fragments": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*",
         "@solana/codecs": "^8.3.0"

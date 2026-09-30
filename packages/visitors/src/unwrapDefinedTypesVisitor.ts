@@ -1,4 +1,5 @@
-import { assertIsNodeFilter, camelCase, CamelCaseString, programNode } from '@codama/nodes';
+import { camelCase } from '@codama/fragments/casing';
+import { assertIsNodeFilter, IdentifierString, programNode } from '@codama/nodes';
 import {
     extendVisitor,
     findProgramNodeFromPath,
@@ -20,7 +21,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
         const [programName, typeName] = fullPath.split('.');
         return `${camelCase(programName)}.${camelCase(typeName)}`;
     });
-    const shouldInline = (typeName: CamelCaseString, programName: CamelCaseString | undefined): boolean => {
+    const shouldInline = (typeName: IdentifierString, programName: IdentifierString | undefined): boolean => {
         if (typesToInline === '*') return true;
         const fullPath = `${programName}.${typeName}`;
         if (!!programName && typesToInlineCamelCased.includes(fullPath)) return true;

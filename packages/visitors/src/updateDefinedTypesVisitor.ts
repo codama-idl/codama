@@ -1,11 +1,5 @@
-import {
-    assertIsNode,
-    camelCase,
-    definedTypeLinkNode,
-    definedTypeNode,
-    DefinedTypeNodeInput,
-    isNode,
-} from '@codama/nodes';
+import { camelCase } from '@codama/fragments/casing';
+import { assertIsNode, definedTypeLinkNode, definedTypeNode, DefinedTypeNodeInput, isNode } from '@codama/nodes';
 import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
 
 import { renameEnumNode, renameStructNode } from './renameHelpers';

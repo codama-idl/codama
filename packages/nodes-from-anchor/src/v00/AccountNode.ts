@@ -1,9 +1,9 @@
+import { camelCase } from '@codama/fragments/casing';
 import {
     AccountNode,
     accountNode,
     assertIsNode,
     bytesTypeNode,
-    camelCase,
     DiscriminatorNode,
     fieldDiscriminatorNode,
     fixedSizeTypeNode,

@@ -1,8 +1,8 @@
 import {
     accountNode,
     assertIsNode,
-    CamelCaseString,
     constantPdaSeedNodeFromString,
+    IdentifierString,
     numberTypeNode,
     pdaLinkNode,
     pdaNode,
@@ -35,7 +35,7 @@ test('it updates the name of an account', () => {
 
     // Then we expect the following tree changes.
     assertIsNode(result, 'programNode');
-    expect((result.accounts ?? [])[0].name).toBe('myNewAccount' as CamelCaseString);
+    expect((result.accounts ?? [])[0].name).toBe('myNewAccount' as IdentifierString);
 });
 
 test('it updates the name of an account within a specific program', () => {
@@ -65,10 +65,10 @@ test('it updates the name of an account within a specific program', () => {
 
     // Then we expect the first account to have been renamed.
     assertIsNode(result, 'rootNode');
-    expect((result.program.accounts ?? [])[0].name).toBe('newCandyMachine' as CamelCaseString);
+    expect((result.program.accounts ?? [])[0].name).toBe('newCandyMachine' as IdentifierString);
 
     // But not the second account.
-    expect(((result.additionalPrograms ?? [])[0].accounts ?? [])[0].name).toBe('candyMachine' as CamelCaseString);
+    expect(((result.additionalPrograms ?? [])[0].accounts ?? [])[0].name).toBe('candyMachine' as IdentifierString);
 });
 
 test("it renames the fields of an account's data", () => {
@@ -91,7 +91,7 @@ test("it renames the fields of an account's data", () => {
     // Then we expect the following tree changes.
     assertIsNode(result, 'accountNode');
     const data = resolveNestedTypeNode(result.data);
-    expect((data.fields ?? [])[0].name).toBe('myNewData' as CamelCaseString);
+    expect((data.fields ?? [])[0].name).toBe('myNewData' as IdentifierString);
 });
 
 test('it updates the name of associated PDA nodes', () => {
@@ -114,10 +114,10 @@ test('it updates the name of associated PDA nodes', () => {
 
     // Then we expect the associated PDA node to have been renamed.
     assertIsNode(result, 'programNode');
-    expect((result.pdas ?? [])[0].name).toBe('myNewAccount' as CamelCaseString);
+    expect((result.pdas ?? [])[0].name).toBe('myNewAccount' as IdentifierString);
 
     // But not the other PDA node.
-    expect((result.pdas ?? [])[1].name).toBe('myOtherAccount' as CamelCaseString);
+    expect((result.pdas ?? [])[1].name).toBe('myOtherAccount' as IdentifierString);
 });
 
 test('it creates a new PDA node when providing seeds to an account with no linked PDA', () => {
@@ -288,7 +288,7 @@ test('it can update the seeds and name of an account at the same time', () => {
     assertIsNode(result, 'programNode');
 
     // Then we expect the account name to have been updated.
-    expect((result.accounts ?? [])[0].name).toBe('myNewAccount' as CamelCaseString);
+    expect((result.accounts ?? [])[0].name).toBe('myNewAccount' as IdentifierString);
 
     // And a new PDA node to have been created with that new name and the provided seeds.
     expect((result.pdas ?? []).length).toBe(1);

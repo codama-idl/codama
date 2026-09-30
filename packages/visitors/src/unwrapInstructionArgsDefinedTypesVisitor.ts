@@ -1,4 +1,4 @@
-import { assertIsNode, CamelCaseString, definedTypeLinkNode, isNode } from '@codama/nodes';
+import { assertIsNode, definedTypeLinkNode, IdentifierString, isNode } from '@codama/nodes';
 import { getRecordLinkablesVisitor, LinkableDictionary, rootNodeVisitor, visit } from '@codama/visitors-core';
 
 import { getDefinedTypeHistogramVisitor } from './getDefinedTypeHistogramVisitor';
@@ -10,7 +10,7 @@ export function unwrapInstructionArgsDefinedTypesVisitor() {
         const linkables = new LinkableDictionary();
         visit(root, getRecordLinkablesVisitor(linkables));
 
-        const definedTypesToInline = (Object.keys(histogram) as CamelCaseString[])
+        const definedTypesToInline = (Object.keys(histogram) as IdentifierString[])
             // Get all defined types used exactly once as an instruction argument.
             .filter(key => (histogram[key].total ?? 0) === 1 && (histogram[key].directlyAsInstructionArgs ?? 0) === 1)
             // Filter out enums which are better defined as external types.
