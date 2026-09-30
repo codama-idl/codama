@@ -45,6 +45,8 @@ import {
     LinkableDictionary,
     NodePath,
     NodeSelector,
+    parsePath,
+    PathSegment,
     pipe,
     recordLinkablesOnFirstVisitVisitor,
     Visitor,
@@ -455,16 +457,6 @@ function getInstructionAccountRename(
 ): IdentifierString | undefined {
     const instructionPath = getNodePathUntilLastNode(path, 'instructionNode');
     return instructionPath ? renames.instructionAccounts?.(instructionPath)?.get(identifier) : undefined;
-}
-
-export type PathSegment = { identifier: string; kind: 'field' } | { index: number; kind: 'index' };
-
-const PATH_SEGMENT_REGEX = /(?:^|\.)([A-Za-z_][A-Za-z0-9_]*)|\[(0|[1-9][0-9]*)\]/g;
-
-export function parsePath(path: string): PathSegment[] {
-    return [...path.matchAll(PATH_SEGMENT_REGEX)].map(([, identifier, index]) =>
-        identifier !== undefined ? { identifier, kind: 'field' } : { index: Number(index), kind: 'index' },
-    );
 }
 
 function serializePath(segments: PathSegment[]): string {

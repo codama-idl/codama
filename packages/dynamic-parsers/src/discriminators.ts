@@ -1,8 +1,10 @@
 import { CodecAndValueVisitors, containsBytes, ReadonlyUint8Array } from '@codama/dynamic-codecs';
 import {
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
     CodamaError,
+    isCodamaError,
 } from '@codama/errors';
 import {
     ConstantDiscriminatorNode,
@@ -10,17 +12,19 @@ import {
     constantValueNode,
     DiscriminatorNode,
     FieldDiscriminatorNode,
-    isNode,
     SizeDiscriminatorNode,
     StructFieldTypeNode,
     TypeNode,
 } from '@codama/nodes';
 import {
     getLastNodeFromPath,
+    isNodePath,
     LinkableDictionary,
     NodePath,
     NodeStack,
     ProvidedScope,
+    resolveTypePath,
+    TypePathNode,
     visit,
 } from '@codama/visitors-core';
 
@@ -84,11 +88,7 @@ function matchFieldDiscriminator(
     dataType: TypeNode | undefined,
     context: DiscriminatorContext,
 ): boolean {
-    const segments = discriminator.path.split('.');
-    const resolved = findDataField(dataType, segments, context.stack.getPath(), context.linkables);
-    if (!resolved) {
-        throw new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: discriminator.path });
-    }
+    const resolved = resolveDiscriminatorField(discriminator, dataType, context);
     const field = getLastNodeFromPath(resolved);
     if (!field.defaultValue) {
         throw new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, { field: discriminator.path });
@@ -99,29 +99,27 @@ function matchFieldDiscriminator(
     return context.stack.withPath(resolved, () => matchConstantDiscriminator(bytes, constantDiscriminator, context));
 }
 
-function matchSizeDiscriminator(bytes: ReadonlyUint8Array, discriminator: SizeDiscriminatorNode): boolean {
-    return bytes.length === discriminator.size;
+/** Resolve the struct field a field discriminator points to, within the given data type. */
+function resolveDiscriminatorField(
+    discriminator: FieldDiscriminatorNode,
+    dataType: TypeNode | undefined,
+    { linkables, stack }: DiscriminatorContext,
+): NodePath<StructFieldTypeNode> {
+    const notFound = (cause?: unknown) =>
+        new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { cause, field: discriminator.path });
+    if (!dataType) throw notFound();
+    let resolved: NodePath<TypePathNode>;
+    try {
+        resolved = resolveTypePath([...stack.getPath(), dataType], discriminator.path, linkables);
+    } catch (error) {
+        if (isCodamaError(error, CODAMA_ERROR__CANNOT_RESOLVE_PATH)) throw notFound(error);
+        throw error;
+    }
+    // Only struct fields carry default values, e.g. a tuple item (`[0]`) cannot be a discriminator field.
+    if (!isNodePath(resolved, 'structFieldTypeNode')) throw notFound();
+    return resolved;
 }
 
-/**
- * Find the struct field at the given path segments within `type`, following
- * `definedTypeLinkNode`s, and return its full path.
- */
-function findDataField(
-    type: TypeNode | undefined,
-    segments: string[],
-    path: NodePath,
-    linkables: LinkableDictionary,
-): NodePath<StructFieldTypeNode> | undefined {
-    if (!type) return undefined;
-    if (isNode(type, 'definedTypeLinkNode')) {
-        const linkedPath = linkables.getPathOrThrow([...path, type]);
-        return findDataField(getLastNodeFromPath(linkedPath).type, segments, linkedPath, linkables);
-    }
-    if (!isNode(type, 'structTypeNode')) return undefined;
-    const [identifier, ...rest] = segments;
-    const field = (type.fields ?? []).find(field => field.identifier === identifier);
-    if (!field) return undefined;
-    const fieldPath = [...path, type, field] as unknown as NodePath<StructFieldTypeNode>;
-    return rest.length === 0 ? fieldPath : findDataField(field.type, rest, fieldPath, linkables);
+function matchSizeDiscriminator(bytes: ReadonlyUint8Array, discriminator: SizeDiscriminatorNode): boolean {
+    return bytes.length === discriminator.size;
 }

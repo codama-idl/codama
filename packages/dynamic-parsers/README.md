@@ -102,7 +102,7 @@ Note that it uses the instruction's `programAddress` to restrict the search to t
 Accounts, events and instructions are identified using their `discriminators`, which must all match the provided bytes.
 
 - `constantDiscriminatorNode`: the bytes contain the encoded constant at the given offset.
-- `fieldDiscriminatorNode`: the bytes contain the encoded default value of the field at the given `path` and offset. The path is relative to the node's `data` and follows linked types, e.g. `header.kind`. Injected default values are resolved using the `provides` of the instruction.
+- `fieldDiscriminatorNode`: the bytes contain the encoded default value of the field at the given `path` and offset. The path is relative to the node's `data`, follows linked types, and must point to a struct field, e.g. `header.kind` or `entries[0].kind`. Injected default values are resolved using the `provides` of the instruction.
 - `sizeDiscriminatorNode`: the bytes have exactly the given size.
 
 ## Program selection

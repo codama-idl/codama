@@ -33,6 +33,7 @@ import {
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING,
     CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
@@ -125,6 +126,14 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: {
         idlType: string;
+    };
+    [CODAMA_ERROR__CANNOT_RESOLVE_PATH]: {
+        /** The path of the node the segment could not be applied to, from the root. */
+        nodePath: readonly Node[];
+        /** The path expression being resolved, e.g. `config.fees[0]`. */
+        path: PathString;
+        /** The segment that could not be followed, e.g. `fees` or `[0]`. */
+        segment: string;
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: {
         field: PathString;

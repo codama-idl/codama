@@ -808,6 +808,38 @@ const visitor = pipe(
 );
 ```
 
+## Resolving path expressions
+
+Some nodes point into nested data using a path expression, such as a `dataValueNode('config.fees[0]')` or a `fieldDiscriminatorNode('header.kind')`. A path is made of segments where `.identifier` selects a struct field and `[n]` selects the n-th item of a tuple, or the item of an array or set.
+
+### `resolveTypePath`
+
+The `resolveTypePath` function follows a path expression from a source type and returns the full `NodePath` of the node it points to. The source may be any type node, struct field, enum variant or `definedTypeLinkNode`. It requires a `LinkableDictionary` to follow links along the way.
+
+```ts
+// Given instruction data such as `struct { config: link(config) }`
+// where the `config` defined type is `struct { fees: array(u16) }`.
+const source = [root, program, instruction, instruction.data];
+const path = resolveTypePath(source, pathString('config.fees[0]'), linkables);
+// ^ [root, program, configType, configStruct, feesField, feesArray, u16]
+
+const node = getLastNodeFromPath(path);
+// ^ integerTypeNode('u16')
+```
+
+Note that:
+
+- Links are followed through the path of their definitions, so any further links resolve in the program that defines them. Here, the returned path goes through `configType` rather than the instruction.
+- The last node is returned as addressed. For instance, resolving `config` above returns the struct field whose type is the link, without following it.
+- If a segment cannot be followed, a `CODAMA_ERROR__CANNOT_RESOLVE_PATH` error is thrown, naming the segment and the path of the node it was applied to. Dangling links throw a `CODAMA_ERROR__LINKED_NODE_NOT_FOUND` error.
+
+The `parsePath` helper splits a path expression into its segments.
+
+```ts
+parsePath('config.fees[0]');
+// ^ [{ kind: 'field', identifier: 'config' }, { kind: 'field', identifier: 'fees' }, { kind: 'index', index: 0 }]
+```
+
 ## Other useful visitors
 
 This package provides a few other visitors that may help build more complex visitors.
