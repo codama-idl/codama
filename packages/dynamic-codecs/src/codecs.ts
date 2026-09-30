@@ -154,12 +154,7 @@ export function getNodeValueCodecVisitor(
         node: TLinkNode,
     ) => {
         const path = linkables.getPathOrThrow(stack.getPath(node.kind) as NodePath<TLinkNode>);
-        stack.pushPath(path);
-        try {
-            return visit(getLastNodeFromPath(path), visitor);
-        } finally {
-            stack.popPath();
-        }
+        return stack.visitPath(path, visitor);
     };
 
     const getCollectionCodec = (item: Codec<unknown>, count: CountNode): Codec<unknown[]> => {

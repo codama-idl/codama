@@ -100,12 +100,7 @@ export function getByteSizeVisitor(
                     // This prevents infinite recursion by assuming cyclic types don't have a fixed size.
                     if (definedTypeStack.includes(linkedDefinedType.identifier)) return null;
 
-                    stack.pushPath(linkedDefinedPath);
-                    try {
-                        return visit(linkedDefinedType, self);
-                    } finally {
-                        stack.popPath();
-                    }
+                    return stack.visitPath(linkedDefinedPath, self);
                 },
 
                 visitEnumType(node, { self }) {

@@ -1,7 +1,8 @@
 import { CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK, CodamaError } from '@codama/errors';
 import { GetNodeFromKind, Node, NodeKind } from '@codama/nodes';
 
-import { assertIsNodePath, NodePath, nodePathToString } from './NodePath';
+import { assertIsNodePath, getLastNodeFromPath, NodePath, nodePathToString } from './NodePath';
+import { visit, Visitor } from './visitor';
 
 type MutableNodePath = Node[];
 
@@ -50,6 +51,46 @@ export class NodeStack {
             });
         }
         return [...this.stack.pop()!];
+    }
+
+    /**
+     * Run `callback` with `path` as the current path, then restore the
+     * previous one, even if `callback` throws. Use it to jump to another
+     * part of the tree, e.g. to the definition of a linked node.
+     *
+     * @example
+     * ```ts
+     * const fields = stack.withPath(definedTypePath, () => getFields(definedType.type));
+     * ```
+     */
+    public withPath<T>(path: NodePath, callback: () => T): T {
+        this.pushPath(path);
+        try {
+            return callback();
+        } finally {
+            this.popPath();
+        }
+    }
+
+    /**
+     * Visit the last node of `path` with the rest of `path` as the current
+     * path, then restore the previous one, even if the visit throws.
+     *
+     * The visitor must record its nodes on this stack (e.g. using
+     * `recordNodeStackVisitor`), which adds the visited node back to the
+     * path. Otherwise, use {@link NodeStack.withPath} instead.
+     *
+     * @example
+     * ```ts
+     * const linkedPath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
+     * return stack.visitPath(linkedPath, self);
+     * ```
+     */
+    public visitPath<TNode extends Node, TReturn>(
+        path: NodePath<TNode>,
+        visitor: Visitor<TReturn, TNode['kind']>,
+    ): TReturn {
+        return this.withPath(path.slice(0, -1), () => visit(getLastNodeFromPath(path), visitor));
     }
 
     public getPath(): NodePath;
