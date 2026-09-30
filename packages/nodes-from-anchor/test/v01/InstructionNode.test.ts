@@ -1,17 +1,24 @@
 import {
     bytesTypeNode,
     fieldDiscriminatorNode,
-    fixedSizeTypeNode,
+    fixedSizeTransformNode,
     instructionAccountNode,
-    instructionArgumentNode,
     instructionNode,
-    numberTypeNode,
+    integerTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { GenericsV01, getAnchorDiscriminatorV01, instructionNodeFromAnchorV01 } from '../../src';
 
 const generics = {} as GenericsV01;
+const discriminatorField = structFieldTypeNode({
+    defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
+    defaultValueStrategy: 'omitted',
+    identifier: 'discriminator',
+    type: bytesTypeNode({ transforms: [fixedSizeTransformNode(8)] }),
+});
 
 test('it creates instruction nodes', () => {
     const node = instructionNodeFromAnchorV01(
@@ -43,30 +50,32 @@ test('it creates instruction nodes', () => {
                     // TODO: Handle seeds with nested paths. (Needs a path in the IDL but should we?)
                     // defaultValue: pdaValueNode(
                     //     pdaNode({
-                    //         name: 'distribution',
+                    //         identifier: 'distribution',
                     //         seeds: [
                     //             constantPdaSeedNodeFromBytes('base58', 'F9bS'),
-                    //             variablePdaSeedNode('distributionGroupMint', publicKeyTypeNode()),
+                    //             variablePdaSeedNode('distribution_group_mint', publicKeyTypeNode()),
                     //         ],
                     //     }),
-                    //     [pdaSeedValueNode("distributionGroupMint", accountValueNode('distribution', 'group_mint'))],
+                    //     {
+                    //         seeds: [
+                    //             pdaSeedValueNode(
+                    //                 'distribution_group_mint',
+                    //                 accountValueNode('distribution', 'group_mint'),
+                    //             ),
+                    //         ],
+                    //     },
                     // ),
+                    identifier: 'distribution',
                     isSigner: false,
                     isWritable: true,
-                    name: 'distribution',
                 }),
             ],
-            arguments: [
-                instructionArgumentNode({
-                    defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
-                    defaultValueStrategy: 'omitted',
-                    name: 'discriminator',
-                    type: fixedSizeTypeNode(bytesTypeNode(), 8),
-                }),
-                instructionArgumentNode({ name: 'amount', type: numberTypeNode('u8') }),
-            ],
+            data: structTypeNode([
+                discriminatorField,
+                structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u8') }),
+            ]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'mintTokens',
+            identifier: 'mintTokens',
         }),
     );
 });
@@ -84,16 +93,39 @@ test('it creates instruction nodes with anchor discriminators', () => {
 
     expect(node).toEqual(
         instructionNode({
-            arguments: [
-                instructionArgumentNode({
-                    defaultValue: getAnchorDiscriminatorV01([246, 28, 6, 87, 251, 45, 50, 42]),
-                    defaultValueStrategy: 'omitted',
-                    name: 'discriminator',
-                    type: fixedSizeTypeNode(bytesTypeNode(), 8),
-                }),
-            ],
+            data: structTypeNode([discriminatorField]),
             discriminators: [fieldDiscriminatorNode('discriminator')],
-            name: 'myInstruction',
+            identifier: 'myInstruction',
+        }),
+    );
+});
+
+test('it keeps the raw casing of instruction and argument identifiers', () => {
+    const node = instructionNodeFromAnchorV01(
+        {
+            accounts: [{ name: 'token_account', signer: false, writable: true }],
+            args: [{ docs: ['The amount.', 'In lamports.'], name: 'max_amount', type: 'u64' }],
+            discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+            docs: ['My instruction.'],
+            name: 'my_instruction',
+        },
+        generics,
+    );
+
+    expect(node).toEqual(
+        instructionNode({
+            accounts: [instructionAccountNode({ identifier: 'token_account', isSigner: false, isWritable: true })],
+            data: structTypeNode([
+                discriminatorField,
+                structFieldTypeNode({
+                    docs: 'The amount.\nIn lamports.',
+                    identifier: 'max_amount',
+                    type: integerTypeNode('u64'),
+                }),
+            ]),
+            discriminators: [fieldDiscriminatorNode('discriminator')],
+            docs: 'My instruction.',
+            identifier: 'my_instruction',
         }),
     );
 });

@@ -1,4 +1,4 @@
-import { arrayTypeNode, fixedCountNode, numberTypeNode, prefixedCountNode } from '@codama/nodes';
+import { arrayTypeNode, fixedCountNode, integerTypeNode, prefixedCountNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { GenericsV01, typeNodeFromAnchorV01 } from '../../../src';
@@ -7,10 +7,10 @@ const generics = {} as GenericsV01;
 
 test('it creates array type nodes', () => {
     expect(typeNodeFromAnchorV01({ array: ['u8', 2] }, generics)).toEqual(
-        arrayTypeNode(numberTypeNode('u8'), fixedCountNode(2)),
+        arrayTypeNode(integerTypeNode('u8'), fixedCountNode(2)),
     );
     expect(typeNodeFromAnchorV01({ vec: 'u8' }, generics)).toEqual(
-        arrayTypeNode(numberTypeNode('u8'), prefixedCountNode(numberTypeNode('u32'))),
+        arrayTypeNode(integerTypeNode('u8'), prefixedCountNode(integerTypeNode('u32'))),
     );
 });
 
@@ -24,5 +24,5 @@ test('it unwraps array nodes with generic sizes', () => {
                 types: {},
             },
         ),
-    ).toEqual(arrayTypeNode(numberTypeNode('u8'), fixedCountNode(100)));
+    ).toEqual(arrayTypeNode(integerTypeNode('u8'), fixedCountNode(100)));
 });

@@ -13,9 +13,25 @@ test('it creates error nodes', () => {
     expect(node).toEqual(
         errorNode({
             code: 42,
-            docs: ['myError: my error message'],
+            docs: 'myError: my error message',
+            identifier: 'myError',
             message: 'my error message',
-            name: 'myError',
+        }),
+    );
+});
+
+test('it uses the error name as docs when the message is empty', () => {
+    const node = errorNodeFromAnchorV01({
+        code: 42,
+        name: 'MyError',
+    });
+
+    expect(node).toEqual(
+        errorNode({
+            code: 42,
+            docs: 'MyError',
+            identifier: 'MyError',
+            message: '',
         }),
     );
 });

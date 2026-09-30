@@ -4,26 +4,29 @@ import { expect, test } from 'vitest';
 import { instructionAccountNodeFromAnchorV00, instructionAccountNodesFromAnchorV00 } from '../../src';
 
 test('it creates instruction account nodes', () => {
+    // When we convert an Anchor instruction account.
     const node = instructionAccountNodeFromAnchorV00({
         docs: ['my docs'],
         isMut: true,
         isOptional: true,
         isSigner: false,
-        name: 'myInstructionAccount',
+        name: 'my_instruction_account',
     });
 
+    // Then we expect an instruction account node that keeps the IDL casing.
     expect(node).toEqual(
         instructionAccountNode({
-            docs: ['my docs'],
+            docs: 'my docs',
+            identifier: 'my_instruction_account',
             isOptional: true,
             isSigner: false,
             isWritable: true,
-            name: 'myInstructionAccount',
         }),
     );
 });
 
 test('it flattens nested instruction accounts without prefixing when no duplicates exist', () => {
+    // When we convert nested instruction accounts with unique names.
     const nodes = instructionAccountNodesFromAnchorV00([
         { isMut: false, isSigner: false, name: 'accountA' },
         {
@@ -36,15 +39,17 @@ test('it flattens nested instruction accounts without prefixing when no duplicat
         { isMut: true, isSigner: true, name: 'accountD' },
     ]);
 
+    // Then we expect the nested accounts to be flattened without prefixes.
     expect(nodes).toEqual([
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'accountA' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'accountB' }),
-        instructionAccountNode({ isSigner: true, isWritable: false, name: 'accountC' }),
-        instructionAccountNode({ isSigner: true, isWritable: true, name: 'accountD' }),
+        instructionAccountNode({ identifier: 'accountA', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'accountB', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'accountC', isSigner: true, isWritable: false }),
+        instructionAccountNode({ identifier: 'accountD', isSigner: true, isWritable: true }),
     ]);
 });
 
 test('it prevents duplicate names by prefixing nested accounts with different parent names', () => {
+    // When we convert nested instruction accounts whose names collide once flattened.
     const nodes = instructionAccountNodesFromAnchorV00([
         {
             accounts: [
@@ -62,10 +67,28 @@ test('it prevents duplicate names by prefixing nested accounts with different pa
         },
     ]);
 
+    // Then we expect the nested accounts to be prefixed by their group names.
     expect(nodes).toEqual([
-        instructionAccountNode({ isSigner: false, isWritable: false, name: 'tokenProgramMint' }),
-        instructionAccountNode({ isSigner: true, isWritable: false, name: 'tokenProgramAuthority' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMint' }),
-        instructionAccountNode({ isSigner: false, isWritable: true, name: 'nftProgramMetadata' }),
+        instructionAccountNode({ identifier: 'tokenProgram_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'tokenProgram_authority', isSigner: true, isWritable: false }),
+        instructionAccountNode({ identifier: 'nftProgram_mint', isSigner: false, isWritable: true }),
+        instructionAccountNode({ identifier: 'nftProgram_metadata', isSigner: false, isWritable: true }),
+    ]);
+});
+
+test('it prefixes nested accounts whose names only collide once cased', () => {
+    // When we convert nested instruction accounts whose names only differ by their casing.
+    const nodes = instructionAccountNodesFromAnchorV00([
+        { isMut: false, isSigner: false, name: 'token_mint' },
+        {
+            accounts: [{ isMut: true, isSigner: false, name: 'tokenMint' }],
+            name: 'nested',
+        },
+    ]);
+
+    // Then we expect the nested accounts to be prefixed by their group names.
+    expect(nodes).toEqual([
+        instructionAccountNode({ identifier: 'token_mint', isSigner: false, isWritable: false }),
+        instructionAccountNode({ identifier: 'nested_tokenMint', isSigner: false, isWritable: true }),
     ]);
 });

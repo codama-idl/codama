@@ -3,28 +3,25 @@ import {
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     CodamaError,
 } from '@codama/errors';
-import { camelCase } from '@codama/fragments/casing';
 import {
     accountValueNode,
-    argumentValueNode,
-    bytesTypeNode,
     constantPdaSeedNodeFromBytes,
-    InstructionArgumentNode,
-    isNode,
+    dataValueNode,
     PdaSeedNode,
     PdaSeedValueNode,
     pdaSeedValueNode,
     publicKeyTypeNode,
-    stringTypeNode,
+    StructFieldTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { getBase58Codec } from '@solana/codecs';
 
+import { removeBorshSizePrefix } from '../utils';
 import { IdlV01Seed } from './idl';
 
 export function pdaSeedNodeFromAnchorV01(
     seed: IdlV01Seed,
-    instructionArguments: InstructionArgumentNode[],
+    dataFields: StructFieldTypeNode[],
     prefix?: string,
 ): Readonly<{ definition: PdaSeedNode; value?: PdaSeedValueNode }> {
     const kind = seed.kind;
@@ -45,37 +42,17 @@ export function pdaSeedNodeFromAnchorV01(
         }
         case 'arg': {
             // Ignore nested paths.
-            const [originalArgumentName] = seed.path.split('.');
-            const argumentName = camelCase(originalArgumentName);
-            const argumentNode = instructionArguments.find(({ identifier }) => identifier === argumentName);
-            if (!argumentNode) {
-                throw new CodamaError(CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: originalArgumentName });
+            const [argumentName] = seed.path.split('.');
+            const field = dataFields.find(({ identifier }) => identifier === argumentName);
+            if (!field) {
+                throw new CodamaError(CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING, { name: argumentName });
             }
 
             // Anchor uses unprefixed strings and byte arrays for PDA seeds
-            // even though the arguments themselves use Borsh size-prefixed
-            // types. Thus, we must recognize both cases and convert the
-            // types accordingly.
-            const isBorshString =
-                isNode(argumentNode.type, 'sizePrefixTypeNode') &&
-                isNode(argumentNode.type.type, 'stringTypeNode') &&
-                argumentNode.type.type.encoding === 'utf8' &&
-                isNode(argumentNode.type.prefix, 'numberTypeNode') &&
-                argumentNode.type.prefix.format === 'u32';
-            const isBorshBytes =
-                isNode(argumentNode.type, 'sizePrefixTypeNode') &&
-                isNode(argumentNode.type.type, 'bytesTypeNode') &&
-                isNode(argumentNode.type.prefix, 'numberTypeNode') &&
-                argumentNode.type.prefix.format === 'u32';
-            const argumentType = isBorshString
-                ? stringTypeNode('utf8')
-                : isBorshBytes
-                  ? bytesTypeNode()
-                  : argumentNode.type;
-
+            // even though the arguments themselves are Borsh size-prefixed.
             return {
-                definition: variablePdaSeedNode(argumentNode.identifier, argumentType),
-                value: pdaSeedValueNode(argumentNode.identifier, argumentValueNode(argumentNode.identifier)),
+                definition: variablePdaSeedNode(field.identifier, removeBorshSizePrefix(field.type)),
+                value: pdaSeedValueNode(field.identifier, dataValueNode(field.identifier)),
             };
         }
         default:

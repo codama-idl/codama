@@ -1,38 +1,33 @@
-import { camelCase } from '@codama/fragments/casing';
 import {
-    bytesTypeNode,
     fieldDiscriminatorNode,
-    fixedSizeTypeNode,
-    instructionArgumentNode,
     InstructionNode,
     instructionNode,
+    structFieldTypeNode,
+    structTypeNode,
 } from '@codama/nodes';
 
 import { getAnchorDiscriminatorV01 } from '../discriminators';
+import { docsFromAnchor, fixedSizeBytesTypeNode } from '../utils';
 import type { IdlV01Instruction } from './idl';
 import { instructionAccountNodesFromAnchorV01 } from './InstructionAccountNode';
-import { instructionArgumentNodeFromAnchorV01 } from './InstructionArgumentNode';
+import { structFieldTypeNodeFromAnchorV01 } from './typeNodes';
 import type { GenericsV01 } from './unwrapGenerics';
 
 export function instructionNodeFromAnchorV01(idl: IdlV01Instruction, generics: GenericsV01): InstructionNode {
-    const name = idl.name;
-    let dataArguments = idl.args.map(arg => instructionArgumentNodeFromAnchorV01(arg, generics));
-
-    const discriminatorField = instructionArgumentNode({
+    const discriminatorField = structFieldTypeNode({
         defaultValue: getAnchorDiscriminatorV01(idl.discriminator),
         defaultValueStrategy: 'omitted',
         identifier: 'discriminator',
-        type: fixedSizeTypeNode(bytesTypeNode(), idl.discriminator.length),
+        type: fixedSizeBytesTypeNode(idl.discriminator.length),
     });
-    dataArguments = [discriminatorField, ...dataArguments];
-    const discriminators = [fieldDiscriminatorNode('discriminator')];
+    const dataFields = [discriminatorField, ...idl.args.map(arg => structFieldTypeNodeFromAnchorV01(arg, generics))];
 
     return instructionNode({
-        accounts: instructionAccountNodesFromAnchorV01(idl.accounts ?? [], dataArguments),
-        arguments: dataArguments,
-        discriminators,
-        docs: idl.docs ?? [],
-        identifier: camelCase(name),
+        accounts: instructionAccountNodesFromAnchorV01(idl.accounts ?? [], dataFields),
+        data: structTypeNode(dataFields),
+        discriminators: [fieldDiscriminatorNode('discriminator')],
+        docs: docsFromAnchor(idl.docs),
+        identifier: idl.name,
         optionalAccountStrategy: 'programId',
     });
 }

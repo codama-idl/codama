@@ -1,10 +1,8 @@
 import {
     booleanTypeNode,
-    enumEmptyVariantTypeNode,
-    enumStructVariantTypeNode,
-    enumTupleVariantTypeNode,
     enumTypeNode,
-    numberTypeNode,
+    enumVariantTypeNode,
+    integerTypeNode,
     structFieldTypeNode,
     structTypeNode,
     tupleTypeNode,
@@ -14,28 +12,35 @@ import { expect, test } from 'vitest';
 import { typeNodeFromAnchorV00 } from '../../../src';
 
 test('it creates enum type nodes', () => {
+    // When we convert the Anchor type.
     const node = typeNodeFromAnchorV00({
         kind: 'enum',
         variants: [
-            { name: 'variantA' }, // Empty variant.
-            { fields: ['u16', 'bool'], name: 'variantB' }, // Tuple variant.
-            { fields: [{ name: 'age', type: 'u8' }], name: 'variantC' }, // Struct variant.
+            { name: 'VariantA' }, // Empty variant.
+            { fields: ['u16', 'bool'], name: 'VariantB' }, // Tuple variant.
+            { fields: [{ name: 'age', type: 'u8' }], name: 'VariantC' }, // Struct variant.
         ],
     });
 
+    // Then we expect the equivalent Codama type node.
     expect(node).toEqual(
-        enumTypeNode([
-            enumEmptyVariantTypeNode('variantA'),
-            enumTupleVariantTypeNode('variantB', tupleTypeNode([numberTypeNode('u16'), booleanTypeNode()])),
-            enumStructVariantTypeNode(
-                'variantC',
-                structTypeNode([structFieldTypeNode({ name: 'age', type: numberTypeNode('u8') })]),
-            ),
-        ]),
+        enumTypeNode(
+            [
+                enumVariantTypeNode('VariantA'),
+                enumVariantTypeNode('VariantB', { data: tupleTypeNode([integerTypeNode('u16'), booleanTypeNode()]) }),
+                enumVariantTypeNode('VariantC', {
+                    data: structTypeNode([structFieldTypeNode({ identifier: 'age', type: integerTypeNode('u8') })]),
+                }),
+            ],
+            { size: integerTypeNode('u8') },
+        ),
     );
 });
 
 test('it creates enum type nodes with custom sizes', () => {
+    // When we convert the Anchor type.
     const node = typeNodeFromAnchorV00({ kind: 'enum', size: 'u16', variants: [] });
-    expect(node).toEqual(enumTypeNode([], { size: numberTypeNode('u16') }));
+
+    // Then we expect the equivalent Codama type node.
+    expect(node).toEqual(enumTypeNode([], { size: integerTypeNode('u16') }));
 });
