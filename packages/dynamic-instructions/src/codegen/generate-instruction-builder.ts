@@ -18,12 +18,11 @@ export function generateInstructionBuildersMap(idl: RootNode): string {
 export type ${programName}InstructionBuilders = {\n`;
 
     for (const ix of idl.program.instructions ?? []) {
-        const refs = getResolutionRefs(ix);
+        const refs = getResolutionRefs(ix, idl.program.definedTypes ?? []);
         const signerRef = getInstructionSignerRef(ix);
-        const argsGeneric = refs.argsRef ?? 'Record<string, never>';
+        const dataGeneric = refs.dataRef ?? 'undefined';
         const signersGeneric = signerRef.signersRef ?? 'string[]';
-        const resolversGeneric = refs.resolversRef ? `, ${refs.resolversRef}` : '';
-        output += `    ${ix.identifier}: InstructionsBuilderFn<${argsGeneric}, ${refs.accountsRef}, ${signersGeneric}${resolversGeneric}>;\n`;
+        output += `    ${ix.identifier}: InstructionsBuilderFn<${dataGeneric}, ${refs.accountsRef}, ${signersGeneric}>;\n`;
     }
 
     output += '};\n';

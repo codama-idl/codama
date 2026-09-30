@@ -5,7 +5,7 @@ import path from 'node:path';
 
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { makeRoot } from '../test-utils';
+import { makeRoot } from '../_setup';
 
 const CLI_PATH = path.resolve('bin/cli.cjs');
 

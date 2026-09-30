@@ -8,7 +8,7 @@ import { getLastNodeFromPath, getNodePathUntilLastNode, type InstructionAccountN
 
 import { toAddress } from '../shared/address';
 import type { AccountsInput, DataInput } from '../shared/types';
-import { createResolutionContext } from './context';
+import { createResolutionContext, getAccountInput } from './context';
 import { resolveAccountAddress } from './resolve-account-address';
 
 export type ResolveInstructionAccountAddressInput<
@@ -57,7 +57,7 @@ export async function resolveInstructionAccountAddress<
         });
     }
 
-    const addressInput = accountsInput?.[ixAccountNode.identifier];
+    const addressInput = getAccountInput({ accountsInput }, ixAccountNode.identifier);
     if (addressInput !== undefined && addressInput !== null) {
         return toAddress(addressInput);
     }

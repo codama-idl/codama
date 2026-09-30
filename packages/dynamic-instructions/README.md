@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/dynamic-instructions.svg?style=flat&label=%40codama%2Fdynamic-instructions
 [npm-url]: https://www.npmjs.com/package/@codama/dynamic-instructions
 
-This package provides a runtime Solana instruction builder that dynamically constructs `Instruction` (`@solana/instructions`). It provides instruction arguments encoding and validation, accounts resolution. Powers [`@codama/dynamic-client`](../dynamic-client/README.md) with `InstructionsBuilder`.
+This package provides a runtime Solana instruction builder that dynamically constructs `Instruction` (`@solana/instructions`). It encodes and validates instruction data and resolves instruction accounts. Powers [`@codama/dynamic-client`](../dynamic-client/README.md) with `InstructionsBuilder`.
 
 It also provides a **clear-signing display** layer that turns a concrete instruction into human-readable text — see [Instruction display](#instruction-display-clear-signing).
 
@@ -22,9 +22,9 @@ pnpm install @codama/dynamic-instructions
 
 ## Types generation
 
-This package can emit TypeScript types per-instruction - `${Name}Args`, `${Name}Accounts`, `${Name}Resolvers`, and `${Name}Signers` aliases, plus an aggregate `${Program}InstructionBuilders` map.
+This package can emit TypeScript types per instruction: `${Name}InstructionDataArgs`, `${Name}Accounts` and `${Name}AccountsWithData`, `${Name}Signers` aliases, plus an aggregate `${Program}InstructionBuilders` map.
 
-The `${Name}Args` / `${Name}Accounts` / `${Name}Resolvers` type contracts that resolvers operate on are emitted by [`@codama/dynamic-address-resolution/codegen`](../dynamic-address-resolution/README.md) and re-used here. The builder depends on resolution because the input shape it accepts (e.g. optional auto-resolvable accounts) is a direct consequence of resolution rules.
+The `${Name}InstructionDataArgs` and `${Name}Accounts` types are emitted by [`@codama/dynamic-address-resolution/codegen`](../dynamic-address-resolution/README.md) and re-used here, since the accounts that may be omitted depend on the resolution rules.
 
 ### CLI
 
@@ -44,75 +44,55 @@ const source = generateTypes(idl);
 
 ## Functions
 
-### `createInstructionsBuilder(root, ixNode)`
+Every function takes the path of the instruction from the root node, e.g. `[root, root.program, instruction]`, so links and injected values resolve from the program defining the instruction, which may be an additional program.
 
-Creates an async instruction builder function for a given `InstructionNode`. The returned function validates inputs, resolves defaults, encodes arguments, and assembles the final `Instruction`.
+### `createInstructionsBuilder(path)`
 
-**Untyped:**
-
-```ts
-const build = createInstructionsBuilder(root, ixNode);
-const instruction = await build(args, accounts, signers, resolvers);
-```
-
-**Typed:**
-
-> Types are generated via [`generate-types`](#types-generation).
+Creates an async function building the `Instruction` (`@solana/instructions`) of an instruction. It encodes the provided data, resolves the accounts that are not provided from their default values, and uses the address of the program defining the instruction.
 
 ```ts
-import type { CreateItemAccounts, CreateItemArgs, CreateItemResolvers } from './generated/<idl-name>-instruction-types';
-
-const build = createInstructionsBuilder<CreateItemArgs, CreateItemAccounts, [], CreateItemResolvers>(root, ixNode);
-const instruction = await build({ name: 'item' }, { authority }, [], {
-    resolveOwner: async (args, accounts) => accounts.authority,
+const build = createInstructionsBuilder([root, root.program, transfer]);
+const instruction = await build({
+    // Remaining accounts are provided as lists of addresses under their identifier.
+    accounts: { authority, destination, signers: [signerA, signerB], source },
+    data: { amount: 1_000_000_000n },
+    // Accounts with `isSigner: 'either'` to mark as signers.
+    signers: ['authority'],
 });
 ```
 
-### `createAccountMeta(root, ixNode, argumentsInput?, accountsInput?, signers?, resolversInput?)`
-
-Resolves and builds `AccountMeta[]` for an instruction. Handles PDA derivation, default value resolution, optional accounts, and signer disambiguation.
-
-**Untyped:**
+Types generated via [`generate-types`](#types-generation) can type its inputs.
 
 ```ts
-const accountMetas = await createAccountMeta(root, ixNode, args, accounts, ['owner'], resolvers);
+import type {
+    TransferAccounts,
+    TransferInstructionDataArgs,
+    TransferSigners,
+} from './generated/<idl-name>-instruction-types';
+
+const build = createInstructionsBuilder<TransferInstructionDataArgs, TransferAccounts, TransferSigners>(path);
 ```
 
-**Typed:**
+### `encodeInstructionData(path, data?)`
 
-> Types are generated via [`generate-types`](#types-generation).
+Encodes the data of an instruction using its codec from [`@codama/dynamic-codecs`](../dynamic-codecs/README.md), including the default values of its fields, e.g. discriminators.
 
 ```ts
-import type { CreateItemAccounts, CreateItemArgs, CreateItemResolvers } from './generated/<idl-name>-instruction-types';
-
-const accountMetas = await createAccountMeta<CreateItemAccounts, CreateItemArgs, CreateItemResolvers>(
-    root,
-    ixNode,
-    { name: 'item' },
-    { authority },
-    ['owner'],
-    { resolveOwner: async (args, accounts) => accounts.authority },
-);
+const bytes = encodeInstructionData([root, root.program, transfer], { amount: 1_000_000_000n });
 ```
 
-### `encodeInstructionArguments(root, ixNode, argumentsInput?)`
+Codama errors raised while encoding are thrown as is, e.g. a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error for a value of the wrong type. Other encoding errors, e.g. an integer out of range, throw a `CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` error whose `cause` is the original error. Use `createInstructionDataEncoder(path)` to create the codec once and encode several times.
 
-Encodes instruction arguments into a `ReadonlyUint8Array` buffer according to the Codama schema. Auto-encodes arguments with `defaultValueStrategy: 'omitted'` (e.g. discriminators).
+### `createAccountMetas({ path, accounts?, data?, signers? })`
 
-**Untyped:**
-
-```ts
-const data = encodeInstructionArguments(root, ixNode, { amount: 1_000_000_000 });
-```
-
-**Typed:**
-
-> Types are generated via [`generate-types`](#types-generation).
+Creates the `AccountMeta`s of an instruction: its accounts, in order, followed by its remaining accounts. Accounts that are not provided are resolved from their default values, e.g. PDAs derived from the data, and optional accounts provided as `null` follow the `optionalAccountStrategy` of the instruction.
 
 ```ts
-import type { TransferArgs } from './generated/<idl-name>-instruction-types';
-
-const data = encodeInstructionArguments<TransferArgs>(root, ixNode, { amount: 1_000_000_000n });
+const accountMetas = await createAccountMetas({
+    accounts: { authority, destination, source },
+    data: { amount: 1_000_000_000n },
+    path: [root, root.program, transfer],
+});
 ```
 
 ## Instruction display (clear signing)

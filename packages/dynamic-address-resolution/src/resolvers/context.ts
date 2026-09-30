@@ -3,6 +3,7 @@ import {
     CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
     CodamaError,
 } from '@codama/errors';
 import type { Address } from '@solana/addresses';
@@ -11,6 +12,7 @@ import {
     findProgramNodeFromPath,
     getLastNodeFromPath,
     getRecordLinkablesVisitor,
+    type IdentifierString,
     type InstructionNode,
     isNode,
     LinkableDictionary,
@@ -28,8 +30,9 @@ import {
     visit,
 } from 'codama';
 
-import { toAddress } from '../shared/address';
+import { type AddressInput, toAddress } from '../shared/address';
 import type { AccountsInput, DataInput } from '../shared/types';
+import { formatValueType } from '../shared/util';
 import type { ResolutionContext } from './types';
 
 const linkablesCache = new WeakMap<Node, LinkableDictionary>();
@@ -64,6 +67,26 @@ export function createResolutionContext<TAccounts extends AccountsInput, TData e
         resolutionPath: [],
         scope: getProvidedScope(instructionPath),
     };
+}
+
+/**
+ * The address provided for the given account, if any. Throws
+ * `UNEXPECTED_ADDRESS_TYPE` when given a list of addresses, which only
+ * remaining accounts accept.
+ */
+export function getAccountInput(
+    ctx: Pick<ResolutionContext, 'accountsInput'>,
+    accountName: IdentifierString,
+): AddressInput | null | undefined {
+    const input = ctx.accountsInput?.[accountName];
+    if (Array.isArray(input)) {
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
+            accountName,
+            actualType: formatValueType(input),
+            expectedType: 'Address | PublicKey',
+        });
+    }
+    return input as AddressInput | null | undefined;
 }
 
 export function getInstruction(ctx: ResolutionContext): InstructionNode {

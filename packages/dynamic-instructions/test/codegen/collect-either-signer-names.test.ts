@@ -7,21 +7,19 @@ describe('collectEitherSignerNames', () => {
     test('should return the names of accounts with isSigner: "either"', () => {
         const ix = instructionNode({
             accounts: [
-                instructionAccountNode({ isSigner: 'either', isWritable: false, name: 'authority' }),
-                instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' }),
-                instructionAccountNode({ isSigner: 'either', isWritable: false, name: 'delegate' }),
+                instructionAccountNode({ identifier: 'authority', isSigner: 'either', isWritable: false }),
+                instructionAccountNode({ identifier: 'payer', isSigner: true, isWritable: true }),
+                instructionAccountNode({ identifier: 'delegate', isSigner: 'either', isWritable: false }),
             ],
-            arguments: [],
-            name: 'transfer',
+            identifier: 'transfer',
         });
         expect(collectEitherSignerNames(ix)).toEqual(['authority', 'delegate']);
     });
 
     test('should return an empty array when no account is isSigner: "either"', () => {
         const ix = instructionNode({
-            accounts: [instructionAccountNode({ isSigner: true, isWritable: true, name: 'payer' })],
-            arguments: [],
-            name: 'pay',
+            accounts: [instructionAccountNode({ identifier: 'payer', isSigner: true, isWritable: true })],
+            identifier: 'pay',
         });
         expect(collectEitherSignerNames(ix)).toEqual([]);
     });

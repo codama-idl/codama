@@ -1,8 +1,8 @@
-import { instructionAccountNode, instructionArgumentNode, instructionNode } from 'codama';
+import { instructionAccountNode, instructionNode, integerTypeNode, structFieldTypeNode, structTypeNode } from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { generateTypes } from '../../src/codegen/generate-types';
-import { makeRoot } from '../test-utils';
+import { makeRoot } from '../_setup';
 
 describe('generateTypes', () => {
     test('should compose header, instruction blocks, signers, and instruction builders map', () => {
@@ -10,16 +10,11 @@ describe('generateTypes', () => {
             [
                 instructionNode({
                     accounts: [
-                        instructionAccountNode({ isSigner: 'either', isWritable: false, name: 'authority' }),
-                        instructionAccountNode({ isSigner: false, isWritable: true, name: 'source' }),
+                        instructionAccountNode({ identifier: 'authority', isSigner: 'either', isWritable: false }),
+                        instructionAccountNode({ identifier: 'source', isSigner: false, isWritable: true }),
                     ],
-                    arguments: [
-                        instructionArgumentNode({
-                            name: 'amount',
-                            type: { endian: 'le', format: 'u64', kind: 'numberTypeNode' },
-                        }),
-                    ],
-                    name: 'transfer',
+                    data: structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]),
+                    identifier: 'transfer',
                 }),
             ],
             'token',
@@ -28,10 +23,12 @@ describe('generateTypes', () => {
         // Header
         expect(output).toContain('Auto-generated instruction types');
         expect(output).toContain("import type { InstructionsBuilderFn } from '@codama/dynamic-instructions';");
-        expect(output).toContain('export type TransferArgs');
+        expect(output).toContain('export type TransferInstructionDataArgs');
         expect(output).toContain('export type TransferAccounts');
         expect(output).toContain("export type TransferSigners = ('authority')[];");
         expect(output).toContain('export type TokenInstructionBuilders');
-        expect(output).toContain('transfer: InstructionsBuilderFn<TransferArgs, TransferAccounts');
+        expect(output).toContain(
+            'transfer: InstructionsBuilderFn<TransferInstructionDataArgs, TransferAccounts, TransferSigners>',
+        );
     });
 });

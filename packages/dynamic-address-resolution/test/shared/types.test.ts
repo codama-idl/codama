@@ -5,8 +5,11 @@ import type { AddressInput } from '../../src/shared/address';
 import type { AccountsInput, DataInput } from '../../src/shared/types';
 
 describe('AccountsInput', () => {
-    test('it accepts a partial record of AddressInput or null', () => {
-        expectTypeOf<AccountsInput>().toExtend<Partial<Record<string, AddressInput | null>>>();
+    test('it accepts a partial record of AddressInput, lists of AddressInput or null', () => {
+        expectTypeOf<AccountsInput>().toExtend<
+            Partial<Record<string, AddressInput | readonly AddressInput[] | null>>
+        >();
+        expectTypeOf<{ signers: Address[] }>().toExtend<AccountsInput>();
         expectTypeOf<{ mint: null }>().toExtend<AccountsInput>();
         expectTypeOf<{ mint: Address }>().toExtend<AccountsInput>();
         // eslint-disable-next-line @typescript-eslint/no-empty-object-type

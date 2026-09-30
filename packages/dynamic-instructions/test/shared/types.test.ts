@@ -1,24 +1,33 @@
+import type { Address } from '@solana/addresses';
 import type { Instruction } from '@solana/instructions';
 import { describe, expectTypeOf, test } from 'vitest';
 
-import type { EitherSigners, InstructionsBuilderFn } from '../../src/shared/types';
+import type { EitherSigners, InstructionInput, InstructionsBuilderFn } from '../../src/shared/types';
 
 describe('InstructionsBuilderFn', () => {
-    test('should return a Promise of Instruction', () => {
+    test('it returns a Promise of Instruction', () => {
         expectTypeOf<InstructionsBuilderFn>().returns.toEqualTypeOf<Promise<Instruction>>();
     });
 
-    test('should allow calling with no arguments', () => {
+    test('it can be called without inputs', () => {
         expectTypeOf<InstructionsBuilderFn>().toBeCallableWith();
     });
 
-    test('should accept all four parameters', () => {
-        expectTypeOf<InstructionsBuilderFn>().toBeCallableWith({}, {}, [], {});
+    test('it accepts accounts, data and signers', () => {
+        expectTypeOf<InstructionsBuilderFn>().toBeCallableWith({ accounts: {}, data: {}, signers: [] });
+    });
+
+    test('it types its inputs with its type parameters', () => {
+        type Build = InstructionsBuilderFn<{ amount: bigint }, { signers: Address[]; source: Address }, 'owner'[]>;
+        expectTypeOf<Parameters<Build>[0]>().toEqualTypeOf<
+            InstructionInput<{ amount: bigint }, { signers: Address[]; source: Address }, 'owner'[]> | undefined
+        >();
+        expectTypeOf<NonNullable<Parameters<Build>[0]>['data']>().toEqualTypeOf<{ amount: bigint } | undefined>();
     });
 });
 
 describe('EitherSigners', () => {
-    test('should be an array of strings', () => {
+    test('it is an array of strings', () => {
         expectTypeOf<EitherSigners>().toEqualTypeOf<string[]>();
     });
 });

@@ -9,7 +9,7 @@ import { visitOrElse } from 'codama';
 
 import { safeStringify } from '../shared/util';
 import { createAccountDefaultValueVisitor, unexpectedAccountDefaultValueNode } from '../visitors/account-default-value';
-import { getInstruction, getProgramAddress } from './context';
+import { getAccountInput, getInstruction, getProgramAddress } from './context';
 import type { ResolutionContext } from './types';
 
 /**
@@ -21,7 +21,7 @@ export async function resolveAccountAddress(
     ctx: ResolutionContext,
 ): Promise<Address | null> {
     // Optional accounts explicitly provided as null resolve using the optional account strategy.
-    if (ctx.accountsInput?.[ixAccountNode.identifier] === null && ixAccountNode.isOptional) {
+    if (getAccountInput(ctx, ixAccountNode.identifier) === null && ixAccountNode.isOptional) {
         return resolveOptionalAccountWithStrategy(ixAccountNode, ctx);
     }
 

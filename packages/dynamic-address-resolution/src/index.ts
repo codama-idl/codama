@@ -3,7 +3,7 @@ export { resolveInstructionAccountAddress, resolveStandalonePda } from './resolv
 export type { ResolveInstructionAccountAddressInput, ResolveStandalonePdaInput } from './resolvers';
 
 // Helpers
-export { isPublicKeyLike, isAddressConvertible, toAddress } from './shared/address';
+export { isAddressConvertible, isPublicKeyLike, toAddress, toAddressOrThrow } from './shared/address';
 export { OPTIONAL_NODE_KINDS } from './shared/nodes';
 
 // Types
