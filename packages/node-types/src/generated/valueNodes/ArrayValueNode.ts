@@ -11,9 +11,6 @@ export interface ArrayValueNode<
     // Children.
     /** The items of the array, in order. */
     readonly items?: TItems;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

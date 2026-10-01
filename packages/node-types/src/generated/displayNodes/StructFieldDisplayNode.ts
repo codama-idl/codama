@@ -26,7 +26,7 @@ export interface StructFieldDisplayNode<
     // Children.
     /**
      * An override label shown for the member (e.g. `"Amount"`).
-     * When absent, renderers derive a label from the member `name`.
+     * When absent, renderers derive a label from the member `identifier`.
      */
     readonly label?: TLabel;
     /**
@@ -34,9 +34,6 @@ export interface StructFieldDisplayNode<
      * Meaningful only when `flatten` is `true`. Useful to disambiguate when two flattened children might collide.
      */
     readonly flattenPrefix?: TFlattenPrefix;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

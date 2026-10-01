@@ -93,6 +93,20 @@ test('it returns data enum values with their data', () => {
     expect(resultMove).toStrictEqual({ __discriminator: 5, __kind: 'move', data: { x: 10n, y: 20n } });
 });
 
+test('it returns enum values whose data is neither a struct nor a tuple', () => {
+    // Given a value visitor under a program with an enum whose variant data is an integer.
+    const visitor = getVisitorForEnum(
+        enumTypeNode([enumVariantTypeNode('amount', { data: integerTypeNode('u64') })]),
+        'operation',
+    );
+
+    // When we visit an enum value node with an integer payload.
+    const result = visit(enumValueNode('operation', 'amount', { value: integerValueNode('42') }), visitor);
+
+    // Then we expect the integer to be nested under `data`.
+    expect(result).toStrictEqual({ __discriminator: 0, __kind: 'amount', data: 42n });
+});
+
 test('it throws when the variant does not exist', () => {
     const enumType = enumTypeNode([enumVariantTypeNode('up')]);
     const visitor = getVisitorForEnum(enumType, 'direction');

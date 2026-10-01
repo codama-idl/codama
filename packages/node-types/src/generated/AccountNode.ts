@@ -40,9 +40,6 @@ export interface AccountNode<
      * When multiple are listed, they are combined with a logical AND.
      */
     readonly discriminators?: TDiscriminators;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

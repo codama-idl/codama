@@ -29,9 +29,6 @@ export interface EnumVariantTypeNode<
     readonly data?: TData;
     /** Display metadata describing how the variant is presented. */
     readonly display?: TDisplay;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

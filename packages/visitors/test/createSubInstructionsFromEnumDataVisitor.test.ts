@@ -150,6 +150,31 @@ test('it does not copy existing sub-instructions into the new ones', () => {
     expect(subInstructions.slice(1).every(ix => ix.subInstructions === undefined)).toBe(true);
 });
 
+test('it copies the return data of the instruction into its sub-instructions', () => {
+    // Given an instruction returning data.
+    const returnData = integerTypeNode('u64');
+    const node = program(
+        instructionNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'action', type: definedTypeLinkNode('action') })]),
+            identifier: 'act',
+            returnData,
+        }),
+    );
+
+    // When we create sub-instructions from the enum field.
+    const result = visit(node, createSubInstructionsFromEnumDataVisitor({ act: 'action' }));
+
+    // Then every sub-instruction returns the same data as the instruction it splits.
+    assertIsNode(result, 'programNode');
+    const instruction = result.instructions?.[0];
+    expect(instruction?.returnData).toStrictEqual(returnData);
+    expect((instruction?.subInstructions ?? []).map(ix => ix.returnData)).toStrictEqual([
+        returnData,
+        returnData,
+        returnData,
+    ]);
+});
+
 test('it throws when the field is missing or not an enum', () => {
     // Given an instruction without an enum field.
     const node = instructionNode({ data: structTypeNode([u8Field('amount')]), identifier: 'act' });

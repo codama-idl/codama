@@ -14,7 +14,7 @@ import type { TypeNode } from './typeNodes/TypeNode';
 type SelfInstructionNode = InstructionNode;
 
 /**
- * A program instruction: its accounts, data, byte-delta hints, discriminators, optional status, and optional sub-instructions.
+ * A program instruction: its accounts, data, return data, byte-delta hints, discriminators, optional status, and optional sub-instructions.
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/0d8edced-cfa4-4500-b80c-ebc56181a338)
  */
@@ -22,6 +22,7 @@ export interface InstructionNode<
     TDocs extends string | TextNode | undefined = string | TextNode | undefined,
     TAccounts extends Array<InstructionAccountNode> | undefined = Array<InstructionAccountNode> | undefined,
     TData extends TypeNode | undefined = TypeNode | undefined,
+    TReturnData extends TypeNode | undefined = TypeNode | undefined,
     TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined =
         | Array<InstructionRemainingAccountsNode>
         | undefined,
@@ -55,6 +56,11 @@ export interface InstructionNode<
      * Contextual defaults use the inject/provide pattern: a field default may be an `injectedValueNode` whose key is fulfilled by the `provides` list of the instruction.
      */
     readonly data?: TData;
+    /**
+     * The type describing the data returned by the instruction to its caller via `set_return_data` — any type node, including a `definedTypeLinkNode`.
+     * When absent, the instruction returns no data.
+     */
+    readonly returnData?: TReturnData;
     /** Variable-length tails of accounts appended after the named account slots. */
     readonly remainingAccounts?: TRemainingAccounts;
     /**
@@ -79,9 +85,6 @@ export interface InstructionNode<
     readonly provides?: TProvides;
     /** Display metadata describing how the instruction is presented. */
     readonly display?: TDisplay;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

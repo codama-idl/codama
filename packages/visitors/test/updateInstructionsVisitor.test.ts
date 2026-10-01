@@ -358,6 +358,18 @@ test('it updates the byte deltas, discriminators and remaining accounts of an in
     );
 });
 
+test('it updates the return data of an instruction', () => {
+    // Given an instruction without return data.
+    const node = instructionNode({ identifier: 'getPrice' });
+
+    // When we set its return data.
+    const returnData = integerTypeNode('u64');
+    const result = visit(node, updateInstructionsVisitor({ getPrice: { returnData } }));
+
+    // Then we expect it to be set.
+    expect(result).toStrictEqual(instructionNode({ identifier: 'getPrice', returnData }));
+});
+
 test('it deletes instructions', () => {
     // Given a program with two instructions.
     const node = programNode({

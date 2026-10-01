@@ -5,6 +5,7 @@ import {
     instructionAccountNode,
     instructionNode,
     integerTypeNode,
+    optionTypeNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
@@ -61,6 +62,23 @@ test('it creates instruction nodes', () => {
             identifier: 'mintTokens',
         }),
     );
+});
+
+test('it creates instruction nodes with return data', () => {
+    // When we convert an Anchor instruction that returns data.
+    const node = instructionNodeFromAnchorV01(
+        {
+            accounts: [],
+            args: [],
+            discriminator: [246, 28, 6, 87, 251, 45, 50, 42],
+            name: 'getPrice',
+            returns: { option: 'u64' },
+        },
+        generics,
+    );
+
+    // Then we expect its return data to be converted.
+    expect(node.returnData).toStrictEqual(optionTypeNode(integerTypeNode('u64')));
 });
 
 test('it creates instruction nodes with anchor discriminators', () => {

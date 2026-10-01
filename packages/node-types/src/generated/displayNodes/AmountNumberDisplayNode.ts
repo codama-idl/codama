@@ -27,9 +27,6 @@ export interface AmountNumberDisplayNode<
      * When this input cannot resolve, renderers should present the scaled value without a unit.
      */
     readonly unit?: TUnit;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

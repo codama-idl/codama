@@ -652,7 +652,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             if (enumLink === null) return null;
             assertIsNode(enumLink, 'definedTypeLinkNode');
             const value = node.value ? (visit(this)(node.value) ?? undefined) : undefined;
-            if (value) assertIsNode(value, ['structValueNode', 'tupleValueNode']);
+            if (value) assertIsNode(value, VALUE_NODES);
             return enumValueNode(enumLink, node.variant, {
                 ...node,
                 value,
@@ -1476,6 +1476,8 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             if (status) assertIsNode(status, 'instructionStatusNode');
             const data = node.data ? (visit(this)(node.data) ?? undefined) : undefined;
             if (data) assertIsNode(data, TYPE_NODES);
+            const returnData = node.returnData ? (visit(this)(node.returnData) ?? undefined) : undefined;
+            if (returnData) assertIsNode(returnData, TYPE_NODES);
             let docs = node.docs;
             if (docs !== undefined && typeof docs !== 'string') {
                 const visited = visit(this)(docs) ?? undefined;
@@ -1491,6 +1493,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                     .map(visit(this))
                     .filter(removeNullAndAssertIsNodeFilter('instructionAccountNode')),
                 data,
+                returnData,
                 byteDeltas: node.byteDeltas
                     ? node.byteDeltas
                           .map(visit(this))

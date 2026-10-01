@@ -344,8 +344,8 @@ importers:
         specifier: workspace:*
         version: link:../fragments
       '@codama/spec':
-        specifier: 2.0.0-rc.0
-        version: 2.0.0-rc.0
+        specifier: 2.0.0-rc.1
+        version: 2.0.0-rc.1
     devDependencies:
       '@types/node':
         specifier: ^26
@@ -513,8 +513,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@codama/spec@2.0.0-rc.0':
-    resolution: {integrity: sha512-479s9KRHADsxExMwQGN1Yx7sb2AfTXF3I5vh4Giasp86Koz5+HceCLTqhvcpUmVHRlj/030Fov3h1M89FOlh/A==}
+  '@codama/spec@2.0.0-rc.1':
+    resolution: {integrity: sha512-dV7W4s9iWKJuER6I8RXocZg+s80cWO/PgVyrqOpFo3ZmvtB4Yy6Hkvo1bUEjgJsYhRlOyPt5PuZRS7Txz1JAww==}
     engines: {node: '>=22.12.0'}
 
   '@esbuild/aix-ppc64@0.27.0':
@@ -3409,7 +3409,7 @@ snapshots:
 
   '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/1c42099ad47946663c997cb77a0b96db8ebacd96': {}
 
-  '@codama/spec@2.0.0-rc.0': {}
+  '@codama/spec@2.0.0-rc.1': {}
 
   '@esbuild/aix-ppc64@0.27.0':
     optional: true

@@ -37,6 +37,7 @@ export const GENERIC_PARAM_ORDER: ReadonlyMap<string, readonly string[]> = new M
             'docs',
             'accounts',
             'data',
+            'returnData',
             'remainingAccounts',
             'byteDeltas',
             'discriminators',
