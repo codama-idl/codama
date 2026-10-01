@@ -1,4 +1,4 @@
-import type { DefinedTypeLinkNode, EnumValueNode, EnumValuePayload, PluginNode } from '@codama/node-types';
+import type { DefinedTypeLinkNode, EnumValueNode, PluginNode, ValueNode } from '@codama/node-types';
 
 import { identifierString } from '../../shared';
 import { definedTypeLinkNode } from '../linkNodes/DefinedTypeLinkNode';
@@ -6,7 +6,7 @@ import { definedTypeLinkNode } from '../linkNodes/DefinedTypeLinkNode';
 /** A concrete value of a defined enum: a variant identifier plus an optional payload. */
 export function enumValueNode<
     const TEnum extends DefinedTypeLinkNode = DefinedTypeLinkNode,
-    const TValue extends EnumValuePayload | undefined = undefined,
+    const TValue extends ValueNode | undefined = undefined,
     const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     enumLink: TEnum | string,

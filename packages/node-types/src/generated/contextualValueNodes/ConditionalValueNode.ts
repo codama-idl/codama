@@ -28,9 +28,6 @@ export interface ConditionalValueNode<
     readonly ifTrue?: TIfTrue;
     /** The value used when the condition fails — i.e. it does not match `value` or, without a `value`, does not exist. */
     readonly ifFalse?: TIfFalse;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

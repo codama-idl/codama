@@ -14,9 +14,6 @@ export interface HiddenPrefixTransformNode<
     // Children.
     /** The constant values written before the transformed type, in order. */
     readonly prefix?: TPrefix;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

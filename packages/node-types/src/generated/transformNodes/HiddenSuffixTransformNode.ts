@@ -14,9 +14,6 @@ export interface HiddenSuffixTransformNode<
     // Children.
     /** The constant values written after the transformed type, in order. */
     readonly suffix?: TSuffix;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

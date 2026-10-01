@@ -18,12 +18,9 @@ export interface EnumVariantDisplayNode<
     // Children.
     /**
      * An override label shown for the variant (e.g. `"Buy"`).
-     * When absent, renderers derive a label from the variant `name`.
+     * When absent, renderers derive a label from the variant `identifier`.
      */
     readonly label?: TLabel;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

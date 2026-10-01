@@ -24,9 +24,6 @@ export interface DefinedTypeNode<
     readonly docs?: TDocs;
     /** The type definition. */
     readonly type: TType;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

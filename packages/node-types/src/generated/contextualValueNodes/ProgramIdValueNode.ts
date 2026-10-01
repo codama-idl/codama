@@ -5,9 +5,6 @@ export interface ProgramIdValueNode<TPlugins extends Array<PluginNode> | undefin
     readonly kind: 'programIdValueNode';
 
     // Children.
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

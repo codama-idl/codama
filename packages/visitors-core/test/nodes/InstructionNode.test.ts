@@ -7,6 +7,7 @@ import {
     instructionStatusNode,
     integerTypeNode,
     integerValueNode,
+    isNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
@@ -87,6 +88,32 @@ test('remaining accounts', () => {
 
     expectMergeVisitorCount(nodeWithRemainingAccounts, 2);
     expectIdentityVisitor(nodeWithRemainingAccounts);
+});
+
+test('return data', () => {
+    const nodeWithReturnData = instructionNode({
+        data: structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]),
+        identifier: 'getPrice',
+        returnData: integerTypeNode('u64'),
+    });
+
+    expectMergeVisitorCount(nodeWithReturnData, 5);
+    expectIdentityVisitor(nodeWithReturnData);
+    // Only the return data is an integer type directly under the instruction.
+    expectDeleteNodesVisitor(
+        nodeWithReturnData,
+        path => isNode(path[path.length - 1], 'integerTypeNode') && path.length === 2,
+        { ...nodeWithReturnData, returnData: undefined },
+    );
+    expectDebugStringVisitor(
+        nodeWithReturnData,
+        `
+instructionNode [getPrice]
+|   structTypeNode
+|   |   structFieldTypeNode [amount]
+|   |   |   integerTypeNode [u64]
+|   integerTypeNode [u64]`,
+    );
 });
 
 test('byte deltas', () => {

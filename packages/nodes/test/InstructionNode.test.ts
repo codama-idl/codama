@@ -35,6 +35,17 @@ test('it can have a data type', () => {
     expect(node.data).toBe(data);
 });
 
+test('it defaults to no return data', () => {
+    const node = instructionNode({ identifier: 'foo' });
+    expect('returnData' in node).toBe(false);
+});
+
+test('it can have a return data type', () => {
+    const returnData = integerTypeNode('u64');
+    const node = instructionNode({ identifier: 'foo', returnData });
+    expect(node.returnData).toBe(returnData);
+});
+
 test('it omits array attributes when they are empty', () => {
     const node = instructionNode({ accounts: [], byteDeltas: [], identifier: 'foo', remainingAccounts: [] });
     expect('accounts' in node).toBe(false);

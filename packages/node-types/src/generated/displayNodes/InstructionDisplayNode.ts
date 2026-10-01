@@ -21,9 +21,6 @@ export interface InstructionDisplayNode<
      * A placeholder renders through its referent's own presentation; the `skip` rule governs the fallback list only and never the sentence.
      */
     readonly interpolatedIntent?: TInterpolatedIntent;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

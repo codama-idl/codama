@@ -18,9 +18,6 @@ export interface SentinelTransformNode<
     // Children.
     /** The constant value written immediately after the transformed type to mark its end. */
     readonly sentinel: TSentinel;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

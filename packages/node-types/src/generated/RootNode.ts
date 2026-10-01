@@ -29,9 +29,6 @@ export interface RootNode<
     readonly program: TProgram;
     /** Additional programs referenced by the primary program. */
     readonly additionalPrograms?: TAdditionalPrograms;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }
