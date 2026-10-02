@@ -53,6 +53,7 @@
     "dependencies": {
         "@codama/errors": "workspace:*",
         "@codama/node-types": "workspace:*",
+        "@codama/node-types-v1": "npm:@codama/node-types@1.11.0",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*"
     },
