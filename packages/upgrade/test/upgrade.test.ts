@@ -8,9 +8,8 @@ import { CODAMA_VERSION, CodamaVersion, programNode, rootNode } from '@codama/no
 import { describe, expect, test } from 'vitest';
 
 import { upgrade, UpgradableRootNode } from '../src';
-import type { v1 } from '../src';
 
-const program = programNode({ name: 'myProgram', publicKey: '1111', version: '1.0.0' });
+const program = programNode({ identifier: 'myProgram', publicKey: '1111', version: '1.0.0' });
 
 function rootNodeWithVersion(version: string) {
     return { ...rootNode(program), version: version as CodamaVersion };
@@ -18,12 +17,12 @@ function rootNodeWithVersion(version: string) {
 
 describe('upgrade', () => {
     test('it restamps IDLs of the latest major with the latest spec version', () => {
-        const upgraded = upgrade(rootNodeWithVersion('1.0.0'));
+        const upgraded = upgrade(rootNodeWithVersion('2.0.0'));
         expect(upgraded.version).toBe(CODAMA_VERSION);
     });
 
     test('it preserves the IDL content', () => {
-        const upgraded = upgrade(rootNodeWithVersion('1.4.2'));
+        const upgraded = upgrade(rootNodeWithVersion('2.4.2'));
         expect(upgraded).toEqual({ ...rootNode(program), version: CODAMA_VERSION });
     });
 
@@ -55,13 +54,6 @@ describe('upgrade', () => {
         expect(() => upgrade(rootNodeWithVersion('3.4.2'))).toThrow(
             new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '3.4.2' }),
         );
-    });
-
-    test('it exposes frozen v1 types that describe v1 IDLs', () => {
-        // Compile-time guarantee: while the latest major is 1, a freshly
-        // constructed IDL satisfies the frozen v1 `RootNode` shape.
-        const frozenTyped: v1.RootNode = rootNode(program);
-        expect(frozenTyped.kind).toBe('rootNode');
     });
 
     test('it refuses inputs that are not root nodes', () => {

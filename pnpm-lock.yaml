@@ -368,6 +368,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/node-types':
+        specifier: workspace:*
+        version: link:../node-types
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
