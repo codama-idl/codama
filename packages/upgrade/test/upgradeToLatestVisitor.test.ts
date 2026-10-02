@@ -6,8 +6,8 @@ import defaultExport, { upgradeToLatestVisitor } from '../src';
 
 describe('upgradeToLatestVisitor', () => {
     test('it upgrades the visited IDL to the latest major', () => {
-        const program = programNode({ name: 'myProgram', publicKey: '1111' });
-        const root = { ...rootNode(program), version: '1.0.0' as CodamaVersion };
+        const program = programNode({ identifier: 'myProgram', publicKey: '1111' });
+        const root = { ...rootNode(program), version: '2.1.0' as CodamaVersion };
         const upgraded = visit(root, upgradeToLatestVisitor());
         expect(upgraded).toEqual({ ...rootNode(program), version: CODAMA_VERSION });
     });
