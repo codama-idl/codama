@@ -3,9 +3,8 @@ import {
     CODAMA_VERSION,
     definedTypeNode,
     instructionAccountNode,
-    instructionArgumentNode,
     instructionNode,
-    numberTypeNode,
+    integerTypeNode,
     pdaNode,
     programNode,
     publicKeyTypeNode,
@@ -14,56 +13,56 @@ import {
     structTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
-import { throwValidatorItemsVisitor, getValidationItemsVisitor } from '@codama/validators';
+import { getValidationItemsVisitor, throwValidatorItemsVisitor } from '@codama/validators';
 import { visit } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
 
 import { upgradeFromJson } from '../src';
 
 /**
- * A representative v1 IDL carrying an older minor version stamp, the
- * way a historical IDL would arrive from disk or from the chain.
+ * A representative IDL of the latest major carrying an older minor version
+ * stamp, the way it would arrive from disk or from the chain.
  */
-const v1Json = JSON.stringify({
+const json = JSON.stringify({
     ...rootNode(
         programNode({
             accounts: [
                 accountNode({
                     data: structTypeNode([
-                        structFieldTypeNode({ name: 'authority', type: publicKeyTypeNode() }),
-                        structFieldTypeNode({ name: 'amount', type: numberTypeNode('u64') }),
+                        structFieldTypeNode({ identifier: 'authority', type: publicKeyTypeNode() }),
+                        structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') }),
                     ]),
-                    name: 'counter',
+                    identifier: 'counter',
                 }),
             ],
-            definedTypes: [definedTypeNode({ name: 'myType', type: numberTypeNode('u32') })],
+            definedTypes: [definedTypeNode({ identifier: 'myType', type: integerTypeNode('u32') })],
+            identifier: 'myProgram',
             instructions: [
                 instructionNode({
-                    accounts: [instructionAccountNode({ isSigner: true, isWritable: true, name: 'authority' })],
-                    arguments: [instructionArgumentNode({ name: 'amount', type: numberTypeNode('u64') })],
-                    name: 'increment',
+                    accounts: [instructionAccountNode({ identifier: 'authority', isSigner: true, isWritable: true })],
+                    data: structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]),
+                    identifier: 'increment',
                 }),
             ],
-            name: 'myProgram',
-            pdas: [pdaNode({ name: 'counter', seeds: [variablePdaSeedNode('authority', publicKeyTypeNode())] })],
+            pdas: [pdaNode({ identifier: 'counter', seeds: [variablePdaSeedNode('authority', publicKeyTypeNode())] })],
             publicKey: '1111',
             version: '1.0.0',
         }),
     ),
-    version: '1.2.0',
+    version: '2.0.0',
 });
 
 describe('upgradeFromJson', () => {
     test('it parses and upgrades a JSON-encoded IDL', () => {
-        const upgraded = upgradeFromJson(v1Json);
+        const upgraded = upgradeFromJson(json);
         expect(upgraded.version).toBe(CODAMA_VERSION);
-        expect(upgraded.program.name).toBe('myProgram');
+        expect(upgraded.program.identifier).toBe('myProgram');
         expect(upgraded.program.accounts).toHaveLength(1);
         expect(upgraded.program.instructions).toHaveLength(1);
     });
 
     test('it produces an IDL that passes the validators', () => {
-        const upgraded = upgradeFromJson(v1Json);
+        const upgraded = upgradeFromJson(json);
         expect(() => visit(upgraded, throwValidatorItemsVisitor(getValidationItemsVisitor()))).not.toThrow();
     });
 });

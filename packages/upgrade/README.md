@@ -63,7 +63,7 @@ The explicit `"@codama/upgrade#upgradeToLatestVisitor"` form is equivalent.
 
 The package maintains an append-only chain of pure, hand-written functions, each upgrading exactly one major to the next. Upgrading detects the IDL's source major from its `version` attribute, runs every function from that major up to the latest, and restamps the result — so supporting a new major only ever requires one new function, and every older version reaches the latest for free, forever.
 
-The node types of older majors are frozen into this package at the time each major is superseded (generated from a pinned `@codama/spec` of that era and committed). They are exposed as type-only namespaces for anyone writing custom migration logic:
+The node types of older majors are frozen into this package at the time each major is superseded (a hand-maintained static copy of the node types of that era, committed alongside the upgrade functions). They are exposed as type-only namespaces for anyone writing custom migration logic:
 
 ```ts
 import type { v1 } from '@codama/upgrade';
