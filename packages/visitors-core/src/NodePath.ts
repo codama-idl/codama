@@ -1,8 +1,26 @@
 import { assertIsNode, GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
 
-export type NodePath<TNode extends Node | undefined = undefined> = TNode extends undefined
+/**
+ * The nodes leading to a node, from the root to that node included.
+ *
+ * Without a node type, any list of nodes. With one, a list ending at a node of
+ * that type. Unions are not distributed: `NodePath<AccountNode | PdaNode>` is a
+ * path ending at either node, not one path type per member, so a path built
+ * from a node only known as a union, e.g. `[...stack.getPath(), node]`, is
+ * accepted.
+ */
+export type NodePath<TNode extends Node | undefined = undefined> = NodePathImpl<TNode, TNode>;
+
+/**
+ * Distributes over `TCheck` to tell paths without a node type apart, but ends
+ * every path at the whole `TNode`, without `undefined`, so unions are not
+ * split into one path type per member. Distributing, rather than checking
+ * `[TNode] extends [undefined]`, keeps the type resolvable for generic node
+ * types, e.g. `NodePath<TLinkNode>`.
+ */
+type NodePathImpl<TCheck, TNode> = TCheck extends undefined
     ? readonly Node[]
-    : readonly [...(readonly Node[]), TNode];
+    : readonly [...(readonly Node[]), Exclude<TNode, undefined>];
 
 export function getLastNodeFromPath<TNode extends Node>(path: NodePath<TNode>): TNode {
     return path[path.length - 1] as TNode;
