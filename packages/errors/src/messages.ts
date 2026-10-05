@@ -21,6 +21,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
@@ -102,6 +103,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]: 'Missing data [$path] in [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING]:
         'Default value is missing for argument [$argumentName] in [$instructionName].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM]:
+        'Expected the items of a set to be unique, but the item at index [$index] equals the item at index [$firstIndex].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]: 'Failed to derive PDA for account [$accountName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA]: 'Failed to encode the data of [$instructionName].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER]:

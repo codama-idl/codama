@@ -42,6 +42,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
@@ -163,6 +164,14 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING]: {
         argumentName: IdentifierString;
         instructionName: IdentifierString;
+    };
+    [CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM]: {
+        /** The index of the first item the duplicate is equal to. */
+        firstIndex: number;
+        /** The index of the duplicate item. */
+        index: number;
+        /** The path of the set type node that rejected the value, from the root. */
+        nodePath: readonly Node[];
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]: {
         accountName: IdentifierString;
