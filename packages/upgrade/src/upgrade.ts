@@ -2,6 +2,7 @@ import { CODAMA_ERROR__UNSUPPORTED_VERSION, CODAMA_ERROR__VERSION_MISMATCH, Coda
 import { assertIsNode, CODAMA_VERSION, getCodamaVersionMajor, Node, RootNode } from '@codama/nodes';
 
 import type * as v1 from './v1';
+import { upgradeV1ToV2 } from './v1ToV2';
 
 /**
  * Any Codama IDL that {@link upgrade} can bring to the latest major —
@@ -39,8 +40,8 @@ export function upgrade(root: UpgradableRootNode): RootNode {
 
     let current: unknown = node;
     // One line per major, each running a pure, hand-written function that
-    // upgrades exactly one major to the next. For example, once v2 ships:
-    // if (major <= 1) current = upgradeV1ToV2(current as v1.RootNode);
+    // upgrades exactly one major to the next.
+    if (major <= 1) current = upgradeV1ToV2(current as v1.RootNode);
 
     // Every block above upgraded one major, so `current` now has the
     // latest shape.

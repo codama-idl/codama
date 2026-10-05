@@ -21,6 +21,36 @@ export function compactAndFreeze<T extends object>(attributes: T): T {
     return Object.freeze(Object.fromEntries(entries)) as T;
 }
 
+/**
+ * The v2 identifier of a v1 name, e.g. an account name. v1 names were meant
+ * to be camelCase, so they are valid v2 identifiers, except for hand-written
+ * names with dashes, e.g. `token-2022`, whose dashes become underscores.
+ *
+ * @throws `CODAMA_ERROR__INVALID_BRANDED_STRING` for any other invalid name.
+ */
+export function identifierFromV1(name: string): v2.IdentifierString {
+    return brandFromV1(name, IDENTIFIER_REGEX, 'identifier (letters, digits and underscores; no leading digit)');
+}
+
+/** The v2 path of a v1 name referencing a top-level field, e.g. an argument name. See {@link identifierFromV1}. */
+export function pathFromV1(name: string): v2.PathString {
+    return brandFromV1(name, IDENTIFIER_REGEX, 'path (e.g. "data.amount" or "[0].field")');
+}
+
+/** The v2 namespace of a v1 plugin name. See {@link identifierFromV1}. */
+export function namespaceFromV1(name: string): v2.NamespaceString {
+    return brandFromV1(name, NAMESPACE_REGEX, 'namespace (dot-separated identifiers)');
+}
+
+const IDENTIFIER_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const NAMESPACE_REGEX = /^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/;
+
+function brandFromV1<T extends string>(name: string, regex: RegExp, expected: string): T {
+    const value = name.replaceAll('-', '_');
+    if (!regex.test(value)) throw new CodamaError(CODAMA_ERROR__INVALID_BRANDED_STRING, { actual: name, expected });
+    return value as T;
+}
+
 /** v1 docs are arrays of lines, joined with line breaks in v2. Empty docs are dropped. */
 export function docsFromV1(docs: v1.Docs | undefined): string | undefined {
     return docs && docs.length > 0 ? docs.join('\n') : undefined;

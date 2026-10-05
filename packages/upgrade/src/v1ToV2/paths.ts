@@ -35,6 +35,15 @@ export function getV1ProgramFromPath(path: V1NodePath): v1.ProgramNode | undefin
     return undefined;
 }
 
+/** The closest instruction node of a v1 path, i.e. the instruction a contextual value belongs to. */
+export function getV1InstructionFromPath(path: V1NodePath): v1.InstructionNode | undefined {
+    for (let index = path.length - 1; index >= 0; index--) {
+        const node = path[index];
+        if (node.kind === 'instructionNode') return node;
+    }
+    return undefined;
+}
+
 /**
  * The path of the defined type a v1 link points to, given the path of that
  * link, e.g. `[root, program, definedType]`, if any. Links without a `program`
@@ -45,13 +54,27 @@ export function getV1LinkedDefinedTypePath(
     linkPath: V1NodePath<v1.DefinedTypeLinkNode>,
 ): V1NodePath<v1.DefinedTypeNode> | undefined {
     const link = getLastV1NodeFromPath(linkPath);
+    return getV1LinkedPath(linkPath, program => program.definedTypes?.find(candidate => candidate.name === link.name));
+}
+
+/** The path of the PDA a v1 link points to, given the path of that link. See {@link getV1LinkedDefinedTypePath}. */
+export function getV1LinkedPdaPath(linkPath: V1NodePath<v1.PdaLinkNode>): V1NodePath<v1.PdaNode> | undefined {
+    const link = getLastV1NodeFromPath(linkPath);
+    return getV1LinkedPath(linkPath, program => program.pdas?.find(candidate => candidate.name === link.name));
+}
+
+function getV1LinkedPath<TNode extends v1.Node>(
+    linkPath: V1NodePath<v1.DefinedTypeLinkNode | v1.PdaLinkNode>,
+    find: (program: v1.ProgramNode) => TNode | undefined,
+): V1NodePath<TNode> | undefined {
+    const link = getLastV1NodeFromPath(linkPath);
     const root = getV1RootFromPath(linkPath);
     const program = link.program
         ? [root?.program, ...(root?.additionalPrograms ?? [])].find(candidate => candidate?.name === link.program?.name)
         : getV1ProgramFromPath(linkPath);
-    const definedType = program?.definedTypes?.find(candidate => candidate.name === link.name);
-    if (!program || !definedType) return undefined;
-    return root ? [root, program, definedType] : [program, definedType];
+    const node = program ? find(program) : undefined;
+    if (!program || !node) return undefined;
+    return root ? [root, program, node] : [program, node];
 }
 
 /** v1 type nodes wrapping another type without changing its kind, e.g. `fixedSizeTypeNode`. */

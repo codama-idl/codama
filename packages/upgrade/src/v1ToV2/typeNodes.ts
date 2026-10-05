@@ -5,7 +5,7 @@ import type * as v2 from '../v2';
 import { displayNodeFromV1, injectableIntegerValueNodeFromV1, injectableStringValueNodeFromV1 } from './displayNodes';
 import { linkNodeFromV1 } from './linkNodes';
 import { getLastV1NodeFromPath, unwrapV1TypePath, V1NodePath, V1WrapperTypeNode } from './paths';
-import { compactAndFreeze, docsFromV1, integerStringFromV1 } from './shared';
+import { compactAndFreeze, docsFromV1, identifierFromV1, integerStringFromV1 } from './shared';
 import { constantValueNodeFromV1, valueNodeFromV1 } from './valueNodes';
 
 /** Convert a v1 type node, turning wrappers into transforms and splitting numbers by kind. */
@@ -37,23 +37,23 @@ export function integerTypeNodeFromV1(path: V1NodePath<v1.NestedTypeNode<v1.Numb
 export function structTypeNodeFromV1(path: V1NodePath<v1.StructTypeNode>): v2.StructTypeNode {
     const type = getLastV1NodeFromPath(path);
     return compactAndFreeze({
-        fields: type.fields?.map(field => structFieldTypeNodeFromV1([...path, field])),
         kind: 'structTypeNode',
+        fields: type.fields?.map(field => structFieldTypeNodeFromV1([...path, field])),
     });
 }
 
 export function structFieldTypeNodeFromV1(path: V1NodePath<v1.StructFieldTypeNode>): v2.StructFieldTypeNode {
     const field = getLastV1NodeFromPath(path);
     return compactAndFreeze({
+        kind: 'structFieldTypeNode',
+        identifier: identifierFromV1(field.name),
+        defaultValueStrategy: field.defaultValueStrategy,
+        docs: docsFromV1(field.docs),
+        type: typeNodeFromV1([...path, field.type]),
         defaultValue: field.defaultValue
             ? valueNodeFromV1([...path, field.defaultValue], [...path, field.type])
             : undefined,
-        defaultValueStrategy: field.defaultValueStrategy,
         display: field.display ? displayNodeFromV1(field.display) : undefined,
-        docs: docsFromV1(field.docs),
-        identifier: field.name as string as v2.IdentifierString,
-        kind: 'structFieldTypeNode',
-        type: typeNodeFromV1([...path, field.type]),
     });
 }
 
@@ -64,11 +64,11 @@ export function structFieldTypeNodeFromV1(path: V1NodePath<v1.StructFieldTypeNod
 export function enumVariantTypeNodeFromV1(path: V1NodePath<v1.EnumVariantTypeNode>): v2.EnumVariantTypeNode {
     const variant = getLastV1NodeFromPath(path);
     return compactAndFreeze({
-        data: enumVariantDataFromV1(path),
-        discriminator: variant.discriminator,
-        display: variant.display ? displayNodeFromV1(variant.display) : undefined,
-        identifier: variant.name as string as v2.IdentifierString,
         kind: 'enumVariantTypeNode',
+        identifier: identifierFromV1(variant.name),
+        discriminator: variant.discriminator,
+        data: enumVariantDataFromV1(path),
+        display: variant.display ? displayNodeFromV1(variant.display) : undefined,
     });
 }
 
@@ -91,9 +91,9 @@ function standaloneTypeNodeFromV1(path: V1NodePath<Exclude<v1.TypeNode, V1Wrappe
             return quantityTypeNodeFromV1([...path, type.number], type.decimals, type.unit);
         case 'arrayTypeNode':
             return compactAndFreeze({
-                count: countNodeFromV1([...path, type.count]),
-                item: typeNodeFromV1([...path, type.item]),
                 kind: 'arrayTypeNode',
+                item: typeNodeFromV1([...path, type.item]),
+                count: countNodeFromV1([...path, type.count]),
             });
         case 'booleanTypeNode':
             return compactAndFreeze({ kind: 'booleanTypeNode', size: integerTypeNodeFromV1([...path, type.size]) });
@@ -106,54 +106,54 @@ function standaloneTypeNodeFromV1(path: V1NodePath<Exclude<v1.TypeNode, V1Wrappe
         case 'enumTypeNode':
             return compactAndFreeze<v2.EnumTypeNode>({
                 kind: 'enumTypeNode',
-                size: integerTypeNodeFromV1([...path, type.size]),
                 variants: type.variants?.map(variant => enumVariantTypeNodeFromV1([...path, variant])),
+                size: integerTypeNodeFromV1([...path, type.size]),
             });
         case 'mapTypeNode':
             return compactAndFreeze({
-                count: countNodeFromV1([...path, type.count]),
-                key: typeNodeFromV1([...path, type.key]),
                 kind: 'mapTypeNode',
+                key: typeNodeFromV1([...path, type.key]),
                 value: typeNodeFromV1([...path, type.value]),
+                count: countNodeFromV1([...path, type.count]),
             });
         case 'numberTypeNode':
             return numberTypeNodeFromV1(path as V1NodePath<v1.NumberTypeNode>, { allowTimes: true });
         case 'optionTypeNode':
             return compactAndFreeze({
+                kind: 'optionTypeNode',
                 fixed: type.fixed,
                 item: typeNodeFromV1([...path, type.item]),
-                kind: 'optionTypeNode',
                 prefix: integerTypeNodeFromV1([...path, type.prefix]),
             });
         case 'publicKeyTypeNode':
             return compactAndFreeze({ kind: 'publicKeyTypeNode' });
         case 'remainderOptionTypeNode':
-            return compactAndFreeze({ item: typeNodeFromV1([...path, type.item]), kind: 'remainderOptionTypeNode' });
+            return compactAndFreeze({ kind: 'remainderOptionTypeNode', item: typeNodeFromV1([...path, type.item]) });
         case 'setTypeNode':
             return compactAndFreeze({
-                count: countNodeFromV1([...path, type.count]),
-                item: typeNodeFromV1([...path, type.item]),
                 kind: 'setTypeNode',
+                item: typeNodeFromV1([...path, type.item]),
+                count: countNodeFromV1([...path, type.count]),
             });
         case 'solAmountTypeNode':
             return quantityTypeNodeFromV1([...path, type.number], 9, 'SOL');
         case 'stringTypeNode':
             return compactAndFreeze({
-                display: type.display ? displayNodeFromV1(type.display) : undefined,
-                encoding: type.encoding,
                 kind: 'stringTypeNode',
+                encoding: type.encoding,
+                display: type.display ? displayNodeFromV1(type.display) : undefined,
             });
         case 'structTypeNode':
             return structTypeNodeFromV1(path as V1NodePath<v1.StructTypeNode>);
         case 'tupleTypeNode':
             return compactAndFreeze({
-                items: type.items?.map(item => typeNodeFromV1([...path, item])),
                 kind: 'tupleTypeNode',
+                items: type.items?.map(item => typeNodeFromV1([...path, item])),
             });
         case 'zeroableOptionTypeNode':
             return compactAndFreeze({
-                item: typeNodeFromV1([...path, type.item]),
                 kind: 'zeroableOptionTypeNode',
+                item: typeNodeFromV1([...path, type.item]),
                 zeroValue: type.zeroValue ? constantValueNodeFromV1([...path, type.zeroValue]) : undefined,
             });
     }
@@ -176,24 +176,24 @@ function numberTypeNodeFromV1(
         const unitDisplay =
             display?.kind === 'amountNumberDisplayNode' ? unitDisplayNodeFromV1([...path, display]) : undefined;
         return compactAndFreeze({
-            display: unitDisplay,
-            endian: number.endian,
-            format: number.format,
             kind: 'floatTypeNode',
+            format: number.format,
+            endian: number.endian,
+            display: unitDisplay,
         });
     }
 
     const integer = compactAndFreeze<v2.IntegerTypeNode>({
-        display: display?.kind === 'amountNumberDisplayNode' ? numberDisplayNodeFromV1([...path, display]) : undefined,
-        endian: number.endian,
-        format: number.format,
         kind: 'integerTypeNode',
+        format: number.format,
+        endian: number.endian,
+        display: display?.kind === 'amountNumberDisplayNode' ? numberDisplayNodeFromV1([...path, display]) : undefined,
     });
     if (options.allowTimes && display?.kind === 'dateTimeNumberDisplayNode') {
-        return compactAndFreeze({ kind: 'dateTimeTypeNode', number: integer, ticksPerSecond: display.ticksPerSecond });
+        return compactAndFreeze({ kind: 'dateTimeTypeNode', ticksPerSecond: display.ticksPerSecond, number: integer });
     }
     if (options.allowTimes && display?.kind === 'durationNumberDisplayNode') {
-        return compactAndFreeze({ kind: 'durationTypeNode', number: integer, ticksPerSecond: display.ticksPerSecond });
+        return compactAndFreeze({ kind: 'durationTypeNode', ticksPerSecond: display.ticksPerSecond, number: integer });
     }
     return integer;
 }
@@ -206,8 +206,8 @@ function numberDisplayNodeFromV1(path: V1NodePath<v1.AmountNumberDisplayNode>): 
     const display = getLastV1NodeFromPath(path);
     if (display.decimals === undefined) return unitDisplayNodeFromV1(path);
     return compactAndFreeze<v2.AmountNumberDisplayNode>({
-        decimals: injectableIntegerValueNodeFromV1([...path, display.decimals]),
         kind: 'amountNumberDisplayNode',
+        decimals: injectableIntegerValueNodeFromV1([...path, display.decimals]),
         unit: display.unit ? injectableStringValueNodeFromV1([...path, display.unit]) : undefined,
     });
 }
@@ -240,30 +240,30 @@ function quantityTypeNodeFromV1(
 
     if (number.format === 'f32' || number.format === 'f64') {
         return compactAndFreeze<v2.FloatTypeNode>({
-            endian: number.endian,
-            format: number.format,
             kind: 'floatTypeNode',
-            transforms,
+            format: number.format,
+            endian: number.endian,
             unit,
+            transforms,
         });
     }
 
     // The integer is a pure encoding slot of the quantity, so its own displays are dropped.
     const integer = compactAndFreeze<v2.IntegerTypeNode>({
-        endian: number.endian,
-        format: number.format,
         kind: 'integerTypeNode',
+        format: number.format,
+        endian: number.endian,
     });
-    if (decimals === 0) return compactAndFreeze({ ...integer, transforms, unit });
+    if (decimals === 0) return compactAndFreeze({ ...integer, unit, transforms });
     if (number.format === 'shortU16') {
         return compactAndFreeze<v2.IntegerTypeNode>({
             ...integer,
             display: compactAndFreeze<v2.AmountNumberDisplayNode>({
+                kind: 'amountNumberDisplayNode',
                 decimals: compactAndFreeze<v2.IntegerValueNode>({
                     kind: 'integerValueNode',
                     value: integerStringFromV1(decimals),
                 }),
-                kind: 'amountNumberDisplayNode',
                 unit: unit
                     ? compactAndFreeze<v2.StringValueNode>({ kind: 'stringValueNode', string: unit })
                     : undefined,
@@ -273,10 +273,10 @@ function quantityTypeNodeFromV1(
     }
     return compactAndFreeze<v2.FixedPointTypeNode>({
         kind: 'fixedPointTypeNode',
-        number: integer,
         scale: decimals,
-        transforms,
         unit,
+        number: integer,
+        transforms,
     });
 }
 

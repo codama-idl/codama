@@ -8,7 +8,7 @@ import {
     unwrapV1TypeNode,
     V1NodePath,
 } from './paths';
-import { compactAndFreeze, decimalStringFromV1, integerStringFromV1 } from './shared';
+import { compactAndFreeze, decimalStringFromV1, identifierFromV1, integerStringFromV1 } from './shared';
 import { typeNodeFromV1 } from './typeNodes';
 
 /**
@@ -36,35 +36,35 @@ export function valueNodeFromV1(
         case 'setValueNode': {
             const itemType = type?.kind === 'arrayTypeNode' || type?.kind === 'setTypeNode' ? type.item : undefined;
             return compactAndFreeze({
-                items: value.items?.map(item => valueNodeFromV1([...valuePath, item], nested(itemType))),
                 kind: value.kind,
+                items: value.items?.map(item => valueNodeFromV1([...valuePath, item], nested(itemType))),
             });
         }
         case 'booleanValueNode':
-            return compactAndFreeze({ boolean: value.boolean, kind: 'booleanValueNode' });
+            return compactAndFreeze({ kind: 'booleanValueNode', boolean: value.boolean });
         case 'bytesValueNode':
-            return compactAndFreeze({ data: value.data, encoding: value.encoding, kind: 'bytesValueNode' });
+            return compactAndFreeze({ kind: 'bytesValueNode', data: value.data, encoding: value.encoding });
         case 'constantValueNode':
             return constantValueNodeFromV1(valuePath as V1NodePath<v1.ConstantValueNode>);
         case 'enumValueNode':
             return enumValueNodeFromV1(valuePath as V1NodePath<v1.EnumValueNode>);
         case 'injectedValueNode':
             return compactAndFreeze({
-                fallback: value.fallback ? valueNodeFromV1([...valuePath, value.fallback], typePath) : undefined,
-                key: value.key as string as v2.IdentifierString,
                 kind: 'injectedValueNode',
+                key: identifierFromV1(value.key),
+                fallback: value.fallback ? valueNodeFromV1([...valuePath, value.fallback], typePath) : undefined,
             });
         case 'mapValueNode': {
             const mapType = type?.kind === 'mapTypeNode' ? type : undefined;
             return compactAndFreeze({
+                kind: 'mapValueNode',
                 entries: value.entries?.map(entry =>
                     compactAndFreeze({
-                        key: valueNodeFromV1([...valuePath, entry, entry.key], nested(mapType?.key)),
                         kind: 'mapEntryValueNode',
+                        key: valueNodeFromV1([...valuePath, entry, entry.key], nested(mapType?.key)),
                         value: valueNodeFromV1([...valuePath, entry, entry.value], nested(mapType?.value)),
                     }),
                 ),
-                kind: 'mapValueNode',
             });
         }
         case 'noneValueNode':
@@ -73,9 +73,9 @@ export function valueNodeFromV1(
             return numberValueNodeFromV1(value, type);
         case 'publicKeyValueNode':
             return compactAndFreeze({
-                identifier: value.identifier ? (value.identifier as string as v2.IdentifierString) : undefined,
                 kind: 'publicKeyValueNode',
                 publicKey: value.publicKey,
+                identifier: value.identifier ? identifierFromV1(value.identifier) : undefined,
             });
         case 'someValueNode': {
             const itemType =
@@ -94,25 +94,25 @@ export function valueNodeFromV1(
         case 'structValueNode': {
             const fields = type?.kind === 'structTypeNode' ? type.fields : undefined;
             return compactAndFreeze({
+                kind: 'structValueNode',
                 fields: value.fields?.map((field): v2.StructFieldValueNode => {
                     const fieldType = fields?.find(candidate => candidate.name === field.name);
                     return compactAndFreeze({
-                        identifier: field.name as string as v2.IdentifierString,
                         kind: 'structFieldValueNode',
+                        identifier: identifierFromV1(field.name),
                         value: valueNodeFromV1(
                             [...valuePath, field, field.value],
                             resolvedPath && fieldType ? [...resolvedPath, fieldType, fieldType.type] : undefined,
                         ),
                     });
                 }),
-                kind: 'structValueNode',
             });
         }
         case 'tupleValueNode': {
             const items = type?.kind === 'tupleTypeNode' ? type.items : undefined;
             return compactAndFreeze({
-                items: value.items?.map((item, index) => valueNodeFromV1([...valuePath, item], nested(items?.[index]))),
                 kind: 'tupleValueNode',
+                items: value.items?.map((item, index) => valueNodeFromV1([...valuePath, item], nested(items?.[index]))),
             });
         }
     }
@@ -170,15 +170,15 @@ function enumValueNodeFromV1(path: V1NodePath<v1.EnumValueNode>): v2.ValueNode {
     const dataType = getV1VariantDataType(variant);
 
     return compactAndFreeze({
-        enum: linkNodeFromV1(value.enum),
         kind: 'enumValueNode',
+        variant: identifierFromV1(value.variant),
+        enum: linkNodeFromV1(value.enum),
         value: value.value
             ? valueNodeFromV1(
                   [...path, value.value],
                   enumPath && variant && dataType ? [...enumPath, variant, dataType] : undefined,
               )
             : undefined,
-        variant: value.variant as string as v2.IdentifierString,
     });
 }
 
