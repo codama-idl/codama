@@ -1,33 +1,31 @@
 {
     "kind": "rootNode",
     "standard": "codama",
-    "version": "1.7.0",
+    "version": "2.0.0",
     "program": {
         "kind": "programNode",
-        "name": "example",
+        "identifier": "example",
         "publicKey": "5xjPsgMHuoj4MrAPJVBrTomk5UAZvCxVtAdcWwgheoZs",
         "version": "0.1.0",
-        "origin": "anchor",
-        "docs": [],
         "accounts": [
             {
                 "kind": "accountNode",
-                "name": "dataAccount1",
-                "docs": [],
+                "identifier": "dataAccount1",
                 "data": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "discriminator",
+                            "identifier": "discriminator",
                             "defaultValueStrategy": "omitted",
-                            "docs": [],
                             "type": {
-                                "kind": "fixedSizeTypeNode",
-                                "size": 8,
-                                "type": {
-                                    "kind": "bytesTypeNode"
-                                }
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
                             },
                             "defaultValue": {
                                 "kind": "bytesValueNode",
@@ -37,18 +35,16 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "input",
-                            "docs": [],
+                            "identifier": "input",
                             "type": {
-                                "kind": "numberTypeNode",
+                                "kind": "integerTypeNode",
                                 "format": "u64",
                                 "endian": "le"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "optionalInput",
-                            "docs": [],
+                            "identifier": "optionalInput",
                             "type": {
                                 "kind": "optionTypeNode",
                                 "fixed": false,
@@ -56,7 +52,7 @@
                                     "kind": "publicKeyTypeNode"
                                 },
                                 "prefix": {
-                                    "kind": "numberTypeNode",
+                                    "kind": "integerTypeNode",
                                     "format": "u8",
                                     "endian": "le"
                                 }
@@ -64,10 +60,9 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "bump",
-                            "docs": [],
+                            "identifier": "bump",
                             "type": {
-                                "kind": "numberTypeNode",
+                                "kind": "integerTypeNode",
                                 "format": "u8",
                                 "endian": "le"
                             }
@@ -77,29 +72,29 @@
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "accountNode",
-                "name": "nestedExampleAccount",
-                "docs": [],
+                "identifier": "nestedExampleAccount",
                 "data": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "discriminator",
+                            "identifier": "discriminator",
                             "defaultValueStrategy": "omitted",
-                            "docs": [],
                             "type": {
-                                "kind": "fixedSizeTypeNode",
-                                "size": 8,
-                                "type": {
-                                    "kind": "bytesTypeNode"
-                                }
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
                             },
                             "defaultValue": {
                                 "kind": "bytesValueNode",
@@ -109,11 +104,10 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "input",
-                            "docs": [],
+                            "identifier": "input",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "structAndEnumsInput"
+                                "identifier": "structAndEnumsInput"
                             }
                         }
                     ]
@@ -121,29 +115,29 @@
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "accountNode",
-                "name": "storeOptionalAccount",
-                "docs": [],
+                "identifier": "storeOptionalAccount",
                 "data": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "discriminator",
+                            "identifier": "discriminator",
                             "defaultValueStrategy": "omitted",
-                            "docs": [],
                             "type": {
-                                "kind": "fixedSizeTypeNode",
-                                "size": 8,
-                                "type": {
-                                    "kind": "bytesTypeNode"
-                                }
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
                             },
                             "defaultValue": {
                                 "kind": "bytesValueNode",
@@ -153,8 +147,7 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "optionalAcc",
-                            "docs": [],
+                            "identifier": "optionalAcc",
                             "type": {
                                 "kind": "optionTypeNode",
                                 "fixed": false,
@@ -162,7 +155,7 @@
                                     "kind": "publicKeyTypeNode"
                                 },
                                 "prefix": {
-                                    "kind": "numberTypeNode",
+                                    "kind": "integerTypeNode",
                                     "format": "u8",
                                     "endian": "le"
                                 }
@@ -173,7 +166,7 @@
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
@@ -182,45 +175,39 @@
         "instructions": [
             {
                 "kind": "instructionNode",
-                "name": "externalProgramsWithPda",
-                "docs": [],
+                "identifier": "externalProgramsWithPda",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "mint",
+                        "identifier": "mint",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "tokenAccount",
+                        "identifier": "tokenAccount",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaNode",
-                                "name": "tokenAccount",
-                                "docs": [],
+                                "identifier": "tokenAccount",
                                 "programId": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
                                 "seeds": [
                                     {
                                         "kind": "variablePdaSeedNode",
-                                        "name": "signer",
-                                        "docs": [],
+                                        "identifier": "signer",
                                         "type": {
                                             "kind": "publicKeyTypeNode"
                                         }
@@ -238,8 +225,7 @@
                                     },
                                     {
                                         "kind": "variablePdaSeedNode",
-                                        "name": "mint",
-                                        "docs": [],
+                                        "identifier": "mint",
                                         "type": {
                                             "kind": "publicKeyTypeNode"
                                         }
@@ -249,18 +235,18 @@
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "signer",
+                                    "identifier": "signer",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "signer"
+                                        "identifier": "signer"
                                     }
                                 },
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "mint",
+                                    "identifier": "mint",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "mint"
+                                        "identifier": "mint"
                                     }
                                 }
                             ]
@@ -268,32 +254,31 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "dependentAccount",
+                        "identifier": "dependentAccount",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "dependentAccount"
+                                "identifier": "dependentAccount"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "signer",
+                                    "identifier": "signer",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "signer"
+                                        "identifier": "signer"
                                     }
                                 },
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "tokenAccount",
+                                    "identifier": "tokenAccount",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "tokenAccount"
+                                        "identifier": "tokenAccount"
                                     }
                                 }
                             ]
@@ -301,11 +286,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -314,11 +298,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "tokenProgram",
+                        "identifier": "tokenProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -327,11 +310,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "associatedTokenProgram",
+                        "identifier": "associatedTokenProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
@@ -340,11 +322,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "rent",
+                        "identifier": "rent",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "SysvarRent111111111111111111111111111111111",
@@ -352,68 +333,69 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "2d1ba417d532503f",
+                                "encoding": "base16"
                             }
-                        },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "2d1ba417d532503f",
-                            "encoding": "base16"
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "fourLevelPda",
-                "docs": [],
+                "identifier": "fourLevelPda",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "level1",
+                        "identifier": "level1",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "level1"
+                                "identifier": "level1"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "signer",
+                                    "identifier": "signer",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "signer"
+                                        "identifier": "signer"
                                     }
                                 }
                             ]
@@ -421,24 +403,23 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "level2",
+                        "identifier": "level2",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "level2"
+                                "identifier": "level2"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "level1",
+                                    "identifier": "level1",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "level1"
+                                        "identifier": "level1"
                                     }
                                 }
                             ]
@@ -446,24 +427,23 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "level3",
+                        "identifier": "level3",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "level3"
+                                "identifier": "level3"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "level2",
+                                    "identifier": "level2",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "level2"
+                                        "identifier": "level2"
                                     }
                                 }
                             ]
@@ -471,24 +451,23 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "level4",
+                        "identifier": "level4",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "level4"
+                                "identifier": "level4"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "level3",
+                                    "identifier": "level3",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "level3"
+                                        "identifier": "level3"
                                     }
                                 }
                             ]
@@ -496,11 +475,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -508,63 +486,63 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "0a91d0f7e05f68d9",
+                                "encoding": "base16"
                             }
-                        },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "0a91d0f7e05f68d9",
-                            "encoding": "base16"
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "nestedExample",
-                "docs": [],
+                "identifier": "nestedExample",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "nestedExampleAccount",
+                        "identifier": "nestedExampleAccount",
                         "isWritable": true,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -572,72 +550,71 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "74d1961627e33e2f",
+                                "encoding": "base16"
                             }
                         },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "74d1961627e33e2f",
-                            "encoding": "base16"
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "input",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "structAndEnumsInput"
+                            }
                         }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "input",
-                        "docs": [],
-                        "type": {
-                            "kind": "definedTypeLinkNode",
-                            "name": "structAndEnumsInput"
-                        }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "noArguments",
-                "docs": [],
+                "identifier": "noArguments",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "acc",
+                        "identifier": "acc",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -645,68 +622,69 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "d8babc37a02f97b1",
+                                "encoding": "base16"
                             }
-                        },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "d8babc37a02f97b1",
-                            "encoding": "base16"
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "pubkeySeedIx",
-                "docs": [],
+                "identifier": "pubkeySeedIx",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "newAccount",
+                        "identifier": "newAccount",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "newAccount"
+                                "identifier": "newAccount"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "signer",
+                                    "identifier": "signer",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "signer"
+                                        "identifier": "signer"
                                     }
                                 }
                             ]
@@ -714,11 +692,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -726,78 +703,78 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "fbe4907a8392e6e1",
+                                "encoding": "base16"
                             }
                         },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "fbe4907a8392e6e1",
-                            "encoding": "base16"
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "input",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            }
                         }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "input",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u64",
-                            "endian": "le"
-                        }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "selfReferencePda",
-                "docs": [],
+                "identifier": "selfReferencePda",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "recursive",
+                        "identifier": "recursive",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "recursive"
+                                "identifier": "recursive"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "recursive",
+                                    "identifier": "recursive",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "recursive"
+                                        "identifier": "recursive"
                                     }
                                 }
                             ]
@@ -805,11 +782,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -817,76 +793,77 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "5b16377c88fe854e",
+                                "encoding": "base16"
                             }
-                        },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "5b16377c88fe854e",
-                            "encoding": "base16"
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "stringSeedPda",
-                "docs": [],
+                "identifier": "stringSeedPda",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "pdaAccount",
+                        "identifier": "pdaAccount",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "pdaAccount"
+                                "identifier": "pdaAccount"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "id",
+                                    "identifier": "id",
                                     "value": {
-                                        "kind": "argumentValueNode",
-                                        "name": "id"
+                                        "kind": "dataValueNode",
+                                        "path": "id"
                                     }
                                 },
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "name",
+                                    "identifier": "name",
                                     "value": {
-                                        "kind": "argumentValueNode",
-                                        "name": "name"
+                                        "kind": "dataValueNode",
+                                        "path": "name"
                                     }
                                 }
                             ]
@@ -894,11 +871,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -906,95 +882,96 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "be1f479d57a0852b",
+                                "encoding": "base16"
                             }
                         },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "be1f479d57a0852b",
-                            "encoding": "base16"
-                        }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "name",
-                        "docs": [],
-                        "type": {
-                            "kind": "sizePrefixTypeNode",
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "name",
                             "type": {
                                 "kind": "stringTypeNode",
-                                "encoding": "utf8"
-                            },
-                            "prefix": {
-                                "kind": "numberTypeNode",
-                                "format": "u32",
+                                "encoding": "utf8",
+                                "transforms": [
+                                    {
+                                        "kind": "sizePrefixTransformNode",
+                                        "prefix": {
+                                            "kind": "integerTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "id",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
                                 "endian": "le"
                             }
                         }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "id",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u64",
-                            "endian": "le"
-                        }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "twoNodeCyclePda",
-                "docs": [],
+                "identifier": "twoNodeCyclePda",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "pdaA",
+                        "identifier": "pdaA",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "pdaA"
+                                "identifier": "pdaA"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "pdaB",
+                                    "identifier": "pdaB",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "pdaB"
+                                        "identifier": "pdaB"
                                     }
                                 }
                             ]
@@ -1002,24 +979,23 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "pdaB",
+                        "identifier": "pdaB",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "pdaB"
+                                "identifier": "pdaB"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "pdaA",
+                                    "identifier": "pdaA",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "pdaA"
+                                        "identifier": "pdaA"
                                     }
                                 }
                             ]
@@ -1027,11 +1003,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -1039,68 +1014,69 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "a0c0bcc91ff667be",
+                                "encoding": "base16"
                             }
-                        },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "a0c0bcc91ff667be",
-                            "encoding": "base16"
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "updateOptionalAccount",
-                "docs": [],
+                "identifier": "updateOptionalAccount",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "createdOptionalAcc",
+                        "identifier": "createdOptionalAcc",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "createdOptionalAcc"
+                                "identifier": "createdOptionalAcc"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "id",
+                                    "identifier": "id",
                                     "value": {
-                                        "kind": "argumentValueNode",
-                                        "name": "id"
+                                        "kind": "dataValueNode",
+                                        "path": "id"
                                     }
                                 }
                             ]
@@ -1108,19 +1084,17 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "optionalAccKey",
+                        "identifier": "optionalAccKey",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": true,
-                        "docs": []
+                        "isOptional": true
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -1128,135 +1102,137 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "f2c55828eba2993c",
+                                "encoding": "base16"
                             }
                         },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "f2c55828eba2993c",
-                            "encoding": "base16"
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "id",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            }
                         }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "id",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u64",
-                            "endian": "le"
-                        }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "updateOptionalInput",
-                "docs": [],
+                "identifier": "updateOptionalInput",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "signer",
+                        "identifier": "signer",
                         "isWritable": false,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "existingAccount",
+                        "identifier": "existingAccount",
                         "isWritable": true,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "pdaValueNode",
                             "pda": {
                                 "kind": "pdaLinkNode",
-                                "name": "newAccount"
+                                "identifier": "newAccount"
                             },
                             "seeds": [
                                 {
                                     "kind": "pdaSeedValueNode",
-                                    "name": "signer",
+                                    "identifier": "signer",
                                     "value": {
                                         "kind": "accountValueNode",
-                                        "name": "signer"
+                                        "identifier": "signer"
                                     }
                                 }
                             ]
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "defaultValueStrategy": "omitted",
-                        "docs": [],
-                        "type": {
-                            "kind": "fixedSizeTypeNode",
-                            "size": 8,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
-                                "kind": "bytesTypeNode"
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 8
+                                    }
+                                ]
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "1f094566b31b79c7",
+                                "encoding": "base16"
                             }
                         },
-                        "defaultValue": {
-                            "kind": "bytesValueNode",
-                            "data": "1f094566b31b79c7",
-                            "encoding": "base16"
-                        }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "input",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u64",
-                            "endian": "le"
-                        }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "optionalInput",
-                        "docs": [],
-                        "type": {
-                            "kind": "optionTypeNode",
-                            "fixed": false,
-                            "item": {
-                                "kind": "publicKeyTypeNode"
-                            },
-                            "prefix": {
-                                "kind": "numberTypeNode",
-                                "format": "u8",
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "input",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
                                 "endian": "le"
                             }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "optionalInput",
+                            "type": {
+                                "kind": "optionTypeNode",
+                                "fixed": false,
+                                "item": {
+                                    "kind": "publicKeyTypeNode"
+                                },
+                                "prefix": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u8",
+                                    "endian": "le"
+                                }
+                            }
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
@@ -1265,19 +1241,18 @@
         "definedTypes": [
             {
                 "kind": "definedTypeNode",
-                "name": "command",
-                "docs": [],
+                "identifier": "command",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumTupleVariantTypeNode",
-                            "name": "start",
-                            "tuple": {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "start",
+                            "data": {
                                 "kind": "tupleTypeNode",
                                 "items": [
                                     {
-                                        "kind": "numberTypeNode",
+                                        "kind": "integerTypeNode",
                                         "format": "u64",
                                         "endian": "le"
                                     }
@@ -1285,30 +1260,31 @@
                             }
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "stop"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "stop"
                         },
                         {
-                            "kind": "enumStructVariantTypeNode",
-                            "name": "continue",
-                            "struct": {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "continue",
+                            "data": {
                                 "kind": "structTypeNode",
                                 "fields": [
                                     {
                                         "kind": "structFieldTypeNode",
-                                        "name": "reason",
-                                        "docs": [],
+                                        "identifier": "reason",
                                         "type": {
-                                            "kind": "sizePrefixTypeNode",
-                                            "type": {
-                                                "kind": "stringTypeNode",
-                                                "encoding": "utf8"
-                                            },
-                                            "prefix": {
-                                                "kind": "numberTypeNode",
-                                                "format": "u32",
-                                                "endian": "le"
-                                            }
+                                            "kind": "stringTypeNode",
+                                            "encoding": "utf8",
+                                            "transforms": [
+                                                {
+                                                    "kind": "sizePrefixTransformNode",
+                                                    "prefix": {
+                                                        "kind": "integerTypeNode",
+                                                        "format": "u32",
+                                                        "endian": "le"
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 ]
@@ -1316,7 +1292,7 @@
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1324,51 +1300,47 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "innerEnum",
-                "docs": [],
+                "identifier": "innerEnum",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumStructVariantTypeNode",
-                            "name": "tokenTransfer",
-                            "struct": {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "tokenTransfer",
+                            "data": {
                                 "kind": "structTypeNode",
                                 "fields": [
                                     {
                                         "kind": "structFieldTypeNode",
-                                        "name": "amount",
-                                        "docs": [],
+                                        "identifier": "amount",
                                         "type": {
-                                            "kind": "numberTypeNode",
+                                            "kind": "integerTypeNode",
                                             "format": "u64",
                                             "endian": "le"
                                         }
                                     },
                                     {
                                         "kind": "structFieldTypeNode",
-                                        "name": "tokenType",
-                                        "docs": [],
+                                        "identifier": "tokenType",
                                         "type": {
                                             "kind": "definedTypeLinkNode",
-                                            "name": "tokenType"
+                                            "identifier": "tokenType"
                                         }
                                     }
                                 ]
                             }
                         },
                         {
-                            "kind": "enumStructVariantTypeNode",
-                            "name": "stake",
-                            "struct": {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "stake",
+                            "data": {
                                 "kind": "structTypeNode",
                                 "fields": [
                                     {
                                         "kind": "structFieldTypeNode",
-                                        "name": "duration",
-                                        "docs": [],
+                                        "identifier": "duration",
                                         "type": {
-                                            "kind": "numberTypeNode",
+                                            "kind": "integerTypeNode",
                                             "format": "u64",
                                             "endian": "le"
                                         }
@@ -1377,12 +1349,12 @@
                             }
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "none"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "none"
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1390,28 +1362,25 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "innerHeader",
-                "docs": [],
+                "identifier": "innerHeader",
                 "type": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "version",
-                            "docs": [],
+                            "identifier": "version",
                             "type": {
-                                "kind": "numberTypeNode",
+                                "kind": "integerTypeNode",
                                 "format": "u32",
                                 "endian": "le"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "command",
-                            "docs": [],
+                            "identifier": "command",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "command"
+                                "identifier": "command"
                             }
                         }
                     ]
@@ -1419,67 +1388,65 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "innerStruct",
-                "docs": [],
+                "identifier": "innerStruct",
                 "type": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "value",
-                            "docs": [],
+                            "identifier": "value",
                             "type": {
-                                "kind": "numberTypeNode",
+                                "kind": "integerTypeNode",
                                 "format": "u64",
                                 "endian": "le"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "name",
-                            "docs": [],
+                            "identifier": "name",
                             "type": {
-                                "kind": "sizePrefixTypeNode",
-                                "type": {
-                                    "kind": "stringTypeNode",
-                                    "encoding": "utf8"
-                                },
-                                "prefix": {
-                                    "kind": "numberTypeNode",
-                                    "format": "u32",
-                                    "endian": "le"
-                                }
+                                "kind": "stringTypeNode",
+                                "encoding": "utf8",
+                                "transforms": [
+                                    {
+                                        "kind": "sizePrefixTransformNode",
+                                        "prefix": {
+                                            "kind": "integerTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        }
+                                    }
+                                ]
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "seedEnum",
-                            "docs": [],
+                            "identifier": "seedEnum",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "seedEnum"
+                                "identifier": "seedEnum"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "bytes",
-                            "docs": [],
+                            "identifier": "bytes",
                             "type": {
-                                "kind": "sizePrefixTypeNode",
-                                "type": {
-                                    "kind": "bytesTypeNode"
-                                },
-                                "prefix": {
-                                    "kind": "numberTypeNode",
-                                    "format": "u32",
-                                    "endian": "le"
-                                }
+                                "kind": "bytesTypeNode",
+                                "transforms": [
+                                    {
+                                        "kind": "sizePrefixTransformNode",
+                                        "prefix": {
+                                            "kind": "integerTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        }
+                                    }
+                                ]
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "optionalPubkey",
-                            "docs": [],
+                            "identifier": "optionalPubkey",
                             "type": {
                                 "kind": "optionTypeNode",
                                 "fixed": false,
@@ -1487,7 +1454,7 @@
                                     "kind": "publicKeyTypeNode"
                                 },
                                 "prefix": {
-                                    "kind": "numberTypeNode",
+                                    "kind": "integerTypeNode",
                                     "format": "u8",
                                     "endian": "le"
                                 }
@@ -1495,13 +1462,12 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "enumsArray",
-                            "docs": [],
+                            "identifier": "enumsArray",
                             "type": {
                                 "kind": "arrayTypeNode",
                                 "item": {
                                     "kind": "definedTypeLinkNode",
-                                    "name": "seedEnum"
+                                    "identifier": "seedEnum"
                                 },
                                 "count": {
                                     "kind": "fixedCountNode",
@@ -1514,26 +1480,25 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "seedEnum",
-                "docs": [],
+                "identifier": "seedEnum",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "arm"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "arm"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "bar"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "bar"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "car"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "car"
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1541,51 +1506,45 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "structAndEnumsInput",
-                "docs": [],
+                "identifier": "structAndEnumsInput",
                 "type": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "header",
-                            "docs": [],
+                            "identifier": "header",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "innerHeader"
+                                "identifier": "innerHeader"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "innerStruct",
-                            "docs": [],
+                            "identifier": "innerStruct",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "innerStruct"
+                                "identifier": "innerStruct"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "innerEnum",
-                            "docs": [],
+                            "identifier": "innerEnum",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "innerEnum"
+                                "identifier": "innerEnum"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "seedEnum",
-                            "docs": [],
+                            "identifier": "seedEnum",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "seedEnum"
+                                "identifier": "seedEnum"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "pubkey",
-                            "docs": [],
+                            "identifier": "pubkey",
                             "type": {
                                 "kind": "publicKeyTypeNode"
                             }
@@ -1595,36 +1554,36 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "tokenType",
-                "docs": [],
+                "identifier": "tokenType",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "sPL"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "sPL"
                         },
                         {
-                            "kind": "enumStructVariantTypeNode",
-                            "name": "nFT",
-                            "struct": {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "nFT",
+                            "data": {
                                 "kind": "structTypeNode",
                                 "fields": [
                                     {
                                         "kind": "structFieldTypeNode",
-                                        "name": "collection",
-                                        "docs": [],
+                                        "identifier": "collection",
                                         "type": {
-                                            "kind": "sizePrefixTypeNode",
-                                            "type": {
-                                                "kind": "stringTypeNode",
-                                                "encoding": "utf8"
-                                            },
-                                            "prefix": {
-                                                "kind": "numberTypeNode",
-                                                "format": "u32",
-                                                "endian": "le"
-                                            }
+                                            "kind": "stringTypeNode",
+                                            "encoding": "utf8",
+                                            "transforms": [
+                                                {
+                                                    "kind": "sizePrefixTransformNode",
+                                                    "prefix": {
+                                                        "kind": "integerTypeNode",
+                                                        "format": "u32",
+                                                        "endian": "le"
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 ]
@@ -1632,7 +1591,7 @@
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1642,8 +1601,7 @@
         "pdas": [
             {
                 "kind": "pdaNode",
-                "name": "dependentAccount",
-                "docs": [],
+                "identifier": "dependentAccount",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1658,16 +1616,14 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "signer",
-                        "docs": [],
+                        "identifier": "signer",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "tokenAccount",
-                        "docs": [],
+                        "identifier": "tokenAccount",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1676,8 +1632,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "level1",
-                "docs": [],
+                "identifier": "level1",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1692,8 +1647,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "signer",
-                        "docs": [],
+                        "identifier": "signer",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1702,8 +1656,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "level2",
-                "docs": [],
+                "identifier": "level2",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1718,8 +1671,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "level1",
-                        "docs": [],
+                        "identifier": "level1",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1728,8 +1680,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "level3",
-                "docs": [],
+                "identifier": "level3",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1744,8 +1695,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "level2",
-                        "docs": [],
+                        "identifier": "level2",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1754,8 +1704,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "level4",
-                "docs": [],
+                "identifier": "level4",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1770,8 +1719,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "level3",
-                        "docs": [],
+                        "identifier": "level3",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1780,8 +1728,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "newAccount",
-                "docs": [],
+                "identifier": "newAccount",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1796,8 +1743,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "signer",
-                        "docs": [],
+                        "identifier": "signer",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1806,8 +1752,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "recursive",
-                "docs": [],
+                "identifier": "recursive",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1822,8 +1767,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "recursive",
-                        "docs": [],
+                        "identifier": "recursive",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1832,23 +1776,20 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "pdaAccount",
-                "docs": [],
+                "identifier": "pdaAccount",
                 "seeds": [
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "id",
-                        "docs": [],
+                        "identifier": "id",
                         "type": {
-                            "kind": "numberTypeNode",
+                            "kind": "integerTypeNode",
                             "format": "u64",
                             "endian": "le"
                         }
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "name",
-                        "docs": [],
+                        "identifier": "name",
                         "type": {
                             "kind": "stringTypeNode",
                             "encoding": "utf8"
@@ -1858,8 +1799,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "pdaA",
-                "docs": [],
+                "identifier": "pdaA",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1874,8 +1814,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "pdaB",
-                        "docs": [],
+                        "identifier": "pdaB",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1884,8 +1823,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "pdaB",
-                "docs": [],
+                "identifier": "pdaB",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1900,8 +1838,7 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "pdaA",
-                        "docs": [],
+                        "identifier": "pdaA",
                         "type": {
                             "kind": "publicKeyTypeNode"
                         }
@@ -1910,8 +1847,7 @@
             },
             {
                 "kind": "pdaNode",
-                "name": "createdOptionalAcc",
-                "docs": [],
+                "identifier": "createdOptionalAcc",
                 "seeds": [
                     {
                         "kind": "constantPdaSeedNode",
@@ -1926,20 +1862,15 @@
                     },
                     {
                         "kind": "variablePdaSeedNode",
-                        "name": "id",
-                        "docs": [],
+                        "identifier": "id",
                         "type": {
-                            "kind": "numberTypeNode",
+                            "kind": "integerTypeNode",
                             "format": "u64",
                             "endian": "le"
                         }
                     }
                 ]
             }
-        ],
-        "events": [],
-        "errors": [],
-        "constants": []
-    },
-    "additionalPrograms": []
+        ]
+    }
 }

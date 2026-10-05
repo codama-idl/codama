@@ -1,11 +1,12 @@
-import { getNodeCodec } from '@codama/dynamic-codecs';
+import { getNodeValueCodec } from '@codama/dynamic-codecs';
+import { CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA } from '@codama/errors';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { none, some } from '@solana/codecs';
 import type { RootNode } from 'codama';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import type { NestedExampleArgs } from '../../generated/example-idl-types';
-import { SvmTestContext } from '../../test-utils';
+import type { NestedExampleInstructionDataArgs } from '../../generated/example-idl-types';
+import { SvmTestContext, valueTypeError } from '../../test-utils';
 import { bytesToBase16CodecFormat, createTestContext, programClient } from './helpers';
 
 describe('anchor-example: nestedExampleIx', () => {
@@ -28,7 +29,7 @@ describe('anchor-example: nestedExampleIx', () => {
         const ix = await programClient.methods
             .nestedExample({
                 input: {
-                    header: { command: { __kind: 'start', fields: [42n] }, version: 1 },
+                    header: { command: { __kind: 'start', data: [42n] }, version: 1 },
                     innerEnum: { __kind: 'none' },
                     innerStruct: {
                         bytes: new Uint8Array([1, 2, 3]),
@@ -52,8 +53,8 @@ describe('anchor-example: nestedExampleIx', () => {
 
         const exampleAccount = decodeNestedExampleAccount(programClient.root, exampleAccountData);
         expect(exampleAccount.input).toEqual({
-            header: { command: { __discriminator: 0, __kind: 'Start', fields: [42n] }, version: 1 },
-            innerEnum: { __discriminator: 2, __kind: 'None' },
+            header: { command: { __discriminator: 0, __kind: 'start', data: [42n] }, version: 1n },
+            innerEnum: { __discriminator: 2, __kind: 'none' },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([1, 2, 3])),
                 enumsArray: [seedEnumVariant('arm'), seedEnumVariant('car')],
@@ -79,7 +80,7 @@ describe('anchor-example: nestedExampleIx', () => {
         const ix = await programClient.methods
             .nestedExample({
                 input: {
-                    header: { command: { __kind: 'continue', reason: 'keep going' }, version: 2 },
+                    header: { command: { __kind: 'continue', data: { reason: 'keep going' } }, version: 2 },
                     innerEnum: { __kind: 'none' },
                     innerStruct: {
                         bytes: new Uint8Array([]),
@@ -105,12 +106,12 @@ describe('anchor-example: nestedExampleIx', () => {
             header: {
                 command: {
                     __discriminator: 2,
-                    __kind: 'Continue',
-                    reason: 'keep going',
+                    __kind: 'continue',
+                    data: { reason: 'keep going' },
                 },
-                version: 2,
+                version: 2n,
             },
-            innerEnum: { __discriminator: 2, __kind: 'None' },
+            innerEnum: { __discriminator: 2, __kind: 'none' },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([])),
                 enumsArray: [seedEnumVariant('bar'), seedEnumVariant('bar')],
@@ -137,7 +138,7 @@ describe('anchor-example: nestedExampleIx', () => {
             .nestedExample({
                 input: {
                     header: { command: { __kind: 'stop' }, version: 1 },
-                    innerEnum: { __kind: 'tokenTransfer', amount: BigInt(500), tokenType: { __kind: 'sPL' } },
+                    innerEnum: { __kind: 'tokenTransfer', data: { amount: BigInt(500), tokenType: { __kind: 'sPL' } } },
                     innerStruct: {
                         bytes: new Uint8Array([0xde, 0xad, 0xbe, 0xef]),
                         enumsArray: ['car', 'arm'],
@@ -162,15 +163,14 @@ describe('anchor-example: nestedExampleIx', () => {
             header: {
                 command: {
                     __discriminator: 1,
-                    __kind: 'Stop',
+                    __kind: 'stop',
                 },
-                version: 1,
+                version: 1n,
             },
             innerEnum: {
                 __discriminator: 0,
-                __kind: 'TokenTransfer',
-                amount: 500n,
-                tokenType: { __discriminator: 0, __kind: 'SPL' },
+                __kind: 'tokenTransfer',
+                data: { amount: 500n, tokenType: { __discriminator: 0, __kind: 'sPL' } },
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([0xde, 0xad, 0xbe, 0xef])),
@@ -197,11 +197,10 @@ describe('anchor-example: nestedExampleIx', () => {
         const ix = await programClient.methods
             .nestedExample({
                 input: {
-                    header: { command: { __kind: 'start', fields: [42n] }, version: 1 },
+                    header: { command: { __kind: 'start', data: [42n] }, version: 1 },
                     innerEnum: {
                         __kind: 'tokenTransfer',
-                        amount: BigInt(1),
-                        tokenType: { __kind: 'nFT', collection: 'DegenApes' },
+                        data: { amount: BigInt(1), tokenType: { __kind: 'nFT', data: { collection: 'DegenApes' } } },
                     },
                     innerStruct: {
                         bytes: new Uint8Array([]),
@@ -227,16 +226,18 @@ describe('anchor-example: nestedExampleIx', () => {
             header: {
                 command: {
                     __discriminator: 0,
-                    __kind: 'Start',
-                    fields: [42n],
+                    __kind: 'start',
+                    data: [42n],
                 },
-                version: 1,
+                version: 1n,
             },
             innerEnum: {
                 __discriminator: 0,
-                __kind: 'TokenTransfer',
-                amount: 1n,
-                tokenType: { __discriminator: 1, __kind: 'NFT', collection: 'DegenApes' },
+                __kind: 'tokenTransfer',
+                data: {
+                    amount: 1n,
+                    tokenType: { __discriminator: 1, __kind: 'nFT', data: { collection: 'DegenApes' } },
+                },
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([])),
@@ -264,8 +265,8 @@ describe('anchor-example: nestedExampleIx', () => {
         const ix = await programClient.methods
             .nestedExample({
                 input: {
-                    header: { command: { __kind: 'start', fields: [321n] }, version: 3 },
-                    innerEnum: { __kind: 'stake', duration: BigInt(86400) },
+                    header: { command: { __kind: 'start', data: [321n] }, version: 3 },
+                    innerEnum: { __kind: 'stake', data: { duration: BigInt(86400) } },
                     innerStruct: {
                         bytes: new Uint8Array([10, 20]),
                         enumsArray: ['bar', 'car'],
@@ -290,15 +291,15 @@ describe('anchor-example: nestedExampleIx', () => {
             header: {
                 command: {
                     __discriminator: 0,
-                    __kind: 'Start',
-                    fields: [321n],
+                    __kind: 'start',
+                    data: [321n],
                 },
-                version: 3,
+                version: 3n,
             },
             innerEnum: {
                 __discriminator: 1,
-                __kind: 'Stake',
-                duration: 86400n,
+                __kind: 'stake',
+                data: { duration: 86400n },
             },
             innerStruct: {
                 bytes: bytesToBase16CodecFormat(new Uint8Array([10, 20])),
@@ -322,8 +323,8 @@ describe('anchor-example: nestedExampleIx', () => {
             nestedExampleAccount = await deriveNestedExamplePda(programClient.programAddress, pubkeyArg, 'arm', 'bar');
         });
 
-        const makeValidArgs = (pubkey: Address): NestedExampleArgs['input'] => ({
-            header: { command: { __kind: 'start', fields: [123n] }, version: 1 },
+        const makeValidArgs = (pubkey: Address): NestedExampleInstructionDataArgs['input'] => ({
+            header: { command: { __kind: 'start', data: [123n] }, version: 1 },
             innerEnum: { __kind: 'none' },
             innerStruct: {
                 bytes: new Uint8Array([1, 2, 3]),
@@ -338,33 +339,45 @@ describe('anchor-example: nestedExampleIx', () => {
         });
 
         test('should throw when input is missing', async () => {
+            // Missing structs encode as empty ones, so their first required field is reported.
             await expect(
                 programClient.methods
-                    .nestedExample({} as unknown as NestedExampleArgs)
+                    .nestedExample({} as unknown as NestedExampleInstructionDataArgs)
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'command', kind: 'definedTypeNode' },
+                    { actualType: 'undefined', nodeKind: 'enumTypeNode' },
+                ),
+            );
         });
 
         test('should throw when header is missing', async () => {
+            // Missing structs encode as empty ones, so their first required field is reported.
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { header: _header, ...args } = makeValidArgs(pubkeyArg);
             await expect(
                 programClient.methods
                     .nestedExample({
-                        input: args as unknown as NestedExampleArgs['input'],
+                        input: args as unknown as NestedExampleInstructionDataArgs['input'],
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.header"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'command', kind: 'definedTypeNode' },
+                    { actualType: 'undefined', nodeKind: 'enumTypeNode' },
+                ),
+            );
         });
 
         test('should throw when command enum fields tuple payload is missing', async () => {
             const input = makeValidArgs(pubkeyArg);
             input.header.command = {
                 __kind: 'start',
-                fields: null,
-            } as unknown as NestedExampleArgs['input']['header']['command'];
+                data: null,
+            } as unknown as NestedExampleInstructionDataArgs['input']['header']['command'];
             await expect(
                 programClient.methods
                     .nestedExample({
@@ -372,17 +385,21 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.header.command"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'command', kind: 'definedTypeNode' },
+                    { actualType: 'null', nodeKind: 'tupleTypeNode' },
+                ),
+            );
         });
 
         test('should throw when innerEnum payload data is missing', async () => {
             const input = makeValidArgs(pubkeyArg);
             input.innerEnum = {
                 __kind: 'tokenTransfer',
-                amount: BigInt(1),
-                tokenType: { __kind: 'nFT', collection: 'Test' },
+                data: { amount: BigInt(1), tokenType: { __kind: 'nFT', data: { collection: 'Test' } } },
             };
-            input.innerEnum.amount = undefined as unknown as bigint; // Force amount to be missing
+            input.innerEnum.data.amount = undefined as unknown as bigint; // Force amount to be missing
             await expect(
                 programClient.methods
                     .nestedExample({
@@ -390,20 +407,35 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Enum variant "tokenTransfer" has invalid "amount"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'innerEnum', kind: 'definedTypeNode' },
+                    { actualType: 'undefined', nodeKind: 'integerTypeNode' },
+                ),
+            );
         });
 
         test('should throw when tokenTransfer variant is missing all payload fields', async () => {
             const input = {
                 ...makeValidArgs(pubkeyArg),
-                innerEnum: { __kind: 'tokenTransfer' } as unknown as NestedExampleArgs['input']['innerEnum'],
+                innerEnum: {
+                    __kind: 'tokenTransfer',
+                } as unknown as NestedExampleInstructionDataArgs['input']['innerEnum'],
             };
             await expect(
                 programClient.methods
                     .nestedExample({ input })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Enum variant "tokenTransfer" has invalid "amount"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'innerEnum', kind: 'definedTypeNode' },
+                    {
+                        actualType: "variant 'tokenTransfer' without data",
+                        nodeKind: 'enumVariantTypeNode',
+                    },
+                ),
+            );
         });
 
         test('should throw when tokenTransfer variant is missing tokenType', async () => {
@@ -411,22 +443,29 @@ describe('anchor-example: nestedExampleIx', () => {
                 ...makeValidArgs(pubkeyArg),
                 innerEnum: {
                     __kind: 'tokenTransfer',
-                    amount: BigInt(1),
-                } as unknown as NestedExampleArgs['input']['innerEnum'],
+                    data: { amount: BigInt(1) },
+                } as unknown as NestedExampleInstructionDataArgs['input']['innerEnum'],
             };
             await expect(
                 programClient.methods
                     .nestedExample({ input })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Enum variant "tokenTransfer" has invalid "tokenType"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'tokenType', kind: 'definedTypeNode' },
+                    { actualType: 'undefined', nodeKind: 'enumTypeNode' },
+                ),
+            );
         });
 
         test('should throw when continue variant is missing reason', async () => {
             const input = {
                 ...makeValidArgs(pubkeyArg),
                 header: {
-                    command: { __kind: 'continue' } as unknown as NestedExampleArgs['input']['header']['command'],
+                    command: {
+                        __kind: 'continue',
+                    } as unknown as NestedExampleInstructionDataArgs['input']['header']['command'],
                     version: 1,
                 },
             };
@@ -435,20 +474,34 @@ describe('anchor-example: nestedExampleIx', () => {
                     .nestedExample({ input })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.header.command".*"reason"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'command', kind: 'definedTypeNode' },
+                    {
+                        actualType: "variant 'continue' without data",
+                        nodeKind: 'enumVariantTypeNode',
+                    },
+                ),
+            );
         });
 
         test('should throw when innerStruct is missing', async () => {
+            // Missing structs encode as empty ones, so their first required field is reported.
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { innerStruct: _innerStruct, ...args } = makeValidArgs(pubkeyArg);
             await expect(
                 programClient.methods
                     .nestedExample({
-                        input: args as unknown as NestedExampleArgs['input'],
+                        input: args as unknown as NestedExampleInstructionDataArgs['input'],
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.innerStruct"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'innerStruct', kind: 'definedTypeNode' },
+                    { actualType: 'undefined', nodeKind: 'stringTypeNode' },
+                ),
+            );
         });
 
         test('should throw when pubkey is missing', async () => {
@@ -457,18 +510,23 @@ describe('anchor-example: nestedExampleIx', () => {
             await expect(
                 programClient.methods
                     .nestedExample({
-                        input: args as unknown as NestedExampleArgs['input'],
+                        input: args as unknown as NestedExampleInstructionDataArgs['input'],
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.pubkey"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'structAndEnumsInput', kind: 'definedTypeNode' },
+                    { actualType: 'undefined', nodeKind: 'publicKeyTypeNode' },
+                ),
+            );
         });
 
         test('should throw when header.version is string', async () => {
             const input = {
                 ...makeValidArgs(pubkeyArg),
                 header: { command: { __kind: 'start' }, version: 'one' as unknown as number },
-            } as unknown as NestedExampleArgs['input'];
+            } as unknown as NestedExampleInstructionDataArgs['input'];
             await expect(
                 programClient.methods
                     .nestedExample({
@@ -476,7 +534,12 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.header.version"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'innerHeader', kind: 'definedTypeNode' },
+                    { actualType: 'string', nodeKind: 'integerTypeNode' },
+                ),
+            );
         });
 
         test('should throw when innerStruct.value is string', async () => {
@@ -488,7 +551,7 @@ describe('anchor-example: nestedExampleIx', () => {
                     ...innerStruct,
                     value: 'hundred-of-thousands' as unknown as bigint,
                 },
-            } as unknown as NestedExampleArgs['input'];
+            } as unknown as NestedExampleInstructionDataArgs['input'];
             await expect(
                 programClient.methods
                     .nestedExample({
@@ -496,7 +559,12 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.innerStruct.value"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'innerStruct', kind: 'definedTypeNode' },
+                    { actualType: 'string', nodeKind: 'integerTypeNode' },
+                ),
+            );
         });
 
         test('should throw for invalid seedEnum variant', async () => {
@@ -508,13 +576,20 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.seedEnum"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'seedEnum', kind: 'definedTypeNode' },
+                    { actualType: "variant 'invalidVariant'", nodeKind: 'enumTypeNode' },
+                ),
+            );
         });
 
         test('should throw for invalid innerEnum __kind', async () => {
             const input = {
                 ...makeValidArgs(pubkeyArg),
-                innerEnum: { __kind: 'nonExistent' } as unknown as NestedExampleArgs['input']['innerEnum'],
+                innerEnum: {
+                    __kind: 'nonExistent',
+                } as unknown as NestedExampleInstructionDataArgs['input']['innerEnum'],
             };
             await expect(
                 programClient.methods
@@ -523,14 +598,21 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.innerEnum"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'innerEnum', kind: 'definedTypeNode' },
+                    { actualType: "variant 'nonExistent'", nodeKind: 'enumTypeNode' },
+                ),
+            );
         });
 
         test('should throw for invalid header.command __kind', async () => {
             const input = {
                 ...makeValidArgs(pubkeyArg),
                 header: {
-                    command: { __kind: 'invalidCommand' } as unknown as NestedExampleArgs['input']['header']['command'],
+                    command: {
+                        __kind: 'invalidCommand',
+                    } as unknown as NestedExampleInstructionDataArgs['input']['header']['command'],
                     version: 1,
                 },
             };
@@ -539,7 +621,12 @@ describe('anchor-example: nestedExampleIx', () => {
                     .nestedExample({ input })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.header.command"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'command', kind: 'definedTypeNode' },
+                    { actualType: "variant 'invalidCommand'", nodeKind: 'enumTypeNode' },
+                ),
+            );
         });
 
         test('should throw when enumsArray has wrong size', async () => {
@@ -559,7 +646,14 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.innerStruct.enumsArray/);
+            ).rejects.toThrow(
+                expect.objectContaining({
+                    context: expect.objectContaining({
+                        __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
+                        instructionName: 'nestedExample',
+                    }),
+                }),
+            );
         });
 
         test('should throw when enumsArray has invalid enum value', async () => {
@@ -569,7 +663,7 @@ describe('anchor-example: nestedExampleIx', () => {
                 ...makeValidArgs(pubkeyArg),
                 innerStruct: {
                     ...innerStruct,
-                    enumsArray: ['arm', 'invalid', 123] as unknown as ('arm' | 'bar' | 'car')[],
+                    enumsArray: ['arm', 'invalid'] as unknown as ('arm' | 'bar' | 'car')[],
                 },
             };
             await expect(
@@ -579,7 +673,12 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.innerStruct.enumsArray/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'seedEnum', kind: 'definedTypeNode' },
+                    { actualType: "variant 'invalid'", nodeKind: 'enumTypeNode' },
+                ),
+            );
         });
 
         test('should throw when bytes is string instead of Uint8Array', async () => {
@@ -596,7 +695,12 @@ describe('anchor-example: nestedExampleIx', () => {
                     })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.innerStruct.bytes"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'innerStruct', kind: 'definedTypeNode' },
+                    { actualType: 'string', nodeKind: 'bytesTypeNode' },
+                ),
+            );
         });
 
         test('should throw for invalid pubkey string', async () => {
@@ -606,18 +710,23 @@ describe('anchor-example: nestedExampleIx', () => {
                     .nestedExample({ input })
                     .accounts({ nestedExampleAccount, signer: payer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "input.pubkey"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'structAndEnumsInput', kind: 'definedTypeNode' },
+                    { actualType: 'string', nodeKind: 'publicKeyTypeNode' },
+                ),
+            );
         });
     });
 });
 
 function decodeNestedExampleAccount(root: RootNode, data: Uint8Array) {
-    const accountNode = (root.program.accounts ?? []).find(a => a.name === 'nestedExampleAccount');
+    const accountNode = (root.program.accounts ?? []).find(a => a.identifier === 'nestedExampleAccount');
     if (!accountNode) {
         throw new Error('Could not find account node "nestedExampleAccount" node in IDL');
     }
 
-    const codec = getNodeCodec([root, root.program, accountNode], {
+    const codec = getNodeValueCodec([root, root.program, accountNode], {
         bytesEncoding: 'base16',
     });
     const decoded = codec.decode(Uint8Array.from(data));
@@ -645,10 +754,9 @@ async function deriveNestedExamplePda(
 
 /** SeedEnum enum is stored as a number. */
 export function seedEnumVariant(enumValue: string) {
-    const kind = enumValue.charAt(0).toUpperCase() + enumValue.slice(1).toLowerCase();
-    const variants = ['Arm', 'Bar', 'Car'];
-    if (!variants.includes(kind)) {
+    const variants = ['arm', 'bar', 'car'];
+    if (!variants.includes(enumValue)) {
         throw new Error(`Unknown enum value: ${enumValue}`);
     }
-    return { __discriminator: variants.indexOf(kind), __kind: kind };
+    return { __discriminator: variants.indexOf(enumValue), __kind: enumValue };
 }

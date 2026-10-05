@@ -1,18 +1,33 @@
-import { getNodeCodec, type ReadonlyUint8Array } from '@codama/dynamic-codecs';
+import { getNodeValueCodec, type ReadonlyUint8Array } from '@codama/dynamic-codecs';
+import { CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM } from '@codama/errors';
 import { type Address } from '@solana/addresses';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import type { CollectionTypesProgramClient } from '../generated/collection-types-idl-types';
-import { createTestProgramClient, loadRoot, SvmTestContext } from '../test-utils';
+import { createTestProgramClient, loadRoot, SvmTestContext, valueTypeError } from '../test-utils';
 
 const root = loadRoot('collection-types-idl.json');
 
 function decodeInstructionData(instructionName: string, data: ReadonlyUint8Array): unknown {
-    const ix = (root.program.instructions ?? []).find(i => i.name === instructionName);
+    const ix = (root.program.instructions ?? []).find(i => i.identifier === instructionName);
     if (!ix) throw new Error(`Instruction ${instructionName} not found`);
 
-    const codec = getNodeCodec([root, root.program, ix]);
+    const codec = getNodeValueCodec([root, root.program, ix]);
     return codec.decode(new Uint8Array(data));
+}
+
+/** Match a `DUPLICATE_SET_ITEM` error raised by the set of the `data` field. */
+function duplicateSetItemError(indices: { firstIndex: number; index: number }): unknown {
+    return expect.objectContaining({
+        context: expect.objectContaining({
+            __code: CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
+            ...indices,
+            nodePath: expect.arrayContaining([
+                expect.objectContaining({ identifier: 'data', kind: 'structFieldTypeNode' }),
+                expect.objectContaining({ kind: 'setTypeNode' }),
+            ]),
+        }),
+    });
 }
 
 describe('Collection types: encoding and validation (set, map, tuple)', () => {
@@ -35,7 +50,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
             const decoded = decodeInstructionData('storeTuple', ix.data!);
             expect(decoded).toMatchObject({
                 data: [42n, 'hello'],
-                discriminator: 0,
+                discriminator: 0n,
             });
         });
 
@@ -50,7 +65,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
             const decoded = decodeInstructionData('storeNestedTuple', ix.data!);
             expect(decoded).toMatchObject({
                 data: [{ alice: 100n, bob: 200n }, [1n, 2n, 3n]],
-                discriminator: 6,
+                discriminator: 6n,
             });
         });
 
@@ -61,7 +76,12 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     .storeTuple({ data: [42n] })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "data\[1\]", value: undefined/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'storeTuple', kind: 'instructionNode' },
+                    { actualType: 'undefined', nodeKind: 'stringTypeNode' },
+                ),
+            );
         });
 
         test('should reject tuple with wrong item type', async () => {
@@ -71,7 +91,12 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     .storeTuple({ data: [42n, 123] })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "data\[1\]", value: 123/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'storeTuple', kind: 'instructionNode' },
+                    { actualType: 'number (123)', nodeKind: 'stringTypeNode' },
+                ),
+            );
         });
     });
 
@@ -85,7 +110,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
             const decoded = decodeInstructionData('storeMap', ix.data!);
             expect(decoded).toMatchObject({
                 data: { alice: 100n, bob: 200n, charlie: 300n },
-                discriminator: 1,
+                discriminator: 1n,
             });
         });
 
@@ -95,7 +120,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
             const decoded = decodeInstructionData('storeMap', ix.data!);
             expect(decoded).toMatchObject({
                 data: {},
-                discriminator: 1,
+                discriminator: 1n,
             });
         });
 
@@ -118,7 +143,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     list2: [10n, 20n],
                     list3: [],
                 },
-                discriminator: 7,
+                discriminator: 7n,
             });
         });
 
@@ -129,7 +154,12 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     .storeMap({ data: [1, 2, 3] })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Expected \[object\] for \[mapTypeNode\]/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'storeMap', kind: 'instructionNode' },
+                    { actualType: 'array (length 3)', nodeKind: 'mapTypeNode' },
+                ),
+            );
         });
 
         test('should reject wrong value type', async () => {
@@ -139,7 +169,12 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     .storeMap({ data: { key: 'wrong' } })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "data"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'storeMap', kind: 'instructionNode' },
+                    { actualType: 'string', nodeKind: 'integerTypeNode' },
+                ),
+            );
         });
     });
 
@@ -153,7 +188,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
             const decoded = decodeInstructionData('storeSet', ix.data!);
             expect(decoded).toMatchObject({
                 data: [1n, 2n, 3n],
-                discriminator: 2,
+                discriminator: 2n,
             });
         });
 
@@ -163,7 +198,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
             const decoded = decodeInstructionData('storeSet', ix.data!);
             expect(decoded).toMatchObject({
                 data: [],
-                discriminator: 2,
+                discriminator: 2n,
             });
         });
 
@@ -188,17 +223,17 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     [3n, 'third'],
                     [3n, 'fifth'],
                 ],
-                discriminator: 8,
+                discriminator: 8n,
             });
         });
 
-        test('should reject duplicate primitive values in set', async () => {
+        test('should reject duplicate values in set', async () => {
             await expect(
                 programClient.methods
                     .storeSet({ data: [1n, 2n, 1n] })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Expected all items to be unique/);
+            ).rejects.toThrow(duplicateSetItemError({ firstIndex: 0, index: 2 }));
             await expect(
                 programClient.methods
                     .storeNestedSet({
@@ -210,7 +245,7 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Expected all items to be unique/);
+            ).rejects.toThrow(duplicateSetItemError({ firstIndex: 0, index: 2 }));
         });
 
         test('should reject non-array input', async () => {
@@ -220,10 +255,15 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     .storeSet({ data: { key: 'value' } })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "data"/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'storeSet', kind: 'instructionNode' },
+                    { actualType: 'object', nodeKind: 'setTypeNode' },
+                ),
+            );
         });
 
-        test('should reject non-serializable input with a helpful validation error', async () => {
+        test('should reject circular objects in place of items', async () => {
             const invalidData: Record<string, unknown> = { a: 1n, b: {} };
             invalidData.b = invalidData;
 
@@ -233,7 +273,12 @@ describe('Collection types: encoding and validation (set, map, tuple)', () => {
                     .storeSet({ data: [invalidData, invalidData] })
                     .accounts({ signer })
                     .instruction(),
-            ).rejects.toThrow(/Invalid argument "data", value: non-serializable array \(length 2\)/);
+            ).rejects.toThrow(
+                valueTypeError(
+                    { identifier: 'storeSet', kind: 'instructionNode' },
+                    { actualType: 'object', nodeKind: 'integerTypeNode' },
+                ),
+            );
         });
     });
 });

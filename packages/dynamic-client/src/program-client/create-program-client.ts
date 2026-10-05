@@ -1,8 +1,7 @@
 import {
     type AccountsInput,
     type AddressInput,
-    type ArgumentsInput,
-    type ResolversInput,
+    type DataInput,
     resolveStandalonePda,
     toAddress,
 } from '@codama/dynamic-address-resolution';
@@ -16,9 +15,13 @@ import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
 import { createFromJson, updateProgramsVisitor } from 'codama';
 
-import { collectPdaNodes } from './collect-pdas';
+import { collectPdaPaths } from './collect-pdas';
 import { MethodsBuilder } from './methods-builder';
 
+/**
+ * A Codama IDL of the latest major, as a root node object or as its JSON.
+ * Upgrade IDLs of older majors with `upgrade` from `@codama/upgrade` first.
+ */
 export type IdlInput = object | string;
 
 export type CreateProgramClientOptions = {
@@ -32,25 +35,35 @@ export type CreateProgramClientOptions = {
 export type ProgramClient = {
     /** Quick lookup by instruction name. */
     instructions: Map<string, InstructionNode>;
-    /** Anchor-like facade namespace for building instructions. */
-    methods: Record<string, (args?: ArgumentsInput) => ProgramMethodBuilder>;
+    /** Anchor-like facade namespace for building instructions from their data. */
+    methods: Record<string, (data?: DataInput) => ProgramMethodBuilder>;
     /** Anchor-like facade namespace for standalone PDA derivation. */
-    pdas?: Record<string, (seeds?: Record<string, unknown>) => Promise<ProgramDerivedAddress>>;
+    pdas?: Record<string, (seeds?: Record<string, unknown>, options?: PdaOptions) => Promise<ProgramDerivedAddress>>;
     /** Program id as an `Address`. */
     programAddress: Address;
-    /** Parsed Codama root node for advanced use-cases. */
+    /** Parsed Codama root node, for advanced use-cases. */
     root: RootNode;
+};
+
+export type PdaOptions = {
+    /**
+     * The program deriving the PDA, e.g. for PDAs that instructions derive from
+     * another program through their `pdaValueNode.programId`. Defaults to the
+     * `programId` of the PDA, or else the address of the program defining it.
+     */
+    programId?: AddressInput;
 };
 
 export type ProgramMethodBuilder = {
     accounts(accounts: AccountsInput): ProgramMethodBuilder;
     instruction(): Promise<Instruction>;
-    resolvers(resolvers: ResolversInput): ProgramMethodBuilder;
     signers(signers: string[]): ProgramMethodBuilder;
 };
 
 /**
- * Creates a program client from a Codama IDL.
+ * Creates a program client from a Codama IDL of the latest major. IDLs of
+ * older majors throw `CODAMA_ERROR__VERSION_MISMATCH`: upgrade them with
+ * `upgrade` from `@codama/upgrade` first.
  *
  * For type safety, generate types and pass as a generic. See the README.md for details.
  */
@@ -94,7 +107,8 @@ export function createProgramClient<TClient = ProgramClient>(
                     });
                 }
 
-                return (args?: ArgumentsInput) => new MethodsBuilder(root, ixNode, args) as ProgramMethodBuilder;
+                return (data?: DataInput) =>
+                    new MethodsBuilder([root, root.program, ixNode], data) as ProgramMethodBuilder;
             },
             has(target, prop) {
                 return Reflect.has(target, prop) || (typeof prop === 'string' && instructions.has(prop));
@@ -102,10 +116,10 @@ export function createProgramClient<TClient = ProgramClient>(
         },
     ) as ProgramClient['methods'];
 
-    const pdaNodes = collectPdaNodes(root);
+    const pdaPaths = collectPdaPaths(root);
 
     const pdas =
-        pdaNodes.size === 0
+        pdaPaths.size === 0
             ? undefined
             : (new Proxy(
                   {},
@@ -113,20 +127,25 @@ export function createProgramClient<TClient = ProgramClient>(
                       get(_target, prop) {
                           if (typeof prop !== 'string' || PASSTHROUGH_PROPS.has(prop)) return undefined;
 
-                          const pdaNode = pdaNodes.get(prop);
-                          if (!pdaNode) {
+                          const pdaPath = pdaPaths.get(prop);
+                          if (!pdaPath) {
                               if (prop in Object.prototype) return undefined;
-                              const available = [...pdaNodes.keys()].join(', ');
+                              const available = [...pdaPaths.keys()].join(', ');
                               throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND, {
                                   available,
                                   pdaName: prop,
                               });
                           }
 
-                          return (seeds?: Record<string, unknown>) => resolveStandalonePda(root, pdaNode, seeds);
+                          return (seeds?: Record<string, unknown>, pdaOptions: PdaOptions = {}) =>
+                              resolveStandalonePda({
+                                  path: pdaPath,
+                                  programId: pdaOptions.programId,
+                                  seedsInput: seeds,
+                              });
                       },
                       has(target, prop) {
-                          return Reflect.has(target, prop) || (typeof prop === 'string' && pdaNodes.has(prop));
+                          return Reflect.has(target, prop) || (typeof prop === 'string' && pdaPaths.has(prop));
                       },
                   },
               ) as ProgramClient['pdas']);

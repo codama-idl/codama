@@ -8,6 +8,7 @@ import {
     none,
     some,
 } from '@solana/codecs';
+import { pluginNode, type StructFieldTypeNode } from 'codama';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';
@@ -39,7 +40,12 @@ function expectedData({
     return new Uint8Array([...discriminator, ...nameBytes, ...descriptionBytes, ...tagsBytes]);
 }
 
-describe('Custom resolvers: arguments ResolverValueNode', () => {
+/**
+ * The data fields of this IDL were resolved by custom resolvers in v1. Once
+ * upgraded, they have no default value and carry `codama.resolver` plugins
+ * instead, so callers provide them like any other data field.
+ */
+describe('Custom resolvers: resolved data fields', () => {
     let authority: Address;
     let ctx: SvmTestContext;
 
@@ -48,117 +54,31 @@ describe('Custom resolvers: arguments ResolverValueNode', () => {
         authority = await ctx.createFundedAccount();
     });
 
-    test('should resolve omitted argument via resolver', async () => {
-        const ix = await programClient.methods
-            .createItem({ name: 'hello' })
-            .accounts({ authority })
-            .resolvers({ resolveDescription: () => Promise.resolve('auto-filled') })
-            .instruction();
-
-        expect(ix.data).toEqual(expectedData({ description: 'auto-filled', name: 'hello', tags: null }));
-    });
-
-    test('should bypass resolver when argument is explicitly provided', async () => {
-        const ix = await programClient.methods
-            .createItem({ description: 'explicit', name: 'hello' })
-            .accounts({ authority })
-            .resolvers({
-                resolveDescription: () => {
-                    throw new Error('should not be called');
-                },
-            })
-            .instruction();
-
-        expect(ix.data).toEqual(expectedData({ description: 'explicit', name: 'hello', tags: null }));
-    });
-
-    test('should call multiple resolvers independently', async () => {
-        const ix = await programClient.methods
-            .createItem({ name: 'multi' })
-            .accounts({ authority })
-            .resolvers({
-                resolveDescription: () => Promise.resolve('desc'),
-                resolveTags: () => Promise.resolve(42),
-            })
-            .instruction();
-
-        expect(ix.data).toEqual(expectedData({ description: 'desc', name: 'multi', tags: 42 }));
-    });
-
-    test('should pass argumentsInput and accountsInput context to resolver', async () => {
-        const expectedArgs = { name: 'context' };
-        const expectedAccounts = { authority };
-        const capturedArgs: Record<string, unknown> = {};
-        const capturedAccounts: Record<string, unknown> = {};
-
-        await programClient.methods
-            .createItem(expectedArgs)
-            .accounts(expectedAccounts)
-            .resolvers({
-                resolveDescription: (args, accounts) => {
-                    Object.assign(capturedArgs, args);
-                    Object.assign(capturedAccounts, accounts);
-                    return Promise.resolve(null);
-                },
-            })
-            .instruction();
-
-        expect(capturedArgs).toEqual(expectedArgs);
-        expect(capturedAccounts).toEqual(expectedAccounts);
-    });
-
-    test('should omit optional argument when no resolver provided', async () => {
-        const ix = await programClient.methods
-            .createItem({ name: 'no-resolver' })
-            .accounts({ authority })
-            .instruction();
-
-        expect(ix.data).toEqual(expectedData({ description: null, name: 'no-resolver', tags: null }));
-    });
-
-    test('should propagate error when argument resolver throws', async () => {
-        await expect(
-            programClient.methods
-                .createItem({ name: 'err' })
-                .accounts({ authority })
-                .resolvers({
-                    resolveDescription: () => {
-                        throw new Error('Error from resolver');
-                    },
-                })
-                .instruction(),
-        ).rejects.toThrow(
-            /Resolver \[resolveDescription\] threw an error while resolving \[instructionArgumentNode\] \[description\]/,
+    test('should keep the resolvers of data fields as codama.resolver plugins', () => {
+        const data = programClient.instructions.get('createItem')?.data;
+        const fields = new Map<string, StructFieldTypeNode>(
+            (data?.kind === 'structTypeNode' ? (data.fields ?? []) : []).map(field => [field.identifier, field]),
         );
-
-        await expect(
-            programClient.methods
-                .createItem({ name: 'err' })
-                .accounts({ authority })
-                .resolvers({
-                    resolveDescription: () => Promise.reject(new Error('Async error from resolver')),
-                })
-                .instruction(),
-        ).rejects.toThrow(
-            /Resolver \[resolveDescription\] threw an error while resolving \[instructionArgumentNode\] \[description\]/,
-        );
+        expect(fields.get('description')?.defaultValue).toBeUndefined();
+        expect(fields.get('description')?.plugins).toStrictEqual([
+            pluginNode('codama.resolver', { name: 'resolveDescription' }),
+        ]);
+        expect(fields.get('tags')?.plugins).toStrictEqual([pluginNode('codama.resolver', { name: 'resolveTags' })]);
+        expect(fields.get('tags')?.defaultValueStrategy).toBe('optional');
     });
 
-    test('should encode optional argument as none when resolver returns undefined or null', async () => {
-        const ix1 = await programClient.methods
-            .createItem({ name: 'hello world 1' })
+    test('should encode the data provided in place of resolved fields', async () => {
+        const ix = await programClient.methods
+            .createItem({ description: 'explicit', name: 'hello', tags: 42 })
             .accounts({ authority })
-            .resolvers({ resolveDescription: () => Promise.resolve(undefined) })
             .instruction();
 
-        expect(ix1.data).toEqual(expectedData({ description: null, name: 'hello world 1', tags: null }));
+        expect(ix.data).toEqual(expectedData({ description: 'explicit', name: 'hello', tags: 42 }));
+    });
 
-        const ix2 = await programClient.methods
-            .createItem({ name: 'hello world 2' })
-            .accounts({ authority })
-            .resolvers({ resolveDescription: () => Promise.resolve(null) })
-            .instruction();
+    test('should encode omitted optional resolved fields as none', async () => {
+        const ix = await programClient.methods.createItem({ name: 'hello' }).accounts({ authority }).instruction();
 
-        expect(ix2.data).toEqual(expectedData({ description: null, name: 'hello world 2', tags: null }));
+        expect(ix.data).toEqual(expectedData({ description: null, name: 'hello', tags: null }));
     });
 });

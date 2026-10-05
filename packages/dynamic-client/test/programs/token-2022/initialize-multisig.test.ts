@@ -25,8 +25,8 @@ describe('Token 2022 Program: initializeMultisig', () => {
             .instruction();
 
         const initMultisigIx = await token2022Client.methods
-            .initializeMultisig({ m: 2, signers: [signer1, signer2, signer3] })
-            .accounts({ multisig: multisigAccount })
+            .initializeMultisig({ m: 2 })
+            .accounts({ multisig: multisigAccount, signers: [signer1, signer2, signer3] })
             .instruction();
 
         await ctx.sendInstructions([createAccountIx, initMultisigIx], [payer, multisigAccount]);

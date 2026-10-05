@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { getSchemaDecoder } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import { createCredential, createSchema, loadSasProgram, programClient } from './sas-test-utils';
 
 describe('SAS: changeSchemaStatus', () => {
@@ -90,6 +90,11 @@ describe('SAS: changeSchemaStatus', () => {
                 .changeSchemaStatus({ isPaused: 'yes' as unknown as boolean })
                 .accounts({ authority, credential: credentialPda, schema: schemaPda })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "isPaused"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'isPaused', kind: 'structFieldTypeNode' },
+                { actualType: 'string', nodeKind: 'booleanTypeNode' },
+            ),
+        );
     });
 });

@@ -3,7 +3,7 @@ import { type Address } from '@solana/addresses';
 import type { Some } from '@solana/codecs';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import {
     decodeBufferAccount,
     decodeMetadataAccount,
@@ -330,6 +330,11 @@ describe('Program Metadata: initialize', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "seed", value: undefined/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'seed', kind: 'definedTypeNode' },
+                { actualType: 'undefined', nodeKind: 'stringTypeNode' },
+            ),
+        );
     });
 });

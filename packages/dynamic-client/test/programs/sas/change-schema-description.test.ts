@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { getSchemaDecoder } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import { createCredential, createSchema, loadSasProgram, programClient } from './sas-test-utils';
 
 describe('SAS: changeSchemaDescription', () => {
@@ -64,6 +64,11 @@ describe('SAS: changeSchemaDescription', () => {
                     schema: schemaPda,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "description"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'description', kind: 'structFieldTypeNode' },
+                { actualType: 'bigint', nodeKind: 'stringTypeNode' },
+            ),
+        );
     });
 });

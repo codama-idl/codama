@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { deriveCredentialPda, getCredentialDecoder } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import { loadSasProgram, programClient } from './sas-test-utils';
 
 describe('SAS: createCredential', () => {
@@ -63,6 +63,11 @@ describe('SAS: createCredential', () => {
                 .createCredential({ name: undefined as unknown as string, signers: [authority] })
                 .accounts({ authority, credential: credentialPda, payer: authority })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "name"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'name', kind: 'structFieldTypeNode' },
+                { actualType: 'undefined', nodeKind: 'stringTypeNode' },
+            ),
+        );
     });
 });

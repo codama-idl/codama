@@ -8,7 +8,7 @@ import {
 } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import {
     createCredential,
     createSchema,
@@ -204,6 +204,11 @@ describe('SAS: createTokenizedAttestation', () => {
                     tokenProgram: ctx.TOKEN_2022_PROGRAM_ADDRESS,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "data"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'data', kind: 'structFieldTypeNode' },
+                { actualType: 'object', nodeKind: 'bytesTypeNode' },
+            ),
+        );
     });
 });

@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { deriveSchemaPda, getSchemaDecoder } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import {
     createCredential,
     createSchema,
@@ -112,7 +112,12 @@ describe('SAS: changeSchemaVersion', () => {
                     payer: authority,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "fieldNames"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'fieldNames', kind: 'structFieldTypeNode' },
+                { actualType: 'undefined', nodeKind: 'arrayTypeNode' },
+            ),
+        );
 
         await expect(
             programClient.methods
@@ -128,6 +133,11 @@ describe('SAS: changeSchemaVersion', () => {
                     payer: authority,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "layout"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'layout', kind: 'structFieldTypeNode' },
+                { actualType: 'number (123)', nodeKind: 'bytesTypeNode' },
+            ),
+        );
     });
 });

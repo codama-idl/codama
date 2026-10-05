@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { deriveSchemaPda, getSchemaDecoder } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import {
     createCredential,
     loadSasProgram,
@@ -95,7 +95,12 @@ describe('SAS: createSchema', () => {
                 })
                 .accounts({ authority, credential: credentialPda, payer: authority, schema: schemaPda })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "name"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'name', kind: 'structFieldTypeNode' },
+                { actualType: 'undefined', nodeKind: 'stringTypeNode' },
+            ),
+        );
 
         await expect(
             programClient.methods
@@ -107,6 +112,11 @@ describe('SAS: createSchema', () => {
                 })
                 .accounts({ authority, credential: credentialPda, payer: authority, schema: schemaPda })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "fieldNames"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'fieldNames', kind: 'structFieldTypeNode' },
+                { actualType: 'object', nodeKind: 'arrayTypeNode' },
+            ),
+        );
     });
 });

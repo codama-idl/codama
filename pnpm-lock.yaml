@@ -112,9 +112,6 @@ importers:
       '@codama/dynamic-address-resolution':
         specifier: workspace:*
         version: link:../dynamic-address-resolution
-      '@codama/dynamic-codecs':
-        specifier: workspace:*
-        version: link:../dynamic-codecs
       '@codama/dynamic-instructions':
         specifier: workspace:*
         version: link:../dynamic-instructions
@@ -122,9 +119,6 @@ importers:
         specifier: workspace:*
         version: link:../errors
       '@solana/addresses':
-        specifier: ^8.4.0
-        version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
-      '@solana/codecs':
         specifier: ^8.4.0
         version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
       '@solana/instructions':
@@ -136,10 +130,10 @@ importers:
       commander:
         specifier: ^15.0.0
         version: 15.0.0
-      superstruct:
-        specifier: ^2.0.2
-        version: 2.0.2
     devDependencies:
+      '@codama/dynamic-codecs':
+        specifier: workspace:*
+        version: link:../dynamic-codecs
       '@codama/nodes-from-anchor':
         specifier: workspace:*
         version: link:../nodes-from-anchor
@@ -158,6 +152,9 @@ importers:
       '@solana-program/token-2022':
         specifier: ^0.17.0
         version: 0.17.0(@solana/kit@8.4.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))
+      '@solana/codecs':
+        specifier: ^8.4.0
+        version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
       '@solana/kit':
         specifier: 8.4.0
         version: 8.4.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
@@ -3071,10 +3068,6 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
-  superstruct@2.0.2:
-    resolution: {integrity: sha512-uV+TFRZdXsqXTL2pRvujROjdZQ4RAlBUS5BTh9IGm+jTqQntYThciG/qu57Gs69yjnVUSqdxF9YLmSnpupBW9A==}
-    engines: {node: '>=14.0.0'}
-
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
     engines: {node: '>=0.8'}
@@ -5766,8 +5759,6 @@ snapshots:
       mz: 2.7.0
       pirates: 4.0.7
       ts-interface-checker: 0.1.13
-
-  superstruct@2.0.2: {}
 
   thenify-all@1.6.0:
     dependencies:

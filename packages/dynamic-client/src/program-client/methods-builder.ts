@@ -1,40 +1,39 @@
-import type { AccountsInput, ArgumentsInput, EitherSigners, ResolversInput } from '@codama/dynamic-instructions';
+import type { AccountsInput, DataInput, EitherSigners } from '@codama/dynamic-instructions';
 import { createInstructionsBuilder } from '@codama/dynamic-instructions';
 import type { Instruction } from '@solana/instructions';
-import type { InstructionNode, RootNode } from 'codama';
+import type { InstructionNode, NodePath } from 'codama';
 
+/**
+ * Fluent builder for a single instruction of a program client, created by
+ * `client.methods.<instruction>(data)`.
+ */
 export class MethodsBuilder {
     private _accounts?: AccountsInput;
-    // "either" signers Account names
+    // The accounts of `isSigner: 'either'` slots that must sign.
     private _signers?: EitherSigners;
-    // Custom resolver functions for ResolverValueNode
-    private _resolvers?: ResolversInput;
 
     constructor(
-        private readonly root: RootNode,
-        private readonly ixNode: InstructionNode,
-        private readonly args?: ArgumentsInput,
+        private readonly path: NodePath<InstructionNode>,
+        private readonly data?: DataInput,
     ) {}
 
+    /** Provide the instruction accounts, including remaining accounts as address lists under their identifier. */
     accounts(accounts: AccountsInput) {
         this._accounts = accounts;
         return this;
     }
 
-    // Explicitly provide Account names which must be Signers.
-    // This is to help InstructionAccountNode resolution with ambiguous isSigner: "either". Other signers will be auto-resolved
+    /**
+     * Name the accounts with an ambiguous `isSigner: 'either'` that must sign.
+     * Other signers are resolved from the IDL.
+     */
     signers(signers: EitherSigners) {
         this._signers = signers;
         return this;
     }
 
-    resolvers(resolvers: ResolversInput) {
-        this._resolvers = resolvers;
-        return this;
-    }
-
     async instruction(): Promise<Instruction> {
-        const build = createInstructionsBuilder(this.root, this.ixNode);
-        return await build(this.args, this._accounts, this._signers, this._resolvers);
+        const build = createInstructionsBuilder(this.path);
+        return await build({ accounts: this._accounts, data: this.data, signers: this._signers });
     }
 }
