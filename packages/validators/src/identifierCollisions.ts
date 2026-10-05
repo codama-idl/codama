@@ -37,7 +37,7 @@ export function getIdentifierCollisionItems(
             existing === identifier
                 ? `${label} identifier "${identifier}" is not unique${context}.`
                 : `${label} identifier "${identifier}" collides with "${existing}" once converted to camelCase${context}.`;
-        items.push(validationItem('error', message, entry, stack));
+        items.push(validationItem('error', message, [...stack.getPath(), entry]));
     });
 
     return items;

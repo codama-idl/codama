@@ -1,4 +1,4 @@
-import { CodamaError } from '@codama/errors';
+import { isCodamaError } from '@codama/errors';
 import { isNode, REGISTERED_NODE_KINDS } from '@codama/nodes';
 import {
     extendVisitor,
@@ -34,7 +34,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitAccount(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Account has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Account has no identifier.', stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -42,7 +42,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitDefinedType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Defined type has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Defined type has no identifier.', stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -50,15 +50,12 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitDefinedTypeLink(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(
-                            validationItem('error', 'Pointing to a defined type with no identifier.', node, stack),
-                        );
+                        items.push(validationItem('error', 'Pointing to a defined type with no identifier.', stack));
                     } else if (!linkables.has(stack.getPath(node.kind))) {
                         items.push(
                             validationItem(
                                 'error',
                                 `Pointing to a missing defined type named "${node.identifier}"`,
-                                node,
                                 stack,
                             ),
                         );
@@ -70,7 +67,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     const items = [] as ValidationItem[];
                     const variants = node.variants ?? [];
                     if (variants.length === 0) {
-                        items.push(validationItem('warn', 'Enum has no variants.', node, stack));
+                        items.push(validationItem('warn', 'Enum has no variants.', stack));
                     }
                     items.push(...getIdentifierCollisionItems(variants, 'Enum variant', '', stack));
                     return [...items, ...next(node)];
@@ -79,7 +76,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitEnumVariantType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Enum variant has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Enum variant has no identifier.', stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -87,13 +84,13 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitError(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Error has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Error has no identifier.', stack));
                     }
                     if (typeof node.code !== 'number') {
-                        items.push(validationItem('error', 'Error has no code.', node, stack));
+                        items.push(validationItem('error', 'Error has no code.', stack));
                     }
                     if (!node.message) {
-                        items.push(validationItem('warn', 'Error has no message.', node, stack));
+                        items.push(validationItem('warn', 'Error has no message.', stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -115,7 +112,6 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                                 validationItem(
                                     'error',
                                     `Injected value "${node.key}" is not provided and has no fallback.`,
-                                    node,
                                     stack,
                                 ),
                             );
@@ -127,11 +123,16 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitInstruction(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Instruction has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Instruction has no identifier.', stack));
                     }
                     (node.accounts ?? []).forEach(account => {
                         if (!account.identifier) {
-                            items.push(validationItem('error', 'Instruction account has no identifier.', node, stack));
+                            items.push(
+                                validationItem('error', 'Instruction account has no identifier.', [
+                                    ...stack.getPath(),
+                                    account,
+                                ]),
+                            );
                         }
                     });
 
@@ -163,8 +164,8 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     try {
                         inputs = visit(node, resolverVisitor);
                     } catch (error) {
-                        if (!(error instanceof CodamaError)) throw error;
-                        items.push(validationItem('error', error.message, node, stack));
+                        if (!isCodamaError(error)) throw error;
+                        items.push(validationItem('error', error.message, stack, error));
                     }
 
                     // A bump can only be derived from an account that is not a signer.
@@ -178,7 +179,6 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                                     'error',
                                     `Data field "${input.path}" cannot default to the bump of the "${bumpAccount}" ` +
                                         'account as it may be a signer.',
-                                    node,
                                     stack,
                                 ),
                             );
@@ -197,13 +197,13 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitProgram(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Program has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Program has no identifier.', stack));
                     }
                     if (!node.publicKey) {
-                        items.push(validationItem('error', 'Program has no public key.', node, stack));
+                        items.push(validationItem('error', 'Program has no public key.', stack));
                     }
                     if (!node.version) {
-                        items.push(validationItem('warn', 'Program has no version.', node, stack));
+                        items.push(validationItem('warn', 'Program has no version.', stack));
                     }
 
                     // Check for identifier collisions within each collection of the program.
@@ -228,7 +228,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitStructFieldType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Struct field has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Struct field has no identifier.', stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -244,12 +244,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     const items = [] as ValidationItem[];
                     if ((node.plugins ?? []).length === 0) {
                         items.push(
-                            validationItem(
-                                'info',
-                                'Text node has no plugins; use a plain string instead.',
-                                node,
-                                stack,
-                            ),
+                            validationItem('info', 'Text node has no plugins; use a plain string instead.', stack),
                         );
                     }
                     return [...items, ...next(node)];
@@ -258,7 +253,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitTupleType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if ((node.items ?? []).length === 0) {
-                        items.push(validationItem('warn', 'Tuple has no items.', node, stack));
+                        items.push(validationItem('warn', 'Tuple has no items.', stack));
                     }
                     return [...items, ...next(node)];
                 },
