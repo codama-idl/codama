@@ -1,4 +1,5 @@
 import {
+    CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
     CodamaError,
@@ -19,7 +20,9 @@ import {
     instructionStatusNode,
     integerTypeNode,
     integerValueNode,
+    optionTypeNode,
     pluginNode,
+    programLinkNode,
     programNode,
     ProgramNode,
     providedNode,
@@ -425,4 +428,167 @@ test('it reports text nodes without plugins', () => {
         validationItem('info', 'Text node has no plugins; use a plain string instead.', [plainStatus, plainText]),
     ]);
     expect(translatedItems).toEqual([]);
+});
+
+test('it reports cyclic defined types without a finite value', () => {
+    // Given a loop whose every value nests another one.
+    const loop = definedTypeNode({
+        identifier: 'loop',
+        type: structTypeNode([structFieldTypeNode({ identifier: 'next', type: definedTypeLinkNode('loop') })]),
+    });
+    const program = programNode({ definedTypes: [loop], identifier: 'myProgram', publicKey: '1111', version: '1.0.0' });
+    const root = rootNode(program);
+
+    const loopCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
+        name: loop.identifier,
+        path: [root, program, loop],
+    });
+
+    // When we validate it.
+    const items = visit(root, getValidationItemsVisitor());
+
+    // Then the loop is reported.
+    expect(items).toStrictEqual([validationItem('error', loopCause.message, [root, program, loop], loopCause)]);
+});
+
+test('it reports defined types aliasing themselves', () => {
+    // Given a type aliasing itself.
+    const alias = definedTypeNode({ identifier: 'alias', type: definedTypeLinkNode('alias') });
+    const program = programNode({
+        definedTypes: [alias],
+        identifier: 'myProgram',
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+
+    const aliasCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
+        name: alias.identifier,
+        path: [root, program, alias],
+    });
+
+    // When we validate it.
+    const items = visit(root, getValidationItemsVisitor());
+
+    // Then the alias is reported.
+    expect(items).toStrictEqual([validationItem('error', aliasCause.message, [root, program, alias], aliasCause)]);
+});
+
+test('it accepts cyclic defined types with a finite value', () => {
+    // Given a linked list that may end with `None`.
+    const list = definedTypeNode({
+        identifier: 'list',
+        type: structTypeNode([
+            structFieldTypeNode({
+                identifier: 'next',
+                type: optionTypeNode(definedTypeLinkNode('list'), { prefix: integerTypeNode('u8') }),
+            }),
+        ]),
+    });
+    const program = programNode({ definedTypes: [list], identifier: 'myProgram', publicKey: '1111', version: '1.0.0' });
+
+    // When we validate it, then nothing is reported.
+    expect(visit(rootNode(program), getValidationItemsVisitor())).toStrictEqual([]);
+});
+
+test('it only reports the cyclic defined type when another one links to it', () => {
+    // Given a type linking to a loop.
+    const loop = definedTypeNode({
+        identifier: 'loop',
+        type: structTypeNode([structFieldTypeNode({ identifier: 'next', type: definedTypeLinkNode('loop') })]),
+    });
+    const usesLoop = definedTypeNode({ identifier: 'usesLoop', type: definedTypeLinkNode('loop') });
+    const program = programNode({
+        definedTypes: [loop, usesLoop],
+        identifier: 'myProgram',
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+
+    const loopCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
+        name: loop.identifier,
+        path: [root, program, loop],
+    });
+
+    // When we validate it.
+    const items = visit(root, getValidationItemsVisitor());
+
+    // Then only the loop is reported.
+    expect(items).toStrictEqual([validationItem('error', loopCause.message, [root, program, loop], loopCause)]);
+});
+
+test('it reports every defined type of a cycle without a finite value', () => {
+    // Given two types nesting each other.
+    const a = definedTypeNode({
+        identifier: 'a',
+        type: structTypeNode([structFieldTypeNode({ identifier: 'b', type: definedTypeLinkNode('b') })]),
+    });
+    const b = definedTypeNode({
+        identifier: 'b',
+        type: structTypeNode([structFieldTypeNode({ identifier: 'a', type: definedTypeLinkNode('a') })]),
+    });
+    const program = programNode({ definedTypes: [a, b], identifier: 'myProgram', publicKey: '1111', version: '1.0.0' });
+    const root = rootNode(program);
+
+    const aCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
+        name: a.identifier,
+        path: [root, program, a],
+    });
+
+    const bCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
+        name: b.identifier,
+        path: [root, program, b],
+    });
+
+    // When we validate them.
+    const items = visit(root, getValidationItemsVisitor());
+
+    // Then both are reported.
+    expect(items).toStrictEqual([
+        validationItem('error', aCause.message, [root, program, a], aCause),
+        validationItem('error', bCause.message, [root, program, b], bCause),
+    ]);
+});
+
+test('it does not mistake links to same-named defined types of other programs for cycles', () => {
+    // Given a type of program A linking to a same-named type of program B.
+    const typeA = definedTypeNode({
+        identifier: 'config',
+        type: definedTypeLinkNode('config', { program: programLinkNode('programB') }),
+    });
+    const typeB = definedTypeNode({ identifier: 'config', type: integerTypeNode('u32') });
+    const programA = programNode({
+        definedTypes: [typeA],
+        identifier: 'programA',
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const programB = programNode({
+        definedTypes: [typeB],
+        identifier: 'programB',
+        publicKey: '2222',
+        version: '1.0.0',
+    });
+
+    // When we validate them, then nothing is reported.
+    expect(visit(rootNode(programA, { additionalPrograms: [programB] }), getValidationItemsVisitor())).toStrictEqual(
+        [],
+    );
+});
+
+test('it does not check the values of defined types outside a program', () => {
+    // Given a loop validated on its own.
+    const link = definedTypeLinkNode('loop');
+    const field = structFieldTypeNode({ identifier: 'next', type: link });
+    const struct = structTypeNode([field]);
+    const loop = definedTypeNode({ identifier: 'loop', type: struct });
+
+    // When we validate it.
+    const items = visit(loop, getValidationItemsVisitor());
+
+    // Then it does not throw, and only reports the link it cannot resolve without a program.
+    expect(items).toStrictEqual([
+        validationItem('error', 'Pointing to a missing defined type named "loop"', [loop, struct, field, link]),
+    ]);
 });

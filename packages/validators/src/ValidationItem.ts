@@ -9,10 +9,11 @@ export type LogLevel = (typeof LOG_LEVELS)[number];
  * A diagnostic reported when validating a Codama IDL.
  *
  * The `path` leads to the node the diagnostic is about, which is its last
- * node. When the diagnostic stems from a `CodamaError` thrown while
- * validating, e.g. a cyclic dependency between instruction inputs, that
- * error is kept as its `cause`, so consumers can match its code and context
- * rather than its message.
+ * node. When the diagnostic corresponds to a `CodamaError`, that error is
+ * kept as its `cause`, so consumers can match its code and context rather
+ * than its message. It may be thrown while validating, e.g. a cyclic
+ * dependency between instruction inputs, or be the error that creating a
+ * codec would throw.
  */
 export type ValidationItem<TNode extends Node = Node> = {
     cause?: CodamaError;
@@ -28,7 +29,7 @@ export type ValidationItem<TNode extends Node = Node> = {
  * @param message - A human-readable description of the diagnostic.
  * @param path - The path to the node the diagnostic is about, or the stack
  * whose current path leads to it.
- * @param cause - The `CodamaError` the diagnostic stems from, if any.
+ * @param cause - The `CodamaError` the diagnostic matches, if any.
  * @throws `CODAMA_ERROR__UNEXPECTED_NODE_KIND` when given a stack with an
  * empty path, since a diagnostic must be about a node.
  *
