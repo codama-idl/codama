@@ -17,7 +17,8 @@ export type InstructionDataField = {
  *
  * Fields are only addressable where the data type resolves to a struct, so
  * nested fields are listed for struct-typed (or struct-linked) fields only.
- * Each defined type is followed at most once, which guards against cycles.
+ * Each defined type is followed at most once per branch, which guards against
+ * cycles while still expanding sibling fields linking the same type.
  *
  * @param instructionPath - The path to the instruction. It must contain the
  *   instruction's `programNode` for linked data to be followed; otherwise a
@@ -37,8 +38,9 @@ export function getInstructionDataFields(
 ): InstructionDataField[] {
     const fields: InstructionDataField[] = [];
     const stack = new NodeStack(instructionPath);
-    // Keyed by node rather than identifier: same-named types of different programs are distinct.
-    const walkedDefinedTypes = new Set<DefinedTypeNode>();
+    // The defined types followed on the current branch, keyed by node rather than
+    // identifier: same-named types of different programs are distinct.
+    const followedDefinedTypes = new Set<DefinedTypeNode>();
 
     const walk = (type: TypeNode | undefined, prefix: string): void => {
         if (!type) return;
@@ -46,9 +48,10 @@ export function getInstructionDataFields(
             const linkedPath = linkables.getPath([...stack.getPath(), type]);
             if (!linkedPath) return;
             const definedType = getLastNodeFromPath(linkedPath);
-            if (walkedDefinedTypes.has(definedType)) return;
-            walkedDefinedTypes.add(definedType);
+            if (followedDefinedTypes.has(definedType)) return;
+            followedDefinedTypes.add(definedType);
             stack.withPath(linkedPath, () => walk(definedType.type, prefix));
+            followedDefinedTypes.delete(definedType);
             return;
         }
         if (!isNode(type, 'structTypeNode')) return;

@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, CodamaError } from '@codama/errors';
 import {
     accountNode,
     type AccountNode,
@@ -10,7 +11,7 @@ import {
 } from '@codama/nodes';
 import { expect, expectTypeOf, test } from 'vitest';
 
-import { getLastNodeFromPath, type NodePath } from '../src';
+import { assertNodePathHasProgram, getLastNodeFromPath, type NodePath } from '../src';
 
 const program = programNode({ identifier: 'myProgram', publicKey: '1111' });
 const root = rootNode(program);
@@ -47,4 +48,16 @@ test('it keeps optional node types as either kind of path', () => {
     expectTypeOf<NodePath<PdaNode | undefined>>().toEqualTypeOf<
         readonly Node[] | readonly [...(readonly Node[]), PdaNode]
     >();
+});
+
+test('it accepts paths containing a program node', () => {
+    const account = accountNode({ identifier: 'myAccount' });
+    expect(() => assertNodePathHasProgram([root, program, account])).not.toThrow();
+});
+
+test('it rejects paths without a program node', () => {
+    const account = accountNode({ identifier: 'myAccount' });
+    expect(() => assertNodePathHasProgram([account])).toThrow(
+        new CodamaError(CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, { path: [account] }),
+    );
 });

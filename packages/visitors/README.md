@@ -313,6 +313,8 @@ This visitor replaces any `DefinedTypeLinkNode` with the type of the `DefinedTyp
 
 Note that if multiple link nodes point to the same defined type, each link node will be replaced by a copy of the defined type. The `transforms` of each link are applied on top of the inlined type.
 
+Defined types in a cycle made only of types to inline, such as `node = struct { next: option<link(node)> }`, are not inlined since inlining them would never end: they are kept in their programs, and so are the links to them. A cycle going through a type that is not inlined ends at its link, so its other types are inlined as usual.
+
 ```ts
 codama.update(unwrapDefinedTypesVisitor(['counter', 'splToken.escrow']));
 ```

@@ -1,5 +1,6 @@
 import {
     accountNode,
+    arrayTypeNode,
     assertIsNode,
     constantNode,
     definedTypeLinkNode,
@@ -8,9 +9,11 @@ import {
     fixedSizeTransformNode,
     integerTypeNode,
     integerValueNode,
+    optionTypeNode,
     pdaNode,
     programLinkNode,
     programNode,
+    remainderCountNode,
     rootNode,
     sizePrefixTransformNode,
     stringTypeNode,
@@ -244,5 +247,96 @@ test('it qualifies links inside types inlined into another program', () => {
                 type: definedTypeLinkNode('inner', { program: programLinkNode('programB') }),
             }),
         ]),
+    );
+});
+
+test('it keeps cyclic defined types and the links to them', () => {
+    // Given a linked list used by an account, next to a plain alias.
+    const list = definedTypeNode({
+        identifier: 'list',
+        type: structTypeNode([
+            structFieldTypeNode({ identifier: 'value', type: definedTypeLinkNode('amount') }),
+            structFieldTypeNode({
+                identifier: 'next',
+                type: optionTypeNode(definedTypeLinkNode('list'), { prefix: integerTypeNode('u8') }),
+            }),
+        ]),
+    });
+    const node = programNode({
+        accounts: [accountNode({ data: definedTypeLinkNode('list'), identifier: 'myAccount' })],
+        definedTypes: [list, definedTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we unwrap every defined type.
+    const result = visit(node, unwrapDefinedTypesVisitor('*'));
+
+    // Then only the alias is inlined, including within the kept cyclic type.
+    expect(result).toStrictEqual(
+        programNode({
+            accounts: [accountNode({ data: definedTypeLinkNode('list'), identifier: 'myAccount' })],
+            definedTypes: [
+                definedTypeNode({
+                    identifier: 'list',
+                    type: structTypeNode([
+                        structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u64') }),
+                        structFieldTypeNode({
+                            identifier: 'next',
+                            type: optionTypeNode(definedTypeLinkNode('list'), { prefix: integerTypeNode('u8') }),
+                        }),
+                    ]),
+                }),
+            ],
+            identifier: 'myProgram',
+            publicKey: '1111',
+        }),
+    );
+});
+
+test('it keeps defined types in a cycle made only of types to inline', () => {
+    // Given two types linking to each other.
+    const node = programNode({
+        definedTypes: [
+            definedTypeNode({ identifier: 'a', type: arrayTypeNode(definedTypeLinkNode('b'), remainderCountNode()) }),
+            definedTypeNode({ identifier: 'b', type: arrayTypeNode(definedTypeLinkNode('a'), remainderCountNode()) }),
+        ],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we unwrap both of them, then nothing changes.
+    expect(visit(node, unwrapDefinedTypesVisitor(['a', 'b']))).toStrictEqual(node);
+});
+
+test('it inlines defined types in a cycle going through a type not to inline', () => {
+    // Given two types linking to each other.
+    const node = programNode({
+        definedTypes: [
+            definedTypeNode({ identifier: 'a', type: arrayTypeNode(definedTypeLinkNode('b'), remainderCountNode()) }),
+            definedTypeNode({ identifier: 'b', type: arrayTypeNode(definedTypeLinkNode('a'), remainderCountNode()) }),
+        ],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we unwrap one of them.
+    const result = visit(node, unwrapDefinedTypesVisitor(['a']));
+
+    // Then it is inlined, and the cycle ends at the link to the other one.
+    expect(result).toStrictEqual(
+        programNode({
+            definedTypes: [
+                definedTypeNode({
+                    identifier: 'b',
+                    type: arrayTypeNode(
+                        arrayTypeNode(definedTypeLinkNode('b'), remainderCountNode()),
+                        remainderCountNode(),
+                    ),
+                }),
+            ],
+            identifier: 'myProgram',
+            publicKey: '1111',
+        }),
     );
 });
