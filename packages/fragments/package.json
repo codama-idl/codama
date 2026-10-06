@@ -1,6 +1,6 @@
 {
     "name": "@codama/fragments",
-    "version": "1.0.0",
+    "version": "2.0.0-rc.0",
     "description": "Composable code-generation fragments and language-aware import maps for Codama renderers",
     "keywords": [
         "codama",

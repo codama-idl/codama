@@ -1,6 +1,6 @@
 {
     "name": "@codama/cli",
-    "version": "1.6.3",
+    "version": "2.0.0-rc.0",
     "description": "A CLI for setting up and managing Codama IDLs",
     "keywords": [
         "cli",
