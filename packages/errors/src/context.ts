@@ -34,6 +34,7 @@ import {
     CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING,
     CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     CODAMA_ERROR__CANNOT_RESOLVE_PATH,
+    CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
@@ -137,6 +138,12 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         path: PathString;
         /** The segment that could not be followed, e.g. `fees` or `[0]`. */
         segment: string;
+    };
+    [CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE]: {
+        /** The identifier of the defined type. */
+        name: IdentifierString;
+        /** The path of the defined type, from the root. */
+        path: readonly Node[];
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: {
         field: PathString;
