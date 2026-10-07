@@ -57,35 +57,22 @@ export function assertValueType(
 }
 
 /**
- * Reject arrays whose items encode to the same bytes before encoding them as a
- * set, since sets hold unique values. Comparing encoded bytes works for any item
- * type, e.g. structs or tuples, and accounts for encoded default values. Values
- * that are not arrays go through so the wrapped codec can reject them.
+ * Reject the items of a set that encode to the same bytes, since sets hold
+ * unique values. Comparing encoded bytes works for any item type, e.g. structs
+ * or tuples, and accounts for encoded default values.
  *
  * Each item is encoded once more for the check, and variable-size codecs run it
  * twice (when sizing and when writing), a cost accepted for its simplicity.
  */
-export function assertUniqueItems(
-    codec: Codec<unknown>,
-    item: Encoder<unknown>,
-    nodePath: readonly Node[],
-): Codec<unknown> {
+export function assertUniqueItems(items: readonly unknown[], item: Encoder<unknown>, nodePath: readonly Node[]): void {
     const base16 = getBase16Decoder();
-    return transformCodec(codec, (value: unknown) => {
-        if (!Array.isArray(value)) return value;
-        const indices = new Map<string, number>();
-        value.forEach((itemValue: unknown, index) => {
-            const key = base16.decode(item.encode(itemValue));
-            const firstIndex = indices.get(key);
-            if (firstIndex !== undefined) {
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM, {
-                    firstIndex,
-                    index,
-                    nodePath,
-                });
-            }
-            indices.set(key, index);
-        });
-        return value;
+    const indices = new Map<string, number>();
+    items.forEach((itemValue: unknown, index) => {
+        const key = base16.decode(item.encode(itemValue));
+        const firstIndex = indices.get(key);
+        if (firstIndex !== undefined) {
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM, { firstIndex, index, nodePath });
+        }
+        indices.set(key, index);
     });
 }
