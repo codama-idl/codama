@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__INVALID_TICKS_PER_SECOND, CodamaError } from '@codama/errors';
 import { dateTimeTypeNode, integerTypeNode } from '@codama/nodes';
 import { getI64Encoder } from '@solana/codecs';
 import { expect, test } from 'vitest';
@@ -65,6 +66,10 @@ test('it matches JavaScript dates within their range', () => {
     expect(seconds.map(second => formatDateTime(decodeDateTime(second)))).toStrictEqual(expected);
 });
 
-test('it does not format date-times whose ticks per second are not positive integers', () => {
-    expect(formatDateTime(decodeDateTime(1n, 0))).toBeNull();
+test('it throws when the ticks per second of a date-time are not a positive integer', () => {
+    const node = dateTimeTypeNode(integerTypeNode('i64'), { ticksPerSecond: 0 });
+    const decoded = getNodeCodec([node]).decode(getI64Encoder().encode(1n));
+    expect(() => formatDateTime(decoded)).toThrow(
+        new CodamaError(CODAMA_ERROR__INVALID_TICKS_PER_SECOND, { path: [node], ticksPerSecond: 0 }),
+    );
 });

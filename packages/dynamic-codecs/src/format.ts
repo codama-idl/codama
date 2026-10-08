@@ -1,5 +1,10 @@
+import { CODAMA_ERROR__INVALID_TICKS_PER_SECOND, CodamaError } from '@codama/errors';
+import { titleCase } from '@codama/fragments/casing';
 import {
     AmountNumberDisplayNode,
+    DateTimeTypeNode,
+    DurationTypeNode,
+    getTextNodeContent,
     InjectableIntegerValueNode,
     InjectableStringValueNode,
     InjectedValueNode,
@@ -9,6 +14,7 @@ import {
     UnitNumberDisplayNode,
 } from '@codama/nodes';
 import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
+import type { Address } from '@solana/addresses';
 import {
     BinaryFixedPoint,
     binaryFixedPointToString,
@@ -16,21 +22,30 @@ import {
     decimalFixedPointToString,
     formatBinaryFixedPoint,
     formatDecimalFixedPoint,
+    getBase16Decoder,
     rawBinaryFixedPoint,
     rawDecimalFixedPoint,
     Signedness,
 } from '@solana/codecs';
 
+import { getCodecFromBytesEncoding } from './bytes';
 import type {
+    DecodedBooleanTypeNode,
+    DecodedBytesTypeNode,
     DecodedDateTimeTypeNode,
     DecodedDurationTypeNode,
+    DecodedEnumTypeNode,
     DecodedFixedPointTypeNode,
     DecodedFloatTypeNode,
     DecodedIntegerTypeNode,
+    DecodedPublicKeyTypeNode,
     DecodedStringTypeNode,
 } from './decoded';
 
-/** Options shared by the formatters of decoded nodes. */
+/**
+ * Options shared by the formatters of decoded nodes. Every formatter accepts them, even those
+ * that use none of them yet, so all formatters share the `(decoded, options)` signature.
+ */
 export type FormatOptions = {
     /**
      * Place a unit next to a formatted value, e.g. to write `"USD 40.5"`. Defaults to
@@ -44,6 +59,12 @@ export type FormatOptions = {
      * fraction digit, e.g. `"1234.56789"`.
      */
     numberFormat?: Intl.NumberFormat;
+    /**
+     * Format an address, e.g. to name it from sources the caller trusts, such as a token list or
+     * an address book, or to truncate it: `address => names.get(address) ?? address`. Defaults to
+     * the address itself.
+     */
+    formatAddress?: (address: Address) => string;
     /**
      * Resolve the value of an injected value node used by a display node, e.g. the `decimals` of
      * an amount provided by its instruction, given its path through the decoded node, e.g.
@@ -145,16 +166,15 @@ export function formatFixedPoint(decoded: DecodedFixedPointTypeNode, options: Fo
  * when not zero, exactly when `ticksPerSecond` is a power of 10 and rounded to the
  * nanosecond otherwise.
  *
- * Returns `null` when `ticksPerSecond` is not a positive integer.
+ * @throws `CODAMA_ERROR__INVALID_TICKS_PER_SECOND` when `ticksPerSecond` is not a positive integer.
  *
  * @example
  * ```ts
  * formatDateTime(decoded); // "2024-01-01T00:00:00Z"
  * ```
  */
-export function formatDateTime(decoded: DecodedDateTimeTypeNode): string | null {
-    const time = toSeconds(decoded.value, getLastNodeFromPath(decoded.path).ticksPerSecond);
-    if (!time) return null;
+export function formatDateTime(decoded: DecodedDateTimeTypeNode, _options: FormatOptions = {}): string {
+    const time = toSeconds(decoded.value, decoded.path);
     const days = floorDiv(time.seconds, SECONDS_PER_DAY);
     const secondsOfDay = time.seconds - days * SECONDS_PER_DAY;
     const [year, month, day] = getCivilDate(days);
@@ -167,17 +187,16 @@ export function formatDateTime(decoded: DecodedDateTimeTypeNode): string | null 
  * needed, e.g. `"49:00:00"`, with a leading `-` when negative. Fractions of a second are shown
  * as for {@link formatDateTime}.
  *
- * Returns `null` when `ticksPerSecond` is not a positive integer.
+ * @throws `CODAMA_ERROR__INVALID_TICKS_PER_SECOND` when `ticksPerSecond` is not a positive integer.
  *
  * @example
  * ```ts
  * formatDuration(decoded); // "01:30:00"
  * ```
  */
-export function formatDuration(decoded: DecodedDurationTypeNode): string | null {
+export function formatDuration(decoded: DecodedDurationTypeNode, _options: FormatOptions = {}): string {
     const negative = decoded.value < 0n;
-    const time = toSeconds(negative ? -decoded.value : decoded.value, getLastNodeFromPath(decoded.path).ticksPerSecond);
-    if (!time) return null;
+    const time = toSeconds(negative ? -decoded.value : decoded.value, decoded.path);
     return `${negative ? '-' : ''}${formatClock(time.seconds)}${time.fraction}`;
 }
 
@@ -192,12 +211,71 @@ export function formatDuration(decoded: DecodedDurationTypeNode): string | null 
  * formatString(decoded); // "abcd"
  * ```
  */
-export function formatString(decoded: DecodedStringTypeNode): string {
+export function formatString(decoded: DecodedStringTypeNode, _options: FormatOptions = {}): string {
     const display = getLastNodeFromPath(decoded.path).display;
     if (!display) return decoded.value;
     return Array.from(decoded.value)
         .slice(display.sliceStart ?? 0, display.sliceEnd)
         .join('');
+}
+
+/**
+ * Format a decoded boolean as `"true"` or `"false"`.
+ *
+ * @example
+ * ```ts
+ * formatBoolean(decoded); // "true"
+ * ```
+ */
+export function formatBoolean(decoded: DecodedBooleanTypeNode, _options: FormatOptions = {}): string {
+    return decoded.value ? 'true' : 'false';
+}
+
+/**
+ * Format decoded bytes as hexadecimal with a `0x` prefix, whatever the encoding they were
+ * decoded with, e.g. `["base64", "AQI="]` gives `"0x0102"`. Bytes decoded as `utf8` are
+ * re-encoded from their text, so invalid UTF-8 sequences, already replaced when decoding, are
+ * not recovered: decode bytes with another encoding to format them exactly.
+ *
+ * @example
+ * ```ts
+ * formatBytes(decoded); // "0x0102"
+ * ```
+ */
+export function formatBytes(decoded: DecodedBytesTypeNode, _options: FormatOptions = {}): string {
+    const [encoding, data] = decoded.value;
+    return `0x${getBase16Decoder().decode(getCodecFromBytesEncoding(encoding).encode(data))}`;
+}
+
+/**
+ * Format a decoded enum as the label of its variant's display node, or the identifier of its
+ * variant in title case otherwise, e.g. `"Move To"` for `moveTo`. The data of the variant, if
+ * any, is not included.
+ *
+ * @example
+ * ```ts
+ * // enumVariantTypeNode('moveTo', { display: enumVariantDisplayNode({ label: 'Move' }) })
+ * formatEnum(decoded); // "Move"
+ * ```
+ */
+export function formatEnum(decoded: DecodedEnumTypeNode, _options: FormatOptions = {}): string {
+    const variant = getLastNodeFromPath(decoded.variant.path);
+    const label = variant.display?.label;
+    return label === undefined ? titleCase(variant.identifier) : getTextNodeContent(label);
+}
+
+/**
+ * Format a decoded public key with `formatAddress`, if any, or as its address otherwise.
+ *
+ * @example
+ * ```ts
+ * formatPublicKey(decoded); // "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+ * formatPublicKey(decoded, { formatAddress: address => names.get(address) ?? address }); // "USDC"
+ * ```
+ */
+export function formatPublicKey(decoded: DecodedPublicKeyTypeNode, options: FormatOptions = {}): string {
+    const address = decoded.value as Address;
+    return options.formatAddress ? options.formatAddress(address) : address;
 }
 
 const SECONDS_PER_DAY = 86_400n;
@@ -263,14 +341,18 @@ function resolveStringInput(
 }
 
 /**
- * Split a non-negative number of ticks into whole seconds and the fraction of a second,
- * e.g. `".5"`. Ticks that are not powers of 10 of a second are rounded to the nanosecond.
+ * Split a non-negative number of ticks of a date-time or duration into whole seconds and the
+ * fraction of a second, e.g. `".5"`. Ticks that are not powers of 10 of a second are rounded to
+ * the nanosecond.
  */
 function toSeconds(
     ticks: bigint,
-    ticksPerSecond: number | undefined = 1,
-): { fraction: string; seconds: bigint } | undefined {
-    if (!Number.isSafeInteger(ticksPerSecond) || ticksPerSecond <= 0) return undefined;
+    path: NodePath<DateTimeTypeNode | DurationTypeNode>,
+): { fraction: string; seconds: bigint } {
+    const ticksPerSecond = getLastNodeFromPath(path).ticksPerSecond ?? 1;
+    if (!Number.isSafeInteger(ticksPerSecond) || ticksPerSecond <= 0) {
+        throw new CodamaError(CODAMA_ERROR__INVALID_TICKS_PER_SECOND, { path, ticksPerSecond });
+    }
     let perSecond = BigInt(ticksPerSecond);
     let digits = getPowerOfTen(perSecond);
     if (digits === undefined) {

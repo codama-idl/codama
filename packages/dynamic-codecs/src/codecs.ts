@@ -2,7 +2,6 @@ import {
     CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
-    CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
     CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
     CodamaError,
 } from '@codama/errors';
@@ -52,9 +51,7 @@ import {
     fixCodecSize,
     FixedSizeNumberCodec,
     getArrayCodec,
-    getBase16Codec,
     getBase58Codec,
-    getBase64Codec,
     getBooleanCodec,
     getConstantCodec,
     getF32Codec,
@@ -77,7 +74,6 @@ import {
     getU128Codec,
     getUnionCodec,
     getUnitCodec,
-    getUtf8Codec,
     isFixedSize,
     isOption,
     isSome,
@@ -93,6 +89,7 @@ import {
     transformCodec,
 } from '@solana/codecs';
 
+import { getCodecFromBytesEncoding } from './bytes';
 import type {
     DecodedAccountNode,
     DecodedNodeCodec,
@@ -935,23 +932,6 @@ export function getConstantValueBytes(
     valueVisitor: Visitor<unknown, ValueNode['kind']>,
 ): ReadonlyUint8Array {
     return visit(node.type, codecVisitor).encode(visit(node.value, valueVisitor));
-}
-
-function getCodecFromBytesEncoding(encoding: BytesEncoding) {
-    switch (encoding) {
-        case 'base16':
-            return getBase16Codec();
-        case 'base58':
-            return getBase58Codec();
-        case 'base64':
-            return getBase64Codec();
-        case 'utf8':
-            return getUtf8Codec();
-        default:
-            throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING, {
-                encoding: encoding satisfies never,
-            });
-    }
 }
 
 /** Integers always decode as `bigint`s, whatever their size, and encode from `number`s or `bigint`s. */

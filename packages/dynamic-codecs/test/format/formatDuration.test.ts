@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__INVALID_TICKS_PER_SECOND, CodamaError } from '@codama/errors';
 import { durationTypeNode, integerTypeNode } from '@codama/nodes';
 import { getI64Encoder } from '@solana/codecs';
 import { expect, test } from 'vitest';
@@ -35,6 +36,10 @@ test('it rounds ticks that are not powers of 10 of a second to the nanosecond', 
     expect(formatDuration(decodeDuration(5n, 3))).toBe('00:00:01.666666667');
 });
 
-test('it does not format durations whose ticks per second are not positive integers', () => {
-    expect(formatDuration(decodeDuration(1n, -1))).toBeNull();
+test('it throws when the ticks per second of a duration are not a positive integer', () => {
+    const node = durationTypeNode(integerTypeNode('i64'), { ticksPerSecond: -1 });
+    const decoded = getNodeCodec([node]).decode(getI64Encoder().encode(1n));
+    expect(() => formatDuration(decoded)).toThrow(
+        new CodamaError(CODAMA_ERROR__INVALID_TICKS_PER_SECOND, { path: [node], ticksPerSecond: -1 }),
+    );
 });
