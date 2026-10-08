@@ -32,6 +32,7 @@ import type {
     ZeroableOptionTypeNode,
 } from '@codama/nodes';
 import { assertIsNodePath, isNodePath, type NodePath } from '@codama/visitors-core';
+import type { Address } from '@solana/addresses';
 import type { Codec, Option } from '@solana/codecs';
 
 /**
@@ -146,7 +147,7 @@ export type DecodedOptionTypeNode = DecodedNodeBase<OptionTypeNode, Option<unkno
 };
 
 /** A decoded public key, e.g. `{ value: '11111111111111111111111111111111' }`. */
-export type DecodedPublicKeyTypeNode = DecodedNodeBase<PublicKeyTypeNode, string>;
+export type DecodedPublicKeyTypeNode = DecodedNodeBase<PublicKeyTypeNode, Address>;
 
 /** A decoded remainder option, e.g. `{ value: { __option: 'Some', value: 42n }, item: … }`. */
 export type DecodedRemainderOptionTypeNode = DecodedNodeBase<RemainderOptionTypeNode, Option<unknown>> & {

@@ -1,10 +1,8 @@
 import { CODAMA_ERROR__INVALID_TICKS_PER_SECOND, CodamaError } from '@codama/errors';
-import { titleCase } from '@codama/fragments/casing';
 import {
     AmountNumberDisplayNode,
     DateTimeTypeNode,
     DurationTypeNode,
-    getTextNodeContent,
     InjectableIntegerValueNode,
     InjectableStringValueNode,
     InjectedValueNode,
@@ -28,7 +26,6 @@ import {
     Signedness,
 } from '@solana/codecs';
 
-import { getCodecFromBytesEncoding } from './bytes';
 import type {
     DecodedBooleanTypeNode,
     DecodedBytesTypeNode,
@@ -41,6 +38,7 @@ import type {
     DecodedPublicKeyTypeNode,
     DecodedStringTypeNode,
 } from './decoded';
+import { getCodecFromBytesEncoding, getEnumVariantLabel } from './utils';
 
 /**
  * Options shared by the formatters of decoded nodes. Every formatter accepts them, even those
@@ -259,9 +257,7 @@ export function formatBytes(decoded: DecodedBytesTypeNode, _options: FormatOptio
  * ```
  */
 export function formatEnum(decoded: DecodedEnumTypeNode, _options: FormatOptions = {}): string {
-    const variant = getLastNodeFromPath(decoded.variant.path);
-    const label = variant.display?.label;
-    return label === undefined ? titleCase(variant.identifier) : getTextNodeContent(label);
+    return getEnumVariantLabel(decoded.variant);
 }
 
 /**
@@ -274,8 +270,7 @@ export function formatEnum(decoded: DecodedEnumTypeNode, _options: FormatOptions
  * ```
  */
 export function formatPublicKey(decoded: DecodedPublicKeyTypeNode, options: FormatOptions = {}): string {
-    const address = decoded.value as Address;
-    return options.formatAddress ? options.formatAddress(address) : address;
+    return options.formatAddress ? options.formatAddress(decoded.value) : decoded.value;
 }
 
 const SECONDS_PER_DAY = 86_400n;
