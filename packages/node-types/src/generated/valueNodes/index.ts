@@ -3,7 +3,6 @@ export * from './BooleanValueNode';
 export * from './BytesValueNode';
 export * from './ConstantValueNode';
 export * from './EnumValueNode';
-export * from './EnumValuePayload';
 export * from './FloatValueNode';
 export * from './InjectableIntegerValueNode';
 export * from './InjectableStringValueNode';

@@ -19,9 +19,6 @@ export interface InstructionStatusNode<
     // Children.
     /** Free-form prose accompanying the status — e.g. a deprecation notice with migration guidance. May span multiple lines. */
     readonly message?: TMessage;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

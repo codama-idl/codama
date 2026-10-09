@@ -34,9 +34,6 @@ export interface StructFieldTypeNode<
     readonly defaultValue?: TDefaultValue;
     /** Display metadata describing how the field is presented. */
     readonly display?: TDisplay;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

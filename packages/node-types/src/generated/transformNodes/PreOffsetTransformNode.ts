@@ -66,9 +66,6 @@ export interface PreOffsetTransformNode<
     readonly strategy: PreOffsetStrategy;
 
     // Children.
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

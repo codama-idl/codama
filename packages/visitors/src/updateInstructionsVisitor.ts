@@ -76,6 +76,7 @@ const INSTRUCTION_UPDATE_KEYS = [
     'plugins',
     'provides',
     'remainingAccounts',
+    'returnData',
     'status',
     'subInstructions',
 ];

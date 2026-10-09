@@ -15,9 +15,6 @@ export interface ConstantValueNode<
     readonly type: TType;
     /** The concrete value of the constant. */
     readonly value: TValue;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

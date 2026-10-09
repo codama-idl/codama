@@ -42,6 +42,7 @@ export function instructionNodeFromAnchorV00(
         docs: docsFromAnchor(idl.docs),
         identifier: name,
         optionalAccountStrategy: idl.legacyOptionalAccountsStrategy ? 'omitted' : 'programId',
+        returnData: idl.returns ? typeNodeFromAnchorV00(idl.returns) : undefined,
     });
 }
 

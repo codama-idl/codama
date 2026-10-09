@@ -9,9 +9,6 @@ export interface PayerValueNode<TPlugins extends Array<PluginNode> | undefined =
     readonly kind: 'payerValueNode';
 
     // Children.
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

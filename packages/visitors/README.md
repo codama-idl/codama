@@ -173,6 +173,8 @@ export type DefinedTypeHistogram = {
         inEvents: number;
         // The number of times the type is used in instruction data.
         inInstructionData: number;
+        // The number of times the type is used in instruction return data.
+        inInstructionReturnData: number;
         // The number of times the type is used in total, including default values, PDA seeds and constants.
         total: number;
     };

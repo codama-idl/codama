@@ -19,9 +19,6 @@ export interface PdaValueNode<
     readonly seeds?: TSeeds;
     /** The program ID used to derive the PDA. When omitted, the PDA’s declared program is used. */
     readonly programId?: TProgramId;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

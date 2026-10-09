@@ -744,6 +744,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...(node.status ? visit(this)(node.status) : []),
                 ...(node.accounts ?? []).flatMap(visit(this)),
                 ...(node.data ? visit(this)(node.data) : []),
+                ...(node.returnData ? visit(this)(node.returnData) : []),
                 ...(node.remainingAccounts ?? []).flatMap(visit(this)),
                 ...(node.byteDeltas ?? []).flatMap(visit(this)),
                 ...(node.discriminators ?? []).flatMap(visit(this)),

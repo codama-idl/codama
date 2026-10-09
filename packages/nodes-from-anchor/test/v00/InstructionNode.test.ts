@@ -37,6 +37,14 @@ test('it creates instruction nodes', () => {
     );
 });
 
+test('it creates instruction nodes with return data', () => {
+    // When we convert an Anchor instruction that returns data.
+    const node = instructionNodeFromAnchorV00({ accounts: [], args: [], name: 'getPrice', returns: 'u64' }, 0);
+
+    // Then we expect its return data to be converted.
+    expect(node.returnData).toStrictEqual(integerTypeNode('u64'));
+});
+
 test('it creates instruction nodes with anchor discriminators', () => {
     // When we convert an Anchor instruction with an Anchor origin.
     const node = instructionNodeFromAnchorV00(

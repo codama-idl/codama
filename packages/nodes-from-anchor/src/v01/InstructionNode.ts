@@ -10,7 +10,7 @@ import { getAnchorDiscriminatorV01 } from '../discriminators';
 import { DefinedTypeMap, docsFromAnchor, fixedSizeBytesTypeNode } from '../utils';
 import type { IdlV01Instruction } from './idl';
 import { instructionAccountNodesFromAnchorV01 } from './InstructionAccountNode';
-import { structFieldTypeNodeFromAnchorV01 } from './typeNodes';
+import { structFieldTypeNodeFromAnchorV01, typeNodeFromAnchorV01 } from './typeNodes';
 import type { GenericsV01 } from './unwrapGenerics';
 
 export function instructionNodeFromAnchorV01(
@@ -33,5 +33,6 @@ export function instructionNodeFromAnchorV01(
         docs: docsFromAnchor(idl.docs),
         identifier: idl.name,
         optionalAccountStrategy: 'programId',
+        returnData: idl.returns ? typeNodeFromAnchorV01(idl.returns, generics) : undefined,
     });
 }

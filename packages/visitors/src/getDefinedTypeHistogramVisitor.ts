@@ -20,11 +20,15 @@ export type DefinedTypeHistogram = {
         inDefinedTypes: number;
         inEvents: number;
         inInstructionData: number;
+        inInstructionReturnData: number;
         total: number;
     };
 };
 
-type LinkUsage = { direct: boolean; mode: 'account' | 'definedType' | 'event' | 'instruction' | null };
+type LinkUsage = {
+    direct: boolean;
+    mode: 'account' | 'definedType' | 'event' | 'instruction' | 'instructionReturnData' | null;
+};
 
 function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogram {
     const result: DefinedTypeHistogram = {};
@@ -39,6 +43,7 @@ function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogr
                 result[key].inDefinedTypes += histogram[key].inDefinedTypes;
                 result[key].inEvents += histogram[key].inEvents;
                 result[key].inInstructionData += histogram[key].inInstructionData;
+                result[key].inInstructionReturnData += histogram[key].inInstructionReturnData;
                 result[key].directlyAsInstructionData += histogram[key].directlyAsInstructionData;
             }
         });
@@ -54,8 +59,8 @@ function mergeHistograms(histograms: DefinedTypeHistogram[]): DefinedTypeHistogr
  *
  * Every `definedTypeLinkNode` counts towards `total`, including those in
  * default values, PDA seeds or constants. The `in*` counters only track
- * links inside an account's data, a defined type's type, an event's data or
- * an instruction's data respectively.
+ * links inside an account's data, a defined type's type, an event's data, an
+ * instruction's data or an instruction's return data respectively.
  */
 export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> {
     const stack = new NodeStack();
@@ -79,6 +84,7 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
                             inDefinedTypes: Number(mode === 'definedType'),
                             inEvents: Number(mode === 'event'),
                             inInstructionData: Number(mode === 'instruction'),
+                            inInstructionReturnData: Number(mode === 'instructionReturnData'),
                             total: 1,
                         },
                     };
@@ -91,7 +97,7 @@ export function getDefinedTypeHistogramVisitor(): Visitor<DefinedTypeHistogram> 
 /**
  * Locate a link, given its path, relative to its closest account, event,
  * defined type or instruction: whether it sits under that node's data (or
- * type) and, for instructions, whether it is used directly.
+ * type, or return data) and, for instruction data, whether it is used directly.
  */
 function getLinkUsage(path: NodePath): LinkUsage {
     const link = path[path.length - 1];
@@ -104,6 +110,7 @@ function getLinkUsage(path: NodePath): LinkUsage {
             return { direct: false, mode: child === owner.type ? 'definedType' : null };
         }
         if (isNode(owner, 'instructionNode')) {
+            if (child === owner.returnData) return { direct: false, mode: 'instructionReturnData' };
             if (child !== owner.data) return { direct: false, mode: null };
             const isData = path.length === index + 2;
             const field = path[index + 2];

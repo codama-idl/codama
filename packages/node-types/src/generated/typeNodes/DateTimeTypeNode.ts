@@ -25,9 +25,6 @@ export interface DateTimeTypeNode<
     readonly number: TNumber;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */
     readonly transforms?: TTransforms;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

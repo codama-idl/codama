@@ -20,9 +20,6 @@ export interface StringDisplayNode<TPlugins extends Array<PluginNode> | undefine
     readonly sliceEnd?: number;
 
     // Children.
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

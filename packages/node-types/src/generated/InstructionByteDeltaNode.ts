@@ -20,9 +20,6 @@ export interface InstructionByteDeltaNode<
     // Children.
     /** The source of the delta value — a literal number, the size of a linked account, or a value within the instruction data. */
     readonly value: TValue;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }
