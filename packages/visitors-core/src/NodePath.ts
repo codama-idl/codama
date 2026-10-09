@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, CodamaError } from '@codama/errors';
 import { assertIsNode, GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
 
 /**
@@ -46,6 +47,18 @@ export function findLastNodeFromPath<TKind extends NodeKind>(
 
 export function findProgramNodeFromPath(path: NodePath): ProgramNode | undefined {
     return findLastNodeFromPath(path, 'programNode');
+}
+
+/**
+ * Assert that the path contains a program node, e.g. to resolve the links of
+ * its last node, which are resolved from the closest program of their path.
+ *
+ * @throws `CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING` when it does not.
+ */
+export function assertNodePathHasProgram(path: NodePath): void {
+    if (!findProgramNodeFromPath(path)) {
+        throw new CodamaError(CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, { path });
+    }
 }
 
 export function findInstructionNodeFromPath(path: NodePath): InstructionNode | undefined {

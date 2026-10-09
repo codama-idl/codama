@@ -63,6 +63,7 @@ import {
     CODAMA_ERROR__INVALID_BRANDED_STRING,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
+    CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
     CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS,
     CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE,
     CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND,
@@ -258,6 +259,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
         fsFunction: string;
+    };
+    [CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING]: {
+        /** The path that should contain a program node, e.g. to resolve links from. */
+        path: readonly Node[];
     };
     [CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS]: {
         dependencies: readonly string[];

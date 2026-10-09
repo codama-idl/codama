@@ -7,15 +7,19 @@ export * from './extendVisitor';
 export * from './generated';
 export * from './getByteSizeVisitor';
 export * from './getDebugStringVisitor';
+export * from './getDefinedTypeLinksVisitor';
+export * from './getHasFiniteValueVisitor';
 export * from './getInstructionDataFields';
 export * from './getMaxByteSizeVisitor';
 export * from './getResolvedInstructionInputsVisitor';
 export * from './getUniqueHashStringVisitor';
+export * from './hasDefinedTypeFiniteValue';
 // Wrapper layering semantic overrides on top of the generated raw
 // `identityVisitor`; shadows the barrel re-export above.
 export { identityVisitor } from './identityVisitor';
 export * from './interceptFirstVisitVisitor';
 export * from './interceptVisitor';
+export * from './isDefinedTypeCyclic';
 export * from './LinkableDictionary';
 export * from './mapVisitor';
 export * from './NodePath';
