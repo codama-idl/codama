@@ -389,9 +389,9 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
 }>;
 
 type ValidationItem = {
+    cause?: Error;
     level: 'debug' | 'error' | 'info' | 'trace' | 'warn';
     message: string;
-    node: Node;
     path: readonly Node[];
 };
 

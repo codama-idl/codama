@@ -1,27 +1,55 @@
-import { Node } from '@codama/nodes';
-import { NodePath, NodeStack } from '@codama/visitors-core';
+import type { CodamaError } from '@codama/errors';
+import { type Node, REGISTERED_NODE_KINDS } from '@codama/nodes';
+import { assertIsNodePath, NodePath, NodeStack } from '@codama/visitors-core';
 
 export const LOG_LEVELS = ['debug', 'trace', 'info', 'warn', 'error'] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];
 
-export type ValidationItem = {
+/**
+ * A diagnostic reported when validating a Codama IDL.
+ *
+ * The `path` leads to the node the diagnostic is about, which is its last
+ * node. When the diagnostic stems from a `CodamaError` thrown while
+ * validating, e.g. a cyclic dependency between instruction inputs, that
+ * error is kept as its `cause`, so consumers can match its code and context
+ * rather than its message.
+ */
+export type ValidationItem<TNode extends Node = Node> = {
+    cause?: CodamaError;
     level: LogLevel;
     message: string;
-    node: Node;
-    path: NodePath;
+    path: NodePath<TNode>;
 };
 
-export function validationItem(
+/**
+ * Create a {@link ValidationItem}.
+ *
+ * @param level - The severity of the diagnostic.
+ * @param message - A human-readable description of the diagnostic.
+ * @param path - The path to the node the diagnostic is about, or the stack
+ * whose current path leads to it.
+ * @param cause - The `CodamaError` the diagnostic stems from, if any.
+ * @throws `CODAMA_ERROR__UNEXPECTED_NODE_KIND` when given a stack with an
+ * empty path, since a diagnostic must be about a node.
+ *
+ * @example
+ * ```ts
+ * validationItem('warn', 'Program has no version.', [root, program]);
+ * ```
+ */
+export function validationItem<TNode extends Node = Node>(
     level: LogLevel,
     message: string,
-    node: Node,
-    path: NodePath | NodeStack,
-): ValidationItem {
+    path: NodePath<TNode> | NodeStack,
+    cause?: CodamaError,
+): ValidationItem<TNode> {
+    const nodePath = Array.isArray(path) ? path : (path as NodeStack).getPath();
+    assertIsNodePath(nodePath, REGISTERED_NODE_KINDS);
     return {
+        ...(cause ? { cause } : {}),
         level,
         message,
-        node,
-        path: Array.isArray(path) ? path : (path as NodeStack).getPath(),
+        path: nodePath as NodePath<TNode>,
     };
 }
 

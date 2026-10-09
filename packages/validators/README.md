@@ -29,16 +29,32 @@ pnpm install @codama/validators
 A validation item describes a single piece of information — typically a warning or an error — about a node in the Codama IDL.
 
 ```ts
-type ValidationItem = {
+type ValidationItem<TNode extends Node = Node> = {
     // The level of importance of a validation item.
     level: 'debug' | 'trace' | 'info' | 'warn' | 'error';
     // A human-readable message describing the issue or information.
     message: string;
-    // The node that the validation item is related to.
-    node: Node;
-    // The path of nodes that led to the node above (including the node itself).
-    path: NodePath;
+    // The path of nodes leading to the node the item is about, which is its last node.
+    path: NodePath<TNode>;
+    // The error the item stems from, when it was raised while validating.
+    cause?: CodamaError;
 };
+```
+
+Items stemming from a `CodamaError`, e.g. a cyclic dependency between instruction inputs, keep it as their `cause`, so you can match its code and context rather than the message:
+
+```ts
+import {
+    CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    isCodamaError,
+} from '@codama/errors';
+
+const cycles = items.filter(item =>
+    isCodamaError(
+        item.cause,
+        CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    ),
+);
 ```
 
 ## Functions

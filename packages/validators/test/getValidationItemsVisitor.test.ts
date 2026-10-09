@@ -1,4 +1,10 @@
 import {
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    CodamaError,
+    isCodamaError,
+} from '@codama/errors';
+import {
     accountBumpValueNode,
     accountNode,
     accountValueNode,
@@ -24,10 +30,50 @@ import {
     textNode,
     tupleTypeNode,
 } from '@codama/nodes';
-import { visit } from '@codama/visitors-core';
+import { NodeStack, visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { getValidationItemsVisitor, validationItem } from '../src';
+
+test('it reports no cause for diagnostics that do not stem from errors', () => {
+    const node = tupleTypeNode([]);
+    const [item] = visit(node, getValidationItemsVisitor());
+    expect(item).toStrictEqual({ level: 'warn', message: 'Tuple has no items.', path: [node] });
+});
+
+test('it reports instruction accounts without identifiers against the account', () => {
+    // Given an instruction with an account whose identifier is empty.
+    const account = {
+        ...instructionAccountNode({ identifier: 'owner', isSigner: false, isWritable: false }),
+        identifier: '' as IdentifierString,
+    };
+    const node = { ...instructionNode({ identifier: 'transfer' }), accounts: [account] };
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the item leads to the account rather than to the instruction.
+    expect(items).toContainEqual(validationItem('error', 'Instruction account has no identifier.', [node, account]));
+});
+
+test('it accepts node stacks from other copies of the package', () => {
+    // Given a stack that is not an instance of this copy's NodeStack class.
+    const node = tupleTypeNode([]);
+    const foreignStack = { getPath: () => [node] } as unknown as NodeStack;
+
+    // Then its path is used.
+    expect(validationItem('warn', 'Tuple has no items.', foreignStack)).toStrictEqual(
+        validationItem('warn', 'Tuple has no items.', [node]),
+    );
+});
+
+test('it refuses to create validation items that are not about a node', () => {
+    expect(() => validationItem('error', 'Oops.', new NodeStack())).toThrow(
+        expect.objectContaining({
+            context: expect.objectContaining({ __code: CODAMA_ERROR__UNEXPECTED_NODE_KIND, kind: null, node: null }),
+        }),
+    );
+});
 
 test('it validates program nodes', () => {
     // Given a program node with empty strings (as a parsed, unvalidated IDL may contain).
@@ -43,9 +89,9 @@ test('it validates program nodes', () => {
 
     // Then we expect the following validation errors.
     expect(items).toEqual([
-        validationItem('error', 'Program has no identifier.', node, [node]),
-        validationItem('error', 'Program has no public key.', node, [node]),
-        validationItem('warn', 'Program has no version.', node, [node]),
+        validationItem('error', 'Program has no identifier.', [node]),
+        validationItem('error', 'Program has no public key.', [node]),
+        validationItem('warn', 'Program has no version.', [node]),
     ]);
 });
 
@@ -64,10 +110,11 @@ test('it validates nested nodes', () => {
 
     // Then we expect the following validation errors.
     expect(items).toEqual([
-        validationItem('warn', 'Tuple has no items.', tupleNode, [node, tupleNode]),
-        validationItem('error', 'Struct field identifier "owner" is not unique.', duplicateOwnerField, [
+        validationItem('warn', 'Tuple has no items.', [node, tupleNode]),
+        validationItem('error', 'Struct field identifier "owner" is not unique.', [
             node,
             structNode,
+            duplicateOwnerField,
         ]),
     ]);
 });
@@ -112,13 +159,7 @@ test('it reports a nested defined type link that points at a missing type', () =
 
     // Then the missing link is reported as an error.
     expect(items).toEqual([
-        validationItem('error', 'Pointing to a missing defined type named "missing"', link, [
-            node,
-            foo,
-            struct,
-            field,
-            link,
-        ]),
+        validationItem('error', 'Pointing to a missing defined type named "missing"', [node, foo, struct, field, link]),
     ]);
 });
 
@@ -147,8 +188,7 @@ test.each([
         validationItem(
             'error',
             `Struct field identifier "${second}" collides with "${first}" once converted to camelCase.`,
-            collidingField,
-            [node],
+            [node, collidingField],
         ),
     ]);
 });
@@ -190,8 +230,7 @@ test('it reports identifier collisions within the collections of a program', () 
         validationItem(
             'error',
             'Account identifier "Token" collides with "token" once converted to camelCase in program "test".',
-            collidingAccount,
-            [node],
+            [node, collidingAccount],
         ),
     ]);
 });
@@ -211,8 +250,7 @@ test('it reports identifier collisions between the programs of a root', () => {
         validationItem(
             'error',
             'Program identifier "splToken" collides with "spl_token" once converted to camelCase.',
-            additionalProgram,
-            [node],
+            [node, additionalProgram],
         ),
     ]);
 });
@@ -227,7 +265,7 @@ test('it reports duplicate enum variants', () => {
 
     // Then the duplicate is reported once.
     expect(items).toEqual([
-        validationItem('error', 'Enum variant identifier "quit" is not unique.', duplicateVariant, [node]),
+        validationItem('error', 'Enum variant identifier "quit" is not unique.', [node, duplicateVariant]),
     ]);
 });
 
@@ -247,12 +285,10 @@ test('it reports duplicate instruction accounts', () => {
 
     // Then the duplicate is reported within the instruction.
     expect(items).toEqual([
-        validationItem(
-            'error',
-            'Instruction account identifier "owner" is not unique in instruction "transfer".',
+        validationItem('error', 'Instruction account identifier "owner" is not unique in instruction "transfer".', [
+            node,
             duplicateAccount,
-            [node],
-        ),
+        ]),
     ]);
 });
 
@@ -279,16 +315,20 @@ test('it reports errors raised when resolving instruction default values', () =>
     // When we get the validation items using a visitor.
     const items = visit(node, getValidationItemsVisitor());
 
-    // Then the cycle is reported against the instruction.
-    expect(items).toEqual([
-        validationItem(
-            'error',
-            'Circular dependency detected when resolving the default values of the [myInstruction] instruction. ' +
-                'Got the following dependency cycle [a -> b -> a].',
-            node,
-            [node],
+    // Then the cycle is reported against the instruction, with the error it stems from as its cause.
+    const [a, b] = node.accounts!;
+    const cause = new CodamaError(
+        CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+        { cycle: [a, b, a], formattedCycle: 'a -> b -> a', instruction: node, instructionName: node.identifier },
+    );
+    expect(items).toEqual([validationItem('error', cause.message, [node], cause)]);
+    expect(
+        isCodamaError(
+            items[0].cause,
+            CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
         ),
-    ]);
+    ).toBe(true);
+    expect(items[0].cause?.context).toMatchObject({ formattedCycle: 'a -> b -> a', instructionName: 'myInstruction' });
 });
 
 test('it reports a data field defaulting to the bump of a potential signer', () => {
@@ -314,7 +354,6 @@ test('it reports a data field defaulting to the bump of a potential signer', () 
         validationItem(
             'error',
             'Data field "bump" cannot default to the bump of the "authority" account as it may be a signer.',
-            node,
             [node],
         ),
     ]);
@@ -360,7 +399,7 @@ test('it reports injected values that are neither provided nor given a fallback'
 
     // Then only the unprovided injection without a fallback is reported.
     expect(items).toEqual([
-        validationItem('error', 'Injected value "missing" is not provided and has no fallback.', unprovided, [
+        validationItem('error', 'Injected value "missing" is not provided and has no fallback.', [
             node,
             data,
             unprovidedField,
@@ -383,10 +422,7 @@ test('it reports text nodes without plugins', () => {
 
     // Then only the plugin-free text node is reported, as information.
     expect(plainItems).toEqual([
-        validationItem('info', 'Text node has no plugins; use a plain string instead.', plainText, [
-            plainStatus,
-            plainText,
-        ]),
+        validationItem('info', 'Text node has no plugins; use a plain string instead.', [plainStatus, plainText]),
     ]);
     expect(translatedItems).toEqual([]);
 });
