@@ -1,0 +1,229 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "1.3.0",
+    "program": {
+        "kind": "programNode",
+        "name": "vault",
+        "publicKey": "Vau1t11111111111111111111111111111111111111",
+        "version": "1.0.0",
+        "origin": "shank",
+        "docs": ["A vault program.", "It stores tokens."],
+        "definedTypes": [
+            {
+                "kind": "definedTypeNode",
+                "name": "price",
+                "docs": [],
+                "type": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "ratio",
+                    "program": { "kind": "programLinkNode", "name": "oracle" }
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "name": "action",
+                "docs": ["What to do."],
+                "type": {
+                    "kind": "enumTypeNode",
+                    "size": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                    "variants": [
+                        { "kind": "enumEmptyVariantTypeNode", "name": "stop" },
+                        {
+                            "kind": "enumTupleVariantTypeNode",
+                            "name": "wait",
+                            "tuple": {
+                                "kind": "tupleTypeNode",
+                                "items": [{ "kind": "numberTypeNode", "format": "u64", "endian": "le" }]
+                            }
+                        },
+                        {
+                            "kind": "enumStructVariantTypeNode",
+                            "name": "move",
+                            "struct": {
+                                "kind": "structTypeNode",
+                                "fields": [
+                                    {
+                                        "kind": "structFieldTypeNode",
+                                        "name": "x",
+                                        "docs": [],
+                                        "type": { "kind": "numberTypeNode", "format": "i32", "endian": "le" }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "name": "config",
+                "docs": [],
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "fee",
+                            "docs": ["The fee, in USD."],
+                            "type": {
+                                "kind": "amountTypeNode",
+                                "decimals": 2,
+                                "unit": "USD",
+                                "number": { "kind": "numberTypeNode", "format": "u64", "endian": "le" }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "createdAt",
+                            "docs": [],
+                            "type": {
+                                "kind": "dateTimeTypeNode",
+                                "number": { "kind": "numberTypeNode", "format": "i64", "endian": "le" }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "label",
+                            "docs": [],
+                            "type": {
+                                "kind": "fixedSizeTypeNode",
+                                "size": 32,
+                                "type": { "kind": "stringTypeNode", "encoding": "utf8" }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "price",
+                            "docs": [],
+                            "type": { "kind": "definedTypeLinkNode", "name": "price" },
+                            "defaultValue": { "kind": "numberValueNode", "number": 1 }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "next",
+                            "docs": [],
+                            "type": { "kind": "definedTypeLinkNode", "name": "action" },
+                            "defaultValue": {
+                                "kind": "enumValueNode",
+                                "enum": { "kind": "definedTypeLinkNode", "name": "action" },
+                                "variant": "wait",
+                                "value": {
+                                    "kind": "tupleValueNode",
+                                    "items": [{ "kind": "numberValueNode", "number": 3 }]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "accounts": [
+            {
+                "kind": "accountNode",
+                "name": "vaultAccount",
+                "docs": [],
+                "size": 72,
+                "pda": { "kind": "pdaLinkNode", "name": "vaultPda" },
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "discriminator",
+                            "docs": [],
+                            "type": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                            "defaultValue": { "kind": "numberValueNode", "number": 1 },
+                            "defaultValueStrategy": "omitted"
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "owner",
+                            "docs": [],
+                            "type": { "kind": "publicKeyTypeNode" }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "config",
+                            "docs": [],
+                            "type": { "kind": "definedTypeLinkNode", "name": "config" }
+                        }
+                    ]
+                },
+                "discriminators": [{ "kind": "fieldDiscriminatorNode", "name": "discriminator", "offset": 0 }]
+            }
+        ],
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "name": "vaultPda",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": { "kind": "stringTypeNode", "encoding": "utf8" },
+                        "value": { "kind": "stringValueNode", "string": "vault" }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "owner",
+                        "docs": [],
+                        "type": { "kind": "publicKeyTypeNode" }
+                    }
+                ]
+            }
+        ],
+        "errors": [
+            { "kind": "errorNode", "name": "vaultFull", "code": 6000, "message": "The vault is full", "docs": [] }
+        ],
+        "constants": [
+            {
+                "kind": "constantNode",
+                "name": "maxRatio",
+                "docs": [],
+                "type": { "kind": "definedTypeLinkNode", "name": "price" },
+                "value": { "kind": "numberValueNode", "number": 2 }
+            }
+        ],
+        "events": [
+            {
+                "kind": "eventNode",
+                "name": "deposited",
+                "docs": [],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "amount",
+                            "docs": [],
+                            "type": { "kind": "numberTypeNode", "format": "u64", "endian": "le" }
+                        }
+                    ]
+                }
+            }
+        ],
+        "instructions": []
+    },
+    "additionalPrograms": [
+        {
+            "kind": "programNode",
+            "name": "oracle",
+            "publicKey": "Orac1e1111111111111111111111111111111111111",
+            "version": "0.1.0",
+            "docs": [],
+            "definedTypes": [
+                {
+                    "kind": "definedTypeNode",
+                    "name": "ratio",
+                    "docs": [],
+                    "type": { "kind": "numberTypeNode", "format": "f64", "endian": "le" }
+                }
+            ],
+            "accounts": [],
+            "pdas": [],
+            "errors": [],
+            "instructions": []
+        }
+    ]
+}

@@ -26,6 +26,12 @@ module.exports = oxlint.defineConfig({
             files: ['packages/cli/**', 'packages/node-types/**', 'packages/nodes/**'],
             rules: { 'sort-keys': 'off' },
         },
+        // The upgrade converters build node structures deliberately in spec attribute order,
+        // so upgraded IDLs serialise like natively written ones.
+        {
+            files: ['packages/upgrade/src/v1ToV2/**'],
+            rules: { 'sort-keys': 'off' },
+        },
         // Generated output is deliberately ordered and machine-written.
         {
             files: ['**/generated/**'],

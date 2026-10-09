@@ -1,0 +1,372 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "1.9.0",
+    "program": {
+        "kind": "programNode",
+        "name": "showcase",
+        "publicKey": "Show111111111111111111111111111111111111111",
+        "version": "1.0.0",
+        "docs": [],
+        "definedTypes": [
+            {
+                "kind": "definedTypeNode",
+                "name": "collections",
+                "docs": [],
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "scores",
+                            "docs": [],
+                            "type": {
+                                "kind": "arrayTypeNode",
+                                "item": { "kind": "numberTypeNode", "format": "u16", "endian": "le" },
+                                "count": { "kind": "fixedCountNode", "value": 2 }
+                            },
+                            "defaultValue": {
+                                "kind": "arrayValueNode",
+                                "items": [
+                                    { "kind": "numberValueNode", "number": 1 },
+                                    { "kind": "numberValueNode", "number": 2 }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "tags",
+                            "docs": [],
+                            "type": {
+                                "kind": "setTypeNode",
+                                "item": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                                "count": {
+                                    "kind": "prefixedCountNode",
+                                    "prefix": { "kind": "numberTypeNode", "format": "u32", "endian": "le" }
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "setValueNode",
+                                "items": [{ "kind": "numberValueNode", "number": 7 }]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "weights",
+                            "docs": [],
+                            "type": {
+                                "kind": "mapTypeNode",
+                                "key": { "kind": "stringTypeNode", "encoding": "utf8" },
+                                "value": { "kind": "numberTypeNode", "format": "f32", "endian": "le" },
+                                "count": { "kind": "remainderCountNode" }
+                            },
+                            "defaultValue": {
+                                "kind": "mapValueNode",
+                                "entries": [
+                                    {
+                                        "kind": "mapEntryValueNode",
+                                        "key": { "kind": "stringValueNode", "string": "base" },
+                                        "value": { "kind": "numberValueNode", "number": 1 }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "salt",
+                            "docs": [],
+                            "type": { "kind": "bytesTypeNode" },
+                            "defaultValue": { "kind": "bytesValueNode", "data": "0102", "encoding": "base16" }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "enabled",
+                            "docs": [],
+                            "type": {
+                                "kind": "booleanTypeNode",
+                                "size": { "kind": "numberTypeNode", "format": "u8", "endian": "le" }
+                            },
+                            "defaultValue": { "kind": "booleanValueNode", "boolean": true }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "name": "options",
+                "docs": [],
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "delegate",
+                            "docs": [],
+                            "type": {
+                                "kind": "optionTypeNode",
+                                "fixed": true,
+                                "item": { "kind": "publicKeyTypeNode" },
+                                "prefix": { "kind": "numberTypeNode", "format": "u8", "endian": "le" }
+                            },
+                            "defaultValue": {
+                                "kind": "someValueNode",
+                                "value": {
+                                    "kind": "publicKeyValueNode",
+                                    "publicKey": "11111111111111111111111111111111",
+                                    "identifier": "systemProgram"
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "limit",
+                            "docs": [],
+                            "type": {
+                                "kind": "remainderOptionTypeNode",
+                                "item": { "kind": "numberTypeNode", "format": "u64", "endian": "le" }
+                            },
+                            "defaultValue": { "kind": "noneValueNode" }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "authority",
+                            "docs": [],
+                            "type": {
+                                "kind": "zeroableOptionTypeNode",
+                                "item": { "kind": "publicKeyTypeNode" },
+                                "zeroValue": {
+                                    "kind": "constantValueNode",
+                                    "type": { "kind": "publicKeyTypeNode" },
+                                    "value": {
+                                        "kind": "publicKeyValueNode",
+                                        "publicKey": "11111111111111111111111111111111"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "settings",
+                            "docs": [],
+                            "type": { "kind": "definedTypeLinkNode", "name": "collections" },
+                            "defaultValue": {
+                                "kind": "structValueNode",
+                                "fields": [
+                                    {
+                                        "kind": "structFieldValueNode",
+                                        "name": "enabled",
+                                        "value": { "kind": "booleanValueNode", "boolean": false }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "name": "wrapped",
+                "docs": [],
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "name",
+                            "docs": [],
+                            "type": {
+                                "kind": "sizePrefixTypeNode",
+                                "prefix": { "kind": "numberTypeNode", "format": "u32", "endian": "le" },
+                                "type": {
+                                    "kind": "stringTypeNode",
+                                    "encoding": "utf8",
+                                    "display": { "kind": "stringDisplayNode", "sliceStart": 0, "sliceEnd": 8 }
+                                }
+                            },
+                            "display": { "kind": "structFieldDisplayNode", "label": "Name", "skip": "never" }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "framed",
+                            "docs": [],
+                            "type": {
+                                "kind": "hiddenPrefixTypeNode",
+                                "prefix": [
+                                    {
+                                        "kind": "constantValueNode",
+                                        "type": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                                        "value": { "kind": "numberValueNode", "number": 255 }
+                                    }
+                                ],
+                                "type": {
+                                    "kind": "hiddenSuffixTypeNode",
+                                    "suffix": [
+                                        {
+                                            "kind": "constantValueNode",
+                                            "type": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                                            "value": { "kind": "numberValueNode", "number": 0 }
+                                        }
+                                    ],
+                                    "type": { "kind": "numberTypeNode", "format": "u32", "endian": "le" }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "padded",
+                            "docs": [],
+                            "type": {
+                                "kind": "preOffsetTypeNode",
+                                "offset": 2,
+                                "strategy": "padded",
+                                "type": {
+                                    "kind": "postOffsetTypeNode",
+                                    "offset": 4,
+                                    "strategy": "relative",
+                                    "type": { "kind": "numberTypeNode", "format": "u16", "endian": "be" }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "terminated",
+                            "docs": [],
+                            "type": {
+                                "kind": "sentinelTypeNode",
+                                "sentinel": {
+                                    "kind": "constantValueNode",
+                                    "type": { "kind": "stringTypeNode", "encoding": "utf8" },
+                                    "value": { "kind": "stringValueNode", "string": "\u0000" }
+                                },
+                                "type": { "kind": "stringTypeNode", "encoding": "utf8" }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "name": "numbers",
+                "docs": [],
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "balance",
+                            "docs": [],
+                            "type": {
+                                "kind": "numberTypeNode",
+                                "format": "u64",
+                                "endian": "le",
+                                "display": {
+                                    "kind": "amountNumberDisplayNode",
+                                    "decimals": { "kind": "numberValueNode", "number": 9 },
+                                    "unit": { "kind": "stringValueNode", "string": "SOL" }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "items",
+                            "docs": [],
+                            "type": {
+                                "kind": "numberTypeNode",
+                                "format": "u32",
+                                "endian": "le",
+                                "display": {
+                                    "kind": "amountNumberDisplayNode",
+                                    "unit": { "kind": "stringValueNode", "string": "items" }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "lockup",
+                            "docs": [],
+                            "type": {
+                                "kind": "numberTypeNode",
+                                "format": "i64",
+                                "endian": "le",
+                                "display": { "kind": "durationNumberDisplayNode", "ticksPerSecond": 1000 }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "name": "signal",
+                "docs": [],
+                "type": {
+                    "kind": "enumTypeNode",
+                    "size": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+                    "variants": [
+                        {
+                            "kind": "enumEmptyVariantTypeNode",
+                            "name": "off",
+                            "display": { "kind": "enumVariantDisplayNode", "label": "Off" }
+                        },
+                        { "kind": "enumEmptyVariantTypeNode", "name": "on", "discriminator": 5 }
+                    ]
+                }
+            }
+        ],
+        "accounts": [
+            {
+                "kind": "accountNode",
+                "name": "marker",
+                "docs": [],
+                "size": 1,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "flag",
+                            "docs": [],
+                            "type": { "kind": "numberTypeNode", "format": "u8", "endian": "le" }
+                        }
+                    ]
+                },
+                "discriminators": [{ "kind": "sizeDiscriminatorNode", "size": 1 }]
+            }
+        ],
+        "pdas": [],
+        "errors": [],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "name": "ping",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "status": { "kind": "instructionStatusNode", "lifecycle": "deprecated", "message": "Use `pong`." },
+                "display": { "kind": "instructionDisplayNode", "intent": "Pings the program" },
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "program",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": { "kind": "programIdValueNode" },
+                        "display": { "kind": "instructionAccountDisplayNode", "label": "Program" }
+                    }
+                ],
+                "arguments": [],
+                "discriminators": [
+                    {
+                        "kind": "constantDiscriminatorNode",
+                        "offset": 0,
+                        "constant": {
+                            "kind": "constantValueNode",
+                            "type": { "kind": "bytesTypeNode" },
+                            "value": { "kind": "bytesValueNode", "data": "ff", "encoding": "base16" }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

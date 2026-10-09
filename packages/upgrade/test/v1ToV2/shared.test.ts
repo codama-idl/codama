@@ -7,7 +7,10 @@ import {
     decimalStringFromV1,
     definedTypeNodeFromV1,
     docsFromV1,
+    identifierFromV1,
     integerStringFromV1,
+    namespaceFromV1,
+    pathFromV1,
     pluginNodeFromV1,
 } from '../../src/v1ToV2';
 
@@ -112,6 +115,54 @@ function getUnfrozenPaths(value: unknown, path = 'root'): string[] {
     const children = Object.entries(value).flatMap(([key, child]) => getUnfrozenPaths(child, `${path}.${key}`));
     return [...own, ...children];
 }
+
+describe('identifierFromV1', () => {
+    test('it carries v1 names over as v2 identifiers', () => {
+        expect(identifierFromV1('transferTokens')).toBe('transferTokens');
+    });
+
+    test('it replaces the dashes of hand-written v1 names with underscores', () => {
+        expect(identifierFromV1('token-2022')).toBe('token_2022');
+    });
+
+    test('it throws on other invalid v1 names', () => {
+        expect(() => identifierFromV1('2fast')).toThrow(
+            new CodamaError(CODAMA_ERROR__INVALID_BRANDED_STRING, {
+                actual: '2fast',
+                expected: 'identifier (letters, digits and underscores; no leading digit)',
+            }),
+        );
+        expect(() => identifierFromV1('my token')).toThrow(
+            expect.objectContaining({ context: expect.objectContaining({ actual: 'my token' }) }),
+        );
+    });
+});
+
+describe('pathFromV1', () => {
+    test('it carries v1 names over as single-segment v2 paths', () => {
+        expect(pathFromV1('amount')).toBe('amount');
+        expect(pathFromV1('fee-rate')).toBe('fee_rate');
+        expect(() => pathFromV1('fees.0')).toThrow(
+            new CodamaError(CODAMA_ERROR__INVALID_BRANDED_STRING, {
+                actual: 'fees.0',
+                expected: 'path (e.g. "data.amount" or "[0].field")',
+            }),
+        );
+    });
+});
+
+describe('namespaceFromV1', () => {
+    test('it carries v1 plugin names over as v2 namespaces', () => {
+        expect(namespaceFromV1('explorerHints')).toBe('explorerHints');
+        expect(namespaceFromV1('explorer-hints')).toBe('explorer_hints');
+        expect(() => namespaceFromV1('explorer hints')).toThrow(
+            new CodamaError(CODAMA_ERROR__INVALID_BRANDED_STRING, {
+                actual: 'explorer hints',
+                expected: 'namespace (dot-separated identifiers)',
+            }),
+        );
+    });
+});
 
 describe('docsFromV1', () => {
     test('it joins lines with line breaks', () => {

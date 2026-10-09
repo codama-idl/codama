@@ -59,6 +59,33 @@ This function returns a visitor that upgrades the visited IDL, designed as a pre
 
 The explicit `"@codama/upgrade#upgradeToLatestVisitor"` form is equivalent.
 
+### `upgradeV1ToV2(rootNode)`
+
+Each step of the upgrade chain is also exported on its own, for tools that only need to go from one major to the next. Importing a single step only bundles that step. The result is stamped with the latest version of the major it produces.
+
+```ts
+import { upgradeV1ToV2 } from '@codama/upgrade';
+
+const v2Root = upgradeV1ToV2(v1Root);
+```
+
+## Upgrading from v1
+
+Most v1 nodes have a direct v2 counterpart. Information that v2 can no longer express in the IDL itself moves into the official `codama.*` plugins, so renderers can still act on it:
+
+| v1                                                                              | v2                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Instruction `arguments`                                                         | The fields of a struct `data`                                                                                                                                                                    |
+| A contextual argument default, e.g. `accountBumpValueNode('vault')`             | An `injectedValueNode` keyed by the argument, provided by the instruction's `provides`                                                                                                           |
+| `argumentValueNode('amount')` / `accountFieldValueNode('mint', 'authority')`    | `dataValueNode('amount')` / `accountDataValueNode('mint', { path: 'authority' })`                                                                                                                |
+| `extraArguments`                                                                | `codama.extraArgument` plugins on the instruction. A default v2 cannot express is resolved by a `codama.resolver` plugin nested in the extra argument plugin, which keeps the default's strategy |
+| A `resolverValueNode` default                                                   | No default, and a `codama.resolver` plugin with the resolver's name and dependencies                                                                                                             |
+| A default relying on a resolver or an extra argument, e.g. a resolved condition | No default, and a new `codama.resolver` plugin, e.g. `resolveBurnEdition`, resolving the whole default. Its dependencies include the seeds a PDA default omits                                   |
+| Remaining accounts given as `argumentValueNode('signers')` or by a resolver     | Remaining accounts identified as `signers`, or as `remainingAccounts` (or the first free `remainingAccountsN`) with a `codama.resolver` plugin                                                   |
+| A byte delta given by a resolver                                                | A zero byte delta with a `codama.resolver` plugin                                                                                                                                                |
+
+Names keep their v1 spelling, except for dashes in hand-written names, which become underscores, e.g. `token-2022` becomes `token_2022`, including where plugins reference them, such as resolver dependencies. Any other name that is not a valid v2 identifier throws a `CODAMA_ERROR__INVALID_BRANDED_STRING` error. Tuple variants holding a single item stay tuples, so generated APIs are unchanged.
+
 ## How it works
 
 The package maintains an append-only chain of pure, hand-written functions, each upgrading exactly one major to the next. Upgrading detects the IDL's source major from its `version` attribute, runs every function from that major up to the latest, and restamps the result — so supporting a new major only ever requires one new function, and every older version reaches the latest for free, forever.

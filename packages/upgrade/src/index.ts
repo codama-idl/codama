@@ -9,6 +9,7 @@
 export * from './upgrade';
 export * from './upgradeFromJson';
 export * from './upgradeToLatestVisitor';
+export { upgradeV1ToV2 } from './v1ToV2/rootNodes';
 export { upgradeToLatestVisitor as default } from './upgradeToLatestVisitor';
 
 export type * as v1 from './v1';

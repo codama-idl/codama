@@ -1,7 +1,7 @@
 import type * as v1 from '../v1';
 import type * as v2 from '../v2';
 import { getLastV1NodeFromPath, V1NodePath } from './paths';
-import { compactAndFreeze, integerStringFromV1 } from './shared';
+import { compactAndFreeze, identifierFromV1, integerStringFromV1 } from './shared';
 import { valueNodeFromV1 } from './valueNodes';
 
 /** v1 display nodes whose shape is unchanged in v2. */
@@ -13,14 +13,40 @@ type V1UnchangedDisplayNode =
     | v1.StructFieldDisplayNode;
 
 /**
- * Convert a v1 display node whose shape is unchanged in v2. Number displays
- * are converted alongside their number, since date-times and durations moved
- * to the type layer.
+ * Convert a v1 display node whose shape is unchanged in v2, in the attribute
+ * order of v2. Number displays are converted alongside their number, since
+ * date-times and durations moved to the type layer.
  */
 export function displayNodeFromV1<T extends V1UnchangedDisplayNode>(
     display: T,
 ): Extract<v2.RegisteredDisplayNode, { kind: T['kind'] }> {
-    return compactAndFreeze({ ...display }) as unknown as Extract<v2.RegisteredDisplayNode, { kind: T['kind'] }>;
+    const node: V1UnchangedDisplayNode = display;
+    return displayNodeInV2OrderFromV1(node) as Extract<v2.RegisteredDisplayNode, { kind: T['kind'] }>;
+}
+
+function displayNodeInV2OrderFromV1(display: V1UnchangedDisplayNode): v2.RegisteredDisplayNode {
+    switch (display.kind) {
+        case 'enumVariantDisplayNode':
+            return compactAndFreeze({ kind: display.kind, skipInnerData: display.skipInnerData, label: display.label });
+        case 'instructionAccountDisplayNode':
+            return compactAndFreeze({ kind: display.kind, skip: display.skip, label: display.label });
+        case 'instructionDisplayNode':
+            return compactAndFreeze({
+                kind: display.kind,
+                intent: display.intent,
+                interpolatedIntent: display.interpolatedIntent,
+            });
+        case 'stringDisplayNode':
+            return compactAndFreeze({ kind: display.kind, sliceStart: display.sliceStart, sliceEnd: display.sliceEnd });
+        case 'structFieldDisplayNode':
+            return compactAndFreeze({
+                kind: display.kind,
+                skip: display.skip,
+                flatten: display.flatten,
+                label: display.label,
+                flattenPrefix: display.flattenPrefix,
+            });
+    }
 }
 
 export function injectableIntegerValueNodeFromV1(
@@ -31,9 +57,9 @@ export function injectableIntegerValueNodeFromV1(
         return compactAndFreeze({ kind: 'integerValueNode', value: integerStringFromV1(value.number) });
     }
     return compactAndFreeze({
-        fallback: value.fallback ? valueNodeFromV1([...path, value.fallback], [...path, INTEGER_HINT]) : undefined,
-        key: value.key as string as v2.IdentifierString,
         kind: 'injectedValueNode',
+        key: identifierFromV1(value.key),
+        fallback: value.fallback ? valueNodeFromV1([...path, value.fallback], [...path, INTEGER_HINT]) : undefined,
     });
 }
 
@@ -43,9 +69,9 @@ export function injectableStringValueNodeFromV1(
     const value = getLastV1NodeFromPath(path);
     if (value.kind === 'stringValueNode') return compactAndFreeze({ kind: 'stringValueNode', string: value.string });
     return compactAndFreeze({
-        fallback: value.fallback ? valueNodeFromV1([...path, value.fallback], undefined) : undefined,
-        key: value.key as string as v2.IdentifierString,
         kind: 'injectedValueNode',
+        key: identifierFromV1(value.key),
+        fallback: value.fallback ? valueNodeFromV1([...path, value.fallback], undefined) : undefined,
     });
 }
 
