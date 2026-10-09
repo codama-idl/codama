@@ -139,7 +139,7 @@ export type EncodableNodes =
 
 /** Options shared by {@link getNodeCodec}, {@link getNodeValueCodec} and their visitors. */
 export type CodecVisitorOptions = {
-    /** The encoding used to decode plain bytes, e.g. `["base64", "SGVsbG8="]`. Defaults to `base64`. */
+    /** The encoding of decoded plain bytes, e.g. `'base16'` decodes them as `["base16", "0102"]`. Defaults to `base64`. */
     bytesEncoding?: BytesEncoding;
 };
 
