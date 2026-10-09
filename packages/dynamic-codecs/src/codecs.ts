@@ -1,4 +1,5 @@
 import {
+    CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
     CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
@@ -27,6 +28,7 @@ import {
 import {
     getLastNodeFromPath,
     getRecordLinkablesVisitor,
+    hasDefinedTypeFiniteValue,
     interceptVisitor,
     LinkableDictionary,
     NodePath,
@@ -83,6 +85,7 @@ import {
     transformCodec,
 } from '@solana/codecs';
 
+import { getLazyCodec } from './lazy';
 import {
     assertUniqueItems,
     assertValueType,
@@ -206,6 +209,33 @@ export function getNodeValueCodecVisitor(
         });
         let resolved: { value: unknown } | undefined;
         return () => (resolved ??= { value: visit(defaultValue, defaultValueVisitor) }).value;
+    };
+
+    // The codecs of the defined types being created, so a link back to one of them gets a lazy
+    // codec deferring to it rather than creating it again forever, e.g. for linked lists.
+    const definedTypesInProgress = new Map<DefinedTypeNode, { codec?: Codec<unknown> }>();
+    // The recursive types known to have a finite value, so each is only checked once.
+    const finiteDefinedTypes = new Set<DefinedTypeNode>();
+    const getRecursiveCodec = (path: NodePath<DefinedTypeNode>, inProgress: { codec?: Codec<unknown> }) => {
+        // A type without a finite value would make its lazy codec recurse forever.
+        const definedType = getLastNodeFromPath(path);
+        if (!finiteDefinedTypes.has(definedType)) {
+            if (!hasDefinedTypeFiniteValue(path, linkables)) {
+                throw new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
+                    name: definedType.identifier,
+                    path,
+                });
+            }
+            finiteDefinedTypes.add(definedType);
+        }
+        return getLazyCodec(() => {
+            if (inProgress.codec) return inProgress.codec;
+            // Only reachable when creating the type requires encoding a value of itself, e.g. a
+            // constant typed by a link back to it, nested where the finite value check does not look.
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION, {
+                message: `The codec of defined type [${getLastNodeFromPath(path).identifier}] was used while being created`,
+            });
+        });
     };
 
     const visitLinkedNode = <TLinkNode extends AccountLinkNode | DefinedTypeLinkNode | InstructionLinkNode>(
@@ -335,10 +365,21 @@ export function getNodeValueCodecVisitor(
             return visit(node.number, this);
         },
         visitDefinedType(node) {
-            return visit(node.type, this);
+            const inProgress: { codec?: Codec<unknown> } = {};
+            definedTypesInProgress.set(node, inProgress);
+            try {
+                const codec = visit(node.type, this);
+                inProgress.codec = codec;
+                return codec;
+            } finally {
+                definedTypesInProgress.delete(node);
+            }
         },
         visitDefinedTypeLink(node) {
-            return visitLinkedNode(node);
+            const path = linkables.getPathOrThrow(stack.getPath(node.kind));
+            const inProgress = definedTypesInProgress.get(getLastNodeFromPath(path));
+            if (inProgress) return getRecursiveCodec(path, inProgress);
+            return stack.visitPath(path, visitor);
         },
         visitDurationType(node) {
             return visit(node.number, this);

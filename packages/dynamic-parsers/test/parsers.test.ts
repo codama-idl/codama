@@ -4,6 +4,8 @@ import {
     constantDiscriminatorNode,
     constantValueNode,
     constantValueNodeFromBytes,
+    definedTypeLinkNode,
+    definedTypeNode,
     eventNode,
     fieldDiscriminatorNode,
     fixedSizeTransformNode,
@@ -13,6 +15,7 @@ import {
     instructionRemainingAccountsNode,
     integerTypeNode,
     integerValueNode,
+    optionTypeNode,
     programNode,
     rootNode,
     sizePrefixTransformNode,
@@ -80,6 +83,36 @@ describe('parseAccountData', () => {
         // Then we expect the single account to be decoded via the fallback.
         expect(result).toStrictEqual({
             data: { value: 42n },
+            path: [root, root.program, account],
+        });
+    });
+
+    test('it parses account data of recursive types', () => {
+        // Given an account holding a linked list.
+        const list = definedTypeNode({
+            identifier: 'list',
+            type: structTypeNode([
+                structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') }),
+                structFieldTypeNode({
+                    identifier: 'next',
+                    type: optionTypeNode(definedTypeLinkNode('list'), { prefix: integerTypeNode('u8') }),
+                }),
+            ]),
+        });
+        const account = accountNode({ data: definedTypeLinkNode('list'), identifier: 'myAccount' });
+        const root = rootNode(
+            programNode({ accounts: [account], definedTypes: [list], identifier: 'myProgram', publicKey: '1111' }),
+        );
+
+        // When we parse its data.
+        const result = parseAccountData(root, hex('01010200'));
+
+        // Then we get the whole list.
+        expect(result).toStrictEqual({
+            data: {
+                next: { __option: 'Some', value: { next: { __option: 'None' }, value: 2n } },
+                value: 1n,
+            },
             path: [root, root.program, account],
         });
     });

@@ -185,6 +185,19 @@ codec.encode([42, 99]); // 0x2a006300ffff
 codec.decode(hex('2a006300ffff')); // [42n, 99n]
 ```
 
+### Recursive types
+
+Defined types may link back to themselves, directly or through other defined types, e.g. linked lists or trees. Their values nest as deep as the data goes.
+
+```ts
+// list = struct { value: u8, next: option<link(list)> }
+const codec = getNodeValueCodec([root, program, list]);
+
+codec.encode({ next: { __option: 'Some', value: { next: null, value: 2 } }, value: 1 }); // 0x01010200
+```
+
+A link back to its own type always has a variable size, so it cannot be the item of a fixed option or a zeroable option. Creating the codec of a type whose every value would nest another one, e.g. `loop = struct { next: link(loop) }`, throws a `CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE` error naming that type, since such a codec could never encode or decode anything.
+
 ## Visitors
 
 ### `getNodeValueCodecVisitor(linkables, options?)`
