@@ -1,8 +1,11 @@
-import { isCodamaError } from '@codama/errors';
+import { CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, CodamaError, isCodamaError } from '@codama/errors';
 import { isNode, REGISTERED_NODE_KINDS } from '@codama/nodes';
 import {
     extendVisitor,
+    findProgramNodeFromPath,
     getResolvedInstructionInputsVisitor,
+    hasDefinedTypeFiniteValue,
+    isDefinedTypeCyclic,
     LinkableDictionary,
     mergeVisitor,
     NodeStack,
@@ -43,6 +46,24 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
                         items.push(validationItem('error', 'Defined type has no identifier.', stack));
+                    }
+
+                    // A cyclic type whose every value nests another one cannot be encoded or decoded. The
+                    // cyclic check matches the codecs, which only throw for links back to their own type:
+                    // an enum without variants alone is reported by its own warning. Links can only be
+                    // resolved within a program, so types outside one are skipped.
+                    const path = stack.getPath('definedTypeNode');
+                    if (
+                        findProgramNodeFromPath(path) &&
+                        isDefinedTypeCyclic(path, linkables) &&
+                        !hasDefinedTypeFiniteValue(path, linkables)
+                    ) {
+                        // Keep the error creating its codec would throw, so both report it the same way.
+                        const cause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
+                            name: node.identifier,
+                            path,
+                        });
+                        items.push(validationItem('error', cause.message, stack, cause));
                     }
                     return [...items, ...next(node)];
                 },
