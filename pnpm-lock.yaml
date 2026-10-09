@@ -371,6 +371,9 @@ importers:
       '@codama/node-types':
         specifier: workspace:*
         version: link:../node-types
+      '@codama/node-types-v1':
+        specifier: npm:@codama/node-types@1.11.0
+        version: '@codama/node-types@1.11.0'
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -509,6 +512,9 @@ packages:
   '@clack/prompts@1.7.0':
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
+
+  '@codama/node-types@1.11.0':
+    resolution: {integrity: sha512-QfTvw+q8TLHHHAKvmbhklYTcb5dnO8PO8I4HaON5j/nWSM999r46nTOSyOx8yQ5kPN/mBJy3lpU93cvVrDrmNg==}
 
   '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/1c42099ad47946663c997cb77a0b96db8ebacd96':
     resolution: {tarball: https://codeload.github.com/codama-idl/release-tools/tar.gz/1c42099ad47946663c997cb77a0b96db8ebacd96}
@@ -3409,6 +3415,8 @@ snapshots:
       fast-string-width: 3.0.2
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
+
+  '@codama/node-types@1.11.0': {}
 
   '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/1c42099ad47946663c997cb77a0b96db8ebacd96': {}
 
