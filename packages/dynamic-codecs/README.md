@@ -70,6 +70,43 @@ if (isDecodedNode(amount, 'structTypeNode')) {
 }
 ```
 
+## Formatting
+
+Decoded nodes carry the nodes that decoded them, so their values can be formatted for humans using the presentation metadata of those nodes: units, display nodes, scales and ticks. Each formatter takes the decoded node of its kind.
+
+| Formatter          | Decoded node                | Example                         |
+| ------------------ | --------------------------- | ------------------------------- |
+| `formatInteger`    | `DecodedIntegerTypeNode`    | `"1.5 USDC"`, `"42 slots"`      |
+| `formatFloat`      | `DecodedFloatTypeNode`      | `"1.5 USD"`                     |
+| `formatFixedPoint` | `DecodedFixedPointTypeNode` | `"123.45%"`                     |
+| `formatDateTime`   | `DecodedDateTimeTypeNode`   | `"2024-01-01T00:00:00.5Z"`      |
+| `formatDuration`   | `DecodedDurationTypeNode`   | `"49:00:00"`, `"-00:00:01.5"`   |
+| `formatString`     | `DecodedStringTypeNode`     | `"abcd"`, sliced by its display |
+
+```ts
+import { formatInteger, getNodeCodec, isDecodedNode } from '@codama/dynamic-codecs';
+
+// amount: u64 with amountNumberDisplayNode({ decimals: integerValueNode('6'), unit: stringValueNode('USDC') })
+const decoded = getNodeCodec([root, program, amountType]).decode(bytes);
+if (isDecodedNode(decoded.type, 'integerTypeNode')) {
+    formatInteger(decoded.type); // "1.5 USDC"
+}
+```
+
+Numbers are formatted exactly, including 128-bit integers and binary fixed points, using the fixed points of `@solana/codecs`. String slices count Unicode code points, so they never split a character such as an emoji. Date-times are exact ISO 8601 UTC strings for any year.
+
+- **Units:** the unit of a display node wins over the unit of a type, which is the fallback whenever the former is absent or cannot be resolved. Units follow their value after a space, except `%`, `‰` and `°`.
+- **Amounts:** when the `decimals` of an `amountNumberDisplayNode` cannot be resolved, `formatInteger` returns `null` rather than a wrongly scaled amount, so you can present the raw value instead.
+- **Ticks:** `formatDateTime` and `formatDuration` return `null` when `ticksPerSecond` is not a positive integer.
+
+`formatInteger`, `formatFloat` and `formatFixedPoint` accept options:
+
+| Name                   | Type                                             | Description                                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `formatUnit`           | `(value: string, unit: string) => string`        | Place a unit next to a value, e.g. `` (value, unit) => `${unit} ${value}` `` for `"USD 40.5"`. Defaults to `formatUnit`, also exported.                                      |
+| `numberFormat`         | `Intl.NumberFormat`                              | Format numbers for a locale, e.g. `"1,234,567.89"`. Its options decide the digits shown. Amounts and fixed points are given to it exactly, never through a JavaScript float. |
+| `resolveInjectedValue` | `(path: NodePath<InjectedValueNode>) => unknown` | Resolve injected values of display nodes, e.g. `decimals` provided by an instruction, from their path through the decoded node. `undefined` means unresolved.                |
+
 ## Node paths
 
 The full path is needed to resolve link nodes, which may point to other programs, and injected values, which are provided by the enclosing instructions.
