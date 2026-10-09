@@ -31,6 +31,45 @@ const counter = codec.decode(bytes);
 // ^ { authority: '9BbWp6tcX9MEGSUEpNXfspYxYsWCxE9FgRkAc3RpftkT', count: 42n }
 ```
 
+## Decoded nodes
+
+`getNodeCodec` returns a codec that decodes into a `DecodedNode` rather than a plain value. A decoded node keeps the `path` of the node that decoded it, from the root, its `value` in the format of `getNodeValueCodec`, the absolute cursor positions before and after reading it (`preOffset` and `postOffset`, transforms included, in the vocabulary of Kit's offset codecs) and the decoded nodes of its children, named after the attributes of their node, e.g. the `fields` of a struct. It encodes from `{ value }`.
+
+```ts
+import { assertIsDecodedNode, getNodeCodec } from '@codama/dynamic-codecs';
+
+// counter = struct { authority: publicKey, count: u64 }
+const decoded = getNodeCodec([root, program, counterAccount]).decode(bytes);
+decoded.value; // { authority: '9BbW…ftkT', count: 42n }
+assertIsDecodedNode(decoded.data, 'structTypeNode');
+decoded.data.fields[1].type; // { path: [root, program, counterAccount, struct, countField, u64], value: 42n, preOffset: 32, postOffset: 40 }
+```
+
+| Node                                                                  | Children                           |
+| --------------------------------------------------------------------- | ---------------------------------- |
+| `AccountNode`, `EventNode`                                            | `data`                             |
+| `InstructionNode`                                                     | `data` (absent without data)       |
+| `DefinedTypeNode`, `StructFieldTypeNode`                              | `type`                             |
+| `StructTypeNode`                                                      | `fields`                           |
+| `EnumTypeNode`                                                        | `variant`, the decoded variant     |
+| `EnumVariantTypeNode`                                                 | `data` (absent without data)       |
+| `OptionTypeNode`, `RemainderOptionTypeNode`, `ZeroableOptionTypeNode` | `item` (absent when `None`)        |
+| `ArrayTypeNode`, `SetTypeNode`, `TupleTypeNode`                       | `items`                            |
+| `MapTypeNode`                                                         | `entries`, as `[key, value]` pairs |
+
+Other type nodes, such as integers, fixed points or strings, have no children: their node, available via `getLastNodeFromPath(decoded.path)`, tells how to read their value.
+
+Links are transparent: they decode as the node they link to, so the path of a linked type goes through its definition, e.g. `[root, program, definedType, enumTypeNode]`. The transforms of a link, e.g. a size prefix, are included in the cursor positions of the type it decodes as, although that type's own node does not carry them. Recursive types decode at any depth.
+
+Each node kind has its own decoded node type, e.g. `DecodedStructTypeNode` or `DecodedIntegerTypeNode`, and `DecodedNode<TNode>` gives the one of a node type. Use `isDecodedNode` or `assertIsDecodedNode` to narrow a decoded node to a node kind, e.g. to access its children.
+
+```ts
+const amount = decoded.data; // DecodedTypeNode
+if (isDecodedNode(amount, 'structTypeNode')) {
+    amount.fields; // DecodedStructFieldTypeNode[]
+}
+```
+
 ## Node paths
 
 The full path is needed to resolve link nodes, which may point to other programs, and injected values, which are provided by the enclosing instructions.
@@ -200,9 +239,17 @@ A link back to its own type always has a variable size, so it cannot be the item
 
 ## Visitors
 
+### `getNodeCodecVisitor(linkables, options?)`
+
+The visitor used by `getNodeCodec` under the hood. It returns a codec of decoded nodes for the visited node. On top of the `bytesEncoding` option, it accepts the `stack` of the visited node's ancestors, used to resolve links, and the `scope` of the enclosing instructions' provided values, used to resolve injected values.
+
+```ts
+const codec = visit(someTypeNode, getNodeCodecVisitor(linkables, { scope, stack }));
+```
+
 ### `getNodeValueCodecVisitor(linkables, options?)`
 
-The visitor used by `getNodeValueCodec` under the hood. It returns a `Codec<unknown>` for the visited node. On top of the `bytesEncoding` option, it accepts the `stack` of the visited node's ancestors, used to resolve links, and the `scope` of the enclosing instructions' provided values, used to resolve injected values.
+The visitor used by `getNodeValueCodec` under the hood. It accepts the same options and returns a `Codec<unknown>` for the visited node, whose values are the values of the decoded nodes of `getNodeCodecVisitor`.
 
 ```ts
 const codec = visit(someTypeNode, getNodeValueCodecVisitor(linkables, { scope, stack }));
