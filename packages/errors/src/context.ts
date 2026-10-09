@@ -62,6 +62,7 @@ import {
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
     CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
     CODAMA_ERROR__INVALID_BRANDED_STRING,
+    CODAMA_ERROR__INVALID_TICKS_PER_SECOND,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
     CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
@@ -257,6 +258,12 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__INVALID_BRANDED_STRING]: {
         actual: string;
         expected: string;
+    };
+    [CODAMA_ERROR__INVALID_TICKS_PER_SECOND]: {
+        /** The path of the date-time or duration type, from the root. */
+        path: readonly Node[];
+        /** The invalid number of ticks per second, e.g. `0`. */
+        ticksPerSecond: number;
     };
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: {
         kind: LinkNode['kind'];

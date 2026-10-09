@@ -82,6 +82,10 @@ Decoded nodes carry the nodes that decoded them, so their values can be formatte
 | `formatDateTime`   | `DecodedDateTimeTypeNode`   | `"2024-01-01T00:00:00.5Z"`      |
 | `formatDuration`   | `DecodedDurationTypeNode`   | `"49:00:00"`, `"-00:00:01.5"`   |
 | `formatString`     | `DecodedStringTypeNode`     | `"abcd"`, sliced by its display |
+| `formatBoolean`    | `DecodedBooleanTypeNode`    | `"true"`                        |
+| `formatBytes`      | `DecodedBytesTypeNode`      | `"0x0102"`                      |
+| `formatEnum`       | `DecodedEnumTypeNode`       | `"Move"`, `"Move To"`           |
+| `formatPublicKey`  | `DecodedPublicKeyTypeNode`  | `"USDC"`, or its address        |
 
 ```ts
 import { formatInteger, getNodeCodec, isDecodedNode } from '@codama/dynamic-codecs';
@@ -97,15 +101,19 @@ Numbers are formatted exactly, including 128-bit integers and binary fixed point
 
 - **Units:** the unit of a display node wins over the unit of a type, which is the fallback whenever the former is absent or cannot be resolved. Units follow their value after a space, except `%`, `‰` and `°`.
 - **Amounts:** when the `decimals` of an `amountNumberDisplayNode` cannot be resolved, `formatInteger` returns `null` rather than a wrongly scaled amount, so you can present the raw value instead.
-- **Ticks:** `formatDateTime` and `formatDuration` return `null` when `ticksPerSecond` is not a positive integer.
+- **Ticks:** `formatDateTime` and `formatDuration` throw `CODAMA_ERROR__INVALID_TICKS_PER_SECOND` when `ticksPerSecond` is not a positive integer.
+- **Bytes:** bytes are written in hexadecimal whatever the encoding they were decoded with. Bytes decoded as `utf8` cannot be recovered exactly when they are not valid UTF-8, so decode them with another encoding.
+- **Enums:** the label of the variant's display node, or the variant's identifier in title case otherwise. The data of the variant is not included.
+- **Public keys:** formatted by the `formatAddress` option, e.g. to name or truncate them, or written as the address otherwise.
 
-`formatInteger`, `formatFloat` and `formatFixedPoint` accept options:
+All formatters share the `(decoded, options)` signature and accept the following options, though each only uses those relevant to it, e.g. `formatAddress` for public keys and `numberFormat` for numbers:
 
-| Name                   | Type                                             | Description                                                                                                                                                                  |
-| ---------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `formatUnit`           | `(value: string, unit: string) => string`        | Place a unit next to a value, e.g. `` (value, unit) => `${unit} ${value}` `` for `"USD 40.5"`. Defaults to `formatUnit`, also exported.                                      |
-| `numberFormat`         | `Intl.NumberFormat`                              | Format numbers for a locale, e.g. `"1,234,567.89"`. Its options decide the digits shown. Amounts and fixed points are given to it exactly, never through a JavaScript float. |
-| `resolveInjectedValue` | `(path: NodePath<InjectedValueNode>) => unknown` | Resolve injected values of display nodes, e.g. `decimals` provided by an instruction, from their path through the decoded node. `undefined` means unresolved.                |
+| Name                   | Type                                             | Description                                                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `formatUnit`           | `(value: string, unit: string) => string`        | Place a unit next to a value, e.g. `` (value, unit) => `${unit} ${value}` `` for `"USD 40.5"`. Defaults to `formatUnit`, also exported.                                                           |
+| `formatAddress`        | `(address: Address) => string`                   | Format an address, e.g. to name it from sources you trust such as a token list or an address book, or to truncate it: `address => names.get(address) ?? address`. Defaults to the address itself. |
+| `numberFormat`         | `Intl.NumberFormat`                              | Format numbers for a locale, e.g. `"1,234,567.89"`. Its options decide the digits shown. Amounts and fixed points are given to it exactly, never through a JavaScript float.                      |
+| `resolveInjectedValue` | `(path: NodePath<InjectedValueNode>) => unknown` | Resolve injected values of display nodes, e.g. `decimals` provided by an instruction, from their path through the decoded node. `undefined` means unresolved.                                     |
 
 ## Node paths
 
