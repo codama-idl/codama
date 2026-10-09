@@ -89,7 +89,6 @@ import {
     transformCodec,
 } from '@solana/codecs';
 
-import { getCodecFromBytesEncoding } from './bytes';
 import type {
     DecodedAccountNode,
     DecodedNodeCodec,
@@ -114,6 +113,7 @@ import type {
     GetDecodedNode,
 } from './decoded';
 import { getLazyCodec } from './lazy';
+import { getCodecFromBytesEncoding } from './utils';
 import {
     assertUniqueItems,
     assertValueType,

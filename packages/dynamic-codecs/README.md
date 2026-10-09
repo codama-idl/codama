@@ -115,6 +115,35 @@ All formatters share the `(decoded, options)` signature and accept the following
 | `numberFormat`         | `Intl.NumberFormat`                              | Format numbers for a locale, e.g. `"1,234,567.89"`. Its options decide the digits shown. Amounts and fixed points are given to it exactly, never through a JavaScript float.                      |
 | `resolveInjectedValue` | `(path: NodePath<InjectedValueNode>) => unknown` | Resolve injected values of display nodes, e.g. `decimals` provided by an instruction, from their path through the decoded node. `undefined` means unresolved.                                     |
 
+## Formatted nodes
+
+`formatDecodedNode` formats a decoded node of any kind, e.g. a whole account, into a formatted node: the same tree, where every node also carries its `text` and whether it is `degraded`. Formatted nodes are decoded nodes too, so they keep their `path`, `value` and offsets and work wherever decoded nodes do.
+
+```ts
+import { assertIsFormattedNode, formatDecodedNode } from '@codama/dynamic-codecs';
+
+// account: a decoded account, e.g. from `parseAccountData` of `@codama/dynamic-parsers`
+const formatted = formatDecodedNode(account, {
+    formatAddress: address => names.get(address) ?? address,
+});
+formatted.text; // "Amount: 1.5 USDC, Owner: Alice, Config: (Fee: 25 bps)"
+
+assertIsFormattedNode(formatted.data, 'structTypeNode');
+for (const field of formatted.data.fields) {
+    field.label; // "Amount"
+    field.text; // "1.5 USDC"
+    field.type; // the formatted type, e.g. a struct to lay out as nested rows
+}
+```
+
+- **Leaves** use the formatter of their kind. On top of the [formatting options](#formatting), you can override the formatters of booleans, bytes, date-times, durations, enum labels, fixed points, floats, integers and strings, e.g. `formatBoolean: boolean => (boolean.value ? 'Yes' : 'No')`. Public keys go through `formatAddress`.
+- **Struct fields** carry their `label`, `skip`, `flatten` and `flattenPrefix`, from their display node or their defaults: the identifier in title case, `"never"`, `false` and `""`. `flatten` is only `true` when the field's type is a struct.
+- **Enum variants** carry their `label` and `skipInnerData`.
+- **Text** joins the text of children: `Label: text` for struct fields, `, ` between items and map entries, `None` for empty options, and the variant's label followed by its data in parentheses for enums, e.g. `Limit (Price: 100)`. Containers within containers are wrapped in parentheses, so an empty one shows as `()`, e.g. `Items: ()`. Struct fields skipped `always` are left out, and flattened fields are replaced by their own fields, with their prefix.
+- **Degraded** nodes are amounts whose `decimals` cannot be resolved, written as their raw value, and every node whose text includes them.
+
+Laying out the tree, e.g. as rows honouring `flatten` and `skip`, is left to you. To fill a sentence such as an instruction's interpolated intent, `getDecodedNodeAtPath` finds the node a path expression points to, e.g. `getDecodedNodeAtPath(formatted, pathString('config.fees[0]'))?.text`. It returns `undefined` for indices beyond the items of an array or set, and throws `CODAMA_ERROR__CANNOT_RESOLVE_PATH` for paths that do not fit the data, e.g. an unknown field. As with `resolveTypePath`, paths do not go through options or enums.
+
 ## Node paths
 
 The full path is needed to resolve link nodes, which may point to other programs, and injected values, which are provided by the enclosing instructions.
