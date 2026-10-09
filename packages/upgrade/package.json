@@ -52,6 +52,7 @@
     },
     "dependencies": {
         "@codama/errors": "workspace:*",
+        "@codama/node-types": "workspace:*",
         "@codama/nodes": "workspace:*",
         "@codama/visitors-core": "workspace:*"
     },
