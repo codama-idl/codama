@@ -34,8 +34,8 @@ describe('Token 2022 Program: harvestWithheldTokensToMint', () => {
 
         // Harvest fees from destination to mint
         const harvestIx = await token2022Client.methods
-            .harvestWithheldTokensToMint({ sources: [destination] })
-            .accounts({ mint })
+            .harvestWithheldTokensToMint()
+            .accounts({ mint, sources: [destination] })
             .instruction();
         await ctx.sendInstruction(harvestIx, [payer]);
 

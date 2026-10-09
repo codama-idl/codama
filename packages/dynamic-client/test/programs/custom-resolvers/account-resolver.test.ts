@@ -1,10 +1,17 @@
+import { CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING } from '@codama/errors';
 import type { Address } from '@solana/addresses';
+import { type InstructionAccountNode, pluginNode } from 'codama';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';
 import { programClient } from './custom-resolvers-test-utils';
 
-describe('Custom resolvers: accounts ResolverValueNode', () => {
+/**
+ * The accounts of this IDL were resolved by custom resolvers in v1. Once
+ * upgraded, they have no default value and carry `codama.resolver` plugins
+ * instead, so callers provide them like any other account.
+ */
+describe('Custom resolvers: resolved accounts', () => {
     let authority: Address;
     let ctx: SvmTestContext;
 
@@ -13,138 +20,90 @@ describe('Custom resolvers: accounts ResolverValueNode', () => {
         authority = await ctx.createFundedAccount();
     });
 
-    test('should resolve accounts addresses via resolver', async () => {
+    test('should keep the resolvers of accounts as codama.resolver plugins', () => {
+        const instruction = programClient.instructions.get('transferWithResolver');
+        const accounts = new Map<string, InstructionAccountNode>(
+            (instruction?.accounts ?? []).map(account => [account.identifier, account]),
+        );
+        expect(accounts.get('destination')?.defaultValue).toBeUndefined();
+        expect(accounts.get('destination')?.plugins).toStrictEqual([
+            pluginNode('codama.resolver', { name: 'resolveDestination' }),
+        ]);
+        expect(accounts.get('treasury')?.plugins).toStrictEqual([
+            pluginNode('codama.resolver', { name: 'resolveTreasury' }),
+        ]);
+    });
+
+    test('should use the accounts provided in place of resolved accounts', async () => {
         const destination = await ctx.createFundedAccount();
         const treasury = await ctx.createFundedAccount();
 
-        const expectedAccounts = [authority, destination, treasury];
         const ix = await programClient.methods
             .transferWithResolver({ amount: 100 })
-            .accounts({ authority })
-            .resolvers({
-                resolveDestination: () => Promise.resolve(destination),
-                resolveTreasury: () => Promise.resolve(treasury),
-            })
+            .accounts({ authority, destination, treasury })
             .instruction();
 
-        expect(ix.accounts?.length).toBe(3);
-        ix.accounts?.forEach((accountMeta, index) => {
-            expect(accountMeta.address).toBe(expectedAccounts[index]);
-        });
+        expect(ix.accounts?.map(account => account.address)).toStrictEqual([authority, destination, treasury]);
     });
 
-    test('should throw AccountError when resolver missing for required account', async () => {
-        await expect(
-            programClient.methods.transferWithResolver({ amount: 100 }).accounts({ authority }).instruction(),
-        ).rejects.toThrow(/Resolver \[resolveDestination\] not provided for account \[destination\]/);
-    });
-
-    test('should throw AccountError when resolver returns null/undefined for required account', async () => {
-        const treasury = await ctx.createAccount();
+    test('should require resolved accounts that are not optional', async () => {
         await expect(
             programClient.methods
                 .transferWithResolver({ amount: 100 })
-                .accounts({ authority, treasury })
-                .resolvers({
-                    resolveDestination: () => Promise.resolve(null),
-                })
-                .instruction(),
-        ).rejects.toThrow(/Invalid account address \[destination\]: \[null\]/);
-
-        await expect(
-            programClient.methods
-                .transferWithResolver({ amount: 100 })
-                .accounts({ authority, treasury })
-                .resolvers({
-                    resolveDestination: () => Promise.resolve(undefined),
-                })
-                .instruction(),
-        ).rejects.toThrow(/Invalid account address \[destination\]: \[undefined\]/);
-    });
-
-    test('should propagate error when account resolver rejects', async () => {
-        await expect(
-            programClient.methods
-                .transferWithResolver({ amount: 100 })
-                .accounts({ authority })
-                .resolvers({
-                    resolveDestination: () => Promise.reject(new Error('resolver failed')),
-                    resolveTreasury: () => Promise.resolve(ctx.SYSTEM_PROGRAM_ADDRESS),
-                })
+                // @ts-expect-error - testing missing resolved accounts
+                .accounts({ authority, treasury: null })
                 .instruction(),
         ).rejects.toThrow(
-            /Resolver \[resolveDestination\] threw an error while resolving \[instructionAccountNode\] \[destination\]/,
+            expect.objectContaining({
+                context: expect.objectContaining({
+                    __code: CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
+                    accountName: 'destination',
+                    instructionName: 'transferWithResolver',
+                }),
+            }),
         );
     });
 
-    test('should throw when resolver missing for optional undefined account with direct resolverValueNode', async () => {
+    test('should omit resolved accounts that are optional when given null', async () => {
         const destination = await ctx.createFundedAccount();
 
-        await expect(
-            programClient.methods
-                .transferWithResolver({ amount: 100 })
-                .accounts({ authority })
-                .resolvers({
-                    resolveDestination: () => Promise.resolve(destination),
-                })
-                .instruction(),
-        ).rejects.toThrow(/Resolver \[resolveTreasury\] not provided for account \[treasury\]/);
-
-        // double-check: when we provide null, treasury will be resolved into programId even without resolveTreasury resolver.
         const ix = await programClient.methods
             .transferWithResolver({ amount: 100 })
-            .accounts({ authority, treasury: null })
-            .resolvers({
-                resolveDestination: () => Promise.resolve(destination),
-            })
+            .accounts({ authority, destination, treasury: null })
             .instruction();
+
+        // Omitted optional accounts follow the `programId` optional account strategy.
         expect(ix.accounts?.[2].address).toBe(programClient.programAddress);
     });
 
-    test('should bypass resolver when account is explicitly provided', async () => {
-        const destination = await ctx.createAccount();
-        const treasury = await ctx.createAccount();
+    test('should handle accounts whose conditions were resolved like any other resolved account', async () => {
+        // In v1, both accounts defaulted to a conditional value whose condition was resolved.
+        const requiredTarget = await ctx.createAccount();
 
-        const ix = await programClient.methods
-            .transferWithResolver({ amount: 42 })
-            .accounts({ authority, destination, treasury })
-            .resolvers({
-                resolveDestination: () => {
-                    throw new Error('resolveDestination should not be called');
-                },
-                resolveTreasury: () => {
-                    throw new Error('resolveTreasury should not be called');
-                },
-            })
-            .instruction();
-
-        expect(ix.accounts?.[1].address).toBe(destination);
-        expect(ix.accounts?.[2].address).toBe(treasury);
-    });
-
-    test('should resolve to programId when resolver returns null', async () => {
         const ix = await programClient.methods
             .conditionalTransfer()
-            .accounts({ authority })
-            .resolvers({
-                resolveIncludeRequired: () => Promise.resolve(true),
-                resolveIncludeTarget: () => Promise.resolve(null),
-            })
+            .accounts({ authority, optionalTarget: null, requiredTarget })
             .instruction();
+        expect(ix.accounts?.map(account => account.address)).toStrictEqual([
+            authority,
+            programClient.programAddress,
+            requiredTarget,
+        ]);
 
-        expect(ix.accounts?.[1].address).toBe(programClient.programAddress);
-    });
-
-    test('should throw AccountError when omitted required account conditional has no ifFalse and condition is falsy', async () => {
         await expect(
             programClient.methods
                 .conditionalTransfer()
-                .accounts({ authority })
-                .resolvers({
-                    resolveIncludeRequired: () => Promise.resolve(false),
-                    resolveIncludeTarget: () => Promise.resolve(true),
-                })
+                // @ts-expect-error - testing a missing resolved account
+                .accounts({ authority, optionalTarget: null })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[requiredTarget\] in \[conditionalTransfer\] instruction/);
+        ).rejects.toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({
+                    __code: CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
+                    accountName: 'requiredTarget',
+                    instructionName: 'conditionalTransfer',
+                }),
+            }),
+        );
     });
 });

@@ -62,15 +62,15 @@ describe('Token 2022 Program: approve', () => {
             .instruction();
 
         const initMultisigIx = await token2022Client.methods
-            .initializeMultisig({ m: 2, signers: [signer1, signer2, signer3] })
-            .accounts({ multisig: multisigOwner })
+            .initializeMultisig({ m: 2 })
+            .accounts({ multisig: multisigOwner, signers: [signer1, signer2, signer3] })
             .instruction();
 
         await ctx.sendInstructions([createAccountIx, initMultisigIx], [payer, multisigOwner]);
 
         const ix = await token2022Client.methods
-            .approve({ amount: 500_000, multiSigners: [signer1, signer2] })
-            .accounts({ delegate, owner: multisigOwner, source: sourceAccount })
+            .approve({ amount: 500_000 })
+            .accounts({ delegate, multiSigners: [signer1, signer2], owner: multisigOwner, source: sourceAccount })
             .instruction();
         await ctx.sendInstruction(ix, [payer, signer1, signer2]);
 

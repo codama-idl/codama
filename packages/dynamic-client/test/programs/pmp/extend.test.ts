@@ -1,7 +1,7 @@
 import { type Address } from '@solana/addresses';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import {
     allocateBufferAccount,
     decodeMetadataAccount,
@@ -86,7 +86,12 @@ describe('Program Metadata: extend', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "length"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'length', kind: 'structFieldTypeNode' },
+                { actualType: 'undefined', nodeKind: 'integerTypeNode' },
+            ),
+        );
     });
 
     test('should throw AccountError when required account is missing', async () => {

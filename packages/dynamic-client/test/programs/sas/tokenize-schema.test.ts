@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { deriveSasAuthorityAddress, deriveSchemaMintPda } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import { createCredential, createSchema, getSchemaMintSize, loadSasProgram, programClient } from './sas-test-utils';
 
 describe('SAS: tokenizeSchema', () => {
@@ -103,6 +103,11 @@ describe('SAS: tokenizeSchema', () => {
                     tokenProgram: ctx.TOKEN_2022_PROGRAM_ADDRESS,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "maxSize"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'maxSize', kind: 'structFieldTypeNode' },
+                { actualType: 'string', nodeKind: 'integerTypeNode' },
+            ),
+        );
     });
 });

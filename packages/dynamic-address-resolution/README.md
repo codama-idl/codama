@@ -88,11 +88,12 @@ When no branch matches, optional accounts resolve using the optional account str
 
 ## `resolveStandalonePda(input)`
 
-Derives a PDA outside of any instruction, from its path and the values of its variable seeds.
+Derives a PDA outside of any instruction, from its path and the values of its variable seeds. It uses the given `programId`, or else the `programId` of the PDA, or else the address of the program defining it. Pass a `programId` for PDAs that instructions derive from another program through their `pdaValueNode.programId`.
 
 ```ts
 const [address, bump] = await resolveStandalonePda({
     path: [root, root.program, metadataPda],
+    programId: otherProgramAddress, // optional
     seedsInput: { authority, seed: 'idl' },
 });
 ```

@@ -67,8 +67,8 @@ describe('Token Program: approve', () => {
             .instruction();
 
         const initMultisigIx = await tokenClient.methods
-            .initializeMultisig({ m: 2, signers: [signer1, signer2, signer3] })
-            .accounts({ multisig: multisigOwner })
+            .initializeMultisig({ m: 2 })
+            .accounts({ multisig: multisigOwner, signers: [signer1, signer2, signer3] })
             .instruction();
 
         await ctx.sendInstructions([createAccountIx, initMultisigIx], [payer, multisigOwner]);
@@ -76,8 +76,8 @@ describe('Token Program: approve', () => {
         // Approve delegate with multisig owner,
         // providing signer1 and signer2 without signing by multisigOwner
         const ix = await tokenClient.methods
-            .approve({ amount: 500_000, multiSigners: [signer1, signer2] })
-            .accounts({ delegate, owner: multisigOwner, source: sourceAccount })
+            .approve({ amount: 500_000 })
+            .accounts({ delegate, multiSigners: [signer1, signer2], owner: multisigOwner, source: sourceAccount })
             .instruction();
         await ctx.sendInstruction(ix, [payer, signer1, signer2]);
 

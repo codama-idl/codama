@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { deriveAttestationPda, getAttestationDecoder, serializeAttestationData } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import { createAttestation, createCredential, createSchema, loadSasProgram, programClient } from './sas-test-utils';
 
 describe('SAS: createAttestation', () => {
@@ -106,6 +106,11 @@ describe('SAS: createAttestation', () => {
                     schema: schemaPda,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "nonce"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'nonce', kind: 'structFieldTypeNode' },
+                { actualType: 'string', nodeKind: 'publicKeyTypeNode' },
+            ),
+        );
     });
 });

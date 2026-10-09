@@ -109,7 +109,7 @@ describe('Token 2022 Program: tokenMetadata', () => {
             .accounts({ metadata: mint, updateAuthority })
             .instruction();
         const addKeyIx = await token2022Client.methods
-            .updateTokenMetadataField({ field: { __kind: 'key', fields: ['color'] }, value: 'blue' })
+            .updateTokenMetadataField({ field: { __kind: 'key', data: ['color'] }, value: 'blue' })
             .accounts({ metadata: mint, updateAuthority })
             .instruction();
 
@@ -146,7 +146,7 @@ describe('Token 2022 Program: tokenMetadata', () => {
 
         // Add a custom key-value pair
         const addKeyIx = await token2022Client.methods
-            .updateTokenMetadataField({ field: { __kind: 'key', fields: ['color'] }, value: 'blue' })
+            .updateTokenMetadataField({ field: { __kind: 'key', data: ['color'] }, value: 'blue' })
             .accounts({ metadata: mint, updateAuthority })
             .instruction();
         await ctx.sendInstruction(addKeyIx, [payer, updateAuthority]);

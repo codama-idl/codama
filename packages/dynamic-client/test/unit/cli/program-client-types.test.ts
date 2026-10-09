@@ -1,30 +1,28 @@
-import type { ResolverFn } from '@codama/dynamic-address-resolution';
 import type { Address, ProgramDerivedAddress } from '@solana/addresses';
 import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
 import { describe, expectTypeOf, test } from 'vitest';
 
 import type {
-    CreateItemAccounts,
-    CreateItemArgs,
-    CreateItemResolvers,
+    ConditionalTransferAccounts,
+    TransferWithResolverAccounts,
 } from '../../programs/generated/custom-resolvers-test-idl-types';
 import type {
-    AllocateArgs,
-    CanonicalPdaSeeds,
-    NonCanonicalPdaSeeds,
+    AllocateInstructionDataArgs,
+    CanonicalSeeds,
+    NonCanonicalSeeds,
     ProgramMetadataPdas,
     ProgramMetadataProgramClient,
-    WriteArgs,
+    WriteInstructionDataArgs,
 } from '../../programs/generated/pmp-idl-types';
 import type {
     CreateAccountAccounts,
-    CreateAccountArgs,
+    CreateAccountInstructionDataArgs,
     CreateAccountMethod,
     SystemMethods,
     SystemProgramClient,
 } from '../../programs/generated/system-program-idl-types';
-import type { InitializeConfidentialTransferMintArgs } from '../../programs/generated/token-2022-idl-types';
+import type { InitializeConfidentialTransferMintInstructionDataArgs } from '../../programs/generated/token-2022-idl-types';
 
 describe('generated program client types', () => {
     describe('program client without PDAs (SystemProgramClient)', () => {
@@ -67,22 +65,21 @@ describe('generated program client types', () => {
             expectTypeOf<MethodsBuilder>().toHaveProperty('instruction');
             expectTypeOf<MethodsBuilder['instruction']>().returns.toEqualTypeOf<Promise<Instruction>>();
 
-            expectTypeOf<MethodsBuilder>().toHaveProperty('resolvers');
-            expectTypeOf<MethodsBuilder['resolvers']>().returns.toEqualTypeOf<MethodsBuilder>();
-
             expectTypeOf<MethodsBuilder>().toHaveProperty('signers');
             expectTypeOf<MethodsBuilder['signers']>().returns.toEqualTypeOf<MethodsBuilder>();
+
+            expectTypeOf<MethodsBuilder>().not.toHaveProperty('resolvers');
         });
 
-        test('should have correct properties on CreateAccountArgs', () => {
-            expectTypeOf<CreateAccountArgs>().toHaveProperty('lamports');
-            expectTypeOf<CreateAccountArgs['lamports']>().toEqualTypeOf<bigint | number>();
+        test('should have correct properties on CreateAccountInstructionDataArgs', () => {
+            expectTypeOf<CreateAccountInstructionDataArgs>().toHaveProperty('lamports');
+            expectTypeOf<CreateAccountInstructionDataArgs['lamports']>().toEqualTypeOf<bigint | number>();
 
-            expectTypeOf<CreateAccountArgs>().toHaveProperty('space');
-            expectTypeOf<CreateAccountArgs['space']>().toEqualTypeOf<bigint | number>();
+            expectTypeOf<CreateAccountInstructionDataArgs>().toHaveProperty('space');
+            expectTypeOf<CreateAccountInstructionDataArgs['space']>().toEqualTypeOf<bigint | number>();
 
-            expectTypeOf<CreateAccountArgs>().toHaveProperty('programAddress');
-            expectTypeOf<CreateAccountArgs['programAddress']>().toEqualTypeOf<Address>();
+            expectTypeOf<CreateAccountInstructionDataArgs>().toHaveProperty('programAddress');
+            expectTypeOf<CreateAccountInstructionDataArgs['programAddress']>().toEqualTypeOf<Address>();
         });
 
         test('should have correct properties on CreateAccountAccounts', () => {
@@ -105,41 +102,45 @@ describe('generated program client types', () => {
             expectTypeOf<keyof ProgramMetadataPdas>().toEqualTypeOf<ExpectedPdaKeys>();
             type PdaFn = ProgramMetadataPdas[keyof ProgramMetadataPdas];
             expectTypeOf<PdaFn>().returns.toEqualTypeOf<Promise<ProgramDerivedAddress>>();
+            expectTypeOf<PdaFn>().parameter(1).toEqualTypeOf<{ programId?: Address } | undefined>();
         });
 
-        test('should have correct seed properties on CanonicalPdaSeeds', () => {
-            expectTypeOf<CanonicalPdaSeeds>().toHaveProperty('program');
-            expectTypeOf<CanonicalPdaSeeds['program']>().toEqualTypeOf<Address>();
+        test('should have correct seed properties on CanonicalSeeds', () => {
+            expectTypeOf<CanonicalSeeds>().toHaveProperty('program');
+            expectTypeOf<CanonicalSeeds['program']>().toEqualTypeOf<Address>();
 
-            expectTypeOf<CanonicalPdaSeeds>().toHaveProperty('seed');
-            expectTypeOf<CanonicalPdaSeeds['seed']>().toEqualTypeOf<string>();
+            expectTypeOf<CanonicalSeeds>().toHaveProperty('seed');
+            expectTypeOf<CanonicalSeeds['seed']>().toEqualTypeOf<string>();
         });
 
-        test('should have correct seed properties on NonCanonicalPdaSeeds', () => {
-            expectTypeOf<NonCanonicalPdaSeeds>().toHaveProperty('program');
-            expectTypeOf<NonCanonicalPdaSeeds['program']>().toEqualTypeOf<Address>();
+        test('should have correct seed properties on NonCanonicalSeeds', () => {
+            expectTypeOf<NonCanonicalSeeds>().toHaveProperty('program');
+            expectTypeOf<NonCanonicalSeeds['program']>().toEqualTypeOf<Address>();
 
-            expectTypeOf<NonCanonicalPdaSeeds>().toHaveProperty('authority');
-            expectTypeOf<NonCanonicalPdaSeeds['authority']>().toEqualTypeOf<Address>();
+            expectTypeOf<NonCanonicalSeeds>().toHaveProperty('authority');
+            expectTypeOf<NonCanonicalSeeds['authority']>().toEqualTypeOf<Address>();
 
-            expectTypeOf<NonCanonicalPdaSeeds>().toHaveProperty('seed');
-            expectTypeOf<NonCanonicalPdaSeeds['seed']>().toEqualTypeOf<string>();
+            expectTypeOf<NonCanonicalSeeds>().toHaveProperty('seed');
+            expectTypeOf<NonCanonicalSeeds['seed']>().toEqualTypeOf<string>();
         });
     });
 
     describe('remainderOptionTypeNode optional args (pmp-idl)', () => {
         test('should have optional data in write args', () => {
-            expectTypeOf<WriteArgs>().toMatchObjectType<{ data?: Uint8Array | null; offset: number }>();
+            expectTypeOf<WriteInstructionDataArgs>().toMatchObjectType<{
+                data?: Uint8Array | null;
+                offset: bigint | number;
+            }>();
         });
 
         test('should have optional seed in allocate args', () => {
-            expectTypeOf<AllocateArgs>().toMatchObjectType<{ seed?: string | null }>();
+            expectTypeOf<AllocateInstructionDataArgs>().toMatchObjectType<{ seed?: string | null }>();
         });
     });
 
     describe('zeroableOptionTypeNode optional args (token-2022)', () => {
-        test('should have optional auditorElgamalPubkey in InitializeConfidentialTransferMintArgs', () => {
-            expectTypeOf<InitializeConfidentialTransferMintArgs>().toMatchObjectType<{
+        test('should have optional auditorElgamalPubkey in InitializeConfidentialTransferMintInstructionDataArgs', () => {
+            expectTypeOf<InitializeConfidentialTransferMintInstructionDataArgs>().toMatchObjectType<{
                 auditorElgamalPubkey?: Address | null;
                 authority?: Address | null;
                 autoApproveNewAccounts: boolean;
@@ -147,17 +148,21 @@ describe('generated program client types', () => {
         });
     });
 
-    describe('resolver types', () => {
-        test('should have expected resolver keys on CreateItemResolvers', () => {
-            expectTypeOf<CreateItemResolvers>().toHaveProperty('resolveDescription');
-            expectTypeOf<CreateItemResolvers['resolveDescription']>().toExtend<
-                ResolverFn<CreateItemArgs, CreateItemAccounts>
-            >();
+    describe('resolved inputs (custom-resolvers-test-idl)', () => {
+        test('should require accounts that were resolved in v1', () => {
+            expectTypeOf<TransferWithResolverAccounts>().toEqualTypeOf<{
+                authority: Address;
+                destination: Address;
+                treasury: Address | null;
+            }>();
+        });
 
-            expectTypeOf<CreateItemResolvers>().toHaveProperty('resolveTags');
-            expectTypeOf<CreateItemResolvers['resolveTags']>().toExtend<
-                ResolverFn<CreateItemArgs, CreateItemAccounts>
-            >();
+        test('should require accounts whose v1 conditions were resolved', () => {
+            expectTypeOf<ConditionalTransferAccounts>().toEqualTypeOf<{
+                authority: Address;
+                optionalTarget: Address | null;
+                requiredTarget: Address;
+            }>();
         });
     });
 });
