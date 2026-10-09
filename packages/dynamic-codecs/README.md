@@ -84,7 +84,7 @@ Values are raw JavaScript values that stay close to the bytes. For instance, a f
 | [`TupleTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/TupleTypeNode.md)                     | `["John", 42n]`                                              |                                                                                                                          |
 | [`EnumTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/EnumTypeNode.md)                       | `{ __kind: "move", __discriminator: 2, data: { x: 1n } }`    | See [Enums](#enums). Variants without data also encode from their identifier.                                            |
 | [`ArrayTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/ArrayTypeNode.md)                     | `[1n, 2n, 3n]`                                               |                                                                                                                          |
-| [`SetTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/SetTypeNode.md)                         | `[1n, 2n, 3n]`                                               | Same as arrays.                                                                                                          |
+| [`SetTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/SetTypeNode.md)                         | `[1n, 2n, 3n]`                                               | Same as arrays. Encoding rejects duplicate items, see [Invalid values](#invalid-values).                                 |
 | [`MapTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/MapTypeNode.md)                         | `{ key1: "value1", key2: "value2" }`                         | An object.                                                                                                               |
 | [`OptionTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/OptionTypeNode.md)                   | `{ __option: "Some", value: 42n }` or `{ __option: "None" }` | Option objects, rather than `T \| null`, keep nested options distinct. Also encodes from a value, `null` or `undefined`. |
 | [`RemainderOptionTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/RemainderOptionTypeNode.md) | `{ __option: "Some", value: 42n }` or `{ __option: "None" }` | Same as options.                                                                                                         |
@@ -150,6 +150,8 @@ A missing struct encodes as a struct whose fields are all missing, so their defa
 ### Invalid values
 
 Encoding throws a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error when a value does not match its type, e.g. a string for an integer or a missing field without a default value, rather than encoding unexpected bytes. Structs and maps must be plain objects, so `Map`s or class instances are rejected. Its `nodePath` context is the path of the node that rejected the value, from the root.
+
+Sets also throw a `CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM` error when two items encode to the same bytes, e.g. `[42, 42n]`. Its context gives the `index` of the duplicate, the `firstIndex` of the item it equals and the `nodePath` of the set. Decoding keeps duplicates, so existing data reads as it is.
 
 ```ts
 const codec = getNodeValueCodec([root, program, instruction]);

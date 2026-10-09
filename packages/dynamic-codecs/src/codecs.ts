@@ -83,7 +83,13 @@ import {
     transformCodec,
 } from '@solana/codecs';
 
-import { assertValueType, formatValueType, getUnexpectedValueTypeError, isObjectRecord } from './validation';
+import {
+    assertUniqueItems,
+    assertValueType,
+    formatValueType,
+    getUnexpectedValueTypeError,
+    isObjectRecord,
+} from './validation';
 import { getValueNodeVisitor } from './values';
 
 /** The node kinds a codec can be created for. */
@@ -476,7 +482,8 @@ export function getNodeValueCodecVisitor(
         },
         visitSetType(node) {
             // Sets are represented as arrays in order to be compatible with JSON.
-            return getArrayLikeCodec(visit(node.item, this), node.count);
+            const item = visit(node.item, this);
+            return assertUniqueItems(getArrayLikeCodec(item, node.count), item, stack.getPath());
         },
         visitStringType(node) {
             const codec = getCodecFromBytesEncoding(node.encoding) as Codec<unknown>;
