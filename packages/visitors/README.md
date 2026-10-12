@@ -72,6 +72,27 @@ codama.update(
 );
 ```
 
+### `addProgramsVisitor`
+
+This visitor adds `ProgramNodes` to the `additionalPrograms` of the root node. It accepts an array of program inputs, preserving the main program and any existing additional programs. It throws if a new program shares a camelCase identifier with the main program, an existing additional program, or another new program, since they would collide under the spec's casing-collision rule.
+
+```ts
+codama.update(
+    addProgramsVisitor([
+        // Add the Token program.
+        {
+            identifier: 'token',
+            publicKey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+        // Add the Associated Token program.
+        {
+            identifier: 'associatedToken',
+            publicKey: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+        },
+    ]),
+);
+```
+
 ### `checkCodamaVersionVisitor`
 
 This visitor checks that the version of the visited Codama IDL shares its major with the Codama spec version supported by the installed packages — mirroring the check performed by `createFromRoot` — and throws a `CODAMA_ERROR__VERSION_MISMATCH` error otherwise. The IDL is returned unchanged when the check passes.

@@ -21,6 +21,7 @@ import {
     PdaSeedValueNode,
     ProgramNode,
     ProvidedNode,
+    RootNode,
     StructFieldTypeNode,
 } from '@codama/node-types';
 
@@ -73,6 +74,7 @@ import {
     CODAMA_ERROR__VERSION_MISMATCH,
     CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
+    CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES,
     CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
     CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
     CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS,
@@ -293,6 +295,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         duplicatedPdaNames: IdentifierString[];
         program: ProgramNode;
         programName: IdentifierString;
+    };
+    [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES]: {
+        duplicatedProgramNames: IdentifierString[];
+        root: RootNode;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION]: {
         visitFunction: string;
