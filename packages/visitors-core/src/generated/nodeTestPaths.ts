@@ -97,6 +97,7 @@ export const NODE_TEST_PATHS: Readonly<Record<NodeKind, string>> = {
     tupleTypeNode: 'typeNodes/TupleTypeNode',
     tupleValueNode: 'valueNodes/TupleValueNode',
     unitNumberDisplayNode: 'displayNodes/UnitNumberDisplayNode',
+    valueLabelDisplayNode: 'displayNodes/ValueLabelDisplayNode',
     variablePdaSeedNode: 'pdaSeedNodes/VariablePdaSeedNode',
     zeroableOptionTypeNode: 'typeNodes/ZeroableOptionTypeNode',
 };

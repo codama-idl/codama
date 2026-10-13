@@ -17,20 +17,20 @@ export function fixedPointTypeNode<
     const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     number: TNumber,
-    scale: number,
     options: {
+        scale: number;
         base?: 2 | 10;
         unit?: string;
         display?: TDisplay;
         transforms?: TTransforms;
         plugins?: TPlugins;
-    } = {},
+    },
 ): FixedPointTypeNode<TNumber, TDisplay, TTransforms, TPlugins> {
     return Object.freeze({
         kind: 'fixedPointTypeNode',
 
         // Data.
-        scale,
+        scale: options.scale,
         ...(options.base !== undefined && { base: options.base }),
         ...(options.unit !== undefined && { unit: options.unit }),
 

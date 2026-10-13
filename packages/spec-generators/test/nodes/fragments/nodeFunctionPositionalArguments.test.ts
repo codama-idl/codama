@@ -70,6 +70,42 @@ describe('getNodeFunctionPositionalArgumentsFragment', () => {
         expect(out).toContain('= {}');
     });
 
+    it('requires required attributes in the `options` bag, and the bag itself', () => {
+        const n = defineNode('myNode', {
+            attributes: [
+                attribute('value', union('ValueNode')),
+                attribute('scale', u32()),
+                optionalAttribute('subtract', enumeration('Endianness')),
+            ],
+        });
+        const config: NodeConstructorConfig = { positionalArgs: ['value'] };
+        const out = getNodeFunctionPositionalArgumentsFragment(
+            n,
+            getNodeTypeParameterAttributes(n, scope),
+            config,
+        ).content;
+        expect(out).toMatch(/\bscale: /);
+        expect(out).toContain('subtract?:');
+        expect(out).not.toContain('= {}');
+    });
+
+    it('keeps required attributes with a default optional in the `options` bag', () => {
+        const n = defineNode('myNode', {
+            attributes: [attribute('value', union('ValueNode')), attribute('scale', u32())],
+        });
+        const config: NodeConstructorConfig = {
+            attributes: { scale: { default: fragment`2` } },
+            positionalArgs: ['value'],
+        };
+        const out = getNodeFunctionPositionalArgumentsFragment(
+            n,
+            getNodeTypeParameterAttributes(n, scope),
+            config,
+        ).content;
+        expect(out).toContain('scale?:');
+        expect(out).toContain('= {}');
+    });
+
     it("widens an array attribute's `[]` default through the bare element-array type, without `| undefined`", () => {
         // The intermediate cast widens the `[]` literal before the final
         // narrowing to the generic. For arrays it must NOT include the

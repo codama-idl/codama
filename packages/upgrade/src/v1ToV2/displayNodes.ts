@@ -63,9 +63,10 @@ export function injectableIntegerValueNodeFromV1(
     });
 }
 
-export function injectableStringValueNodeFromV1(
+/** A v1 string unit, as a v2 unit: v1 units are strings or injections, both still valid v2 units. */
+export function injectableUnitValueNodeFromV1(
     path: V1NodePath<v1.InjectableStringValueNode>,
-): v2.InjectableStringValueNode {
+): v2.InjectableUnitValueNode {
     const value = getLastV1NodeFromPath(path);
     if (value.kind === 'stringValueNode') return compactAndFreeze({ kind: 'stringValueNode', string: value.string });
     return compactAndFreeze({

@@ -168,8 +168,8 @@ describe('durationTypeNode', () => {
 
 describe('fixedPointTypeNode', () => {
     test('it delegates to the underlying number type', () => {
-        expectMaxSize(fixedPointTypeNode(integerTypeNode('u64'), 9), 8);
-        expectMaxSize(fixedPointTypeNode(integerTypeNode('shortU16'), 9), 3);
+        expectMaxSize(fixedPointTypeNode(integerTypeNode('u64'), { scale: 9 }), 8);
+        expectMaxSize(fixedPointTypeNode(integerTypeNode('shortU16'), { scale: 9 }), 3);
     });
 });
 

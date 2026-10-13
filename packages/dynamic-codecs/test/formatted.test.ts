@@ -96,7 +96,9 @@ describe('leaves', () => {
     });
 
     test('it formats fixed points with an override', () => {
-        const decoded = getNodeCodec([fixedPointTypeNode(integerTypeNode('u32'), 2)]).decode(hex('39300000'));
+        const decoded = getNodeCodec([fixedPointTypeNode(integerTypeNode('u32'), { scale: 2 })]).decode(
+            hex('39300000'),
+        );
         expect(formatDecodedNode(decoded).text).toBe('123.45');
         expect(formatDecodedNode(decoded, { formatFixedPoint: () => 'about 123' }).text).toBe('about 123');
     });

@@ -8,3 +8,4 @@ export * from './RegisteredDisplayNode';
 export * from './StringDisplayNode';
 export * from './StructFieldDisplayNode';
 export * from './UnitNumberDisplayNode';
+export * from './ValueLabelDisplayNode';

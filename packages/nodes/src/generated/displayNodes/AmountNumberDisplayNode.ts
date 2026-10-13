@@ -1,13 +1,13 @@
 import type {
     AmountNumberDisplayNode,
     InjectableIntegerValueNode,
-    InjectableStringValueNode,
+    InjectableUnitValueNode,
     PluginNode,
 } from '@codama/node-types';
 
 export type AmountNumberDisplayNodeInput<
     TDecimals extends InjectableIntegerValueNode = InjectableIntegerValueNode,
-    TUnit extends InjectableStringValueNode | undefined = InjectableStringValueNode | undefined,
+    TUnit extends InjectableUnitValueNode | undefined = InjectableUnitValueNode | undefined,
     TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > = Omit<AmountNumberDisplayNode<TDecimals, TUnit, TPlugins>, 'kind'>;
 
@@ -19,7 +19,7 @@ export type AmountNumberDisplayNodeInput<
  */
 export function amountNumberDisplayNode<
     const TDecimals extends InjectableIntegerValueNode,
-    const TUnit extends InjectableStringValueNode | undefined = undefined,
+    const TUnit extends InjectableUnitValueNode | undefined = undefined,
     const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(
     input: AmountNumberDisplayNodeInput<TDecimals, TUnit, TPlugins>,
