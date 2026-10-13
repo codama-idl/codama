@@ -155,7 +155,7 @@ export const NODE_CONFIGS: ReadonlyMap<string, NodeConstructorConfig> = new Map<
         },
     ],
     ['enumVariantTypeNode', { positionalArgs: ['identifier'] }],
-    ['fixedPointTypeNode', { positionalArgs: ['number', 'scale'] }],
+    ['fixedPointTypeNode', { positionalArgs: ['number'] }],
     [
         'floatTypeNode',
         {

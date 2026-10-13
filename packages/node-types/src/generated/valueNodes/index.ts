@@ -5,7 +5,7 @@ export * from './ConstantValueNode';
 export * from './EnumValueNode';
 export * from './FloatValueNode';
 export * from './InjectableIntegerValueNode';
-export * from './InjectableStringValueNode';
+export * from './InjectableUnitValueNode';
 export * from './InjectedValueNode';
 export * from './IntegerValueNode';
 export * from './MapEntryValueNode';

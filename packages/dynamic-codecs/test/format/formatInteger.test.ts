@@ -3,6 +3,7 @@ import {
     injectedValueNode,
     integerTypeNode,
     integerValueNode,
+    publicKeyValueNode,
     stringValueNode,
     unitNumberDisplayNode,
 } from '@codama/nodes';
@@ -157,4 +158,24 @@ test('it places units with a custom function', () => {
     const display = amountNumberDisplayNode({ decimals: integerValueNode('6'), unit: stringValueNode('USDC') });
     const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
     expect(formatInteger(decoded, { formatUnit: (value, unit) => `${unit} ${value}` })).toBe('USDC 1.5');
+});
+
+test('it formats amounts with an address unit as the address', () => {
+    const unit = publicKeyValueNode('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+    const display = amountNumberDisplayNode({ decimals: integerValueNode('6'), unit });
+    const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
+    expect(formatInteger(decoded)).toBe('1.5 EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+});
+
+test('it formats amounts with an address unit using the address formatter', () => {
+    const unit = publicKeyValueNode('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+    const display = amountNumberDisplayNode({ decimals: integerValueNode('6'), unit });
+    const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
+    expect(formatInteger(decoded, { formatAddress: () => 'USDC' })).toBe('1.5 USDC');
+});
+
+test('it formats integers with an address unit display using the address formatter', () => {
+    const display = unitNumberDisplayNode({ unit: publicKeyValueNode('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v') });
+    const decoded = getNodeCodec([integerTypeNode('u8', { display })]).decode(hex('2a'));
+    expect(formatInteger(decoded, { formatAddress: () => 'USDC' })).toBe('42 USDC');
 });

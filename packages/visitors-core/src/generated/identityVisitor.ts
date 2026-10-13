@@ -102,6 +102,7 @@ import {
     TYPE_NODES,
     unitNumberDisplayNode,
     VALUE_NODES,
+    valueLabelDisplayNode,
     variablePdaSeedNode,
     zeroableOptionTypeNode,
 } from '@codama/nodes';
@@ -263,7 +264,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             assertIsNode(number, 'integerTypeNode');
             const display = node.display ? (visit(this)(node.display) ?? undefined) : undefined;
             if (display) assertIsNode(display, 'unitNumberDisplayNode');
-            return fixedPointTypeNode(number, node.scale, {
+            return fixedPointTypeNode(number, {
                 ...node,
                 display,
                 transforms: node.transforms
@@ -356,8 +357,11 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
 
     if (keys.includes('publicKeyTypeNode')) {
         visitor.visitPublicKeyType = function visitPublicKeyType(node) {
+            const accountLink = node.accountLink ? (visit(this)(node.accountLink) ?? undefined) : undefined;
+            if (accountLink) assertIsNode(accountLink, 'accountLinkNode');
             return publicKeyTypeNode({
                 ...node,
+                accountLink,
                 transforms: node.transforms
                     ? node.transforms.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(TRANSFORM_NODE_KINDS))
                     : undefined,
@@ -1047,7 +1051,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             if (decimals === null) return null;
             assertIsNode(decimals, ['integerValueNode', 'injectedValueNode']);
             const unit = node.unit ? (visit(this)(node.unit) ?? undefined) : undefined;
-            if (unit) assertIsNode(unit, ['stringValueNode', 'injectedValueNode']);
+            if (unit) assertIsNode(unit, ['stringValueNode', 'publicKeyValueNode', 'injectedValueNode']);
             return amountNumberDisplayNode({
                 ...node,
                 decimals,
@@ -1149,6 +1153,9 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                 ...node,
                 label,
                 flattenPrefix,
+                valueLabels: node.valueLabels
+                    ? node.valueLabels.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('valueLabelDisplayNode'))
+                    : undefined,
                 plugins: node.plugins
                     ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
                     : undefined,
@@ -1160,10 +1167,33 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitUnitNumberDisplay = function visitUnitNumberDisplay(node) {
             const unit = visit(this)(node.unit);
             if (unit === null) return null;
-            assertIsNode(unit, ['stringValueNode', 'injectedValueNode']);
+            assertIsNode(unit, ['stringValueNode', 'publicKeyValueNode', 'injectedValueNode']);
             return unitNumberDisplayNode({
                 ...node,
                 unit,
+                plugins: node.plugins
+                    ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
+                    : undefined,
+            });
+        };
+    }
+
+    if (keys.includes('valueLabelDisplayNode')) {
+        visitor.visitValueLabelDisplay = function visitValueLabelDisplay(node) {
+            const value = visit(this)(node.value);
+            if (value === null) return null;
+            assertIsNode(value, VALUE_NODES);
+            let label = node.label;
+            if (typeof label !== 'string') {
+                const visited = visit(this)(label);
+                if (visited === null) return null;
+                assertIsNode(visited, 'textNode');
+                label = visited;
+            }
+            return valueLabelDisplayNode({
+                ...node,
+                value,
+                label,
                 plugins: node.plugins
                     ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
                     : undefined,

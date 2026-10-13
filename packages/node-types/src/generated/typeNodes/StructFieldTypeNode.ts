@@ -21,7 +21,7 @@ export interface StructFieldTypeNode<
     readonly identifier: IdentifierString;
     /**
      * How a configured default value is exposed in generated APIs.
-     * Only relevant when `defaultValue` is set — a strategy without a default value is meaningless. When absent, `optional` is assumed.
+     * Only relevant when `defaultValue` is set or a `codama.resolver` plugin resolves the field — a strategy without a default value is meaningless. When absent, `optional` is assumed.
      */
     readonly defaultValueStrategy?: DefaultValueStrategy;
 

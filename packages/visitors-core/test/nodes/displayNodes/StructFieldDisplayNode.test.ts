@@ -1,4 +1,4 @@
-import { structFieldDisplayNode } from '@codama/nodes';
+import { integerValueNode, structFieldDisplayNode, valueLabelDisplayNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -24,4 +24,12 @@ test('deleteNodesVisitor', () => {
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(node, `structFieldDisplayNode`);
+});
+
+test('it visits the value labels of struct fields', () => {
+    const valueLabel = valueLabelDisplayNode({ label: 'All', value: integerValueNode('18446744073709551615') });
+    const labelledNode = structFieldDisplayNode({ label: 'Amount', valueLabels: [valueLabel] });
+    expectMergeVisitorCount(labelledNode, 3);
+    expectIdentityVisitor(labelledNode);
+    expectDeleteNodesVisitor(labelledNode, '[valueLabelDisplayNode]', structFieldDisplayNode({ label: 'Amount' }));
 });

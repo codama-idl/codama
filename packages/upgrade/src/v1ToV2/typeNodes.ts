@@ -2,7 +2,7 @@ import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, CodamaError } from '@codama/errors'
 
 import type * as v1 from '../v1';
 import type * as v2 from '../v2';
-import { displayNodeFromV1, injectableIntegerValueNodeFromV1, injectableStringValueNodeFromV1 } from './displayNodes';
+import { displayNodeFromV1, injectableIntegerValueNodeFromV1, injectableUnitValueNodeFromV1 } from './displayNodes';
 import { linkNodeFromV1 } from './linkNodes';
 import { getLastV1NodeFromPath, unwrapV1TypePath, V1NodePath, V1WrapperTypeNode } from './paths';
 import { compactAndFreeze, docsFromV1, identifierFromV1, integerStringFromV1 } from './shared';
@@ -208,7 +208,7 @@ function numberDisplayNodeFromV1(path: V1NodePath<v1.AmountNumberDisplayNode>): 
     return compactAndFreeze<v2.AmountNumberDisplayNode>({
         kind: 'amountNumberDisplayNode',
         decimals: injectableIntegerValueNodeFromV1([...path, display.decimals]),
-        unit: display.unit ? injectableStringValueNodeFromV1([...path, display.unit]) : undefined,
+        unit: display.unit ? injectableUnitValueNodeFromV1([...path, display.unit]) : undefined,
     });
 }
 
@@ -217,7 +217,7 @@ function unitDisplayNodeFromV1(path: V1NodePath<v1.AmountNumberDisplayNode>): v2
     if (!display.unit) return undefined;
     return compactAndFreeze<v2.UnitNumberDisplayNode>({
         kind: 'unitNumberDisplayNode',
-        unit: injectableStringValueNodeFromV1([...path, display.unit]),
+        unit: injectableUnitValueNodeFromV1([...path, display.unit]),
     });
 }
 

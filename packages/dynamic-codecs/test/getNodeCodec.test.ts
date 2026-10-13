@@ -116,7 +116,7 @@ describe('leaves', () => {
     });
 
     test('it decodes fixed points as their raw number, at their own path', () => {
-        const node = fixedPointTypeNode(integerTypeNode('u32'), 2);
+        const node = fixedPointTypeNode(integerTypeNode('u32'), { scale: 2 });
         expect(getNodeCodec([node]).decode(hex('39300000'))).toStrictEqual({
             path: [node],
             postOffset: 4,

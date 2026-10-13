@@ -318,10 +318,10 @@ describe('quantities', () => {
             number: { endian: 'le', format: 'u64', kind: 'numberTypeNode' },
         } as v1.SolAmountTypeNode;
         expect(typeNodeFromV1([...programPath, amount])).toStrictEqual(
-            fixedPointTypeNode(integerTypeNode('u64'), 6, { unit: 'USDC' }),
+            fixedPointTypeNode(integerTypeNode('u64'), { scale: 6, unit: 'USDC' }),
         );
         expect(typeNodeFromV1([...programPath, solAmount])).toStrictEqual(
-            fixedPointTypeNode(integerTypeNode('u64'), 9, { unit: 'SOL' }),
+            fixedPointTypeNode(integerTypeNode('u64'), { scale: 9, unit: 'SOL' }),
         );
     });
 
@@ -346,7 +346,7 @@ describe('quantities', () => {
             },
         } as v1.AmountTypeNode;
         expect(typeNodeFromV1([...programPath, type])).toStrictEqual(
-            fixedPointTypeNode(integerTypeNode('u64'), 2, { transforms: [fixedSizeTransformNode(16)] }),
+            fixedPointTypeNode(integerTypeNode('u64'), { scale: 2, transforms: [fixedSizeTransformNode(16)] }),
         );
     });
 

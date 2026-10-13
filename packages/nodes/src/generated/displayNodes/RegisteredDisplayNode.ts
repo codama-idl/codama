@@ -7,4 +7,5 @@ export const REGISTERED_DISPLAY_NODE_KINDS = [
     'stringDisplayNode' as const,
     'structFieldDisplayNode' as const,
     'unitNumberDisplayNode' as const,
+    'valueLabelDisplayNode' as const,
 ];

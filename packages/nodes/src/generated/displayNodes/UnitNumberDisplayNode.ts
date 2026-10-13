@@ -1,7 +1,7 @@
-import type { InjectableStringValueNode, PluginNode, UnitNumberDisplayNode } from '@codama/node-types';
+import type { InjectableUnitValueNode, PluginNode, UnitNumberDisplayNode } from '@codama/node-types';
 
 export type UnitNumberDisplayNodeInput<
-    TUnit extends InjectableStringValueNode = InjectableStringValueNode,
+    TUnit extends InjectableUnitValueNode = InjectableUnitValueNode,
     TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > = Omit<UnitNumberDisplayNode<TUnit, TPlugins>, 'kind'>;
 
@@ -11,7 +11,7 @@ export type UnitNumberDisplayNodeInput<
  * When the type also carries a static `unit`, a resolved display unit wins for presentation; the type's unit is the fallback whenever injection cannot resolve.
  */
 export function unitNumberDisplayNode<
-    const TUnit extends InjectableStringValueNode,
+    const TUnit extends InjectableUnitValueNode,
     const TPlugins extends Array<PluginNode> | undefined = undefined,
 >(input: UnitNumberDisplayNodeInput<TUnit, TPlugins>): UnitNumberDisplayNode<TUnit, TPlugins> {
     return Object.freeze({

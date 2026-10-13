@@ -42,12 +42,12 @@ test('it wraps integers in fixed points, date-times and durations', () => {
     const u64 = integerTypeNode('u64');
     const i64 = integerTypeNode('i64');
     expect(wrapField(u64, { kind: 'FixedPoint', scale: 6, unit: 'USDC' })).toStrictEqual(
-        fixedPointTypeNode(u64, 6, { unit: 'USDC' }),
+        fixedPointTypeNode(u64, { scale: 6, unit: 'USDC' }),
     );
     expect(wrapField(u64, { base: 2, kind: 'FixedPoint', scale: 32 })).toStrictEqual(
-        fixedPointTypeNode(u64, 32, { base: 2 }),
+        fixedPointTypeNode(u64, { base: 2, scale: 32 }),
     );
-    expect(wrapField(u64, { kind: 'SolAmount' })).toStrictEqual(fixedPointTypeNode(u64, 9, { unit: 'SOL' }));
+    expect(wrapField(u64, { kind: 'SolAmount' })).toStrictEqual(fixedPointTypeNode(u64, { scale: 9, unit: 'SOL' }));
     expect(wrapField(i64, { kind: 'DateTime' })).toStrictEqual(dateTimeTypeNode(i64));
     expect(wrapField(i64, { kind: 'Duration', ticksPerSecond: 1000 })).toStrictEqual(
         durationTypeNode(i64, { ticksPerSecond: 1000 }),
@@ -79,7 +79,7 @@ test('it sets units and unit displays on floats only', () => {
 test('it moves the transforms of the integer onto the wrapper', () => {
     const transforms = [fixedSizeTransformNode(16)];
     expect(wrapField(integerTypeNode('u64', { transforms }), { kind: 'SolAmount' })).toStrictEqual(
-        fixedPointTypeNode(integerTypeNode('u64'), 9, { transforms, unit: 'SOL' }),
+        fixedPointTypeNode(integerTypeNode('u64'), { scale: 9, transforms, unit: 'SOL' }),
     );
 });
 
@@ -108,7 +108,7 @@ test('it does not wrap integers used as sizes or prefixes', () => {
 
 test('it does not wrap numbers that are already wrapped', () => {
     // Given a field that is already a fixed point.
-    const node = struct({ value: fixedPointTypeNode(integerTypeNode('u64'), 6) });
+    const node = struct({ value: fixedPointTypeNode(integerTypeNode('u64'), { scale: 6 }) });
 
     // When we wrap it again, then nothing changes.
     expect(visit(node, setNumberWrappersVisitor({ value: { kind: 'DateTime' } }))).toStrictEqual(node);

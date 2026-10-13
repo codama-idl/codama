@@ -11,6 +11,7 @@ export interface FieldDiscriminatorNode<
     /**
      * The path to the discriminating field, relative to the account or instruction data — e.g. `discriminator` or `header.kind`.
      * Field segments are only valid where the data type resolves to a struct (following links).
+     * The path must not cross a public key's `accountLink`: identification only reads the bytes being identified.
      */
     readonly path: PathString;
     /** The byte offset of the field. */

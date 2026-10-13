@@ -11,7 +11,9 @@ import { getTypeExprFragment } from './typeExpr';
  * The node function's positional-argument list plus a trailing
  * `options` bag for every attribute not listed in `positionalArgs`.
  * `hidden`-defaulted attributes are excluded from both — they're
- * emitted directly in the body. Returned fragment has no leading or
+ * emitted directly in the body. Bag fields are optional unless the spec
+ * requires them and the config supplies no default, in which case the
+ * bag itself is required too. Returned fragment has no leading or
  * trailing whitespace; the caller composes it into a larger fragment.
  */
 export function getNodeFunctionPositionalArgumentsFragment(
@@ -34,10 +36,11 @@ export function getNodeFunctionPositionalArgumentsFragment(
         return true;
     });
     if (bagAttrs.length > 0) {
-        const bagFields = bagAttrs.map(a => renderBagField(a, typeParameterAttrsByName.get(a.name)));
+        const bagFields = bagAttrs.map(a => renderBagField(a, typeParameterAttrsByName.get(a.name), config));
         const fieldLines = mergeFragments(bagFields, parts => parts.map(p => `${p};`).join('\n'));
         const bagType = fragment`{\n${fieldLines}\n}`;
-        bareParams.push(fragment`options: ${bagType} = {}`);
+        const isBagRequired = bagAttrs.some(a => isBagFieldRequired(a, config));
+        bareParams.push(isBagRequired ? fragment`options: ${bagType}` : fragment`options: ${bagType} = {}`);
     }
 
     if (bareParams.length === 0) return fragment``;
@@ -71,8 +74,24 @@ function renderParamForAttribute(
     return fragment`${paramName}${optionalMark}: ${baseTsType}${defaultClause}`;
 }
 
-function renderBagField(attr: AttributeSpec, typeParameterAttribute: AttributeSpec | undefined): Fragment {
-    return fragment`${attr.name}?: ${renderAttributeTsType(attr, typeParameterAttribute)}`;
+function renderBagField(
+    attr: AttributeSpec,
+    typeParameterAttribute: AttributeSpec | undefined,
+    config: NodeConstructorConfig,
+): Fragment {
+    const optionalMark = isBagFieldRequired(attr, config) ? '' : '?';
+    return fragment`${attr.name}${optionalMark}: ${renderAttributeTsType(attr, typeParameterAttribute)}`;
+}
+
+/**
+ * Whether a bag field must be supplied: the spec requires the attribute
+ * and the config supplies no default for it. Arrays are never required
+ * since they skip-when-empty.
+ */
+function isBagFieldRequired(attr: AttributeSpec, config: NodeConstructorConfig): boolean {
+    if (attr.optional || attr.type.kind === 'array') return false;
+    const override = config.attributes?.[attr.name];
+    return !(override && ('default' in override || 'value' in override));
 }
 
 function renderParamTsType(

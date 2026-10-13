@@ -7,7 +7,7 @@ import {
     FloatTypeNode,
     floatTypeNode,
     InjectableIntegerValueNode,
-    InjectableStringValueNode,
+    InjectableUnitValueNode,
     IntegerTypeNode,
     integerTypeNode,
     isNode,
@@ -21,12 +21,12 @@ import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor, NodePa
 /** A semantic wrapper to apply to a number: a scaled quantity, a point in time, a duration, a unit or a display. */
 export type NumberWrapper =
     | { base?: 2 | 10; kind: 'FixedPoint'; scale: number; unit?: string }
-    | { decimals: InjectableIntegerValueNode; kind: 'AmountDisplay'; unit?: InjectableStringValueNode }
+    | { decimals: InjectableIntegerValueNode; kind: 'AmountDisplay'; unit?: InjectableUnitValueNode }
     | { kind: 'DateTime'; ticksPerSecond?: number }
     | { kind: 'Duration'; ticksPerSecond?: number }
     | { kind: 'SolAmount' }
     | { kind: 'Unit'; unit: string }
-    | { kind: 'UnitDisplay'; unit: InjectableStringValueNode };
+    | { kind: 'UnitDisplay'; unit: InjectableUnitValueNode };
 
 type NumberWrapperMap = Record<string, NumberWrapper>;
 
@@ -162,8 +162,13 @@ function wrapIntegerInTypeNode(
                 throw invalidWrapper(wrapper, 'a fixed point cannot wrap a variable-size `shortU16` integer');
             }
             return wrapper.kind === 'SolAmount'
-                ? fixedPointTypeNode(inner, 9, { transforms, unit: 'SOL' })
-                : fixedPointTypeNode(inner, wrapper.scale, { base: wrapper.base, transforms, unit: wrapper.unit });
+                ? fixedPointTypeNode(inner, { scale: 9, transforms, unit: 'SOL' })
+                : fixedPointTypeNode(inner, {
+                      base: wrapper.base,
+                      scale: wrapper.scale,
+                      transforms,
+                      unit: wrapper.unit,
+                  });
         }
     }
 }

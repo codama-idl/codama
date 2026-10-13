@@ -4,7 +4,7 @@ import {
     DateTimeTypeNode,
     DurationTypeNode,
     InjectableIntegerValueNode,
-    InjectableStringValueNode,
+    InjectableUnitValueNode,
     InjectedValueNode,
     IntegerFormat,
     isNode,
@@ -59,8 +59,8 @@ export type FormatOptions = {
     numberFormat?: Intl.NumberFormat;
     /**
      * Format an address, e.g. to name it from sources the caller trusts, such as a token list or
-     * an address book, or to truncate it: `address => names.get(address) ?? address`. Defaults to
-     * the address itself.
+     * an address book, or to truncate it: `address => names.get(address) ?? address`. Used for
+     * public keys and for address units of display nodes. Defaults to the address itself.
      */
     formatAddress?: (address: Address) => string;
     /**
@@ -142,7 +142,7 @@ export function formatFloat(decoded: DecodedFloatTypeNode, options: FormatOption
  *
  * @example
  * ```ts
- * // fixedPointTypeNode(u32, 2, { unit: '%' })
+ * // fixedPointTypeNode(u32, { unit: '%', scale: 2 })
  * formatFixedPoint(decoded); // "123.45%"
  * ```
  */
@@ -304,7 +304,7 @@ function getDisplayUnit(
     options: FormatOptions,
 ): string | undefined {
     if (!display?.unit) return undefined;
-    return resolveStringInput(path, display, display.unit, options);
+    return resolveUnitInput(path, display, display.unit, options);
 }
 
 /** A non-negative integer input of a display node, e.g. the `decimals` of an amount, if it resolves. */
@@ -322,13 +322,20 @@ function resolveIntegerInput(
     return undefined;
 }
 
-/** A non-empty string input of a display node, e.g. the `unit` of an amount, if it resolves. */
-function resolveStringInput(
+/**
+ * The unit of a display node, if it resolves to a non-empty string: a literal string, a literal
+ * address formatted with `formatAddress`, or an injected value.
+ */
+function resolveUnitInput(
     path: NodePath,
     display: Node,
-    input: InjectableStringValueNode,
+    input: InjectableUnitValueNode,
     options: FormatOptions,
 ): string | undefined {
+    if (isNode(input, 'publicKeyValueNode')) {
+        const address = input.publicKey as Address;
+        return options.formatAddress ? options.formatAddress(address) : address;
+    }
     const value: unknown = isNode(input, 'stringValueNode')
         ? input.string
         : options.resolveInjectedValue?.([...path, display, input]);

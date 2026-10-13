@@ -8,7 +8,7 @@ import {
     expectMergeVisitorCount,
 } from '../_setup';
 
-const node = fixedPointTypeNode(integerTypeNode('i64'), 9);
+const node = fixedPointTypeNode(integerTypeNode('i64'), { scale: 9 });
 
 test('mergeVisitor', () => {
     expectMergeVisitorCount(node, 2);
