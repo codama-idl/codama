@@ -1,5 +1,6 @@
 import { CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS, CodamaError } from '@codama/errors';
 import {
+    accountLinkNode,
     accountNode,
     assertIsNode,
     dataValueNode,
@@ -370,6 +371,58 @@ describe('getUpdateVisitor path resolution', () => {
         );
         expect(newRich.display).toStrictEqual(
             instructionDisplayNode({ interpolatedIntent: textNode({ content: 'Send ${data.args.lamports}' }) }),
+        );
+    });
+
+    test('it repoints account data placeholders of interpolated intents', () => {
+        // Given an intent reading the data of a renamed account, through its account link.
+        const mint = accountNode({ data: structTypeNode([u8Field('decimals')]), identifier: 'mint' });
+        const instruction = instructionNode({
+            accounts: [
+                instructionAccountNode({
+                    accountLink: accountLinkNode('mint'),
+                    identifier: 'mint',
+                    isSigner: false,
+                    isWritable: false,
+                }),
+            ],
+            display: instructionDisplayNode({ interpolatedIntent: 'Mint (${accounts.mint.data.decimals} decimals)' }),
+            identifier: 'mintTo',
+        });
+        const root = rootNode(
+            programNode({ accounts: [mint], identifier: 'p', instructions: [instruction], publicKey: '1' }),
+        );
+
+        // When we rename the instruction account and the field of the linked account.
+        const result = repoint(root, {
+            accountFields: renameAt('[accountNode]mint', renames({ decimals: 'precision' })),
+            instructionAccounts: renameAt('[instructionNode]', renames({ mint: 'tokenMint' })),
+        });
+
+        // Then both the account and its data path are rewritten.
+        expect(result.program.instructions?.[0].display).toStrictEqual(
+            instructionDisplayNode({ interpolatedIntent: 'Mint (${accounts.tokenMint.data.precision} decimals)' }),
+        );
+    });
+
+    test('it keeps invalid interpolated intents as they are', () => {
+        // Given an intent with an invalid placeholder next to a renamed account.
+        const intent = 'Send ${accounts.source} (${accounts.source.lamports})';
+        const instruction = instructionNode({
+            accounts: [instructionAccountNode({ identifier: 'source', isSigner: true, isWritable: true })],
+            display: instructionDisplayNode({ interpolatedIntent: intent }),
+            identifier: 'send',
+        });
+        const root = rootNode(programNode({ identifier: 'p', instructions: [instruction], publicKey: '1' }));
+
+        // When we rename the account.
+        const result = repoint(root, {
+            instructionAccounts: renameAt('[instructionNode]', renames({ source: 'from' })),
+        });
+
+        // Then the intent is kept, for validators to report.
+        expect(result.program.instructions?.[0].display).toStrictEqual(
+            instructionDisplayNode({ interpolatedIntent: intent }),
         );
     });
 

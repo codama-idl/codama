@@ -1,5 +1,8 @@
 import {
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
+    CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
+    CODAMA_ERROR__INVALID_TICKS_PER_SECOND,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
     CodamaError,
@@ -7,20 +10,33 @@ import {
 } from '@codama/errors';
 import {
     accountBumpValueNode,
+    accountDataValueNode,
+    accountLinkNode,
     accountNode,
     accountValueNode,
+    conditionalValueNode,
+    constantValueNode,
+    dataValueNode,
+    dateTimeTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
+    durationTypeNode,
     enumTypeNode,
     enumVariantTypeNode,
+    fieldDiscriminatorNode,
+    fixedPointTypeNode,
     IdentifierString,
     injectedValueNode,
     instructionAccountNode,
+    instructionDisplayNode,
     instructionNode,
     instructionStatusNode,
     integerTypeNode,
     integerValueNode,
+    noneValueNode,
     optionTypeNode,
+    pathString,
+    payerValueNode,
     pluginNode,
     programLinkNode,
     programNode,
@@ -28,10 +44,14 @@ import {
     providedNode,
     publicKeyTypeNode,
     rootNode,
+    someValueNode,
+    stringValueNode,
+    structFieldDisplayNode,
     structFieldTypeNode,
     structTypeNode,
     textNode,
     tupleTypeNode,
+    valueLabelDisplayNode,
 } from '@codama/nodes';
 import { NodeStack, visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
@@ -590,5 +610,506 @@ test('it does not check the values of defined types outside a program', () => {
     // Then it does not throw, and only reports the link it cannot resolve without a program.
     expect(items).toStrictEqual([
         validationItem('error', 'Pointing to a missing defined type named "loop"', [loop, struct, field, link]),
+    ]);
+});
+
+test('it reports date-times whose ticks per second are not positive integers', () => {
+    const node = dateTimeTypeNode(integerTypeNode('i64'), { ticksPerSecond: 0 });
+    const items = visit(node, getValidationItemsVisitor());
+    const cause = new CodamaError(CODAMA_ERROR__INVALID_TICKS_PER_SECOND, { path: [node], ticksPerSecond: 0 });
+    expect(items).toStrictEqual([validationItem('error', cause.message, [node], cause)]);
+});
+
+test('it reports durations whose ticks per second are not positive integers', () => {
+    const node = durationTypeNode(integerTypeNode('u64'), { ticksPerSecond: 1.5 });
+    const items = visit(node, getValidationItemsVisitor());
+    const cause = new CodamaError(CODAMA_ERROR__INVALID_TICKS_PER_SECOND, { path: [node], ticksPerSecond: 1.5 });
+    expect(items).toStrictEqual([validationItem('error', cause.message, [node], cause)]);
+});
+
+test('it accepts date-times and durations with positive integer ticks per second', () => {
+    expect(
+        visit(dateTimeTypeNode(integerTypeNode('i64'), { ticksPerSecond: 1000 }), getValidationItemsVisitor()),
+    ).toEqual([]);
+    expect(visit(durationTypeNode(integerTypeNode('u64')), getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it reports fixed points whose scale is not a positive integer', () => {
+    const node = fixedPointTypeNode(integerTypeNode('u64'), { scale: 0 });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Fixed-point scale must be a positive integer, got 0.', [node]),
+    ]);
+});
+
+test('it accepts fixed points with a positive integer scale', () => {
+    expect(visit(fixedPointTypeNode(integerTypeNode('u64'), { scale: 6 }), getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it accepts value labels matching the type of their field', () => {
+    const display = structFieldDisplayNode({
+        valueLabels: [
+            valueLabelDisplayNode({ label: 'Never expires', value: noneValueNode() }),
+            valueLabelDisplayNode({ label: 'Now', value: someValueNode(integerValueNode('0')) }),
+        ],
+    });
+    const node = structFieldTypeNode({ display, identifier: 'expiry', type: optionTypeNode(integerTypeNode('i64')) });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it reports value labels not matching the type of their field', () => {
+    const valueLabel = valueLabelDisplayNode({ label: 'All', value: stringValueNode('max') });
+    const display = structFieldDisplayNode({ valueLabels: [valueLabel] });
+    const node = structFieldTypeNode({ display, identifier: 'amount', type: integerTypeNode('u64') });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Value label does not match the type of field "amount".', [node, display, valueLabel]),
+    ]);
+});
+
+test('it reports value labels with injected values', () => {
+    // Given a value label injecting its value, within an instruction that does not provide it.
+    const valueLabel = valueLabelDisplayNode({ label: 'All', value: injectedValueNode({ key: 'max' }) });
+    const display = structFieldDisplayNode({ valueLabels: [valueLabel] });
+    const field = structFieldTypeNode({ display, identifier: 'amount', type: integerTypeNode('u64') });
+    const data = structTypeNode([field]);
+    const node = instructionNode({ data, identifier: 'withdraw' });
+
+    // Then only the value label is reported, not the missing provider.
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Value labels must be concrete values, got an injected value.', [
+            node,
+            data,
+            field,
+            display,
+            valueLabel,
+        ]),
+    ]);
+});
+
+test('it reports value labels with constant values', () => {
+    const value = constantValueNode(integerTypeNode('u64'), integerValueNode('1'));
+    const valueLabel = valueLabelDisplayNode({ label: 'One', value });
+    const display = structFieldDisplayNode({ valueLabels: [valueLabel] });
+    const node = structFieldTypeNode({ display, identifier: 'amount', type: integerTypeNode('u64') });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Value labels must be concrete values, got a constant value.', [
+            node,
+            display,
+            valueLabel,
+        ]),
+    ]);
+});
+
+test('it checks value labels against the defined types their field links to', () => {
+    // Given a field linking to an optional amount, labelled with an integer.
+    const valueLabel = valueLabelDisplayNode({ label: 'All', value: integerValueNode('1') });
+    const display = structFieldDisplayNode({ valueLabels: [valueLabel] });
+    const field = structFieldTypeNode({ display, identifier: 'amount', type: definedTypeLinkNode('maybeAmount') });
+    const data = structTypeNode([field]);
+    const account = accountNode({ data, identifier: 'vault' });
+    const program = programNode({
+        accounts: [account],
+        definedTypes: [definedTypeNode({ identifier: 'maybeAmount', type: optionTypeNode(integerTypeNode('u64')) })],
+        identifier: 'myProgram',
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+
+    // Then the integer does not match the option.
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Value label does not match the type of field "amount".', [
+            root,
+            program,
+            account,
+            data,
+            field,
+            display,
+            valueLabel,
+        ]),
+    ]);
+});
+
+test('it accepts field discriminators pointing to struct fields', () => {
+    const data = structTypeNode([
+        structFieldTypeNode({ defaultValue: integerValueNode('1'), identifier: 'kind', type: integerTypeNode('u8') }),
+    ]);
+    const node = accountNode({ data, discriminators: [fieldDiscriminatorNode('kind')], identifier: 'vault' });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it reports field discriminators whose path cannot be resolved', () => {
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'kind', type: integerTypeNode('u8') })]);
+    const discriminator = fieldDiscriminatorNode('missing');
+    const node = accountNode({ data, discriminators: [discriminator], identifier: 'vault' });
+    const items = visit(node, getValidationItemsVisitor());
+    const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+        nodePath: [node, data],
+        path: pathString('missing'),
+        segment: 'missing',
+    });
+    expect(items).toStrictEqual([validationItem('error', cause.message, [node, discriminator], cause)]);
+});
+
+test('it reports field discriminators that do not point to struct fields', () => {
+    const data = tupleTypeNode([integerTypeNode('u8')]);
+    const discriminator = fieldDiscriminatorNode('[0]');
+    const node = accountNode({ data, discriminators: [discriminator], identifier: 'vault' });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Field discriminator path "[0]" must point to a struct field.', [node, discriminator]),
+    ]);
+});
+
+test('it reports field discriminators of instructions without data', () => {
+    const discriminator = fieldDiscriminatorNode('kind');
+    const node = instructionNode({ discriminators: [discriminator], identifier: 'close' });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Field discriminator path "kind" cannot be resolved as there is no data.', [
+            node,
+            discriminator,
+        ]),
+    ]);
+});
+
+test('it reports field discriminators crossing account links', () => {
+    // Given a token account identified by the decimals of its mint, read through an account link.
+    const mint = accountNode({
+        data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]),
+        identifier: 'mint',
+    });
+    const mintField = structFieldTypeNode({
+        identifier: 'mint',
+        type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+    });
+    const data = structTypeNode([mintField]);
+    const discriminator = fieldDiscriminatorNode('mint.decimals');
+    const token = accountNode({ data, discriminators: [discriminator], identifier: 'token' });
+    const program = programNode({
+        accounts: [token, mint],
+        identifier: 'myProgram',
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+
+    // Then the discriminator is reported, since identification only reads the bytes being identified.
+    const items = visit(root, getValidationItemsVisitor());
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Field discriminator path "mint.decimals" must not cross an account link.',
+            [root, program, token, discriminator],
+            new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+                nodePath: [root, program, token, data, mintField, mintField.type],
+                path: pathString('mint.decimals'),
+                segment: 'decimals',
+            }),
+        ),
+    ]);
+});
+
+test('it reports account links pointing to missing accounts', () => {
+    const link = accountLinkNode('missing');
+    const node = instructionAccountNode({ accountLink: link, identifier: 'mint', isSigner: false, isWritable: false });
+    const program = programNode({
+        identifier: 'myProgram',
+        instructions: [instructionNode({ accounts: [node], identifier: 'mintTo' })],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Pointing to a missing account named "missing"', [
+            root,
+            program,
+            program.instructions![0],
+            node,
+            link,
+        ]),
+    ]);
+});
+
+test('it accepts data values whose path resolves within the instruction data', () => {
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]);
+    const node = instructionNode({
+        data,
+        identifier: 'transfer',
+        provides: [providedNode('x', dataValueNode('amount'))],
+    });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it reports data values whose path cannot be resolved', () => {
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]);
+    const value = dataValueNode('fee');
+    const provided = providedNode('x', value);
+    const node = instructionNode({ data, identifier: 'transfer', provides: [provided] });
+    const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+        nodePath: [node, data],
+        path: pathString('fee'),
+        segment: 'fee',
+    });
+    expect(visit(node, getValidationItemsVisitor())).toStrictEqual([
+        validationItem('error', cause.message, [node, provided, value], cause),
+    ]);
+});
+
+test('it reports data value defaults whose path cannot be resolved once', () => {
+    // Given an account defaulting to a value conditioned on a missing data path.
+    const value = dataValueNode('missing');
+    const defaultValue = conditionalValueNode({ condition: value, ifTrue: payerValueNode() });
+    const account = instructionAccountNode({ defaultValue, identifier: 'payer', isSigner: true, isWritable: true });
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]);
+    const node = instructionNode({ accounts: [account], data, identifier: 'transfer' });
+
+    // Then only the path is reported, not the invalid dependency it also is.
+    const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+        nodePath: [node, data],
+        path: pathString('missing'),
+        segment: 'missing',
+    });
+    expect(visit(node, getValidationItemsVisitor())).toStrictEqual([
+        validationItem('error', cause.message, [node, account, defaultValue, value], cause),
+    ]);
+});
+
+test('it reports account data value defaults of unknown accounts once', () => {
+    // Given an account defaulting to the data of an unknown account.
+    const value = accountDataValueNode('mint', { path: 'owner' });
+    const account = instructionAccountNode({
+        defaultValue: value,
+        identifier: 'owner',
+        isSigner: false,
+        isWritable: false,
+    });
+    const node = instructionNode({ accounts: [account], identifier: 'transfer' });
+
+    // Then only the account data value is reported, not the invalid dependency it also is.
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Account "mint" is not an account of instruction "transfer".', [node, account, value]),
+    ]);
+});
+
+test('it reports account values of unknown accounts', () => {
+    const value = accountValueNode('missing');
+    const provided = providedNode('owner', value);
+    const node = instructionNode({ identifier: 'transfer', provides: [provided] });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Account "missing" is not an account of instruction "transfer".', [
+            node,
+            provided,
+            value,
+        ]),
+    ]);
+});
+
+test('it reports account bump values of unknown accounts once', () => {
+    // Given an account defaulting to the bump of an unknown account.
+    const value = accountBumpValueNode('missing');
+    const account = instructionAccountNode({
+        defaultValue: value,
+        identifier: 'seed',
+        isSigner: false,
+        isWritable: false,
+    });
+    const node = instructionNode({ accounts: [account], identifier: 'create' });
+
+    // Then the bump value is reported, rather than the invalid dependency it also is.
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Account "missing" is not an account of instruction "create".', [node, account, value]),
+    ]);
+});
+
+test('it reports data values of instructions without data', () => {
+    const value = dataValueNode('amount');
+    const provided = providedNode('x', value);
+    const node = instructionNode({ identifier: 'close', provides: [provided] });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Data path "amount" cannot be resolved as instruction "close" has no data.', [
+            node,
+            provided,
+            value,
+        ]),
+    ]);
+});
+
+test('it accepts data values crossing account links', () => {
+    // Given instruction data holding a mint address linked to the mint account.
+    const mint = accountNode({
+        data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]),
+        identifier: 'mint',
+    });
+    const data = structTypeNode([
+        structFieldTypeNode({ identifier: 'mint', type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }) }),
+    ]);
+    const instruction = instructionNode({
+        data,
+        identifier: 'transfer',
+        provides: [providedNode('decimals', dataValueNode('mint.decimals'))],
+    });
+    const program = programNode({
+        accounts: [mint],
+        identifier: 'myProgram',
+        instructions: [instruction],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // Then the path is resolved through the link.
+    expect(visit(rootNode(program), getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it accepts account data values whose path resolves within the linked account data', () => {
+    const mint = accountNode({
+        data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]),
+        identifier: 'mint',
+    });
+    const instruction = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                accountLink: accountLinkNode('mint'),
+                identifier: 'mint',
+                isSigner: false,
+                isWritable: false,
+            }),
+        ],
+        identifier: 'transfer',
+        provides: [
+            providedNode('decimals', accountDataValueNode('mint', { path: 'decimals' })),
+            providedNode('state', accountDataValueNode('mint')),
+        ],
+    });
+    const program = programNode({
+        accounts: [mint],
+        identifier: 'myProgram',
+        instructions: [instruction],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    expect(visit(rootNode(program), getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it reports account data values whose path cannot be resolved', () => {
+    const mintData = structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]);
+    const mint = accountNode({ data: mintData, identifier: 'mint' });
+    const value = accountDataValueNode('mint', { path: 'supply' });
+    const provided = providedNode('supply', value);
+    const instruction = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                accountLink: accountLinkNode('mint'),
+                identifier: 'mint',
+                isSigner: false,
+                isWritable: false,
+            }),
+        ],
+        identifier: 'transfer',
+        provides: [provided],
+    });
+    const program = programNode({
+        accounts: [mint],
+        identifier: 'myProgram',
+        instructions: [instruction],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+    const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+        nodePath: [root, program, mint, mintData],
+        path: pathString('supply'),
+        segment: 'supply',
+    });
+    expect(visit(root, getValidationItemsVisitor())).toStrictEqual([
+        validationItem('error', cause.message, [root, program, instruction, provided, value], cause),
+    ]);
+});
+
+test('it reports account data values of unknown accounts', () => {
+    const value = accountDataValueNode('mint', { path: 'decimals' });
+    const provided = providedNode('decimals', value);
+    const node = instructionNode({ identifier: 'transfer', provides: [provided] });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Account "mint" is not an account of instruction "transfer".', [node, provided, value]),
+    ]);
+});
+
+test('it reports account data values of accounts without an account link', () => {
+    const value = accountDataValueNode('mint', { path: 'decimals' });
+    const provided = providedNode('decimals', value);
+    const node = instructionNode({
+        accounts: [instructionAccountNode({ identifier: 'mint', isSigner: false, isWritable: false })],
+        identifier: 'transfer',
+        provides: [provided],
+    });
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Account "mint" has no account link, so its data cannot be read.', [
+            node,
+            provided,
+            value,
+        ]),
+    ]);
+});
+
+test('it accepts interpolated intents whose placeholders resolve', () => {
+    const mint = accountNode({
+        data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]),
+        identifier: 'mint',
+    });
+    const instruction = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                accountLink: accountLinkNode('mint'),
+                identifier: 'mint',
+                isSigner: false,
+                isWritable: false,
+            }),
+        ],
+        data: structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]),
+        display: instructionDisplayNode({
+            interpolatedIntent: 'Mint ${data.amount} of ${accounts.mint} (${accounts.mint.data.decimals} decimals)',
+        }),
+        identifier: 'mintTo',
+    });
+    const program = programNode({
+        accounts: [mint],
+        identifier: 'myProgram',
+        instructions: [instruction],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    expect(visit(rootNode(program), getValidationItemsVisitor())).toEqual([]);
+});
+
+test('it reports interpolated intents with invalid placeholders', () => {
+    const display = instructionDisplayNode({ interpolatedIntent: 'Burn ${accounts.mint.lamports}' });
+    const node = instructionNode({ display, identifier: 'burn' });
+    const cause = new CodamaError(CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER, {
+        placeholder: '${accounts.mint.lamports}',
+        template: 'Burn ${accounts.mint.lamports}',
+    });
+    expect(visit(node, getValidationItemsVisitor())).toStrictEqual([
+        validationItem('error', cause.message, [node, display], cause),
+    ]);
+});
+
+test('it reports interpolated intents referring to unknown accounts', () => {
+    const display = instructionDisplayNode({ interpolatedIntent: textNode({ content: 'Close ${accounts.vault}' }) });
+    const node = instructionNode({ display, identifier: 'close' });
+    const items = visit(node, getValidationItemsVisitor());
+    expect(items).toContainEqual(
+        validationItem('error', 'Account "vault" is not an account of instruction "close".', [node, display]),
+    );
+});
+
+test('it reports interpolated intents whose data paths cannot be resolved', () => {
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]);
+    const display = instructionDisplayNode({ interpolatedIntent: 'Transfer ${data.fee}' });
+    const node = instructionNode({ data, display, identifier: 'transfer' });
+    const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+        nodePath: [node, data],
+        path: pathString('fee'),
+        segment: 'fee',
+    });
+    expect(visit(node, getValidationItemsVisitor())).toStrictEqual([
+        validationItem('error', cause.message, [node, display], cause),
     ]);
 });

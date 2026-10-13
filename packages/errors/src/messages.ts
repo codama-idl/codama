@@ -41,6 +41,7 @@ import {
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
     CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
     CODAMA_ERROR__INVALID_BRANDED_STRING,
+    CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
     CODAMA_ERROR__INVALID_TICKS_PER_SECOND,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
@@ -137,6 +138,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED]:
         'Injected value [$key] is not provided and has no fallback. Values injected into a defined type are provided by the instruction that uses it.',
     [CODAMA_ERROR__INVALID_BRANDED_STRING]: 'Expected a valid [$expected], got [$actual].',
+    [CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER]:
+        'Invalid placeholder [$placeholder] in interpolated intent [$template]. Placeholders are `${data.<path>}`, `${accounts.<account>}` or `${accounts.<account>.data[.<path>]}`.',
     [CODAMA_ERROR__INVALID_TICKS_PER_SECOND]:
         'Expected a positive integer number of ticks per second, got [$ticksPerSecond].',
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not find linked node [$name] from [$kind].',

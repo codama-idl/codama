@@ -1,11 +1,19 @@
-import { CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS, CodamaError } from '@codama/errors';
 import {
+    CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
+    CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
+    CodamaError,
+    isCodamaError,
+} from '@codama/errors';
+import {
+    AccountDataValueNode,
     accountDataValueNode,
     accountLinkNode,
     AccountNode,
+    AccountValueNode,
     accountValueNode,
     accountBumpValueNode,
     assertIsNode,
+    DataValueNode,
     dataValueNode,
     definedTypeLinkNode,
     DefinedTypeNode,
@@ -17,6 +25,7 @@ import {
     instructionDisplayNode,
     instructionLinkNode,
     InstructionNode,
+    InterpolatedIntentPart,
     isNode,
     identifierString,
     GetNodeFromKind,
@@ -28,6 +37,8 @@ import {
     tupleTypeNode,
     pdaLinkNode,
     PdaNode,
+    parseInterpolatedIntent,
+    printInterpolatedIntent,
     programLinkNode,
     ProgramNode,
     TextNode,
@@ -286,6 +297,35 @@ function getRenameReferencesTransformers(
 ): BottomUpNodeTransformerWithSelector[] {
     const resolvePaths = createPathResolver(renames, linkables);
 
+    /** Repoint an `accountValueNode` within `path` to its renamed instruction account. */
+    const renameAccountValue = (node: AccountValueNode, path: NodePath): AccountValueNode => {
+        const newIdentifier = getInstructionAccountRename(path, node.identifier, renames);
+        return newIdentifier ? accountValueNode(newIdentifier, { ...node }) : node;
+    };
+
+    /** Repoint the path of a `dataValueNode` within `path` to the renamed fields of its instruction data. */
+    const renameDataValue = (node: DataValueNode, path: NodePath): DataValueNode => {
+        const instructionPath = getNodePathUntilLastNode(path, 'instructionNode');
+        if (!instructionPath) return node;
+        const newPath = resolvePaths.fromInstruction(node.path, instructionPath);
+        return newPath === node.path ? node : dataValueNode(newPath, { ...node });
+    };
+
+    /** Repoint an `accountDataValueNode` within `path` to its renamed instruction account and account fields. */
+    const renameAccountDataValue = (node: AccountDataValueNode, path: NodePath): AccountDataValueNode => {
+        const newAccount = getInstructionAccountRename(path, node.account, renames);
+        const instructionPath = getNodePathUntilLastNode(path, 'instructionNode');
+        const account = instructionPath
+            ? getLastNodeFromPath(instructionPath).accounts?.find(a => a.identifier === node.account)
+            : undefined;
+        const newPath =
+            node.path && instructionPath && account
+                ? resolvePaths.fromInstructionAccount(node.path, instructionPath, account)
+                : node.path;
+        if (!newAccount && newPath === node.path) return node;
+        return accountDataValueNode(newAccount ?? node.account, { ...node, path: newPath });
+    };
+
     return [
         {
             select: '[programLinkNode]',
@@ -348,38 +388,23 @@ function getRenameReferencesTransformers(
             select: '[accountValueNode|accountBumpValueNode]',
             transform: (node, stack) => {
                 assertIsNode(node, ['accountValueNode', 'accountBumpValueNode']);
+                if (isNode(node, 'accountValueNode')) return renameAccountValue(node, stack.getPath());
                 const newIdentifier = getInstructionAccountRename(stack.getPath(), node.identifier, renames);
-                if (!newIdentifier) return node;
-                return isNode(node, 'accountValueNode')
-                    ? accountValueNode(newIdentifier, { ...node })
-                    : accountBumpValueNode(newIdentifier, { ...node });
+                return newIdentifier ? accountBumpValueNode(newIdentifier, { ...node }) : node;
             },
         },
         {
             select: '[dataValueNode]',
             transform: (node, stack) => {
                 assertIsNode(node, 'dataValueNode');
-                const instructionPath = getNodePathUntilLastNode(stack.getPath(), 'instructionNode');
-                if (!instructionPath) return node;
-                const path = resolvePaths.fromInstruction(node.path, instructionPath);
-                return path === node.path ? node : dataValueNode(path, { ...node });
+                return renameDataValue(node, stack.getPath());
             },
         },
         {
             select: '[accountDataValueNode]',
             transform: (node, stack) => {
                 assertIsNode(node, 'accountDataValueNode');
-                const newAccount = getInstructionAccountRename(stack.getPath(), node.account, renames);
-                const instructionPath = getNodePathUntilLastNode(stack.getPath(), 'instructionNode');
-                const account = instructionPath
-                    ? getLastNodeFromPath(instructionPath).accounts?.find(a => a.identifier === node.account)
-                    : undefined;
-                const path =
-                    node.path && instructionPath && account
-                        ? resolvePaths.fromInstructionAccount(node.path, instructionPath, account)
-                        : node.path;
-                if (!newAccount && path === node.path) return node;
-                return accountDataValueNode(newAccount ?? node.account, { ...node, path });
+                return renameAccountDataValue(node, stack.getPath());
             },
         },
         {
@@ -402,21 +427,24 @@ function getRenameReferencesTransformers(
                 assertIsNode(node, 'instructionDisplayNode');
                 const instructionPath = getNodePathUntilLastNode(stack.getPath(), 'instructionNode');
                 if (!instructionPath || node.interpolatedIntent === undefined) return node;
-                const renameIntent = (intent: string): string =>
-                    intent.replace(
-                        /\$\{(data|accounts)((?:\.[A-Za-z_][A-Za-z0-9_]*|\[(?:0|[1-9][0-9]*)\])*)\}/g,
-                        (placeholder: string, root: string, rest: string) => {
-                            if (root === 'accounts') {
-                                const account = rest.slice(1);
-                                const newAccount = getInstructionAccountRename(instructionPath, account, renames);
-                                return newAccount ? `\${accounts.${newAccount}}` : placeholder;
-                            }
-                            const path = rest.startsWith('.') ? rest.slice(1) : rest;
-                            const newPath = resolvePaths.fromInstruction(path, instructionPath);
-                            if (newPath === path) return placeholder;
-                            return `\${data${newPath.startsWith('[') ? '' : '.'}${newPath}}`;
-                        },
-                    );
+                // Placeholders are renamed as the contextual values they are equivalent to. Invalid
+                // intents are kept as they are, for validators to report.
+                const renameIntent = (intent: string): string => {
+                    let parts: InterpolatedIntentPart[];
+                    try {
+                        parts = parseInterpolatedIntent(intent);
+                    } catch (error) {
+                        if (isCodamaError(error, CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER)) return intent;
+                        throw error;
+                    }
+                    const newParts = parts.map(part => {
+                        if (typeof part === 'string') return part;
+                        if (isNode(part, 'dataValueNode')) return renameDataValue(part, instructionPath);
+                        if (isNode(part, 'accountValueNode')) return renameAccountValue(part, instructionPath);
+                        return renameAccountDataValue(part, instructionPath);
+                    });
+                    return newParts.every((part, i) => part === parts[i]) ? intent : printInterpolatedIntent(newParts);
+                };
                 const intent = node.interpolatedIntent;
                 const newIntent: string | TextNode =
                     typeof intent === 'string'

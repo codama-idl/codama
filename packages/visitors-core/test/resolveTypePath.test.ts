@@ -1,5 +1,7 @@
 import { CODAMA_ERROR__CANNOT_RESOLVE_PATH, CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
+    accountLinkNode,
+    accountNode,
     arrayTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
@@ -231,6 +233,123 @@ describe('resolveTypePath', () => {
                 nodePath: source,
                 path: pathString('x'),
                 segment: 'x',
+            }),
+        );
+    });
+});
+
+describe('resolveTypePath with account links', () => {
+    // A token account whose `mint` field links to the mint account.
+    const decimals = structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') });
+    const mintData = structTypeNode([decimals]);
+    const mintAccount = accountNode({ data: mintData, identifier: 'mint' });
+    const mintField = structFieldTypeNode({
+        identifier: 'mint',
+        type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+    });
+    const tokenData = structTypeNode([mintField]);
+    const tokenAccount = accountNode({ data: tokenData, identifier: 'token' });
+    const program = programNode({ accounts: [tokenAccount, mintAccount], identifier: 'myProgram', publicKey: '1111' });
+    const root = rootNode(program);
+    const source = [root, program, tokenAccount, tokenData] as const;
+
+    test('it follows account links into the data of the linked account', () => {
+        const resolved = resolveTypePath(source, pathString('mint.decimals'), getLinkables(root), {
+            followAccountLinks: true,
+        });
+        expect(resolved).toStrictEqual([root, program, mintAccount, mintData, decimals]);
+    });
+
+    test('it does not follow account links by default', () => {
+        expectCodamaError(
+            () => resolveTypePath(source, pathString('mint.decimals'), getLinkables(root)),
+            new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+                nodePath: [...source, mintField, mintField.type],
+                path: pathString('mint.decimals'),
+                segment: 'decimals',
+            }),
+        );
+    });
+
+    test('it returns a linked public key as addressed without following it', () => {
+        const resolved = resolveTypePath(source, pathString('mint'), getLinkables(root), { followAccountLinks: true });
+        expect(resolved).toStrictEqual([...source, mintField]);
+    });
+
+    test('it follows account links back to the same account across segments', () => {
+        // Given a linked list whose `next` field links to the account itself.
+        const value = structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') });
+        const next = structFieldTypeNode({
+            identifier: 'next',
+            type: publicKeyTypeNode({ accountLink: accountLinkNode('node') }),
+        });
+        const nodeData = structTypeNode([value, next]);
+        const nodeAccount = accountNode({ data: nodeData, identifier: 'node' });
+        const listProgram = programNode({ accounts: [nodeAccount], identifier: 'list', publicKey: '2222' });
+        const listRoot = rootNode(listProgram);
+
+        // Then each segment can follow the link again, as paths are finite.
+        const resolved = resolveTypePath(
+            [listRoot, listProgram, nodeAccount, nodeData],
+            pathString('next.next.value'),
+            getLinkables(listRoot),
+            { followAccountLinks: true },
+        );
+        expect(resolved).toStrictEqual([listRoot, listProgram, nodeAccount, nodeData, value]);
+    });
+
+    test('it throws on accounts whose data links back to themselves rather than looping', () => {
+        // Given an account whose data is a public key linking to the account itself.
+        const selfData = publicKeyTypeNode({ accountLink: accountLinkNode('self') });
+        const selfAccount = accountNode({ data: selfData, identifier: 'self' });
+        const selfProgram = programNode({ accounts: [selfAccount], identifier: 'loop', publicKey: '3333' });
+        const selfRoot = rootNode(selfProgram);
+
+        // Then resolving into it throws once the account is followed twice.
+        expectCodamaError(
+            () =>
+                resolveTypePath(
+                    [selfRoot, selfProgram, selfAccount, selfData],
+                    pathString('x'),
+                    getLinkables(selfRoot),
+                    {
+                        followAccountLinks: true,
+                    },
+                ),
+            new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+                nodePath: [selfRoot, selfProgram, selfAccount, selfData],
+                path: pathString('x'),
+                segment: 'x',
+            }),
+        );
+    });
+
+    test('it throws when a linked account cannot be found', () => {
+        const link = accountLinkNode('missing');
+        const missingField = structFieldTypeNode({
+            identifier: 'missing',
+            type: publicKeyTypeNode({ accountLink: link }),
+        });
+        const data = structTypeNode([missingField]);
+        const account = accountNode({ data, identifier: 'holder' });
+        const holderProgram = programNode({ accounts: [account], identifier: 'holder', publicKey: '4444' });
+        const holderRoot = rootNode(holderProgram);
+
+        expectCodamaError(
+            () =>
+                resolveTypePath(
+                    [holderRoot, holderProgram, account, data],
+                    pathString('missing.x'),
+                    getLinkables(holderRoot),
+                    {
+                        followAccountLinks: true,
+                    },
+                ),
+            new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
+                kind: 'accountLinkNode',
+                linkNode: link,
+                name: link.identifier,
+                path: [holderRoot, holderProgram, account, data, missingField, missingField.type, link],
             }),
         );
     });
