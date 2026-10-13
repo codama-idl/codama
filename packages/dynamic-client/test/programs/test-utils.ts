@@ -28,7 +28,8 @@ export function loadIdl(idlFileName: string, baseDir?: string): IdlInput {
  */
 export function createTestProgramClient<T = ProgramClient>(idlFileName: string): T {
     const idl = loadIdl(idlFileName);
-    return createProgramClient<T>(idl);
+    // Test programs read no account data, so their clients need no `fetchAccounts`.
+    return createProgramClient<ProgramClient>(idl) as T;
 }
 
 export function loadRoot(idlFileName: string): RootNode {

@@ -1,4 +1,4 @@
-import { getResolutionRefs } from '@codama/dynamic-address-resolution/codegen';
+import { getResolutionRefs, readsAccountData } from '@codama/dynamic-address-resolution/codegen';
 import { pascalCase, type RootNode } from 'codama';
 
 import { getInstructionSignerRef } from './generate-signer-types';
@@ -27,4 +27,21 @@ export type ${programName}InstructionBuilders = {\n`;
 
     output += '};\n';
     return output;
+}
+
+/**
+ * Generate a `${Name}ReadsAccountData` boolean literal type per instruction, telling whether
+ * building it reads account data. Passed to `createInstructionsBuilder`, it makes its
+ * `fetchAccounts` option required accordingly.
+ *
+ * NOTE: it is intentionally NOT exported as public method.
+ * Use `generateTypes` instead.
+ */
+export function generateReadsAccountDataTypes(idl: RootNode): string {
+    let output = '';
+    for (const ix of idl.program.instructions ?? []) {
+        const reads = readsAccountData([idl, idl.program, ix]);
+        output += `export type ${pascalCase(ix.identifier)}ReadsAccountData = ${reads ? 'true' : 'false'};\n`;
+    }
+    return output === '' ? '' : `${output}\n`;
 }

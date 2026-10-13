@@ -276,6 +276,32 @@ describe('resolveTypePath with account links', () => {
         expect(resolved).toStrictEqual([...source, mintField]);
     });
 
+    test('it only follows account links for field segments', () => {
+        // Given a public key linking to an account whose data is a tuple.
+        const pairData = tupleTypeNode([integerTypeNode('u8')]);
+        const pairAccount = accountNode({ data: pairData, identifier: 'pair' });
+        const pairField = structFieldTypeNode({
+            identifier: 'pair',
+            type: publicKeyTypeNode({ accountLink: accountLinkNode('pair') }),
+        });
+        const pairSource = structTypeNode([pairField]);
+        const pairProgram = programNode({ accounts: [pairAccount], identifier: 'pairs', publicKey: '5555' });
+        const pairRoot = rootNode(pairProgram);
+
+        // Then an index segment does not follow the link.
+        expectCodamaError(
+            () =>
+                resolveTypePath([pairRoot, pairProgram, pairSource], pathString('pair[0]'), getLinkables(pairRoot), {
+                    followAccountLinks: true,
+                }),
+            new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+                nodePath: [pairRoot, pairProgram, pairSource, pairField, pairField.type],
+                path: pathString('pair[0]'),
+                segment: '[0]',
+            }),
+        );
+    });
+
     test('it follows account links back to the same account across segments', () => {
         // Given a linked list whose `next` field links to the account itself.
         const value = structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') });

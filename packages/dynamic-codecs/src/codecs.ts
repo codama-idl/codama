@@ -20,6 +20,7 @@ import {
     IntegerTypeNode,
     isNode,
     RegisteredTypeNode,
+    StructFieldTypeNode,
     TransformNode,
     TYPE_NODE_KINDS,
     ValueNode,
@@ -138,6 +139,13 @@ export type EncodableNodes =
 export type CodecVisitorOptions = {
     /** The encoding of decoded plain bytes, e.g. `'base16'` decodes them as `["base16", "0102"]`. Defaults to `base64`. */
     bytesEncoding?: BytesEncoding;
+    /**
+     * The values of struct field default values resolved beforehand, used when encoding instead
+     * of evaluating the default value nodes of these fields. Codecs evaluate default values
+     * synchronously, so this lets callers supply the ones that need asynchronous work, e.g. a
+     * default injected from the data of an account, which must be fetched first.
+     */
+    resolvedDefaultValues?: ReadonlyMap<StructFieldTypeNode, unknown>;
 };
 
 /** A decoded node before its cursor positions are known, which the outermost layer of its codec adds. */
@@ -844,7 +852,12 @@ export function getNodeCodecVisitor(
         },
         visitStructFieldType(node) {
             const path = stack.getPath('structFieldTypeNode');
-            const getDefaultValue = node.defaultValue ? getDefaultValueGetter(node.defaultValue) : undefined;
+            const resolvedDefaultValues = options.resolvedDefaultValues;
+            const getDefaultValue = resolvedDefaultValues?.has(node)
+                ? () => resolvedDefaultValues.get(node)
+                : node.defaultValue
+                  ? getDefaultValueGetter(node.defaultValue)
+                  : undefined;
             const omitted = node.defaultValueStrategy === 'omitted';
             return getCompositeCodec(
                 visit(node.type, this),

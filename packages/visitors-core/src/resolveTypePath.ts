@@ -65,9 +65,9 @@ export type ResolveTypePathOptions = {
  * reflects where each node is defined. The last node is returned as
  * addressed, e.g. a struct field whose type is a link. Indices into arrays
  * and sets are not checked against their count, as they select the item type.
- * With `followAccountLinks`, public keys carrying an `accountLink` resolve to
- * the data of the linked account, e.g. `mint.decimals` reads the `decimals`
- * of the account the `mint` field links to.
+ * With `followAccountLinks`, field segments applied to public keys carrying an
+ * `accountLink` resolve within the data of the linked account, e.g.
+ * `mint.decimals` reads the `decimals` of the account the `mint` field links to.
  *
  * @param source - The path to the type the path expression is relative to,
  *   e.g. `[root, program, instruction, instruction.data]`.
@@ -139,7 +139,12 @@ function resolveContainer(
             if (followedTypes.has(definedType)) throw getCannotResolvePathError(current, path, segment);
             followedTypes.add(definedType);
             current = [...definedTypePath, definedType.type];
-        } else if (options.followAccountLinks && isNode(node, 'publicKeyTypeNode') && node.accountLink) {
+        } else if (
+            options.followAccountLinks &&
+            segment.kind === 'field' &&
+            isNode(node, 'publicKeyTypeNode') &&
+            node.accountLink
+        ) {
             const linkPath = [...current, node.accountLink] as unknown as NodePath<AccountLinkNode>;
             const accountPath = linkables.getPathOrThrow(linkPath);
             const account = getLastNodeFromPath(accountPath);

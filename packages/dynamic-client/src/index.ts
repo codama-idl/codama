@@ -1,7 +1,13 @@
 export type { ProgramDerivedAddress } from '@solana/addresses';
 
 export { isPublicKeyLike, toAddress } from '@codama/dynamic-address-resolution';
-export type { AccountsInput, AddressInput, DataInput, PublicKeyLike } from '@codama/dynamic-address-resolution';
+export type {
+    AccountsInput,
+    AddressInput,
+    DataInput,
+    FetchAccountsFn,
+    PublicKeyLike,
+} from '@codama/dynamic-address-resolution';
 
 export { CodamaError, isCodamaError } from '@codama/errors';
 export {

@@ -26,6 +26,7 @@ describe('generateTypes', () => {
         expect(output).toContain('export type TransferInstructionDataArgs');
         expect(output).toContain('export type TransferAccounts');
         expect(output).toContain("export type TransferSigners = ('authority')[];");
+        expect(output).toContain('export type TransferReadsAccountData = false;');
         expect(output).toContain('export type TokenInstructionBuilders');
         expect(output).toContain(
             'transfer: InstructionsBuilderFn<TransferInstructionDataArgs, TransferAccounts, TransferSigners>',

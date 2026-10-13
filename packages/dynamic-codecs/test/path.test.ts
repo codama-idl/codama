@@ -1,5 +1,7 @@
 import { CODAMA_ERROR__CANNOT_RESOLVE_PATH, CodamaError } from '@codama/errors';
 import {
+    accountLinkNode,
+    accountNode,
     arrayTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
@@ -11,14 +13,15 @@ import {
     optionTypeNode,
     pathString,
     programNode,
+    publicKeyTypeNode,
     rootNode,
     structFieldTypeNode,
     structTypeNode,
     tupleTypeNode,
 } from '@codama/nodes';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
-import { formatDecodedNode, getDecodedNodeAtPath, getNodeCodec } from '../src';
+import { type DecodedAccountNode, formatDecodedNode, getDecodedNodeAtPath, getNodeCodec } from '../src';
 import { hex } from './_setup';
 
 const u8 = integerTypeNode('u8');
@@ -127,4 +130,101 @@ test('it follows the data of enum variants', () => {
     const node = enumTypeNode([enumVariantTypeNode('set', { data: config })]);
     const decoded = getNodeCodec([node]).decode(hex('00191e0102'));
     expect(getDecodedNodeAtPath(decoded.variant, pathString('fees[0]'))?.value).toBe(25n);
+});
+
+describe('account links', () => {
+    // A transfer whose `mint` links to a mint account holding its `decimals`.
+    const mint = accountNode({
+        data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: u8 })]),
+        identifier: 'mint',
+    });
+    const transfer = structTypeNode([
+        structFieldTypeNode({ identifier: 'mint', type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }) }),
+        structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() }),
+    ]);
+    const root = rootNode(programNode({ accounts: [mint], identifier: 'myProgram', publicKey: '1111' }));
+    const decodedTransfer = getNodeCodec([root, root.program, transfer]).decode(new Uint8Array(64).fill(1));
+    const decodedMint = getNodeCodec([root, root.program, mint]).decode(hex('06')); // decimals = 6
+
+    test('it follows account links using the resolved account', () => {
+        const resolveAccountLink = () => decodedMint;
+        const decimals = getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'), { resolveAccountLink });
+        expect(decimals).toBe(getDecodedNodeAtPath(decodedMint, pathString('decimals')));
+    });
+
+    test('it gives the decoded public key to the account link resolver', () => {
+        const publicKeys: unknown[] = [];
+        getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'), {
+            resolveAccountLink: publicKey => {
+                publicKeys.push(publicKey);
+                return decodedMint;
+            },
+        });
+        expect(publicKeys).toEqual([decodedTransfer.fields[0].type]);
+    });
+
+    test('it returns undefined when the linked account is not resolved', () => {
+        const resolveAccountLink = () => undefined;
+        expect(
+            getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'), { resolveAccountLink }),
+        ).toBeUndefined();
+    });
+
+    test('it throws when crossing an account link without a resolver', () => {
+        const mintField = transfer.fields![0];
+        expect(() => getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'))).toThrow(
+            new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+                nodePath: [root, root.program, transfer, mintField, mintField.type],
+                path: pathString('mint.decimals'),
+                segment: 'decimals',
+            }),
+        );
+    });
+
+    test('it does not follow public keys without account links', () => {
+        const resolveAccountLink = () => decodedMint;
+        expect(() =>
+            getDecodedNodeAtPath(decodedTransfer, pathString('owner.decimals'), { resolveAccountLink }),
+        ).toThrow(expect.objectContaining({ context: expect.objectContaining({ segment: 'decimals' }) }));
+    });
+
+    test('it returns linked public keys as addressed', () => {
+        const resolveAccountLink = () => decodedMint;
+        expect(getDecodedNodeAtPath(decodedTransfer, pathString('mint'), { resolveAccountLink })).toBe(
+            decodedTransfer.fields[0],
+        );
+    });
+
+    test('it follows account links within formatted nodes', () => {
+        const formattedMint = formatDecodedNode(decodedMint);
+        const decimals = getDecodedNodeAtPath(formatDecodedNode(decodedTransfer), pathString('mint.decimals'), {
+            resolveAccountLink: () => formattedMint,
+        });
+        expect(decimals?.text).toBe('6');
+    });
+
+    test('it follows account links of linked accounts', () => {
+        // A token whose `mint` links to the mint account.
+        const token = accountNode({
+            data: structTypeNode([
+                structFieldTypeNode({
+                    identifier: 'mint',
+                    type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+                }),
+            ]),
+            identifier: 'token',
+        });
+        const tokenRoot = rootNode(
+            programNode({ accounts: [mint, token], identifier: 'myProgram', publicKey: '1111' }),
+        );
+        const decodedToken = getNodeCodec([tokenRoot, tokenRoot.program, token]).decode(new Uint8Array(32));
+        const accounts = new Map<string, DecodedAccountNode>([
+            [decodedTransfer.fields[0].value as string, decodedToken],
+            [getDecodedNodeAtPath(decodedToken, pathString('mint'))?.value as string, decodedMint],
+        ]);
+        const decimals = getDecodedNodeAtPath(decodedTransfer, pathString('mint.mint.decimals'), {
+            resolveAccountLink: publicKey => accounts.get(publicKey.value),
+        });
+        expect(decimals?.value).toBe(6n);
+    });
 });

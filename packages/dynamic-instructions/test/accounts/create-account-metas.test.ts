@@ -1,3 +1,4 @@
+import { getNodeValueCodec } from '@codama/dynamic-codecs';
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
@@ -5,9 +6,13 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
     CodamaError,
 } from '@codama/errors';
+import type { EncodedAccount } from '@solana/accounts';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { AccountRole } from '@solana/instructions';
 import {
+    accountDataValueNode,
+    accountLinkNode,
+    accountNode,
     dataValueNode,
     instructionAccountNode,
     type InstructionAccountNodeInput,
@@ -26,9 +31,9 @@ import {
     structTypeNode,
     variablePdaSeedNode,
 } from 'codama';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
-import { createAccountMetas } from '../../src';
+import { createAccountMetas, type FetchAccountsFn } from '../../src';
 import { generateAddress, getInstructionPath, PROGRAM_ADDRESS } from '../_setup';
 
 const RENT = 'SysvarRent111111111111111111111111111111111' as Address;
@@ -300,5 +305,47 @@ describe('remaining accounts', () => {
                 expectedType: 'Address | PublicKey',
             }),
         );
+    });
+});
+
+describe('account data', () => {
+    test('it fetches the accounts read by all accounts in a single call', async () => {
+        // Given two accounts defaulting to the data of two other accounts.
+        const holder = accountNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() })]),
+            identifier: 'holder',
+        });
+        const holderAccount = (identifier: string) => account(identifier, { accountLink: accountLinkNode('holder') });
+        const ownerOf = (identifier: string) => accountDataValueNode(identifier, { path: 'owner' });
+        const path = getInstructionPath(
+            instruction({
+                accounts: [
+                    holderAccount('first'),
+                    holderAccount('second'),
+                    account('firstOwner', { defaultValue: ownerOf('first') }),
+                    account('secondOwner', { defaultValue: ownerOf('second') }),
+                ],
+            }),
+            { accounts: [holder] },
+        );
+        const [first, second] = await Promise.all([generateAddress(), generateAddress()]);
+        const data = getNodeValueCodec([path[0], path[1], holder]).encode({ owner: RENT }) as Uint8Array;
+        const fetchAccounts = vi.fn<FetchAccountsFn>(addresses =>
+            Promise.resolve(
+                addresses.map((address): EncodedAccount => ({
+                    address,
+                    data,
+                    executable: false,
+                    lamports: 0n as EncodedAccount['lamports'],
+                    programAddress: PROGRAM_ADDRESS,
+                    space: BigInt(data.length),
+                })),
+            ),
+        );
+
+        // Then both are fetched together.
+        const accountMetas = await createAccountMetas({ accounts: { first, second }, fetchAccounts, path });
+        expect(accountMetas.map(meta => meta.address)).toEqual([first, second, RENT, RENT]);
+        expect(fetchAccounts.mock.calls).toEqual([[[first, second]]]);
     });
 });

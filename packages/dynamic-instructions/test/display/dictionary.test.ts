@@ -18,7 +18,7 @@ import {
     type DisplayAccountMap,
     type DisplayDictionary,
     type DisplayNamedMap,
-    type FetchAccountsFn,
+    type FetchMaybeAccountsFn,
     getDisplayAccountMap,
     getDisplayAccountMapCodec,
     getDisplayAccountMapDecoder,
@@ -342,7 +342,7 @@ describe('getDisplayAccountMap', () => {
         const parsed = makeParsedInstruction(root, instruction, { amount: 1n }, new Map([['mint', MINT]]));
         const encoded = { ...encodeAccountData(root, mint, { decimals: 6 }), address: MINT };
 
-        const fetchAccounts = vi.fn<FetchAccountsFn>(addresses =>
+        const fetchAccounts = vi.fn<FetchMaybeAccountsFn>(addresses =>
             Promise.resolve(addresses.map(address => ({ ...encoded, address }))),
         );
 
@@ -366,7 +366,7 @@ describe('getDisplayAccountMap', () => {
         });
         const root = makeRoot([instruction]);
         const parsed = makeParsedInstruction(root, instruction, { amount: 1n });
-        const fetchAccounts = vi.fn<FetchAccountsFn>(() => Promise.resolve([]));
+        const fetchAccounts = vi.fn<FetchMaybeAccountsFn>(() => Promise.resolve([]));
 
         // When we fill the account map.
         const map = await getDisplayAccountMap(root, parsed, fetchAccounts);
@@ -382,7 +382,7 @@ describe('getDisplayAccountMap', () => {
         const mint = mintAccountNode();
         const root = makeRoot([instruction], 'testProgram', [mint]);
         const parsed = makeParsedInstruction(root, instruction, { amount: 1n }, new Map([['mint', MINT]]));
-        const fetchAccounts: FetchAccountsFn = addresses =>
+        const fetchAccounts: FetchMaybeAccountsFn = addresses =>
             Promise.resolve(addresses.map(address => ({ address, exists: false }) as MaybeEncodedAccount));
 
         // When we fill the account map.

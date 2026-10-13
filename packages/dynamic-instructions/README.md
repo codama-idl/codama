@@ -22,7 +22,7 @@ pnpm install @codama/dynamic-instructions
 
 ## Types generation
 
-This package can emit TypeScript types per instruction: `${Name}InstructionDataArgs`, `${Name}Accounts` and `${Name}AccountsWithData`, `${Name}Signers` aliases, plus an aggregate `${Program}InstructionBuilders` map.
+This package can emit TypeScript types per instruction: `${Name}InstructionDataArgs`, `${Name}Accounts` and `${Name}AccountsWithData`, `${Name}Signers` aliases, `${Name}ReadsAccountData` flags, plus an aggregate `${Program}InstructionBuilders` map.
 
 The `${Name}InstructionDataArgs` and `${Name}Accounts` types are emitted by [`@codama/dynamic-address-resolution/codegen`](../dynamic-address-resolution/README.md) and re-used here, since the accounts that may be omitted depend on the resolution rules.
 
@@ -46,7 +46,7 @@ const source = generateTypes(idl);
 
 Every function takes the path of the instruction from the root node, e.g. `[root, root.program, instruction]`, so links and injected values resolve from the program defining the instruction, which may be an additional program.
 
-### `createInstructionsBuilder(path)`
+### `createInstructionsBuilder(path, options?)`
 
 Creates an async function building the `Instruction` (`@solana/instructions`) of an instruction. It encodes the provided data, resolves the accounts that are not provided from their default values, and uses the address of the program defining the instruction.
 
@@ -73,7 +73,19 @@ import type {
 const build = createInstructionsBuilder<TransferInstructionDataArgs, TransferAccounts, TransferSigners>(path);
 ```
 
-### `encodeInstructionData(path, data?)`
+Default values may read the data of accounts, e.g. the `decimals` of a mint injected into the data of `transferChecked`. Pass a `fetchAccounts` option returning these accounts: each build fetches every account it reads once, in as few calls as possible. The generated `${Name}ReadsAccountData` types make it required for the instructions reading account data. See [Reading account data](../dynamic-address-resolution/README.md#reading-account-data).
+
+```ts
+const build = createInstructionsBuilder<
+    TransferCheckedInstructionDataArgs,
+    TransferCheckedAccounts,
+    TransferCheckedSigners,
+    TransferCheckedReadsAccountData // true: `fetchAccounts` is required
+>([root, root.program, transferChecked], { fetchAccounts });
+const instruction = await build({ accounts: { authority, destination, mint, source }, data: { amount: 42n } });
+```
+
+### `encodeInstructionData(path, data?, options?)`
 
 Encodes the data of an instruction using its codec from [`@codama/dynamic-codecs`](../dynamic-codecs/README.md), including the default values of its fields, e.g. discriminators.
 
@@ -83,9 +95,11 @@ const bytes = encodeInstructionData([root, root.program, transfer], { amount: 1_
 
 Codama errors raised while encoding are thrown as is, e.g. a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error for a value of the wrong type. Other encoding errors, e.g. an integer out of range, throw a `CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` error whose `cause` is the original error. Use `createInstructionDataEncoder(path)` to create the codec once and encode several times.
 
-### `createAccountMetas({ path, accounts?, data?, signers? })`
+Default values injected from account data cannot be evaluated while encoding: resolve them with `resolveInstructionDataDefaultValues` from [`@codama/dynamic-address-resolution`](../dynamic-address-resolution/README.md#reading-account-data) and pass them as the `resolvedDefaultValues` option. The encoder then creates a codec for these values on each call, since they differ from one instruction to the next.
 
-Creates the `AccountMeta`s of an instruction: its accounts, in order, followed by its remaining accounts. Accounts that are not provided are resolved from their default values, e.g. PDAs derived from the data, and optional accounts provided as `null` follow the `optionalAccountStrategy` of the instruction.
+### `createAccountMetas({ path, accounts?, data?, fetchAccounts?, signers? })`
+
+Creates the `AccountMeta`s of an instruction: its accounts, in order, followed by its remaining accounts. Accounts that are not provided are resolved from their default values, e.g. PDAs derived from the data, and optional accounts provided as `null` follow the `optionalAccountStrategy` of the instruction. Default values reading account data fetch these accounts with `fetchAccounts`, shared by all the accounts.
 
 ```ts
 const accountMetas = await createAccountMetas({
@@ -192,4 +206,4 @@ const bytes = getDisplayDictionaryCodec().encode(dictionary);
 
 ### Consuming the dictionary (offline)
 
-`fetchAccounts` (batch) is the counterpart of the display layer's `fetchAccount`; wire it to Kit's `fetchEncodedAccounts` for a single `getMultipleAccounts` round-trip. The bundle is encoded with byte codecs — `getDisplayDictionaryCodec` (and per-map `getDisplayAccountMapCodec` / `getDisplayNamedMapCodec`, each also available as split `…Encoder` / `…Decoder`). The offline renderer decodes it and resolves the display from the maps: account bytes are decoded through the IDL's `accountLink` exactly as online, and addresses are named from `names`.
+`fetchAccounts` (a `FetchMaybeAccountsFn`, since missing accounts are dropped) is the batch counterpart of the display layer's `fetchAccount`; wire it to Kit's `fetchEncodedAccounts` for a single `getMultipleAccounts` round-trip. The bundle is encoded with byte codecs — `getDisplayDictionaryCodec` (and per-map `getDisplayAccountMapCodec` / `getDisplayNamedMapCodec`, each also available as split `…Encoder` / `…Decoder`). The offline renderer decodes it and resolves the display from the maps: account bytes are decoded through the IDL's `accountLink` exactly as online, and addresses are named from `names`.

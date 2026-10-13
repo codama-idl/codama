@@ -53,21 +53,24 @@ describe('isAccountAutoResolvable', () => {
         expect(isAccountAutoResolvable(acc)).toBe(true);
     });
 
-    test('it returns false for defaults requiring account fetches', () => {
-        const bump = instructionAccountNode({
+    test('it returns false for account bumps', () => {
+        const acc = instructionAccountNode({
             defaultValue: accountBumpValueNode('pda'),
             identifier: 'a',
             isSigner: false,
             isWritable: false,
         });
-        const data = instructionAccountNode({
+        expect(isAccountAutoResolvable(acc)).toBe(false);
+    });
+
+    test('it returns true for defaults reading account data', () => {
+        const acc = instructionAccountNode({
             defaultValue: accountDataValueNode('mint', { path: 'owner' }),
             identifier: 'a',
             isSigner: false,
             isWritable: false,
         });
-        expect(isAccountAutoResolvable(bump)).toBe(false);
-        expect(isAccountAutoResolvable(data)).toBe(false);
+        expect(isAccountAutoResolvable(acc)).toBe(true);
     });
 
     test('it resolves injected defaults from the provides of the instruction', () => {

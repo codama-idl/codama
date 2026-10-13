@@ -57,10 +57,11 @@ import { upgrade } from '@codama/upgrade';
 const client = createProgramClient(upgrade(v1Idl));
 ```
 
-| Parameter           | Type               | Description                               |
-| ------------------- | ------------------ | ----------------------------------------- |
-| `idl`               | `object \| string` | Codama IDL object or JSON string          |
-| `options.programId` | `AddressInput`     | Override the program address from the IDL |
+| Parameter               | Type               | Description                                       |
+| ----------------------- | ------------------ | ------------------------------------------------- |
+| `idl`                   | `object \| string` | Codama IDL object or JSON string                  |
+| `options.programId`     | `AddressInput`     | Override the program address from the IDL         |
+| `options.fetchAccounts` | `FetchAccountsFn`  | Fetch the accounts default values read, see below |
 
 Returns a `ProgramClient` (or `T` when a type parameter is provided).
 
@@ -72,6 +73,7 @@ type ProgramClient = {
     methods: Record<string, (data?: DataInput) => ProgramMethodBuilder>;
     pdas?: Record<string, (seeds?: Record<string, unknown>, options?: PdaOptions) => Promise<ProgramDerivedAddress>>;
     programAddress: Address;
+    readsAccountData: boolean; // whether some instructions read account data, requiring `fetchAccounts`
     root: RootNode;
 };
 ```
@@ -84,6 +86,23 @@ client.methods
     .accounts(accounts) // provide account addresses, including remaining accounts
     .signers(['accountName']) // optionally mark ambiguous accounts as signers
     .instruction(); // Promise<Instruction>
+```
+
+Some default values read the data of accounts, e.g. the `decimals` of a mint. Building these instructions requires a `fetchAccounts` option returning the accounts, which must exist, given once to the client. The generated client types require it for programs with such instructions. See [Reading account data](../dynamic-address-resolution/README.md#reading-account-data).
+
+```ts
+import { assertAccountsExist, fetchEncodedAccounts } from '@solana/accounts';
+
+const fetchAccounts: FetchAccountsFn = async addresses => {
+    const accounts = await fetchEncodedAccounts(rpc, addresses);
+    assertAccountsExist(accounts);
+    return accounts;
+};
+```
+
+```ts
+const client = createProgramClient<TokenProgramClient>(idl, { fetchAccounts });
+await client.methods.transferChecked({ amount: 42n }).accounts(accounts).instruction();
 ```
 
 ### `AddressInput`

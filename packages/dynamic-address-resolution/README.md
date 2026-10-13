@@ -36,6 +36,44 @@ The path is needed to follow links, e.g. to PDAs of other programs, and to resol
 
 The `dataInput` uses the value format of [`@codama/dynamic-codecs`](../dynamic-codecs/README.md), e.g. `bigint` integers and `{ __kind, data }` enums.
 
+### Reading account data
+
+Some default values read the data of accounts, e.g. an owner defaulting to `accountDataValueNode('mint', { path: 'mintAuthority' })`, or a seed reading `dataValueNode('mint.decimals')` where `mint` is a public key linking to the mint account. Pass a `fetchAccounts` function returning these accounts, which must exist. Their data is decoded using the IDL, following `accountLink`s.
+
+```ts
+import { assertAccountsExist, fetchEncodedAccounts } from '@solana/accounts';
+
+const fetchAccounts: FetchAccountsFn = async addresses => {
+    const accounts = await fetchEncodedAccounts(rpc, addresses);
+    assertAccountsExist(accounts);
+    return accounts;
+};
+```
+
+```ts
+const address = await resolveInstructionAccountAddress({
+    accountsInput: { mint },
+    fetchAccounts,
+    path: [root, root.program, instruction, ownerAccount],
+});
+```
+
+Errors come from Kit: `assertAccountsExist` throws for accounts that do not exist, and data that does not decode throws `SOLANA_ERROR__ACCOUNTS__FAILED_TO_DECODE_ACCOUNT`. Errors thrown by `fetchAccounts` are thrown as is. `readsAccountData(path)` tells whether building an instruction may read account data, and thus needs `fetchAccounts`; the generated types of `@codama/dynamic-instructions` and `@codama/dynamic-client` use it to require the option.
+
+Accounts requested together are fetched in a single call, and each account is fetched once per resolution. Use `getBatchedFetchAccounts(fetchAccounts)` to share these batches and this cache across several resolutions, e.g. all the accounts of an instruction.
+
+Instruction data fields whose default value is injected from account data, e.g. a `decimals` field provided by `accountDataValueNode('mint', { path: 'decimals' })`, cannot be evaluated by codecs, which are synchronous. `resolveInstructionDataDefaultValues` resolves them beforehand, for the `resolvedDefaultValues` codec option.
+
+```ts
+const resolvedDefaultValues = await resolveInstructionDataDefaultValues({
+    accountsInput: { mint },
+    dataInput: { amount: 42n },
+    fetchAccounts,
+    path: [root, root.program, transferChecked],
+});
+const bytes = getNodeValueCodec(path, { resolvedDefaultValues }).encode({ amount: 42n });
+```
+
 ## Resolution rules
 
 A provided address is always used. Otherwise, the account resolves from its `defaultValue`, or from the `optionalAccountStrategy` of its instruction when it is optional and provided as `null`.
@@ -56,17 +94,20 @@ Default values resolve as follows.
 | `programLinkNode`      | The address of the linked program.                                                                           |
 | `accountValueNode`     | The address of another account of the instruction, resolved recursively.                                     |
 | `dataValueNode`        | The address at the given path of the data, e.g. `config.owner`, using default values of fields when missing. |
+| `accountDataValueNode` | The address at the given path of the data of an account. See [Reading account data](#reading-account-data).  |
 | `pdaValueNode`         | The derived PDA. See [PDAs](#pdas).                                                                          |
 | `conditionalValueNode` | One of its branches. See [Conditions](#conditions).                                                          |
 | `injectedValueNode`    | Its provided value, resolved like any other default value.                                                   |
 | `payerValueNode`       | The provided address, which is required.                                                                     |
 | `identityValueNode`    | The provided address, which is required.                                                                     |
 
-`accountBumpValueNode` and `accountDataValueNode` defaults are not supported, since they require fetching accounts.
+`accountBumpValueNode` defaults are not supported.
+
+Paths of data values may cross the `accountLink` of a public key, e.g. `mint.decimals`, which reads the data of that account. See [Reading account data](#reading-account-data).
 
 ### PDAs
 
-Each seed is encoded using its declared type: constant seeds use their value, and variable seeds use the value provided by the `pdaValueNode`, from an account, the instruction data or a value node. Missing `remainderOptionTypeNode` seeds encode to zero bytes.
+Each seed is encoded using its declared type: constant seeds use their value, and variable seeds use the value provided by the `pdaValueNode`, from an account, the instruction data, the data of an account injected through an `accountDataValueNode`, or a value node. Missing `remainderOptionTypeNode` seeds encode to zero bytes.
 
 ```ts
 // seeds: [constant('vault'), variable('owner', publicKey), variable('name', string)]

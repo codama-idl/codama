@@ -1,7 +1,17 @@
 import type { DataInput } from '@codama/dynamic-address-resolution';
 import { getNodeValueCodec, type ReadonlyUint8Array } from '@codama/dynamic-codecs';
 import { CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, CodamaError, isCodamaError } from '@codama/errors';
-import { getLastNodeFromPath, type InstructionNode, type NodePath } from 'codama';
+import { getLastNodeFromPath, type InstructionNode, type NodePath, type StructFieldTypeNode } from 'codama';
+
+/** Options of the functions returned by {@link createInstructionDataEncoder}. */
+export type EncodeInstructionDataOptions = {
+    /**
+     * The default values of data fields resolved beforehand, used instead of evaluating them,
+     * e.g. those injected from account data. See `resolveInstructionDataDefaultValues` in
+     * `@codama/dynamic-address-resolution`.
+     */
+    resolvedDefaultValues?: ReadonlyMap<StructFieldTypeNode, unknown>;
+};
 
 /**
  * Create a function encoding the data of the instruction at the end of the
@@ -12,14 +22,21 @@ import { getLastNodeFromPath, type InstructionNode, type NodePath } from 'codama
  * an `INJECTED_VALUE_NOT_PROVIDED` error for a missing injected default value.
  * Other encoding errors, e.g. an integer out of range, throw a
  * `DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` error whose cause is the original error.
+ *
+ * Default values injected from contextual values, e.g. account data, cannot be evaluated while
+ * encoding: provide them through the `resolvedDefaultValues` option.
  */
 export function createInstructionDataEncoder<TData extends DataInput = DataInput>(
     path: NodePath<InstructionNode>,
-): (data?: TData) => ReadonlyUint8Array {
+): (data?: TData, options?: EncodeInstructionDataOptions) => ReadonlyUint8Array {
     const codec = getNodeValueCodec(path);
-    return data => {
+    return (data, { resolvedDefaultValues } = {}) => {
         try {
-            return codec.encode(data);
+            const dataCodec =
+                resolvedDefaultValues && resolvedDefaultValues.size > 0
+                    ? getNodeValueCodec(path, { resolvedDefaultValues })
+                    : codec;
+            return dataCodec.encode(data);
         } catch (error) {
             if (isCodamaError(error)) throw error;
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, {
@@ -42,6 +59,7 @@ export function createInstructionDataEncoder<TData extends DataInput = DataInput
 export function encodeInstructionData<TData extends DataInput = DataInput>(
     path: NodePath<InstructionNode>,
     data?: TData,
+    options?: EncodeInstructionDataOptions,
 ): ReadonlyUint8Array {
-    return createInstructionDataEncoder<TData>(path)(data);
+    return createInstructionDataEncoder<TData>(path)(data, options);
 }

@@ -7,6 +7,7 @@ import {
     CodamaError,
 } from '@codama/errors';
 import {
+    accountLinkNode,
     accountNode,
     constantDiscriminatorNode,
     constantValueNode,
@@ -20,6 +21,7 @@ import {
     programLinkNode,
     pathString,
     programNode,
+    publicKeyTypeNode,
     rootNode,
     sizeDiscriminatorNode,
     stringTypeNode,
@@ -400,6 +402,36 @@ describe('matchDiscriminators', () => {
             ]);
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
                 new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('pair[0]') }),
+            );
+        });
+        test('it does not follow account links', () => {
+            // Given a discriminator reading a field of a linked mint, which has a default value.
+            const discriminator = fieldDiscriminatorNode('mint.decimals');
+            const mint = accountNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        defaultValue: integerValueNode('6'),
+                        identifier: 'decimals',
+                        type: integerTypeNode('u8'),
+                    }),
+                ]),
+                identifier: 'mint',
+            });
+            const data = structTypeNode([
+                structFieldTypeNode({
+                    identifier: 'mint',
+                    type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+                }),
+            ]);
+            const token = accountNode({ data, discriminators: [discriminator], identifier: 'token' });
+            const program = programNode({ accounts: [mint, token], identifier: 'myProgram', publicKey: '1111' });
+            const root = rootNode(program);
+            visit(root, getRecordLinkablesVisitor(linkables));
+            context = getContext(linkables, new NodeStack([root, program, token]));
+
+            // Then the discriminator field is not found, since identifying bytes cannot read other accounts.
+            expect(() => matchDiscriminators(new Uint8Array(32).fill(6), [discriminator], data, context)).toThrow(
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('mint.decimals') }),
             );
         });
     });

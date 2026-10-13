@@ -90,6 +90,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@solana/accounts':
+        specifier: ^8.4.0
+        version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
       '@solana/addresses':
         specifier: ^8.4.0
         version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
