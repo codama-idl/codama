@@ -11,6 +11,7 @@ export * from './shared';
 export * from './ConstantPdaSeedNode';
 export * from './ConstantValueNode';
 export * from './EnumTypeNode';
+export * from './InstructionDisplayNode';
 export * from './InstructionNode';
 export * from './Node';
 export * from './ProgramNode';

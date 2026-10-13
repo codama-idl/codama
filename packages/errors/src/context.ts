@@ -62,6 +62,7 @@ import {
     CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
     CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
     CODAMA_ERROR__INVALID_BRANDED_STRING,
+    CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
     CODAMA_ERROR__INVALID_TICKS_PER_SECOND,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
@@ -258,6 +259,12 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__INVALID_BRANDED_STRING]: {
         actual: string;
         expected: string;
+    };
+    [CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER]: {
+        /** The invalid placeholder, e.g. `${accounts.mint.lamports}`. */
+        placeholder: string;
+        /** The interpolated intent containing the placeholder. */
+        template: string;
     };
     [CODAMA_ERROR__INVALID_TICKS_PER_SECOND]: {
         /** The path of the date-time or duration type, from the root. */

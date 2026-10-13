@@ -1,5 +1,14 @@
 import { CODAMA_ERROR__CANNOT_RESOLVE_PATH, CodamaError } from '@codama/errors';
-import { DefinedTypeLinkNode, DefinedTypeNode, isNode, Node, PathString, RegisteredTypeNode } from '@codama/nodes';
+import {
+    AccountLinkNode,
+    AccountNode,
+    DefinedTypeLinkNode,
+    DefinedTypeNode,
+    isNode,
+    Node,
+    PathString,
+    RegisteredTypeNode,
+} from '@codama/nodes';
 
 import { LinkableDictionary } from './LinkableDictionary';
 import { getLastNodeFromPath, NodePath } from './NodePath';
@@ -34,6 +43,17 @@ export function parsePath(path: string): PathSegment[] {
     );
 }
 
+/** Options of {@link resolveTypePath}. */
+export type ResolveTypePathOptions = {
+    /**
+     * Whether a field segment applied to a public key whose type carries an
+     * `accountLink` continues into the linked account's data, e.g. `mint.decimals`.
+     * Defaults to `false`, since following such paths requires reading account
+     * state: field discriminators, for instance, must not cross account links.
+     */
+    followAccountLinks?: boolean;
+};
+
 /**
  * Resolve a path expression against the type at the end of `source` and
  * return the full path of the node it points to.
@@ -45,11 +65,15 @@ export function parsePath(path: string): PathSegment[] {
  * reflects where each node is defined. The last node is returned as
  * addressed, e.g. a struct field whose type is a link. Indices into arrays
  * and sets are not checked against their count, as they select the item type.
+ * With `followAccountLinks`, public keys carrying an `accountLink` resolve to
+ * the data of the linked account, e.g. `mint.decimals` reads the `decimals`
+ * of the account the `mint` field links to.
  *
  * @param source - The path to the type the path expression is relative to,
  *   e.g. `[root, program, instruction, instruction.data]`.
  * @param path - The path expression, e.g. `config.fees[0]`.
- * @param linkables - Used to follow `definedTypeLinkNode`s.
+ * @param linkables - Used to follow `definedTypeLinkNode`s and account links.
+ * @param options - Whether to follow account links.
  * @throws `CODAMA_ERROR__CANNOT_RESOLVE_PATH` when a segment cannot be followed.
  * @throws `CODAMA_ERROR__LINKED_NODE_NOT_FOUND` when a link cannot be resolved.
  *
@@ -64,9 +88,10 @@ export function resolveTypePath(
     source: TypePath,
     path: PathString,
     linkables: LinkableDictionary,
+    options: ResolveTypePathOptions = {},
 ): NodePath<TypePathNode> {
     const resolved = parsePath(path).reduce((current, segment) => {
-        const container = resolveContainer(current, linkables, path, segment);
+        const container = resolveContainer(current, linkables, path, segment, options);
         const type = getLastTypePathNode(container);
         const withChild = (child: TypePathNode): TypePath => [...container, child];
 
@@ -95,9 +120,11 @@ function resolveContainer(
     linkables: LinkableDictionary,
     path: PathString,
     segment: PathSegment,
+    options: ResolveTypePathOptions,
 ): TypePath {
     let current = source;
     const followedTypes = new Set<DefinedTypeNode>();
+    const followedAccounts = new Set<AccountNode>();
     for (;;) {
         const node = getLastTypePathNode(current);
         if (isNode(node, 'structFieldTypeNode')) {
@@ -112,6 +139,14 @@ function resolveContainer(
             if (followedTypes.has(definedType)) throw getCannotResolvePathError(current, path, segment);
             followedTypes.add(definedType);
             current = [...definedTypePath, definedType.type];
+        } else if (options.followAccountLinks && isNode(node, 'publicKeyTypeNode') && node.accountLink) {
+            const linkPath = [...current, node.accountLink] as unknown as NodePath<AccountLinkNode>;
+            const accountPath = linkables.getPathOrThrow(linkPath);
+            const account = getLastNodeFromPath(accountPath);
+            // An account whose data is a public key linking back to itself never reaches a type.
+            if (followedAccounts.has(account)) throw getCannotResolvePathError(current, path, segment);
+            followedAccounts.add(account);
+            current = [...accountPath, account.data];
         } else {
             return current;
         }

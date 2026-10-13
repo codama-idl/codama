@@ -20,6 +20,7 @@ export { identityVisitor } from './identityVisitor';
 export * from './interceptFirstVisitVisitor';
 export * from './interceptVisitor';
 export * from './isDefinedTypeCyclic';
+export * from './isValueNodeOfType';
 export * from './LinkableDictionary';
 export * from './mapVisitor';
 export * from './NodePath';
