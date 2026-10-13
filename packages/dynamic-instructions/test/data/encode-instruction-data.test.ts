@@ -5,6 +5,7 @@ import {
 } from '@codama/errors';
 import { getBase16Encoder } from '@solana/codecs';
 import {
+    accountDataValueNode,
     definedTypeLinkNode,
     definedTypeNode,
     injectedValueNode,
@@ -106,5 +107,23 @@ describe('encodeInstructionData', () => {
                 context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, instructionName: 'transfer' },
             }),
         );
+    });
+
+    test('it encodes resolved default values', () => {
+        // Given a fee injected from account data, which codecs cannot read.
+        const fee = structFieldTypeNode({
+            defaultValue: injectedValueNode({ key: 'fee' }),
+            identifier: 'fee',
+            type: integerTypeNode('u8'),
+        });
+        const pay = instructionNode({
+            data: structTypeNode([fee]),
+            identifier: 'pay',
+            provides: [providedNode('fee', accountDataValueNode('config', { path: 'fee' }))],
+        });
+
+        // Then it encodes its value resolved beforehand.
+        const resolvedDefaultValues = new Map([[fee, 5]]);
+        expect(encodeInstructionData(getInstructionPath(pay), {}, { resolvedDefaultValues })).toStrictEqual(hex('05'));
     });
 });

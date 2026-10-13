@@ -2,6 +2,8 @@ import {
     type AccountsInput,
     type AddressInput,
     type DataInput,
+    type FetchAccountsFn,
+    readsAccountData,
     resolveStandalonePda,
     toAddress,
 } from '@codama/dynamic-address-resolution';
@@ -26,6 +28,12 @@ export type IdlInput = object | string;
 
 export type CreateProgramClientOptions = {
     /**
+     * Fetches the accounts whose data default values read when building instructions, e.g. a
+     * mint for its `decimals`. Required, in the generated client types, for programs with
+     * instructions reading account data.
+     */
+    fetchAccounts?: FetchAccountsFn;
+    /**
      * Optional override for the program id.
      * If not provided, uses `root.program.publicKey` from the IDL.
      */
@@ -41,6 +49,11 @@ export type ProgramClient = {
     pdas?: Record<string, (seeds?: Record<string, unknown>, options?: PdaOptions) => Promise<ProgramDerivedAddress>>;
     /** Program id as an `Address`. */
     programAddress: Address;
+    /**
+     * Whether building some of its instructions reads account data, which requires the
+     * `fetchAccounts` option. Generated client types set it to `true` or `false`.
+     */
+    readsAccountData: boolean;
     /** Parsed Codama root node, for advanced use-cases. */
     root: RootNode;
 };
@@ -69,7 +82,9 @@ export type ProgramMethodBuilder = {
  */
 export function createProgramClient<TClient = ProgramClient>(
     idl: IdlInput,
-    options: CreateProgramClientOptions = {},
+    ...[options = {}]: [TClient] extends [{ readsAccountData: true }]
+        ? [options: CreateProgramClientOptions & { fetchAccounts: FetchAccountsFn }]
+        : [options?: CreateProgramClientOptions]
 ): TClient {
     const json = typeof idl === 'string' ? idl : JSON.stringify(idl);
     const codama = createFromJson(json);
@@ -108,7 +123,11 @@ export function createProgramClient<TClient = ProgramClient>(
                 }
 
                 return (data?: DataInput) =>
-                    new MethodsBuilder([root, root.program, ixNode], data) as ProgramMethodBuilder;
+                    new MethodsBuilder(
+                        [root, root.program, ixNode],
+                        data,
+                        options.fetchAccounts,
+                    ) as ProgramMethodBuilder;
             },
             has(target, prop) {
                 return Reflect.has(target, prop) || (typeof prop === 'string' && instructions.has(prop));
@@ -155,6 +174,7 @@ export function createProgramClient<TClient = ProgramClient>(
         methods,
         pdas,
         programAddress,
+        readsAccountData: [...instructions.values()].some(ix => readsAccountData([root, root.program, ix])),
         root,
     } as unknown as TClient;
 }

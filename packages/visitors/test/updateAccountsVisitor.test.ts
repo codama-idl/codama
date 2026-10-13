@@ -9,15 +9,19 @@ import {
     accountNode,
     assertIsNode,
     constantPdaSeedNodeFromString,
+    dataValueNode,
     fieldDiscriminatorNode,
     identifierString,
     instructionAccountNode,
+    instructionDisplayNode,
     instructionNode,
     integerTypeNode,
     pdaLinkNode,
     pdaNode,
     programLinkNode,
     programNode,
+    providedNode,
+    publicKeyTypeNode,
     rootNode,
     structFieldTypeNode,
     structTypeNode,
@@ -463,4 +467,121 @@ test('it lets the last account win when several accounts update the same PDA', (
     // Then the PDA gets the seeds of the last account.
     assertIsNode(result, 'programNode');
     expect(result.pdas).toStrictEqual([pdaNode({ identifier: 'shared', seeds: otherSeeds })]);
+});
+
+test('it repoints paths crossing account links to renamed data fields', () => {
+    // Given a mint read through account links by data paths, account data paths and intents.
+    const linkedMint = () => publicKeyTypeNode({ accountLink: accountLinkNode('mint') });
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]),
+                identifier: 'mint',
+            }),
+            accountNode({
+                data: structTypeNode([structFieldTypeNode({ identifier: 'mint', type: linkedMint() })]),
+                identifier: 'token',
+            }),
+        ],
+        identifier: 'myProgram',
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({
+                        accountLink: accountLinkNode('token'),
+                        identifier: 'token',
+                        isSigner: false,
+                        isWritable: false,
+                    }),
+                ],
+                data: structTypeNode([structFieldTypeNode({ identifier: 'mint', type: linkedMint() })]),
+                display: instructionDisplayNode({
+                    interpolatedIntent: 'Use ${data.mint.decimals} or ${accounts.token.data.mint.decimals}',
+                }),
+                identifier: 'transfer',
+                provides: [
+                    providedNode('fromData', dataValueNode('mint.decimals')),
+                    providedNode('fromAccount', accountDataValueNode('token', { path: 'mint.decimals' })),
+                ],
+            }),
+        ],
+        publicKey: '1111',
+    });
+
+    // When we rename the decimals of the mint.
+    const result = visit(node, updateAccountsVisitor({ mint: { data: { decimals: 'precision' } } }));
+
+    // Then every path reading them across account links points to the new field.
+    assertIsNode(result, 'programNode');
+    const instruction = result.instructions?.[0];
+    expect(instruction?.provides).toStrictEqual([
+        providedNode('fromData', dataValueNode('mint.precision')),
+        providedNode('fromAccount', accountDataValueNode('token', { path: 'mint.precision' })),
+    ]);
+    expect(instruction?.display?.interpolatedIntent).toBe(
+        'Use ${data.mint.precision} or ${accounts.token.data.mint.precision}',
+    );
+});
+
+test('it does not repoint discriminators across account links', () => {
+    // Given a discriminator whose path crosses an account link, which validators reject.
+    const discriminator = fieldDiscriminatorNode('mint.decimals');
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]),
+                identifier: 'mint',
+            }),
+            accountNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        identifier: 'mint',
+                        type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+                    }),
+                ]),
+                discriminators: [discriminator],
+                identifier: 'token',
+            }),
+        ],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we rename the decimals of the mint, then the discriminator is kept as is.
+    const result = visit(node, updateAccountsVisitor({ mint: { data: { decimals: 'precision' } } }));
+    assertIsNode(result, 'programNode');
+    expect(result.accounts?.[1].discriminators).toStrictEqual([discriminator]);
+});
+
+test('it stops repointing paths at accounts whose data links to themselves', () => {
+    // Given an account whose data is a public key linking back to itself.
+    const pointer = accountNode({
+        data: publicKeyTypeNode({ accountLink: accountLinkNode('pointer') }),
+        identifier: 'pointer',
+    });
+    const defaultValue = dataValueNode('pointer.value');
+    const node = programNode({
+        accounts: [pointer],
+        identifier: 'myProgram',
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({ defaultValue, identifier: 'a', isSigner: false, isWritable: false }),
+                ],
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        identifier: 'pointer',
+                        type: publicKeyTypeNode({ accountLink: accountLinkNode('pointer') }),
+                    }),
+                ]),
+                identifier: 'read',
+            }),
+        ],
+        publicKey: '1111',
+    });
+
+    // When we rename the account, then the path is kept as is.
+    const result = visit(node, updateAccountsVisitor({ pointer: { identifier: 'renamed' } }));
+    assertIsNode(result, 'programNode');
+    expect(result.instructions?.[0].accounts?.[0].defaultValue).toStrictEqual(defaultValue);
 });

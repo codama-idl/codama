@@ -1,7 +1,17 @@
-import { instructionAccountNode, instructionNode, integerTypeNode, structFieldTypeNode, structTypeNode } from 'codama';
+import {
+    accountDataValueNode,
+    instructionAccountNode,
+    instructionNode,
+    integerTypeNode,
+    structFieldTypeNode,
+    structTypeNode,
+} from 'codama';
 import { describe, expect, test } from 'vitest';
 
-import { generateInstructionBuildersMap } from '../../src/codegen/generate-instruction-builder';
+import {
+    generateInstructionBuildersMap,
+    generateReadsAccountDataTypes,
+} from '../../src/codegen/generate-instruction-builder';
 import { makeRoot } from '../_setup';
 
 describe('generateInstructionBuildersMap', () => {
@@ -23,5 +33,28 @@ describe('generateInstructionBuildersMap', () => {
             'transfer: InstructionsBuilderFn<TransferInstructionDataArgs, TransferAccounts, string[]>;',
         );
         expect(output).toContain('close: InstructionsBuilderFn<undefined, CloseAccounts, string[]>;');
+    });
+
+    test('should flag the instructions reading account data', () => {
+        const root = makeRoot(
+            [
+                instructionNode({
+                    accounts: [
+                        instructionAccountNode({
+                            defaultValue: accountDataValueNode('mint', { path: 'mintAuthority' }),
+                            identifier: 'authority',
+                            isSigner: false,
+                            isWritable: false,
+                        }),
+                    ],
+                    identifier: 'mintTo',
+                }),
+                instructionNode({ identifier: 'close' }),
+            ],
+            'token',
+        );
+        expect(generateReadsAccountDataTypes(root)).toBe(
+            'export type MintToReadsAccountData = true;\nexport type CloseReadsAccountData = false;\n\n',
+        );
     });
 });

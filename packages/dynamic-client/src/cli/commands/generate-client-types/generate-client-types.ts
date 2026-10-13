@@ -2,6 +2,7 @@ import {
     generatePdaTypes,
     generateResolutionInputTypes,
     getResolutionRefs,
+    readsAccountData,
 } from '@codama/dynamic-address-resolution/codegen';
 import { generateSignerTypes, getInstructionSignerRef } from '@codama/dynamic-instructions/codegen';
 import { pascalCase, type RootNode } from 'codama';
@@ -76,12 +77,15 @@ export type ${programName}Methods = {\n`;
     output += pdaTypeBlock;
 
     const pdasProp = pdasMapTypeName ? `    pdas: ${pdasMapTypeName};\n` : '';
+    // Clients of programs reading account data require \`fetchAccounts\` when created.
+    const reads = (idl.program.instructions ?? []).some(ix => readsAccountData([idl, idl.program, ix]));
     output += `/**
  * Strongly-typed program client for ${programName}.
  */
 export type ${programName}ProgramClient = {
     methods: ${programName}Methods;
 ${pdasProp}    programAddress: Address;
+    readsAccountData: ${reads ? 'true' : 'false'};
     root: RootNode;
     instructions: Map<string, InstructionNode>;
 };

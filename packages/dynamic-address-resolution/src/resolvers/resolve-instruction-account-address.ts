@@ -7,7 +7,7 @@ import type { Address } from '@solana/addresses';
 import { getLastNodeFromPath, getNodePathUntilLastNode, type InstructionAccountNode, type NodePath } from 'codama';
 
 import { toAddress } from '../shared/address';
-import type { AccountsInput, DataInput } from '../shared/types';
+import type { AccountsInput, DataInput, FetchAccountsFn } from '../shared/types';
 import { createResolutionContext, getAccountInput } from './context';
 import { resolveAccountAddress } from './resolve-account-address';
 
@@ -17,6 +17,12 @@ export type ResolveInstructionAccountAddressInput<
 > = {
     accountsInput?: TAccounts;
     dataInput?: TData;
+    /**
+     * Fetches the accounts whose data default values read, e.g. an `accountDataValueNode` or a
+     * `dataValueNode` crossing an `accountLink`. Required by instructions reading account data,
+     * see `readsAccountData`.
+     */
+    fetchAccounts?: FetchAccountsFn;
     /** The path of the instruction account from the root node, e.g. `[root, program, instruction, account]`. */
     path: NodePath<InstructionAccountNode>;
 };
@@ -31,6 +37,9 @@ export type ResolveInstructionAccountAddressInput<
  * | Without default | `undefined` or `null` | throws, unless optional and `null` |
  * | With default | `undefined` | its default value |
  * | Optional | `null` | its `optionalAccountStrategy` |
+ *
+ * Default values reading account data, e.g. `accountDataValueNode('mint', { path: 'mintAuthority' })`,
+ * fetch these accounts with `fetchAccounts` and decode them using their `accountLink`.
  *
  * @example
  * ```ts
@@ -47,6 +56,7 @@ export async function resolveInstructionAccountAddress<
 >({
     accountsInput,
     dataInput,
+    fetchAccounts,
     path,
 }: ResolveInstructionAccountAddressInput<TAccounts, TData>): Promise<Address | null> {
     const ixAccountNode = getLastNodeFromPath(path);
@@ -70,6 +80,6 @@ export async function resolveInstructionAccountAddress<
         });
     }
 
-    const ctx = createResolutionContext(instructionPath, { accountsInput, dataInput });
+    const ctx = createResolutionContext(instructionPath, { accountsInput, dataInput, fetchAccounts });
     return await resolveAccountAddress(ixAccountNode, ctx);
 }

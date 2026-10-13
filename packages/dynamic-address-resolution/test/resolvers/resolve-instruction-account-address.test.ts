@@ -11,7 +11,6 @@ import {
 import type { Address } from '@solana/addresses';
 import {
     accountBumpValueNode,
-    accountDataValueNode,
     accountValueNode,
     bytesTypeNode,
     bytesValueNode,
@@ -210,18 +209,11 @@ describe('default values', () => {
         }
     });
 
-    test('it does not support account bumps and account data', async () => {
-        const bump = getAccountPath(account('a', { defaultValue: accountBumpValueNode('pda') })).path;
-        const data = getAccountPath(
-            account('a', { defaultValue: accountDataValueNode('mint', { path: 'owner' }) }),
-        ).path;
+    test('it does not support account bumps', async () => {
+        const { path } = getAccountPath(account('a', { defaultValue: accountBumpValueNode('pda') }));
         await expectCodamaError(
-            resolveInstructionAccountAddress({ path: bump }),
+            resolveInstructionAccountAddress({ path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: 'accountBumpValueNode' }),
-        );
-        await expectCodamaError(
-            resolveInstructionAccountAddress({ path: data }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: 'accountDataValueNode' }),
         );
     });
 });

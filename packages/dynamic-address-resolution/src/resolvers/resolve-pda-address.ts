@@ -20,8 +20,9 @@ import {
 import { toAddress, toAddressOrThrow } from '../shared/address';
 import { OPTIONAL_NODE_KINDS } from '../shared/nodes';
 import { resolvePdaSeedValue } from '../visitors/pda-seed-value';
-import { encodeValue, getInstruction, getProgramAddress, getRequiredDataValue, getValue } from './context';
+import { encodeValue, getInstruction, getProgramAddress, getValue } from './context';
 import { resolveAccountValueNodeAddress } from './resolve-account-value-node-address';
+import { getRequiredDataValue } from './resolve-value';
 import type { ResolutionContext } from './types';
 
 /**
@@ -70,7 +71,7 @@ async function resolvePdaProgramAddress(
     accountName: IdentifierString,
 ): Promise<Address> {
     if (isNode(programId, 'dataValueNode')) {
-        return toAddressOrThrow(getRequiredDataValue(ctx, programId.path), accountName);
+        return toAddressOrThrow(await getRequiredDataValue(ctx, programId.path), accountName);
     }
     const address = await resolveAccountValueNodeAddress(programId, ctx);
     if (address === null) {

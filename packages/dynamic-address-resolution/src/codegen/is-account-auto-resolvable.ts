@@ -6,10 +6,10 @@ import {
     ProvidedScope,
 } from 'codama';
 
-// Accounts with these default values cannot be resolved without user input or fetching accounts.
+// Accounts with these default values cannot be resolved without user input. Default values
+// reading account data are resolvable, provided accounts can be fetched.
 const NON_RESOLVABLE_VALUE_NODES: InstructionInputValueNode['kind'][] = [
     'accountBumpValueNode',
-    'accountDataValueNode',
     'identityValueNode',
     'payerValueNode',
 ];

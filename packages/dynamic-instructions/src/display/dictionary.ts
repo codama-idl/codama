@@ -60,10 +60,11 @@ export type DisplayDictionary = {
 };
 
 /**
- * Fetches multiple on-chain accounts in one call. The batch counterpart of the display layer's
- * `fetchAccount`; wire it to Kit's `fetchEncodedAccounts` for a single `getMultipleAccounts` call.
+ * Fetches multiple on-chain accounts in one call, which may not exist. The batch counterpart of
+ * the display layer's `fetchAccount`; wire it to Kit's `fetchEncodedAccounts` for a single
+ * `getMultipleAccounts` call.
  */
-export type FetchAccountsFn = (addresses: Address[]) => Promise<MaybeEncodedAccount[]>;
+export type FetchMaybeAccountsFn = (addresses: Address[]) => Promise<MaybeEncodedAccount[]>;
 
 /**
  * Computes the addresses whose account state the display layer would fetch to present the given
@@ -95,7 +96,7 @@ export function getRequiredAccountsForDisplay(root: RootNode, parsedInstruction:
 export async function getDisplayAccountMap(
     root: RootNode,
     parsedInstruction: ParsedInstruction,
-    fetchAccounts: FetchAccountsFn,
+    fetchAccounts: FetchMaybeAccountsFn,
 ): Promise<DisplayAccountMap> {
     const addresses = getRequiredAccountsForDisplay(root, parsedInstruction);
     if (addresses.length === 0) return new Map();

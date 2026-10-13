@@ -506,7 +506,8 @@ type PathOwner =
 /**
  * Rewrite path expressions (e.g. `config.fee`) whose segments point to
  * renamed struct fields, walking the original types from the path's root
- * and following defined type links.
+ * and following defined type links. Paths reading account state, i.e. data
+ * and account data paths, also follow account links, e.g. `mint.decimals`.
  */
 function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) {
     const getFieldRename = (owner: PathOwner, prefix: string, identifier: string): IdentifierString | undefined => {
@@ -522,7 +523,13 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
         }
     };
 
-    const rewrite = (path: string, root: TypeNode | undefined, rootOwner: PathOwner, rootContext: NodePath): string => {
+    const rewrite = (
+        path: string,
+        root: TypeNode | undefined,
+        rootOwner: PathOwner,
+        rootContext: NodePath,
+        options: { followAccountLinks: boolean },
+    ): string => {
         const segments = parsePath(path);
         let type = root;
         let owner = rootOwner;
@@ -532,7 +539,25 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
         const followedDefinedTypes = new Set<DefinedTypeNode>();
 
         for (const segment of segments) {
-            while (type && isNode(type, 'definedTypeLinkNode')) {
+            // Unlike defined types, an account may link to itself across segments, e.g. `parent.parent`.
+            const followedAccounts = new Set<AccountNode>();
+            while (type && isNode(type, ['definedTypeLinkNode', 'publicKeyTypeNode'])) {
+                if (isNode(type, 'publicKeyTypeNode')) {
+                    if (!options.followAccountLinks || segment.kind !== 'field' || !type.accountLink) break;
+                    const accountPath = linkables.getPath([...context, type.accountLink]);
+                    const account = accountPath ? getLastNodeFromPath(accountPath) : undefined;
+                    if (!accountPath || !account || followedAccounts.has(account)) {
+                        type = undefined;
+                        break;
+                    }
+                    followedAccounts.add(account);
+                    followedDefinedTypes.clear();
+                    owner = { kind: 'account', path: accountPath };
+                    context = accountPath;
+                    prefix = '';
+                    type = account.data;
+                    continue;
+                }
                 const definedTypePath = linkables.getPath([...context, type]);
                 const definedType = definedTypePath ? getLastNodeFromPath(definedTypePath) : undefined;
                 if (!definedTypePath || !definedType || followedDefinedTypes.has(definedType)) {
@@ -571,7 +596,9 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
     return {
         fromInstruction(path: string, instructionPath: NodePath<InstructionNode>): string {
             const instruction = getLastNodeFromPath(instructionPath);
-            return rewrite(path, instruction.data, { kind: 'instruction', path: instructionPath }, instructionPath);
+            return rewrite(path, instruction.data, { kind: 'instruction', path: instructionPath }, instructionPath, {
+                followAccountLinks: true,
+            });
         },
         fromInstructionAccount(
             path: string,
@@ -582,23 +609,28 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
             const accountPath = linkables.getPath([...instructionPath, instructionAccount.accountLink]);
             if (!accountPath) return path;
             const account = getLastNodeFromPath(accountPath);
-            return rewrite(path, account.data, { kind: 'account', path: accountPath }, accountPath);
+            return rewrite(path, account.data, { kind: 'account', path: accountPath }, accountPath, {
+                followAccountLinks: true,
+            });
         },
+        /** Field discriminators never cross account links: they only read the bytes they identify. */
         fromOwner(path: string, ownerPath: NodePath<Node>): string {
+            const options = { followAccountLinks: false };
             if (isNodePath(ownerPath, 'accountNode')) {
                 return rewrite(
                     path,
                     getLastNodeFromPath(ownerPath).data,
                     { kind: 'account', path: ownerPath },
                     ownerPath,
+                    options,
                 );
             }
             if (isNodePath(ownerPath, 'instructionNode')) {
                 const instruction = getLastNodeFromPath(ownerPath);
-                return rewrite(path, instruction.data, { kind: 'instruction', path: ownerPath }, ownerPath);
+                return rewrite(path, instruction.data, { kind: 'instruction', path: ownerPath }, ownerPath, options);
             }
             if (isNodePath(ownerPath, 'eventNode')) {
-                return rewrite(path, getLastNodeFromPath(ownerPath).data, { kind: 'none' }, ownerPath);
+                return rewrite(path, getLastNodeFromPath(ownerPath).data, { kind: 'none' }, ownerPath, options);
             }
             return path;
         },

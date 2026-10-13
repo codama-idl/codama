@@ -511,6 +511,30 @@ test('it accepts cyclic defined types with a finite value', () => {
     expect(visit(rootNode(program), getValidationItemsVisitor())).toStrictEqual([]);
 });
 
+test('it accepts accounts whose data links back to themselves', () => {
+    // Given nodes linking to their parent node, through a defined type.
+    const nodeData = definedTypeNode({
+        identifier: 'nodeData',
+        type: structTypeNode([
+            structFieldTypeNode({
+                identifier: 'parent',
+                type: publicKeyTypeNode({ accountLink: accountLinkNode('node') }),
+            }),
+        ]),
+    });
+    const node = accountNode({ data: definedTypeLinkNode('nodeData'), identifier: 'node' });
+    const program = programNode({
+        accounts: [node],
+        definedTypes: [nodeData],
+        identifier: 'myProgram',
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we validate it, then nothing is reported, since public keys have a finite size.
+    expect(visit(rootNode(program), getValidationItemsVisitor())).toStrictEqual([]);
+});
+
 test('it only reports the cyclic defined type when another one links to it', () => {
     // Given a type linking to a loop.
     const loop = definedTypeNode({

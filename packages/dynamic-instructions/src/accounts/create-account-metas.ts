@@ -1,6 +1,8 @@
 import {
     type AccountsInput,
     type DataInput,
+    type FetchAccountsFn,
+    getBatchedFetchAccounts,
     isAddressConvertible,
     resolveInstructionAccountAddress,
     toAddressOrThrow,
@@ -35,6 +37,8 @@ export type CreateAccountMetasInput<
     accounts?: TAccounts;
     /** The instruction data, used to resolve default values, e.g. PDA seeds. */
     data?: TData;
+    /** Fetches the accounts whose data default values read, see `resolveInstructionAccountAddress`. */
+    fetchAccounts?: FetchAccountsFn;
     /** The path of the instruction from the root node, e.g. `[root, program, instruction]`. */
     path: NodePath<InstructionNode>;
     /** The accounts with `isSigner: 'either'` to mark as signers. */
@@ -65,9 +69,17 @@ export type CreateAccountMetasInput<
 export async function createAccountMetas<
     TAccounts extends AccountsInput = AccountsInput,
     TData extends DataInput = DataInput,
->({ accounts, data, path, signers = [] }: CreateAccountMetasInput<TAccounts, TData>): Promise<AccountMeta[]> {
+>({
+    accounts,
+    data,
+    fetchAccounts,
+    path,
+    signers = [],
+}: CreateAccountMetasInput<TAccounts, TData>): Promise<AccountMeta[]> {
     const instruction = getLastNodeFromPath(path);
     assertValidAccountAddresses(instruction, accounts);
+    // Accounts resolved in parallel share a single batch and cache of fetched accounts.
+    const batchedFetchAccounts = fetchAccounts ? getBatchedFetchAccounts(fetchAccounts) : undefined;
 
     const programAddress = getInstructionProgramAddress(path);
     const accountMetas = await Promise.all(
@@ -75,6 +87,7 @@ export async function createAccountMetas<
             const address = await resolveInstructionAccountAddress({
                 accountsInput: accounts,
                 dataInput: data,
+                fetchAccounts: batchedFetchAccounts,
                 path: [...path, account],
             });
             if (address === null) return null;

@@ -3,6 +3,7 @@ import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
 import { describe, expectTypeOf, test } from 'vitest';
 
+import { createProgramClient, type FetchAccountsFn } from '../../../src';
 import type {
     ConditionalTransferAccounts,
     TransferWithResolverAccounts,
@@ -163,6 +164,29 @@ describe('generated program client types', () => {
                 optionalTarget: Address | null;
                 requiredTarget: Address;
             }>();
+        });
+    });
+
+    // Type-level checks only: the clients are never created.
+    describe('reading account data', () => {
+        const fetchAccounts = (() => Promise.resolve([])) as FetchAccountsFn;
+        type ReadingClient = Omit<SystemProgramClient, 'readsAccountData'> & { readsAccountData: true };
+
+        test('should flag programs reading no account data', () => {
+            expectTypeOf<SystemProgramClient['readsAccountData']>().toEqualTypeOf<false>();
+        });
+
+        test('should require fetchAccounts for clients of programs reading account data', () => {
+            expectTypeOf(() => createProgramClient<ReadingClient>({}, { fetchAccounts })).toBeFunction();
+            // @ts-expect-error A fetchAccounts option is required.
+            expectTypeOf(() => createProgramClient<ReadingClient>({})).toBeFunction();
+            // @ts-expect-error A fetchAccounts option is required.
+            expectTypeOf(() => createProgramClient<ReadingClient>({}, {})).toBeFunction();
+        });
+
+        test('should keep fetchAccounts optional for other clients', () => {
+            expectTypeOf(() => createProgramClient<SystemProgramClient>({})).toBeFunction();
+            expectTypeOf(() => createProgramClient<SystemProgramClient>({}, { fetchAccounts })).toBeFunction();
         });
     });
 });

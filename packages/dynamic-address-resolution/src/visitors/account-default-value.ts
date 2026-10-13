@@ -13,10 +13,11 @@ import {
     visitOrElse,
 } from 'codama';
 
-import { getAccountInput, getInstruction, getProgramAddress, getRequiredDataValue } from '../resolvers/context';
+import { getAccountInput, getInstruction, getProgramAddress } from '../resolvers/context';
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import { resolveConditionalValueNodeCondition } from '../resolvers/resolve-conditional';
 import { resolvePdaAddress } from '../resolvers/resolve-pda-address';
+import { getAccountDataValue, getRequiredDataValue } from '../resolvers/resolve-value';
 import type { ResolutionContext } from '../resolvers/types';
 import { toAddress, toAddressOrThrow } from '../shared/address';
 
@@ -66,8 +67,8 @@ export function createAccountDefaultValueVisitor(
     const visitor: Visitor<Promise<Address | null>, AccountDefaultValueSupportedNodeKind> = {
         visitAccountBumpValue: () => unsupported('accountBumpValueNode'),
 
-        // Resolving account data would require fetching the account.
-        visitAccountDataValue: () => unsupported('accountDataValueNode'),
+        visitAccountDataValue: async node =>
+            toAddressOrThrow(await getAccountDataValue(ctx, node), ixAccountNode.identifier),
 
         visitAccountValue: async node => await resolveAccountValueNodeAddress(node, ctx),
 
@@ -84,8 +85,8 @@ export function createAccountDefaultValueVisitor(
             return await visitOrElse(branch, visitor, unexpectedAccountDefaultValueNode);
         },
 
-        visitDataValue: node =>
-            Promise.resolve(toAddressOrThrow(getRequiredDataValue(ctx, node.path), ixAccountNode.identifier)),
+        visitDataValue: async node =>
+            toAddressOrThrow(await getRequiredDataValue(ctx, node.path), ixAccountNode.identifier),
 
         visitIdentityValue: requireProvidedAccount,
 

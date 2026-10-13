@@ -2,8 +2,22 @@ import { CODAMA_ERROR__CANNOT_RESOLVE_PATH, CodamaError } from '@codama/errors';
 import { PathString } from '@codama/nodes';
 import { getLastNodeFromPath, parsePath, PathSegment } from '@codama/visitors-core';
 
-import { DecodedNode, isDecodedNode } from './decoded';
-import type { FormattedNode } from './formatted';
+import { DecodedAccountNode, DecodedNode, DecodedPublicKeyTypeNode, isDecodedNode } from './decoded';
+import type { FormattedAccountNode, FormattedNode, FormattedPublicKeyTypeNode } from './formatted';
+
+/** Options of {@link getDecodedNodeAtPath}. */
+export type GetDecodedNodeAtPathOptions<
+    TPublicKey extends DecodedPublicKeyTypeNode = DecodedPublicKeyTypeNode,
+    TAccount extends DecodedAccountNode = DecodedAccountNode,
+> = {
+    /**
+     * Get the decoded data of the account a public key links to, e.g. from accounts fetched
+     * beforehand, so paths can cross its `accountLink`, as `mint.decimals` does. Returning
+     * `undefined`, e.g. for an account that was not fetched, makes the whole path resolve to
+     * `undefined`. Without it, crossing an account link throws.
+     */
+    resolveAccountLink?: (publicKey: TPublicKey) => TAccount | undefined;
+};
 
 /**
  * Get the decoded node a path expression points to within a decoded node, e.g. to fill the
@@ -14,27 +28,50 @@ import type { FormattedNode } from './formatted';
  * formatted, and an `[n]` segment selects the n-th item of an array, set or tuple. Accounts,
  * events, instructions, defined types, struct fields and enum variants along the way resolve to
  * their data or type, as for `resolveTypePath`. Options and enums are not, so a path cannot
- * go through them.
+ * go through them. A `.identifier` segment applied to a public key whose type carries an
+ * `accountLink` continues into the data of the linked account, as given by the
+ * `resolveAccountLink` option.
  *
  * Returns `undefined` when the decoded data has no such node, i.e. an index beyond the items of
- * an array or set.
+ * an array or set, or a linked account that `resolveAccountLink` does not provide.
  *
  * @throws `CODAMA_ERROR__CANNOT_RESOLVE_PATH` when a segment cannot be applied to the node it
- *   reaches, e.g. an unknown struct field or an index into an integer.
+ *   reaches, e.g. an unknown struct field, an index into an integer, or a field of a linked
+ *   public key without a `resolveAccountLink` option.
  *
  * @example
  * ```ts
  * // data: struct { config: struct { fees: array(u16) } }
  * getDecodedNodeAtPath(instruction, pathString('config.fees[0]')); // the decoded u16
  * getDecodedNodeAtPath(formatDecodedNode(instruction), pathString('config.fees[0]'))?.text; // "25"
+ *
+ * // data: struct { mint: publicKey(accountLink: mint) }
+ * getDecodedNodeAtPath(instruction, pathString('mint.decimals'), {
+ *     resolveAccountLink: publicKey => decodedAccounts.get(publicKey.value),
+ * }); // the decoded `decimals` of the mint account
  * ```
  */
-export function getDecodedNodeAtPath(decoded: FormattedNode, path: PathString): FormattedNode | undefined;
-export function getDecodedNodeAtPath(decoded: DecodedNode, path: PathString): DecodedNode | undefined;
-export function getDecodedNodeAtPath(decoded: DecodedNode, path: PathString): DecodedNode | undefined {
+export function getDecodedNodeAtPath(
+    decoded: FormattedNode,
+    path: PathString,
+    options?: GetDecodedNodeAtPathOptions<FormattedPublicKeyTypeNode, FormattedAccountNode>,
+): FormattedNode | undefined;
+export function getDecodedNodeAtPath(
+    decoded: DecodedNode,
+    path: PathString,
+    options?: GetDecodedNodeAtPathOptions,
+): DecodedNode | undefined;
+export function getDecodedNodeAtPath(
+    decoded: DecodedNode,
+    path: PathString,
+    options: GetDecodedNodeAtPathOptions<never> = {},
+): DecodedNode | undefined {
+    // The overloads only pass formatted public keys to resolvers of formatted nodes.
+    const resolveOptions = options as GetDecodedNodeAtPathOptions;
     let current: DecodedNode = decoded;
     for (const segment of parsePath(path)) {
-        const container = resolveContainer(current, path, segment);
+        const container = resolveContainer(current, path, segment, resolveOptions);
+        if (container === undefined) return undefined;
         if (segment.kind === 'field') {
             const field = isDecodedNode(container, 'structTypeNode')
                 ? container.fields.find(field => getLastNodeFromPath(field.path).identifier === segment.identifier)
@@ -56,8 +93,17 @@ export function getDecodedNodeAtPath(decoded: DecodedNode, path: PathString): De
     return current;
 }
 
-/** Resolve accounts, events, instructions, defined types, struct fields and enum variants to their data or type. */
-function resolveContainer(decoded: DecodedNode, path: PathString, segment: PathSegment): DecodedNode {
+/**
+ * Resolve accounts, events, instructions, defined types, struct fields and enum variants to their
+ * data or type, and, before a field segment, linked public keys to the data of their account.
+ * Returns `undefined` when the linked account is not provided.
+ */
+function resolveContainer(
+    decoded: DecodedNode,
+    path: PathString,
+    segment: PathSegment,
+    options: GetDecodedNodeAtPathOptions,
+): DecodedNode | undefined {
     let current = decoded;
     for (;;) {
         if (isDecodedNode(current, ['accountNode', 'enumVariantTypeNode', 'eventNode', 'instructionNode'])) {
@@ -65,6 +111,15 @@ function resolveContainer(decoded: DecodedNode, path: PathString, segment: PathS
             current = current.data;
         } else if (isDecodedNode(current, ['definedTypeNode', 'structFieldTypeNode'])) {
             current = current.type;
+        } else if (
+            segment.kind === 'field' &&
+            isDecodedNode(current, 'publicKeyTypeNode') &&
+            getLastNodeFromPath(current.path).accountLink &&
+            options.resolveAccountLink
+        ) {
+            const account = options.resolveAccountLink(current);
+            if (!account) return undefined;
+            current = account;
         } else {
             return current;
         }

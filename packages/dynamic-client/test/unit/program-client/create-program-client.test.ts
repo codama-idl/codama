@@ -5,7 +5,14 @@ import {
 } from '@codama/errors';
 import { address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { AccountRole } from '@solana/instructions';
-import { CODAMA_VERSION } from 'codama';
+import {
+    accountDataValueNode,
+    CODAMA_VERSION,
+    instructionAccountNode,
+    instructionNode,
+    programNode,
+    rootNode,
+} from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { createProgramClient, type ProgramClient } from '../../../src';
@@ -340,6 +347,31 @@ describe('createProgramClient', () => {
                     },
                 }),
             );
+        });
+    });
+
+    describe('readsAccountData', () => {
+        test('should be false for programs whose instructions read no account data', () => {
+            expect(createTestProgramClient('system-program-idl.json').readsAccountData).toBe(false);
+        });
+
+        test('should be true for programs with an instruction reading account data', () => {
+            // Given an instruction whose authority defaults to the authority of its mint.
+            const authority = instructionAccountNode({
+                defaultValue: accountDataValueNode('mint', { path: 'mintAuthority' }),
+                identifier: 'authority',
+                isSigner: false,
+                isWritable: false,
+            });
+            const mintTo = instructionNode({ accounts: [authority], identifier: 'mintTo' });
+            const root = rootNode(
+                programNode({
+                    identifier: 'token',
+                    instructions: [mintTo],
+                    publicKey: '11111111111111111111111111111111',
+                }),
+            );
+            expect(createProgramClient(root).readsAccountData).toBe(true);
         });
     });
 });

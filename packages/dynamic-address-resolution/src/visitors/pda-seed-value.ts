@@ -1,13 +1,15 @@
 import { CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, CodamaError } from '@codama/errors';
 import { isNode, type PdaSeedValueValue } from 'codama';
 
-import { getDataValue, getValue } from '../resolvers/context';
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
+import { resolveValue } from '../resolvers/resolve-value';
 import type { ResolutionContext } from '../resolvers/types';
 
 /**
  * Resolve the value of a variable PDA seed, before it is encoded using the
- * type of the seed. Returns `undefined` when the value is missing.
+ * type of the seed. Returns `undefined` when the value is missing. Values
+ * other than accounts are resolved as `resolveValue` does, e.g. reading
+ * account data for a value injected from an `accountDataValueNode`.
  */
 export async function resolvePdaSeedValue(node: PdaSeedValueValue, ctx: ResolutionContext): Promise<unknown> {
     if (isNode(node, 'accountValueNode')) {
@@ -17,8 +19,5 @@ export async function resolvePdaSeedValue(node: PdaSeedValueValue, ctx: Resoluti
         }
         return address;
     }
-    if (isNode(node, 'dataValueNode')) {
-        return getDataValue(ctx, node.path);
-    }
-    return getValue(ctx, ctx.instructionPath, node);
+    return await resolveValue(node, ctx);
 }
