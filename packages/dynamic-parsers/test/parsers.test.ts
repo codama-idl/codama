@@ -30,7 +30,14 @@ import { LinkableDictionary } from '@codama/visitors-core';
 import { AccountRole } from '@solana/instructions';
 import { describe, expect, test } from 'vitest';
 
-import { parseAccountData, parseData, parseEventData, parseInstruction, parseInstructionData } from '../src';
+import {
+    matchesAccountData,
+    parseAccountData,
+    parseData,
+    parseEventData,
+    parseInstruction,
+    parseInstructionData,
+} from '../src';
 import { hex } from './_setup';
 
 describe('parseAccountData', () => {
@@ -718,6 +725,68 @@ describe('linkables', () => {
         >[1];
         expect(() => parseInstruction(root, instruction, { linkables: new LinkableDictionary() })).toThrow(
             linkedNodeNotFound,
+        );
+    });
+});
+
+describe('matchesAccountData', () => {
+    // A mint discriminated by its first byte, and an account without discriminators.
+    const mint = accountNode({
+        data: structTypeNode([
+            structFieldTypeNode({
+                defaultValue: integerValueNode('1'),
+                defaultValueStrategy: 'omitted',
+                identifier: 'discriminator',
+                type: integerTypeNode('u8'),
+            }),
+            structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') }),
+        ]),
+        discriminators: [fieldDiscriminatorNode('discriminator')],
+        identifier: 'mint',
+    });
+    const anything = accountNode({ data: structTypeNode([]), identifier: 'anything' });
+    const root = rootNode(programNode({ accounts: [mint, anything], identifier: 'myProgram', publicKey: '1111' }));
+
+    test('it matches bytes matching the discriminators of the account', () => {
+        expect(matchesAccountData([root, root.program, mint], hex('0106'))).toBe(true);
+    });
+
+    test('it does not match bytes of another account', () => {
+        expect(matchesAccountData([root, root.program, mint], hex('0206'))).toBe(false);
+    });
+
+    test('it matches any bytes for accounts without discriminators', () => {
+        expect(matchesAccountData([root, root.program, anything], hex('ff'))).toBe(true);
+    });
+
+    test('it uses the given linkables rather than recording them', () => {
+        // Given a mint discriminated by a field of a linked type.
+        const header = definedTypeNode({
+            identifier: 'header',
+            type: structTypeNode([
+                structFieldTypeNode({
+                    defaultValue: integerValueNode('1'),
+                    identifier: 'kind',
+                    type: integerTypeNode('u8'),
+                }),
+            ]),
+        });
+        const linked = accountNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'header', type: definedTypeLinkNode('header') })]),
+            discriminators: [fieldDiscriminatorNode('header.kind')],
+            identifier: 'linked',
+        });
+        const linkedRoot = rootNode(
+            programNode({ accounts: [linked], definedTypes: [header], identifier: 'myProgram', publicKey: '1111' }),
+        );
+        expect(() =>
+            matchesAccountData([linkedRoot, linkedRoot.program, linked], hex('01'), {
+                linkables: new LinkableDictionary(),
+            }),
+        ).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
         );
     });
 });

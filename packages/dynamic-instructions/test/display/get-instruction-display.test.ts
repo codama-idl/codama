@@ -9,6 +9,7 @@ import {
     accountValueNode,
     amountNumberDisplayNode,
     arrayTypeNode,
+    arrayValueNode,
     dataValueNode,
     definedTypeLinkNode,
     definedTypeNode,
@@ -34,6 +35,7 @@ import {
     type ProgramNodeInput,
     providedNode,
     publicKeyTypeNode,
+    publicKeyValueNode,
     stringTypeNode,
     stringValueNode,
     structFieldDisplayNode,
@@ -267,6 +269,29 @@ describe('value labels', () => {
         expect(display(instruction, { data: { amount: 18_446_744_073_709_551_615n } }).interpolatedIntent).toBe(
             'Transfer All',
         );
+    });
+
+    test('it shows the value labels of nested fields', () => {
+        const config = data(withLabels(u64));
+        expect(
+            display(
+                { data: data(field('config', config)) },
+                { data: { config: { amount: 18_446_744_073_709_551_615n } } },
+            ).fields,
+        ).toStrictEqual([{ label: 'Config', value: 'Amount: All' }]);
+    });
+
+    test('it shows the value label of lists of addresses as a single row', () => {
+        const label = valueLabelDisplayNode({
+            label: 'Just Alice',
+            value: arrayValueNode([publicKeyValueNode(ALICE)]),
+        });
+        const signers = field('signers', arrayTypeNode(publicKeyTypeNode(), prefixedCountNode(integerTypeNode('u8'))), {
+            display: structFieldDisplayNode({ valueLabels: [label] }),
+        });
+        expect(display({ data: data(signers) }, { data: { signers: [ALICE] } }).fields).toStrictEqual([
+            { label: 'Signers', value: 'Just Alice' },
+        ]);
     });
 
     test('it shows the value label of flattened fields as a single row', () => {
