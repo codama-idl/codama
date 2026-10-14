@@ -4,7 +4,13 @@ import {
     CodamaError,
 } from '@codama/errors';
 import type { Address } from '@solana/addresses';
-import { getLastNodeFromPath, getNodePathUntilLastNode, type InstructionAccountNode, type NodePath } from 'codama';
+import {
+    getLastNodeFromPath,
+    getNodePathUntilLastNode,
+    type InstructionAccountNode,
+    type LinkableDictionary,
+    type NodePath,
+} from 'codama';
 
 import { toAddress } from '../shared/address';
 import type { AccountsInput, DataInput, FetchAccountsFn } from '../shared/types';
@@ -23,6 +29,11 @@ export type ResolveInstructionAccountAddressInput<
      * see `readsAccountData`.
      */
     fetchAccounts?: FetchAccountsFn;
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, used to follow links.
+     * Defaults to recording them from the root of the path: pass them to avoid recording them again.
+     */
+    linkables?: LinkableDictionary;
     /** The path of the instruction account from the root node, e.g. `[root, program, instruction, account]`. */
     path: NodePath<InstructionAccountNode>;
 };
@@ -57,6 +68,7 @@ export async function resolveInstructionAccountAddress<
     accountsInput,
     dataInput,
     fetchAccounts,
+    linkables,
     path,
 }: ResolveInstructionAccountAddressInput<TAccounts, TData>): Promise<Address | null> {
     const ixAccountNode = getLastNodeFromPath(path);
@@ -80,6 +92,6 @@ export async function resolveInstructionAccountAddress<
         });
     }
 
-    const ctx = createResolutionContext(instructionPath, { accountsInput, dataInput, fetchAccounts });
+    const ctx = createResolutionContext(instructionPath, { accountsInput, dataInput, fetchAccounts, linkables });
     return await resolveAccountAddress(ixAccountNode, ctx);
 }

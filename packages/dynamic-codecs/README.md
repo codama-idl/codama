@@ -99,7 +99,7 @@ if (isDecodedNode(decoded.type, 'integerTypeNode')) {
 
 Numbers are formatted exactly, including 128-bit integers and binary fixed points, using the fixed points of `@solana/codecs`. String slices count Unicode code points, so they never split a character such as an emoji. Date-times are exact ISO 8601 UTC strings for any year.
 
-- **Units:** the unit of a display node wins over the unit of a type, which is the fallback whenever the former is absent or cannot be resolved. Units follow their value after a space, except `%`, `‰` and `°`.
+- **Units:** the unit of a display node wins over the unit of a type, which is the fallback whenever the former is absent or cannot be resolved. Units follow their value after a space, except `%`, `‰` and `°`. Address units, literal or injected, are formatted by the `formatAddress` option, or written as the address otherwise.
 - **Amounts:** when the `decimals` of an `amountNumberDisplayNode` cannot be resolved, `formatInteger` returns `null` rather than a wrongly scaled amount, so you can present the raw value instead.
 - **Ticks:** `formatDateTime` and `formatDuration` throw `CODAMA_ERROR__INVALID_TICKS_PER_SECOND` when `ticksPerSecond` is not a positive integer.
 - **Bytes:** bytes are written in hexadecimal whatever the encoding they were decoded with. Bytes decoded as `utf8` cannot be recovered exactly when they are not valid UTF-8, so decode them with another encoding.
@@ -108,12 +108,12 @@ Numbers are formatted exactly, including 128-bit integers and binary fixed point
 
 All formatters share the `(decoded, options)` signature and accept the following options, though each only uses those relevant to it, e.g. `formatAddress` for public keys and `numberFormat` for numbers:
 
-| Name                   | Type                                             | Description                                                                                                                                                                                       |
-| ---------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `formatUnit`           | `(value: string, unit: string) => string`        | Place a unit next to a value, e.g. `` (value, unit) => `${unit} ${value}` `` for `"USD 40.5"`. Defaults to `formatUnit`, also exported.                                                           |
-| `formatAddress`        | `(address: Address) => string`                   | Format an address, e.g. to name it from sources you trust such as a token list or an address book, or to truncate it: `address => names.get(address) ?? address`. Defaults to the address itself. |
-| `numberFormat`         | `Intl.NumberFormat`                              | Format numbers for a locale, e.g. `"1,234,567.89"`. Its options decide the digits shown. Amounts and fixed points are given to it exactly, never through a JavaScript float.                      |
-| `resolveInjectedValue` | `(path: NodePath<InjectedValueNode>) => unknown` | Resolve injected values of display nodes, e.g. `decimals` provided by an instruction, from their path through the decoded node. `undefined` means unresolved.                                     |
+| Name                   | Type                                                            | Description                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `formatUnit`           | `(value: string, unit: string) => string`                       | Place a unit next to a value, e.g. `` (value, unit) => `${unit} ${value}` `` for `"USD 40.5"`. Defaults to `formatUnit`, also exported.                                                                                                                                                                                                                                      |
+| `formatAddress`        | `(address: Address) => string`                                  | Format an address, e.g. to name it from sources you trust such as a token list or an address book, or to truncate it: `address => names.get(address) ?? address`. Used for public keys and address units, literal or injected. Defaults to the address itself.                                                                                                               |
+| `numberFormat`         | `Intl.NumberFormat`                                             | Format numbers for a locale, e.g. `"1,234,567.89"`. Its options decide the digits shown. Amounts and fixed points are given to it exactly, never through a JavaScript float.                                                                                                                                                                                                 |
+| `resolveInjectedValue` | `(path: NodePath<InjectedValueNode>) => ValueNode \| undefined` | Resolve injected values of display nodes, e.g. `decimals` provided by an instruction, from their path through the decoded node, to the value node they stand for, e.g. `integerValueNode('6')`, or `publicKeyValueNode(mint)` for a unit provided by an account. Resolved values are used as literal ones. `undefined`, or a value node of the wrong kind, means unresolved. |
 
 ## Formatted nodes
 
@@ -152,6 +152,14 @@ getDecodedNodeAtPath(formatted, pathString('mint.decimals'), {
 })?.text; // "6"
 ```
 
+### Value labels
+
+`getValueLabel` returns the label a decoded struct field presents instead of its value, from the `valueLabels` of its display node, e.g. `"All"` for an amount of `u64::MAX`. Labels apply to the raw value, before any formatting, so present the label instead of the formatted text when there is one. A label matches when its value encodes to the same bytes as the decoded value, so equal values match whatever their representation, and the first matching label wins. Links of the field's type are followed using the linkable nodes of the tree, recorded from the root of its path unless given as a second argument. Labels must be values of the field's type, as validators require, and others throw.
+
+```ts
+getValueLabel(amountField) ?? amountField.text; // "All"
+```
+
 ## Node paths
 
 The full path is needed to resolve link nodes, which may point to other programs, and injected values, which are provided by the enclosing instructions.
@@ -178,10 +186,11 @@ The following nodes can be at the end of the path: `AccountNode`, `AccountLinkNo
 
 ## Options
 
-| Name                    | Type                                        | Default    | Description                                                                               |
-| ----------------------- | ------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------- |
-| `bytesEncoding`         | `BytesEncoding`                             | `"base64"` | The encoding used when decoding plain bytes.                                              |
-| `resolvedDefaultValues` | `ReadonlyMap<StructFieldTypeNode, unknown>` | None       | Values used when encoding the default values of these fields, instead of evaluating them. |
+| Name                    | Type                                        | Default                            | Description                                                                                                                                             |
+| ----------------------- | ------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bytesEncoding`         | `BytesEncoding`                             | `"base64"`                         | The encoding used when decoding plain bytes.                                                                                                            |
+| `resolvedDefaultValues` | `ReadonlyMap<StructFieldTypeNode, unknown>` | None                               | Values used when encoding the default values of these fields, instead of evaluating them.                                                               |
+| `linkables`             | `LinkableDictionary`                        | Recorded from the root of the path | The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, to avoid recording them again. Only for `getNodeCodec` and `getNodeValueCodec`. |
 
 ```ts
 const codec = getNodeValueCodec([root, program, definedType], { bytesEncoding: 'base16' });

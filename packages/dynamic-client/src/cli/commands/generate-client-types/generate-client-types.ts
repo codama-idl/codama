@@ -5,7 +5,7 @@ import {
     readsAccountData,
 } from '@codama/dynamic-address-resolution/codegen';
 import { generateSignerTypes, getInstructionSignerRef } from '@codama/dynamic-instructions/codegen';
-import { pascalCase, type RootNode } from 'codama';
+import { getLinkablesFromNode, pascalCase, type RootNode } from 'codama';
 
 /**
  * Generate the TypeScript types of a strongly-typed program client for a
@@ -78,7 +78,8 @@ export type ${programName}Methods = {\n`;
 
     const pdasProp = pdasMapTypeName ? `    pdas: ${pdasMapTypeName};\n` : '';
     // Clients of programs reading account data require \`fetchAccounts\` when created.
-    const reads = (idl.program.instructions ?? []).some(ix => readsAccountData([idl, idl.program, ix]));
+    const linkables = getLinkablesFromNode(idl);
+    const reads = (idl.program.instructions ?? []).some(ix => readsAccountData([idl, idl.program, ix], linkables));
     output += `/**
  * Strongly-typed program client for ${programName}.
  */

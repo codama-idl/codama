@@ -8,9 +8,12 @@ import {
     accountValueNode,
     identifierString,
     injectedValueNode,
+    instructionNode,
     integerValueNode,
+    programNode,
     providedNode,
     publicKeyTypeNode,
+    rootNode,
     stringValueNode,
     structFieldValueNode,
     structValueNode,
@@ -18,7 +21,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { ProvidedScope } from '../src';
+import { getProvidedScopeFromPath, ProvidedScope } from '../src';
 
 const kinds = ['accountValueNode' as const, 'integerValueNode' as const];
 
@@ -238,4 +241,20 @@ test('it clones into an independent scope', () => {
     clone.pop();
     expect(scope.get(identifierString('symbol'))).toBeDefined();
     expect(clone.get(identifierString('symbol'))).toBeUndefined();
+});
+
+test('it opens a frame for every instruction of a path, outermost first', () => {
+    // Given a sub-instruction shadowing a key provided by its parent.
+    const child = instructionNode({ identifier: 'child', provides: [providedNode('fee', integerValueNode('2'))] });
+    const parent = instructionNode({
+        identifier: 'parent',
+        provides: [providedNode('fee', integerValueNode('1')), providedNode('decimals', integerValueNode('6'))],
+        subInstructions: [child],
+    });
+    const root = rootNode(programNode({ identifier: 'myProgram', instructions: [parent], publicKey: '1111' }));
+
+    // Then the child's frame wins, and the parent's frame stays visible.
+    const scope = getProvidedScopeFromPath([root, root.program, parent, child]);
+    expect(scope.resolve(injectedValueNode({ key: 'fee' }), { kinds })).toEqual(integerValueNode('2'));
+    expect(scope.resolve(injectedValueNode({ key: 'decimals' }), { kinds })).toEqual(integerValueNode('6'));
 });

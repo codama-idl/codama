@@ -21,7 +21,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getRecordLinkablesVisitor, isDefinedTypeCyclic, LinkableDictionary, visit } from '../src';
+import { getLinkablesFromNode, isDefinedTypeCyclic, LinkableDictionary } from '../src';
 
 test('it detects defined types linking to themselves', () => {
     // Given a linked list.
@@ -37,8 +37,7 @@ test('it detects defined types linking to themselves', () => {
     });
     const program = programNode({ definedTypes: [list], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether it is cyclic, then it is.
     expect(isDefinedTypeCyclic([root, program, list], linkables)).toBe(true);
@@ -56,8 +55,7 @@ test('it detects cycles through other defined types', () => {
     });
     const program = programNode({ definedTypes: [tree, forest], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether the tree is cyclic, then it is.
     expect(isDefinedTypeCyclic([root, program, tree], linkables)).toBe(true);
@@ -75,8 +73,7 @@ test('it does not mark types linking to a cycle as cyclic', () => {
     });
     const program = programNode({ definedTypes: [list, leaf], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether the leaf is cyclic, then it is not.
     expect(isDefinedTypeCyclic([root, program, leaf], linkables)).toBe(false);
@@ -94,8 +91,7 @@ test('it detects cycles through transforms', () => {
     });
     const program = programNode({ definedTypes: [tagged], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether it is cyclic, then it is.
     expect(isDefinedTypeCyclic([root, program, tagged], linkables)).toBe(true);
@@ -120,8 +116,7 @@ test('it ignores links within values', () => {
     });
     const program = programNode({ definedTypes: [direction], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether it is cyclic, then it is not, since values do not shape the type.
     expect(isDefinedTypeCyclic([root, program, direction], linkables)).toBe(false);
@@ -137,8 +132,7 @@ test('it does not confuse same-named defined types of different programs', () =>
     const programA = programNode({ definedTypes: [typeA], identifier: 'a', publicKey: '1111' });
     const programB = programNode({ definedTypes: [typeB], identifier: 'b', publicKey: '2222' });
     const root = rootNode(programA, { additionalPrograms: [programB] });
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether the type of program A is cyclic, then it is not.
     expect(isDefinedTypeCyclic([root, programA, typeA], linkables)).toBe(false);
@@ -149,8 +143,7 @@ test('it ignores links it cannot resolve', () => {
     const orphan = definedTypeNode({ identifier: 'orphan', type: definedTypeLinkNode('missing') });
     const program = programNode({ definedTypes: [orphan], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether it is cyclic, then it is not.
     expect(isDefinedTypeCyclic([root, program, orphan], linkables)).toBe(false);
@@ -180,8 +173,7 @@ test('it throws when the path has no program', () => {
         type: optionTypeNode(definedTypeLinkNode('list'), { prefix: integerTypeNode('u8') }),
     });
     const program = programNode({ definedTypes: [list], identifier: 'test', publicKey: '1111' });
-    const linkables = new LinkableDictionary();
-    visit(rootNode(program), getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(rootNode(program));
 
     // When we check it from a path without its program, then it throws rather than missing the cycle.
     expect(() => isDefinedTypeCyclic([list], linkables)).toThrow(

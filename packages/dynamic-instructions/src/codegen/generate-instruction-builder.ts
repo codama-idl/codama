@@ -1,5 +1,5 @@
 import { getResolutionRefs, readsAccountData } from '@codama/dynamic-address-resolution/codegen';
-import { pascalCase, type RootNode } from 'codama';
+import { getLinkablesFromNode, pascalCase, type RootNode } from 'codama';
 
 import { getInstructionSignerRef } from './generate-signer-types';
 
@@ -38,9 +38,10 @@ export type ${programName}InstructionBuilders = {\n`;
  * Use `generateTypes` instead.
  */
 export function generateReadsAccountDataTypes(idl: RootNode): string {
+    const linkables = getLinkablesFromNode(idl);
     let output = '';
     for (const ix of idl.program.instructions ?? []) {
-        const reads = readsAccountData([idl, idl.program, ix]);
+        const reads = readsAccountData([idl, idl.program, ix], linkables);
         output += `export type ${pascalCase(ix.identifier)}ReadsAccountData = ${reads ? 'true' : 'false'};\n`;
     }
     return output === '' ? '' : `${output}\n`;

@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND } from '@codama/errors';
 import {
     accountDataValueNode,
     accountLinkNode,
@@ -9,6 +10,7 @@ import {
     instructionNode,
     type InstructionNodeInput,
     integerTypeNode,
+    LinkableDictionary,
     pdaLinkNode,
     pdaNode,
     pdaSeedValueNode,
@@ -90,5 +92,22 @@ describe('readsAccountData', () => {
                 provides: [providedNode('decimals', accountDataValueNode('mint', { path: 'decimals' }))],
             }),
         ).toBe(true);
+    });
+
+    test('it uses the given linkables rather than recording them', () => {
+        // Given linkables that do not record the mint, so the account link cannot be followed.
+        const instruction = instructionNode({
+            accounts: [account('owner', { defaultValue: dataValueNode('mint.decimals') })],
+            data,
+            identifier: 'myInstruction',
+        });
+        const root = rootNode(
+            programNode({ accounts: [mint], identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }),
+        );
+        expect(() => readsAccountData([root, root.program, instruction], new LinkableDictionary())).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
+        );
     });
 });

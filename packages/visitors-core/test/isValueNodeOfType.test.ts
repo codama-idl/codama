@@ -46,7 +46,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getRecordLinkablesVisitor, isValueNodeOfType, LinkableDictionary, visit } from '../src';
+import { getLinkablesFromNode, isValueNodeOfType, LinkableDictionary } from '../src';
 
 const linkables = new LinkableDictionary();
 const u64 = integerTypeNode('u64');
@@ -201,8 +201,7 @@ test('it follows links to defined types', () => {
     const amount = definedTypeNode({ identifier: 'amount', type: optionTypeNode(u64) });
     const program = programNode({ definedTypes: [amount], identifier: 'myProgram', publicKey: '1111' });
     const root = rootNode(program);
-    const programLinkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(programLinkables));
+    const programLinkables = getLinkablesFromNode(root);
 
     const typePath = [root, program, definedTypeLinkNode('amount')] as const;
     expect(isValueNodeOfType(noneValueNode(), typePath, programLinkables)).toBe(true);
@@ -214,8 +213,7 @@ test('it rejects values of alias cycles, which have no value', () => {
     const typeB = definedTypeNode({ identifier: 'b', type: definedTypeLinkNode('a') });
     const program = programNode({ definedTypes: [typeA, typeB], identifier: 'myProgram', publicKey: '1111' });
     const root = rootNode(program);
-    const programLinkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(programLinkables));
+    const programLinkables = getLinkablesFromNode(root);
 
     expect(isValueNodeOfType(integerValueNode('1'), [root, program, definedTypeLinkNode('a')], programLinkables)).toBe(
         false,

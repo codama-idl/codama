@@ -1,10 +1,17 @@
-import { CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
+    CodamaError,
+} from '@codama/errors';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { getU32Encoder, getUtf8Encoder } from '@solana/codecs';
 import {
     constantPdaSeedNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     integerTypeNode,
     integerValueNode,
+    LinkableDictionary,
     pdaNode,
     programIdValueNode,
     programNode,
@@ -48,6 +55,35 @@ describe('resolveStandalonePda', () => {
             ],
         });
         expect(await resolveStandalonePda({ path: getPdaPath(pda) })).toEqual(expected);
+    });
+
+    test('it encodes seeds of linked types', async () => {
+        // Given a seed whose type is a defined type of the program.
+        const pda = pdaNode({
+            identifier: 'counter',
+            seeds: [variablePdaSeedNode('count', definedTypeLinkNode('count'))],
+        });
+        const count = definedTypeNode({ identifier: 'count', type: integerTypeNode('u32') });
+        const root = rootNode(
+            programNode({ definedTypes: [count], identifier: 'test', pdas: [pda], publicKey: PROGRAM_ADDRESS }),
+        );
+        const path = [root, root.program, pda] as const;
+
+        // Then it is encoded using the linked type.
+        const expected = await getProgramDerivedAddress({
+            programAddress: PROGRAM_ADDRESS,
+            seeds: [getU32Encoder().encode(42)],
+        });
+        expect(await resolveStandalonePda({ path, seedsInput: { count: 42 } })).toEqual(expected);
+
+        // And given linkables are used rather than recorded again.
+        await expect(
+            resolveStandalonePda({ linkables: new LinkableDictionary(), path, seedsInput: { count: 42 } }),
+        ).rejects.toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
+        );
     });
 
     test('it derives PDAs from variable seeds', async () => {

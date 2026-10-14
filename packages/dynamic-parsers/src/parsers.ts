@@ -8,7 +8,7 @@ import {
     ReadonlyUint8Array,
 } from '@codama/dynamic-codecs';
 import { AccountNode, EventNode, IdentifierString, InstructionNode, RootNode } from '@codama/nodes';
-import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
+import { getLastNodeFromPath, getLinkablesFromNode, NodePath } from '@codama/visitors-core';
 import type {
     AccountLookupMeta,
     AccountMeta,
@@ -91,14 +91,16 @@ export function parseData<TKind extends ParsableNodeKind>(
     kind?: TKind | TKind[],
     options: ParseDataOptions = {},
 ): GetDecodedNodeFromKind<TKind> | undefined {
+    // Identifying and decoding share the linkable nodes of the tree, recorded once.
+    const linkables = options.linkables ?? getLinkablesFromNode(root);
     const path = identifyData<TKind>(
         root,
         bytes,
         kind ?? (['accountNode', 'instructionNode', 'eventNode'] as TKind[]),
-        { programAddress: options.programAddress },
+        { linkables, programAddress: options.programAddress },
     );
     if (!path) return undefined;
-    const codec = getNodeCodec(path as NodePath<ParsableNode>, { bytesEncoding: options.bytesEncoding });
+    const codec = getNodeCodec(path as NodePath<ParsableNode>, { bytesEncoding: options.bytesEncoding, linkables });
     try {
         return codec.decode(bytes) as GetDecodedNodeFromKind<TKind>;
     } catch {
@@ -140,10 +142,11 @@ export function parseInstruction(
     instruction: Instruction &
         InstructionWithAccounts<readonly (AccountLookupMeta | AccountMeta)[]> &
         InstructionWithData<ReadonlyUint8Array>,
-    options: CodecVisitorOptions = {},
+    options: Omit<ParseDataOptions, 'programAddress'> = {},
 ): ParsedInstruction | undefined {
     const decoded = parseInstructionData(root, instruction.data, {
         bytesEncoding: options.bytesEncoding,
+        linkables: options.linkables,
         programAddress: instruction.programAddress,
     });
     if (!decoded) return undefined;

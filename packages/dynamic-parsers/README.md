@@ -73,10 +73,11 @@ const parsed = parseData(rootNode, bytes, ['accountNode', 'eventNode']);
 
 All the functions above accept the following options.
 
-| Name             | Type            | Description                                                                                                      |
-| ---------------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `programAddress` | `string`        | Restricts the search to the programs matching this address. See [Program selection](#program-selection).         |
-| `bytesEncoding`  | `BytesEncoding` | The encoding of decoded plain bytes, e.g. `'base16'` decodes them as `["base16", "0102"]`. Defaults to `base64`. |
+| Name             | Type                 | Description                                                                                                                                                                       |
+| ---------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `programAddress` | `string`             | Restricts the search to the programs matching this address. See [Program selection](#program-selection).                                                                          |
+| `bytesEncoding`  | `BytesEncoding`      | The encoding of decoded plain bytes, e.g. `'base16'` decodes them as `["base16", "0102"]`. Defaults to `base64`.                                                                  |
+| `linkables`      | `LinkableDictionary` | The linkable nodes of the tree, e.g. from `getLinkablesFromNode(rootNode)`, to avoid recording them again when parsing many times. Defaults to recording them from the root node. |
 
 ### `parseInstruction(rootNode, instruction, options?)`
 
@@ -93,7 +94,7 @@ if (parsed) {
 }
 ```
 
-It uses the instruction's `programAddress` to restrict the search to the matching program, including any of the root node's `additionalPrograms`. When no program of the root matches that address, nothing is parsed: matching an unknown program against another program's candidates would confidently misattribute the data, which matters when the result is displayed to end users (e.g. clear signing). It accepts the `bytesEncoding` option.
+It uses the instruction's `programAddress` to restrict the search to the matching program, including any of the root node's `additionalPrograms`. When no program of the root matches that address, nothing is parsed: matching an unknown program against another program's candidates would confidently misattribute the data, which matters when the result is displayed to end users (e.g. clear signing). It accepts the `bytesEncoding` and `linkables` options.
 
 ## Discriminators
 

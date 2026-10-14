@@ -29,7 +29,7 @@ import {
     structTypeNode,
     zeroableOptionTypeNode,
 } from '@codama/nodes';
-import { getRecordLinkablesVisitor, LinkableDictionary, NodeStack, visit } from '@codama/visitors-core';
+import { getLinkablesFromNode, NodeStack, visit } from '@codama/visitors-core';
 import { SOLANA_ERROR__CODECS__EXPECTED_FIXED_LENGTH } from '@solana/errors';
 import { expect, test } from 'vitest';
 
@@ -121,8 +121,7 @@ test('it restores the node stack when a linked type throws', () => {
         publicKey: '1111',
     });
     const root = rootNode(programA, { additionalPrograms: [programB] });
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // And a codec visitor reused from within programA.
     const stack = new NodeStack([root, programA]);

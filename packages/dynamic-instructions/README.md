@@ -44,7 +44,7 @@ const source = generateTypes(idl);
 
 ## Functions
 
-Every function takes the path of the instruction from the root node, e.g. `[root, root.program, instruction]`, so links and injected values resolve from the program defining the instruction, which may be an additional program.
+Every function takes the path of the instruction from the root node, e.g. `[root, root.program, instruction]`, so links and injected values resolve from the program defining the instruction, which may be an additional program. Links are followed using the linkable nodes of the tree, which every function records from the root of the path unless given as a `linkables` option, e.g. from `getLinkablesFromNode(root)`, to avoid recording them again.
 
 ### `createInstructionsBuilder(path, options?)`
 

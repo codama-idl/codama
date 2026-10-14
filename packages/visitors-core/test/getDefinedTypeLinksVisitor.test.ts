@@ -19,7 +19,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getDefinedTypeLinksVisitor, getRecordLinkablesVisitor, LinkableDictionary, NodeStack, visit } from '../src';
+import { getDefinedTypeLinksVisitor, getLinkablesFromNode, NodeStack, visit } from '../src';
 
 test('it lists the defined types linked by a type without following them', () => {
     // Given a type linking to itself, to an alias, and to a type of another program within a transform.
@@ -51,8 +51,7 @@ test('it lists the defined types linked by a type without following them', () =>
     const program = programNode({ definedTypes: [node, amount], identifier: 'test', publicKey: '1111' });
     const otherProgram = programNode({ definedTypes: [length], identifier: 'other', publicKey: '2222' });
     const root = rootNode(program, { additionalPrograms: [otherProgram] });
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we list its links.
     const stack = new NodeStack();
@@ -86,8 +85,7 @@ test('it ignores the defined types of enum values and unresolved links', () => {
     });
     const program = programNode({ definedTypes: [direction], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we list its links, then there are none.
     const stack = new NodeStack();
@@ -118,8 +116,7 @@ test('it lists links nested deep within a type', () => {
     });
     const program = programNode({ definedTypes: [payment, amount], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we list its links.
     const stack = new NodeStack();
@@ -134,8 +131,7 @@ test('it cannot resolve links when visited without the path of the type', () => 
     const amount = definedTypeNode({ identifier: 'amount', type: integerTypeNode('u64') });
     const wrapper = definedTypeNode({ identifier: 'wrapper', type: definedTypeLinkNode('amount') });
     const program = programNode({ definedTypes: [wrapper, amount], identifier: 'test', publicKey: '1111' });
-    const linkables = new LinkableDictionary();
-    visit(rootNode(program), getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(rootNode(program));
 
     // When we visit it on its own, without its program on the path.
     const paths = visit(wrapper, getDefinedTypeLinksVisitor(linkables));

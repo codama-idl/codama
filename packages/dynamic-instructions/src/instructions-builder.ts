@@ -4,7 +4,7 @@ import {
     getBatchedFetchAccounts,
     resolveInstructionDataDefaultValues,
 } from '@codama/dynamic-address-resolution';
-import type { InstructionNode, NodePath } from 'codama';
+import { getLinkablesFromNode, type InstructionNode, type NodePath } from 'codama';
 
 import { createAccountMetas } from './accounts';
 import { createInstructionDataEncoder } from './data';
@@ -20,6 +20,7 @@ import type { CreateInstructionsBuilderOptions, EitherSigners, InstructionsBuild
  * of the program defining the instruction. Default values reading account data,
  * e.g. `accountDataValueNode('mint', { path: 'decimals' })`, fetch these accounts
  * using the `fetchAccounts` option, which `TReadsAccountData` makes required.
+ * It records the linkable nodes of the tree once, for all its builds, unless given as `linkables`.
  *
  * @example
  * ```ts
@@ -39,8 +40,9 @@ export function createInstructionsBuilder<
         : [options?: CreateInstructionsBuilderOptions<TReadsAccountData>]
 ): InstructionsBuilderFn<TData, TAccounts, TSigners> {
     const programAddress = getInstructionProgramAddress(path);
-    const encodeData = createInstructionDataEncoder<TData>(path);
-    const { fetchAccounts } = (options ?? {}) as CreateInstructionsBuilderOptions;
+    const { fetchAccounts, linkables = getLinkablesFromNode(path[0]) } = (options ??
+        {}) as CreateInstructionsBuilderOptions;
+    const encodeData = createInstructionDataEncoder<TData>(path, linkables);
 
     return async ({ accounts, data, signers } = {}) => {
         // Each build gets its own batch and cache of fetched accounts, shared by its data and
@@ -52,9 +54,10 @@ export function createInstructionsBuilder<
                 accountsInput: accounts,
                 dataInput: data,
                 fetchAccounts: batchedFetchAccounts,
+                linkables,
                 path,
             }),
-            createAccountMetas({ accounts, data, fetchAccounts: batchedFetchAccounts, path, signers }),
+            createAccountMetas({ accounts, data, fetchAccounts: batchedFetchAccounts, linkables, path, signers }),
         ]);
         if (resolvedDefaultValues.status === 'rejected') throw resolvedDefaultValues.reason;
         const instructionData = encodeData(data, { resolvedDefaultValues: resolvedDefaultValues.value });

@@ -32,7 +32,16 @@ const address = await resolveInstructionAccountAddress({
 });
 ```
 
-The path is needed to follow links, e.g. to PDAs of other programs, and to resolve injected values from the `provides` of the instruction and its parents.
+The path is needed to follow links, e.g. to PDAs of other programs, and to resolve injected values from the `provides` of the instruction and its parents. Links are followed using the linkable nodes of the tree, which every function of this package records from the root of the path unless given as `linkables`. Record them once with `getLinkablesFromNode(root)` and pass them when resolving several times.
+
+```ts
+import { getLinkablesFromNode } from 'codama';
+
+const linkables = getLinkablesFromNode(root);
+const addresses = await Promise.all(
+    accountPaths.map(path => resolveInstructionAccountAddress({ accountsInput, dataInput, linkables, path })),
+);
+```
 
 The `dataInput` uses the value format of [`@codama/dynamic-codecs`](../dynamic-codecs/README.md), e.g. `bigint` integers and `{ __kind, data }` enums.
 

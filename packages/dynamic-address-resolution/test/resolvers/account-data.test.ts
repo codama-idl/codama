@@ -6,6 +6,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CodamaError,
 } from '@codama/errors';
 import type { EncodedAccount } from '@solana/accounts';
@@ -24,6 +25,7 @@ import {
     instructionNode,
     integerTypeNode,
     integerValueNode,
+    LinkableDictionary,
     pdaLinkNode,
     pdaNode,
     pdaSeedValueNode,
@@ -608,5 +610,44 @@ describe('resolveInstructionDataDefaultValues', () => {
             path: [root, root.program, instruction],
         });
         expect(values).toEqual(new Map([[decimals, 6n]]));
+    });
+});
+
+describe('given linkables', () => {
+    // Linkables that do not record the mint account, so following its account link fails.
+    const linkedNodeNotFound = expect.objectContaining({
+        context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+    });
+
+    test('it uses them to resolve instruction account addresses', async () => {
+        const owner = account('owner', { defaultValue: accountDataValueNode('mint', { path: 'mintAuthority' }) });
+        const { path } = getAccountPath({ accounts: [mintAccount(), owner] });
+        const promise = resolveInstructionAccountAddress({
+            accountsInput: { mint: MINT_ADDRESS },
+            fetchAccounts: getFetchAccounts([]),
+            linkables: new LinkableDictionary(),
+            path,
+        });
+        await expect(promise).rejects.toThrow(linkedNodeNotFound);
+    });
+
+    test('it uses them to resolve instruction data default values', async () => {
+        const decimals = structFieldTypeNode({
+            defaultValue: injectedValueNode({ key: 'decimals' }),
+            identifier: 'decimals',
+            type: integerTypeNode('u8'),
+        });
+        const { instructionPath } = getPath({
+            accounts: [mintAccount()],
+            data: structTypeNode([decimals]),
+            provides: [providedNode('decimals', accountDataValueNode('mint', { path: 'decimals' }))],
+        });
+        const promise = resolveInstructionDataDefaultValues({
+            accountsInput: { mint: MINT_ADDRESS },
+            fetchAccounts: getFetchAccounts([]),
+            linkables: new LinkableDictionary(),
+            path: instructionPath,
+        });
+        await expect(promise).rejects.toThrow(linkedNodeNotFound);
     });
 });

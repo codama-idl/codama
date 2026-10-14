@@ -6,7 +6,7 @@ import {
     isNode,
     programLinkNode,
 } from '@codama/nodes';
-import { getRecordLinkablesVisitor, LinkableDictionary, rootNodeVisitor, visit } from '@codama/visitors-core';
+import { getLinkablesFromNode, rootNodeVisitor, visit } from '@codama/visitors-core';
 
 import { getDefinedTypeHistogramVisitor } from './getDefinedTypeHistogramVisitor';
 import { unwrapDefinedTypesVisitor } from './unwrapDefinedTypesVisitor';
@@ -19,8 +19,7 @@ import { unwrapDefinedTypesVisitor } from './unwrapDefinedTypesVisitor';
 export function unwrapInstructionDataDefinedTypesVisitor() {
     return rootNodeVisitor(root => {
         const histogram = visit(root, getDefinedTypeHistogramVisitor());
-        const linkables = new LinkableDictionary();
-        visit(root, getRecordLinkablesVisitor(linkables));
+        const linkables = getLinkablesFromNode(root);
 
         const definedTypesToInline = (Object.keys(histogram) as IdentifierString[])
             // Get all defined types used exactly once, directly as instruction data.

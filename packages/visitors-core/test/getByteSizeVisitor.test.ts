@@ -50,7 +50,7 @@ import {
     ByteSizeVisitorKeys,
     getByteSizeVisitor,
     getLastNodeFromPath,
-    getRecordLinkablesVisitor,
+    getLinkablesFromNode,
     LinkableDictionary,
     NodePath,
     NodeStack,
@@ -72,8 +72,7 @@ const expectSizeWithContext = (
 ) => {
     const node = getLastNodeFromPath(nodePath);
     const stack = new NodeStack(nodePath.slice(0, -1));
-    const linkables = new LinkableDictionary();
-    visit(nodePath[0], getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(nodePath[0]);
     expectSize(node, expectedSize, linkables, stack);
 };
 

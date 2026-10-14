@@ -11,7 +11,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getRecordLinkablesVisitor, hasDefinedTypeFiniteValue, LinkableDictionary, visit } from '../src';
+import { getLinkablesFromNode, hasDefinedTypeFiniteValue, LinkableDictionary } from '../src';
 
 test('it finds a finite value for types whose recursion may stop', () => {
     // Given a list that may end with `None`.
@@ -26,8 +26,7 @@ test('it finds a finite value for types whose recursion may stop', () => {
     });
     const program = programNode({ definedTypes: [list], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether it has a finite value, then it does.
     expect(hasDefinedTypeFiniteValue([root, program, list], linkables)).toBe(true);
@@ -41,8 +40,7 @@ test('it finds no finite value for types whose recursion never stops', () => {
     });
     const program = programNode({ definedTypes: [loop], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we check whether it has a finite value, then it does not.
     expect(hasDefinedTypeFiniteValue([root, program, loop], linkables)).toBe(false);
@@ -69,8 +67,7 @@ test('it throws when the path has no program', () => {
     // Given a loop whose program is recorded.
     const loop = definedTypeNode({ identifier: 'loop', type: definedTypeLinkNode('loop') });
     const program = programNode({ definedTypes: [loop], identifier: 'test', publicKey: '1111' });
-    const linkables = new LinkableDictionary();
-    visit(rootNode(program), getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(rootNode(program));
 
     // When we check it from a path without its program, then it throws rather than missing the loop.
     expect(() => hasDefinedTypeFiniteValue([loop], linkables)).toThrow(

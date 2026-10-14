@@ -23,7 +23,7 @@ import {
 import { expect, test } from 'vitest';
 
 import {
-    getRecordLinkablesVisitor,
+    getLinkablesFromNode,
     getResolvedInstructionInputsVisitor,
     LinkableDictionary,
     NodeStack,
@@ -487,8 +487,7 @@ test('it collects data fields through a defined type link', () => {
         instructions: [instruction],
         publicKey: '1111',
     });
-    const linkables = new LinkableDictionary();
-    visit(program, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(program);
 
     // When we get its resolved inputs from within its program.
     const stack = new NodeStack([program]);

@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND } from '@codama/errors';
 import {
     accountNode,
     arrayTypeNode,
@@ -39,6 +40,7 @@ import {
     tupleTypeNode,
     zeroableOptionTypeNode,
 } from '@codama/nodes';
+import { LinkableDictionary } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
 
 import { getNodeCodec, getNodeValueCodec } from '../src';
@@ -826,5 +828,25 @@ describe('transforms', () => {
             preOffset: 1,
             value: [1n, 2n],
         });
+    });
+});
+
+describe('linkables', () => {
+    // A struct whose field links to a defined type of the program.
+    const amount = definedTypeNode({ identifier: 'amount', type: integerTypeNode('u8') });
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: definedTypeLinkNode('amount') })]);
+    const root = rootNode(programNode({ definedTypes: [amount], identifier: 'myProgram', publicKey: '1111' }));
+    const linkedNodeNotFound = expect.objectContaining({
+        context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+    });
+
+    test('it records the linkables of the tree by default', () => {
+        expect(getNodeValueCodec([root, root.program, data]).decode(hex('2a'))).toStrictEqual({ amount: 42n });
+    });
+
+    test('it uses the given linkables rather than recording them', () => {
+        const linkables = new LinkableDictionary();
+        expect(() => getNodeCodec([root, root.program, data], { linkables })).toThrow(linkedNodeNotFound);
+        expect(() => getNodeValueCodec([root, root.program, data], { linkables })).toThrow(linkedNodeNotFound);
     });
 });

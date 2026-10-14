@@ -9,15 +9,13 @@ import type { ReadonlyUint8Array } from '@solana/codecs';
 import {
     findProgramNodeFromPath,
     getLastNodeFromPath,
-    getRecordLinkablesVisitor,
+    getLinkablesFromNode,
+    getProvidedScopeFromPath,
     type IdentifierString,
     type InstructionNode,
-    isNode,
-    LinkableDictionary,
-    type Node,
+    type LinkableDictionary,
     type NodePath,
     NodeStack,
-    ProvidedScope,
     type TypeNode,
     type ValueNode,
     visit,
@@ -29,38 +27,27 @@ import { formatValueType } from '../shared/util';
 import { getBatchedFetchAccounts } from './batched-fetch-accounts';
 import type { ResolutionContext } from './types';
 
-const linkablesCache = new WeakMap<Node, LinkableDictionary>();
-
-/** Record, once per root node, the linkable nodes of the tree containing the given path. */
-export function getLinkables(path: NodePath): LinkableDictionary {
-    const root = path[0];
-    let linkables = linkablesCache.get(root);
-    if (!linkables) {
-        linkables = new LinkableDictionary();
-        visit(root, getRecordLinkablesVisitor(linkables));
-        linkablesCache.set(root, linkables);
-    }
-    return linkables;
-}
-
-/** Open a frame for every instruction in the path, parents first, so their `provides` resolve injected values. */
-export function getProvidedScope(path: NodePath): ProvidedScope {
-    return new ProvidedScope(...path.flatMap(node => (isNode(node, 'instructionNode') ? [node.provides ?? []] : [])));
-}
-
-/** Create the resolution context of the instruction at the end of the given path. */
+/**
+ * Create the resolution context of the instruction at the end of the given path, recording the
+ * linkable nodes of its tree unless given.
+ */
 export function createResolutionContext<TAccounts extends AccountsInput, TData extends DataInput>(
     instructionPath: NodePath<InstructionNode>,
-    inputs: { accountsInput?: TAccounts; dataInput?: TData; fetchAccounts?: FetchAccountsFn },
+    inputs: {
+        accountsInput?: TAccounts;
+        dataInput?: TData;
+        fetchAccounts?: FetchAccountsFn;
+        linkables?: LinkableDictionary;
+    },
 ): ResolutionContext<TAccounts, TData> {
     return {
         accountsInput: inputs.accountsInput,
         dataInput: inputs.dataInput,
         fetchAccounts: inputs.fetchAccounts ? getBatchedFetchAccounts(inputs.fetchAccounts) : undefined,
         instructionPath,
-        linkables: getLinkables(instructionPath),
+        linkables: inputs.linkables ?? getLinkablesFromNode(instructionPath[0]),
         resolutionPath: [],
-        scope: getProvidedScope(instructionPath),
+        scope: getProvidedScopeFromPath(instructionPath),
     };
 }
 
