@@ -1,4 +1,9 @@
-import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CODAMA_ERROR__UNEXPECTED_NODE_KIND, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
+    CodamaError,
+} from '@codama/errors';
 import {
     accountNode,
     amountNumberDisplayNode,
@@ -24,6 +29,7 @@ import {
     optionTypeNode,
     prefixedCountNode,
     programNode,
+    providedNode,
     publicKeyTypeNode,
     rootNode,
     setTypeNode,
@@ -39,12 +45,13 @@ import {
     valueLabelDisplayNode,
     zeroableOptionTypeNode,
 } from '@codama/nodes';
-import { LinkableDictionary } from '@codama/visitors-core';
+import { getLastNodeFromPath, LinkableDictionary, ProvidedScope } from '@codama/visitors-core';
 import { address, getAddressEncoder } from '@solana/addresses';
 import { getUtf8Encoder } from '@solana/codecs';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import {
+    assertIsDecodedNode,
     assertIsFormattedNode,
     DecodedNode,
     FormattedIntegerTypeNode,
@@ -52,6 +59,7 @@ import {
     FormattedStructTypeNode,
     formatDecodedNode,
     GetFormattedNodeFromDecoded,
+    getFormattedRows,
     getNodeCodec,
     isDecodedNode,
     isFormattedNode,
@@ -248,6 +256,85 @@ describe('structs', () => {
     });
 });
 
+describe('rows', () => {
+    test('it lays out structs as one row per field', () => {
+        const node = structTypeNode([
+            structFieldTypeNode({ identifier: 'amount', type: u8 }),
+            structFieldTypeNode({ identifier: 'maxFee', type: u8 }),
+        ]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('2a07')));
+        expect(getFormattedRows(formatted)).toStrictEqual([
+            { field: formatted.fields[0], identifiers: ['amount'], label: 'Amount', text: '42' },
+            { field: formatted.fields[1], identifiers: ['maxFee'], label: 'Max Fee', text: '7' },
+        ]);
+    });
+
+    test('it presents containers without wrapping them in parentheses', () => {
+        const node = structTypeNode([
+            structFieldTypeNode({ identifier: 'items', type: arrayTypeNode(u8, fixedCountNode(2)) }),
+        ]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('0102')));
+        expect(getFormattedRows(formatted).map(row => row.text)).toStrictEqual(['1, 2']);
+    });
+
+    test('it leaves out fields skipped always', () => {
+        const node = structTypeNode([
+            structFieldTypeNode({
+                display: structFieldDisplayNode({ skip: 'always' }),
+                identifier: 'discriminator',
+                type: u8,
+            }),
+            structFieldTypeNode({ identifier: 'amount', type: u8 }),
+        ]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('032a')));
+        expect(getFormattedRows(formatted).map(row => row.label)).toStrictEqual(['Amount']);
+    });
+
+    test('it keeps fields skipped when injected', () => {
+        const display = structFieldDisplayNode({ skip: 'whenInjected' });
+        const node = structTypeNode([structFieldTypeNode({ display, identifier: 'decimals', type: u8 })]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('06')));
+        expect(getFormattedRows(formatted)).toMatchObject([{ field: { skip: 'whenInjected' }, label: 'Decimals' }]);
+    });
+
+    test('it replaces flattened fields by the rows of their fields, with their combined prefixes', () => {
+        const flatten = (flattenPrefix: string) => structFieldDisplayNode({ flatten: true, flattenPrefix });
+        const inner = structTypeNode([structFieldTypeNode({ identifier: 'fee', type: u8 })]);
+        const outer = structTypeNode([
+            structFieldTypeNode({ display: flatten('b.'), identifier: 'inner', type: inner }),
+            structFieldTypeNode({ identifier: 'admin', type: u8 }),
+        ]);
+        const node = structTypeNode([
+            structFieldTypeNode({ display: flatten('a.'), identifier: 'outer', type: outer }),
+            structFieldTypeNode({ identifier: 'amount', type: u8 }),
+        ]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('19012a')));
+        expect(
+            getFormattedRows(formatted).map(({ identifiers, label, text }) => [identifiers, label, text]),
+        ).toStrictEqual([
+            [['outer', 'inner', 'fee'], 'a.b.Fee', '25'],
+            [['outer', 'admin'], 'a.Admin', '1'],
+            [['amount'], 'Amount', '42'],
+        ]);
+    });
+
+    test('it presents fields matching a value label as their label, without flattening them', () => {
+        const config = structTypeNode([structFieldTypeNode({ identifier: 'fee', type: u8 })]);
+        const display = structFieldDisplayNode({
+            flatten: true,
+            valueLabels: [
+                valueLabelDisplayNode({
+                    label: textNode({ content: 'Free' }),
+                    value: structValueNode([structFieldValueNode('fee', integerValueNode('0'))]),
+                }),
+            ],
+        });
+        const node = structTypeNode([structFieldTypeNode({ display, identifier: 'config', type: config })]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('00')));
+        expect(getFormattedRows(formatted).map(({ label, text }) => [label, text])).toStrictEqual([['Config', 'Free']]);
+    });
+});
+
 describe('lists, sets, tuples and maps', () => {
     test('it formats arrays as their items', () => {
         const decoded = getNodeCodec([arrayTypeNode(u8, fixedCountNode(3))]).decode(hex('010203'));
@@ -399,6 +486,27 @@ describe('degraded nodes', () => {
         expect(formatted.fields[0].degraded).toBe(true);
     });
 
+    test('it presents degraded integers through the formatDegraded option', () => {
+        const node = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: amount })]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('60e31600')), {
+            formatDegraded: raw => `${raw} (raw)`,
+        });
+        expect(formatted).toMatchObject({ degraded: true, text: 'Amount: 1500000 (raw)' });
+        expect(formatted.fields[0].type).toMatchObject({ degraded: true, text: '1500000 (raw)' });
+    });
+
+    test('it gives formatDegraded the raw value and the decoded node', () => {
+        const decoded = getNodeCodec([amount]).decode(hex('60e31600'));
+        const calls: unknown[] = [];
+        formatDecodedNode(decoded, { formatDegraded: (...args) => (calls.push(args), '') });
+        expect(calls).toStrictEqual([['1500000', decoded]]);
+    });
+
+    test('it does not use formatDegraded for integers that can be formatted', () => {
+        const formatted = formatDecodedNode(getNodeCodec([u8]).decode(hex('2a')), { formatDegraded: () => 'raw' });
+        expect(formatted.text).toBe('42');
+    });
+
     test('it does not degrade nodes whose amounts can be resolved', () => {
         const display = amountNumberDisplayNode({ decimals: integerValueNode('6'), unit: stringValueNode('USDC') });
         const node = structTypeNode([
@@ -406,6 +514,96 @@ describe('degraded nodes', () => {
         ]);
         const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('60e31600')));
         expect(formatted).toMatchObject({ degraded: false, text: 'Amount: 1.5 USDC' });
+    });
+});
+
+describe('injected values', () => {
+    const decimals = injectedValueNode({ key: 'decimals' });
+    const amount = integerTypeNode('u32', { display: amountNumberDisplayNode({ decimals }) });
+    const amountField = (identifier: string) => structFieldTypeNode({ identifier, type: amount });
+
+    test('it gives the resolver the decoded nodes containing the value', () => {
+        const node = structTypeNode([
+            structFieldTypeNode({ identifier: 'config', type: structTypeNode([amountField('fee')]) }),
+        ]);
+        const decoded = getNodeCodec([node]).decode(hex('60e31600'));
+        const parents: unknown[] = [];
+        formatDecodedNode(decoded, {
+            resolveInjectedValue: (_, nodeParents) => (parents.push(nodeParents), undefined),
+        });
+        const config = decoded.fields[0];
+        assertIsDecodedNode(config.type, 'structTypeNode');
+        expect(parents).toStrictEqual([[decoded, config, config.type, config.type.fields[0]]]);
+    });
+
+    test('it tells apart values whose types link to the same defined type', () => {
+        // Given two fields linking to the same defined type, whose decoded paths are the same.
+        const amounts = definedTypeNode({ identifier: 'amounts', type: structTypeNode([amountField('value')]) });
+        const node = structTypeNode([
+            structFieldTypeNode({ identifier: 'from', type: definedTypeLinkNode('amounts') }),
+            structFieldTypeNode({ identifier: 'to', type: definedTypeLinkNode('amounts') }),
+        ]);
+        const root = rootNode(programNode({ definedTypes: [amounts], identifier: 'myProgram', publicKey: '1111' }));
+        const decoded = getNodeCodec([root, root.program, node]).decode(hex('0100000002000000'));
+
+        // Then the resolver receives the fields containing each value.
+        const fields: string[][] = [];
+        formatDecodedNode(decoded, {
+            resolveInjectedValue: (_, parents) => {
+                fields.push(
+                    parents.flatMap(parent =>
+                        isDecodedNode(parent, 'structFieldTypeNode')
+                            ? [getLastNodeFromPath(parent.path).identifier]
+                            : [],
+                    ),
+                );
+                return undefined;
+            },
+        });
+        expect(fields).toStrictEqual([
+            ['from', 'value'],
+            ['to', 'value'],
+        ]);
+    });
+
+    test('it resolves values provided by the instruction within linked defined types', () => {
+        const config = definedTypeNode({ identifier: 'config', type: structTypeNode([amountField('fee')]) });
+        const instruction = instructionNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'config', type: definedTypeLinkNode('config') })]),
+            identifier: 'configure',
+            provides: [providedNode('decimals', integerValueNode('6'))],
+        });
+        const root = rootNode(
+            programNode({
+                definedTypes: [config],
+                identifier: 'myProgram',
+                instructions: [instruction],
+                publicKey: '1111',
+            }),
+        );
+        const formatted = formatDecodedNode(getNodeCodec([root, root.program, instruction]).decode(hex('60e31600')));
+        expect(formatted.text).toBe('Config: (Fee: 1.5)');
+    });
+
+    test('it resolves values from the given scope', () => {
+        const scope = new ProvidedScope([providedNode('decimals', integerValueNode('6'))]);
+        const formatted = formatDecodedNode(getNodeCodec([amount]).decode(hex('60e31600')), { scope });
+        expect(formatted.text).toBe('1.5');
+    });
+
+    test('it throws when an instruction provides a node that is not an instruction input', () => {
+        const instruction = instructionNode({
+            data: structTypeNode([amountField('amount')]),
+            identifier: 'transfer',
+            provides: [providedNode('decimals', u8)],
+        });
+        const root = rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }));
+        const decoded = getNodeCodec([root, root.program, instruction]).decode(hex('60e31600'));
+        expect(() => formatDecodedNode(decoded)).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE }),
+            }),
+        );
     });
 });
 
@@ -419,6 +617,20 @@ describe('accounts and instructions', () => {
         const formatted = formatDecodedNode(getNodeCodec([root, root.program, account]).decode(hex('2a')));
         expect(formatted.text).toBe('Amount: 42');
         expect(formatted.data.text).toBe('Amount: 42');
+    });
+
+    test('it resolves the injected values of instructions from their provided value nodes', () => {
+        const display = amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) });
+        const instruction = instructionNode({
+            data: structTypeNode([
+                structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u32', { display }) }),
+            ]),
+            identifier: 'transfer',
+            provides: [providedNode('decimals', integerValueNode('6'))],
+        });
+        const root = rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }));
+        const formatted = formatDecodedNode(getNodeCodec([root, root.program, instruction]).decode(hex('60e31600')));
+        expect(formatted).toMatchObject({ degraded: false, text: 'Amount: 1.5' });
     });
 
     test('it formats instructions without data as empty text', () => {
@@ -507,6 +719,45 @@ describe('value labels', () => {
         const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('0000000000000000')));
         expect(formatted.fields[0]).toMatchObject({ flatten: false, text: 'Default config' });
         expect(formatted.text).toBe('Config: Default config');
+    });
+
+    test('it resolves values injected into labelled fields within linked defined types', () => {
+        // Given a labelled field within a linked defined type, whose fee defaults to a value the instruction provides.
+        const settings = structTypeNode([
+            structFieldTypeNode({ identifier: 'enabled', type: u8 }),
+            structFieldTypeNode({ defaultValue: injectedValueNode({ key: 'fee' }), identifier: 'fee', type: u8 }),
+        ]);
+        const defaults = valueLabelDisplayNode({
+            label: 'Default settings',
+            value: structValueNode([structFieldValueNode('enabled', integerValueNode('1'))]),
+        });
+        const config = definedTypeNode({
+            identifier: 'config',
+            type: structTypeNode([
+                structFieldTypeNode({
+                    display: structFieldDisplayNode({ valueLabels: [defaults] }),
+                    identifier: 'settings',
+                    type: settings,
+                }),
+            ]),
+        });
+        const instruction = instructionNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'config', type: definedTypeLinkNode('config') })]),
+            identifier: 'configure',
+            provides: [providedNode('fee', integerValueNode('5'))],
+        });
+        const root = rootNode(
+            programNode({
+                definedTypes: [config],
+                identifier: 'myProgram',
+                instructions: [instruction],
+                publicKey: '1111',
+            }),
+        );
+
+        // Then the label value uses the provided fee, and matches.
+        const formatted = formatDecodedNode(getNodeCodec([root, root.program, instruction]).decode(hex('0105')));
+        expect(formatted.text).toBe('Config: (Settings: Default settings)');
     });
 
     test('it does not degrade fields presenting a value label', () => {

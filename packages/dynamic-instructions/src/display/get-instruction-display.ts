@@ -43,9 +43,9 @@ export async function getInstructionDisplay(
  * accounts, e.g. the `decimals` of a mint, come from the `accounts` option, e.g. fetched with
  * `getDisplayAccountMap`.
  *
- * Amounts whose decimals cannot be resolved are written as their raw value followed by `(raw)`
- * in the rows, so they cannot be mistaken for scaled amounts, and make the interpolated intent
- * `null`.
+ * Amounts whose decimals cannot be resolved are written in the rows through the `formatDegraded`
+ * option, as their raw value followed by `(raw)` by default, so they cannot be mistaken for scaled
+ * amounts, and make the interpolated intent `null`.
  *
  * @example
  * ```ts

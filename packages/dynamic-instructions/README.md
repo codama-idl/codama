@@ -162,7 +162,7 @@ const display =
 - **Value labels:** a field matching one of its value labels shows the label rather than its formatted value, wherever it is, e.g. within a nested struct, and in the sentence.
 - **Addresses:** every address, in public key fields, account rows, placeholders and address units, goes through the `formatAddress` option.
 - **Injected values:** injected values of display nodes, e.g. the `decimals` of an amount, resolve from the `provides` of the instruction and its parents: literal values, accounts, the program, values of the instruction data, or values of account data. Paths crossing account links read the data of the linked accounts, with a `.data` segment, e.g. `${data.mint.data.decimals}`.
-- **Degraded values:** an amount whose decimals cannot be resolved shows its raw value followed by `(raw)`, so it cannot be mistaken for a scaled amount, and makes the sentence `null`. So do placeholders referring to omitted accounts, empty values, or account data that is not available.
+- **Degraded values:** an amount whose decimals cannot be resolved shows its raw value followed by `(raw)`, or as the `formatDegraded` option presents it, so it cannot be mistaken for a scaled amount, and makes the sentence `null`. So do placeholders referring to omitted accounts, empty values, or account data that is not available.
 
 ## Display dictionary
 

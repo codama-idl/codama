@@ -6,6 +6,7 @@ import {
     getProvidedScopeFromPath,
     LinkableDictionary,
     NodeStack,
+    ProvidedScope,
     visit,
 } from '@codama/visitors-core';
 import type { ReadonlyUint8Array } from '@solana/codecs';
@@ -13,6 +14,17 @@ import type { ReadonlyUint8Array } from '@solana/codecs';
 import { getNodeValueCodecVisitor } from './codecs';
 import type { DecodedStructFieldTypeNode } from './decoded';
 import { getValueNodeVisitor } from './values';
+
+/** Options of {@link getValueLabel}. */
+export type GetValueLabelOptions = {
+    /** The linkable nodes of the tree, to follow the links of the field's type. Defaults to recording them from the root of its path. */
+    readonly linkables?: LinkableDictionary;
+    /**
+     * The `provides` in scope of the field, to resolve the values injected into its type. Defaults
+     * to the instructions on its path, which a field within a linked defined type does not go through.
+     */
+    readonly scope?: ProvidedScope;
+};
 
 /**
  * Get the label a decoded struct field presents instead of its value, e.g. `"All"` for an amount
@@ -24,7 +36,7 @@ import { getValueNodeVisitor } from './values';
  * Value labels apply to the raw decoded value, before any formatting: use the label, when there
  * is one, instead of the formatted text of the field. The links of its type, e.g. a linked enum,
  * resolve from the linkable nodes of the tree, recorded from the root of the field's path unless
- * given as `linkables`.
+ * given as the `linkables` option.
  *
  * Labels must be values of the field's type, as validators require: a label whose value does not
  * fit, e.g. a string labelling an integer, throws when encoded, as invalid IDLs do in codecs.
@@ -36,15 +48,18 @@ import { getValueNodeVisitor } from './values';
  * getValueLabel(amountField) ?? amountField.text; // what to present
  * ```
  */
-export function getValueLabel(field: DecodedStructFieldTypeNode, linkables?: LinkableDictionary): string | undefined {
+export function getValueLabel(
+    field: DecodedStructFieldTypeNode,
+    options: GetValueLabelOptions = {},
+): string | undefined {
     const node = getLastNodeFromPath(field.path);
     const valueLabels = node.display?.valueLabels ?? [];
     if (valueLabels.length === 0) return undefined;
-    const recordedLinkables = linkables ?? getLinkablesFromNode(field.path[0]);
+    const recordedLinkables = options.linkables ?? getLinkablesFromNode(field.path[0]);
 
     // As for `getNodeCodec`, the enclosing instructions provide the values injected into the field.
     const stack = new NodeStack(field.path);
-    const scope = getProvidedScopeFromPath(field.path);
+    const scope = options.scope ?? getProvidedScopeFromPath(field.path);
     const codec = visit(node.type, getNodeValueCodecVisitor(recordedLinkables, { scope, stack }));
     let bytes: ReadonlyUint8Array;
     try {

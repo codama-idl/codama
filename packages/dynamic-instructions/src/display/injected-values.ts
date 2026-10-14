@@ -1,14 +1,20 @@
-import { type DecodedNode, getDecodedNodeAtPath, isDecodedNode } from '@codama/dynamic-codecs';
+import {
+    type DecodedNode,
+    type FormatDecodedNodeOptions,
+    getDecodedNodeAtPath,
+    isDecodedNode,
+} from '@codama/dynamic-codecs';
 import {
     findProgramNodeFromPath,
     getLastNodeFromPath,
     getProvidedScopeFromPath,
-    type InjectedValueNode,
     INSTRUCTION_INPUT_VALUE_NODE_KINDS,
     type InstructionInputValueNode,
     integerValueNode,
     isNode,
-    type NodePath,
+    parsePath,
+    pathString,
+    type ProvidedScope,
     publicKeyValueNode,
     stringValueNode,
     VALUE_NODE_KINDS,
@@ -31,21 +37,62 @@ import { type DisplayContext, getAccountAddress, getInstructionAccountData, getL
  * | `accountDataValueNode` | The integer, string or address at its path within the data of the account |
  * | Anything else, e.g. `pdaValueNode` | Unresolved |
  *
- * Values that are not available, e.g. an omitted account or account data that was not fetched,
- * are unresolved, so the formatters present them with confidence or not at all. Each resolved
- * node is given to `onResolved`, e.g. to know which members the value was read from.
+ * Values that are not available, e.g. an omitted account or account data that was not fetched, are
+ * unresolved, so the formatters present them with confidence or not at all. Values within fields
+ * skipped `always` of the formatted node are not shown, so they are not resolved either, and the
+ * accounts only they read are not fetched. Each value read from a member, e.g. `account:mint` or
+ * `data:config.fee`, is given to `onRead` with the decoded nodes containing the value, e.g. to know
+ * which rows present that member. The `provides` come from the given scope, which defaults to those
+ * of the instruction and its parents.
  */
 export function getInjectedValueResolver(
     context: DisplayContext,
-    onResolved?: (node: InstructionInputValueNode) => void,
-): (path: NodePath<InjectedValueNode>) => ValueNode | undefined {
-    const scope = getProvidedScopeFromPath(context.parsed.path);
-    return path => {
+    onRead?: (member: string, parents: readonly DecodedNode[]) => void,
+    scope: ProvidedScope = getProvidedScopeFromPath(context.parsed.path),
+): NonNullable<FormatDecodedNodeOptions['resolveInjectedValue']> {
+    return (path, parents) => {
+        // The formatted node itself is shown, e.g. a hidden field a placeholder refers to.
+        if (parents.slice(1).some(isFieldSkippedAlways)) return undefined;
         const node = scope.resolve(getLastNodeFromPath(path), { kinds: INSTRUCTION_INPUT_VALUE_NODE_KINDS });
         const value = node === undefined ? undefined : getValueNodeOf(context, node);
-        if (node !== undefined && value !== undefined) onResolved?.(node);
+        const member = node === undefined || value === undefined ? undefined : getReadMember(context, node);
+        if (member !== undefined) onRead?.(member, parents);
         return value;
     };
+}
+
+function isFieldSkippedAlways(decoded: DecodedNode): boolean {
+    return (
+        isDecodedNode(decoded, 'structFieldTypeNode') && getLastNodeFromPath(decoded.path).display?.skip === 'always'
+    );
+}
+
+/** The member a resolved injected value is read from, if any: an account, or a field of the instruction data. */
+function getReadMember(context: DisplayContext, node: InstructionInputValueNode): string | undefined {
+    if (isNode(node, 'accountValueNode')) return `account:${node.identifier}`;
+    if (isNode(node, 'accountDataValueNode')) return `account:${node.account}`;
+    if (isNode(node, 'dataValueNode')) {
+        const path = getDataMemberPath(context, node.path);
+        return path === undefined ? undefined : `data:${path}`;
+    }
+    return undefined;
+}
+
+/**
+ * The path of the field of the instruction data a data path reads: its field segments, up to an
+ * index or an account link, e.g. `config.fee` for `config.fee`, `mint` for `mint.data.decimals` when
+ * `mint` links to an account, or `fees` for `fees[0]`.
+ */
+function getDataMemberPath(context: DisplayContext, path: string): string | undefined {
+    let memberPath: string | undefined;
+    for (const segment of parsePath(path)) {
+        if (segment.kind === 'index') break;
+        const next = memberPath === undefined ? segment.identifier : `${memberPath}.${segment.identifier}`;
+        const node = getDecodedNodeAtPath(context.parsed, pathString(next), { resolveAccountLink: () => undefined });
+        if (!node) break;
+        memberPath = next;
+    }
+    return memberPath;
 }
 
 function getValueNodeOf(context: DisplayContext, node: InstructionInputValueNode): ValueNode | undefined {

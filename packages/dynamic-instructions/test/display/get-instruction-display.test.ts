@@ -318,6 +318,13 @@ describe('degraded amounts', () => {
         ).toStrictEqual([{ label: 'Amount', value: '1500000 (raw)' }]);
     });
 
+    test('it presents degraded amounts through the formatDegraded option', () => {
+        const options = { formatDegraded: (raw: string) => `${raw} (unscaled)` };
+        expect(
+            display({ data: data(field('amount', unresolved)) }, { data: { amount: 1_500_000n } }, options).fields,
+        ).toStrictEqual([{ label: 'Amount', value: '1500000 (unscaled)' }]);
+    });
+
     test('it marks degraded amounts within nested values', () => {
         const config = data(field('amount', unresolved), field('fee', u64));
         expect(
