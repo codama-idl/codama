@@ -1,12 +1,12 @@
 import { CODAMA_ERROR__CANNOT_RESOLVE_PATH, CodamaError } from '@codama/errors';
 import {
     AccountLinkNode,
-    AccountNode,
     DefinedTypeLinkNode,
     DefinedTypeNode,
     isNode,
     Node,
     PathString,
+    PublicKeyTypeNode,
     RegisteredTypeNode,
 } from '@codama/nodes';
 
@@ -46,10 +46,11 @@ export function parsePath(path: string): PathSegment[] {
 /** Options of {@link resolveTypePath}. */
 export type ResolveTypePathOptions = {
     /**
-     * Whether a field segment applied to a public key whose type carries an
-     * `accountLink` continues into the linked account's data, e.g. `mint.decimals`.
-     * Defaults to `false`, since following such paths requires reading account
-     * state: field discriminators, for instance, must not cross account links.
+     * Whether a `.data` segment applied to a public key whose type carries an
+     * `accountLink` continues into the linked account's data, e.g.
+     * `mint.data.decimals`. Defaults to `false`, since following such paths
+     * requires reading account state: field discriminators, for instance, must
+     * not cross account links.
      */
     followAccountLinks?: boolean;
 };
@@ -65,9 +66,11 @@ export type ResolveTypePathOptions = {
  * reflects where each node is defined. The last node is returned as
  * addressed, e.g. a struct field whose type is a link. Indices into arrays
  * and sets are not checked against their count, as they select the item type.
- * With `followAccountLinks`, field segments applied to public keys carrying an
- * `accountLink` resolve within the data of the linked account, e.g.
- * `mint.decimals` reads the `decimals` of the account the `mint` field links to.
+ * With `followAccountLinks`, a `.data` segment applied to a public key carrying
+ * an `accountLink` resolves to the data of the linked account, e.g.
+ * `mint.data.decimals` reads the `decimals` of the account the `mint` field
+ * links to, and `mint.data` its whole data. Other segments applied to such a
+ * public key are reserved for other attributes of the account, so they throw.
  *
  * @param source - The path to the type the path expression is relative to,
  *   e.g. `[root, program, instruction, instruction.data]`.
@@ -90,11 +93,16 @@ export function resolveTypePath(
     linkables: LinkableDictionary,
     options: ResolveTypePathOptions = {},
 ): NodePath<TypePathNode> {
-    const resolved = parsePath(path).reduce((current, segment) => {
-        const container = resolveContainer(current, linkables, path, segment, options);
+    const resolved = parsePath(path).reduce<TypePath>((current, segment) => {
+        const container = resolveContainer(current, linkables, path, segment);
         const type = getLastTypePathNode(container);
         const withChild = (child: TypePathNode): TypePath => [...container, child];
 
+        if (segment.kind === 'field' && options.followAccountLinks && entersLinkedAccountData(type, segment)) {
+            const linkPath = [...container, type.accountLink] as unknown as NodePath<AccountLinkNode>;
+            const accountPath = linkables.getPathOrThrow(linkPath);
+            return [...accountPath, getLastNodeFromPath(accountPath).data];
+        }
         if (segment.kind === 'field') {
             const field = isNode(type, 'structTypeNode')
                 ? (type.fields ?? []).find(field => field.identifier === segment.identifier)
@@ -112,19 +120,17 @@ export function resolveTypePath(
 }
 
 /**
- * Resolve struct fields, enum variants and links to the type they describe,
- * so the next segment can be applied to it.
+ * Resolve struct fields, enum variants and defined type links to the type
+ * they describe, so the next segment can be applied to it.
  */
 function resolveContainer(
     source: TypePath,
     linkables: LinkableDictionary,
     path: PathString,
     segment: PathSegment,
-    options: ResolveTypePathOptions,
 ): TypePath {
     let current = source;
     const followedTypes = new Set<DefinedTypeNode>();
-    const followedAccounts = new Set<AccountNode>();
     for (;;) {
         const node = getLastTypePathNode(current);
         if (isNode(node, 'structFieldTypeNode')) {
@@ -139,23 +145,18 @@ function resolveContainer(
             if (followedTypes.has(definedType)) throw getCannotResolvePathError(current, path, segment);
             followedTypes.add(definedType);
             current = [...definedTypePath, definedType.type];
-        } else if (
-            options.followAccountLinks &&
-            segment.kind === 'field' &&
-            isNode(node, 'publicKeyTypeNode') &&
-            node.accountLink
-        ) {
-            const linkPath = [...current, node.accountLink] as unknown as NodePath<AccountLinkNode>;
-            const accountPath = linkables.getPathOrThrow(linkPath);
-            const account = getLastNodeFromPath(accountPath);
-            // An account whose data is a public key linking back to itself never reaches a type.
-            if (followedAccounts.has(account)) throw getCannotResolvePathError(current, path, segment);
-            followedAccounts.add(account);
-            current = [...accountPath, account.data];
         } else {
             return current;
         }
     }
+}
+
+/** Whether a segment enters the data of the account a public key links to, i.e. a `.data` segment on a linked public key. */
+function entersLinkedAccountData(
+    type: TypePathNode,
+    segment: PathSegment & { kind: 'field' },
+): type is PublicKeyTypeNode & { accountLink: AccountLinkNode } {
+    return segment.identifier === 'data' && isNode(type, 'publicKeyTypeNode') && type.accountLink !== undefined;
 }
 
 function getLastTypePathNode(path: TypePath): TypePathNode {

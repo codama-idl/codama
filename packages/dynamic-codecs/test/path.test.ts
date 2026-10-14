@@ -148,13 +148,15 @@ describe('account links', () => {
 
     test('it follows account links using the resolved account', () => {
         const resolveAccountLink = () => decodedMint;
-        const decimals = getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'), { resolveAccountLink });
+        const decimals = getDecodedNodeAtPath(decodedTransfer, pathString('mint.data.decimals'), {
+            resolveAccountLink,
+        });
         expect(decimals).toBe(getDecodedNodeAtPath(decodedMint, pathString('decimals')));
     });
 
     test('it gives the decoded public key to the account link resolver', () => {
         const publicKeys: unknown[] = [];
-        getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'), {
+        getDecodedNodeAtPath(decodedTransfer, pathString('mint.data.decimals'), {
             resolveAccountLink: publicKey => {
                 publicKeys.push(publicKey);
                 return decodedMint;
@@ -166,17 +168,17 @@ describe('account links', () => {
     test('it returns undefined when the linked account is not resolved', () => {
         const resolveAccountLink = () => undefined;
         expect(
-            getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'), { resolveAccountLink }),
+            getDecodedNodeAtPath(decodedTransfer, pathString('mint.data.decimals'), { resolveAccountLink }),
         ).toBeUndefined();
     });
 
     test('it throws when crossing an account link without a resolver', () => {
         const mintField = transfer.fields![0];
-        expect(() => getDecodedNodeAtPath(decodedTransfer, pathString('mint.decimals'))).toThrow(
+        expect(() => getDecodedNodeAtPath(decodedTransfer, pathString('mint.data.decimals'))).toThrow(
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
                 nodePath: [root, root.program, transfer, mintField, mintField.type],
-                path: pathString('mint.decimals'),
-                segment: 'decimals',
+                path: pathString('mint.data.decimals'),
+                segment: 'data',
             }),
         );
     });
@@ -184,8 +186,25 @@ describe('account links', () => {
     test('it does not follow public keys without account links', () => {
         const resolveAccountLink = () => decodedMint;
         expect(() =>
-            getDecodedNodeAtPath(decodedTransfer, pathString('owner.decimals'), { resolveAccountLink }),
-        ).toThrow(expect.objectContaining({ context: expect.objectContaining({ segment: 'decimals' }) }));
+            getDecodedNodeAtPath(decodedTransfer, pathString('owner.data.decimals'), { resolveAccountLink }),
+        ).toThrow(expect.objectContaining({ context: expect.objectContaining({ segment: 'data' }) }));
+    });
+
+    test('it does not follow account links with other segments', () => {
+        // Given a field of the linked account's data used directly, or another attribute of the account.
+        const resolveAccountLink = () => decodedMint;
+        for (const segment of ['decimals', 'lamports']) {
+            expect(() =>
+                getDecodedNodeAtPath(decodedTransfer, pathString(`mint.${segment}`), { resolveAccountLink }),
+            ).toThrow(expect.objectContaining({ context: expect.objectContaining({ segment }) }));
+        }
+    });
+
+    test('it returns the whole data of linked accounts for a data segment', () => {
+        const resolveAccountLink = () => decodedMint;
+        expect(getDecodedNodeAtPath(decodedTransfer, pathString('mint.data'), { resolveAccountLink })).toBe(
+            decodedMint.data,
+        );
     });
 
     test('it returns linked public keys as addressed', () => {
@@ -197,7 +216,7 @@ describe('account links', () => {
 
     test('it follows account links within formatted nodes', () => {
         const formattedMint = formatDecodedNode(decodedMint);
-        const decimals = getDecodedNodeAtPath(formatDecodedNode(decodedTransfer), pathString('mint.decimals'), {
+        const decimals = getDecodedNodeAtPath(formatDecodedNode(decodedTransfer), pathString('mint.data.decimals'), {
             resolveAccountLink: () => formattedMint,
         });
         expect(decimals?.text).toBe('6');
@@ -222,7 +241,7 @@ describe('account links', () => {
             [decodedTransfer.fields[0].value as string, decodedToken],
             [getDecodedNodeAtPath(decodedToken, pathString('mint'))?.value as string, decodedMint],
         ]);
-        const decimals = getDecodedNodeAtPath(decodedTransfer, pathString('mint.mint.decimals'), {
+        const decimals = getDecodedNodeAtPath(decodedTransfer, pathString('mint.data.mint.data.decimals'), {
             resolveAccountLink: publicKey => accounts.get(publicKey.value),
         });
         expect(decimals?.value).toBe(6n);

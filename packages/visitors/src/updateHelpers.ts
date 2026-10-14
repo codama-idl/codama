@@ -507,7 +507,8 @@ type PathOwner =
  * Rewrite path expressions (e.g. `config.fee`) whose segments point to
  * renamed struct fields, walking the original types from the path's root
  * and following defined type links. Paths reading account state, i.e. data
- * and account data paths, also follow account links, e.g. `mint.decimals`.
+ * and account data paths, also follow account links with a `.data` segment,
+ * e.g. `mint.data.decimals`.
  */
 function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) {
     const getFieldRename = (owner: PathOwner, prefix: string, identifier: string): IdentifierString | undefined => {
@@ -539,25 +540,7 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
         const followedDefinedTypes = new Set<DefinedTypeNode>();
 
         for (const segment of segments) {
-            // Unlike defined types, an account may link to itself across segments, e.g. `parent.parent`.
-            const followedAccounts = new Set<AccountNode>();
-            while (type && isNode(type, ['definedTypeLinkNode', 'publicKeyTypeNode'])) {
-                if (isNode(type, 'publicKeyTypeNode')) {
-                    if (!options.followAccountLinks || segment.kind !== 'field' || !type.accountLink) break;
-                    const accountPath = linkables.getPath([...context, type.accountLink]);
-                    const account = accountPath ? getLastNodeFromPath(accountPath) : undefined;
-                    if (!accountPath || !account || followedAccounts.has(account)) {
-                        type = undefined;
-                        break;
-                    }
-                    followedAccounts.add(account);
-                    followedDefinedTypes.clear();
-                    owner = { kind: 'account', path: accountPath };
-                    context = accountPath;
-                    prefix = '';
-                    type = account.data;
-                    continue;
-                }
+            while (type && isNode(type, 'definedTypeLinkNode')) {
                 const definedTypePath = linkables.getPath([...context, type]);
                 const definedType = definedTypePath ? getLastNodeFromPath(definedTypePath) : undefined;
                 if (!definedTypePath || !definedType || followedDefinedTypes.has(definedType)) {
@@ -571,6 +554,20 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
                 type = definedType.type;
             }
             if (!type) break;
+
+            // A `.data` segment on a linked public key enters the data of its account, e.g. `mint.data.decimals`.
+            if (isNode(type, 'publicKeyTypeNode')) {
+                const entersData = segment.kind === 'field' && segment.identifier === 'data';
+                if (!options.followAccountLinks || !entersData || !type.accountLink) break;
+                const accountPath = linkables.getPath([...context, type.accountLink]);
+                if (!accountPath) break;
+                followedDefinedTypes.clear();
+                owner = { kind: 'account', path: accountPath };
+                context = accountPath;
+                prefix = '';
+                type = getLastNodeFromPath(accountPath).data;
+                continue;
+            }
 
             if (segment.kind === 'field') {
                 if (!isNode(type, 'structTypeNode')) break;

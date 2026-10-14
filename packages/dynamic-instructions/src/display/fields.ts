@@ -138,7 +138,7 @@ function addReadMember(context: DisplayContext, node: InstructionInputValueNode,
 
 /**
  * The path of the field of the instruction data a data path reads: its field segments, up to an
- * index or an account link, e.g. `config.fee` for `config.fee`, `mint` for `mint.decimals` when
+ * index or an account link, e.g. `config.fee` for `config.fee`, `mint` for `mint.data.decimals` when
  * `mint` links to an account, or `fees` for `fees[0]`.
  */
 function getDataMemberPath(context: DisplayContext, path: string): string | undefined {

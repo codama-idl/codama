@@ -21,7 +21,7 @@ import { getDataFieldPaths } from './resolve-instruction-data-default-values';
  * Whether building the instruction at the end of the given path may read account data, and thus
  * requires a `fetchAccounts` function: when the default value of one of its accounts or top-level
  * data fields, once its injected values are resolved, contains an `accountDataValueNode` or a
- * `dataValueNode` whose path crosses the `accountLink` of a public key, e.g. `mint.decimals`.
+ * `dataValueNode` whose path crosses the `accountLink` of a public key, e.g. `mint.data.decimals`.
  * Links are followed using the linkable nodes of the tree, recorded from its root unless given.
  *
  * @example

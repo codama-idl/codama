@@ -1,5 +1,6 @@
 import { getNodeValueCodec } from '@codama/dynamic-codecs';
 import {
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
@@ -189,7 +190,9 @@ describe('account data values', () => {
         const authority = await generateAddress();
         const tokenAddress = await generateAddress();
         const tokenAccount = account('token', { accountLink: accountLinkNode('token') });
-        const owner = account('owner', { defaultValue: accountDataValueNode('token', { path: 'mint.mintAuthority' }) });
+        const owner = account('owner', {
+            defaultValue: accountDataValueNode('token', { path: 'mint.data.mintAuthority' }),
+        });
         const { path, root } = getAccountPath({ accounts: [tokenAccount, owner] });
         const fetchAccounts = getFetchAccounts([
             encodeAccount(root, 'token', tokenAddress, { mint: MINT_ADDRESS }),
@@ -337,7 +340,7 @@ describe('data values crossing account links', () => {
 
     test('it reads the data of linked accounts', async () => {
         const authority = await generateAddress();
-        const owner = account('owner', { defaultValue: dataValueNode('mint.mintAuthority') });
+        const owner = account('owner', { defaultValue: dataValueNode('mint.data.mintAuthority') });
         const { path, root } = getAccountPath({ accounts: [owner], data });
         const fetchAccounts = getFetchAccounts([
             encodeAccount(root, 'mint', MINT_ADDRESS, { decimals: 6, mintAuthority: authority }),
@@ -347,7 +350,98 @@ describe('data values crossing account links', () => {
             fetchAccounts,
             path,
         });
+
         expect(address).toBe(authority);
+    });
+
+    test('it reads the whole data of linked accounts with a data segment', async () => {
+        // Given an account whose data is a single address.
+        const pointer = accountNode({ data: publicKeyTypeNode(), identifier: 'pointer' });
+        const pointerData = structTypeNode([
+            structFieldTypeNode({
+                identifier: 'pointer',
+                type: publicKeyTypeNode({ accountLink: accountLinkNode('pointer') }),
+            }),
+        ]);
+        const target = account('target', { defaultValue: dataValueNode('pointer.data') });
+        const instruction = instructionNode({
+            accounts: [target],
+            data: pointerData,
+            identifier: 'testInstruction',
+        });
+        const root = rootNode(
+            programNode({
+                accounts: [pointer],
+                identifier: 'p',
+                instructions: [instruction],
+                publicKey: PROGRAM_ADDRESS,
+            }),
+        );
+        const fetchAccounts = getFetchAccounts([
+            encodedAccount(MINT_ADDRESS, getAddressEncoder().encode(OTHER_ADDRESS)),
+        ]);
+
+        // Then the account resolves to that address.
+        const address = await resolveInstructionAccountAddress({
+            dataInput: { pointer: MINT_ADDRESS },
+            fetchAccounts,
+            path: [root, root.program, instruction, target],
+        });
+        expect(address).toBe(OTHER_ADDRESS);
+    });
+
+    test('it crosses account links from data that is itself a linked address', async () => {
+        // Given a pointer account whose data is the address of a mint.
+        const authority = await generateAddress();
+        const pointer = accountNode({
+            data: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+            identifier: 'pointer',
+        });
+        const pointerData = structTypeNode([
+            structFieldTypeNode({
+                identifier: 'pointer',
+                type: publicKeyTypeNode({ accountLink: accountLinkNode('pointer') }),
+            }),
+        ]);
+        const owner = account('owner', { defaultValue: dataValueNode('pointer.data.data.mintAuthority') });
+        const instruction = instructionNode({ accounts: [owner], data: pointerData, identifier: 'testInstruction' });
+        const root = rootNode(
+            programNode({
+                accounts: [pointer, mint],
+                identifier: 'p',
+                instructions: [instruction],
+                publicKey: PROGRAM_ADDRESS,
+            }),
+        );
+        const fetchAccounts = getFetchAccounts([
+            encodedAccount(OTHER_ADDRESS, getAddressEncoder().encode(MINT_ADDRESS)),
+            encodeAccount(root, 'mint', MINT_ADDRESS, { decimals: 6, mintAuthority: authority }),
+        ]);
+
+        // Then both links are crossed.
+        const address = await resolveInstructionAccountAddress({
+            dataInput: { pointer: OTHER_ADDRESS },
+            fetchAccounts,
+            path: [root, root.program, instruction, owner],
+        });
+        expect(address).toBe(authority);
+    });
+
+    test('it does not cross account links without a data segment', async () => {
+        const fetchAccounts = getFetchAccounts([]);
+        const owner = account('owner', { defaultValue: dataValueNode('mint.mintAuthority') });
+        const { path } = getAccountPath({ accounts: [owner], data });
+        await expect(
+            resolveInstructionAccountAddress({ dataInput: { mint: MINT_ADDRESS }, fetchAccounts, path }),
+        ).rejects.toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({
+                    __code: CODAMA_ERROR__CANNOT_RESOLVE_PATH,
+                    segment: 'mintAuthority',
+                }),
+            }),
+        );
+        expect(fetchAccounts).not.toHaveBeenCalled();
     });
 
     test('it reads the decoded data of linked accounts without using default values', async () => {
@@ -364,7 +458,7 @@ describe('data values crossing account links', () => {
             ]),
             identifier: 'mint',
         });
-        const owner = account('owner', { defaultValue: dataValueNode('mint.mintAuthority') });
+        const owner = account('owner', { defaultValue: dataValueNode('mint.data.mintAuthority') });
         const instruction = instructionNode({ accounts: [owner], data, identifier: 'testInstruction' });
         const root = rootNode(
             programNode({
@@ -387,13 +481,13 @@ describe('data values crossing account links', () => {
 
     test('it treats the value as missing when the linked public key is missing', async () => {
         const fetchAccounts = getFetchAccounts([]);
-        const owner = account('owner', { defaultValue: dataValueNode('mint.mintAuthority') });
+        const owner = account('owner', { defaultValue: dataValueNode('mint.data.mintAuthority') });
         const { path } = getAccountPath({ accounts: [owner], data });
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: {}, fetchAccounts, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING, {
                 instructionName: path[2].identifier,
-                path: dataValueNode('mint.mintAuthority').path,
+                path: dataValueNode('mint.data.mintAuthority').path,
             }),
         );
         expect(fetchAccounts).not.toHaveBeenCalled();
@@ -401,7 +495,7 @@ describe('data values crossing account links', () => {
 
     test('it derives PDA seeds from the data of linked accounts', async () => {
         const authority = await generateAddress();
-        const seed = pdaSeedValueNode('authority', dataValueNode('mint.mintAuthority'));
+        const seed = pdaSeedValueNode('authority', dataValueNode('mint.data.mintAuthority'));
         const vault = account('vault', { defaultValue: pdaValueNode(pdaLinkNode('vault'), { seeds: [seed] }) });
         const { path, root } = getAccountPath({ accounts: [vault], data });
         const fetchAccounts = getFetchAccounts([

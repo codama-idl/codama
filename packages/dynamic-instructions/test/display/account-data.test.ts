@@ -207,7 +207,7 @@ describe('injected values read from accounts', () => {
                 field('amount', decimalsAmount),
                 field('mint', publicKeyTypeNode({ accountLink: accountLinkNode('mint') })),
             ),
-            provides: [providedNode('decimals', dataValueNode('mint.decimals'))],
+            provides: [providedNode('decimals', dataValueNode('mint.data.decimals'))],
         });
         const accounts = new Map([[MINT, encode(mint, MINT, { decimals: 6, symbol: 'USDC' })]]);
         const parsed = parse({ data: { amount: 1_500_000n, mint: MINT } });
@@ -221,7 +221,7 @@ describe('injected values read from accounts', () => {
         const { encode, parse, root } = setup({
             accounts: [account('source', { accountLink: accountLinkNode('token') })],
             data: data(field('amount', decimalsAmount)),
-            provides: [providedNode('decimals', accountDataValueNode('source', { path: 'mint.decimals' }))],
+            provides: [providedNode('decimals', accountDataValueNode('source', { path: 'mint.data.decimals' }))],
         });
         const accounts = new Map([
             [TOKEN, encode(token, TOKEN, { mint: MINT })],
@@ -312,7 +312,7 @@ describe('placeholders reading accounts', () => {
         const { encode, parse, root } = setup({
             accounts: [account('source', { accountLink: accountLinkNode('token') })],
             data: data(field('mint', publicKeyTypeNode({ accountLink: accountLinkNode('mint') }))),
-            display: intent('${data.mint.symbol} from a ${accounts.source.data.mint.symbol} account'),
+            display: intent('${data.mint.data.symbol} from a ${accounts.source.data.mint.data.symbol} account'),
         });
         const accounts = new Map([
             [TOKEN, encode(token, TOKEN, { mint: MINT })],
@@ -321,6 +321,18 @@ describe('placeholders reading accounts', () => {
         const parsed = parse({ accounts: [readonly(TOKEN)], data: { mint: MINT } });
         expect(getInstructionDisplayFromParsedInstruction(root, parsed, { accounts }).interpolatedIntent).toBe(
             'USDC from a USDC account',
+        );
+    });
+
+    test('it fills placeholders with the whole data of linked accounts', () => {
+        const { encode, parse, root } = setup({
+            data: data(field('mint', publicKeyTypeNode({ accountLink: accountLinkNode('mint') }))),
+            display: intent('Mint: ${data.mint.data}'),
+        });
+        const accounts = new Map([[MINT, encode(mint, MINT, { decimals: 6, symbol: 'USDC' })]]);
+        const parsed = parse({ data: { mint: MINT } });
+        expect(getInstructionDisplayFromParsedInstruction(root, parsed, { accounts }).interpolatedIntent).toBe(
+            'Mint: Decimals: 6, Symbol: USDC',
         );
     });
 
@@ -430,7 +442,7 @@ describe('members skipped when injected', () => {
                 field('amount', decimalsAmount),
                 field('mint', publicKeyTypeNode({ accountLink: accountLinkNode('mint') }), whenInjected),
             ),
-            provides: [providedNode('decimals', dataValueNode('mint.decimals'))],
+            provides: [providedNode('decimals', dataValueNode('mint.data.decimals'))],
         });
         const accounts = new Map([[MINT, encode(mint, MINT, { decimals: 6, symbol: 'USDC' })]]);
         const parsed = parse({ data: { amount: 1_500_000n, mint: MINT } });
@@ -469,7 +481,7 @@ describe('getDisplayAccountMap', () => {
     const multiHop = {
         accounts: [account('source', { accountLink: accountLinkNode('token') })],
         data: data(field('amount', decimalsAmount)),
-        provides: [providedNode('decimals', accountDataValueNode('source', { path: 'mint.decimals' }))],
+        provides: [providedNode('decimals', accountDataValueNode('source', { path: 'mint.data.decimals' }))],
     };
 
     test('it fetches the accounts the display reads, in rounds', async () => {

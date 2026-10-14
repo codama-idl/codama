@@ -35,7 +35,7 @@ import type { DisplayAccountMap, DisplayDictionary, DisplayNamedMap, FetchMaybeA
  * Fetch the accounts the display of a parsed instruction reads, e.g. a mint for the `decimals` of
  * an amount, into a {@link DisplayAccountMap}. Accounts are fetched in rounds, each in a single
  * call to `fetchAccounts`, since reading an account can reveal the next one to read, e.g. the
- * mint of a token account for `${accounts.source.data.mint.decimals}`. Accounts that do not exist
+ * mint of a token account for `${accounts.source.data.mint.data.decimals}`. Accounts that do not exist
  * are left out, and so the values read from them are not presented.
  *
  * Use the map with `getInstructionDisplayFromParsedInstruction`, or within a

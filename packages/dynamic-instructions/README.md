@@ -161,7 +161,7 @@ const display =
 - **Skipped members:** members skipped `always` are left out, and so are members skipped `whenInjected` whose value another row presents through an injection, e.g. a mint whose decimals scale an amount. When that value cannot be presented, e.g. because the mint is not available, the member is shown. Only rows that are always shown count, so members skipped `whenInjected` never hide one another.
 - **Value labels:** a field matching one of its value labels shows the label rather than its formatted value, wherever it is, e.g. within a nested struct, and in the sentence.
 - **Addresses:** every address, in public key fields, account rows, placeholders and address units, goes through the `formatAddress` option.
-- **Injected values:** injected values of display nodes, e.g. the `decimals` of an amount, resolve from the `provides` of the instruction and its parents: literal values, accounts, the program, values of the instruction data, or values of account data. Paths crossing account links read the data of the linked accounts, e.g. `${data.mint.decimals}`.
+- **Injected values:** injected values of display nodes, e.g. the `decimals` of an amount, resolve from the `provides` of the instruction and its parents: literal values, accounts, the program, values of the instruction data, or values of account data. Paths crossing account links read the data of the linked accounts, with a `.data` segment, e.g. `${data.mint.data.decimals}`.
 - **Degraded values:** an amount whose decimals cannot be resolved shows its raw value followed by `(raw)`, so it cannot be mistaken for a scaled amount, and makes the sentence `null`. So do placeholders referring to omitted accounts, empty values, or account data that is not available.
 
 ## Display dictionary
