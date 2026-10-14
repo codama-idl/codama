@@ -1,50 +1,54 @@
-import { type ParsedInstruction, parseInstruction } from '@codama/dynamic-parsers';
-import { getLastNodeFromPath, type RootNode, titleCase } from 'codama';
+import { formatDecodedNode, formatInteger } from '@codama/dynamic-codecs';
+import type { ParsedInstruction } from '@codama/dynamic-parsers';
+import { getLastNodeFromPath, getLinkablesFromNode, getTextNodeContent, type RootNode, titleCase } from 'codama';
 
-import { buildDisplayContext } from './build-display-context';
-import { interpolateIntent } from './interpolate-intent';
-import { listFallback } from './list-fallback';
+import { getDisplayFields } from './fields';
+import { getInjectedValueResolver } from './injected-values';
+import { getInterpolatedIntent } from './interpolated-intent';
 import type { GetInstructionDisplayOptions, InstructionDisplay } from './types';
 
-/** A concrete on-chain instruction, as accepted by `@codama/dynamic-parsers`' `parseInstruction`. */
-type Instruction = Parameters<typeof parseInstruction>[1];
-
 /**
- * Resolves a concrete instruction into its human-readable display.
+ * Present a parsed instruction to humans, e.g. to clear sign it: its intent, its interpolated
+ * intent and the rows of its fallback list. Values are formatted with the formatters of
+ * `@codama/dynamic-codecs`, whose options it accepts, and injected values of display nodes, e.g.
+ * the `decimals` of an amount, resolve from the `provides` of the instruction.
  *
- * Parses the raw instruction against the root, then derives its display. Returns `null` when
- * the instruction cannot be identified or decoded — parsing failure is an expected outcome
- * (e.g. when probing an instruction from an unknown program), not an error.
- */
-export async function getInstructionDisplay(
-    root: RootNode,
-    instruction: Instruction,
-    options: GetInstructionDisplayOptions = {},
-): Promise<InstructionDisplay | null> {
-    const parsedInstruction = parseInstruction(root, instruction);
-    if (!parsedInstruction) return null;
-    return await getInstructionDisplayFromParsedInstruction(root, parsedInstruction, options);
-}
-
-/**
- * Resolves an already-parsed instruction into its human-readable display.
+ * Amounts whose decimals cannot be resolved are written as their raw value followed by `(raw)`
+ * in the rows, so they cannot be mistaken for scaled amounts, and make the interpolated intent
+ * `null`.
  *
- * Computes the intent label and renders both display modes — the interpolated sentence and the
- * structured fallback list — leaving the choice between them to the renderer.
+ * @example
+ * ```ts
+ * const parsed = parseInstruction(root, instruction);
+ * const display = parsed && getInstructionDisplayFromParsedInstruction(root, parsed, {
+ *     formatAddress: address => names.get(address) ?? address,
+ * });
+ * // { intent: 'Transfer', interpolatedIntent: 'Transfer 1.5 USDC to Alice', fields: [{ label: 'Amount', value: '1.5 USDC' }, …] }
+ * ```
  */
-export async function getInstructionDisplayFromParsedInstruction(
+export function getInstructionDisplayFromParsedInstruction(
     root: RootNode,
-    parsedInstruction: ParsedInstruction,
+    parsed: ParsedInstruction,
     options: GetInstructionDisplayOptions = {},
-): Promise<InstructionDisplay> {
-    const displayContext = await buildDisplayContext(root, parsedInstruction, options);
-    const instruction = getLastNodeFromPath(displayContext.parsedInstruction.path);
+): InstructionDisplay {
+    const { linkables = getLinkablesFromNode(root), ...formatOptions } = options;
+    const resolveInjectedValue = getInjectedValueResolver(parsed, linkables);
+    const formatted = formatDecodedNode(parsed, { ...formatOptions, resolveInjectedValue });
 
-    const intent = instruction.display?.intent ?? titleCase(instruction.identifier);
-    const [interpolatedIntent, fields] = await Promise.all([
-        interpolateIntent(displayContext),
-        listFallback(displayContext),
-    ]);
+    // The rows mark the amounts that cannot be scaled, rather than presenting their raw value as is.
+    const formatIntegerOrRaw = formatOptions.formatInteger ?? formatInteger;
+    const marked = formatDecodedNode(parsed, {
+        ...formatOptions,
+        formatInteger: (decoded, integerOptions) =>
+            formatIntegerOrRaw(decoded, integerOptions) ?? `${decoded.value} (raw)`,
+        resolveInjectedValue,
+    });
 
-    return { fields, intent, interpolatedIntent };
+    const instruction = getLastNodeFromPath(parsed.path);
+    const intent = instruction.display?.intent;
+    return {
+        fields: getDisplayFields(marked, parsed, linkables, formatOptions),
+        intent: intent === undefined ? titleCase(instruction.identifier) : getTextNodeContent(intent),
+        interpolatedIntent: getInterpolatedIntent(formatted, parsed, linkables, formatOptions),
+    };
 }
