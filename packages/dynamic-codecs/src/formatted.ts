@@ -1,7 +1,14 @@
 import { CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, CodamaError } from '@codama/errors';
 import { titleCase } from '@codama/fragments/casing';
 import { DisplaySkip, getTextNodeContent, StandaloneTypeNode, StructFieldTypeNode } from '@codama/nodes';
-import { assertIsNodePath, getLastNodeFromPath, isNodePath, NodePath } from '@codama/visitors-core';
+import {
+    assertIsNodePath,
+    getLastNodeFromPath,
+    getLinkablesFromNode,
+    isNodePath,
+    LinkableDictionary,
+    NodePath,
+} from '@codama/visitors-core';
 
 import type {
     DecodableNode,
@@ -46,6 +53,7 @@ import {
     formatString,
 } from './format';
 import { getEnumVariantLabel } from './utils';
+import { getValueLabel } from './valueLabels';
 
 /** The attributes every formatted node adds to its decoded node. */
 type FormattedNodeBase = {
@@ -176,12 +184,18 @@ export type FormattedStringTypeNode = DecodedStringTypeNode & FormattedNodeBase;
  */
 export type FormattedStructFieldTypeNode = FormattedNodeBase &
     Omit<DecodedStructFieldTypeNode, 'type'> & {
-        /** Whether the fields of its struct are lifted into the parent struct. Only `true` for struct types. */
+        /** Whether the fields of its struct are lifted into the parent struct. Only `true` for struct types without a matching value label. */
         readonly flatten: boolean;
         /** The prefix of the labels of its fields when flattened, e.g. `"config."`. Defaults to `""`. */
         readonly flattenPrefix: string;
         /** The label of the field, from its display node or its identifier in title case, e.g. `"Amount"`. */
         readonly label: string;
+        /**
+         * The value label the field presents instead of its value, when its decoded value matches
+         * one of the `valueLabels` of its display node, e.g. `"All"` for an amount of `u64::MAX`.
+         * The field's `text` is then that label, and it is not flattened.
+         */
+        readonly valueLabel?: string;
         /** When the field is left out of a list of fields. Fields skipped `always` are left out of the text of their struct. */
         readonly skip: DisplaySkip;
         /** The formatted type of the field. */
@@ -298,6 +312,12 @@ export function assertIsFormattedNode<TKind extends DecodableNode['kind']>(
  * the `formatAddress` option.
  */
 export type FormatDecodedNodeOptions = FormatOptions & {
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, used to match value
+     * labels whose type links to other nodes, e.g. linked enums. Defaults to recording them from
+     * the root of the decoded node, once, when a field with value labels is formatted.
+     */
+    linkables?: LinkableDictionary;
     /** Format booleans. Defaults to {@link formatBoolean}. */
     formatBoolean?: typeof formatBoolean;
     /** Format bytes. Defaults to {@link formatBytes}. */
@@ -334,6 +354,10 @@ export type FormatDecodedNodeOptions = FormatOptions & {
  * parentheses. Containers within containers are wrapped in parentheses, so empty ones show as `()`. Struct fields skipped
  * `always` are left out of the text, and flattened ones are replaced by their prefixed fields.
  *
+ * Struct fields whose decoded value matches one of their value labels present that label instead,
+ * as their `text` and `valueLabel`, wherever they are, e.g. within a nested struct, and are not
+ * flattened. The labels are matched as {@link getValueLabel} does.
+ *
  * When an integer cannot be formatted, e.g. an amount whose `decimals` cannot be resolved, its
  * text is its raw value and it is `degraded`, as is every node whose text includes it.
  *
@@ -349,7 +373,19 @@ export function formatDecodedNode<TDecoded extends DecodedNode>(
     decoded: TDecoded,
     options: FormatDecodedNodeOptions = {},
 ): GetFormattedNodeFromDecoded<TDecoded> {
-    return formatNode(decoded, options) as GetFormattedNodeFromDecoded<TDecoded>;
+    return formatNode(decoded, withLazyLinkables(options, decoded)) as GetFormattedNodeFromDecoded<TDecoded>;
+}
+
+/** The given options, whose `linkables`, when absent, are recorded from the root of the decoded node on first use. */
+function withLazyLinkables(options: FormatDecodedNodeOptions, decoded: DecodedNode): FormatDecodedNodeOptions {
+    if (options.linkables) return options;
+    let linkables: LinkableDictionary | undefined;
+    const lazyOptions = { ...options };
+    Object.defineProperty(lazyOptions, 'linkables', {
+        enumerable: true,
+        get: () => (linkables ??= getLinkablesFromNode(decoded.path[0])),
+    });
+    return lazyOptions;
 }
 
 function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): FormattedNode {
@@ -446,7 +482,7 @@ function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): Fo
                 ...struct,
                 degraded: entries.some(([, field]) => field.degraded),
                 fields,
-                text: entries.map(([label, field]) => `${label}: ${embed(field.type)}`).join(', '),
+                text: entries.map(([label, field]) => `${label}: ${field.valueLabel ?? embed(field.type)}`).join(', '),
             } satisfies FormattedStructTypeNode;
         }
         case 'structFieldTypeNode':
@@ -524,15 +560,17 @@ function formatStructField(
     const field: StructFieldTypeNode = getLastNodeFromPath(decoded.path);
     const display = field.display;
     const type = formatType(decoded.type, options);
+    const valueLabel = display?.valueLabels?.length ? getValueLabel(decoded, options.linkables) : undefined;
     return {
         ...decoded,
-        degraded: type.degraded,
-        flatten: (display?.flatten ?? false) && isFormattedNode(type, 'structTypeNode'),
+        degraded: valueLabel === undefined && type.degraded,
+        flatten: valueLabel === undefined && (display?.flatten ?? false) && isFormattedNode(type, 'structTypeNode'),
         flattenPrefix: display?.flattenPrefix === undefined ? '' : getTextNodeContent(display.flattenPrefix),
         label: display?.label === undefined ? titleCase(field.identifier) : getTextNodeContent(display.label),
         skip: display?.skip ?? 'never',
-        text: type.text,
+        text: valueLabel ?? type.text,
         type,
+        ...(valueLabel !== undefined && { valueLabel }),
     };
 }
 

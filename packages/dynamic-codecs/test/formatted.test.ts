@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, CodamaError } from '@codama/errors';
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND, CODAMA_ERROR__UNEXPECTED_NODE_KIND, CodamaError } from '@codama/errors';
 import {
     accountNode,
     amountNumberDisplayNode,
@@ -6,8 +6,11 @@ import {
     booleanTypeNode,
     bytesTypeNode,
     dateTimeTypeNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     durationTypeNode,
     enumTypeNode,
+    enumValueNode,
     enumVariantDisplayNode,
     enumVariantTypeNode,
     fixedCountNode,
@@ -28,11 +31,15 @@ import {
     stringValueNode,
     structFieldDisplayNode,
     structFieldTypeNode,
+    structFieldValueNode,
     structTypeNode,
+    structValueNode,
     textNode,
     tupleTypeNode,
+    valueLabelDisplayNode,
     zeroableOptionTypeNode,
 } from '@codama/nodes';
+import { LinkableDictionary } from '@codama/visitors-core';
 import { address, getAddressEncoder } from '@solana/addresses';
 import { getUtf8Encoder } from '@solana/codecs';
 import { describe, expect, expectTypeOf, test } from 'vitest';
@@ -452,6 +459,89 @@ describe('formatted nodes', () => {
                 expectedKinds: ['structTypeNode'],
                 kind: 'integerTypeNode',
                 node: u8,
+            }),
+        );
+    });
+});
+
+describe('value labels', () => {
+    const u64 = integerTypeNode('u64');
+    const unlimited = valueLabelDisplayNode({ label: 'Unlimited', value: integerValueNode('18446744073709551615') });
+    const limit = structFieldTypeNode({
+        display: structFieldDisplayNode({ valueLabels: [unlimited] }),
+        identifier: 'limit',
+        type: u64,
+    });
+    const max = 'ffffffffffffffff';
+
+    test('it presents the value label of fields matching it', () => {
+        const formatted = formatDecodedNode(getNodeCodec([structTypeNode([limit])]).decode(hex(max)));
+        expect(formatted.fields[0]).toMatchObject({
+            text: 'Unlimited',
+            type: { text: '18446744073709551615' },
+            valueLabel: 'Unlimited',
+        });
+        expect(formatted.text).toBe('Limit: Unlimited');
+    });
+
+    test('it presents the formatted value of fields not matching one', () => {
+        const formatted = formatDecodedNode(getNodeCodec([structTypeNode([limit])]).decode(hex('2a00000000000000')));
+        expect(formatted.fields[0].text).toBe('42');
+        expect(formatted.fields[0]).not.toHaveProperty('valueLabel');
+    });
+
+    test('it presents the value labels of nested fields', () => {
+        const node = structTypeNode([structFieldTypeNode({ identifier: 'config', type: structTypeNode([limit]) })]);
+        expect(formatDecodedNode(getNodeCodec([node]).decode(hex(max))).text).toBe('Config: (Limit: Unlimited)');
+    });
+
+    test('it does not flatten fields presenting a value label', () => {
+        const defaults = valueLabelDisplayNode({
+            label: 'Default config',
+            value: structValueNode([structFieldValueNode('limit', integerValueNode('0'))]),
+        });
+        const display = structFieldDisplayNode({ flatten: true, valueLabels: [defaults] });
+        const node = structTypeNode([
+            structFieldTypeNode({ display, identifier: 'config', type: structTypeNode([limit]) }),
+        ]);
+        const formatted = formatDecodedNode(getNodeCodec([node]).decode(hex('0000000000000000')));
+        expect(formatted.fields[0]).toMatchObject({ flatten: false, text: 'Default config' });
+        expect(formatted.text).toBe('Config: Default config');
+    });
+
+    test('it does not degrade fields presenting a value label', () => {
+        // Given an amount whose decimals cannot be resolved, labelled when unlimited.
+        const display = amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) });
+        const amount = structFieldTypeNode({
+            display: structFieldDisplayNode({ valueLabels: [unlimited] }),
+            identifier: 'amount',
+            type: integerTypeNode('u64', { display }),
+        });
+
+        // Then the label is presented with confidence.
+        const formatted = formatDecodedNode(getNodeCodec([structTypeNode([amount])]).decode(hex(max)));
+        expect(formatted.fields[0]).toMatchObject({ degraded: false, text: 'Unlimited' });
+        expect(formatted.degraded).toBe(false);
+    });
+
+    test('it uses the given linkables rather than recording them', () => {
+        // Given a field linking to an enum, labelled by variant.
+        const mode = definedTypeNode({ identifier: 'mode', type: enumTypeNode([enumVariantTypeNode('fast')]) });
+        const labels = [valueLabelDisplayNode({ label: 'Quick', value: enumValueNode('mode', 'fast') })];
+        const field = structFieldTypeNode({
+            display: structFieldDisplayNode({ valueLabels: labels }),
+            identifier: 'mode',
+            type: definedTypeLinkNode('mode'),
+        });
+        const node = structTypeNode([field]);
+        const root = rootNode(programNode({ definedTypes: [mode], identifier: 'myProgram', publicKey: '1111' }));
+        const decoded = getNodeCodec([root, root.program, node]).decode(hex('00'));
+
+        // Then the label matches by default, and the given linkables are used otherwise.
+        expect(formatDecodedNode(decoded).text).toBe('Mode: Quick');
+        expect(() => formatDecodedNode(decoded, { linkables: new LinkableDictionary() })).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
             }),
         );
     });

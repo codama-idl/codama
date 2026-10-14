@@ -3,12 +3,20 @@ import {
     DecodedAccountNode,
     DecodedEventNode,
     DecodedInstructionNode,
-    getNodeCodec,
+    getCodecAndValueVisitors,
     GetDecodedNodeFromKind,
+    getNodeCodec,
     ReadonlyUint8Array,
 } from '@codama/dynamic-codecs';
 import { AccountNode, EventNode, IdentifierString, InstructionNode, RootNode } from '@codama/nodes';
-import { getLastNodeFromPath, getLinkablesFromNode, NodePath } from '@codama/visitors-core';
+import {
+    getLastNodeFromPath,
+    getLinkablesFromNode,
+    LinkableDictionary,
+    NodePath,
+    NodeStack,
+    ProvidedScope,
+} from '@codama/visitors-core';
 import type {
     AccountLookupMeta,
     AccountMeta,
@@ -17,6 +25,7 @@ import type {
     InstructionWithData,
 } from '@solana/instructions';
 
+import { matchDiscriminators } from './discriminators';
 import { identifyData, IdentifyDataOptions } from './identify';
 
 type ParsableNode = AccountNode | EventNode | InstructionNode;
@@ -111,6 +120,14 @@ export function parseData<TKind extends ParsableNodeKind>(
     }
 }
 
+/**
+ * An instruction that can be parsed, as defined in `@solana/instructions`: the address of its
+ * program, its account metas and its data.
+ */
+export type ParsableInstruction = Instruction &
+    InstructionWithAccounts<readonly (AccountLookupMeta | AccountMeta)[]> &
+    InstructionWithData<ReadonlyUint8Array>;
+
 /** The named accounts of a parsed instruction, each pairing its `AccountMeta` with its identifier. */
 export type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { identifier: IdentifierString }>;
 
@@ -139,9 +156,7 @@ export type ParsedInstruction = DecodedInstructionNode & {
  */
 export function parseInstruction(
     root: RootNode,
-    instruction: Instruction &
-        InstructionWithAccounts<readonly (AccountLookupMeta | AccountMeta)[]> &
-        InstructionWithData<ReadonlyUint8Array>,
+    instruction: ParsableInstruction,
     options: Omit<ParseDataOptions, 'programAddress'> = {},
 ): ParsedInstruction | undefined {
     const decoded = parseInstructionData(root, instruction.data, {
@@ -158,4 +173,30 @@ export function parseInstruction(
     });
     const remainingAccounts = instruction.accounts.slice(namedAccounts.length);
     return { ...decoded, accounts, remainingAccounts };
+}
+
+/**
+ * Whether some bytes can be data of the account at the end of the given path, as far as its
+ * discriminators tell, e.g. before decoding data that is expected to be that account, such as
+ * the account a public key links to. Accounts without discriminators match any bytes, since
+ * nothing identifies them.
+ *
+ * @example
+ * ```ts
+ * matchesAccountData([root, program, mintAccount], tokenAccountBytes); // false: not a mint
+ * ```
+ */
+export function matchesAccountData(
+    accountPath: NodePath<AccountNode>,
+    bytes: ReadonlyUint8Array | Uint8Array,
+    options: { linkables?: LinkableDictionary } = {},
+): boolean {
+    const account = getLastNodeFromPath(accountPath);
+    const discriminators = account.discriminators ?? [];
+    if (discriminators.length === 0) return true;
+    const linkables = options.linkables ?? getLinkablesFromNode(accountPath[0]);
+    const stack = new NodeStack(accountPath);
+    const scope = new ProvidedScope();
+    const context = { ...getCodecAndValueVisitors(linkables, { scope, stack }), linkables, scope, stack };
+    return matchDiscriminators(bytes, discriminators, account.data, context);
 }

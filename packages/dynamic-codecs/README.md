@@ -138,6 +138,7 @@ for (const field of formatted.data.fields) {
 
 - **Leaves** use the formatter of their kind. On top of the [formatting options](#formatting), you can override the formatters of booleans, bytes, date-times, durations, enum labels, fixed points, floats, integers and strings, e.g. `formatBoolean: boolean => (boolean.value ? 'Yes' : 'No')`. Public keys go through `formatAddress`.
 - **Struct fields** carry their `label`, `skip`, `flatten` and `flattenPrefix`, from their display node or their defaults: the identifier in title case, `"never"`, `false` and `""`. `flatten` is only `true` when the field's type is a struct.
+- **Value labels:** a struct field whose decoded value matches one of its value labels presents that label, as its `text` and its `valueLabel`, wherever it is, e.g. within a nested struct, and is not flattened. Labels are matched as `getValueLabel` does, following links with the `linkables` option, recorded from the root of the decoded node when absent.
 - **Enum variants** carry their `label` and `skipInnerData`.
 - **Text** joins the text of children: `Label: text` for struct fields, `, ` between items and map entries, `None` for empty options, and the variant's label followed by its data in parentheses for enums, e.g. `Limit (Price: 100)`. Containers within containers are wrapped in parentheses, so an empty one shows as `()`, e.g. `Items: ()`. Struct fields skipped `always` are left out, and flattened fields are replaced by their own fields, with their prefix.
 - **Degraded** nodes are amounts whose `decimals` cannot be resolved, written as their raw value, and every node whose text includes them.
@@ -154,10 +155,10 @@ getDecodedNodeAtPath(formatted, pathString('mint.decimals'), {
 
 ### Value labels
 
-`getValueLabel` returns the label a decoded struct field presents instead of its value, from the `valueLabels` of its display node, e.g. `"All"` for an amount of `u64::MAX`. Labels apply to the raw value, before any formatting, so present the label instead of the formatted text when there is one. A label matches when its value encodes to the same bytes as the decoded value, so equal values match whatever their representation, and the first matching label wins. Links of the field's type are followed using the linkable nodes of the tree, recorded from the root of its path unless given as a second argument. Labels must be values of the field's type, as validators require, and others throw.
+`getValueLabel` returns the label a decoded struct field presents instead of its value, as formatted nodes do, from the `valueLabels` of its display node, e.g. `"All"` for an amount of `u64::MAX`. Labels apply to the raw value, before any formatting, so present the label instead of the formatted text when there is one. A label matches when its value encodes to the same bytes as the decoded value, so equal values match whatever their representation, and the first matching label wins. Links of the field's type are followed using the linkable nodes of the tree, recorded from the root of its path unless given as a second argument. Labels must be values of the field's type, as validators require, and others throw.
 
 ```ts
-getValueLabel(amountField) ?? amountField.text; // "All"
+getValueLabel(amountField); // "All"
 ```
 
 ## Node paths

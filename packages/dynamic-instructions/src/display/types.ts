@@ -1,5 +1,6 @@
 import type { FormatDecodedNodeOptions } from '@codama/dynamic-codecs';
-import type { LinkableDictionary } from 'codama';
+import type { EncodedAccount, MaybeEncodedAccount } from '@solana/accounts';
+import type { Address } from '@solana/addresses';
 
 /** A labelled row of the fallback list of an instruction, e.g. `{ label: 'Amount', value: '1.5 USDC' }`. */
 export type DisplayField = {
@@ -27,14 +28,45 @@ export type InstructionDisplay = {
 };
 
 /**
+ * The accounts an instruction display reads, keyed by address, e.g. a mint for its `decimals`.
+ * Only accounts that exist are stored, so a missing address means its data is not available.
+ */
+export type DisplayAccountMap = ReadonlyMap<Address, EncodedAccount>;
+
+/**
+ * Names of addresses, e.g. `.sol` domains, token symbols or address book entries, from sources
+ * the caller trusts, keyed by address. Use them through the `formatAddress` option.
+ */
+export type DisplayNamedMap = ReadonlyMap<Address, string>;
+
+/**
+ * Everything an instruction display needs beyond the IDL and the instruction: the accounts it
+ * reads and names of addresses. It can be serialised, e.g. to display instructions offline on a
+ * hardware wallet, using `getDisplayDictionaryCodec`.
+ */
+export type DisplayDictionary = {
+    /** The accounts the display reads, keyed by address. */
+    readonly accounts: DisplayAccountMap;
+    /** Names of addresses, keyed by address. */
+    readonly names: DisplayNamedMap;
+};
+
+/**
+ * Fetch the accounts at the given addresses, in the same order, which may not exist, e.g. using
+ * Kit's `fetchEncodedAccounts` to make a single `getMultipleAccounts` RPC call.
+ */
+export type FetchMaybeAccountsFn = (addresses: Address[]) => Promise<MaybeEncodedAccount[]>;
+
+/**
  * Options of the instruction display: the options of `formatDecodedNode` from
- * `@codama/dynamic-codecs`, e.g. `formatAddress` to name addresses or `numberFormat` for a locale,
- * except `resolveInjectedValue`, which the display handles itself.
+ * `@codama/dynamic-codecs`, e.g. `formatAddress` to name addresses, `numberFormat` for a locale
+ * or `linkables` to avoid recording them again, except `resolveInjectedValue`, which the display
+ * handles itself.
  */
 export type GetInstructionDisplayOptions = Omit<FormatDecodedNodeOptions, 'resolveInjectedValue'> & {
     /**
-     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, to avoid recording
-     * them again when displaying many instructions. Defaults to recording them from the root.
+     * The accounts the display reads, e.g. from `getDisplayAccountMap`. Values read from other
+     * accounts cannot be presented. Defaults to none.
      */
-    readonly linkables?: LinkableDictionary;
+    readonly accounts?: DisplayAccountMap;
 };
