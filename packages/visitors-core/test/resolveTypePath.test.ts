@@ -250,20 +250,66 @@ describe('resolveTypePath with account links', () => {
     const root = rootNode(program);
     const source = [root, program, tokenAccount, tokenData] as const;
 
-    test('it follows account links into the data of the linked account', () => {
-        const resolved = resolveTypePath(source, pathString('mint.decimals'), getLinkablesFromNode(root), {
+    test('it follows account links into the data of the linked account with a data segment', () => {
+        const resolved = resolveTypePath(source, pathString('mint.data.decimals'), getLinkablesFromNode(root), {
             followAccountLinks: true,
         });
         expect(resolved).toStrictEqual([root, program, mintAccount, mintData, decimals]);
     });
 
+    test('it resolves a data segment to the whole data of the linked account', () => {
+        const resolved = resolveTypePath(source, pathString('mint.data'), getLinkablesFromNode(root), {
+            followAccountLinks: true,
+        });
+        expect(resolved).toStrictEqual([root, program, mintAccount, mintData]);
+    });
+
+    test('it resolves a data segment to data that is not a struct', () => {
+        // Given an account whose data is a single integer.
+        const counterData = integerTypeNode('u64');
+        const counter = accountNode({ data: counterData, identifier: 'counter' });
+        const counterField = structFieldTypeNode({
+            identifier: 'counter',
+            type: publicKeyTypeNode({ accountLink: accountLinkNode('counter') }),
+        });
+        const holder = structTypeNode([counterField]);
+        const counterProgram = programNode({ accounts: [counter], identifier: 'counters', publicKey: '6666' });
+        const counterRoot = rootNode(counterProgram);
+
+        // Then the data segment reads it.
+        const resolved = resolveTypePath(
+            [counterRoot, counterProgram, holder],
+            pathString('counter.data'),
+            getLinkablesFromNode(counterRoot),
+            { followAccountLinks: true },
+        );
+        expect(resolved).toStrictEqual([counterRoot, counterProgram, counter, counterData]);
+    });
+
+    test('it does not follow account links with other segments', () => {
+        // Given a field of the linked account's data used directly, or another attribute of the account.
+        for (const segment of ['decimals', 'lamports']) {
+            expectCodamaError(
+                () =>
+                    resolveTypePath(source, pathString(`mint.${segment}`), getLinkablesFromNode(root), {
+                        followAccountLinks: true,
+                    }),
+                new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+                    nodePath: [...source, mintField, mintField.type],
+                    path: pathString(`mint.${segment}`),
+                    segment,
+                }),
+            );
+        }
+    });
+
     test('it does not follow account links by default', () => {
         expectCodamaError(
-            () => resolveTypePath(source, pathString('mint.decimals'), getLinkablesFromNode(root)),
+            () => resolveTypePath(source, pathString('mint.data.decimals'), getLinkablesFromNode(root)),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
                 nodePath: [...source, mintField, mintField.type],
-                path: pathString('mint.decimals'),
-                segment: 'decimals',
+                path: pathString('mint.data.decimals'),
+                segment: 'data',
             }),
         );
     });
@@ -321,37 +367,28 @@ describe('resolveTypePath with account links', () => {
         // Then each segment can follow the link again, as paths are finite.
         const resolved = resolveTypePath(
             [listRoot, listProgram, nodeAccount, nodeData],
-            pathString('next.next.value'),
+            pathString('next.data.next.data.value'),
             getLinkablesFromNode(listRoot),
             { followAccountLinks: true },
         );
         expect(resolved).toStrictEqual([listRoot, listProgram, nodeAccount, nodeData, value]);
     });
 
-    test('it throws on accounts whose data links back to themselves rather than looping', () => {
+    test('it follows accounts whose data links back to themselves, one data segment at a time', () => {
         // Given an account whose data is a public key linking to the account itself.
         const selfData = publicKeyTypeNode({ accountLink: accountLinkNode('self') });
         const selfAccount = accountNode({ data: selfData, identifier: 'self' });
         const selfProgram = programNode({ accounts: [selfAccount], identifier: 'loop', publicKey: '3333' });
         const selfRoot = rootNode(selfProgram);
 
-        // Then resolving into it throws once the account is followed twice.
-        expectCodamaError(
-            () =>
-                resolveTypePath(
-                    [selfRoot, selfProgram, selfAccount, selfData],
-                    pathString('x'),
-                    getLinkablesFromNode(selfRoot),
-                    {
-                        followAccountLinks: true,
-                    },
-                ),
-            new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [selfRoot, selfProgram, selfAccount, selfData],
-                path: pathString('x'),
-                segment: 'x',
-            }),
+        // Then each data segment follows the link once, as paths are finite.
+        const resolved = resolveTypePath(
+            [selfRoot, selfProgram, selfAccount, selfData],
+            pathString('data.data'),
+            getLinkablesFromNode(selfRoot),
+            { followAccountLinks: true },
         );
+        expect(resolved).toStrictEqual([selfRoot, selfProgram, selfAccount, selfData]);
     });
 
     test('it throws when a linked account cannot be found', () => {
@@ -369,7 +406,7 @@ describe('resolveTypePath with account links', () => {
             () =>
                 resolveTypePath(
                     [holderRoot, holderProgram, account, data],
-                    pathString('missing.x'),
+                    pathString('missing.data'),
                     getLinkablesFromNode(holderRoot),
                     {
                         followAccountLinks: true,

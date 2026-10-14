@@ -68,8 +68,8 @@ export async function resolveValue(node: InstructionInputValueNode, ctx: Resolut
  * {@link resolveValue} does. Returns `undefined` when the value is missing and
  * has no default value.
  *
- * Field segments applied to a public key whose type carries an `accountLink`
- * continue into the data of the account at that address, e.g. `mint.decimals`,
+ * A `.data` segment applied to a public key whose type carries an `accountLink`
+ * continues into the data of the account at that address, e.g. `mint.data.decimals`,
  * which `ctx.fetchAccounts` fetches.
  */
 export async function getDataValue(ctx: ResolutionContext, path: PathString): Promise<unknown> {
@@ -162,14 +162,18 @@ async function getValueAtPath(
     let current = value;
 
     for (const [index, segment] of parsePath(path).entries()) {
-        const accountPath = segment.kind === 'field' ? getLinkedAccountPath(typePath, ctx) : undefined;
+        // A `.data` segment on a linked public key enters the data of its account.
+        const accountPath =
+            segment.kind === 'field' && segment.identifier === 'data' ? getLinkedAccountPath(typePath, ctx) : undefined;
         if (accountPath) {
             if (current === undefined || current === null) return undefined;
             const address = toAddressOrThrow(current, currentPath);
             current = await readAccountData(ctx, address, accountPath);
             currentSource = [...accountPath, getLastNodeFromPath(accountPath).data];
+            typePath = currentSource;
             currentPath = '';
             isInstructionData = false;
+            continue;
         }
 
         currentPath +=

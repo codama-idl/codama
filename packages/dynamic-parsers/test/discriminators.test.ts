@@ -401,7 +401,7 @@ describe('matchDiscriminators', () => {
         });
         test('it does not follow account links', () => {
             // Given a discriminator reading a field of a linked mint, which has a default value.
-            const discriminator = fieldDiscriminatorNode('mint.decimals');
+            const discriminator = fieldDiscriminatorNode('mint.data.decimals');
             const mint = accountNode({
                 data: structTypeNode([
                     structFieldTypeNode({
@@ -425,7 +425,7 @@ describe('matchDiscriminators', () => {
 
             // Then the discriminator field is not found, since identifying bytes cannot read other accounts.
             expect(() => matchDiscriminators(new Uint8Array(32).fill(6), [discriminator], data, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('mint.decimals') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('mint.data.decimals') }),
             );
         });
     });

@@ -233,7 +233,7 @@ test('it repoints paths crossing account links to the same defined type', () => 
             instructionNode({
                 accounts: [
                     instructionAccountNode({
-                        defaultValue: dataValueNode('node.parent.value'),
+                        defaultValue: dataValueNode('node.data.parent.data.value'),
                         identifier: 'grandParentValue',
                         isSigner: false,
                         isWritable: false,
@@ -251,5 +251,7 @@ test('it repoints paths crossing account links to the same defined type', () => 
 
     // Then the path reading it through two account links points to the new field.
     assertIsNode(result, 'programNode');
-    expect(result.instructions?.[0].accounts?.[0].defaultValue).toStrictEqual(dataValueNode('node.parent.amount'));
+    expect(result.instructions?.[0].accounts?.[0].defaultValue).toStrictEqual(
+        dataValueNode('node.data.parent.data.amount'),
+    );
 });

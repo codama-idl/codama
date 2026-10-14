@@ -207,7 +207,9 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                             if (isCodamaError(error, CODAMA_ERROR__CANNOT_RESOLVE_PATH)) {
                                 const lastNode = getLastNodeFromPath(error.context.nodePath as NodePath<Node>);
                                 const message =
-                                    isNode(lastNode, 'publicKeyTypeNode') && lastNode.accountLink
+                                    isNode(lastNode, 'publicKeyTypeNode') &&
+                                    lastNode.accountLink &&
+                                    error.context.segment === 'data'
                                         ? `Field discriminator path "${node.path}" must not cross an account link.`
                                         : error.message;
                                 items.push(validationItem('error', message, stack, error));

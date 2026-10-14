@@ -617,7 +617,7 @@ describe('interpolated intent', () => {
         const mint = accountNode({ data: data(field('decimals', integerTypeNode('u8'))), identifier: 'mint' });
         const instruction = {
             data: data(field('mint', publicKeyTypeNode({ accountLink: accountLinkNode('mint') }))),
-            display: intent('Decimals: ${data.mint.decimals}'),
+            display: intent('Decimals: ${data.mint.data.decimals}'),
         };
         expect(display(instruction, { data: { mint: CAROL } }, {}, { accounts: [mint] }).interpolatedIntent).toBeNull();
     });

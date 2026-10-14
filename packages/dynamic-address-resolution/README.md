@@ -47,7 +47,7 @@ The `dataInput` uses the value format of [`@codama/dynamic-codecs`](../dynamic-c
 
 ### Reading account data
 
-Some default values read the data of accounts, e.g. an owner defaulting to `accountDataValueNode('mint', { path: 'mintAuthority' })`, or a seed reading `dataValueNode('mint.decimals')` where `mint` is a public key linking to the mint account. Pass a `fetchAccounts` function returning these accounts, which must exist. Their data is decoded using the IDL, following `accountLink`s.
+Some default values read the data of accounts, e.g. an owner defaulting to `accountDataValueNode('mint', { path: 'mintAuthority' })`, or a seed reading `dataValueNode('mint.data.decimals')` where `mint` is a public key linking to the mint account. Pass a `fetchAccounts` function returning these accounts, which must exist. Their data is decoded using the IDL, following `accountLink`s.
 
 ```ts
 import { assertAccountsExist, fetchEncodedAccounts } from '@solana/accounts';
@@ -112,7 +112,7 @@ Default values resolve as follows.
 
 `accountBumpValueNode` defaults are not supported.
 
-Paths of data values may cross the `accountLink` of a public key, e.g. `mint.decimals`, which reads the data of that account. See [Reading account data](#reading-account-data).
+Paths of data values may cross the `accountLink` of a public key, with a `.data` segment, e.g. `mint.data.decimals`, which reads the data of that account. See [Reading account data](#reading-account-data).
 
 ### PDAs
 

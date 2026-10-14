@@ -145,10 +145,10 @@ for (const field of formatted.data.fields) {
 
 Laying out the tree, e.g. as rows honouring `flatten` and `skip`, is left to you. To fill a sentence such as an instruction's interpolated intent, `getDecodedNodeAtPath` finds the node a path expression points to, e.g. `getDecodedNodeAtPath(formatted, pathString('config.fees[0]'))?.text`. It returns `undefined` for indices beyond the items of an array or set, and throws `CODAMA_ERROR__CANNOT_RESOLVE_PATH` for paths that do not fit the data, e.g. an unknown field. As with `resolveTypePath`, paths do not go through options or enums.
 
-Paths may cross the `accountLink` of a public key into the data of the linked account, e.g. `mint.decimals`. Give the decoded accounts, e.g. fetched beforehand, through the `resolveAccountLink` option. It returns `undefined` for accounts it does not have, which makes the whole path `undefined`, so the display can fall back.
+Paths may cross the `accountLink` of a public key into the data of the linked account with a `.data` segment, e.g. `mint.data.decimals`, and `mint.data` returns that whole data. Other segments after a linked public key are reserved for other attributes of the account, so they throw. Give the decoded accounts, e.g. fetched beforehand, through the `resolveAccountLink` option. It returns `undefined` for accounts it does not have, which makes the whole path `undefined`, so the display can fall back.
 
 ```ts
-getDecodedNodeAtPath(formatted, pathString('mint.decimals'), {
+getDecodedNodeAtPath(formatted, pathString('mint.data.decimals'), {
     resolveAccountLink: publicKey => formattedAccounts.get(publicKey.value),
 })?.text; // "6"
 ```

@@ -805,7 +805,7 @@ test('it reports field discriminators crossing account links', () => {
         type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
     });
     const data = structTypeNode([mintField]);
-    const discriminator = fieldDiscriminatorNode('mint.decimals');
+    const discriminator = fieldDiscriminatorNode('mint.data.decimals');
     const token = accountNode({ data, discriminators: [discriminator], identifier: 'token' });
     const program = programNode({
         accounts: [token, mint],
@@ -820,14 +820,46 @@ test('it reports field discriminators crossing account links', () => {
     expect(items).toEqual([
         validationItem(
             'error',
-            'Field discriminator path "mint.decimals" must not cross an account link.',
+            'Field discriminator path "mint.data.decimals" must not cross an account link.',
             [root, program, token, discriminator],
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
                 nodePath: [root, program, token, data, mintField, mintField.type],
-                path: pathString('mint.decimals'),
-                segment: 'decimals',
+                path: pathString('mint.data.decimals'),
+                segment: 'data',
             }),
         ),
+    ]);
+});
+
+test('it reports field discriminator paths applying other segments to linked public keys as unresolvable', () => {
+    // Given a discriminator reading a field of a linked mint without a data segment.
+    const mint = accountNode({
+        data: structTypeNode([structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') })]),
+        identifier: 'mint',
+    });
+    const mintField = structFieldTypeNode({
+        identifier: 'mint',
+        type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+    });
+    const data = structTypeNode([mintField]);
+    const discriminator = fieldDiscriminatorNode('mint.decimals');
+    const token = accountNode({ data, discriminators: [discriminator], identifier: 'token' });
+    const program = programNode({
+        accounts: [token, mint],
+        identifier: 'myProgram',
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+
+    // Then the path is reported as unresolvable, as it does not cross the link.
+    const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+        nodePath: [root, program, token, data, mintField, mintField.type],
+        path: pathString('mint.decimals'),
+        segment: 'decimals',
+    });
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', cause.message, [root, program, token, discriminator], cause),
     ]);
 });
 
@@ -968,7 +1000,7 @@ test('it accepts data values crossing account links', () => {
     const instruction = instructionNode({
         data,
         identifier: 'transfer',
-        provides: [providedNode('decimals', dataValueNode('mint.decimals'))],
+        provides: [providedNode('decimals', dataValueNode('mint.data.decimals'))],
     });
     const program = programNode({
         accounts: [mint],

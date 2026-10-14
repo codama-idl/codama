@@ -99,7 +99,7 @@ export function getInstructionAccountData(context: DisplayContext, identifier: s
     return context.readAccount(address, linkables.getPathOrThrow([...parsed.path, account, account.accountLink]));
 }
 
-/** The decoded data of the account a public key links to, if available, e.g. to follow `mint.decimals`. */
+/** The decoded data of the account a public key links to, if available, e.g. to follow `mint.data.decimals`. */
 export function getLinkedAccountData(
     context: DisplayContext,
     publicKey: DecodedPublicKeyTypeNode,

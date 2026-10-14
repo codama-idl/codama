@@ -66,7 +66,9 @@ describe('readsAccountData', () => {
     });
 
     test('it returns true for data paths crossing account links', () => {
-        expect(reads({ accounts: [account('owner', { defaultValue: dataValueNode('mint.decimals') })] })).toBe(true);
+        expect(reads({ accounts: [account('owner', { defaultValue: dataValueNode('mint.data.decimals') })] })).toBe(
+            true,
+        );
     });
 
     test('it returns false for invalid data paths', () => {
@@ -74,7 +76,7 @@ describe('readsAccountData', () => {
     });
 
     test('it returns true for nested contextual values reading accounts', () => {
-        const seed = pdaSeedValueNode('seed', dataValueNode('mint.decimals'));
+        const seed = pdaSeedValueNode('seed', dataValueNode('mint.data.decimals'));
         const vault = account('vault', { defaultValue: pdaValueNode(pdaLinkNode('vault'), { seeds: [seed] }) });
         expect(reads({ accounts: [vault] })).toBe(true);
     });
@@ -97,7 +99,7 @@ describe('readsAccountData', () => {
     test('it uses the given linkables rather than recording them', () => {
         // Given linkables that do not record the mint, so the account link cannot be followed.
         const instruction = instructionNode({
-            accounts: [account('owner', { defaultValue: dataValueNode('mint.decimals') })],
+            accounts: [account('owner', { defaultValue: dataValueNode('mint.data.decimals') })],
             data,
             identifier: 'myInstruction',
         });
