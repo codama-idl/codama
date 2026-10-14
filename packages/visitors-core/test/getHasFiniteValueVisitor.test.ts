@@ -22,7 +22,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getHasFiniteValueVisitor, getRecordLinkablesVisitor, LinkableDictionary, NodeStack, visit } from '../src';
+import { getHasFiniteValueVisitor, getLinkablesFromNode, NodeStack } from '../src';
 
 const u8 = integerTypeNode('u8');
 const self = definedTypeLinkNode('self');
@@ -47,8 +47,7 @@ test.each<[string, TypeNode]>([
     const definedType = definedTypeNode({ identifier: 'self', type });
     const program = programNode({ definedTypes: [definedType], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit it, then it has a finite value.
     const stack = new NodeStack();
@@ -68,8 +67,7 @@ test.each<[string, TypeNode]>([
     const definedType = definedTypeNode({ identifier: 'self', type });
     const program = programNode({ definedTypes: [definedType], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit it, then it has no finite value.
     const stack = new NodeStack();
@@ -85,8 +83,7 @@ test('it finds no finite value through a type linking to one without', () => {
     const usesLoop = definedTypeNode({ identifier: 'usesLoop', type: definedTypeLinkNode('loop') });
     const program = programNode({ definedTypes: [loop, usesLoop], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit it, then it has no finite value.
     const stack = new NodeStack();
@@ -99,8 +96,7 @@ test('it finds no finite value through a cycle across defined types without a wa
     const b = definedTypeNode({ identifier: 'b', type: field(definedTypeLinkNode('a')) });
     const program = programNode({ definedTypes: [a, b], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit one of them, then it has no finite value.
     const stack = new NodeStack();
@@ -119,8 +115,7 @@ test('it finds a finite value through another branch of a cycle across defined t
     const branch = definedTypeNode({ identifier: 'branch', type: field(definedTypeLinkNode('tree')) });
     const program = programNode({ definedTypes: [tree, branch], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit the type that only reaches the way out through the other one, then it has a finite value.
     const stack = new NodeStack();
@@ -152,8 +147,7 @@ test('it finds a finite value through types shared by sibling branches', () => {
     });
     const program = programNode({ definedTypes: [list, leaf, shared], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit the list, then it has a finite value.
     const stack = new NodeStack();
@@ -172,8 +166,7 @@ test('it finds no finite value through types shared by sibling branches without 
     const shared = definedTypeNode({ identifier: 'shared', type: field(definedTypeLinkNode('loop')) });
     const program = programNode({ definedTypes: [loop, shared], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit the loop, then it has no finite value.
     const stack = new NodeStack();
@@ -199,8 +192,7 @@ test('it finds a finite value for a type first reached within a cycle it does no
     });
     const program = programNode({ definedTypes: [tree, branch, forest], identifier: 'test', publicKey: '1111' });
     const root = rootNode(program);
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we visit the root, then the branch is not mistaken for having no finite value.
     const stack = new NodeStack();

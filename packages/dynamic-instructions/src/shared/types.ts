@@ -1,5 +1,6 @@
 import type { AccountsInput, DataInput, FetchAccountsFn } from '@codama/dynamic-address-resolution';
 import type { Instruction } from '@solana/instructions';
+import type { LinkableDictionary } from 'codama';
 
 type AccountName = string;
 
@@ -35,11 +36,17 @@ export type InstructionsBuilderFn<
  * `TReadsAccountData` is `true`, i.e. when building the instruction reads account data, as
  * reported by `readsAccountData` from `@codama/dynamic-address-resolution`.
  */
-export type CreateInstructionsBuilderOptions<TReadsAccountData extends boolean = boolean> = [
+export type CreateInstructionsBuilderOptions<TReadsAccountData extends boolean = boolean> = ([
     TReadsAccountData,
 ] extends [true]
     ? FetchAccountsOption
-    : Partial<FetchAccountsOption>;
+    : Partial<FetchAccountsOption>) & {
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, used to follow links.
+     * Defaults to recording them from the root of the path: pass them to avoid recording them again.
+     */
+    linkables?: LinkableDictionary;
+};
 
 type FetchAccountsOption = {
     /**

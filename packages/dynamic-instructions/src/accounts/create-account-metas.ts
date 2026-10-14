@@ -16,9 +16,11 @@ import {
 import { type AccountMeta, AccountRole } from '@solana/instructions';
 import {
     getLastNodeFromPath,
+    getLinkablesFromNode,
     type InstructionAccountNode,
     type InstructionNode,
     type InstructionRemainingAccountsNode,
+    type LinkableDictionary,
     type NodePath,
 } from 'codama';
 
@@ -39,6 +41,11 @@ export type CreateAccountMetasInput<
     data?: TData;
     /** Fetches the accounts whose data default values read, see `resolveInstructionAccountAddress`. */
     fetchAccounts?: FetchAccountsFn;
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, used to follow links.
+     * Defaults to recording them from the root of the path: pass them to avoid recording them again.
+     */
+    linkables?: LinkableDictionary;
     /** The path of the instruction from the root node, e.g. `[root, program, instruction]`. */
     path: NodePath<InstructionNode>;
     /** The accounts with `isSigner: 'either'` to mark as signers. */
@@ -73,9 +80,12 @@ export async function createAccountMetas<
     accounts,
     data,
     fetchAccounts,
+    linkables: givenLinkables,
     path,
     signers = [],
 }: CreateAccountMetasInput<TAccounts, TData>): Promise<AccountMeta[]> {
+    // Accounts resolved in parallel share the linkable nodes of the tree, recorded once.
+    const linkables = givenLinkables ?? getLinkablesFromNode(path[0]);
     const instruction = getLastNodeFromPath(path);
     assertValidAccountAddresses(instruction, accounts);
     // Accounts resolved in parallel share a single batch and cache of fetched accounts.
@@ -88,6 +98,7 @@ export async function createAccountMetas<
                 accountsInput: accounts,
                 dataInput: data,
                 fetchAccounts: batchedFetchAccounts,
+                linkables,
                 path: [...path, account],
             });
             if (address === null) return null;

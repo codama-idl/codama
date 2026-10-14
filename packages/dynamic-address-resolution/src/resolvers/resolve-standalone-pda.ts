@@ -1,12 +1,16 @@
 import type { ProgramDerivedAddress } from '@solana/addresses';
-import type { NodePath, PdaNode } from 'codama';
-import { ProvidedScope } from 'codama';
+import type { LinkableDictionary, NodePath, PdaNode } from 'codama';
+import { getLinkablesFromNode, ProvidedScope } from 'codama';
 
 import { type AddressInput, toAddress } from '../shared/address';
-import { getLinkables } from './context';
 import { derivePda, getPdaProgramAddress } from './resolve-pda-address';
 
 export type ResolveStandalonePdaInput = {
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, used to follow links.
+     * Defaults to recording them from the root of the path: pass them to avoid recording them again.
+     */
+    linkables?: LinkableDictionary;
     /** The path of the PDA from the root node, e.g. `[root, program, pda]`. */
     path: NodePath<PdaNode>;
     /**
@@ -34,11 +38,12 @@ export type ResolveStandalonePdaInput = {
  * ```
  */
 export async function resolveStandalonePda({
+    linkables,
     path,
     programId,
     seedsInput = {},
 }: ResolveStandalonePdaInput): Promise<ProgramDerivedAddress> {
-    const ctx = { linkables: getLinkables(path), scope: new ProvidedScope() };
+    const ctx = { linkables: linkables ?? getLinkablesFromNode(path[0]), scope: new ProvidedScope() };
     const programAddress = programId === undefined ? getPdaProgramAddress(path) : toAddress(programId);
     return await derivePda(path, programAddress, ctx, seedNode => Promise.resolve(seedsInput[seedNode.identifier]));
 }

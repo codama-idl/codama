@@ -2,8 +2,11 @@ import { CODAMA_ERROR__CANNOT_RESOLVE_PATH, isCodamaError } from '@codama/errors
 import {
     extendVisitor,
     getLastNodeFromPath,
+    getLinkablesFromNode,
+    getProvidedScopeFromPath,
     INSTRUCTION_INPUT_VALUE_NODE_KINDS,
     type InstructionNode,
+    type LinkableDictionary,
     mergeVisitor,
     type Node,
     type NodePath,
@@ -12,7 +15,6 @@ import {
     visit,
 } from 'codama';
 
-import { getLinkables, getProvidedScope } from './context';
 import { getDataFieldPaths } from './resolve-instruction-data-default-values';
 
 /**
@@ -20,16 +22,19 @@ import { getDataFieldPaths } from './resolve-instruction-data-default-values';
  * requires a `fetchAccounts` function: when the default value of one of its accounts or top-level
  * data fields, once its injected values are resolved, contains an `accountDataValueNode` or a
  * `dataValueNode` whose path crosses the `accountLink` of a public key, e.g. `mint.decimals`.
+ * Links are followed using the linkable nodes of the tree, recorded from its root unless given.
  *
  * @example
  * ```ts
  * readsAccountData([root, root.program, transferChecked]); // true when its decimals default to the mint's
  * ```
  */
-export function readsAccountData(path: NodePath<InstructionNode>): boolean {
+export function readsAccountData(
+    path: NodePath<InstructionNode>,
+    linkables: LinkableDictionary = getLinkablesFromNode(path[0]),
+): boolean {
     const instruction = getLastNodeFromPath(path);
-    const linkables = getLinkables(path);
-    const scope = getProvidedScope(path);
+    const scope = getProvidedScopeFromPath(path);
 
     const crossesAccountLink = (dataPath: PathString): boolean => {
         if (!instruction.data) return false;

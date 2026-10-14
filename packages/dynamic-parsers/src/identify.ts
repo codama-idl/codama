@@ -10,7 +10,7 @@ import {
     RootNode,
 } from '@codama/nodes';
 import {
-    getRecordLinkablesVisitor,
+    getLinkablesFromNode,
     LinkableDictionary,
     NodePath,
     NodeStack,
@@ -38,6 +38,11 @@ export type IdentifyDataOptions = {
      * candidates would confidently misattribute the data.
      */
     programAddress?: string;
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, to avoid recording
+     * them again when they are already known. Defaults to recording them from the root.
+     */
+    linkables?: LinkableDictionary;
 };
 
 export function identifyAccountData(
@@ -74,8 +79,7 @@ export function identifyData<TKind extends IdentifiableNodeKind>(
 
     const stack = new NodeStack();
     const scope = new ProvidedScope();
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = options.linkables ?? getLinkablesFromNode(root);
 
     const context = { ...getCodecAndValueVisitors(linkables, { scope, stack }), linkables, scope, stack };
     const visitor = getByteIdentificationVisitor(kinds, bytes, context, { programAddress: options.programAddress });

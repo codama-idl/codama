@@ -22,6 +22,7 @@ import {
 import { expect, test } from 'vitest';
 
 import {
+    getLinkablesFromNode,
     interceptFirstVisitVisitor,
     interceptVisitor,
     LinkableDictionary,
@@ -337,4 +338,18 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
             path: [node, linkNode],
         }),
     );
+});
+
+test('it gets the linkable nodes of the tree under a node', () => {
+    // Given a root node with an additional program.
+    const node = rootNode(programNode({ identifier: 'programA', publicKey: '1111' }), {
+        additionalPrograms: [programNode({ identifier: 'programB', publicKey: '2222' })],
+    });
+
+    // When we get its linkable nodes.
+    const linkables = getLinkablesFromNode(node);
+
+    // Then both programs are recorded.
+    expect(linkables.getPath([programLinkNode('programA')])).toEqual([node, node.program]);
+    expect(linkables.getPath([programLinkNode('programB')])).toEqual([node, (node.additionalPrograms ?? [])[0]]);
 });

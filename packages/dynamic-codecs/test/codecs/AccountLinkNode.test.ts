@@ -1,5 +1,5 @@
 import { accountLinkNode, accountNode, integerTypeNode, programNode, rootNode } from '@codama/nodes';
-import { getRecordLinkablesVisitor, LinkableDictionary, NodeStack, visit } from '@codama/visitors-core';
+import { getLinkablesFromNode, NodeStack, visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { getNodeValueCodecVisitor } from '../../src';
@@ -9,8 +9,7 @@ test('it resolves the codec of account link nodes', () => {
     // Given an account and a link node pointing to it.
     const account = accountNode({ data: integerTypeNode('u32'), identifier: 'counter' });
     const root = rootNode(programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' }));
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we get the codec of the link node from within the program.
     const stack = new NodeStack([root, root.program]);

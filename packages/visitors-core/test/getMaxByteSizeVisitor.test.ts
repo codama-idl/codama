@@ -50,8 +50,8 @@ import { describe, expect, test } from 'vitest';
 import {
     ByteSizeVisitorKeys,
     getLastNodeFromPath,
+    getLinkablesFromNode,
     getMaxByteSizeVisitor,
-    getRecordLinkablesVisitor,
     LinkableDictionary,
     NodePath,
     NodeStack,
@@ -73,8 +73,7 @@ const expectMaxSizeWithContext = (
 ) => {
     const node = getLastNodeFromPath(nodePath);
     const stack = new NodeStack(nodePath.slice(0, -1));
-    const linkables = new LinkableDictionary();
-    visit(nodePath[0], getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(nodePath[0]);
     expectMaxSize(node, expectedMaxSize, linkables, stack);
 };
 

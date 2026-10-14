@@ -66,7 +66,7 @@ test('it formats fixed points with the resolved unit of their display', () => {
     const decoded = getNodeCodec([
         fixedPointTypeNode(integerTypeNode('u32'), { display, scale: 2, unit: 'tokens' }),
     ]).decode(hex('39300000'));
-    expect(formatFixedPoint(decoded, { resolveInjectedValue: () => 'SOL' })).toBe('123.45 SOL');
+    expect(formatFixedPoint(decoded, { resolveInjectedValue: () => stringValueNode('SOL') })).toBe('123.45 SOL');
 });
 
 test('it formats fixed points with the unit of their type when their display unit cannot be resolved', () => {

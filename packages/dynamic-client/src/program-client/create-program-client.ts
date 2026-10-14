@@ -7,6 +7,7 @@ import {
     resolveStandalonePda,
     toAddress,
 } from '@codama/dynamic-address-resolution';
+import { createInstructionsBuilder, type InstructionsBuilderFn } from '@codama/dynamic-instructions';
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
@@ -15,7 +16,7 @@ import {
 import { type Address, address, type ProgramDerivedAddress } from '@solana/addresses';
 import type { Instruction } from '@solana/instructions';
 import type { InstructionNode, RootNode } from 'codama';
-import { createFromJson, updateProgramsVisitor } from 'codama';
+import { createFromJson, getLinkablesFromNode, updateProgramsVisitor } from 'codama';
 
 import { collectPdaPaths } from './collect-pdas';
 import { MethodsBuilder } from './methods-builder';
@@ -101,11 +102,26 @@ export function createProgramClient<TClient = ProgramClient>(
 
     const root = codama.getRoot();
     const programAddress = address(root.program.publicKey);
+    const linkables = getLinkablesFromNode(root);
 
     const instructions = new Map<string, InstructionNode>();
     for (const ix of root.program.instructions ?? []) {
         instructions.set(ix.identifier, ix);
     }
+
+    // Each instruction gets a single builder, created on first use, sharing the client's linkables.
+    const builders = new Map<InstructionNode, InstructionsBuilderFn>();
+    const getBuilder = (ixNode: InstructionNode): InstructionsBuilderFn => {
+        let builder = builders.get(ixNode);
+        if (!builder) {
+            builder = createInstructionsBuilder([root, root.program, ixNode], {
+                fetchAccounts: options.fetchAccounts,
+                linkables,
+            });
+            builders.set(ixNode, builder);
+        }
+        return builder;
+    };
 
     const methods = new Proxy(
         {},
@@ -122,12 +138,7 @@ export function createProgramClient<TClient = ProgramClient>(
                     });
                 }
 
-                return (data?: DataInput) =>
-                    new MethodsBuilder(
-                        [root, root.program, ixNode],
-                        data,
-                        options.fetchAccounts,
-                    ) as ProgramMethodBuilder;
+                return (data?: DataInput) => new MethodsBuilder(getBuilder(ixNode), data) as ProgramMethodBuilder;
             },
             has(target, prop) {
                 return Reflect.has(target, prop) || (typeof prop === 'string' && instructions.has(prop));
@@ -158,6 +169,7 @@ export function createProgramClient<TClient = ProgramClient>(
 
                           return (seeds?: Record<string, unknown>, pdaOptions: PdaOptions = {}) =>
                               resolveStandalonePda({
+                                  linkables,
                                   path: pdaPath,
                                   programId: pdaOptions.programId,
                                   seedsInput: seeds,
@@ -174,7 +186,7 @@ export function createProgramClient<TClient = ProgramClient>(
         methods,
         pdas,
         programAddress,
-        readsAccountData: [...instructions.values()].some(ix => readsAccountData([root, root.program, ix])),
+        readsAccountData: [...instructions.values()].some(ix => readsAccountData([root, root.program, ix], linkables)),
         root,
     } as unknown as TClient;
 }

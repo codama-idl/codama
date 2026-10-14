@@ -1,7 +1,5 @@
-import type { AccountsInput, DataInput, EitherSigners, FetchAccountsFn } from '@codama/dynamic-instructions';
-import { createInstructionsBuilder } from '@codama/dynamic-instructions';
+import type { AccountsInput, DataInput, EitherSigners, InstructionsBuilderFn } from '@codama/dynamic-instructions';
 import type { Instruction } from '@solana/instructions';
-import type { InstructionNode, NodePath } from 'codama';
 
 /**
  * Fluent builder for a single instruction of a program client, created by
@@ -13,9 +11,8 @@ export class MethodsBuilder {
     private _signers?: EitherSigners;
 
     constructor(
-        private readonly path: NodePath<InstructionNode>,
+        private readonly build: InstructionsBuilderFn,
         private readonly data?: DataInput,
-        private readonly fetchAccounts?: FetchAccountsFn,
     ) {}
 
     /** Provide the instruction accounts, including remaining accounts as address lists under their identifier. */
@@ -34,7 +31,6 @@ export class MethodsBuilder {
     }
 
     async instruction(): Promise<Instruction> {
-        const build = createInstructionsBuilder(this.path, { fetchAccounts: this.fetchAccounts });
-        return await build({ accounts: this._accounts, data: this.data, signers: this._signers });
+        return await this.build({ accounts: this._accounts, data: this.data, signers: this._signers });
     }
 }

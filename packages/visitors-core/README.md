@@ -773,6 +773,14 @@ Note that:
 
 This API may be used with the `recordLinkablesOnFirstVisitVisitor` to record the linkable nodes before the first node visit; as well as the `recordNodeStackVisitor` to keep track of the current node path when accessing the linkable nodes.
 
+### `getLinkablesFromNode`
+
+Records the linkable nodes of the tree under the given node, e.g. a root node, into a new `LinkableDictionary`. Entry points use it once, then pass the dictionary to the functions they compose.
+
+```ts
+const linkables = getLinkablesFromNode(rootNode);
+```
+
 ### `getRecordLinkablesVisitor`
 
 This visitor accepts a `LinkableDictionary` instance and records all linkable nodes it encounters when visiting the nodes.
@@ -780,7 +788,7 @@ This visitor accepts a `LinkableDictionary` instance and records all linkable no
 ```ts
 const linkables = new LinkableDictionary();
 visit(rootNode, getRecordLinkablesVisitor(linkables));
-// Now, all linkable nodes are recorded in the `linkables` dictionary.
+// Now, all linkable nodes are recorded in the `linkables` dictionary, as `getLinkablesFromNode(rootNode)` does.
 ```
 
 ### `recordLinkablesOnFirstVisitVisitor`

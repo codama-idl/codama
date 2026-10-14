@@ -1,4 +1,5 @@
 import { getNodeCodec, isDecodedNode } from '@codama/dynamic-codecs';
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND } from '@codama/errors';
 import {
     accountNode,
     bytesTypeNode,
@@ -25,6 +26,7 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@codama/nodes';
+import { LinkableDictionary } from '@codama/visitors-core';
 import { AccountRole } from '@solana/instructions';
 import { describe, expect, test } from 'vitest';
 
@@ -684,5 +686,38 @@ describe('parseData', () => {
         const root = rootNode(programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' }));
         const result = parseData(root, hex('0102'), 'accountNode', { bytesEncoding: 'base16' });
         expect(result?.value).toStrictEqual({ payload: ['base16', '0102'] });
+    });
+});
+
+describe('linkables', () => {
+    // A single account and instruction without discriminators, whose data links to a defined type.
+    const amount = definedTypeNode({ identifier: 'amount', type: integerTypeNode('u8') });
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: definedTypeLinkNode('amount') })]);
+    const root = rootNode(
+        programNode({
+            accounts: [accountNode({ data, identifier: 'myAccount' })],
+            definedTypes: [amount],
+            identifier: 'myProgram',
+            instructions: [instructionNode({ data, identifier: 'myInstruction' })],
+            publicKey: '1111',
+        }),
+    );
+    const linkedNodeNotFound = expect.objectContaining({
+        context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+    });
+
+    test('it parses data using the given linkables rather than recording them', () => {
+        const linkables = new LinkableDictionary();
+        expect(() => parseAccountData(root, hex('2a'), { linkables })).toThrow(linkedNodeNotFound);
+        expect(() => parseData(root, hex('2a'), 'accountNode', { linkables })).toThrow(linkedNodeNotFound);
+    });
+
+    test('it parses instructions using the given linkables rather than recording them', () => {
+        const instruction = { accounts: [], data: hex('2a'), programAddress: '1111' } as unknown as Parameters<
+            typeof parseInstruction
+        >[1];
+        expect(() => parseInstruction(root, instruction, { linkables: new LinkableDictionary() })).toThrow(
+            linkedNodeNotFound,
+        );
     });
 });

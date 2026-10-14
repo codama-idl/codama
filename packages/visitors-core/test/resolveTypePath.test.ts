@@ -23,17 +23,11 @@ import {
 } from '@codama/nodes';
 import { describe, expect, test } from 'vitest';
 
-import { getRecordLinkablesVisitor, LinkableDictionary, parsePath, resolveTypePath, visit } from '../src';
+import { getLinkablesFromNode, LinkableDictionary, parsePath, resolveTypePath } from '../src';
 
 /** Assert the callback throws a Codama error with exactly the context of the expected one. */
 function expectCodamaError(callback: () => unknown, expected: CodamaError): void {
     expect(callback).toThrow(expect.objectContaining({ context: expected.context }));
-}
-
-function getLinkables(root: ReturnType<typeof rootNode>): LinkableDictionary {
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
-    return linkables;
 }
 
 describe('parsePath', () => {
@@ -61,8 +55,11 @@ describe('resolveTypePath', () => {
 
         // Then each field is returned with its full path.
         const source = [root, program, instruction, data] as const;
-        expect(resolveTypePath(source, pathString('config'), getLinkables(root))).toStrictEqual([...source, config]);
-        expect(resolveTypePath(source, pathString('config.amount'), getLinkables(root))).toStrictEqual([
+        expect(resolveTypePath(source, pathString('config'), getLinkablesFromNode(root))).toStrictEqual([
+            ...source,
+            config,
+        ]);
+        expect(resolveTypePath(source, pathString('config.amount'), getLinkablesFromNode(root))).toStrictEqual([
             ...source,
             config,
             inner,
@@ -109,7 +106,7 @@ describe('resolveTypePath', () => {
         const result = resolveTypePath(
             [root, programA, instruction, data],
             pathString('config.fees[0]'),
-            getLinkables(root),
+            getLinkablesFromNode(root),
         );
 
         // Then the path continues from the definition of the config type.
@@ -207,7 +204,7 @@ describe('resolveTypePath', () => {
         const root = rootNode(program);
 
         expectCodamaError(
-            () => resolveTypePath([root, program, data], pathString('config.fee'), getLinkables(root)),
+            () => resolveTypePath([root, program, data], pathString('config.fee'), getLinkablesFromNode(root)),
             new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
                 kind: 'definedTypeLinkNode',
                 linkNode: link,
@@ -228,7 +225,7 @@ describe('resolveTypePath', () => {
         // Then resolving into them throws once a type is followed twice.
         const source = [root, program, typeA, linkToB] as const;
         expectCodamaError(
-            () => resolveTypePath(source, pathString('x'), getLinkables(root)),
+            () => resolveTypePath(source, pathString('x'), getLinkablesFromNode(root)),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
                 nodePath: source,
                 path: pathString('x'),
@@ -254,7 +251,7 @@ describe('resolveTypePath with account links', () => {
     const source = [root, program, tokenAccount, tokenData] as const;
 
     test('it follows account links into the data of the linked account', () => {
-        const resolved = resolveTypePath(source, pathString('mint.decimals'), getLinkables(root), {
+        const resolved = resolveTypePath(source, pathString('mint.decimals'), getLinkablesFromNode(root), {
             followAccountLinks: true,
         });
         expect(resolved).toStrictEqual([root, program, mintAccount, mintData, decimals]);
@@ -262,7 +259,7 @@ describe('resolveTypePath with account links', () => {
 
     test('it does not follow account links by default', () => {
         expectCodamaError(
-            () => resolveTypePath(source, pathString('mint.decimals'), getLinkables(root)),
+            () => resolveTypePath(source, pathString('mint.decimals'), getLinkablesFromNode(root)),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
                 nodePath: [...source, mintField, mintField.type],
                 path: pathString('mint.decimals'),
@@ -272,7 +269,9 @@ describe('resolveTypePath with account links', () => {
     });
 
     test('it returns a linked public key as addressed without following it', () => {
-        const resolved = resolveTypePath(source, pathString('mint'), getLinkables(root), { followAccountLinks: true });
+        const resolved = resolveTypePath(source, pathString('mint'), getLinkablesFromNode(root), {
+            followAccountLinks: true,
+        });
         expect(resolved).toStrictEqual([...source, mintField]);
     });
 
@@ -291,9 +290,14 @@ describe('resolveTypePath with account links', () => {
         // Then an index segment does not follow the link.
         expectCodamaError(
             () =>
-                resolveTypePath([pairRoot, pairProgram, pairSource], pathString('pair[0]'), getLinkables(pairRoot), {
-                    followAccountLinks: true,
-                }),
+                resolveTypePath(
+                    [pairRoot, pairProgram, pairSource],
+                    pathString('pair[0]'),
+                    getLinkablesFromNode(pairRoot),
+                    {
+                        followAccountLinks: true,
+                    },
+                ),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
                 nodePath: [pairRoot, pairProgram, pairSource, pairField, pairField.type],
                 path: pathString('pair[0]'),
@@ -318,7 +322,7 @@ describe('resolveTypePath with account links', () => {
         const resolved = resolveTypePath(
             [listRoot, listProgram, nodeAccount, nodeData],
             pathString('next.next.value'),
-            getLinkables(listRoot),
+            getLinkablesFromNode(listRoot),
             { followAccountLinks: true },
         );
         expect(resolved).toStrictEqual([listRoot, listProgram, nodeAccount, nodeData, value]);
@@ -337,7 +341,7 @@ describe('resolveTypePath with account links', () => {
                 resolveTypePath(
                     [selfRoot, selfProgram, selfAccount, selfData],
                     pathString('x'),
-                    getLinkables(selfRoot),
+                    getLinkablesFromNode(selfRoot),
                     {
                         followAccountLinks: true,
                     },
@@ -366,7 +370,7 @@ describe('resolveTypePath with account links', () => {
                 resolveTypePath(
                     [holderRoot, holderProgram, account, data],
                     pathString('missing.x'),
-                    getLinkables(holderRoot),
+                    getLinkablesFromNode(holderRoot),
                     {
                         followAccountLinks: true,
                     },

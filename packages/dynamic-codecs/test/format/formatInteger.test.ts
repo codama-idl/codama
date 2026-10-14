@@ -1,11 +1,13 @@
 import {
     amountNumberDisplayNode,
+    floatValueNode,
     injectedValueNode,
     integerTypeNode,
     integerValueNode,
     publicKeyValueNode,
     stringValueNode,
     unitNumberDisplayNode,
+    type ValueNode,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
@@ -66,9 +68,9 @@ test('it formats amounts with injected decimals and units', () => {
     const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
 
     // When we format it with a resolver of both, then they are used.
-    const values = new Map<unknown, unknown>([
-        [decimals, 6n],
-        [unit, 'USDC'],
+    const values = new Map<unknown, ValueNode>([
+        [decimals, integerValueNode('6')],
+        [unit, stringValueNode('USDC')],
     ]);
     expect(formatInteger(decoded, { resolveInjectedValue: path => values.get(path[path.length - 1]) })).toBe(
         '1.5 USDC',
@@ -102,20 +104,15 @@ test('it does not format amounts whose decimals are injected without a resolver'
     expect(formatInteger(decoded)).toBeNull();
 });
 
-test.each<[string, unknown]>([
-    ['negative integers', -1n],
-    ['fractions', 1.5],
-    ['strings', '6'],
+test.each<[string, ValueNode]>([
+    ['negative integers', integerValueNode('-1')],
+    ['integers beyond safe integers', integerValueNode('9007199254740992')],
+    ['floats', floatValueNode('6')],
+    ['strings', stringValueNode('6')],
 ])('it does not format amounts whose decimals resolve to %s', (_, value) => {
     const display = amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) });
     const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
     expect(formatInteger(decoded, { resolveInjectedValue: () => value })).toBeNull();
-});
-
-test('it accepts decimals resolving to numbers', () => {
-    const display = amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) });
-    const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
-    expect(formatInteger(decoded, { resolveInjectedValue: () => 6 })).toBe('1.5');
 });
 
 test('it formats amounts with the unit of their type when their own unit cannot be resolved', () => {
@@ -178,4 +175,30 @@ test('it formats integers with an address unit display using the address formatt
     const display = unitNumberDisplayNode({ unit: publicKeyValueNode('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v') });
     const decoded = getNodeCodec([integerTypeNode('u8', { display })]).decode(hex('2a'));
     expect(formatInteger(decoded, { formatAddress: () => 'USDC' })).toBe('42 USDC');
+});
+
+test('it formats amounts with an injected address unit using the address formatter', () => {
+    // Given an amount whose unit is provided by an account, e.g. its mint.
+    const display = amountNumberDisplayNode({
+        decimals: integerValueNode('6'),
+        unit: injectedValueNode({ key: 'mint' }),
+    });
+    const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
+    const resolveInjectedValue = () => publicKeyValueNode('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+
+    // Then the address goes through the address formatter, as literal ones do.
+    expect(formatInteger(decoded, { formatAddress: () => 'USDC', resolveInjectedValue })).toBe('1.5 USDC');
+    expect(formatInteger(decoded, { resolveInjectedValue })).toBe('1.5 EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+});
+
+test('it does not use injected units of other kinds', () => {
+    const display = unitNumberDisplayNode({ unit: injectedValueNode({ key: 'symbol' }) });
+    const decoded = getNodeCodec([integerTypeNode('u8', { display, unit: 'tokens' })]).decode(hex('2a'));
+    expect(formatInteger(decoded, { resolveInjectedValue: () => integerValueNode('6') })).toBe('42 tokens');
+});
+
+test('it does not use injected units resolving to empty strings', () => {
+    const display = unitNumberDisplayNode({ unit: injectedValueNode({ key: 'symbol' }) });
+    const decoded = getNodeCodec([integerTypeNode('u8', { display, unit: 'tokens' })]).decode(hex('2a'));
+    expect(formatInteger(decoded, { resolveInjectedValue: () => stringValueNode('') })).toBe('42 tokens');
 });

@@ -27,7 +27,8 @@ import {
 } from '@codama/nodes';
 import {
     getLastNodeFromPath,
-    getRecordLinkablesVisitor,
+    getLinkablesFromNode,
+    getProvidedScopeFromPath,
     hasDefinedTypeFiniteValue,
     interceptVisitor,
     LinkableDictionary,
@@ -148,6 +149,15 @@ export type CodecVisitorOptions = {
     resolvedDefaultValues?: ReadonlyMap<StructFieldTypeNode, unknown>;
 };
 
+/** Options of {@link getNodeCodec} and {@link getNodeValueCodec}. */
+export type NodeCodecOptions = CodecVisitorOptions & {
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, to avoid recording
+     * them again when they are already known. Defaults to recording them from the root of the path.
+     */
+    linkables?: LinkableDictionary;
+};
+
 /** A decoded node before its cursor positions are known, which the outermost layer of its codec adds. */
 type Unranged<TDecoded extends DecodedNode> = TDecoded extends unknown
     ? Omit<TDecoded, 'postOffset' | 'preOffset'>
@@ -187,7 +197,8 @@ function isInteger(value: unknown): value is bigint | number {
  * `{ value }`, where `value` is in the format of {@link getNodeValueCodec}.
  *
  * The full path, from the root node, is needed to resolve link nodes and injected
- * values, e.g. `[root, program, definedType]`.
+ * values, e.g. `[root, program, definedType]`. The linkable nodes of the tree are recorded
+ * from its root, unless given with the `linkables` option.
  *
  * @example
  * ```ts
@@ -200,20 +211,17 @@ function isInteger(value: unknown): value is bigint | number {
  */
 export function getNodeCodec<TNode extends EncodableNodes>(
     path: NodePath<TNode>,
-    options: CodecVisitorOptions = {},
+    options: NodeCodecOptions = {},
 ): Codec<DecodedNodeInput, GetDecodedNode<TNode>> {
-    const linkables = new LinkableDictionary();
-    visit(path[0], getRecordLinkablesVisitor(linkables));
+    const { linkables = getLinkablesFromNode(path[0]), ...visitorOptions } = options;
 
-    // Open a frame for every enclosing instruction, so the ones `provides` resolve injected values.
+    // The enclosing instructions provide the values injected into the node.
     const ancestors = path.slice(0, -1);
-    const frames = ancestors.flatMap(node => (isNode(node, 'instructionNode') ? [node.provides ?? []] : []));
-
     const codec = visit(
         getLastNodeFromPath(path) as EncodableNodes,
         getNodeCodecVisitor(linkables, {
-            ...options,
-            scope: new ProvidedScope(...frames),
+            ...visitorOptions,
+            scope: getProvidedScopeFromPath(ancestors),
             stack: new NodeStack(ancestors),
         }),
     );
@@ -241,7 +249,7 @@ export function getNodeCodec<TNode extends EncodableNodes>(
  * const value = codec.decode(bytes);
  * ```
  */
-export function getNodeValueCodec(path: NodePath<EncodableNodes>, options: CodecVisitorOptions = {}): Codec<unknown> {
+export function getNodeValueCodec(path: NodePath<EncodableNodes>, options: NodeCodecOptions = {}): Codec<unknown> {
     return getValueCodec(getNodeCodec(path, options));
 }
 

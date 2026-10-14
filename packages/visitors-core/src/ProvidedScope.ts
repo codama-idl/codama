@@ -188,3 +188,18 @@ export class ProvidedScope {
         return undefined;
     }
 }
+
+/**
+ * The scope of the `provides` of every instruction along the given nodes, outermost first, e.g.
+ * the ancestors of a node, so injected values within that node resolve from the instructions
+ * enclosing it.
+ *
+ * @example
+ * ```ts
+ * // [root, program, parentInstruction, childInstruction]
+ * const scope = getProvidedScopeFromPath(path); // frames of the parent, then of the child
+ * ```
+ */
+export function getProvidedScopeFromPath(path: readonly Node[]): ProvidedScope {
+    return new ProvidedScope(...path.flatMap(node => (isNode(node, 'instructionNode') ? [node.provides ?? []] : [])));
+}

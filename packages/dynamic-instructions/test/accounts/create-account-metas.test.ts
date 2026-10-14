@@ -4,6 +4,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CodamaError,
 } from '@codama/errors';
 import type { EncodedAccount } from '@solana/accounts';
@@ -20,6 +21,8 @@ import {
     type InstructionNodeInput,
     instructionRemainingAccountsNode,
     integerTypeNode,
+    LinkableDictionary,
+    pdaLinkNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
@@ -110,6 +113,22 @@ describe('accounts', () => {
         expect(await createAccountMetas({ data: { owner }, path })).toStrictEqual([
             { address: expected, role: AccountRole.READONLY },
         ]);
+    });
+
+    test('it uses the given linkables rather than recording them', async () => {
+        // Given an account defaulting to a PDA of the program, and linkables that do not record it.
+        const vault = pdaNode({ identifier: 'vault', seeds: [] });
+        const path = getInstructionPath(
+            instruction({ accounts: [account('vault', { defaultValue: pdaValueNode(pdaLinkNode('vault')) })] }),
+            { pdas: [vault] },
+        );
+
+        // Then the PDA link cannot be resolved from them.
+        await expect(createAccountMetas({ linkables: new LinkableDictionary(), path })).rejects.toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
+        );
     });
 
     test('it throws when a required account is missing', async () => {

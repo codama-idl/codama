@@ -29,7 +29,7 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@codama/nodes';
-import { getRecordLinkablesVisitor, LinkableDictionary, NodeStack, ProvidedScope, visit } from '@codama/visitors-core';
+import { getLinkablesFromNode, LinkableDictionary, NodeStack, ProvidedScope } from '@codama/visitors-core';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { DiscriminatorContext, matchDiscriminators } from '../src/discriminators';
@@ -133,8 +133,7 @@ describe('matchDiscriminators', () => {
             const root = rootNode(programA, { additionalPrograms: [programB] });
 
             // And given a recorded linkables dictionary.
-            const linkables = new LinkableDictionary();
-            visit(root, getRecordLinkablesVisitor(linkables));
+            const linkables = getLinkablesFromNode(root);
 
             // And a stack keeping track of the current visited nodes.
             const stack = new NodeStack([root, programA, account]);
@@ -259,8 +258,7 @@ describe('matchDiscriminators', () => {
             const root = rootNode(programA, { additionalPrograms: [programB] });
 
             // And given a recorded linkables dictionary.
-            const linkables = new LinkableDictionary();
-            visit(root, getRecordLinkablesVisitor(linkables));
+            const linkables = getLinkablesFromNode(root);
 
             // And a stack keeping track of the current visited nodes.
             const stack = new NodeStack([root, programA, account]);
@@ -304,8 +302,7 @@ describe('matchDiscriminators', () => {
                 publicKey: '2222',
             });
             const root = rootNode(programA, { additionalPrograms: [programB] });
-            visit(root, getRecordLinkablesVisitor(linkables));
-            context = getContext(linkables, new NodeStack([root, programA, account]));
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, programA, account]));
 
             // Then the `kind` link resolves within programB, as a u16 at offset 1.
             expect(matchDiscriminators(hex('012a00'), [discriminator], data, context)).toBe(true);
@@ -335,8 +332,7 @@ describe('matchDiscriminators', () => {
                 publicKey: '1111',
             });
             const root = rootNode(program);
-            visit(root, getRecordLinkablesVisitor(linkables));
-            context = getContext(linkables, new NodeStack([root, program, account]));
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, program, account]));
 
             // Then the field is found through the link.
             expect(matchDiscriminators(hex('07'), [discriminator], data, context)).toBe(true);
@@ -351,8 +347,7 @@ describe('matchDiscriminators', () => {
             const account = accountNode({ data, discriminators: [discriminator], identifier: 'myAccount' });
             const program = programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' });
             const root = rootNode(program);
-            visit(root, getRecordLinkablesVisitor(linkables));
-            context = getContext(linkables, new NodeStack([root, program, account]));
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, program, account]));
 
             // Then the dangling link is reported rather than a missing field.
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
@@ -426,8 +421,7 @@ describe('matchDiscriminators', () => {
             const token = accountNode({ data, discriminators: [discriminator], identifier: 'token' });
             const program = programNode({ accounts: [mint, token], identifier: 'myProgram', publicKey: '1111' });
             const root = rootNode(program);
-            visit(root, getRecordLinkablesVisitor(linkables));
-            context = getContext(linkables, new NodeStack([root, program, token]));
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, program, token]));
 
             // Then the discriminator field is not found, since identifying bytes cannot read other accounts.
             expect(() => matchDiscriminators(new Uint8Array(32).fill(6), [discriminator], data, context)).toThrow(

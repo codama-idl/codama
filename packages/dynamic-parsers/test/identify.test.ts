@@ -1,9 +1,12 @@
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND } from '@codama/errors';
 import {
     accountNode,
     bytesTypeNode,
     constantDiscriminatorNode,
     constantValueNode,
     constantValueNodeFromBytes,
+    definedTypeLinkNode,
+    definedTypeNode,
     eventNode,
     fieldDiscriminatorNode,
     fixedSizeTransformNode,
@@ -20,6 +23,7 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@codama/nodes';
+import { LinkableDictionary } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
 
 import { identifyAccountData, identifyData, identifyEventData, identifyInstructionData } from '../src';
@@ -527,4 +531,30 @@ describe('identifyData', () => {
         // Then we expect no result because two candidates are ambiguous.
         expect(result).toBeUndefined();
     });
+});
+
+test('it identifies data using the given linkables rather than recording them', () => {
+    // Given an account discriminated by a field of a linked type, and linkables that do not record it.
+    const discriminator = fieldDiscriminatorNode('header.kind');
+    const header = definedTypeNode({
+        identifier: 'header',
+        type: structTypeNode([
+            structFieldTypeNode({
+                defaultValue: integerValueNode('7'),
+                identifier: 'kind',
+                type: integerTypeNode('u8'),
+            }),
+        ]),
+    });
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'header', type: definedTypeLinkNode('header') })]);
+    const account = accountNode({ data, discriminators: [discriminator], identifier: 'myAccount' });
+    const root = rootNode(
+        programNode({ accounts: [account], definedTypes: [header], identifier: 'myProgram', publicKey: '1111' }),
+    );
+
+    // Then it identifies it by default, but not from the given linkables.
+    expect(identifyData(root, hex('07'))).toStrictEqual([root, root.program, account]);
+    expect(() => identifyData(root, hex('07'), undefined, { linkables: new LinkableDictionary() })).toThrow(
+        expect.objectContaining({ context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }) }),
+    );
 });

@@ -2,6 +2,7 @@ import { getNodeValueCodec } from '@codama/dynamic-codecs';
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
 } from '@codama/errors';
 import type { EncodedAccount } from '@solana/accounts';
 import type { Address } from '@solana/addresses';
@@ -11,11 +12,14 @@ import {
     accountDataValueNode,
     accountLinkNode,
     accountNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     injectedValueNode,
     instructionAccountNode,
     instructionNode,
     instructionRemainingAccountsNode,
     integerTypeNode,
+    LinkableDictionary,
     programNode,
     providedNode,
     publicKeyTypeNode,
@@ -76,6 +80,21 @@ describe('createInstructionsBuilder', () => {
         });
         const build = createInstructionsBuilder([root, other, noop]);
         expect((await build()).programAddress).toBe(otherAddress);
+    });
+
+    test('it uses the given linkables rather than recording them', () => {
+        // Given an instruction whose data links to a defined type, and linkables that do not record it.
+        const args = definedTypeNode({ identifier: 'args', type: transfer.data! });
+        const path = getInstructionPath(instructionNode({ ...transfer, data: definedTypeLinkNode('args') }), {
+            definedTypes: [args],
+        });
+
+        // Then the link cannot be resolved from them.
+        expect(() => createInstructionsBuilder(path, { linkables: new LinkableDictionary() })).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
+        );
     });
 
     test('it rejects data of the wrong type', async () => {
