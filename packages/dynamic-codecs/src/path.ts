@@ -128,10 +128,10 @@ function entersLinkedAccountData(
     );
 }
 
-function getCannotResolvePathError(decoded: DecodedNode, path: PathString, segment: PathSegment): CodamaError {
+function getCannotResolvePathError(decoded: DecodedNode, pathString: PathString, segment: PathSegment): CodamaError {
     return new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath: decoded.path,
-        path,
+        path: decoded.path,
+        pathString,
         segment: segment.kind === 'field' ? segment.identifier : `[${segment.index}]`,
     });
 }

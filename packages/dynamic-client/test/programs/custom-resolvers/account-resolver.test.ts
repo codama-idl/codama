@@ -57,8 +57,10 @@ describe('Custom resolvers: resolved accounts', () => {
             expect.objectContaining({
                 context: expect.objectContaining({
                     __code: CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
-                    accountName: 'destination',
-                    instructionName: 'transferWithResolver',
+                    path: expect.arrayContaining([
+                        expect.objectContaining({ identifier: 'transferWithResolver', kind: 'instructionNode' }),
+                        expect.objectContaining({ identifier: 'destination', kind: 'instructionAccountNode' }),
+                    ]),
                 }),
             }),
         );
@@ -100,8 +102,10 @@ describe('Custom resolvers: resolved accounts', () => {
             expect.objectContaining({
                 context: expect.objectContaining({
                     __code: CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
-                    accountName: 'requiredTarget',
-                    instructionName: 'conditionalTransfer',
+                    path: expect.arrayContaining([
+                        expect.objectContaining({ identifier: 'conditionalTransfer', kind: 'instructionNode' }),
+                        expect.objectContaining({ identifier: 'requiredTarget', kind: 'instructionAccountNode' }),
+                    ]),
                 }),
             }),
         );

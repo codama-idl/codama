@@ -650,7 +650,9 @@ describe('anchor-example: nestedExampleIx', () => {
                 expect.objectContaining({
                     context: expect.objectContaining({
                         __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
-                        instructionName: 'nestedExample',
+                        path: expect.arrayContaining([
+                            expect.objectContaining({ identifier: 'nestedExample', kind: 'instructionNode' }),
+                        ]),
                     }),
                 }),
             );

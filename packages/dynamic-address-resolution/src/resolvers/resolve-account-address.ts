@@ -37,8 +37,7 @@ export async function resolveAccountAddress(
     }
 
     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-        accountName: ixAccountNode.identifier,
-        instructionName: getInstruction(ctx).identifier,
+        path: [...ctx.instructionPath, ixAccountNode],
     });
 }
 
@@ -55,8 +54,7 @@ function resolveOptionalAccountWithStrategy(ixAccountNode: InstructionAccountNod
             return getProgramAddress(ctx.instructionPath);
         default:
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY, {
-                accountName: ixAccountNode.identifier,
-                instructionName: instruction.identifier,
+                path: [...ctx.instructionPath, ixAccountNode],
                 strategy: safeStringify(instruction.optionalAccountStrategy),
             });
     }

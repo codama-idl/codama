@@ -119,8 +119,7 @@ describe('instructions', () => {
         expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
             new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                 expectedKinds: [],
-                kind: null,
-                node: provided as never,
+                path: [provided as never],
             }),
         );
     });

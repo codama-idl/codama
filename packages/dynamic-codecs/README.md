@@ -292,14 +292,14 @@ A missing struct encodes as a struct whose fields are all missing, so their defa
 
 ### Invalid values
 
-Encoding throws a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error when a value does not match its type, e.g. a string for an integer or a missing field without a default value, rather than encoding unexpected bytes. Structs and maps must be plain objects, so `Map`s or class instances are rejected. Its `nodePath` context is the path of the node that rejected the value, from the root.
+Encoding throws a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error when a value does not match its type, e.g. a string for an integer or a missing field without a default value, rather than encoding unexpected bytes. Structs and maps must be plain objects, so `Map`s or class instances are rejected. Its `path` context is the path of the node that rejected the value, from the root.
 
-Sets also throw a `CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM` error when two items encode to the same bytes, e.g. `[42, 42n]`. Its context gives the `index` of the duplicate, the `firstIndex` of the item it equals and the `nodePath` of the set. Decoding keeps duplicates, so existing data reads as it is.
+Sets also throw a `CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM` error when two items encode to the same bytes, e.g. `[42, 42n]`. Its context gives the `index` of the duplicate, the `firstIndex` of the item it equals and the `path` of the set. Decoding keeps duplicates, so existing data reads as it is.
 
 ```ts
 const codec = getNodeValueCodec([root, program, instruction]);
 codec.encode({ amount: 'x' });
-// throws with { nodePath: [root, program, instruction, data, amountField, amountType], nodeKind: 'integerTypeNode', … }
+// throws with { path: [root, program, instruction, data, amountField, amountType], … }
 ```
 
 Linked types report the path of their definition, e.g. `[root, program, definedType, …]`, rather than the path of the link.

@@ -86,10 +86,7 @@ export async function resolveInstructionAccountAddress<
 
     const canAutoResolve = !!ixAccountNode.defaultValue || (ixAccountNode.isOptional && addressInput === null);
     if (!canAutoResolve) {
-        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-            accountName: ixAccountNode.identifier,
-            instructionName: getLastNodeFromPath(instructionPath).identifier,
-        });
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, { path });
     }
 
     const ctx = createResolutionContext(instructionPath, { accountsInput, dataInput, fetchAccounts, linkables });

@@ -24,8 +24,7 @@ test('it rejects tuples missing an item as a missing value of that item', () => 
         new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
             actualType: 'undefined',
             expectedType: 'string',
-            nodeKind: 'stringTypeNode',
-            nodePath: [tuple, string],
+            path: [tuple, string],
         }),
     );
 });

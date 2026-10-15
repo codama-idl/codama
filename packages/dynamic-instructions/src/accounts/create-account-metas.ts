@@ -87,7 +87,7 @@ export async function createAccountMetas<
     // Accounts resolved in parallel share the linkable nodes of the tree, recorded once.
     const linkables = givenLinkables ?? getLinkablesFromNode(path[0]);
     const instruction = getLastNodeFromPath(path);
-    assertValidAccountAddresses(instruction, accounts);
+    assertValidAccountAddresses(path, accounts);
     // Accounts resolved in parallel share a single batch and cache of fetched accounts.
     const batchedFetchAccounts = fetchAccounts ? getBatchedFetchAccounts(fetchAccounts) : undefined;
 
@@ -118,27 +118,27 @@ export async function createAccountMetas<
     );
 
     const remainingAccountMetas = (instruction.remainingAccounts ?? []).flatMap(remainingAccounts =>
-        getRemainingAccountMetas(instruction, remainingAccounts, accounts),
+        getRemainingAccountMetas(path, remainingAccounts, accounts),
     );
 
     return [...accountMetas.filter(meta => meta !== null), ...remainingAccountMetas];
 }
 
 /** Ensure the provided addresses of the named accounts of the instruction are valid. */
-function assertValidAccountAddresses(instruction: InstructionNode, accounts: AccountsInput | undefined): void {
-    for (const account of instruction.accounts ?? []) {
+function assertValidAccountAddresses(path: NodePath<InstructionNode>, accounts: AccountsInput | undefined): void {
+    for (const account of getLastNodeFromPath(path).accounts ?? []) {
         const input = accounts?.[account.identifier];
         // Lists are rejected when resolving the account, as only remaining accounts accept them.
         if (input === undefined || input === null || Array.isArray(input) || isAddressConvertible(input)) continue;
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS, {
-            accountName: account.identifier,
+            path: [...path, account],
             value: safeStringify(input),
         });
     }
 }
 
 function getRemainingAccountMetas(
-    instruction: InstructionNode,
+    instructionPath: NodePath<InstructionNode>,
     remainingAccounts: InstructionRemainingAccountsNode,
     accounts: AccountsInput | undefined,
 ): AccountMeta[] {
@@ -147,14 +147,13 @@ function getRemainingAccountMetas(
     if (addresses === undefined) {
         if (remainingAccounts.isOptional) return [];
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-            accountName,
-            instructionName: instruction.identifier,
+            path: [...instructionPath, remainingAccounts],
         });
     }
     if (!Array.isArray(addresses)) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT, {
-            accountName,
             expectedType: 'Address[]',
+            path: [...instructionPath, remainingAccounts],
             value: safeStringify(addresses),
         });
     }

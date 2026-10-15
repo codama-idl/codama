@@ -669,8 +669,7 @@ describe('formatted nodes', () => {
         expect(() => assertIsFormattedNode(formatted, 'structTypeNode')).toThrow(
             new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                 expectedKinds: ['structTypeNode'],
-                kind: 'integerTypeNode',
-                node: u8,
+                path: [u8],
             }),
         );
     });

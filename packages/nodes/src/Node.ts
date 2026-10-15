@@ -15,11 +15,8 @@ export function assertIsNode<TKind extends NodeKind>(
 ): asserts node is GetNodeFromKind<TKind> {
     const kinds = Array.isArray(kind) ? kind : [kind];
     if (!isNode(node, kinds)) {
-        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
-            expectedKinds: kinds,
-            kind: node?.kind ?? null,
-            node,
-        });
+        // Only the node is known here, so its path is the node itself, or empty when it is missing.
+        throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, { expectedKinds: kinds, path: node ? [node] : [] });
     }
 }
 

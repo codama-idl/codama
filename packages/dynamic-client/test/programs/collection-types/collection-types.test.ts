@@ -22,7 +22,7 @@ function duplicateSetItemError(indices: { firstIndex: number; index: number }): 
         context: expect.objectContaining({
             __code: CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
             ...indices,
-            nodePath: expect.arrayContaining([
+            path: expect.arrayContaining([
                 expect.objectContaining({ identifier: 'data', kind: 'structFieldTypeNode' }),
                 expect.objectContaining({ kind: 'setTypeNode' }),
             ]),

@@ -67,8 +67,7 @@ describe('assertIsDecodedNode', () => {
         expect(() => assertIsDecodedNode(decoded, 'structTypeNode')).toThrow(
             new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                 expectedKinds: ['structTypeNode'],
-                kind: 'integerTypeNode',
-                node,
+                path: [node],
             }),
         );
     });

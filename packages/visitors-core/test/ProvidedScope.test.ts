@@ -121,13 +121,11 @@ test('it attributes a wrong-kind fallback of a provided injection to its provide
     const provider = providedNode('symbol', injectedValueNode({ fallback: integerValueNode('9'), key: 'missing' }));
     const scope = new ProvidedScope([provider]);
 
-    // Then the error names the provider.
+    // Then the error names the provider, but not the injection it provides, which the fallback replaces.
     expect(() => scope.resolve(injectedValueNode({ key: 'symbol' }), { kinds: ['stringValueNode'] })).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, {
             expectedKinds: ['stringValueNode'],
-            key: identifierString('symbol'),
-            providedKind: 'integerValueNode',
-            provider,
+            path: [provider],
         }),
     );
 });
@@ -153,8 +151,7 @@ test('it throws when a fallback is not one of the expected kinds', () => {
     expect(() => new ProvidedScope().resolve(node, { kinds: ['stringValueNode'] })).toThrow(
         new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
             expectedKinds: ['stringValueNode'],
-            kind: 'integerValueNode',
-            node: integerValueNode('9'),
+            path: [integerValueNode('9')],
         }),
     );
 });
@@ -165,9 +162,7 @@ test('it throws when the provided node is not one of the expected kinds', () => 
     expect(() => scope.resolve(injectedValueNode({ key: 'decimals' }), { kinds })).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, {
             expectedKinds: kinds,
-            key: identifierString('decimals'),
-            providedKind: 'publicKeyTypeNode',
-            provider,
+            path: [provider, provider.node],
         }),
     );
 });
@@ -185,7 +180,7 @@ test('resolveOrThrow returns the fallback when no frame provides the key', () =>
 test('resolveOrThrow throws when no frame provides the key and there is no fallback', () => {
     const node = injectedValueNode({ key: 'decimals' });
     expect(() => new ProvidedScope().resolveOrThrow(node, { kinds })).toThrow(
-        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: node, key: node.key }),
+        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: node.key, path: [node] }),
     );
 });
 
@@ -199,7 +194,7 @@ test('resolveOrThrow names the nested injection that resolves to nothing', () =>
 
     // Then the error names the nested injection rather than the struct.
     expect(() => new ProvidedScope().resolveOrThrow(node, { kinds: VALUE_NODES })).toThrow(
-        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: age, key: age.key }),
+        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: age.key, path: [age] }),
     );
 });
 
@@ -210,7 +205,7 @@ test('resolveOrThrow names the injection a provided chain dead-ends on', () => {
 
     // Then the error names the innermost unresolvable injection.
     expect(() => scope.resolveOrThrow(injectedValueNode({ key: 'person' }), { kinds: VALUE_NODES })).toThrow(
-        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: missing, key: missing.key }),
+        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: missing.key, path: [missing] }),
     );
 });
 
@@ -220,9 +215,7 @@ test('resolveOrThrow throws when the provided node is not one of the expected ki
     expect(() => scope.resolveOrThrow(injectedValueNode({ key: 'decimals' }), { kinds })).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, {
             expectedKinds: kinds,
-            key: identifierString('decimals'),
-            providedKind: 'publicKeyTypeNode',
-            provider,
+            path: [provider, provider.node],
         }),
     );
 });

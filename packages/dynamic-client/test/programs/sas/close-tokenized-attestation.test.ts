@@ -156,7 +156,7 @@ describe('SAS: closeTokenizedAttestation', () => {
                     tokenProgram: ctx.TOKEN_2022_PROGRAM_ADDRESS,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[attestationMint\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]attestationMint\./);
 
         await expect(
             programClient.methods
@@ -174,6 +174,6 @@ describe('SAS: closeTokenizedAttestation', () => {
                     tokenProgram: ctx.TOKEN_2022_PROGRAM_ADDRESS,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[attestationTokenAccount\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]attestationTokenAccount\./);
     });
 });

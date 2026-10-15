@@ -283,7 +283,7 @@ describe('Program Metadata: initialize', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[authority\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]authority\./);
     });
 
     test('should throw AccountError when required program account is missing', async () => {
@@ -306,7 +306,7 @@ describe('Program Metadata: initialize', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[program\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]program\./);
     });
 
     test('should throw ArgumentError when missing required seed argument', async () => {

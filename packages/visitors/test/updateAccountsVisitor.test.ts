@@ -352,9 +352,8 @@ test('it throws when renaming a data field that does not exist', () => {
     // When we try to rename it, then we expect an error.
     expect(() => visit(account, updateAccountsVisitor({ myAccount: { data: { missing: 'other' } } }))).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
-            account,
             missingField: identifierString('missing'),
-            name: identifierString('myAccount'),
+            path: [account],
         }),
     );
 });

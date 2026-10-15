@@ -27,8 +27,7 @@ export function integerTypeNodeFromV1(path: V1NodePath<v1.NestedTypeNode<v1.Numb
     if (converted.kind !== 'integerTypeNode') {
         throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
             expectedKinds: ['integerTypeNode'],
-            kind: converted.kind,
-            node: converted,
+            path: [converted],
         });
     }
     return withTransforms(converted, transformsFromV1(unwrapped.wrappers));

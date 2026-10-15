@@ -122,8 +122,7 @@ describe('resolveStandalonePda', () => {
         await expect(resolveStandalonePda({ path: getPdaPath(pda) })).rejects.toThrow(
             expect.objectContaining({
                 context: new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, {
-                    pdaName: pda.identifier,
-                    seedName: pda.seeds![0].identifier,
+                    path: [...getPdaPath(pda), pda.seeds![0]],
                 }).context,
             }),
         );

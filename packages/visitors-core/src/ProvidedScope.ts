@@ -101,9 +101,10 @@ export class ProvidedScope {
     ): Exclude<GetNodeFromKind<TKind>, InjectedValueNode> {
         const outcome = this.resolveOutcome(node, options.kinds);
         if ('missing' in outcome) {
+            // Scopes hold nodes rather than paths, so the path is the missing injection itself.
             throw new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, {
-                injectedValue: outcome.missing,
                 key: outcome.missing.key,
+                path: [outcome.missing],
             });
         }
         return outcome.node as Exclude<GetNodeFromKind<TKind>, InjectedValueNode>;
@@ -119,12 +120,13 @@ export class ProvidedScope {
         const resolution = isNode(node, 'injectedValueNode') ? this.lookup(node, depth) : { depth, node };
         if (!resolution) return { missing: node as InjectedValueNode };
         if (!isNode(resolution.node, kinds)) {
-            if (resolution.provider) {
+            const { node: provided, provider } = resolution;
+            if (provider) {
+                // Scopes hold nodes rather than paths, so the path starts at the provider, ending at the
+                // value it provides, unless that value is the fallback of an injection it provides.
                 throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, {
                     expectedKinds: kinds,
-                    key: resolution.provider.identifier,
-                    providedKind: resolution.node.kind,
-                    provider: resolution.provider,
+                    path: provider.node === provided ? [provider, provided] : [provider],
                 });
             }
             assertIsNode(resolution.node, kinds);

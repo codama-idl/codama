@@ -3,24 +3,14 @@
  * @see https://github.com/anza-xyz/kit/blob/main/packages/errors
  */
 
-import {
-    AccountNode,
+import type {
     AccountValueNode,
     DataValueNode,
-    DefinedTypeNode,
-    EnumTypeNode,
     IdentifierString,
-    InjectedValueNode,
     InstructionAccountNode,
-    InstructionNode,
-    LinkNode,
     Node,
     NodeKind,
     PathString,
-    PdaNode,
-    PdaSeedValueNode,
-    ProgramNode,
-    ProvidedNode,
     StructFieldTypeNode,
 } from '@codama/node-types';
 
@@ -29,9 +19,7 @@ import {
     CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
     CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING,
     CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING,
-    CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
-    CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING,
     CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
@@ -42,7 +30,6 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS,
     CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
-    CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
@@ -69,7 +56,6 @@ import {
     CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
     CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS,
     CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE,
-    CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
     CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
@@ -98,6 +84,14 @@ import {
     CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
     CodamaErrorCode,
 } from './codes';
+import { formatContextPath } from './node-path';
+
+/**
+ * A path of nodes, ending at the node an error is about. It starts at the root whenever the
+ * thrower knows it, and is otherwise only made of the last node(s), e.g. `[node]`. Messages
+ * render it as node selectors, e.g. `[programNode]token.[accountNode]mint`.
+ */
+type NodePath = readonly Node[];
 
 type DefaultUnspecifiedErrorContextToUndefined<T> = {
     [P in CodamaErrorCode]: P extends keyof T ? T[P] : undefined;
@@ -105,7 +99,8 @@ type DefaultUnspecifiedErrorContextToUndefined<T> = {
 
 /**
  * WARNING:
- *   - Don't change or remove members of an error's context.
+ *   - Don't change or remove members of an error's context within a major version.
+ *   - Errors about nodes carry the `path` of the node, rather than the node itself, its kind or its identifier.
  */
 export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: {
@@ -120,45 +115,41 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING]: {
         name: string;
     };
-    [CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED]: {
-        kind: string;
-    };
     [CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]: {
         kind: string;
-    };
-    [CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING]: {
-        idlType: string;
-        path: string;
     };
     [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: {
         idlType: string;
     };
     [CODAMA_ERROR__CANNOT_RESOLVE_PATH]: {
-        /** The path of the node the segment could not be applied to, from the root. */
-        nodePath: readonly Node[];
+        /** The path of the node the segment could not be applied to. */
+        path: NodePath;
         /** The path expression being resolved, e.g. `config.fees[0]`. */
-        path: PathString;
+        pathString: PathString;
         /** The segment that could not be followed, e.g. `fees` or `[0]`. */
         segment: string;
     };
     [CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE]: {
-        /** The identifier of the defined type. */
-        name: IdentifierString;
-        /** The path of the defined type, from the root. */
-        path: readonly Node[];
+        /** The path of the defined type. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: {
-        field: PathString;
+        /** The path of the discriminator field. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND]: {
+        /** The path of the field the discriminator refers to, e.g. `discriminator`. */
         field: PathString;
+        /** The path of the field discriminator node. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]: {
-        accountName: IdentifierString;
-        instructionName: IdentifierString;
+        /** The path of the missing instruction account, or remaining accounts. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]: {
-        accountName: IdentifierString;
+        /** The path of the account the resolver resolves. */
+        path: NodePath;
         resolverName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: {
@@ -168,31 +159,34 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         chain: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]: {
-        instructionName: IdentifierString;
-        path: PathString;
-    };
-    [CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING]: {
-        argumentName: IdentifierString;
-        instructionName: IdentifierString;
+        /** The path of the instruction. */
+        path: NodePath;
+        /** The path of the missing data, e.g. `config.fee`. */
+        pathString: PathString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM]: {
         /** The index of the first item the duplicate is equal to. */
         firstIndex: number;
         /** The index of the duplicate item. */
         index: number;
-        /** The path of the set type node that rejected the value, from the root. */
-        nodePath: readonly Node[];
+        /** The path of the set type node that rejected the value. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]: {
-        accountName: IdentifierString;
+        /**
+         * The path of what an account value resolved to null for: a seed of the PDA, ending at the
+         * seed, or its program ID, ending at the PDA.
+         */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA]: {
-        instructionName: IdentifierString;
+        /** The path of the instruction. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER]: {
+        /** The path of the node being resolved. */
+        path: NodePath;
         resolverName: IdentifierString;
-        targetKind: NodeKind;
-        targetName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT]: {
         message: string;
@@ -202,19 +196,22 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         instructionName: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: {
-        accountName: IdentifierString;
+        /** The path of the instruction account. */
+        path: NodePath;
         value: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT]: {
-        accountName: IdentifierString;
         expectedType: string;
+        /** The path of the instruction account, or remaining accounts. */
+        path: NodePath;
         value: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION]: {
         message: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]: {
-        instructionName: IdentifierString;
+        /** The path of the node holding the reference, or of its instruction. */
+        path: NodePath;
         referencedName: IdentifierString;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]: {
@@ -222,8 +219,8 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         pdaName: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: {
-        pdaName: IdentifierString;
-        seedName: IdentifierString;
+        /** The path of the missing seed. */
+        path: NodePath;
     };
 
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]: {
@@ -234,27 +231,28 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]: {
         actualType: string;
         expectedType: string;
-        /** The kind of the node that rejected the value. */
-        nodeKind: NodeKind;
-        /** The path of the node that rejected the value, from the root. */
-        nodePath: readonly Node[];
+        /** The path of the node that rejected the value. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: {
-        nodeKind: NodeKind;
+        /** The path of the unsupported node. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY]: {
-        accountName: IdentifierString;
-        instructionName: IdentifierString;
+        /** The path of the instruction account. */
+        path: NodePath;
         strategy: string;
     };
     [CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND]: {
-        enum: EnumTypeNode;
-        enumName: IdentifierString;
+        /** The path of the enum type. */
+        path: NodePath;
         variant: IdentifierString;
     };
     [CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED]: {
-        injectedValue: InjectedValueNode;
+        /** The key of the injected value. */
         key: IdentifierString;
+        /** The path of the injected value node. */
+        path: NodePath;
     };
     [CODAMA_ERROR__INVALID_BRANDED_STRING]: {
         actual: string;
@@ -267,41 +265,34 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         template: string;
     };
     [CODAMA_ERROR__INVALID_TICKS_PER_SECOND]: {
-        /** The path of the date-time or duration type, from the root. */
-        path: readonly Node[];
+        /** The path of the date-time or duration type. */
+        path: NodePath;
         /** The invalid number of ticks per second, e.g. `0`. */
         ticksPerSecond: number;
     };
     [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: {
-        kind: LinkNode['kind'];
-        linkNode: LinkNode;
-        name: IdentifierString;
-        path: readonly Node[];
+        /** The path of the link node whose target could not be found. */
+        path: NodePath;
     };
     [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]: {
         fsFunction: string;
     };
     [CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING]: {
         /** The path that should contain a program node, e.g. to resolve links from. */
-        path: readonly Node[];
+        path: NodePath;
     };
     [CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS]: {
         dependencies: readonly string[];
         message: string;
     };
     [CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE]: {
-        kind: NodeKind;
-        node: Node | undefined;
-    };
-    [CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND]: {
-        expectedKinds: NodeKind[];
-        kind: NodeKind | null;
-        node: Node | null | undefined;
+        /** The path of the node that cannot be rendered. */
+        path: NodePath;
     };
     [CODAMA_ERROR__UNEXPECTED_NODE_KIND]: {
         expectedKinds: NodeKind[];
-        kind: NodeKind | null;
-        node: Node | null | undefined;
+        /** The path of the unexpected node, or an empty path when no node was found. */
+        path: NodePath;
     };
     [CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING]: {
         encoding: string;
@@ -320,52 +311,51 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         rootVersion: string;
     };
     [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: {
-        account: AccountNode;
         missingField: IdentifierString;
-        name: IdentifierString;
+        /** The path of the account. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]: {
         duplicatedPdaNames: IdentifierString[];
-        program: ProgramNode;
-        programName: IdentifierString;
+        /** The path of the program. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION]: {
         visitFunction: string;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES]: {
         conflictingAttributes: IdentifierString[];
+        /** The path of the struct to flatten. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS]: {
-        field: StructFieldTypeNode;
-        fieldName: IdentifierString;
+        /** The path of the struct field whose struct carries plugins. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK]: {
-        path: readonly Node[];
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR]: {
-        instruction: InstructionNode;
-        instructionName: IdentifierString;
+        /** The path of the instruction. */
+        path: NodePath;
         reason: string;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE]: {
-        instruction: InstructionNode;
-        instructionAccount: InstructionAccountNode;
-        instructionAccountName: IdentifierString;
-        instructionName: IdentifierString;
-        seed: PdaSeedValueNode<AccountValueNode>;
-        seedName: IdentifierString;
+        /** The path of the PDA seed value using the optional account. */
+        path: NodePath;
+        /** The identifier of the optional account. */
         seedValueName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES]: {
         cycle: (InstructionAccountNode | StructFieldTypeNode)[];
         formattedCycle: string;
-        instruction: InstructionNode;
-        instructionName: IdentifierString;
+        /** The path of the instruction. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND]: {
-        definedType: DefinedTypeNode;
         missingMember: string;
-        name: IdentifierString;
+        /** The path of the defined type. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: {
         formattedHistogram: string;
@@ -373,28 +363,33 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]: {
         accountName: string;
-        instruction: InstructionNode;
-        instructionName: IdentifierString;
+        /** The path of the instruction. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND]: {
-        instruction: InstructionNode;
-        instructionName: IdentifierString;
-        path: string;
+        /** The path of the instruction. */
+        path: NodePath;
+        /** The path of the missing data field, e.g. `config.fee`. */
+        pathString: string;
     };
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND]: {
         fieldName: IdentifierString;
-        instruction: InstructionNode;
-        instructionName: IdentifierString;
+        /** The path of the instruction. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]: {
+        /** The invalid dependency, which is not part of the tree. */
         dependency: AccountValueNode | DataValueNode;
         dependencyKind: 'accountValueNode' | 'dataValueNode';
         dependencyName: IdentifierString | PathString;
-        instruction: InstructionNode;
-        instructionName: IdentifierString;
-        parent: InstructionAccountNode | StructFieldTypeNode;
-        parentKind: 'instructionAccountNode' | 'structFieldTypeNode';
-        parentName: IdentifierString | PathString;
+        /**
+         * The instruction account or data field depending on it, e.g. `owner` or `config.fee`. Data
+         * fields within a linked defined type are not on the path of their instruction, so they are
+         * named rather than given as a path.
+         */
+        dependent: IdentifierString | PathString;
+        /** The path of the instruction, whose `provides` may have injected the dependency. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: {
         kind: string;
@@ -402,16 +397,14 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         wrapper: object;
     };
     [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]: {
-        instruction: InstructionNode;
-        instructionName: IdentifierString;
-        pda: PdaNode;
+        /** The path of the instruction. */
+        path: NodePath;
         pdaName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]: {
         expectedKinds: NodeKind[];
-        key: IdentifierString;
-        provider: ProvidedNode;
-        providedKind: NodeKind;
+        /** The path of the provided node, ending at the value it provides. */
+        path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: {
         key: string;
@@ -427,7 +420,7 @@ type ValidationItem = {
     cause?: Error;
     level: 'debug' | 'error' | 'info' | 'trace' | 'warn';
     message: string;
-    path: readonly Node[];
+    path: NodePath;
 };
 
 export function decodeEncodedContext(encodedContext: string): object {
@@ -456,6 +449,8 @@ function encodeValue(value: unknown): string {
 }
 
 function encodeObjectContextEntry([key, value]: [string, unknown]): `${typeof key}=${string}` {
+    // Node paths are encoded as node selectors, since nodes cannot be encoded as strings.
+    if (key === 'path' && Array.isArray(value)) return `${key}=${encodeURIComponent(formatContextPath(value))}`;
     return `${key}=${encodeValue(value)}`;
 }
 

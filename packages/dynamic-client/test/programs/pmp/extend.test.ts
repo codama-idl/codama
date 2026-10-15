@@ -105,6 +105,6 @@ describe('Program Metadata: extend', () => {
                     programData: null,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[account\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]account\./);
     });
 });

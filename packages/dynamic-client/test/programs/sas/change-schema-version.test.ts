@@ -76,7 +76,7 @@ describe('SAS: changeSchemaVersion', () => {
                     payer: authority,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[existingSchema\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]existingSchema\./);
 
         await expect(
             programClient.methods
@@ -89,7 +89,7 @@ describe('SAS: changeSchemaVersion', () => {
                     payer: authority,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[newSchema\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]newSchema\./);
     });
 
     test('should throw ValidationError when argument is invalid', async () => {

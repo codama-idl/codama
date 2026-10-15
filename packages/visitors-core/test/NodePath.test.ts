@@ -1,4 +1,8 @@
-import { CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CodamaError,
+} from '@codama/errors';
 import {
     accountNode,
     type AccountNode,
@@ -11,7 +15,13 @@ import {
 } from '@codama/nodes';
 import { expect, expectTypeOf, test } from 'vitest';
 
-import { assertNodePathHasProgram, getLastNodeFromPath, type NodePath } from '../src';
+import {
+    assertIsNodePath,
+    assertNodePathHasProgram,
+    getLastNodeFromPath,
+    type NodePath,
+    nodePathToString,
+} from '../src';
 
 const program = programNode({ identifier: 'myProgram', publicKey: '1111' });
 const root = rootNode(program);
@@ -59,5 +69,30 @@ test('it rejects paths without a program node', () => {
     const account = accountNode({ identifier: 'myAccount' });
     expect(() => assertNodePathHasProgram([account])).toThrow(
         new CodamaError(CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, { path: [account] }),
+    );
+});
+
+test('it asserts the kind of the last node of a path, reporting the whole path', () => {
+    expect(() => assertIsNodePath([root, program], 'programNode')).not.toThrow();
+    expect(() => assertIsNodePath([root, program], 'accountNode')).toThrow(
+        expect.objectContaining({
+            context: {
+                __code: CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+                expectedKinds: ['accountNode'],
+                path: [root, program],
+            },
+        }),
+    );
+    expect(() => assertIsNodePath([], 'accountNode')).toThrow(
+        expect.objectContaining({
+            context: { __code: CODAMA_ERROR__UNEXPECTED_NODE_KIND, expectedKinds: ['accountNode'], path: [] },
+        }),
+    );
+});
+
+test('it renders paths as error messages do', () => {
+    const account = accountNode({ identifier: 'mint' });
+    expect(nodePathToString([root, program, account, account.data])).toBe(
+        '[programNode]myProgram.[accountNode]mint.[structTypeNode]',
     );
 });

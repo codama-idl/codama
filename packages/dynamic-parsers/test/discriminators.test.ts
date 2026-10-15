@@ -207,21 +207,18 @@ describe('matchDiscriminators', () => {
             const discriminator = fieldDiscriminatorNode('key');
             const fields = structTypeNode([]);
             expect(() => matchDiscriminators(hex('0102030405'), [discriminator], fields, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('key') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('key'),
+                    path: [discriminator],
+                }),
             );
         });
         test('it throws an error if the discriminator field does not have a default value', () => {
             const discriminator = fieldDiscriminatorNode('key');
-            const fields = structTypeNode([
-                structFieldTypeNode({
-                    identifier: 'key',
-                    type: integerTypeNode('u8'),
-                }),
-            ]);
+            const key = structFieldTypeNode({ identifier: 'key', type: integerTypeNode('u8') });
+            const fields = structTypeNode([key]);
             expect(() => matchDiscriminators(hex('0102030405'), [discriminator], fields, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, {
-                    field: pathString('key'),
-                }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, { path: [fields, key] }),
             );
         });
         test('it resolves link nodes correctly', () => {
@@ -352,9 +349,6 @@ describe('matchDiscriminators', () => {
             // Then the dangling link is reported rather than a missing field.
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
                 new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-                    kind: 'definedTypeLinkNode',
-                    linkNode: link,
-                    name: link.identifier,
                     path: [root, program, account, data, header, link],
                 }),
             );
@@ -364,7 +358,10 @@ describe('matchDiscriminators', () => {
             const discriminator = fieldDiscriminatorNode('header.kind');
             const data = structTypeNode([structFieldTypeNode({ identifier: 'header', type: integerTypeNode('u8') })]);
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('header.kind') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('header.kind'),
+                    path: [discriminator],
+                }),
             );
         });
     });
@@ -378,7 +375,7 @@ describe('matchDiscriminators', () => {
                     cause: expect.objectContaining({
                         context: expect.objectContaining({
                             __code: CODAMA_ERROR__CANNOT_RESOLVE_PATH,
-                            path: pathString('header.kind'),
+                            pathString: pathString('header.kind'),
                             segment: 'kind',
                         }),
                     }),
@@ -396,7 +393,10 @@ describe('matchDiscriminators', () => {
                 structFieldTypeNode({ identifier: 'pair', type: tupleTypeNode([integerTypeNode('u8')]) }),
             ]);
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('pair[0]') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('pair[0]'),
+                    path: [discriminator],
+                }),
             );
         });
         test('it does not follow account links', () => {
@@ -427,6 +427,7 @@ describe('matchDiscriminators', () => {
             expect(() => matchDiscriminators(new Uint8Array(32).fill(6), [discriminator], data, context)).toThrow(
                 new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
                     field: pathString('mint.data.decimals'),
+                    path: [root, program, token, discriminator],
                 }),
             );
         });

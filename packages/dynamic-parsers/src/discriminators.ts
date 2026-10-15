@@ -91,7 +91,7 @@ function matchFieldDiscriminator(
     const resolved = resolveDiscriminatorField(discriminator, dataType, context);
     const field = getLastNodeFromPath(resolved);
     if (!field.defaultValue) {
-        throw new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, { field: discriminator.path });
+        throw new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, { path: resolved });
     }
     const constant = constantValueNode(field.type, field.defaultValue);
     const constantDiscriminator = constantDiscriminatorNode(constant, { offset: discriminator.offset });
@@ -106,7 +106,11 @@ function resolveDiscriminatorField(
     { linkables, stack }: DiscriminatorContext,
 ): NodePath<StructFieldTypeNode> {
     const notFound = (cause?: unknown) =>
-        new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { cause, field: discriminator.path });
+        new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+            cause,
+            field: discriminator.path,
+            path: [...stack.getPath(), discriminator],
+        });
     if (!dataType) throw notFound();
     let resolved: NodePath<TypePathNode>;
     try {

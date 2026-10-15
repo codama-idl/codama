@@ -269,7 +269,7 @@ describe('account data values', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ fetchAccounts: getFetchAccounts([]), path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-                instructionName: path[2].identifier,
+                path: path.slice(0, 3),
                 referencedName: accountDataValueNode('unknown').account,
             }),
         );
@@ -304,8 +304,7 @@ describe('account data values', () => {
                 path,
             }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                accountName: mintAccount().identifier,
-                instructionName: path[2].identifier,
+                path: [...path.slice(0, 3), path[2].accounts![0]],
             }),
         );
     });
@@ -486,8 +485,8 @@ describe('data values crossing account links', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: {}, fetchAccounts, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING, {
-                instructionName: path[2].identifier,
-                path: dataValueNode('mint.data.mintAuthority').path,
+                path: path.slice(0, 3),
+                pathString: dataValueNode('mint.data.mintAuthority').path,
             }),
         );
         expect(fetchAccounts).not.toHaveBeenCalled();
@@ -595,7 +594,8 @@ describe('data defaults injected from account data', () => {
                 fetchAccounts,
                 path,
             }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: 'accountDataValueNode' }),
+            // The default value is injected by the instruction, so its path is the provided value itself.
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { path: [provides[0].node] }),
         );
         expect(fetchAccounts).not.toHaveBeenCalled();
     });
@@ -609,7 +609,7 @@ describe('data defaults injected from account data', () => {
         });
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: {}, path }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: 'accountValueNode' }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { path: [accountValueNode('owner')] }),
         );
     });
 });

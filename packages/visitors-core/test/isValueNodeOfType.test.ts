@@ -226,9 +226,6 @@ test('it throws when a link cannot be resolved', () => {
     const link = definedTypeLinkNode('missing');
     expect(() => isValueNodeOfType(integerValueNode('1'), [root, program, link], linkables)).toThrow(
         new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-            kind: 'definedTypeLinkNode',
-            linkNode: link,
-            name: link.identifier,
             path: [root, program, link],
         }),
     );

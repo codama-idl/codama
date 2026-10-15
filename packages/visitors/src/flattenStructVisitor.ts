@@ -5,7 +5,7 @@ import {
 } from '@codama/errors';
 import { camelCase } from '@codama/fragments/casing';
 import { assertIsNode, isNode, Node, StructFieldTypeNode, StructTypeNode, structTypeNode } from '@codama/nodes';
-import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor } from '@codama/visitors-core';
+import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor, NodePath } from '@codama/visitors-core';
 
 export type FlattenStructOptions = string[] | '*';
 
@@ -25,7 +25,7 @@ export function flattenStructVisitor(map: Record<string, FlattenStructOptions>) 
     return bottomUpTransformerVisitor(
         Object.entries(map).map(([stack, options]): BottomUpNodeTransformerWithSelector => ({
             select: `${stack}.[structTypeNode]`,
-            transform: node => flattenStruct(node, options),
+            transform: (node, stack) => flattenStruct(node, options, stack.getPath()),
         })),
     );
 }
@@ -42,8 +42,14 @@ export function flattenStructVisitor(map: Record<string, FlattenStructOptions>) 
  * @throws {CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES}
  * if two resulting fields share a camelCase form, as they would then collide
  * under the spec's casing-collision rule.
+ *
+ * @param path - The path of the struct, used by errors. Defaults to the struct itself.
  */
-export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): StructTypeNode => {
+export const flattenStruct = (
+    node: Node,
+    options: FlattenStructOptions = '*',
+    path: NodePath = [node],
+): StructTypeNode => {
     assertIsNode(node, 'structTypeNode');
     const shouldInline = (field: StructFieldTypeNode): boolean =>
         (options === '*' || options.includes(field.identifier)) &&
@@ -54,8 +60,7 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
         const struct = field.type as StructTypeNode;
         if ((struct.plugins ?? []).length > 0) {
             throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS, {
-                field,
-                fieldName: field.identifier,
+                path: [...path, field],
             });
         }
         return struct.fields ?? [];
@@ -73,6 +78,7 @@ export const flattenStruct = (node: Node, options: FlattenStructOptions = '*'): 
     if (conflictingAttributes.length > 0) {
         throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
             conflictingAttributes,
+            path,
         });
     }
 

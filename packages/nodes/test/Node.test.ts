@@ -33,7 +33,7 @@ describe('assertIsNode', () => {
             'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
         );
         expect(() => assertIsNode(null, 'tupleTypeNode')).toThrowError(
-            'Expected node of kind [tupleTypeNode], got [null].',
+            'Expected node of kind [tupleTypeNode], got none.',
         );
     });
 
@@ -44,7 +44,7 @@ describe('assertIsNode', () => {
             'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [integerTypeNode].',
         );
         expect(() => assertIsNode(null, ['tupleTypeNode', 'publicKeyTypeNode'])).toThrowError(
-            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].',
+            'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got none.',
         );
     });
 });
@@ -73,7 +73,7 @@ describe('assertIsNodeFilter', () => {
         expect(() => filter(publicKeyTypeNode())).toThrowError(
             'Expected node of kind [tupleTypeNode], got [publicKeyTypeNode].',
         );
-        expect(() => filter(null)).toThrowError('Expected node of kind [tupleTypeNode], got [null].');
+        expect(() => filter(null)).toThrowError('Expected node of kind [tupleTypeNode], got none.');
     });
 
     test('it returns a callback that asserts the node is part of the given kinds', () => {
@@ -83,7 +83,7 @@ describe('assertIsNodeFilter', () => {
         expect(() => filter(integerTypeNode('u8'))).toThrowError(
             'Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [integerTypeNode].',
         );
-        expect(() => filter(null)).toThrowError('Expected node of kind [tupleTypeNode,publicKeyTypeNode], got [null].');
+        expect(() => filter(null)).toThrowError('Expected node of kind [tupleTypeNode,publicKeyTypeNode], got none.');
     });
 });
 

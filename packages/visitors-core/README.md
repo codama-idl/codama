@@ -450,7 +450,7 @@ path satisfies NodePath<AccountNode | InstructionNode>;
 
 // Display paths as strings or arrays of strings.
 nodePathToStringArray(path); // -> ['[rootNode]', '[programNode]token', '[accountNode]mint']
-nodePathToString(path); // -> "[rootNode] > [programNode]token > [accountNode]mint"
+nodePathToString(path); // -> "[programNode]token.[accountNode]mint", as error messages render paths
 ```
 
 ### `NodeStack`
