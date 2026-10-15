@@ -39,7 +39,7 @@ test('it decodes remainder sets', () => {
 });
 
 /** Match a `DUPLICATE_SET_ITEM` error with exactly the given context. */
-function duplicateSetItemError(context: { firstIndex: number; index: number; nodePath: readonly Node[] }) {
+function duplicateSetItemError(context: { firstIndex: number; index: number; path: readonly Node[] }) {
     return expect.objectContaining({
         context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM, ...context },
     });
@@ -48,17 +48,13 @@ function duplicateSetItemError(context: { firstIndex: number; index: number; nod
 test('it rejects duplicate items when encoding', () => {
     const set = setTypeNode(integerTypeNode('u16'), prefixedCountNode(integerTypeNode('u32')));
     const codec = getNodeValueCodec([set]);
-    expect(() => codec.encode([42, 99, 42])).toThrow(
-        duplicateSetItemError({ firstIndex: 0, index: 2, nodePath: [set] }),
-    );
+    expect(() => codec.encode([42, 99, 42])).toThrow(duplicateSetItemError({ firstIndex: 0, index: 2, path: [set] }));
 });
 
 test('it compares items by their encoded bytes', () => {
     const set = setTypeNode(integerTypeNode('u16'), remainderCountNode());
     const codec = getNodeValueCodec([set]);
-    expect(() => codec.encode([42, 99, 42n])).toThrow(
-        duplicateSetItemError({ firstIndex: 0, index: 2, nodePath: [set] }),
-    );
+    expect(() => codec.encode([42, 99, 42n])).toThrow(duplicateSetItemError({ firstIndex: 0, index: 2, path: [set] }));
 });
 
 test('it rejects duplicate tuple items', () => {
@@ -70,7 +66,7 @@ test('it rejects duplicate tuple items', () => {
             [2, 'a'],
             [2, 'a'],
         ]),
-    ).toThrow(duplicateSetItemError({ firstIndex: 1, index: 2, nodePath: [set] }));
+    ).toThrow(duplicateSetItemError({ firstIndex: 1, index: 2, path: [set] }));
 });
 
 test('it rejects struct items that only differ by a field set to its default value', () => {
@@ -87,7 +83,7 @@ test('it rejects struct items that only differ by a field set to its default val
     );
     const codec = getNodeValueCodec([set]);
     expect(() => codec.encode([{ id: 1 }, { flags: 0, id: 1 }])).toThrow(
-        duplicateSetItemError({ firstIndex: 0, index: 1, nodePath: [set] }),
+        duplicateSetItemError({ firstIndex: 0, index: 1, path: [set] }),
     );
 });
 
@@ -97,7 +93,7 @@ test('it reports the path of nested sets', () => {
     const struct = structTypeNode([field]);
     const codec = getNodeValueCodec([struct]);
     expect(() => codec.encode({ tags: [1, 1] })).toThrow(
-        duplicateSetItemError({ firstIndex: 0, index: 1, nodePath: [struct, field, set] }),
+        duplicateSetItemError({ firstIndex: 0, index: 1, path: [struct, field, set] }),
     );
 });
 
@@ -115,8 +111,7 @@ test('it rejects values that are not arrays as such', () => {
                 __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
                 actualType: 'string',
                 expectedType: 'array',
-                nodeKind: 'setTypeNode',
-                nodePath: [set],
+                path: [set],
             },
         }),
     );
@@ -132,8 +127,7 @@ test('it rejects items of the wrong type before checking for duplicates', () => 
                 __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
                 actualType: 'string',
                 expectedType: 'integer (number | bigint)',
-                nodeKind: 'integerTypeNode',
-                nodePath: [set, item],
+                path: [set, item],
             },
         }),
     );

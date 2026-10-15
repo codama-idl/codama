@@ -133,11 +133,7 @@ test('it throws when the discriminator cannot be set', () => {
     const withLink = instructionNode({ data: definedTypeLinkNode('args'), identifier: 'ix' });
     const value = integerValueNode('3');
     const cannotSet = (instruction: InstructionNode, reason: string) =>
-        new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR, {
-            instruction,
-            instructionName: instruction.identifier,
-            reason,
-        });
+        new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR, { path: [instruction], reason });
 
     // When the identifier already exists in the data.
     expect(() => visit(withField, setInstructionDiscriminatorsVisitor({ ix: { value } }))).toThrow(

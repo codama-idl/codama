@@ -130,7 +130,7 @@ test('it restores the node stack when a linked type throws', () => {
     // When visiting a link into programB throws.
     const taggedLink = definedTypeLinkNode('tagged', { program: programLinkNode('programB') });
     expect(() => visit(taggedLink, visitor)).toThrow(
-        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: tag, key: tag.key }),
+        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: tag.key, path: [tag] }),
     );
 
     // Then the stack is back within programA, so later links still resolve there.
@@ -261,10 +261,7 @@ test('it rejects defined types whose every value nests another one', () => {
 
     // When we get its codec, then it throws.
     expect(() => getNodeValueCodec([root, root.program, loop])).toThrow(
-        new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-            name: loop.identifier,
-            path: [root, root.program, loop],
-        }),
+        new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path: [root, root.program, loop] }),
     );
 });
 
@@ -275,10 +272,7 @@ test('it rejects defined types aliasing themselves', () => {
 
     // When we get its codec, then it throws.
     expect(() => getNodeValueCodec([root, root.program, alias])).toThrow(
-        new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-            name: alias.identifier,
-            path: [root, root.program, alias],
-        }),
+        new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path: [root, root.program, alias] }),
     );
 });
 
@@ -293,10 +287,7 @@ test('it names the defined type with no finite value when linking to it', () => 
 
     // When we get the codec of the type linking to it, then it throws for the loop.
     expect(() => getNodeValueCodec([root, root.program, usesLoop])).toThrow(
-        new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-            name: loop.identifier,
-            path: [root, root.program, loop],
-        }),
+        new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path: [root, root.program, loop] }),
     );
 });
 

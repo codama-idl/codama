@@ -1,6 +1,6 @@
 import { CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND, CodamaError } from '@codama/errors';
 import { assertIsNode, DefinedTypeNode, definedTypeNode, DefinedTypeNodeInput, isNode, TypeNode } from '@codama/nodes';
-import { getLastNodeFromPath, LinkableDictionary } from '@codama/visitors-core';
+import { getLastNodeFromPath, LinkableDictionary, NodePath } from '@codama/visitors-core';
 
 import { renameEnumNode, renameStructNode } from './renameHelpers';
 import {
@@ -66,7 +66,7 @@ export function updateDefinedTypesVisitor(map: Record<string, DefinedTypeUpdates
         const { data: memberRenames = {}, ...otherUpdates } = updates;
         const original = getLastNodeFromPath(path);
         const type = otherUpdates.type ?? node.type;
-        assertMembersExist(original, otherUpdates.type ?? original.type, Object.keys(memberRenames));
+        assertMembersExist(path, otherUpdates.type ?? original.type, Object.keys(memberRenames));
         return definedTypeNode({ ...node, ...otherUpdates, type: renameMembers(type, memberRenames) });
     });
 
@@ -86,7 +86,7 @@ function renameMembers(type: TypeNode, memberRenames: Record<string, string>): T
     return renameEnumNode(type, memberRenames);
 }
 
-function assertMembersExist(definedType: DefinedTypeNode, type: TypeNode, renamedMembers: string[]): void {
+function assertMembersExist(path: NodePath<DefinedTypeNode>, type: TypeNode, renamedMembers: string[]): void {
     if (renamedMembers.length === 0) return;
     assertIsNode(type, ['structTypeNode', 'enumTypeNode']);
     const members = new Set<string>(
@@ -97,9 +97,8 @@ function assertMembersExist(definedType: DefinedTypeNode, type: TypeNode, rename
     const missingMember = renamedMembers.find(member => !members.has(member));
     if (missingMember !== undefined) {
         throw new CodamaError(CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND, {
-            definedType,
             missingMember,
-            name: definedType.identifier,
+            path,
         });
     }
 }

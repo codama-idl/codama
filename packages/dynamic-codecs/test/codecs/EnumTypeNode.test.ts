@@ -148,8 +148,7 @@ test('it throws when encoding an unknown variant', () => {
         new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
             actualType: "variant 'Frozen'",
             expectedType: 'one of [frozen, initialized]',
-            nodeKind: 'enumTypeNode',
-            nodePath: [enumType],
+            path: [enumType],
         }),
     );
     expect(() => codec.encode({ __kind: 'thawed' })).toThrow(/variant 'thawed'/);
@@ -162,8 +161,7 @@ test('it throws when encoding a variant with data without its data', () => {
     const error = new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
         actualType: "variant 'move' without data",
         expectedType: "{ __kind: 'move', data }",
-        nodeKind: 'enumVariantTypeNode',
-        nodePath: [enumType, move],
+        path: [enumType, move],
     });
     expect(() => codec.encode('move')).toThrow(error);
     expect(() => codec.encode({ __kind: 'move' })).toThrow(error);

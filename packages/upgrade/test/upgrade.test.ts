@@ -5,15 +5,7 @@ import {
     CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CodamaError,
 } from '@codama/errors';
-import {
-    AccountValueNode,
-    CODAMA_VERSION,
-    CodamaVersion,
-    PdaSeedValueNode,
-    PdaValueNode,
-    programNode,
-    rootNode,
-} from '@codama/nodes';
+import { AccountValueNode, CODAMA_VERSION, CodamaVersion, PdaValueNode, programNode, rootNode } from '@codama/nodes';
 import { getValidationItemsVisitor } from '@codama/validators';
 import { visit } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
@@ -96,8 +88,7 @@ describe('upgrade', () => {
         expect(() => upgrade(program as unknown as UpgradableRootNode)).toThrow(
             new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                 expectedKinds: ['rootNode'],
-                kind: 'programNode',
-                node: program,
+                path: [program],
             }),
         );
     });
@@ -168,12 +159,7 @@ describe('upgrade', () => {
         const seed = (vault.defaultValue as PdaValueNode).seeds![0];
         expect(items.map(item => item.cause ?? item.message)).toStrictEqual([
             new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
-                instruction,
-                instructionAccount: vault,
-                instructionAccountName: vault.identifier,
-                instructionName: instruction.identifier,
-                seed: seed as PdaSeedValueNode<AccountValueNode>,
-                seedName: seed.identifier,
+                path: [upgraded, upgraded.program, instruction, vault, vault.defaultValue!, seed],
                 seedValueName: (seed.value as AccountValueNode).identifier,
             }),
         ]);

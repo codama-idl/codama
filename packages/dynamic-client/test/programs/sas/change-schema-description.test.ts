@@ -47,7 +47,7 @@ describe('SAS: changeSchemaDescription', () => {
                     schema: undefined as unknown as Address,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[schema\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]schema\./);
     });
 
     test('should throw ValidationError when description is invalid', async () => {

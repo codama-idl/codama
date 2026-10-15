@@ -18,6 +18,7 @@ import {
     instructionAccountNode,
     type InstructionAccountNodeInput,
     instructionNode,
+    type InstructionNode,
     type InstructionNodeInput,
     instructionRemainingAccountsNode,
     integerTypeNode,
@@ -136,8 +137,7 @@ describe('accounts', () => {
         await expectCodamaError(
             createAccountMetas({ path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                accountName: 'mint',
-                instructionName: 'testInstruction',
+                path: [...path, (path[path.length - 1] as InstructionNode).accounts![0]],
             }),
         );
     });
@@ -150,7 +150,7 @@ describe('accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { mint: 'abc' }, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS, {
-                accountName: 'mint',
+                path: [...path, (path[path.length - 1] as InstructionNode).accounts![0]],
                 value: '"abc"',
             }),
         );
@@ -295,8 +295,10 @@ describe('remaining accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { multisig: multisigAddress }, path: multisigPath }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                accountName: 'signers',
-                instructionName: 'testInstruction',
+                path: [
+                    ...multisigPath,
+                    (multisigPath[multisigPath.length - 1] as InstructionNode).remainingAccounts![0],
+                ],
             }),
         );
     });
@@ -306,8 +308,11 @@ describe('remaining accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { multisig: multisigAddress, signers: a }, path: multisigPath }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT, {
-                accountName: 'signers',
                 expectedType: 'Address[]',
+                path: [
+                    ...multisigPath,
+                    (multisigPath[multisigPath.length - 1] as InstructionNode).remainingAccounts![0],
+                ],
                 value: `"${a}"`,
             }),
         );

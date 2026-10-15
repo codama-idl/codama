@@ -78,9 +78,8 @@ test('it throws when the field does not exist', () => {
         ),
     ).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
-            account: node,
             missingField: identifierString('key'),
-            name: identifierString('myAccount'),
+            path: [node],
         }),
     );
 });
@@ -98,8 +97,7 @@ test('it throws when the account data is linked', () => {
     ).toThrow(
         new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
             expectedKinds: ['structTypeNode'],
-            kind: 'definedTypeLinkNode',
-            node: node.data,
+            path: [node.data],
         }),
     );
 });

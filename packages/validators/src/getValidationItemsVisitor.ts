@@ -120,10 +120,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                         !hasDefinedTypeFiniteValue(path, linkables)
                     ) {
                         // Keep the error creating its codec would throw, so both report it the same way.
-                        const cause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-                            name: node.identifier,
-                            path,
-                        });
+                        const cause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path });
                         items.push(validationItem('error', cause.message, stack, cause));
                     }
                     return [...items, ...next(node)];
@@ -205,7 +202,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                             }
                         } catch (error) {
                             if (isCodamaError(error, CODAMA_ERROR__CANNOT_RESOLVE_PATH)) {
-                                const lastNode = getLastNodeFromPath(error.context.nodePath as NodePath<Node>);
+                                const lastNode = getLastNodeFromPath(error.context.path as NodePath<Node>);
                                 const message =
                                     isNode(lastNode, 'publicKeyTypeNode') &&
                                     lastNode.accountLink &&

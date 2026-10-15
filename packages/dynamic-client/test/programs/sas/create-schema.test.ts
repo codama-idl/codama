@@ -62,7 +62,7 @@ describe('SAS: createSchema', () => {
                     schema: schemaPda,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[credential\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]credential\./);
     });
 
     test('should throw AccountError when schema is missing', async () => {
@@ -78,7 +78,7 @@ describe('SAS: createSchema', () => {
                     schema: undefined as unknown as Address,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[schema\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]schema\./);
     });
 
     test('should throw ArgumentError when argument is invalid', async () => {

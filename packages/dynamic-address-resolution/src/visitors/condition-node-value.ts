@@ -13,8 +13,7 @@ type ConditionNodeSupportedNodeKind = (typeof CONDITION_NODE_SUPPORTED_NODE_KIND
 export function unexpectedConditionNode(node: Node): never {
     throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
         expectedKinds: [...CONDITION_NODE_SUPPORTED_NODE_KINDS],
-        kind: node.kind,
-        node,
+        path: [node],
     });
 }
 

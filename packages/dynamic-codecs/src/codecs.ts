@@ -328,10 +328,7 @@ export function getNodeCodecVisitor(
         const definedType = getLastNodeFromPath(path);
         if (!finiteDefinedTypes.has(definedType)) {
             if (!hasDefinedTypeFiniteValue(path, linkables)) {
-                throw new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-                    name: definedType.identifier,
-                    path,
-                });
+                throw new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path });
             }
             finiteDefinedTypes.add(definedType);
         }
@@ -661,8 +658,7 @@ export function getNodeCodecVisitor(
                         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
                             actualType: `variant '${String(__kind)}'`,
                             expectedType: `one of [${variants.map(variant => variant.identifier).join(', ')}]`,
-                            nodeKind: 'enumTypeNode',
-                            nodePath,
+                            path: nodePath,
                         });
                     }
                     return index;
@@ -697,8 +693,7 @@ export function getNodeCodecVisitor(
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
                         actualType,
                         expectedType,
-                        nodeKind: 'enumVariantTypeNode',
-                        nodePath,
+                        path: nodePath,
                     });
                 }
                 if (node.data === undefined) return undefined;
@@ -706,8 +701,7 @@ export function getNodeCodecVisitor(
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
                         actualType: `variant '${__kind}' without data`,
                         expectedType: `{ __kind: '${__kind}', data }`,
-                        nodeKind: 'enumVariantTypeNode',
-                        nodePath,
+                        path: nodePath,
                     });
                 }
                 return value.data;

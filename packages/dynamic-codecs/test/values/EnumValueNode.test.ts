@@ -1,4 +1,4 @@
-import { CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, CodamaError } from '@codama/errors';
+import { CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND } from '@codama/errors';
 import {
     definedTypeNode,
     enumTypeNode,
@@ -112,10 +112,17 @@ test('it throws when the variant does not exist', () => {
     const visitor = getVisitorForEnum(enumType, 'direction');
     const node = enumValueNode('direction', 'sideways');
     expect(() => visit(node, visitor)).toThrow(
-        new CodamaError(CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, {
-            enum: enumType,
-            enumName: node.enum.identifier,
-            variant: node.variant,
+        expect.objectContaining({
+            context: {
+                __code: CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
+                path: [
+                    expect.objectContaining({ kind: 'rootNode' }),
+                    expect.objectContaining({ kind: 'programNode' }),
+                    expect.objectContaining({ identifier: 'direction', kind: 'definedTypeNode' }),
+                    enumType,
+                ],
+                variant: node.variant,
+            },
         }),
     );
 });

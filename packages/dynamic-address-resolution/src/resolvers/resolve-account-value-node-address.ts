@@ -28,7 +28,7 @@ export async function resolveAccountValueNodeAddress(
     const account = (instruction.accounts ?? []).find(account => account.identifier === node.identifier);
     if (!account) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-            instructionName: instruction.identifier,
+            path: ctx.instructionPath,
             referencedName: node.identifier,
         });
     }

@@ -184,8 +184,7 @@ test('it throws when the field is missing or not an enum', () => {
         expect(() => visit(node, createSubInstructionsFromEnumDataVisitor({ act: fieldName }))).toThrow(
             new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND, {
                 fieldName: identifierString(fieldName),
-                instruction: node,
-                instructionName: identifierString('act'),
+                path: [node],
             }),
         ),
     );

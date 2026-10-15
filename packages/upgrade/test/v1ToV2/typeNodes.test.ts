@@ -179,8 +179,7 @@ describe('integer positions', () => {
         expect(() => integerTypeNodeFromV1([...programPath, prefix])).toThrow(
             new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
                 expectedKinds: ['integerTypeNode'],
-                kind: 'floatTypeNode',
-                node: floatTypeNode('f32'),
+                path: [floatTypeNode('f32')],
             }),
         );
     });

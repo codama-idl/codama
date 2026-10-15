@@ -43,7 +43,7 @@ describe('SAS: changeAuthorizedSigners', () => {
                 .changeAuthorizedSigners({ signers: [authority] })
                 .accounts({ authority, credential: undefined as unknown as Address, payer: authority })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[credential\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]credential\./);
     });
 
     test('should throw ValidationError when signers arg is invalid', async () => {

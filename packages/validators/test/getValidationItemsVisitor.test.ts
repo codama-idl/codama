@@ -93,7 +93,7 @@ test('it accepts node stacks from other copies of the package', () => {
 test('it refuses to create validation items that are not about a node', () => {
     expect(() => validationItem('error', 'Oops.', new NodeStack())).toThrow(
         expect.objectContaining({
-            context: expect.objectContaining({ __code: CODAMA_ERROR__UNEXPECTED_NODE_KIND, kind: null, node: null }),
+            context: expect.objectContaining({ __code: CODAMA_ERROR__UNEXPECTED_NODE_KIND, path: [] }),
         }),
     );
 });
@@ -342,7 +342,7 @@ test('it reports errors raised when resolving instruction default values', () =>
     const [a, b] = node.accounts!;
     const cause = new CodamaError(
         CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
-        { cycle: [a, b, a], formattedCycle: 'a -> b -> a', instruction: node, instructionName: node.identifier },
+        { cycle: [a, b, a], formattedCycle: 'a -> b -> a', path: [node] },
     );
     expect(items).toEqual([validationItem('error', cause.message, [node], cause)]);
     expect(
@@ -351,7 +351,7 @@ test('it reports errors raised when resolving instruction default values', () =>
             CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
         ),
     ).toBe(true);
-    expect(items[0].cause?.context).toMatchObject({ formattedCycle: 'a -> b -> a', instructionName: 'myInstruction' });
+    expect(items[0].cause?.context).toMatchObject({ formattedCycle: 'a -> b -> a', path: [node] });
 });
 
 test('it reports a data field defaulting to the bump of a potential signer', () => {
@@ -459,10 +459,7 @@ test('it reports cyclic defined types without a finite value', () => {
     const program = programNode({ definedTypes: [loop], identifier: 'myProgram', publicKey: '1111', version: '1.0.0' });
     const root = rootNode(program);
 
-    const loopCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-        name: loop.identifier,
-        path: [root, program, loop],
-    });
+    const loopCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path: [root, program, loop] });
 
     // When we validate it.
     const items = visit(root, getValidationItemsVisitor());
@@ -483,7 +480,6 @@ test('it reports defined types aliasing themselves', () => {
     const root = rootNode(program);
 
     const aliasCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-        name: alias.identifier,
         path: [root, program, alias],
     });
 
@@ -550,10 +546,7 @@ test('it only reports the cyclic defined type when another one links to it', () 
     });
     const root = rootNode(program);
 
-    const loopCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-        name: loop.identifier,
-        path: [root, program, loop],
-    });
+    const loopCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path: [root, program, loop] });
 
     // When we validate it.
     const items = visit(root, getValidationItemsVisitor());
@@ -575,15 +568,9 @@ test('it reports every defined type of a cycle without a finite value', () => {
     const program = programNode({ definedTypes: [a, b], identifier: 'myProgram', publicKey: '1111', version: '1.0.0' });
     const root = rootNode(program);
 
-    const aCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-        name: a.identifier,
-        path: [root, program, a],
-    });
+    const aCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path: [root, program, a] });
 
-    const bCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, {
-        name: b.identifier,
-        path: [root, program, b],
-    });
+    const bCause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path: [root, program, b] });
 
     // When we validate them.
     const items = visit(root, getValidationItemsVisitor());
@@ -767,8 +754,8 @@ test('it reports field discriminators whose path cannot be resolved', () => {
     const node = accountNode({ data, discriminators: [discriminator], identifier: 'vault' });
     const items = visit(node, getValidationItemsVisitor());
     const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath: [node, data],
-        path: pathString('missing'),
+        path: [node, data],
+        pathString: pathString('missing'),
         segment: 'missing',
     });
     expect(items).toStrictEqual([validationItem('error', cause.message, [node, discriminator], cause)]);
@@ -823,8 +810,8 @@ test('it reports field discriminators crossing account links', () => {
             'Field discriminator path "mint.data.decimals" must not cross an account link.',
             [root, program, token, discriminator],
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [root, program, token, data, mintField, mintField.type],
-                path: pathString('mint.data.decimals'),
+                path: [root, program, token, data, mintField, mintField.type],
+                pathString: pathString('mint.data.decimals'),
                 segment: 'data',
             }),
         ),
@@ -854,8 +841,8 @@ test('it reports field discriminator paths applying other segments to linked pub
 
     // Then the path is reported as unresolvable, as it does not cross the link.
     const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath: [root, program, token, data, mintField, mintField.type],
-        path: pathString('mint.decimals'),
+        path: [root, program, token, data, mintField, mintField.type],
+        pathString: pathString('mint.decimals'),
         segment: 'decimals',
     });
     expect(visit(root, getValidationItemsVisitor())).toEqual([
@@ -900,8 +887,8 @@ test('it reports data values whose path cannot be resolved', () => {
     const provided = providedNode('x', value);
     const node = instructionNode({ data, identifier: 'transfer', provides: [provided] });
     const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath: [node, data],
-        path: pathString('fee'),
+        path: [node, data],
+        pathString: pathString('fee'),
         segment: 'fee',
     });
     expect(visit(node, getValidationItemsVisitor())).toStrictEqual([
@@ -919,8 +906,8 @@ test('it reports data value defaults whose path cannot be resolved once', () => 
 
     // Then only the path is reported, not the invalid dependency it also is.
     const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath: [node, data],
-        path: pathString('missing'),
+        path: [node, data],
+        pathString: pathString('missing'),
         segment: 'missing',
     });
     expect(visit(node, getValidationItemsVisitor())).toStrictEqual([
@@ -1070,8 +1057,8 @@ test('it reports account data values whose path cannot be resolved', () => {
     });
     const root = rootNode(program);
     const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath: [root, program, mint, mintData],
-        path: pathString('supply'),
+        path: [root, program, mint, mintData],
+        pathString: pathString('supply'),
         segment: 'supply',
     });
     expect(visit(root, getValidationItemsVisitor())).toStrictEqual([
@@ -1161,8 +1148,8 @@ test('it reports interpolated intents whose data paths cannot be resolved', () =
     const display = instructionDisplayNode({ interpolatedIntent: 'Transfer ${data.fee}' });
     const node = instructionNode({ data, display, identifier: 'transfer' });
     const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath: [node, data],
-        path: pathString('fee'),
+        path: [node, data],
+        pathString: pathString('fee'),
         segment: 'fee',
     });
     expect(visit(node, getValidationItemsVisitor())).toStrictEqual([

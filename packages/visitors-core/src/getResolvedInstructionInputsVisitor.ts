@@ -16,7 +16,6 @@ import {
     InstructionNode,
     isNode,
     PathString,
-    PdaSeedValueNode,
     StructFieldTypeNode,
     VALUE_NODES,
 } from '@codama/nodes';
@@ -114,8 +113,7 @@ export function getResolvedInstructionInputsVisitor(
                 {
                     cycle: cycle.map(entry => entry.node),
                     formattedCycle: cycle.map(entry => entry.key).join(' -> '),
-                    instruction,
-                    instructionName: instruction.identifier,
+                    path: stack.getPath('instructionNode'),
                 },
             );
         }
@@ -177,14 +175,14 @@ export function getResolvedInstructionInputsVisitor(
                     if (!isNode(seed.value, 'accountValueNode')) return;
                     const dependency = visitedAccounts.get(seed.value.identifier)!;
                     if (dependency.resolvedIsOptional) {
+                        // A default value injected by a provider is not within the account, so its
+                        // path starts at the PDA value node.
+                        const pdaPath =
+                            account.defaultValue === resolvedDefaultValue
+                                ? [...stack.getPath('instructionNode'), account, resolvedDefaultValue]
+                                : [resolvedDefaultValue];
                         throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
-                            instruction,
-                            instructionAccount: account,
-                            instructionAccountName: account.identifier,
-                            instructionName: instruction.identifier,
-                            // The guard above narrows `seed.value`, which TS does not propagate to `seed` itself.
-                            seed: seed as PdaSeedValueNode<AccountValueNode>,
-                            seedName: seed.identifier,
+                            path: [...pdaPath, seed],
                             seedValueName: seed.value.identifier,
                         });
                     }
@@ -226,13 +224,13 @@ export function getResolvedInstructionInputsVisitor(
                     a => a.identifier === dependency.identifier,
                 );
                 if (!dependencyAccount) {
-                    throwInvalidDependency(instruction, parent, dependency, dependency.identifier);
+                    throwInvalidDependency(parent, dependency, dependency.identifier);
                 }
                 input = { key: dependencyAccount.identifier, kind: 'account', node: dependencyAccount };
             } else if (isNode(dependency, 'dataValueNode')) {
                 const dependencyField = findFieldByPath(dataFields, dependency.path);
                 if (!dependencyField) {
-                    throwInvalidDependency(instruction, parent, dependency, dependency.path);
+                    throwInvalidDependency(parent, dependency, dependency.path);
                 }
                 input = dependencyField;
             }
@@ -243,7 +241,6 @@ export function getResolvedInstructionInputsVisitor(
     }
 
     function throwInvalidDependency(
-        instruction: InstructionNode,
         parent: InstructionInput,
         dependency: InstructionDependency,
         dependencyName: IdentifierString | PathString,
@@ -252,11 +249,8 @@ export function getResolvedInstructionInputsVisitor(
             dependency,
             dependencyKind: dependency.kind,
             dependencyName,
-            instruction,
-            instructionName: instruction.identifier,
-            parent: parent.node,
-            parentKind: parent.node.kind,
-            parentName: parent.key,
+            dependent: parent.key,
+            path: stack.getPath('instructionNode'),
         });
     }
 

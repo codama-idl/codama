@@ -278,8 +278,7 @@ function providedNodeFromV1(path: V1NodePath<v1.ProvidedNode>): v2.ProvidedNode 
     if (!isV1InstructionInputValueNode(provided.node)) {
         throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
             expectedKinds: [],
-            kind: null,
-            node: provided.node as unknown as Node,
+            path: [provided.node as unknown as Node],
         });
     }
     return compactAndFreeze({

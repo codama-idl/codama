@@ -10,7 +10,6 @@ import {
     enumValueNode,
     enumVariantTypeNode,
     fixedSizeTransformNode,
-    identifierString,
     instructionAccountNode,
     instructionNode,
     integerTypeNode,
@@ -158,9 +157,8 @@ test('it throws when renaming a member that does not exist', () => {
     // When we try to rename it, then we expect an error.
     expect(() => visit(definedType, updateDefinedTypesVisitor({ myType: { data: { missing: 'b' } } }))).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND, {
-            definedType,
             missingMember: 'missing',
-            name: identifierString('myType'),
+            path: [definedType],
         }),
     );
 });

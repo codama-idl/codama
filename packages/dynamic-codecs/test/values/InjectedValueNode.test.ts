@@ -35,8 +35,8 @@ test('it throws when the value is not provided and has no fallback', () => {
     const visitor = getValueNodeVisitor(new LinkableDictionary());
     expect(() => visit(node, visitor)).toThrow(
         new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, {
-            injectedValue: node,
             key: node.key,
+            path: [node],
         }),
     );
 });

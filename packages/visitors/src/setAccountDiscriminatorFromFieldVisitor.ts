@@ -32,7 +32,7 @@ export function setAccountDiscriminatorFromFieldVisitor(
     return bottomUpTransformerVisitor(
         Object.entries(map).map(([selector, { field, value, offset }]): BottomUpNodeTransformerWithSelector => ({
             select: ['[accountNode]', selector],
-            transform: node => {
+            transform: (node, stack) => {
                 assertIsNode(node, 'accountNode');
                 assertIsNode(node.data, 'structTypeNode');
 
@@ -40,9 +40,8 @@ export function setAccountDiscriminatorFromFieldVisitor(
                 const fieldIndex = accountFields.findIndex(f => f.identifier === field);
                 if (fieldIndex < 0) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
-                        account: node,
                         missingField: identifierString(field),
-                        name: node.identifier,
+                        path: stack.getPath(),
                     });
                 }
 

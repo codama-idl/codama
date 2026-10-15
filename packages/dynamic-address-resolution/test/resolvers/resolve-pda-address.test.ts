@@ -1,6 +1,7 @@
 import {
     CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
@@ -121,6 +122,26 @@ describe('variable seeds', () => {
         );
         expect(await resolveInstructionAccountAddress({ accountsInput: { owner }, path })).toBe(
             await derive([pubkey(owner)]),
+        );
+    });
+
+    test('it throws for the seed whose account resolves to nothing', async () => {
+        // Given a seed from an optional account omitted from the instruction.
+        const defaultValue = pdaValueNode(pdaLinkNode('vault'), {
+            seeds: [pdaSeedValueNode('owner', accountValueNode('owner'))],
+        });
+        const { path } = getAccountPath(
+            account('vault', { defaultValue }),
+            { accounts: [account('owner', { isOptional: true })], optionalAccountStrategy: 'omitted' },
+            { pdas: [ownerPda] },
+        );
+
+        // Then the error points at that seed.
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ accountsInput: { owner: null }, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, {
+                path: [...path.slice(0, 2), ownerPda, ownerPda.seeds![0]],
+            }),
         );
     });
 
@@ -256,8 +277,7 @@ describe('variable seeds', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: {}, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, {
-                pdaName: ownerPda.identifier,
-                seedName: ownerPda.seeds![0].identifier,
+                path: [...path.slice(0, 2), ownerPda, ownerPda.seeds![0]],
             }),
         );
     });
@@ -274,7 +294,7 @@ describe('variable seeds', () => {
                     __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
                     actualType: 'number (42)',
                     expectedType: 'Address',
-                    nodeKind: 'publicKeyTypeNode',
+                    path: [...path.slice(0, 2), ownerPda, ownerPda.seeds![0], ownerPda.seeds![0].type],
                 }),
             }),
         );
@@ -291,7 +311,7 @@ describe('variable seeds', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-                instructionName: path[2].identifier,
+                path: [...path.slice(0, 2), ownerPda],
                 referencedName: ownerPda.seeds![0].identifier,
             }),
         );
@@ -307,7 +327,7 @@ describe('variable seeds', () => {
             expect.objectContaining({
                 context: expect.objectContaining({
                     __code: CODAMA_ERROR__CANNOT_RESOLVE_PATH,
-                    path: pathString('missing'),
+                    pathString: pathString('missing'),
                     segment: 'missing',
                 }),
             }),
@@ -341,6 +361,22 @@ describe('program addresses', () => {
         expect(
             await resolveInstructionAccountAddress({ accountsInput: { program: OTHER_PROGRAM }, path: accountPath }),
         ).toBe(expected);
+    });
+
+    test('it throws for the PDA whose program ID account resolves to nothing', async () => {
+        // Given a program ID from an optional account omitted from the instruction.
+        const defaultValue = pdaValueNode(pdaLinkNode('vault'), { programId: accountValueNode('program') });
+        const { path } = getAccountPath(
+            account('vault', { defaultValue }),
+            { accounts: [account('program', { isOptional: true })], optionalAccountStrategy: 'omitted' },
+            { pdas: [pda] },
+        );
+
+        // Then the error points at the PDA.
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ accountsInput: { program: null }, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, { path: [...path.slice(0, 2), pda] }),
+        );
     });
 
     test('it throws when the program ID data is not an address', async () => {
@@ -377,8 +413,8 @@ describe('program addresses', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: {}, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING, {
-                instructionName: path[2].identifier,
-                path: pathString('program'),
+                path: path.slice(0, 3),
+                pathString: pathString('program'),
             }),
         );
     });

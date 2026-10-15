@@ -1,5 +1,10 @@
-import { CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, CodamaError } from '@codama/errors';
-import { assertIsNode, GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
+import {
+    CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CodamaError,
+    getNodePathString,
+} from '@codama/errors';
+import { GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
 
 /**
  * The nodes leading to a node, from the root to that node included.
@@ -95,7 +100,9 @@ export function assertIsNodePath<TKind extends NodeKind>(
     path: NodePath | null | undefined,
     kind: TKind | TKind[],
 ): asserts path is NodePath<GetNodeFromKind<TKind>> {
-    assertIsNode(isFilledNodePath(path) ? getLastNodeFromPath<Node>(path) : null, kind);
+    if (isNodePath(path, kind)) return;
+    const expectedKinds = Array.isArray(kind) ? kind : [kind];
+    throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, { expectedKinds, path: path ?? [] });
 }
 
 export function nodePathToStringArray(path: NodePath): string[] {
@@ -104,6 +111,11 @@ export function nodePathToStringArray(path: NodePath): string[] {
     });
 }
 
+/**
+ * Render a path as node selectors joined by dots, leaving out a leading root node, as error
+ * messages do, e.g. `[programNode]token.[accountNode]mint`. See `getNodePathString` from
+ * `@codama/errors`.
+ */
 export function nodePathToString(path: NodePath): string {
-    return nodePathToStringArray(path).join(' > ');
+    return getNodePathString(path);
 }

@@ -1,10 +1,13 @@
-import { CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+    CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
+    CodamaError,
+} from '@codama/errors';
 import {
     accountBumpValueNode,
     accountValueNode,
     definedTypeLinkNode,
     definedTypeNode,
-    identifierString,
     injectedValueNode,
     INSTRUCTION_INPUT_VALUE_NODES,
     instructionAccountNode,
@@ -17,6 +20,7 @@ import {
     providedNode,
     publicKeyTypeNode,
     publicKeyValueNode,
+    rootNode,
     structFieldTypeNode,
     structTypeNode,
 } from '@codama/nodes';
@@ -341,9 +345,7 @@ test('it throws when a provided value is not an instruction input value node', (
     expect(() => resolve(node)).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, {
             expectedKinds: INSTRUCTION_INPUT_VALUE_NODES,
-            key: identifierString('bogus'),
-            providedKind: 'publicKeyTypeNode',
-            provider,
+            path: [provider, provider.node],
         }),
     );
 });
@@ -558,4 +560,65 @@ test('it falls back to the injected value fallback when no provider is found', (
         dependsOn: [],
         resolvedDefaultValue: fallback,
     });
+});
+
+test('it reports invalid dependencies of accounts with the path of their instruction', () => {
+    // Given an account defaulting to an account the instruction does not have.
+    const owner = instructionAccountNode({
+        defaultValue: accountValueNode('missing'),
+        identifier: 'owner',
+        isSigner: false,
+        isWritable: false,
+    });
+    const node = instructionNode({ accounts: [owner], identifier: 'myInstruction' });
+
+    // Then the error carries the path of the instruction and names the account.
+    expect(() => resolve(node)).toThrow(
+        expect.objectContaining({
+            context: expect.objectContaining({
+                __code: CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+                dependent: 'owner',
+                path: [node],
+            }),
+        }),
+    );
+});
+
+test('it reports invalid dependencies of data fields within linked types with the path of their instruction', () => {
+    // Given a nested data field, within a linked type, defaulting to an account the instruction does not have.
+    const fee = structFieldTypeNode({
+        defaultValue: injectedValueNode({ key: 'fee' }),
+        identifier: 'fee',
+        type: publicKeyTypeNode(),
+    });
+    const configType = structTypeNode([fee]);
+    const config = definedTypeNode({ identifier: 'config', type: configType });
+    const configField = structFieldTypeNode({ identifier: 'config', type: definedTypeLinkNode('config') });
+    const data = structTypeNode([configField]);
+    const node = instructionNode({
+        data,
+        identifier: 'myInstruction',
+        provides: [providedNode('fee', accountValueNode('missing'))],
+    });
+    const program = programNode({
+        definedTypes: [config],
+        identifier: 'myProgram',
+        instructions: [node],
+        publicKey: '1111',
+    });
+    const root = rootNode(program);
+
+    // Then the error carries the path of the instruction, whose provides injected the dependency, and names the field.
+    const visitor = getResolvedInstructionInputsVisitor(getLinkablesFromNode(root), {
+        stack: new NodeStack([root, program]),
+    });
+    expect(() => visit(node, visitor)).toThrow(
+        expect.objectContaining({
+            context: expect.objectContaining({
+                __code: CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+                dependent: 'config.fee',
+                path: [root, program, node],
+            }),
+        }),
+    );
 });

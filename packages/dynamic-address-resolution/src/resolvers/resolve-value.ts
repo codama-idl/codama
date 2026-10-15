@@ -53,7 +53,8 @@ export async function resolveValue(node: InstructionInputValueNode, ctx: Resolut
     if (isNode(resolved, VALUE_NODE_KINDS)) return getValue(ctx, ctx.instructionPath, resolved);
     if (isNode(resolved, 'dataValueNode')) return await getDataValue(ctx, resolved.path);
     if (isNode(resolved, 'accountDataValueNode')) return await getAccountDataValue(ctx, resolved);
-    throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: resolved.kind });
+    // The resolved node may come from a provider, so its path is the node itself.
+    throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { path: [resolved] });
 }
 
 /**
@@ -78,8 +79,8 @@ export async function getDataValue(ctx: ResolutionContext, path: PathString): Pr
     if (!instruction.data) {
         const [segment] = parsePath(path);
         throw new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-            nodePath: ctx.instructionPath,
-            path,
+            path: ctx.instructionPath,
+            pathString: path,
             segment: segment ? formatPathSegment(segment) : path,
         });
     }
@@ -93,8 +94,8 @@ export async function getRequiredDataValue(ctx: ResolutionContext, path: PathStr
     const value = await getDataValue(ctx, path);
     if (value === undefined || value === null) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING, {
-            instructionName: getInstruction(ctx).identifier,
-            path,
+            path: ctx.instructionPath,
+            pathString: path,
         });
     }
     return value;
@@ -110,7 +111,7 @@ export async function getAccountDataValue(ctx: ResolutionContext, node: AccountD
     const ixAccountNode = (instruction.accounts ?? []).find(account => account.identifier === node.account);
     if (!ixAccountNode) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-            instructionName: instruction.identifier,
+            path: ctx.instructionPath,
             referencedName: node.account,
         });
     }
@@ -128,8 +129,7 @@ export async function getAccountDataValue(ctx: ResolutionContext, node: AccountD
     const address = await resolveAccountValueNodeAddress(accountValueNode(node.account), ctx);
     if (address === null) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-            accountName: node.account,
-            instructionName: instruction.identifier,
+            path: [...ctx.instructionPath, ixAccountNode],
         });
     }
 
@@ -190,7 +190,9 @@ async function getValueAtPath(
         // see `resolveInstructionDataDefaultValues`, so nested ones are not supported.
         const contextualValue = index > 0 ? getContextualDefaultValue(ctx, node) : undefined;
         if (contextualValue) {
-            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: contextualValue.kind });
+            // A default value injected by a provider is not within the field, so its path is the value itself.
+            const path = node.defaultValue === contextualValue ? [...typePath, contextualValue] : [contextualValue];
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { path });
         }
         current = await getFieldDefaultValue(ctx, typePath as NodePath<StructFieldTypeNode>, currentPath);
     }

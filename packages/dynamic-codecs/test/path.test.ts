@@ -85,8 +85,8 @@ test('it throws for unknown struct fields', () => {
     const decoded = getNodeCodec([data]).decode(bytes);
     expect(() => getDecodedNodeAtPath(decoded, pathString('config.owner'))).toThrow(
         new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-            nodePath: [data, data.fields![1], config],
-            path: pathString('config.owner'),
+            path: [data, data.fields![1], config],
+            pathString: pathString('config.owner'),
             segment: 'owner',
         }),
     );
@@ -103,8 +103,8 @@ test('it throws for segments applied to leaves', () => {
     const decoded = getNodeCodec([data]).decode(bytes);
     expect(() => getDecodedNodeAtPath(decoded, pathString('amount.value'))).toThrow(
         new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-            nodePath: [data, data.fields![0], u8],
-            path: pathString('amount.value'),
+            path: [data, data.fields![0], u8],
+            pathString: pathString('amount.value'),
             segment: 'value',
         }),
     );
@@ -176,8 +176,8 @@ describe('account links', () => {
         const mintField = transfer.fields![0];
         expect(() => getDecodedNodeAtPath(decodedTransfer, pathString('mint.data.decimals'))).toThrow(
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [root, root.program, transfer, mintField, mintField.type],
-                path: pathString('mint.data.decimals'),
+                path: [root, root.program, transfer, mintField, mintField.type],
+                pathString: pathString('mint.data.decimals'),
                 segment: 'data',
             }),
         );

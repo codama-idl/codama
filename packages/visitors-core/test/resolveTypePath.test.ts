@@ -144,8 +144,8 @@ describe('resolveTypePath', () => {
         expectCodamaError(
             () => resolveTypePath([data], pathString('fee'), new LinkableDictionary()),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [data],
-                path: pathString('fee'),
+                path: [data],
+                pathString: pathString('fee'),
                 segment: 'fee',
             }),
         );
@@ -161,24 +161,24 @@ describe('resolveTypePath', () => {
         expectCodamaError(
             () => resolveTypePath([data], pathString('amount[0]'), linkables),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [data, amount, amount.type],
-                path: pathString('amount[0]'),
+                path: [data, amount, amount.type],
+                pathString: pathString('amount[0]'),
                 segment: '[0]',
             }),
         );
         expectCodamaError(
             () => resolveTypePath([tuple], pathString('first'), linkables),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [tuple],
-                path: pathString('first'),
+                path: [tuple],
+                pathString: pathString('first'),
                 segment: 'first',
             }),
         );
         expectCodamaError(
             () => resolveTypePath([tuple], pathString('[1]'), linkables),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [tuple],
-                path: pathString('[1]'),
+                path: [tuple],
+                pathString: pathString('[1]'),
                 segment: '[1]',
             }),
         );
@@ -189,8 +189,8 @@ describe('resolveTypePath', () => {
         expectCodamaError(
             () => resolveTypePath([variant], pathString('amount'), new LinkableDictionary()),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [variant],
-                path: pathString('amount'),
+                path: [variant],
+                pathString: pathString('amount'),
                 segment: 'amount',
             }),
         );
@@ -206,9 +206,6 @@ describe('resolveTypePath', () => {
         expectCodamaError(
             () => resolveTypePath([root, program, data], pathString('config.fee'), getLinkablesFromNode(root)),
             new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-                kind: 'definedTypeLinkNode',
-                linkNode: link,
-                name: link.identifier,
                 path: [root, program, data, config, link],
             }),
         );
@@ -227,8 +224,8 @@ describe('resolveTypePath', () => {
         expectCodamaError(
             () => resolveTypePath(source, pathString('x'), getLinkablesFromNode(root)),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: source,
-                path: pathString('x'),
+                path: source,
+                pathString: pathString('x'),
                 segment: 'x',
             }),
         );
@@ -295,8 +292,8 @@ describe('resolveTypePath with account links', () => {
                         followAccountLinks: true,
                     }),
                 new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                    nodePath: [...source, mintField, mintField.type],
-                    path: pathString(`mint.${segment}`),
+                    path: [...source, mintField, mintField.type],
+                    pathString: pathString(`mint.${segment}`),
                     segment,
                 }),
             );
@@ -307,8 +304,8 @@ describe('resolveTypePath with account links', () => {
         expectCodamaError(
             () => resolveTypePath(source, pathString('mint.data.decimals'), getLinkablesFromNode(root)),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [...source, mintField, mintField.type],
-                path: pathString('mint.data.decimals'),
+                path: [...source, mintField, mintField.type],
+                pathString: pathString('mint.data.decimals'),
                 segment: 'data',
             }),
         );
@@ -345,8 +342,8 @@ describe('resolveTypePath with account links', () => {
                     },
                 ),
             new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-                nodePath: [pairRoot, pairProgram, pairSource, pairField, pairField.type],
-                path: pathString('pair[0]'),
+                path: [pairRoot, pairProgram, pairSource, pairField, pairField.type],
+                pathString: pathString('pair[0]'),
                 segment: '[0]',
             }),
         );
@@ -413,9 +410,6 @@ describe('resolveTypePath with account links', () => {
                     },
                 ),
             new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-                kind: 'accountLinkNode',
-                linkNode: link,
-                name: link.identifier,
                 path: [holderRoot, holderProgram, account, data, missingField, missingField.type, link],
             }),
         );

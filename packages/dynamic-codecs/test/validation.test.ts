@@ -38,12 +38,7 @@ const u16 = integerTypeNode('u16');
 const u8Array = arrayTypeNode(u8, prefixedCountNode(integerTypeNode('u32')));
 
 /** Match an `UNEXPECTED_VALUE_TYPE` error with exactly the given context. */
-function valueTypeError(context: {
-    actualType: string;
-    expectedType: string;
-    nodeKind: Node['kind'];
-    nodePath: readonly Node[];
-}) {
+function valueTypeError(context: { actualType: string; expectedType: string; path: readonly Node[] }) {
     return expect.objectContaining({
         context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, ...context },
     });
@@ -92,9 +87,7 @@ describe('value types', () => {
         '%s rejects %s',
         (_kind, _title, node, value, expectedType, actualType) => {
             const codec = getNodeValueCodec([node] as NodePath<RegisteredTypeNode>);
-            expect(() => codec.encode(value)).toThrow(
-                valueTypeError({ actualType, expectedType, nodeKind: node.kind, nodePath: [node] }),
-            );
+            expect(() => codec.encode(value)).toThrow(valueTypeError({ actualType, expectedType, path: [node] }));
         },
     );
 
@@ -125,20 +118,18 @@ describe('value types', () => {
             valueTypeError({
                 actualType: 'undefined',
                 expectedType: 'integer (number | bigint)',
-                nodeKind: 'integerTypeNode',
-                nodePath: [struct, amount, u8],
+                path: [struct, amount, u8],
             }),
         );
     });
 });
 
 describe('node paths', () => {
-    const integerError = (nodePath: readonly Node[]) =>
+    const integerError = (path: readonly Node[]) =>
         valueTypeError({
             actualType: 'string',
             expectedType: 'integer (number | bigint)',
-            nodeKind: 'integerTypeNode',
-            nodePath,
+            path,
         });
 
     test('it reports the path of the rejecting node through structs, arrays and tuples', () => {

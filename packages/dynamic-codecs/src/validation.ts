@@ -35,8 +35,7 @@ export function getUnexpectedValueTypeError(
     return new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
         actualType: formatValueType(value),
         expectedType,
-        nodeKind: nodePath[nodePath.length - 1].kind,
-        nodePath,
+        path: nodePath,
     });
 }
 
@@ -71,7 +70,11 @@ export function assertUniqueItems(items: readonly unknown[], item: Encoder<unkno
         const key = base16.decode(item.encode(itemValue));
         const firstIndex = indices.get(key);
         if (firstIndex !== undefined) {
-            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM, { firstIndex, index, nodePath });
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM, {
+                firstIndex,
+                index,
+                path: nodePath,
+            });
         }
         indices.set(key, index);
     });

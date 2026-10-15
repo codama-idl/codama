@@ -5,7 +5,6 @@ import {
     accountNode,
     definedTypeLinkNode,
     definedTypeNode,
-    identifierString,
     instructionAccountLinkNode,
     InstructionAccountNode,
     instructionAccountNode,
@@ -330,14 +329,7 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
     const getMissingAccount = () => linkables.getOrThrow([node, linkNode]);
 
     // Then we expect an exception to be thrown.
-    expect(getMissingAccount).toThrow(
-        new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-            kind: 'accountLinkNode',
-            linkNode,
-            name: identifierString('missingAccount'),
-            path: [node, linkNode],
-        }),
-    );
+    expect(getMissingAccount).toThrow(new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, { path: [node, linkNode] }));
 });
 
 test('it gets the linkable nodes of the tree under a node', () => {

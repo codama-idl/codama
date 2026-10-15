@@ -142,8 +142,10 @@ describe('MPL Token Metadata: create with a resolved account', () => {
             expect.objectContaining({
                 context: expect.objectContaining({
                     __code: CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
-                    accountName: 'splTokenProgram',
-                    instructionName: 'create',
+                    path: expect.arrayContaining([
+                        expect.objectContaining({ identifier: 'create', kind: 'instructionNode' }),
+                        expect.objectContaining({ identifier: 'splTokenProgram', kind: 'instructionAccountNode' }),
+                    ]),
                 }),
             }),
         );

@@ -63,8 +63,7 @@ export function createSubInstructionsFromEnumDataVisitor(map: Record<string, str
                 const notFound = () =>
                     new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND, {
                         fieldName: identifierString(fieldName),
-                        instruction: node,
-                        instructionName: node.identifier,
+                        path: stack.getPath(),
                     });
 
                 if (!node.data) throw notFound();

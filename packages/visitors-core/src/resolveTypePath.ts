@@ -163,10 +163,10 @@ function getLastTypePathNode(path: TypePath): TypePathNode {
     return path[path.length - 1] as TypePathNode;
 }
 
-function getCannotResolvePathError(nodePath: NodePath, path: PathString, segment: PathSegment): CodamaError {
+function getCannotResolvePathError(path: NodePath, pathString: PathString, segment: PathSegment): CodamaError {
     return new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
-        nodePath,
         path,
+        pathString,
         segment: segment.kind === 'field' ? segment.identifier : `[${segment.index}]`,
     });
 }

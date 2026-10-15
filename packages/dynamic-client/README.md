@@ -207,7 +207,8 @@ try {
     const ix = await client.methods.transferSol({ amount: 100 }).accounts({}).instruction();
 } catch (err) {
     if (isCodamaError(err, CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING)) {
-        console.error(`Missing account: ${err.context.accountName}`);
+        // Errors about a node carry its `path`, here ending at the missing instruction account.
+        console.error(err.message); // "Missing account [programNode]system.[instructionNode]transferSol.[instructionAccountNode]source."
     }
 }
 ```

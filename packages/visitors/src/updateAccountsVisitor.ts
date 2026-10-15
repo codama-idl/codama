@@ -112,7 +112,7 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
         return accountNode({
             ...node,
             ...otherUpdates,
-            data: renameAccountFields(node, getLastNodeFromPath(path), fieldRenames),
+            data: renameAccountFields(node, path, fieldRenames),
             pda: getPdaUpsert(path)?.link ?? otherUpdates.pda ?? node.pda,
         });
     });
@@ -154,18 +154,18 @@ export function updateAccountsVisitor(map: Record<string, AccountUpdates>) {
 /** Rename the top-level fields of an account's inline struct data, checked against the original account. */
 function renameAccountFields(
     node: AccountNode,
-    original: AccountNode,
+    path: NodePath<AccountNode>,
     fieldRenames: Record<string, string>,
 ): AccountNode['data'] {
     if (Object.keys(fieldRenames).length === 0) return node.data;
+    const original = getLastNodeFromPath(path);
     assertIsNode(original.data, 'structTypeNode');
     const fields = new Set<string>((original.data.fields ?? []).map(field => field.identifier));
     const missingField = Object.keys(fieldRenames).find(field => !fields.has(field));
     if (missingField !== undefined) {
         throw new CodamaError(CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND, {
-            account: original,
             missingField: identifierString(missingField),
-            name: original.identifier,
+            path,
         });
     }
     assertIsNode(node.data, 'structTypeNode');

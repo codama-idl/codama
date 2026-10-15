@@ -7,7 +7,6 @@ import {
     DiscriminatorNode,
     fieldDiscriminatorNode,
     hiddenPrefixTransformNode,
-    InstructionNode,
     instructionNode,
     integerTypeNode,
     isNode,
@@ -23,6 +22,7 @@ import {
     bottomUpTransformerVisitor,
     getByteSizeVisitor,
     LinkableDictionary,
+    NodePath,
     pipe,
     recordLinkablesOnFirstVisitVisitor,
     visit,
@@ -97,7 +97,7 @@ export function setInstructionDiscriminatorsVisitor(map: Record<string, Instruct
                 assertIsNode(node, 'instructionNode');
                 const type = discriminator.type ?? integerTypeNode('u8');
                 const size = visit(type, getByteSizeVisitor(linkables, { stack: stack.clone() }));
-                if (size === null) throw cannotSet(node, 'the discriminator type must have a fixed size');
+                if (size === null) throw cannotSet(stack.getPath(), 'the discriminator type must have a fixed size');
                 const discriminators = shiftDiscriminators(node.discriminators ?? [], size);
 
                 // A field is only at byte 0 of a struct that has no transforms.
@@ -106,7 +106,7 @@ export function setInstructionDiscriminatorsVisitor(map: Record<string, Instruct
                     const identifier = discriminator.identifier ?? 'discriminator';
                     const fields = isNode(node.data, 'structTypeNode') ? (node.data.fields ?? []) : [];
                     if (fields.some(field => field.identifier === identifier)) {
-                        throw cannotSet(node, `the data already has a field named \`${identifier}\``);
+                        throw cannotSet(stack.getPath(), `the data already has a field named \`${identifier}\``);
                     }
                     const field = structFieldTypeNode({
                         defaultValue: discriminator.value,
@@ -124,7 +124,7 @@ export function setInstructionDiscriminatorsVisitor(map: Record<string, Instruct
 
                 if (discriminator.strategy === 'optional') {
                     throw cannotSet(
-                        node,
+                        stack.getPath(),
                         'the `optional` strategy is not supported when the discriminator is added as a hidden prefix',
                     );
                 }
@@ -161,10 +161,6 @@ function shiftDiscriminators(discriminators: DiscriminatorNode[], size: number):
     });
 }
 
-function cannotSet(instruction: InstructionNode, reason: string): CodamaError {
-    return new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR, {
-        instruction,
-        instructionName: instruction.identifier,
-        reason,
-    });
+function cannotSet(path: NodePath, reason: string): CodamaError {
+    return new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR, { path, reason });
 }

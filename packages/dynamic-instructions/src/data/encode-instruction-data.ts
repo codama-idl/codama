@@ -2,7 +2,6 @@ import type { DataInput } from '@codama/dynamic-address-resolution';
 import { getNodeValueCodec, type ReadonlyUint8Array } from '@codama/dynamic-codecs';
 import { CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, CodamaError, isCodamaError } from '@codama/errors';
 import {
-    getLastNodeFromPath,
     getLinkablesFromNode,
     type InstructionNode,
     type LinkableDictionary,
@@ -57,7 +56,7 @@ export function createInstructionDataEncoder<TData extends DataInput = DataInput
             if (isCodamaError(error)) throw error;
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, {
                 cause: error,
-                instructionName: getLastNodeFromPath(path).identifier,
+                path,
             });
         }
     };

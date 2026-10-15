@@ -15,7 +15,7 @@ export function addPdasVisitor(pdas: Record<string, PdaNodeInput[]>) {
     return bottomUpTransformerVisitor(
         Object.entries(pdas).map(([programName, newPdas]) => ({
             select: ['[programNode]', programName],
-            transform: node => {
+            transform: (node, stack) => {
                 assertIsNode(node, 'programNode');
                 const newPdaNodes = newPdas.map(pda => pdaNode(pda));
                 const usedNames = new Set((node.pdas ?? []).map(pda => camelCase(pda.identifier)));
@@ -28,8 +28,7 @@ export function addPdasVisitor(pdas: Record<string, PdaNodeInput[]>) {
                 if (duplicatedPdaNames.size > 0) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
                         duplicatedPdaNames: [...duplicatedPdaNames],
-                        program: node,
-                        programName: node.identifier,
+                        path: stack.getPath(),
                     });
                 }
                 return programNode({ ...node, pdas: [...(node.pdas ?? []), ...newPdaNodes] });

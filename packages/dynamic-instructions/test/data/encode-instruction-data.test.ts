@@ -113,8 +113,7 @@ describe('encodeInstructionData', () => {
                     __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
                     actualType: 'string',
                     expectedType: 'integer (number | bigint)',
-                    nodeKind: 'integerTypeNode',
-                    nodePath: [...path, data, amount, amountType],
+                    path: [...path, data, amount, amountType],
                 },
             }),
         );
@@ -139,7 +138,7 @@ describe('encodeInstructionData', () => {
         expect(() => encodeInstructionData(path, { amount: 300 })).toThrow(
             expect.objectContaining({
                 cause: expect.objectContaining({ message: expect.stringContaining('300') }),
-                context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, instructionName: 'transfer' },
+                context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, path },
             }),
         );
     });

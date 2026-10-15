@@ -103,8 +103,7 @@ export function instructionInputValueNodeFromV1(
 function getUnexpectedResolverError(value: v1.ResolverValueNode): CodamaError {
     return new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
         expectedKinds: [],
-        kind: null,
-        node: value as unknown as Node,
+        path: [value as unknown as Node],
     });
 }
 
