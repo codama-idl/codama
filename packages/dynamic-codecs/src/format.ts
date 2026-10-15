@@ -6,13 +6,15 @@ import {
     InjectableIntegerValueNode,
     InjectableUnitValueNode,
     InjectedValueNode,
+    INSTRUCTION_INPUT_VALUE_NODE_KINDS,
     IntegerFormat,
     isNode,
     Node,
     UnitNumberDisplayNode,
+    VALUE_NODE_KINDS,
     ValueNode,
 } from '@codama/nodes';
-import { getLastNodeFromPath, NodePath } from '@codama/visitors-core';
+import { getLastNodeFromPath, getProvidedScopeFromPath, NodePath, ProvidedScope } from '@codama/visitors-core';
 import type { Address } from '@solana/addresses';
 import {
     BinaryFixedPoint,
@@ -36,6 +38,7 @@ import type {
     DecodedFixedPointTypeNode,
     DecodedFloatTypeNode,
     DecodedIntegerTypeNode,
+    DecodedNode,
     DecodedPublicKeyTypeNode,
     DecodedStringTypeNode,
 } from './decoded';
@@ -68,14 +71,34 @@ export type FormatOptions = {
     /**
      * Resolve an injected value node used by a display node, e.g. the `decimals` of an amount
      * provided by its instruction, given its path through the decoded node, e.g.
-     * `[...decoded.path, amountNumberDisplayNode, injectedValueNode]`. The resolver handles
-     * providers and fallbacks, and returns the value node the injection stands for, e.g.
-     * `integerValueNode('6')` for decimals read from a mint, or `publicKeyValueNode(mint)` for a
-     * unit provided by an account. Resolved values are then used as literal ones would be, so
-     * address units go through `formatAddress`. Returning `undefined`, or a value node of the
-     * wrong kind, leaves the value unresolved.
+     * `[...decoded.path, amountNumberDisplayNode, injectedValueNode]`, and the decoded nodes
+     * containing the value, from the root given to `formatDecodedNode`, e.g. `[data, config]`.
+     * Unlike paths, which restart at the definition of a linked type, these tell apart values whose
+     * types link to the same defined type. Formatters called on their own give none. The resolver
+     * handles providers and fallbacks, and returns the value node the injection stands for, e.g.
+     * `integerValueNode('6')` for decimals read from a mint, or `publicKeyValueNode(mint)` for a unit
+     * provided by an account. Resolved values are then used as literal ones would be, so address
+     * units go through `formatAddress`. Returning a value node of the wrong kind leaves the value
+     * unresolved.
+     *
+     * When it is absent or returns `undefined`, the injection resolves from the `scope` option,
+     * and from its fallbacks, when they resolve to a value node, e.g.
+     * `providedNode('decimals', integerValueNode(6))`. Other provided nodes, e.g. an
+     * `accountValueNode`, need the instruction itself, so they are left unresolved.
      */
-    resolveInjectedValue?: (path: NodePath<InjectedValueNode>) => ValueNode | undefined;
+    resolveInjectedValue?: (
+        path: NodePath<InjectedValueNode>,
+        parents: readonly DecodedNode[],
+    ) => ValueNode | undefined;
+    /**
+     * The `provides` in scope of the formatted values, e.g.
+     * `getProvidedScopeFromPath(instruction.path)`. `formatDecodedNode` defaults it to the
+     * instructions on the path of the node it formats, so values within linked defined types see
+     * them too, and formatters called on their own to the instructions on the path of their value.
+     * Values formatted outside of any instruction, e.g. the data of an instruction whose type links
+     * to a defined type, only resolve from fallbacks.
+     */
+    scope?: ProvidedScope;
 };
 
 /** The units written straight after their value, without a space. */
@@ -344,10 +367,21 @@ function resolveUnitInput(
     return isNode(value, 'stringValueNode') && value.string !== '' ? value.string : undefined;
 }
 
-/** The value node an input of a display node stands for: itself, or what its injection resolves to. */
+/**
+ * The value node an input of a display node stands for: itself, or what its injection resolves
+ * to, through the `resolveInjectedValue` option, then through the value nodes provided in scope.
+ */
 function resolveInput(path: NodePath, display: Node, input: ValueNode, options: FormatOptions): ValueNode | undefined {
     if (!isNode(input, 'injectedValueNode')) return input;
-    return options.resolveInjectedValue?.([...path, display, input]);
+    const injectedPath: NodePath<InjectedValueNode> = [...path, display, input];
+    return options.resolveInjectedValue?.(injectedPath, []) ?? resolveProvidedValue(injectedPath, options);
+}
+
+/** The value node an injection resolves to from the provided scope, or its fallbacks. */
+function resolveProvidedValue(path: NodePath<InjectedValueNode>, options: FormatOptions): ValueNode | undefined {
+    const scope = options.scope ?? getProvidedScopeFromPath(path);
+    const node = scope.resolve(getLastNodeFromPath(path), { kinds: INSTRUCTION_INPUT_VALUE_NODE_KINDS });
+    return isNode(node, VALUE_NODE_KINDS) ? node : undefined;
 }
 
 /**

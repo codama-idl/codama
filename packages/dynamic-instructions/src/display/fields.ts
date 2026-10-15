@@ -1,11 +1,9 @@
 import {
-    type DecodedStructFieldTypeNode,
-    type DecodedTypeNode,
+    type DecodedNode,
     type FormatDecodedNodeOptions,
     formatDecodedNode,
     type FormattedTypeNode,
-    formatInteger,
-    getDecodedNodeAtPath,
+    getFormattedRows,
     isDecodedNode,
     isFormattedNode,
 } from '@codama/dynamic-codecs';
@@ -16,10 +14,6 @@ import {
     getLastNodeFromPath,
     getTextNodeContent,
     type InstructionAccountDisplayNode,
-    type InstructionInputValueNode,
-    isNode,
-    parsePath,
-    pathString,
     titleCase,
 } from 'codama';
 
@@ -61,38 +55,20 @@ export function getDisplayFields(context: DisplayContext): DisplayField[] {
 function getDataRows(context: DisplayContext): Row[] {
     const data = context.parsed.data;
     if (!data) return [];
-    if (isDecodedNode(data, 'structTypeNode')) return getStructRows(context, data.fields, '', '');
-    const reads = new Set<string>();
-    const formatted = formatRowNode(context, data, reads);
-    return [{ label: 'Data', reads, skip: 'never', value: getRowText(formatted.text) }];
-}
-
-/**
- * The rows of struct fields, each formatted on its own to know the members it reads. A field
- * matching one of its value labels shows the label, flattened fields are replaced by their own
- * fields, with their prefix, lists of addresses show one row per address, so each one can be
- * verified, and empty values show as `Empty`.
- */
-function getStructRows(
-    context: DisplayContext,
-    fields: readonly DecodedStructFieldTypeNode[],
-    labelPrefix: string,
-    pathPrefix: string,
-): Row[] {
-    return fields.flatMap(field => {
-        // Hidden fields are not formatted, so the accounts only they read are not fetched.
-        const node = getLastNodeFromPath(field.path);
-        if (node.display?.skip === 'always') return [];
-        const reads = new Set<string>();
-        const formatted = formatRowNode(context, field, reads);
-        const identifier = node.identifier;
-        const path = pathPrefix === '' ? identifier : `${pathPrefix}.${identifier}`;
-        const label = labelPrefix + formatted.label;
-        if (formatted.flatten && isDecodedNode(field.type, 'structTypeNode')) {
-            return getStructRows(context, field.type.fields, labelPrefix + formatted.flattenPrefix, path);
-        }
-        const row = { member: `data:${path}`, reads, skip: formatted.skip };
-        const addresses = formatted.valueLabel === undefined ? getAddressItems(formatted.type) : undefined;
+    const reads: Read[] = [];
+    const formatted = formatDecodedNode(data, getRowFormatOptions(context, reads));
+    if (!isFormattedNode(formatted, 'structTypeNode')) {
+        const members = new Set(reads.map(read => read.member));
+        return [{ label: 'Data', reads: members, skip: 'never', value: getRowText(formatted.text) }];
+    }
+    return getFormattedRows(formatted).flatMap(({ field, identifiers, label, text }) => {
+        const row = {
+            member: `data:${identifiers.join('.')}`,
+            reads: new Set(reads.filter(read => startsWith(read.fields, identifiers)).map(read => read.member)),
+            skip: field.skip,
+        };
+        // Lists of addresses show one row per address, so each one can be verified.
+        const addresses = field.valueLabel === undefined ? getAddressItems(field.type) : undefined;
         if (addresses && addresses.length > 0) {
             return addresses.map((address, index) => ({
                 ...row,
@@ -100,57 +76,41 @@ function getStructRows(
                 value: address.text,
             }));
         }
-        return [{ ...row, label, value: getRowText(formatted.text) }];
+        return [{ ...row, label, value: getRowText(text) }];
     });
 }
 
+/** A member an injected value is read from, with the identifiers of the data fields containing the value. */
+type Read = { readonly fields: readonly string[]; readonly member: string };
+
 /**
- * Format a node of a row, recording the members its injected values are read from. Amounts that
- * cannot be scaled show their raw value followed by `(raw)`, so they cannot be mistaken for
- * scaled amounts.
+ * The options to format the instruction data with, recording the members each injected value is
+ * read from, with the fields containing the value, so each row knows the members it presents.
+ * Values that cannot be formatted show through the `formatDegraded` option, as their raw value
+ * followed by `(raw)` by default, so they cannot be mistaken for formatted values.
  */
-function formatRowNode<TDecoded extends DecodedStructFieldTypeNode | DecodedTypeNode>(
-    context: DisplayContext,
-    decoded: TDecoded,
-    reads: Set<string>,
-) {
+function getRowFormatOptions(context: DisplayContext, reads: Read[]): FormatDecodedNodeOptions {
     const { formatOptions, linkables } = context;
-    const formatIntegerOrRaw = formatOptions.formatInteger ?? formatInteger;
-    const options: FormatDecodedNodeOptions = {
+    return {
         ...formatOptions,
-        formatInteger: (integer, integerOptions) =>
-            formatIntegerOrRaw(integer, integerOptions) ?? `${integer.value} (raw)`,
+        formatDegraded: formatOptions.formatDegraded ?? (raw => `${raw} (raw)`),
         linkables,
-        resolveInjectedValue: getInjectedValueResolver(context, node => addReadMember(context, node, reads)),
+        resolveInjectedValue: getInjectedValueResolver(context, (member, parents) => {
+            reads.push({ fields: getFieldIdentifiers(parents), member });
+        }),
     };
-    return formatDecodedNode(decoded, options);
 }
 
-/** Record the member a resolved injected value is read from: an account, or a field of the instruction data. */
-function addReadMember(context: DisplayContext, node: InstructionInputValueNode, reads: Set<string>): void {
-    if (isNode(node, 'accountValueNode')) reads.add(`account:${node.identifier}`);
-    if (isNode(node, 'accountDataValueNode')) reads.add(`account:${node.account}`);
-    if (isNode(node, 'dataValueNode')) {
-        const path = getDataMemberPath(context, node.path);
-        if (path !== undefined) reads.add(`data:${path}`);
-    }
+/** The identifiers of the struct fields among decoded nodes, e.g. `['config', 'fee']`. */
+function getFieldIdentifiers(parents: readonly DecodedNode[]): string[] {
+    return parents.flatMap(parent =>
+        isDecodedNode(parent, 'structFieldTypeNode') ? [getLastNodeFromPath(parent.path).identifier] : [],
+    );
 }
 
-/**
- * The path of the field of the instruction data a data path reads: its field segments, up to an
- * index or an account link, e.g. `config.fee` for `config.fee`, `mint` for `mint.data.decimals` when
- * `mint` links to an account, or `fees` for `fees[0]`.
- */
-function getDataMemberPath(context: DisplayContext, path: string): string | undefined {
-    let memberPath: string | undefined;
-    for (const segment of parsePath(path)) {
-        if (segment.kind === 'index') break;
-        const next = memberPath === undefined ? segment.identifier : `${memberPath}.${segment.identifier}`;
-        const node = getDecodedNodeAtPath(context.parsed, pathString(next), { resolveAccountLink: () => undefined });
-        if (!node) break;
-        memberPath = next;
-    }
-    return memberPath;
+/** Whether a list starts with the items of another one, e.g. the fields containing a value and those of a row. */
+function startsWith(list: readonly string[], prefix: readonly string[]): boolean {
+    return prefix.length <= list.length && prefix.every((item, index) => list[index] === item);
 }
 
 /**

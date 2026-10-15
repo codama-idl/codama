@@ -10,6 +10,9 @@ import {
     accountValueNode,
     amountNumberDisplayNode,
     dataValueNode,
+    type DefinedTypeNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     fieldDiscriminatorNode,
     injectedValueNode,
     instructionAccountDisplayNode,
@@ -28,9 +31,12 @@ import {
     structFieldDisplayNode,
     structFieldTypeNode,
     type StructFieldTypeNodeInput,
+    structFieldValueNode,
     structTypeNode,
+    structValueNode,
     type TypeNode,
     unitNumberDisplayNode,
+    valueLabelDisplayNode,
 } from 'codama';
 import { describe, expect, test, vi } from 'vitest';
 
@@ -70,11 +76,12 @@ const token = accountNode({
 });
 
 /** A program with the mint and token accounts and the given instruction, with helpers to parse it and encode accounts. */
-function setup(instructionInput: Partial<InstructionNodeInput>) {
+function setup(instructionInput: Partial<InstructionNodeInput>, definedTypes: DefinedTypeNode[] = []) {
     const instruction = instructionNode({ identifier: 'transfer', ...instructionInput });
     const root = rootNode(
         programNode({
             accounts: [mint, token],
+            definedTypes,
             identifier: 'token',
             instructions: [instruction],
             publicKey: PROGRAM_ADDRESS,
@@ -281,6 +288,31 @@ test('it reads injected values from the whole data of instruction accounts', () 
     expect(display.fields[0]).toStrictEqual({ label: 'Count', value: '3 USDC' });
 });
 
+test('it resolves the provided values of placeholders within linked defined types', () => {
+    // Given a labelled field within a linked defined type, whose fee defaults to a value the instruction provides.
+    const settings = data(field('enabled', u8), field('fee', u8, { defaultValue: injectedValueNode({ key: 'fee' }) }));
+    const defaults = valueLabelDisplayNode({
+        label: 'Default settings',
+        value: structValueNode([structFieldValueNode('enabled', integerValueNode('1'))]),
+    });
+    const config = definedTypeNode({
+        identifier: 'config',
+        type: data(field('settings', settings, { display: structFieldDisplayNode({ valueLabels: [defaults] }) })),
+    });
+    const { parse, root } = setup(
+        {
+            data: data(field('config', definedTypeLinkNode('config'))),
+            display: instructionDisplayNode({ interpolatedIntent: 'Use ${data.config.settings}' }),
+            provides: [providedNode('fee', integerValueNode('5'))],
+        },
+        [config],
+    );
+
+    // Then the placeholder presents the label, matched with the provided fee.
+    const parsed = parse({ data: { config: { settings: { enabled: 1, fee: 5 } } } });
+    expect(getInstructionDisplayFromParsedInstruction(root, parsed).interpolatedIntent).toBe('Use Default settings');
+});
+
 describe('placeholders reading accounts', () => {
     const intent = (interpolatedIntent: string) => instructionDisplayNode({ interpolatedIntent });
 
@@ -293,6 +325,20 @@ describe('placeholders reading accounts', () => {
         const parsed = parse({ accounts: [readonly(MINT)] });
         expect(getInstructionDisplayFromParsedInstruction(root, parsed, { accounts }).interpolatedIntent).toBe(
             'Mint of USDC',
+        );
+    });
+
+    test('it fills placeholders with values whose injected values are read from accounts', () => {
+        const { encode, parse, root } = setup({
+            accounts: [mintAccount],
+            data: data(field('amount', decimalsAmount)),
+            display: intent('Transfer ${data.amount}'),
+            provides: [decimalsFromMint],
+        });
+        const accounts = new Map([[MINT, encode(mint, MINT, { decimals: 6, symbol: 'USDC' })]]);
+        const parsed = parse({ accounts: [readonly(MINT)], data: { amount: 1_500_000n } });
+        expect(getInstructionDisplayFromParsedInstruction(root, parsed, { accounts }).interpolatedIntent).toBe(
+            'Transfer 1.5',
         );
     });
 
@@ -451,6 +497,103 @@ describe('members skipped when injected', () => {
         ]);
     });
 
+    test('it only counts the reads of the row presenting them', () => {
+        // Given the amount reading the decimals is itself skipped when injected, next to a shown fee.
+        const { parse, root } = setup({
+            data: data(
+                field('amount', decimalsAmount, whenInjected),
+                field('fee', u8),
+                field('decimals', u8, whenInjected),
+            ),
+            provides: [providedNode('decimals', dataValueNode('decimals'))],
+        });
+        const parsed = parse({ data: { amount: 1_500_000n, decimals: 6, fee: 1 } });
+        expect(getInstructionDisplayFromParsedInstruction(root, parsed).fields.map(row => row.label)).toStrictEqual([
+            'Amount',
+            'Fee',
+            'Decimals',
+        ]);
+    });
+
+    test('it leaves out members read by instruction data that is not a struct', () => {
+        const { parse, root } = setup({
+            ...transfer,
+            data: integerTypeNode('u64', {
+                display: unitNumberDisplayNode({ unit: injectedValueNode({ key: 'unit' }) }),
+            }),
+            provides: [providedNode('unit', accountValueNode('mint'))],
+        });
+        const parsed = parse({ accounts: [readonly(MINT), readonly(OWNER)], data: 42n });
+        expect(
+            getInstructionDisplayFromParsedInstruction(root, parsed, { formatAddress: () => 'USDC' }).fields,
+        ).toStrictEqual([
+            { label: 'Data', value: '42 USDC' },
+            { label: 'Destination', value: 'USDC' },
+        ]);
+    });
+
+    test('it leaves out fields of flattened structs linking to a defined type', () => {
+        const config = definedTypeNode({
+            identifier: 'config',
+            type: data(field('amount', decimalsAmount), field('decimals', u8, whenInjected)),
+        });
+        const { parse, root } = setup(
+            {
+                data: data(
+                    field('config', definedTypeLinkNode('config'), {
+                        display: structFieldDisplayNode({ flatten: true }),
+                    }),
+                ),
+                provides: [providedNode('decimals', dataValueNode('config.decimals'))],
+            },
+            [config],
+        );
+        const parsed = parse({ data: { config: { amount: 1_500_000n, decimals: 6 } } });
+        expect(getInstructionDisplayFromParsedInstruction(root, parsed).fields).toStrictEqual([
+            { label: 'Amount', value: '1.5' },
+        ]);
+    });
+
+    test('it leaves out members read by fields linking to a defined type', () => {
+        // Given a leg whose amount names its mint, which is skipped when injected.
+        const unitFromMint = integerTypeNode('u64', {
+            display: unitNumberDisplayNode({ unit: injectedValueNode({ key: 'unit' }) }),
+        });
+        const leg = definedTypeNode({ identifier: 'leg', type: data(field('amount', unitFromMint)) });
+        const { parse, root } = setup(
+            {
+                accounts: [account('mint', { display: instructionAccountDisplayNode({ skip: 'whenInjected' }) })],
+                data: data(field('leg', definedTypeLinkNode('leg'))),
+                provides: [providedNode('unit', accountValueNode('mint'))],
+            },
+            [leg],
+        );
+        const parsed = parse({ accounts: [readonly(MINT)], data: { leg: { amount: 42n } } });
+        expect(
+            getInstructionDisplayFromParsedInstruction(root, parsed, { formatAddress: () => 'USDC' }).fields,
+        ).toStrictEqual([{ label: 'Leg', value: 'Amount: 42 USDC' }]);
+    });
+
+    test('it only counts the reads of the fields within a row', () => {
+        // Given a shown amount next to a config, skipped when injected, whose own amount names the mint.
+        const unitFromMint = integerTypeNode('u64', {
+            display: unitNumberDisplayNode({ unit: injectedValueNode({ key: 'unit' }) }),
+        });
+        const { parse, root } = setup({
+            accounts: [account('mint', { display: instructionAccountDisplayNode({ skip: 'whenInjected' }) })],
+            data: data(field('amount', u8), field('config', data(field('amount', unitFromMint)), whenInjected)),
+            provides: [providedNode('unit', accountValueNode('mint'))],
+        });
+        const parsed = parse({ accounts: [readonly(MINT)], data: { amount: 1, config: { amount: 42n } } });
+
+        // Then the mint is shown, since the only row presenting it is not always shown.
+        expect(getInstructionDisplayFromParsedInstruction(root, parsed).fields.map(row => row.label)).toStrictEqual([
+            'Amount',
+            'Config',
+            'Mint',
+        ]);
+    });
+
     test('it leaves out fields of nested flattened structs by their path', () => {
         const flatten = { display: structFieldDisplayNode({ flatten: true }) };
         const inner = data(field('amount', decimalsAmount), field('decimals', u8, whenInjected));
@@ -562,6 +705,79 @@ describe('getDisplayAccountMap', () => {
         const fetchAccounts = getFetchAccounts([]);
         await getDisplayAccountMap(root, parse({ accounts: [readonly(MINT)], data: { amount: 1n } }), fetchAccounts);
         expect(fetchAccounts).not.toHaveBeenCalled();
+    });
+
+    test('it does not fetch accounts that only fields skipped always read within shown fields', async () => {
+        const hidden = { display: structFieldDisplayNode({ skip: 'always' }) };
+        const { parse, root } = setup({
+            accounts: [mintAccount],
+            data: data(field('config', data(field('amount', decimalsAmount, hidden), field('fee', u8)))),
+            provides: [decimalsFromMint],
+        });
+        const fetchAccounts = getFetchAccounts([]);
+        const parsed = parse({ accounts: [readonly(MINT)], data: { config: { amount: 1n, fee: 2 } } });
+        await getDisplayAccountMap(root, parsed, fetchAccounts);
+        expect(fetchAccounts).not.toHaveBeenCalled();
+    });
+
+    test('it does not fetch accounts that only fields skipped always read when the instruction has an interpolated intent', async () => {
+        const { parse, root } = setup({
+            accounts: [mintAccount],
+            data: data(
+                field('amount', decimalsAmount, { display: structFieldDisplayNode({ skip: 'always' }) }),
+                field('fee', u8),
+            ),
+            display: instructionDisplayNode({ interpolatedIntent: 'Pay a fee of ${data.fee}' }),
+            provides: [decimalsFromMint],
+        });
+        const fetchAccounts = getFetchAccounts([]);
+        const parsed = parse({ accounts: [readonly(MINT)], data: { amount: 1n, fee: 2 } });
+        await getDisplayAccountMap(root, parsed, fetchAccounts);
+        expect(fetchAccounts).not.toHaveBeenCalled();
+    });
+
+    test('it does not fetch accounts that only hidden fields linking to a defined type read', async () => {
+        const config = definedTypeNode({ identifier: 'config', type: data(field('amount', decimalsAmount)) });
+        const hidden = { display: structFieldDisplayNode({ skip: 'always' }) };
+        const { parse, root } = setup(
+            {
+                accounts: [mintAccount],
+                data: data(field('config', definedTypeLinkNode('config'), hidden), field('fee', u8)),
+                provides: [decimalsFromMint],
+            },
+            [config],
+        );
+        const fetchAccounts = getFetchAccounts([]);
+        const parsed = parse({ accounts: [readonly(MINT)], data: { config: { amount: 1n }, fee: 2 } });
+        await getDisplayAccountMap(root, parsed, fetchAccounts);
+        expect(fetchAccounts).not.toHaveBeenCalled();
+    });
+
+    test('it does not fetch accounts that only hidden fields within a placeholder read', async () => {
+        const hidden = { display: structFieldDisplayNode({ skip: 'always' }) };
+        const { parse, root } = setup({
+            accounts: [mintAccount],
+            data: data(field('config', data(field('amount', decimalsAmount, hidden), field('fee', u8)))),
+            display: instructionDisplayNode({ interpolatedIntent: 'Configure ${data.config}' }),
+            provides: [decimalsFromMint],
+        });
+        const fetchAccounts = getFetchAccounts([]);
+        const parsed = parse({ accounts: [readonly(MINT)], data: { config: { amount: 1n, fee: 2 } } });
+        await getDisplayAccountMap(root, parsed, fetchAccounts);
+        expect(fetchAccounts).not.toHaveBeenCalled();
+        expect(getInstructionDisplayFromParsedInstruction(root, parsed).interpolatedIntent).toBe('Configure Fee: 2');
+    });
+
+    test('it fetches the accounts that a hidden field a placeholder refers to reads', async () => {
+        const { parse, root } = setup({
+            accounts: [mintAccount],
+            data: data(field('amount', decimalsAmount, { display: structFieldDisplayNode({ skip: 'always' }) })),
+            display: instructionDisplayNode({ interpolatedIntent: 'Transfer ${data.amount}' }),
+            provides: [decimalsFromMint],
+        });
+        const fetchAccounts = getFetchAccounts([]);
+        await getDisplayAccountMap(root, parse({ accounts: [readonly(MINT)], data: { amount: 1n } }), fetchAccounts);
+        expect(fetchAccounts.mock.calls).toEqual([[[MINT]]]);
     });
 
     test('it does not fetch anything when the display reads no account', async () => {

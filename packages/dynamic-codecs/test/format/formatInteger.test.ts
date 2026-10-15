@@ -1,15 +1,18 @@
 import {
+    accountValueNode,
     amountNumberDisplayNode,
     floatValueNode,
     injectedValueNode,
+    instructionNode,
     integerTypeNode,
     integerValueNode,
+    providedNode,
     publicKeyValueNode,
     stringValueNode,
     unitNumberDisplayNode,
     type ValueNode,
 } from '@codama/nodes';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { formatInteger, getNodeCodec } from '../../src';
 import { hex } from '../_setup';
@@ -98,10 +101,45 @@ test('it does not format amounts whose decimals cannot be resolved', () => {
     expect(formatInteger(decoded, { resolveInjectedValue: () => undefined })).toBeNull();
 });
 
-test('it does not format amounts whose decimals are injected without a resolver', () => {
+test('it does not format amounts whose decimals are injected without a resolver or a provider', () => {
     const display = amountNumberDisplayNode({ decimals: injectedValueNode({ key: 'decimals' }) });
     const decoded = getNodeCodec([integerTypeNode('u64', { display })]).decode(hex('60e3160000000000'));
     expect(formatInteger(decoded)).toBeNull();
+});
+
+describe('provided values', () => {
+    const decimals = injectedValueNode({ key: 'decimals' });
+    const amount = integerTypeNode('u64', { display: amountNumberDisplayNode({ decimals }) });
+    const decodeIn = (provides: Parameters<typeof instructionNode>[0]['provides']) =>
+        getNodeCodec([instructionNode({ identifier: 'transfer', provides }), amount]).decode(hex('60e3160000000000'));
+
+    test('it resolves injected values from the value nodes provided by the instructions on their path', () => {
+        const decoded = decodeIn([providedNode('decimals', integerValueNode('6'))]);
+        expect(formatInteger(decoded)).toBe('1.5');
+    });
+
+    test('it resolves injected values from their fallback when no instruction provides them', () => {
+        const display = amountNumberDisplayNode({
+            decimals: injectedValueNode({ fallback: integerValueNode('6'), key: 'decimals' }),
+        });
+        const node = integerTypeNode('u64', { display });
+        expect(formatInteger(getNodeCodec([node]).decode(hex('60e3160000000000')))).toBe('1.5');
+    });
+
+    test('it leaves provided nodes that are not value nodes unresolved', () => {
+        const decoded = decodeIn([providedNode('decimals', accountValueNode('mint'))]);
+        expect(formatInteger(decoded)).toBeNull();
+    });
+
+    test('it prefers the resolver over the provided values', () => {
+        const decoded = decodeIn([providedNode('decimals', integerValueNode('6'))]);
+        expect(formatInteger(decoded, { resolveInjectedValue: () => integerValueNode('3') })).toBe('1500');
+    });
+
+    test('it falls back to the provided values when the resolver returns undefined', () => {
+        const decoded = decodeIn([providedNode('decimals', integerValueNode('6'))]);
+        expect(formatInteger(decoded, { resolveInjectedValue: () => undefined })).toBe('1.5');
+    });
 });
 
 test.each<[string, ValueNode]>([

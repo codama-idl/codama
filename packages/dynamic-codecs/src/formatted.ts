@@ -1,10 +1,17 @@
 import { CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, CodamaError } from '@codama/errors';
 import { titleCase } from '@codama/fragments/casing';
-import { DisplaySkip, getTextNodeContent, StandaloneTypeNode, StructFieldTypeNode } from '@codama/nodes';
+import {
+    DisplaySkip,
+    getTextNodeContent,
+    InjectedValueNode,
+    StandaloneTypeNode,
+    StructFieldTypeNode,
+} from '@codama/nodes';
 import {
     assertIsNodePath,
     getLastNodeFromPath,
     getLinkablesFromNode,
+    getProvidedScopeFromPath,
     isNodePath,
     LinkableDictionary,
     NodePath,
@@ -318,6 +325,13 @@ export type FormatDecodedNodeOptions = FormatOptions & {
      * the root of the decoded node, once, when a field with value labels is formatted.
      */
     linkables?: LinkableDictionary;
+    /**
+     * Present a value that cannot be formatted, e.g. an amount whose `decimals` cannot be
+     * resolved, given its fallback text, e.g. its raw integer, and its decoded node:
+     * `` raw => `${raw} (raw)` ``, so it cannot be mistaken for a formatted value. Defaults to the
+     * fallback text. The node stays `degraded` either way.
+     */
+    formatDegraded?: (text: string, decoded: DecodedNode) => string;
     /** Format booleans. Defaults to {@link formatBoolean}. */
     formatBoolean?: typeof formatBoolean;
     /** Format bytes. Defaults to {@link formatBytes}. */
@@ -345,21 +359,23 @@ export type FormatDecodedNodeOptions = FormatOptions & {
 /**
  * Format a decoded node, of any kind, into a formatted node: the same tree, where every node
  * also carries its `text` and whether it is `degraded`, and struct fields and enum variants
- * their label and display attributes. Callers walk the tree to lay it out, e.g. as rows
- * honouring `flatten` and `skip`, or use the `text` of a node to fill a sentence.
+ * their label and display attributes. Callers lay out structs as rows with
+ * {@link getFormattedRows}, walk the tree, or use the `text` of a node to fill a sentence.
  *
  * Leaves use the formatter of their kind, which can be overridden. Containers join the text of
  * their children: struct fields as `Label: text`, items and entries with `, `, a `Some` option as
  * its item and a `None` one as `None`, and an enum as its variant's label followed by its data in
- * parentheses. Containers within containers are wrapped in parentheses, so empty ones show as `()`. Struct fields skipped
- * `always` are left out of the text, and flattened ones are replaced by their prefixed fields.
+ * parentheses. Containers within containers are wrapped in parentheses, so empty ones show as `()`.
+ * Struct fields skipped `always` are left out of the text, and flattened ones are replaced by their
+ * prefixed fields.
  *
  * Struct fields whose decoded value matches one of their value labels present that label instead,
  * as their `text` and `valueLabel`, wherever they are, e.g. within a nested struct, and are not
  * flattened. The labels are matched as {@link getValueLabel} does.
  *
  * When an integer cannot be formatted, e.g. an amount whose `decimals` cannot be resolved, its
- * text is its raw value and it is `degraded`, as is every node whose text includes it.
+ * text is its raw value, through the `formatDegraded` option, and it is `degraded`, as is every
+ * node whose text includes it.
  *
  * @example
  * ```ts
@@ -373,7 +389,12 @@ export function formatDecodedNode<TDecoded extends DecodedNode>(
     decoded: TDecoded,
     options: FormatDecodedNodeOptions = {},
 ): GetFormattedNodeFromDecoded<TDecoded> {
-    return formatNode(decoded, withLazyLinkables(options, decoded)) as GetFormattedNodeFromDecoded<TDecoded>;
+    const scope = options.scope ?? getProvidedScopeFromPath(decoded.path);
+    return formatNode(
+        decoded,
+        withLazyLinkables({ ...options, scope }, decoded),
+        [],
+    ) as GetFormattedNodeFromDecoded<TDecoded>;
 }
 
 /** The given options, whose `linkables`, when absent, are recorded from the root of the decoded node on first use. */
@@ -388,21 +409,28 @@ function withLazyLinkables(options: FormatDecodedNodeOptions, decoded: DecodedNo
     return lazyOptions;
 }
 
-function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): FormattedNode {
+function formatNode(
+    decoded: DecodedNode,
+    options: FormatDecodedNodeOptions,
+    parents: readonly DecodedNode[],
+): FormattedNode {
+    // Children are formatted within this node, and leaves give their parents to the resolver.
+    const inner = [...parents, decoded];
+    const leafOptions = () => withParents(options, parents);
     const node = getLastNodeFromPath(decoded.path as NodePath<DecodableNode>);
     const kind = node.kind;
     switch (kind) {
         case 'accountNode':
         case 'eventNode': {
             const { data } = decoded as DecodedAccountNode | DecodedEventNode;
-            const formattedData = formatType(data, options);
+            const formattedData = formatType(data, options, inner);
             return { ...decoded, data: formattedData, degraded: formattedData.degraded, text: formattedData.text } as
                 | FormattedAccountNode
                 | FormattedEventNode;
         }
         case 'instructionNode': {
             const { data: decodedData, ...instruction } = decoded as DecodedInstructionNode;
-            const data = decodedData ? formatType(decodedData, options) : undefined;
+            const data = decodedData ? formatType(decodedData, options, inner) : undefined;
             return {
                 ...instruction,
                 ...(data && { data }),
@@ -412,7 +440,7 @@ function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): Fo
         }
         case 'definedTypeNode': {
             const definedType = decoded as DecodedDefinedTypeNode;
-            const type = formatType(definedType.type, options);
+            const type = formatType(definedType.type, options, inner);
             return {
                 ...definedType,
                 degraded: type.degraded,
@@ -424,7 +452,7 @@ function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): Fo
         case 'setTypeNode':
         case 'tupleTypeNode': {
             const list = decoded as DecodedArrayTypeNode | DecodedSetTypeNode | DecodedTupleTypeNode;
-            const items = list.items.map(item => formatType(item, options));
+            const items = list.items.map(item => formatType(item, options, inner));
             return {
                 ...list,
                 degraded: items.some(item => item.degraded),
@@ -435,7 +463,7 @@ function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): Fo
         case 'mapTypeNode': {
             const map = decoded as DecodedMapTypeNode;
             const entries = map.entries.map(
-                ([key, value]) => [formatType(key, options), formatType(value, options)] as const,
+                ([key, value]) => [formatType(key, options, inner), formatType(value, options, inner)] as const,
             );
             return {
                 ...map,
@@ -451,7 +479,7 @@ function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): Fo
                 | DecodedOptionTypeNode
                 | DecodedRemainderOptionTypeNode
                 | DecodedZeroableOptionTypeNode;
-            const item = decodedItem ? formatType(decodedItem, options) : undefined;
+            const item = decodedItem ? formatType(decodedItem, options, inner) : undefined;
             return {
                 ...option,
                 ...(item && { item }),
@@ -462,7 +490,7 @@ function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): Fo
         case 'enumTypeNode': {
             const enumNode = decoded as DecodedEnumTypeNode;
             const label = (options.formatEnum ?? formatEnum)(enumNode, options);
-            const variant = formatEnumVariant(enumNode.variant, label, options);
+            const variant = formatEnumVariant(enumNode.variant, label, options, inner);
             return {
                 ...enumNode,
                 degraded: variant.degraded,
@@ -472,62 +500,96 @@ function formatNode(decoded: DecodedNode, options: FormatDecodedNodeOptions): Fo
         }
         case 'enumVariantTypeNode': {
             const variant = decoded as DecodedEnumVariantTypeNode;
-            return formatEnumVariant(variant, getEnumVariantLabel(variant), options);
+            return formatEnumVariant(variant, getEnumVariantLabel(variant), options, parents);
         }
         case 'structTypeNode': {
             const struct = decoded as DecodedStructTypeNode;
-            const fields = struct.fields.map(field => formatStructField(field, options));
-            const entries = getStructTextEntries(fields, '');
+            const fields = struct.fields.map(field => formatStructField(field, options, inner));
+            const rows = getRowsOfFields(fields, '', []);
             return {
                 ...struct,
-                degraded: entries.some(([, field]) => field.degraded),
+                degraded: rows.some(row => row.field.degraded),
                 fields,
-                text: entries.map(([label, field]) => `${label}: ${field.valueLabel ?? embed(field.type)}`).join(', '),
+                text: rows.map(({ field, label }) => `${label}: ${field.valueLabel ?? embed(field.type)}`).join(', '),
             } satisfies FormattedStructTypeNode;
         }
         case 'structFieldTypeNode':
-            return formatStructField(decoded as DecodedStructFieldTypeNode, options);
+            return formatStructField(decoded as DecodedStructFieldTypeNode, options, parents);
         case 'booleanTypeNode':
             return withText(
                 decoded,
-                (options.formatBoolean ?? formatBoolean)(decoded as DecodedBooleanTypeNode, options),
+                (options.formatBoolean ?? formatBoolean)(decoded as DecodedBooleanTypeNode, leafOptions()),
             );
         case 'bytesTypeNode':
-            return withText(decoded, (options.formatBytes ?? formatBytes)(decoded as DecodedBytesTypeNode, options));
+            return withText(
+                decoded,
+                (options.formatBytes ?? formatBytes)(decoded as DecodedBytesTypeNode, leafOptions()),
+            );
         case 'dateTimeTypeNode':
             return withText(
                 decoded,
-                (options.formatDateTime ?? formatDateTime)(decoded as DecodedDateTimeTypeNode, options),
+                (options.formatDateTime ?? formatDateTime)(decoded as DecodedDateTimeTypeNode, leafOptions()),
             );
         case 'durationTypeNode':
             return withText(
                 decoded,
-                (options.formatDuration ?? formatDuration)(decoded as DecodedDurationTypeNode, options),
+                (options.formatDuration ?? formatDuration)(decoded as DecodedDurationTypeNode, leafOptions()),
             );
         case 'fixedPointTypeNode':
             return withText(
                 decoded,
-                (options.formatFixedPoint ?? formatFixedPoint)(decoded as DecodedFixedPointTypeNode, options),
+                (options.formatFixedPoint ?? formatFixedPoint)(decoded as DecodedFixedPointTypeNode, leafOptions()),
             );
         case 'floatTypeNode':
-            return withText(decoded, (options.formatFloat ?? formatFloat)(decoded as DecodedFloatTypeNode, options));
+            return withText(
+                decoded,
+                (options.formatFloat ?? formatFloat)(decoded as DecodedFloatTypeNode, leafOptions()),
+            );
         case 'integerTypeNode': {
             const integer = decoded as DecodedIntegerTypeNode;
-            const text = (options.formatInteger ?? formatInteger)(integer, options);
-            if (text === null) return { ...integer, degraded: true, text: integer.value.toString() };
+            const text = (options.formatInteger ?? formatInteger)(integer, leafOptions());
+            if (text === null) return { ...integer, degraded: true, text: formatDegraded(integer, options) };
             return { ...integer, degraded: false, text };
         }
         case 'publicKeyTypeNode':
-            return withText(decoded, formatPublicKey(decoded as DecodedPublicKeyTypeNode, options));
+            return withText(decoded, formatPublicKey(decoded as DecodedPublicKeyTypeNode, leafOptions()));
         case 'stringTypeNode':
-            return withText(decoded, (options.formatString ?? formatString)(decoded as DecodedStringTypeNode, options));
+            return withText(
+                decoded,
+                (options.formatString ?? formatString)(decoded as DecodedStringTypeNode, leafOptions()),
+            );
         default:
             throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NODE_KIND, { kind: kind satisfies never });
     }
 }
 
-function formatType(decoded: DecodedNode, options: FormatDecodedNodeOptions): FormattedTypeNode {
-    return formatNode(decoded, options) as FormattedTypeNode;
+function formatType(
+    decoded: DecodedNode,
+    options: FormatDecodedNodeOptions,
+    parents: readonly DecodedNode[],
+): FormattedTypeNode {
+    return formatNode(decoded, options, parents) as FormattedTypeNode;
+}
+
+/** The text of an integer that cannot be formatted: its raw value, through the `formatDegraded` option. */
+function formatDegraded(integer: DecodedIntegerTypeNode, options: FormatDecodedNodeOptions): string {
+    const raw = integer.value.toString();
+    return options.formatDegraded ? options.formatDegraded(raw, integer) : raw;
+}
+
+/** The options of a leaf, whose injected values are resolved with the decoded nodes containing it. */
+function withParents(options: FormatDecodedNodeOptions, parents: readonly DecodedNode[]): FormatDecodedNodeOptions {
+    const resolve = options.resolveInjectedValue;
+    if (!resolve) return options;
+    // Copy the descriptors rather than spreading, so lazily recorded linkables stay lazy.
+    const leafOptions: FormatDecodedNodeOptions = Object.defineProperties(
+        {},
+        Object.getOwnPropertyDescriptors(options),
+    );
+    return Object.defineProperty(leafOptions, 'resolveInjectedValue', {
+        enumerable: true,
+        value: (path: NodePath<InjectedValueNode>) => resolve(path, parents),
+    });
 }
 
 function withText(decoded: DecodedNode, text: string): FormattedNode {
@@ -538,10 +600,11 @@ function formatEnumVariant(
     variant: DecodedEnumVariantTypeNode,
     label: string,
     options: FormatDecodedNodeOptions,
+    parents: readonly DecodedNode[],
 ): FormattedEnumVariantTypeNode {
     const { data: decodedData, ...rest } = variant;
     const skipInnerData = getLastNodeFromPath(variant.path).display?.skipInnerData ?? false;
-    const data = decodedData ? formatType(decodedData, options) : undefined;
+    const data = decodedData ? formatType(decodedData, options, [...parents, variant]) : undefined;
     const shownData = !skipInnerData && data && data.text !== '' ? data : undefined;
     return {
         ...rest,
@@ -556,11 +619,13 @@ function formatEnumVariant(
 function formatStructField(
     decoded: DecodedStructFieldTypeNode,
     options: FormatDecodedNodeOptions,
+    parents: readonly DecodedNode[],
 ): FormattedStructFieldTypeNode {
     const field: StructFieldTypeNode = getLastNodeFromPath(decoded.path);
     const display = field.display;
-    const type = formatType(decoded.type, options);
-    const valueLabel = display?.valueLabels?.length ? getValueLabel(decoded, options.linkables) : undefined;
+    const type = formatType(decoded.type, options, [...parents, decoded]);
+    const { linkables, scope } = options;
+    const valueLabel = display?.valueLabels?.length ? getValueLabel(decoded, { linkables, scope }) : undefined;
     return {
         ...decoded,
         degraded: valueLabel === undefined && type.degraded,
@@ -574,20 +639,52 @@ function formatStructField(
     };
 }
 
+/** A row of a formatted struct, as returned by {@link getFormattedRows}. */
+export type FormattedRow = {
+    /** The struct field the row presents, e.g. to read its `skip`, `degraded` or `valueLabel`. */
+    readonly field: FormattedStructFieldTypeNode;
+    /**
+     * The identifiers of the fields from the struct to the row's field, e.g. `['config', 'fee']`
+     * for `fee` flattened from `config`: a key for the row, including across defined type links.
+     */
+    readonly identifiers: readonly string[];
+    /** The label of the field, prefixed by the `flattenPrefix` of the fields it is flattened from, e.g. `"Config Fee"`. */
+    readonly label: string;
+    /** The text of the field, e.g. `"25 bps"`. */
+    readonly text: string;
+};
+
 /**
- * The labelled fields a struct shows in its text: fields skipped `always` are left out and
- * flattened fields are replaced by their own fields, labelled with their prefix.
+ * Lay out a formatted struct as rows, as its text does: one row per field, where fields skipped
+ * `always` are left out and flattened fields are replaced by their own rows, labelled with their
+ * `flattenPrefix`. Fields skipped `whenInjected` are kept, with their `skip`, since only the
+ * caller knows whether another row presents their value. Each row carries the `identifiers` of
+ * the fields leading to it, e.g. to key it.
+ *
+ * @example
+ * ```ts
+ * // config is flattened with the prefix 'Config '
+ * assertIsFormattedNode(formatted.data, 'structTypeNode');
+ * getFormattedRows(formatted.data).map(row => `${row.label}: ${row.text}`);
+ * // ["Config Fee: 25 bps", "Owner: Alice"]
+ * ```
  */
-function getStructTextEntries(
+export function getFormattedRows(struct: FormattedStructTypeNode): FormattedRow[] {
+    return getRowsOfFields(struct.fields, '', []);
+}
+
+function getRowsOfFields(
     fields: readonly FormattedStructFieldTypeNode[],
     prefix: string,
-): (readonly [label: string, field: FormattedStructFieldTypeNode])[] {
+    parentIdentifiers: readonly string[],
+): FormattedRow[] {
     return fields.flatMap(field => {
         if (field.skip === 'always') return [];
+        const identifiers = [...parentIdentifiers, getLastNodeFromPath(field.path).identifier];
         if (field.flatten && isFormattedNode(field.type, 'structTypeNode')) {
-            return getStructTextEntries(field.type.fields, prefix + field.flattenPrefix);
+            return getRowsOfFields(field.type.fields, prefix + field.flattenPrefix, identifiers);
         }
-        return [[prefix + field.label, field] as const];
+        return [{ field, identifiers, label: prefix + field.label, text: field.text }];
     });
 }
 

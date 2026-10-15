@@ -160,7 +160,7 @@ test('it uses the given linkables rather than recording them', () => {
     const decoded = getNodeCodec([root, root.program, data]).decode(hex('01'));
 
     // Then the link cannot be resolved from them.
-    expect(() => getValueLabel(decoded.fields[0], new LinkableDictionary())).toThrow(
+    expect(() => getValueLabel(decoded.fields[0], { linkables: new LinkableDictionary() })).toThrow(
         expect.objectContaining({ context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }) }),
     );
 });
