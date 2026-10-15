@@ -15,7 +15,7 @@ import {
 function options(overrides: Partial<GenerateOptions> = {}): GenerateOptions {
     return {
         outputDir: '/tmp/unused',
-        targetSpecMajor: 1,
+        targetSpecMajor: 2,
         ...overrides,
     };
 }
@@ -23,13 +23,13 @@ function options(overrides: Partial<GenerateOptions> = {}): GenerateOptions {
 describe('validateRenderOptions', () => {
     const spec = getSpec();
 
-    it('accepts the active v1 spec with defaulted options', () => {
+    it('accepts the active v2 spec with defaulted options', () => {
         expect(() => validateRenderOptions(spec, options())).not.toThrow();
     });
 
     it('throws when targetSpecMajor does not match the spec version', () => {
         expect(() => validateRenderOptions(spec, options({ targetSpecMajor: 9 }))).toThrow(
-            /targetSpecMajor=9.*major 1/,
+            /targetSpecMajor=9.*major 2/,
         );
     });
 
@@ -41,7 +41,7 @@ describe('validateRenderOptions', () => {
     it('throws when the default NODE_CONFIGS references a node kind the spec does not declare', () => {
         // Emptying the spec triggers the cross-check on the first
         // configured node kind (`accountNode`, etc.).
-        const empty: Spec = { categories: [], version: '1.0.0' };
+        const empty: Spec = { categories: [], version: '2.0.0' };
         expect(() => validateRenderOptions(empty, options())).toThrow(/nodeConfigs references unknown node kind/);
     });
 
@@ -55,12 +55,11 @@ describe('validateRenderOptions', () => {
                 {
                     enumerations: [],
                     name: 'topLevel',
-                    nestedUnions: [],
                     nodes: spec.categories.flatMap(c => c.nodes).map(n => ({ ...n, attributes: [] })),
                     unions: [],
                 },
             ],
-            version: '1.0.0',
+            version: '2.0.0',
         };
         expect(() => validateRenderOptions(synthetic, options())).toThrow(
             /nodeConfigs\.attributes for ".+" references attribute ".+" which the spec does not declare/,
@@ -85,12 +84,11 @@ describe('validateRenderOptions', () => {
                 {
                     enumerations: [],
                     name: 'topLevel',
-                    nestedUnions: [],
                     nodes: [defineNode('realNode', { attributes: [] })],
                     unions: [],
                 },
             ],
-            version: '1.0.0',
+            version: '2.0.0',
         };
         const customNodeConfigs = new Map<string, NodeConstructorConfig>([['ghostNode', {}]]);
         expect(() => validateRenderOptions(synthetic, options({ nodeConfigs: customNodeConfigs }))).toThrow(
@@ -111,7 +109,7 @@ describe('validateRenderOptions', () => {
 });
 
 describe('getRenderMap', () => {
-    const map = getRenderMap(getSpec(), { targetSpecMajor: 1 });
+    const map = getRenderMap(getSpec(), { targetSpecMajor: 2 });
 
     it('produces a constructor file per spec node, keyed by .ts-suffixed path', () => {
         expect(map.has('AccountNode.ts')).toBe(true);
@@ -155,19 +153,17 @@ describe('getRenderMap', () => {
     });
 
     it('omits the XxxNodeInput type for positional-arg constructors', () => {
-        const entry = getFromRenderMap(map, 'typeNodes/NumberTypeNode.ts');
-        expect(entry.content).not.toContain('NumberTypeNodeInput');
-        expect(entry.content).toContain('export function numberTypeNode');
+        const entry = getFromRenderMap(map, 'typeNodes/IntegerTypeNode.ts');
+        expect(entry.content).not.toContain('IntegerTypeNodeInput');
+        expect(entry.content).toContain('export function integerTypeNode');
     });
 
-    it('drops empty docs at the call site via the conditional-spread pattern', () => {
+    it('passes docs through as a child, omitted when absent', () => {
+        // Docs are a `string | TextNode` child in v2, so they are forwarded
+        // as given rather than parsed into lines.
         const entry = getFromRenderMap(map, 'AccountNode.ts');
-        // Single `parseDocs` call hoisted to a `parsedDocs` local; the
-        // conditional spread reuses the local. The local is named
-        // `parsedDocs` (not `docs`) to avoid shadowing a positional
-        // `docs` parameter on the few constructors that take one.
-        expect(entry.content).toContain('const parsedDocs = parseDocs(input.docs);');
-        expect(entry.content).toContain('...(parsedDocs.length > 0 && { docs: parsedDocs }),');
+        expect(entry.content).toContain('...(input.docs !== undefined && { docs: input.docs }),');
+        expect(entry.content).not.toContain('parseDocs');
     });
 
     it('emits the spec-version constant as its own file, typed as `CodamaVersion`', () => {
@@ -192,7 +188,7 @@ describe('getRenderMap', () => {
         const entry = getFromRenderMap(map, 'typeNodes/StandaloneTypeNode.ts');
         expect(entry.content).toContain('export const STANDALONE_TYPE_NODE_KINDS = [');
         expect(entry.content).not.toContain('] as const;');
-        expect(entry.content).toContain("'numberTypeNode' as const,");
+        expect(entry.content).toContain("'integerTypeNode' as const,");
     });
 
     it('expands union-of-unions transitively by spreading the dependent kinds array', () => {
@@ -224,23 +220,21 @@ describe('getRenderMap', () => {
     });
 
     it('collapses `key: key` pass-throughs to the shorthand `key`', () => {
-        // `numberTypeNode` is a positional constructor whose body
-        // simply forwards `format` and `endian` from the params.
-        const entry = getFromRenderMap(map, 'typeNodes/NumberTypeNode.ts');
+        // `integerTypeNode` is a positional constructor whose body
+        // simply forwards `format` from the params.
+        const entry = getFromRenderMap(map, 'typeNodes/IntegerTypeNode.ts');
         expect(entry.content).toContain('format,');
-        expect(entry.content).toContain('endian,');
         expect(entry.content).not.toContain('format: format');
-        expect(entry.content).not.toContain('endian: endian');
     });
 
-    it('widens `name` parameters from the spec brand to plain `string`', () => {
-        // The spec types `name` attributes as `stringIdentifier()`,
-        // which would render as `CamelCaseString`. The constructor
+    it('widens `identifier` parameters from the spec brand to plain `string`', () => {
+        // The spec types `identifier` attributes as `identifierString()`,
+        // which would render as `IdentifierString`. The constructor
         // relaxes this to `string` so callers can pass any input;
-        // the body wraps in `camelCase(...)` to brand the value.
+        // the body wraps in `identifierString(...)` to brand the value.
         const entry = getFromRenderMap(map, 'linkNodes/AccountLinkNode.ts');
-        expect(entry.content).toMatch(/name: string\b/);
-        expect(entry.content).toContain('name: camelCase(name)');
+        expect(entry.content).toMatch(/identifier: string\b/);
+        expect(entry.content).toContain('identifier: identifierString(identifier)');
     });
 
     it('renders spec-union references by name in generic constraints', () => {

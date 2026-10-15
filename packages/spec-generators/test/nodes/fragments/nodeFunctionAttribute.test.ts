@@ -50,16 +50,16 @@ describe('getNodeFunctionAttributeFragment', () => {
         expect(out).toBe('withHeader: options.withHeader ?? someFn(value),');
     });
 
-    it('rule 3: stringIdentifier wraps the reader in `camelCase(...)`', () => {
-        const attr = specAttr(attribute('name', stringIdentifier()));
-        const out = getNodeFunctionAttributeFragment(attr, 'input.name', undefined, undefined, false).content;
-        expect(out).toBe('name: camelCase(input.name),');
+    it('rule 3: stringIdentifier wraps the reader in `identifierString(...)`', () => {
+        const attr = specAttr(attribute('identifier', stringIdentifier()));
+        const out = getNodeFunctionAttributeFragment(attr, 'input.identifier', undefined, undefined, false).content;
+        expect(out).toBe('identifier: identifierString(input.identifier),');
     });
 
     it('rule 3 (optional path): optional stringIdentifier wraps in a conditional spread', () => {
         const attr = specAttr(optionalAttribute('identifier', stringIdentifier()));
         const out = getNodeFunctionAttributeFragment(attr, 'input.identifier', undefined, undefined, false).content;
-        expect(out).toBe('...(input.identifier !== undefined && { identifier: camelCase(input.identifier) }),');
+        expect(out).toBe('...(input.identifier !== undefined && { identifier: identifierString(input.identifier) }),');
     });
 
     it('uses the spec attribute name as the body key regardless of `paramName`', () => {

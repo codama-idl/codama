@@ -105,7 +105,7 @@ describe('validateRenderOptions', () => {
 });
 
 describe('getRenderMap', () => {
-    const map = getRenderMap(getSpec(), { targetSpecMajor: 1 });
+    const map = getRenderMap(getSpec(), { targetSpecMajor: 2 });
 
     it('produces an entry per generated file, keyed by .ts-suffixed path', () => {
         expect(map.has('AccountNode.ts')).toBe(true);
@@ -121,16 +121,16 @@ describe('getRenderMap', () => {
     });
 
     it('preserves the Fragment imports map keyed by resolved relative paths', () => {
-        // `AccountNode` references the hand-written `Docs` and brands
-        // siblings, plus a few subdir nodes. After resolution every key
-        // is a relative path (no symbolic `node:` / `docs:` keys left).
+        // `AccountNode` references the hand-written brands sibling,
+        // plus a few sibling and subdir nodes. After resolution every key
+        // is a relative path (no symbolic `node:` / `brand:` keys left).
         const entry = getFromRenderMap(map, 'AccountNode.ts');
         for (const key of entry.imports.keys()) {
             expect(key).not.toMatch(/^[a-z]+:/);
         }
-        expect([...entry.imports.keys()]).toContain('../Docs');
         expect([...entry.imports.keys()]).toContain('../brands');
-        expect([...entry.imports.keys()]).toContain('./typeNodes/NestedTypeNode');
+        expect([...entry.imports.keys()]).toContain('./TextNode');
+        expect([...entry.imports.keys()]).toContain('./typeNodes/TypeNode');
     });
 
     it('emits the rendered interface body as the Fragment content', () => {
@@ -144,8 +144,8 @@ describe('getRenderMap', () => {
         // the interface body. The `imports` map carries the same
         // information as metadata.
         const entry = getFromRenderMap(map, 'AccountNode.ts');
-        expect(entry.content).toContain(`import type { Docs } from '../Docs';`);
-        expect(entry.content).toContain(`import type { CamelCaseString } from '../brands';`);
+        expect(entry.content).toContain(`import type { IdentifierString } from '../brands';`);
+        expect(entry.content).toContain(`import type { TextNode } from './TextNode';`);
     });
 
     it('emits a frozen render map', () => {

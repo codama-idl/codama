@@ -30,10 +30,10 @@ describe('getNodeTypeParameterAttributes', () => {
     });
 
     it('also selects narrowable-data attributes listed in NARROWABLE_DATA_ATTRIBUTES', () => {
-        // `numberTypeNode:format` is on the shared narrowable list.
-        const n = defineNode('numberTypeNode', {
+        // `integerTypeNode:format` is on the shared narrowable list.
+        const n = defineNode('integerTypeNode', {
             attributes: [
-                attribute('format', enumeration('NumberFormat')),
+                attribute('format', enumeration('IntegerFormat')),
                 attribute('endian', enumeration('Endianness')),
             ],
         });
@@ -44,45 +44,44 @@ describe('getNodeTypeParameterAttributes', () => {
     });
 
     it('uses genericParamOrder overrides to reorder type-parameter attributes', () => {
-        // `instructionArgumentNode` surfaces `type` (child), `defaultValue`
-        // (child), and `display` (child) as type parameters; the
-        // GENERIC_PARAM_ORDER table pins the order to
-        // `[defaultValue, type, display]`.
-        const n = defineNode('instructionArgumentNode', {
+        // `pdaValueNode` surfaces `pda`, `seeds` and `programId` (children)
+        // as type parameters; the GENERIC_PARAM_ORDER table pins the
+        // order to `[seeds, programId, pda]`.
+        const n = defineNode('pdaValueNode', {
             attributes: [
-                attribute('type', union('TypeNode')),
-                optionalAttribute('defaultValue', union('InstructionInputValueNode')),
-                optionalAttribute('display', node('StructFieldDisplayNode')),
+                attribute('pda', union('PdaValuePda')),
+                attribute('seeds', array(union('PdaSeedValueNode'))),
+                optionalAttribute('programId', union('PdaValueProgramId')),
             ],
         });
         const attrs = getNodeTypeParameterAttributes(n, scope);
-        expect(attrs.map(a => a.name)).toEqual(['defaultValue', 'type', 'display']);
+        expect(attrs.map(a => a.name)).toEqual(['seeds', 'programId', 'pda']);
     });
 
     it('throws when GENERIC_PARAM_ORDER references attributes the spec does not surface', () => {
-        // `programNode`'s order lists `pdas` first. If we construct a
-        // synthetic `programNode` without it, the override is out of
-        // sync with the spec.
+        // `programNode`'s order lists `docs` and `pdas` first. If we
+        // construct a synthetic `programNode` without them, the override
+        // is out of sync with the spec.
         const n = defineNode('programNode', { attributes: [attribute('publicKey', u32())] });
         expect(() => getNodeTypeParameterAttributes(n, scope)).toThrow(
             /genericParamOrder for "programNode" is out of sync.*unknown attribute/,
         );
     });
 
-    it('throws when the spec surfaces a type-parameter attribute that GENERIC_PARAM_ORDER does not list', () => {
-        // `instructionArgumentNode`'s order is `[defaultValue, type, display]`.
-        // Synthesise an unrelated type-parameter attribute (`extra`) and
-        // omit `display`; the strict check should reject the mismatch.
-        const n = defineNode('instructionArgumentNode', {
+    it('appends type-parameter attributes that GENERIC_PARAM_ORDER does not list, e.g. base attributes', () => {
+        // `pdaValueNode`'s order is `[seeds, programId, pda]`. Base
+        // attributes such as `plugins` are deliberately absent from the
+        // override table and land last.
+        const n = defineNode('pdaValueNode', {
             attributes: [
-                attribute('type', union('TypeNode')),
-                optionalAttribute('defaultValue', union('InstructionInputValueNode')),
-                attribute('extra', union('TypeNode')),
+                optionalAttribute('plugins', array(node('pluginNode'))),
+                attribute('pda', union('PdaValuePda')),
+                attribute('seeds', array(union('PdaSeedValueNode'))),
+                optionalAttribute('programId', union('PdaValueProgramId')),
             ],
         });
-        expect(() => getNodeTypeParameterAttributes(n, scope)).toThrow(
-            /genericParamOrder for "instructionArgumentNode" is out of sync.*missing type-parameter attribute/,
-        );
+        const attrs = getNodeTypeParameterAttributes(n, scope);
+        expect(attrs.map(a => a.name)).toEqual(['seeds', 'programId', 'pda', 'plugins']);
     });
 });
 
@@ -106,14 +105,14 @@ describe('computeConstructorDefaults', () => {
     });
 
     it('falls back to the wide constraint as default for a narrowable-data attribute with no override', () => {
-        // `numberTypeNode:format` is narrowable; with no override, the
-        // constructor default is the wide constraint (`NumberFormat`).
-        const n = defineNode('numberTypeNode', {
-            attributes: [attribute('format', enumeration('NumberFormat'))],
+        // `integerTypeNode:format` is narrowable; with no override, the
+        // constructor default is the wide constraint (`IntegerFormat`).
+        const n = defineNode('integerTypeNode', {
+            attributes: [attribute('format', enumeration('IntegerFormat'))],
         });
         const attrs = getNodeTypeParameterAttributes(n, scope);
         const [d] = computeConstructorDefaults(n, attrs, undefined, scope);
-        expect(d.content).toBe('NumberFormat');
+        expect(d.content).toBe('IntegerFormat');
     });
 
     it('uses an override-supplied default verbatim for primitive defaults', () => {
@@ -132,8 +131,8 @@ describe('computeConstructorDefaults', () => {
         const config: NodeConstructorConfig = {
             attributes: {
                 size: {
-                    default: fragment`numberTypeNode('u8')`,
-                    genericDefault: fragment`NumberTypeNode<'u8'>`,
+                    default: fragment`integerTypeNode('u8')`,
+                    genericDefault: fragment`IntegerTypeNode<'u8'>`,
                 },
             },
         };
@@ -142,7 +141,7 @@ describe('computeConstructorDefaults', () => {
         });
         const attrs = getNodeTypeParameterAttributes(n, scope);
         const [d] = computeConstructorDefaults(n, attrs, config, scope);
-        expect(d.content).toBe("NumberTypeNode<'u8'>");
+        expect(d.content).toBe("IntegerTypeNode<'u8'>");
     });
 
     it('falls back to the wide constraint for a required attribute with a `coerce` override', () => {

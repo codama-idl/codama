@@ -8,11 +8,11 @@ import {
     enumeration,
     literal,
     literalUnion,
-    nestedUnion,
     node,
     string,
     stringIdentifier,
     stringVersion,
+    text,
     u32,
     union,
 } from '@codama/spec/api';
@@ -25,7 +25,7 @@ describe('getTypeExprFragment', () => {
         expect(getTypeExprFragment(string()).content).toBe('string');
     });
 
-    it('renders address as plain string for v1 (no brand, no import)', () => {
+    it('renders address as plain string (no brand, no import)', () => {
         const result = getTypeExprFragment(address());
         expect(result.content).toBe('string');
         expect(result.imports.size).toBe(0);
@@ -63,10 +63,10 @@ describe('getTypeExprFragment', () => {
         expect(getTypeExprFragment(literalUnion(true, 'either')).content).toBe('true | "either"');
     });
 
-    it('emits CamelCaseString for stringIdentifier with a brand: import key', () => {
+    it('emits IdentifierString for stringIdentifier with a brand: import key', () => {
         const result = getTypeExprFragment(stringIdentifier());
-        expect(result.content).toBe('CamelCaseString');
-        expect([...result.imports.keys()]).toEqual(['brand:CamelCaseString']);
+        expect(result.content).toBe('IdentifierString');
+        expect([...result.imports.keys()]).toEqual(['brand:IdentifierString']);
     });
 
     it('emits Version for stringVersion with a version: import key', () => {
@@ -81,10 +81,16 @@ describe('getTypeExprFragment', () => {
         expect([...result.imports.keys()]).toEqual(['version:CodamaVersion']);
     });
 
-    it('emits a Docs reference imported from docs:Docs', () => {
+    it('renders docs as `string | TextNode` with a node: import key', () => {
         const result = getTypeExprFragment(docs());
-        expect(result.content).toBe('Docs');
-        expect([...result.imports.keys()]).toEqual(['docs:Docs']);
+        expect(result.content).toBe('string | TextNode');
+        expect([...result.imports.keys()]).toEqual(['node:textNode']);
+    });
+
+    it('renders text as docs are rendered', () => {
+        const result = getTypeExprFragment(text());
+        expect(result.content).toBe('string | TextNode');
+        expect([...result.imports.keys()]).toEqual(['node:textNode']);
     });
 
     it('renders enumeration references with an enumeration: import key', () => {
@@ -123,12 +129,6 @@ describe('getTypeExprFragment', () => {
         // The `Array<…>` wrapping makes precedence unambiguous, so a
         // literal-union element is emitted without extra parens.
         expect(getTypeExprFragment(array(literalUnion(true, 'either'))).content).toBe('Array<true | "either">');
-    });
-
-    it('renders nestedUnion wrapping with both nestedUnion: and node: import keys', () => {
-        const result = getTypeExprFragment(nestedUnion('NestedTypeNode', 'innerTypeNode'));
-        expect(result.content).toBe('NestedTypeNode<InnerTypeNode>');
-        expect([...result.imports.keys()].sort()).toEqual(['nestedUnion:NestedTypeNode', 'node:innerTypeNode']);
     });
 
     it('emits a valid TS string literal even when the value contains characters that need escaping', () => {

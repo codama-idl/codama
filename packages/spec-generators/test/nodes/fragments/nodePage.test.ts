@@ -1,5 +1,5 @@
 import { fragment, use } from '@codama/fragments/javascript';
-import { array, attribute, defineNode, docs, stringIdentifier, union } from '@codama/spec/api';
+import { array, attribute, defineNode, docs, optionalAttribute, stringIdentifier, union } from '@codama/spec/api';
 import { describe, expect, it } from 'vitest';
 
 import type { NodeConstructorConfig } from '../../../src/nodes/config';
@@ -18,7 +18,7 @@ const scope: Pick<ResolvedRenderOptions, 'genericParamOrder' | 'narrowableDataAt
 describe('getNodePageFragment', () => {
     it('emits an `export function <kind>` declaration', () => {
         const n = defineNode('myNode', {
-            attributes: [attribute('name', stringIdentifier()), attribute('data', union('TypeNode'))],
+            attributes: [attribute('identifier', stringIdentifier()), attribute('data', union('TypeNode'))],
         });
         const out = getNodePageFragment(n, 'MyNode', undefined, scope).content;
         expect(out).toContain('export function myNode<');
@@ -33,18 +33,20 @@ describe('getNodePageFragment', () => {
         expect(out).not.toContain('MyNodeInput');
     });
 
-    it('imports `camelCase` from shared when the body uses it', () => {
-        const n = defineNode('myNode', { attributes: [attribute('name', stringIdentifier())] });
+    it('imports `identifierString` from shared when the body uses it', () => {
+        const n = defineNode('myNode', { attributes: [attribute('identifier', stringIdentifier())] });
         const out = getNodePageFragment(n, 'MyNode', undefined, scope);
-        expect([...out.imports.keys()]).toContain('shared:camelCase');
+        expect([...out.imports.keys()]).toContain('shared:identifierString');
     });
 
-    it('imports `parseDocs` from shared when the node has a `docs` attribute', () => {
+    it('imports `TextNode` for a `docs` attribute without any shared docs helper', () => {
         const n = defineNode('myNode', {
-            attributes: [attribute('name', stringIdentifier()), attribute('docs', docs())],
+            attributes: [attribute('identifier', stringIdentifier()), optionalAttribute('docs', docs())],
         });
-        const out = getNodePageFragment(n, 'MyNode', undefined, scope);
-        expect([...out.imports.keys()]).toContain('shared:parseDocs');
+        const { imports } = getNodePageFragment(n, 'MyNode', undefined, scope);
+        const nodeTypes = [...(imports.get('@codama/node-types')?.values() ?? [])].map(i => i.usedIdentifier);
+        expect(nodeTypes).toContain('TextNode');
+        expect([...imports.keys()].filter(key => key.startsWith('shared:'))).toEqual(['shared:identifierString']);
     });
 
     it('pulls in imports declared by an override Fragment via use(...)', () => {

@@ -1,22 +1,14 @@
 import type { Spec } from '@codama/spec';
-import {
-    defineCategory,
-    defineEnumeration,
-    defineNestedUnion,
-    defineNode,
-    defineUnion,
-    node,
-    variant,
-} from '@codama/spec/api';
+import { defineCategory, defineEnumeration, defineNode, defineUnion, variant } from '@codama/spec/api';
 import { describe, expect, it } from 'vitest';
 
 import { buildRenderScope, type RenderOptions } from '../../src/nodeTypes/options';
 
 function buildSpec(categories: Spec['categories']): Spec {
-    return { categories, version: '1.0.0' };
+    return { categories, version: '2.0.0' };
 }
 
-const options: RenderOptions = { targetSpecMajor: 1 };
+const options: RenderOptions = { targetSpecMajor: 2 };
 
 describe('buildRenderScope', () => {
     it('places type-category nodes under typeNodes/', () => {
@@ -107,29 +99,8 @@ describe('buildRenderScope', () => {
         expect(scope.symbolicModules.get('union:InstructionByteDeltaValue')).toBe('InstructionByteDeltaValue');
     });
 
-    it('places nested-union aliases under their parent category', () => {
-        const scope = buildRenderScope(
-            buildSpec([
-                defineCategory('type', {
-                    nestedUnions: [
-                        defineNestedUnion('NestedTypeNode', {
-                            base: node('innerTypeNode'),
-                            wrappers: ['fixedSizeTypeNode'],
-                        }),
-                    ],
-                    nodes: [
-                        defineNode('innerTypeNode', { attributes: [] }),
-                        defineNode('fixedSizeTypeNode', { attributes: [] }),
-                    ],
-                }),
-            ]),
-            options,
-        );
-        expect(scope.symbolicModules.get('nestedUnion:NestedTypeNode')).toBe('typeNodes/NestedTypeNode');
-    });
-
     it('points every brand at the hand-written ../brands sibling', () => {
-        // None of the brand / Docs / Version files are emitted by the
+        // None of the brand / Version files are emitted by the
         // generator; they live at the top of `@codama/node-types/src/`.
         // The scope still carries entries so renderers can resolve
         // symbolic imports against them.
@@ -144,9 +115,9 @@ describe('buildRenderScope', () => {
         expect(scope.symbolicModules.get('brand:CamelCaseString')).toBeUndefined();
     });
 
-    it('points docs:Docs at the hand-written ../Docs sibling', () => {
+    it('no longer registers a Docs module, since docs are `string | TextNode`', () => {
         const scope = buildRenderScope(buildSpec([]), options);
-        expect(scope.symbolicModules.get('docs:Docs')).toBe('../Docs');
+        expect(scope.symbolicModules.get('docs:Docs')).toBeUndefined();
     });
 
     it('points version:Version at the hand-written ../Version sibling', () => {
@@ -168,25 +139,19 @@ describe('buildRenderScope', () => {
 
     it('throws on an unknown category name', () => {
         const spec: Spec = {
-            categories: [{ enumerations: [], name: 'mystery', nestedUnions: [], nodes: [], unions: [] }],
-            version: '1.0.0',
+            categories: [{ enumerations: [], name: 'mystery', nodes: [], unions: [] }],
+            version: '2.0.0',
         };
         expect(() => buildRenderScope(spec, options)).toThrow(/unknown category "mystery"/);
     });
 
     it('files every entity in a category under that category folder', () => {
-        // Sanity: a single category packing nodes, unions, enumerations,
-        // and nested unions all land under the same folder.
+        // Sanity: a single category packing nodes, unions and
+        // enumerations all land under the same folder.
         const scope = buildRenderScope(
             buildSpec([
                 defineCategory('type', {
                     enumerations: [defineEnumeration('SomeEnum', { variants: [variant('a')] })],
-                    nestedUnions: [
-                        defineNestedUnion('SomeNested', {
-                            base: node('a'),
-                            wrappers: ['b'],
-                        }),
-                    ],
                     nodes: [defineNode('a', { attributes: [] }), defineNode('b', { attributes: [] })],
                     unions: [defineUnion('SomeUnion', { members: ['a'] })],
                 }),
@@ -196,6 +161,5 @@ describe('buildRenderScope', () => {
         expect(scope.symbolicModules.get('node:a')).toBe('typeNodes/A');
         expect(scope.symbolicModules.get('union:SomeUnion')).toBe('typeNodes/SomeUnion');
         expect(scope.symbolicModules.get('enumeration:SomeEnum')).toBe('typeNodes/someEnum');
-        expect(scope.symbolicModules.get('nestedUnion:SomeNested')).toBe('typeNodes/SomeNested');
     });
 });

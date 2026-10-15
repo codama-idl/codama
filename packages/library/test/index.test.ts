@@ -24,17 +24,19 @@ test('it exports visitors', () => {
 });
 
 test('it accepts visitors', () => {
-    const codama = createFromRoot(rootNode(programNode({ name: 'myProgram', publicKey: '1111' })));
+    const codama = createFromRoot(rootNode(programNode({ identifier: 'myProgram', publicKey: '1111' })));
     const visitor = voidVisitor({ keys: ['rootNode'] });
     const result = codama.accept(visitor) satisfies void;
     expect(typeof result).toBe('undefined');
 });
 
 test('it updates the root node returned by visitors', () => {
-    const codama = createFromRoot(rootNode(programNode({ name: 'myProgram', publicKey: '1111' })));
-    const visitor = rootNodeVisitor(node => rootNode(programNode({ ...node.program, name: 'myTransformedProgram' })));
+    const codama = createFromRoot(rootNode(programNode({ identifier: 'myProgram', publicKey: '1111' })));
+    const visitor = rootNodeVisitor(node =>
+        rootNode(programNode({ ...node.program, identifier: 'myTransformedProgram' })),
+    );
     codama.update(visitor) satisfies void;
-    expect(codama.getRoot()).toEqual(rootNode(programNode({ name: 'myTransformedProgram', publicKey: '1111' })));
+    expect(codama.getRoot()).toEqual(rootNode(programNode({ identifier: 'myTransformedProgram', publicKey: '1111' })));
 });
 
 test('it reads an IDL that omits every array attribute without throwing (skip-when-empty)', () => {
@@ -45,8 +47,8 @@ test('it reads an IDL that omits every array attribute without throwing (skip-wh
     const json = JSON.stringify({
         kind: 'rootNode',
         program: {
+            identifier: 'myProgram',
             kind: 'programNode',
-            name: 'myProgram',
             publicKey: '1111',
             version: '1.0.0',
         },
@@ -70,14 +72,17 @@ test('it reads an IDL that omits every array attribute without throwing (skip-wh
 
 test('it accepts document versions sharing the spec major, regardless of minor and patch', () => {
     expect(() => validateCodamaVersion(CODAMA_VERSION)).not.toThrow();
-    expect(() => validateCodamaVersion('1.0.0')).not.toThrow();
-    expect(() => validateCodamaVersion('1.42.7')).not.toThrow();
-    expect(() => validateCodamaVersion('1.6.0-rc.6')).not.toThrow();
+    expect(() => validateCodamaVersion('2.0.0')).not.toThrow();
+    expect(() => validateCodamaVersion('2.42.7')).not.toThrow();
+    expect(() => validateCodamaVersion('2.6.0-rc.6')).not.toThrow();
 });
 
 test('it rejects document versions from another spec major', () => {
-    expect(() => validateCodamaVersion('2.0.0')).toThrow(
-        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '2.0.0' }),
+    expect(() => validateCodamaVersion('1.0.0')).toThrow(
+        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '1.0.0' }),
+    );
+    expect(() => validateCodamaVersion('3.0.0')).toThrow(
+        new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '3.0.0' }),
     );
     expect(() => validateCodamaVersion('0.21.3')).toThrow(
         new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '0.21.3' }),
@@ -97,7 +102,7 @@ test('it rejects unparsable document versions', () => {
 });
 
 test('it validates the document version when creating a Codama instance', () => {
-    const program = programNode({ name: 'myProgram', publicKey: '1111' });
+    const program = programNode({ identifier: 'myProgram', publicKey: '1111' });
     expect(() => createFromRoot(rootNode(program))).not.toThrow();
     expect(() => createFromRoot({ ...rootNode(program), version: '99.0.0' as typeof CODAMA_VERSION })).toThrow(
         new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '99.0.0' }),

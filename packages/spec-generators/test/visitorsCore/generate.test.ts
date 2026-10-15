@@ -46,7 +46,7 @@ describe('validateRenderOptions', () => {
 });
 
 describe('getRenderMap', () => {
-    const map = getRenderMap(getSpec(), { targetSpecMajor: 1 });
+    const map = getRenderMap(getSpec(), { targetSpecMajor: 2 });
 
     it('emits one page per visitor plus the test-paths map and an index', () => {
         expect(map.has('identityVisitor.ts')).toBe(true);

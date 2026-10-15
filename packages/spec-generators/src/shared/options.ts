@@ -17,9 +17,10 @@ export interface SharedRenderOptions {
     readonly categoryDirectories?: ReadonlyMap<string, string>;
     /**
      * Per-node override of the type-parameter emission order. Each
-     * value must enumerate exactly the set of attributes that surface
-     * as type parameters for the node — no more, no fewer — otherwise
-     * the run fails.
+     * value lists attributes that surface as type parameters for the
+     * node, in their emission order. Naming an attribute the node does
+     * not surface fails the run, and type parameters a value does not
+     * list, e.g. the base `plugins`, are appended after the listed ones.
      */
     readonly genericParamOrder?: ReadonlyMap<string, readonly string[]>;
     /**
