@@ -425,7 +425,9 @@ describe('matchDiscriminators', () => {
 
             // Then the discriminator field is not found, since identifying bytes cannot read other accounts.
             expect(() => matchDiscriminators(new Uint8Array(32).fill(6), [discriminator], data, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('mint.data.decimals') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('mint.data.decimals'),
+                }),
             );
         });
     });
