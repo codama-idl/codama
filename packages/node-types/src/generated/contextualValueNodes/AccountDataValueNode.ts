@@ -14,7 +14,7 @@ export interface AccountDataValueNode<TPlugins extends Array<PluginNode> | undef
     readonly account: IdentifierString;
     /**
      * The path to the value within the account's decoded data — e.g. `authority` or `state.balances[0]`.
-     * Field segments are only valid where the data type resolves to a struct (following type and account links).
+     * Field segments are only valid where the data type resolves to a struct (following type links), and a `.data` segment crosses a public key's `accountLink` into the linked account's data, e.g. `mint.data.decimals`.
      * When absent, the value is the whole decoded account data.
      */
     readonly path?: PathString;
