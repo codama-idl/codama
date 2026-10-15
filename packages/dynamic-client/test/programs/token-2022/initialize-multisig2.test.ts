@@ -2,7 +2,7 @@ import { getMultisigDecoder } from '@solana-program/token-2022';
 import { describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';
-import { systemClient, TOKEN_2022_MULTISIG_SIZE, token2022Client } from './token-2022-test-utils';
+import { systemClient, token2022Client, TOKEN_2022_MULTISIG_SIZE } from './token-2022-test-utils';
 
 describe('Token 2022 Program: initializeMultisig2', () => {
     test('should initialize_multisig2 account', async () => {

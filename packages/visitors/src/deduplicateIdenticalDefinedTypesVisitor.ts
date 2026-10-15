@@ -1,7 +1,7 @@
 import {
     assertIsNode,
-    DefinedTypeNode,
     definedTypeLinkNode,
+    DefinedTypeNode,
     getAllPrograms,
     IdentifierString,
     Node,

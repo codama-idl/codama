@@ -2,7 +2,7 @@ import { getMintDecoder } from '@solana-program/token-2022';
 import { describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';
-import { systemClient, TOKEN_2022_MINT_SIZE, token2022Client } from './token-2022-test-utils';
+import { systemClient, token2022Client, TOKEN_2022_MINT_SIZE } from './token-2022-test-utils';
 
 describe('Token 2022 Program: initializeMint2', () => {
     test('should initialize_mint2', async () => {

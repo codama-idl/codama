@@ -3,7 +3,7 @@ import { address } from '@solana/addresses';
 import { describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';
-import { systemClient, TOKEN_2022_ACCOUNT_SIZE, token2022Client } from './token-2022-test-utils';
+import { systemClient, token2022Client, TOKEN_2022_ACCOUNT_SIZE } from './token-2022-test-utils';
 
 const TOKEN_2022_NATIVE_MINT = address('9pan9bMn5HatX4EJdBwg9VgCa7Uz5HL8N1m5D3NdXejP');
 

@@ -1,6 +1,6 @@
 import type { RootNode } from '@codama/nodes';
 
-import { upgrade, UpgradableRootNode } from './upgrade';
+import { UpgradableRootNode, upgrade } from './upgrade';
 
 /**
  * Parses a JSON-encoded Codama IDL and upgrades it to the latest

@@ -1,9 +1,9 @@
 import {
     CountNode,
     fixedCountNode,
+    integerTypeNode,
     MapTypeNode,
     mapTypeNode,
-    integerTypeNode,
     prefixedCountNode,
     remainderCountNode,
 } from '@codama/nodes';

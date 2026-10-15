@@ -6,7 +6,8 @@
     },
     "tasks": {
         "build": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**"]
         },
         "test": {
             "dependsOn": ["build"]

@@ -7,8 +7,8 @@ import {
     createTokenAccount,
     mintTokens,
     systemClient,
-    TOKEN_2022_MULTISIG_SIZE,
     token2022Client,
+    TOKEN_2022_MULTISIG_SIZE,
 } from './token-2022-test-utils';
 
 describe('Token 2022 Program: approve', () => {

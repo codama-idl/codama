@@ -2,8 +2,8 @@ import type { Address } from '@solana/addresses';
 import {
     addEncoderSizePrefix,
     getOptionEncoder,
-    getU8Encoder,
     getU32Encoder,
+    getU8Encoder,
     getUtf8Encoder,
     none,
     some,

@@ -13,7 +13,10 @@ import { resolveImportMap } from './resolveImportMap';
  * Output rules:
  *   - Modules are sorted with non-relative paths first, then relative;
  *     within each group, alphabetical.
- *   - Identifiers within each module are alphabetical.
+ *   - Identifiers within each module are sorted alphabetically by the
+ *     name they are used under, ignoring case and any `type` prefix, as
+ *     the `sort-imports` lint rule does, e.g. `{ type Node, noneValueNode }`
+ *     or `{ visit as baseVisit, type Visitor }`.
  *   - When every import from a given module is type-only, the line is
  *     emitted as `import type { … } from '…';` rather than per-identifier
  *     `type` — matching the `@solana/eslint-config-solana`
@@ -51,13 +54,21 @@ export function importMapToString(importMap: ImportMap, dependencies: Record<str
             const infos = [...imports.values()];
             const allTypeOnly = infos.length > 0 && infos.every(info => info.isType);
             const renderedIds = infos
+                .sort(compareImportInfos)
                 .map(info => formatImportInfo(info, allTypeOnly))
-                .sort((a, b) => a.localeCompare(b))
                 .join(', ');
             const prefix = allTypeOnly ? 'import type ' : 'import ';
             return `${prefix}{ ${renderedIds} } from '${module}';`;
         })
         .join('\n');
+}
+
+/** Compare identifiers by the name they are used under, ignoring case, comparing code units rather than using a locale. */
+function compareImportInfos(a: ImportInfo, b: ImportInfo): number {
+    const aName = a.usedIdentifier.toLowerCase();
+    const bName = b.usedIdentifier.toLowerCase();
+    if (aName !== bName) return aName < bName ? -1 : 1;
+    return a.usedIdentifier < b.usedIdentifier ? -1 : a.usedIdentifier > b.usedIdentifier ? 1 : 0;
 }
 
 function formatImportInfo(info: ImportInfo, blockIsTypeOnly: boolean): string {

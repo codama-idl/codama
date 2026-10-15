@@ -1,7 +1,7 @@
 import {
     accountValueNode,
-    dataValueNode,
     conditionalValueNode,
+    dataValueNode,
     enumValueNode,
     programIdValueNode,
 } from '@codama/nodes';

@@ -1,4 +1,4 @@
-import { assertIsNode, Node, integerTypeNode, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
+import { assertIsNode, integerTypeNode, Node, publicKeyTypeNode, tupleTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
 import { nonNullableIdentityVisitor, visit } from '../src';
