@@ -1,7 +1,7 @@
 import {
     type DecodedNode,
-    type FormatDecodedNodeOptions,
     formatDecodedNode,
+    type FormatDecodedNodeOptions,
     type FormattedTypeNode,
     getFormattedRows,
     isDecodedNode,

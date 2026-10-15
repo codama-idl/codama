@@ -1,7 +1,7 @@
 import {
     type DecodedNode,
-    type FormatDecodedNodeOptions,
     formatDecodedNode,
+    type FormatDecodedNodeOptions,
     getDecodedNodeAtPath,
 } from '@codama/dynamic-codecs';
 import {

@@ -55,6 +55,8 @@ import {
     mapEntryValueNode,
     mapTypeNode,
     mapValueNode,
+    type Node,
+    type NodeKind,
     noneValueNode,
     optionTypeNode,
     payerValueNode,
@@ -97,8 +99,6 @@ import {
     TRANSFORM_NODE_KINDS,
     tupleTypeNode,
     tupleValueNode,
-    type Node,
-    type NodeKind,
     TYPE_NODES,
     unitNumberDisplayNode,
     VALUE_NODES,
@@ -108,7 +108,7 @@ import {
 } from '@codama/nodes';
 
 import { staticVisitor } from '../staticVisitor';
-import { type Visitor, visit as baseVisit } from '../visitor';
+import { visit as baseVisit, type Visitor } from '../visitor';
 
 /**
  * Identity visitor: rebuilds the tree node-by-node so callers can

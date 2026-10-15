@@ -1,7 +1,7 @@
 import {
     definedTypeNode,
-    isNode,
     integerTypeNode,
+    isNode,
     programNode,
     publicKeyTypeNode,
     stringTypeNode,

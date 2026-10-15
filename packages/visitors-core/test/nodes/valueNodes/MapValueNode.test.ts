@@ -1,4 +1,4 @@
-import { mapEntryValueNode, mapValueNode, integerValueNode, stringValueNode } from '@codama/nodes';
+import { integerValueNode, mapEntryValueNode, mapValueNode, stringValueNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {

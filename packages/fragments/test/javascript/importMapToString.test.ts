@@ -26,7 +26,32 @@ describe('importMapToString', () => {
 
     it('renders mixed-form imports with per-identifier type prefix', () => {
         const map = addToImportMap(createImportMap(), './foo', ['type Foo as Bar', 'Baz']);
-        expect(importMapToString(map)).toBe("import { Baz, type Foo as Bar } from './foo';");
+        expect(importMapToString(map)).toBe("import { type Foo as Bar, Baz } from './foo';");
+    });
+
+    it('sorts identifiers ignoring their `type` prefix', () => {
+        const map = addToImportMap(createImportMap(), './foo', [
+            'visit',
+            'type Node',
+            'noneValueNode',
+            'tupleTypeNode',
+        ]);
+        expect(importMapToString(map)).toBe("import { type Node, noneValueNode, tupleTypeNode, visit } from './foo';");
+    });
+
+    it('sorts identifiers by the name they are used under', () => {
+        const map = addToImportMap(createImportMap(), './foo', ['type Visitor', 'visit as baseVisit']);
+        expect(importMapToString(map)).toBe("import { visit as baseVisit, type Visitor } from './foo';");
+    });
+
+    it('sorts identifiers ignoring case', () => {
+        const map = addToImportMap(createImportMap(), './foo', ['getTextNodeContent', 'DisplaySkip', 'isNode']);
+        expect(importMapToString(map)).toBe("import { DisplaySkip, getTextNodeContent, isNode } from './foo';");
+    });
+
+    it('sorts identifiers by code unit, as the `sort-imports` lint rule does', () => {
+        const map = addToImportMap(createImportMap(), './foo', ['getI8Codec', 'getI16Codec', 'A_B', 'AB']);
+        expect(importMapToString(map)).toBe("import { A_B, AB, getI16Codec, getI8Codec } from './foo';");
     });
 
     it('promotes to block-level `import type` when all imports are type-only', () => {

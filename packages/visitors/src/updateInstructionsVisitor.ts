@@ -15,8 +15,8 @@ import {
     ProvidedNode,
     providedNode,
     StructFieldTypeNodeInput,
-    ValueNode,
     VALUE_NODES,
+    ValueNode,
 } from '@codama/nodes';
 import { getLastNodeFromPath, LinkableDictionary, NodePath, visit } from '@codama/visitors-core';
 

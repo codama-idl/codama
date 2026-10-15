@@ -1,7 +1,7 @@
 import type { RootNode } from '@codama/nodes';
 import { rootNodeVisitor, Visitor } from '@codama/visitors-core';
 
-import { upgrade, UpgradableRootNode } from './upgrade';
+import { UpgradableRootNode, upgrade } from './upgrade';
 
 /**
  * A visitor that upgrades the visited IDL to the latest major via

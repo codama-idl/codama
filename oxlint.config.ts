@@ -38,4 +38,9 @@ module.exports = oxlint.defineConfig({
             rules: { 'sort-keys': 'off' },
         },
     ],
+    rules: {
+        // Sort the members of each import, e.g. `{ a, B, c }`. Import declarations are already sorted by
+        // oxfmt's `sortImports`, whose order this rule's declaration sorting would conflict with.
+        'sort-imports': ['error', { ignoreCase: true, ignoreDeclarationSort: true }],
+    },
 });

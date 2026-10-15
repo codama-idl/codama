@@ -1,5 +1,5 @@
 import { CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, CodamaError } from '@codama/errors';
-import { assertIsNode, bytesTypeNode, ValueNode, VALUE_NODE_KINDS } from '@codama/nodes';
+import { assertIsNode, bytesTypeNode, VALUE_NODE_KINDS, ValueNode } from '@codama/nodes';
 import {
     LinkableDictionary,
     NodeStack,

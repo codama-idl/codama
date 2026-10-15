@@ -1,8 +1,8 @@
 import {
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CODAMA_ERROR__UNSUPPORTED_VERSION,
-    CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CODAMA_ERROR__VERSION_MISMATCH,
+    CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CodamaError,
 } from '@codama/errors';
 import {
@@ -18,7 +18,7 @@ import { getValidationItemsVisitor } from '@codama/validators';
 import { visit } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
 
-import { upgrade, UpgradableRootNode, upgradeV1ToV2, type v1 } from '../src';
+import { UpgradableRootNode, upgrade, upgradeV1ToV2, type v1 } from '../src';
 
 const program = programNode({ identifier: 'myProgram', publicKey: '1111', version: '1.0.0' });
 

@@ -1,7 +1,7 @@
-import { REGISTERED_NODE_KINDS, type Node, type NodeKind } from '@codama/nodes';
+import { type Node, type NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { staticVisitor } from '../staticVisitor';
-import { type Visitor, visit as baseVisit } from '../visitor';
+import { visit as baseVisit, type Visitor } from '../visitor';
 
 /**
  * Merge visitor: traverses the tree collecting per-node values into

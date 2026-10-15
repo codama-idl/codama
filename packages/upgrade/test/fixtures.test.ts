@@ -6,7 +6,7 @@ import { getValidationItemsVisitor } from '@codama/validators';
 import { identityVisitor, visit } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
 
-import { upgrade, UpgradableRootNode, upgradeFromJson, upgradeV1ToV2 } from '../src';
+import { UpgradableRootNode, upgrade, upgradeFromJson, upgradeV1ToV2 } from '../src';
 import { V2_VERSION } from '../src/v2';
 
 /**
