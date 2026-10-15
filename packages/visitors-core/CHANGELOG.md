@@ -1,5 +1,33 @@
 # @codama/visitors-core
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Start major 2. Release candidates publish under the `rc` dist-tag while this major is in development.
+
+- [#1158](https://github.com/codama-idl/codama/pull/1158) [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Regenerate the node types, constructors and core visitors from the Codama v2 spec (`@codama/spec@2`).
+  
+  The node model changes substantially from v1:
+  
+  - **`name` → `identifier`.** Every named node (`programNode`, `accountNode`, `instructionNode`, links, …) now carries `identifier` instead of `name`, and identifiers preserve their casing — v2 no longer mandates camelCase (`transfer_tokens` and `transferTokens` are both valid; uniqueness is resolved by case-folding).
+  - **Numeric system rework.** `numberTypeNode`/`numberValueNode` split into `integerTypeNode`/`floatTypeNode` and `integerValueNode`/`floatValueNode` (numeric values are string-encoded to stay lossless through JSON). `amountTypeNode`/`solAmountTypeNode` become `fixedPointTypeNode`; new `durationTypeNode`; `dateTimeTypeNode`/`durationTypeNode` carry `ticksPerSecond`.
+  - **Flat transforms.** The wrapper type nodes (`fixedSizeTypeNode`, `sizePrefixTypeNode`, `pre/postOffsetTypeNode`, `sentinelTypeNode`, `hiddenPrefix/SuffixTypeNode`) are removed; every type node instead carries an optional `transforms: transformNode[]` applied innermost-first.
+  - **Instruction data.** `instructionArgumentNode`, `instructionArgumentLinkNode`, `resolverValueNode` and `instructionNode.arguments`/`extraArguments` are removed; instruction arguments live in `instructionNode.data`, reached via path expressions. `argumentValueNode` → `dataValueNode`; `accountFieldValueNode` → `accountDataValueNode`.
+  - **Enum variants unified.** The three variant nodes collapse into a single `enumVariantTypeNode` with an optional `data`.
+  - **Text and docs.** `docs` and text-bearing attributes are the union `string | textNode`; a `textNode` carries structured metadata (plugins). New `textNode`.
+  - **Universal plugins.** Every node gains an optional `plugins: pluginNode[]` base attribute — the extension point for renderer-specific or not-yet-standardised metadata.
+  - **Other.** `programNode.origin` removed (provenance moves to plugins); `pluginNode.name` → `pluginNode.namespace`; `sentinelCountNode` added; path expressions for field references and discriminators.
+  
+  Node factory ergonomics: trailing optional parameters now live in the constructor's `options` bag (e.g. `constantNode(identifier, type, value, { docs })`, `accountLinkNode(identifier, { program })`).
+
+### Patch Changes
+
+- Updated dependencies [[`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391)]:
+  - @codama/errors@2.0.0-rc.0
+  - @codama/fragments@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+
 ## 1.11.0
 
 ### Patch Changes

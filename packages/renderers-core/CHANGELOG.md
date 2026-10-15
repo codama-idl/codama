@@ -1,5 +1,19 @@
 # @codama/renderers-core
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Start major 2. Release candidates publish under the `rc` dist-tag while this major is in development.
+
+### Patch Changes
+
+- Updated dependencies [[`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391)]:
+  - @codama/errors@2.0.0-rc.0
+  - @codama/fragments@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+  - @codama/visitors-core@2.0.0-rc.0
+
 ## 1.4.1
 
 ### Patch Changes
