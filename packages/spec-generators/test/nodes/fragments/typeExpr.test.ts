@@ -8,12 +8,11 @@ import {
     enumeration,
     literal,
     literalUnion,
-    nestedUnion,
     node,
     string,
     stringIdentifier,
     stringVersion,
-    tuple,
+    text,
     u32,
     union,
 } from '@codama/spec/api';
@@ -26,7 +25,7 @@ describe('getTypeExprFragment', () => {
         expect(getTypeExprFragment(string()).content).toBe('string');
     });
 
-    it('renders address as plain string for v1 (no import)', () => {
+    it('renders address as plain string (no import)', () => {
         const result = getTypeExprFragment(address());
         expect(result.content).toBe('string');
         expect(result.imports.size).toBe(0);
@@ -64,9 +63,9 @@ describe('getTypeExprFragment', () => {
         expect(getTypeExprFragment(literalUnion(true, 'either')).content).toBe('true | "either"');
     });
 
-    it('routes stringIdentifier to the CamelCaseString brand imported from @codama/node-types', () => {
+    it('routes stringIdentifier to the IdentifierString brand imported from @codama/node-types', () => {
         const result = getTypeExprFragment(stringIdentifier());
-        expect(result.content).toBe('CamelCaseString');
+        expect(result.content).toBe('IdentifierString');
         expect([...result.imports.keys()]).toEqual(['@codama/node-types']);
     });
 
@@ -82,9 +81,15 @@ describe('getTypeExprFragment', () => {
         expect([...result.imports.keys()]).toEqual(['@codama/node-types']);
     });
 
-    it('routes docs to the Docs alias imported from @codama/node-types', () => {
+    it('renders docs as `string | TextNode` with TextNode imported from @codama/node-types', () => {
         const result = getTypeExprFragment(docs());
-        expect(result.content).toBe('Docs');
+        expect(result.content).toBe('string | TextNode');
+        expect([...result.imports.keys()]).toEqual(['@codama/node-types']);
+    });
+
+    it('renders text as docs are rendered', () => {
+        const result = getTypeExprFragment(text());
+        expect(result.content).toBe('string | TextNode');
         expect([...result.imports.keys()]).toEqual(['@codama/node-types']);
     });
 
@@ -124,24 +129,6 @@ describe('getTypeExprFragment', () => {
         // The `Array<…>` wrapping makes precedence unambiguous, so a
         // literal-union element is emitted without extra parens.
         expect(getTypeExprFragment(array(literalUnion(true, 'either'))).content).toBe('Array<true | "either">');
-    });
-
-    it('renders nestedUnion wrapping with both wrapper and inner imports merged into one @codama/node-types entry', () => {
-        const result = getTypeExprFragment(nestedUnion('NestedTypeNode', 'innerTypeNode'));
-        expect(result.content).toBe('NestedTypeNode<InnerTypeNode>');
-        // Both identifiers come from the same package; they collapse to a
-        // single import-map entry holding two identifiers.
-        expect([...result.imports.keys()]).toEqual(['@codama/node-types']);
-        const ids = [...result.imports.get('@codama/node-types')!.values()].map(i => i.usedIdentifier).sort();
-        expect(ids).toEqual(['InnerTypeNode', 'NestedTypeNode']);
-    });
-
-    it('renders an empty tuple as []', () => {
-        expect(getTypeExprFragment(tuple()).content).toBe('[]');
-    });
-
-    it('renders a multi-element tuple with comma-separated items', () => {
-        expect(getTypeExprFragment(tuple(boolean(), string())).content).toBe('[boolean, string]');
     });
 
     it('emits a valid TS string literal even when the value contains characters that need escaping', () => {

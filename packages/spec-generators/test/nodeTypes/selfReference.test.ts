@@ -1,4 +1,4 @@
-import { array, boolean, literal, nestedUnion, node, tuple, union } from '@codama/spec/api';
+import { array, boolean, literal, node, union } from '@codama/spec/api';
 import { describe, expect, it } from 'vitest';
 
 import { isTypeExprSelfReferential } from '../../src/nodeTypes/selfReference';
@@ -16,16 +16,8 @@ describe('isTypeExprSelfReferential', () => {
         expect(isTypeExprSelfReferential(array(node('fooNode')), 'fooNode')).toBe(true);
     });
 
-    it('recurses through tuple() to find a matching node reference', () => {
-        expect(isTypeExprSelfReferential(tuple(node('barNode'), node('fooNode')), 'fooNode')).toBe(true);
-    });
-
     it('does not recurse through union references — they are name-aliased and break cycles', () => {
         expect(isTypeExprSelfReferential(union('FooUnion'), 'fooNode')).toBe(false);
-    });
-
-    it('does not recurse through nestedUnion references either', () => {
-        expect(isTypeExprSelfReferential(nestedUnion('NestedFoo', 'fooNode'), 'fooNode')).toBe(false);
     });
 
     it('returns false for primitive types', () => {

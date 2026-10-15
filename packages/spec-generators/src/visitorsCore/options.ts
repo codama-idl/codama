@@ -110,19 +110,19 @@ export const IDENTITY_VISITOR_WALK_ORDER: ReadonlyMap<string, readonly string[]>
 export interface RenderOptions extends SharedRenderOptions {
     /**
      * Per-node override of the identity visitor's child-attribute walk
-     * order. Omitted means "use the v1 defaults"
+     * order. Omitted means "use the defaults"
      * ({@link IDENTITY_VISITOR_WALK_ORDER}).
      */
     readonly identityVisitorWalkOrder?: ReadonlyMap<string, readonly string[]>;
     /**
      * Per-node override of the merge visitor's child-attribute walk
-     * order. Omitted means "use the v1 defaults"
+     * order. Omitted means "use the defaults"
      * ({@link MERGE_VISITOR_WALK_ORDER}).
      */
     readonly mergeVisitorWalkOrder?: ReadonlyMap<string, readonly string[]>;
     /**
      * Map from spec union names to the `@codama/nodes` plural-noun
-     * alias constants. Omitted means "use the v1 defaults"
+     * alias constants. Omitted means "use the defaults"
      * ({@link UNION_ALIAS_NAMES}).
      */
     readonly unionAliasNames?: ReadonlyMap<string, string>;

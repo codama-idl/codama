@@ -5,10 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { buildRenderScope, type RenderOptions } from '../../src/nodes/options';
 
 function buildSpec(categories: Spec['categories']): Spec {
-    return { categories, version: '1.0.0' };
+    return { categories, version: '2.0.0' };
 }
 
-const options: RenderOptions = { targetSpecMajor: 1 };
+const options: RenderOptions = { targetSpecMajor: 2 };
 
 describe('buildRenderScope', () => {
     it('places top-level node constructors at the root', () => {
@@ -79,9 +79,9 @@ describe('buildRenderScope', () => {
 
     it('points shared helpers at the hand-written sibling above generated/', () => {
         const scope = buildRenderScope(buildSpec([]), options);
-        expect(scope.symbolicModules.get('shared:DocsInput')).toBe('../shared');
-        expect(scope.symbolicModules.get('shared:parseDocs')).toBe('../shared');
-        expect(scope.symbolicModules.get('shared:camelCase')).toBe('../shared');
+        for (const helper of ['decimalString', 'identifierString', 'integerString', 'namespaceString', 'pathString']) {
+            expect(scope.symbolicModules.get(`shared:${helper}`)).toBe('../shared');
+        }
         expect(scope.symbolicModules.get('shared:isNode')).toBe('../Node');
     });
 
@@ -91,12 +91,11 @@ describe('buildRenderScope', () => {
                 {
                     enumerations: [],
                     name: 'mystery',
-                    nestedUnions: [],
                     nodes: [defineNode('someNode', { attributes: [] })],
                     unions: [],
                 },
             ],
-            version: '1.0.0',
+            version: '2.0.0',
         } as unknown as Spec;
         expect(() => buildRenderScope(spec, options)).toThrow(/unknown category "mystery"/);
     });

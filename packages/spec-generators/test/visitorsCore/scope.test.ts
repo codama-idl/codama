@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildRenderScope, type RenderOptions } from '../../src/visitorsCore/options';
 
-const options: RenderOptions = { targetSpecMajor: 1 };
+const options: RenderOptions = { targetSpecMajor: 2 };
 
 describe('buildRenderScope', () => {
     it('routes visitor:identityVisitor to its sibling file under generated/', () => {
@@ -29,10 +29,10 @@ describe('buildRenderScope', () => {
 
     it('defaults the walk-order and union-alias tables when omitted from options', () => {
         const scope = buildRenderScope(options);
-        // The defaulted maps carry the live v1 spec content; assert
+        // The defaulted maps carry the live v2 spec content; assert
         // a representative key from each rather than the full set.
         expect(scope.unionAliasNames.get('typeNode')).toBe('TYPE_NODES');
-        expect(scope.mergeVisitorWalkOrder.get('arrayTypeNode')).toEqual(['count', 'item']);
+        expect(scope.mergeVisitorWalkOrder.get('arrayTypeNode')).toEqual(['count', 'item', 'transforms']);
         expect(scope.identityVisitorWalkOrder.get('programNode')?.[0]).toBe('accounts');
     });
 

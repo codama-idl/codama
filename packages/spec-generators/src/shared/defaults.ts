@@ -18,10 +18,11 @@ export const NARROWABLE_DATA_ATTRIBUTES: ReadonlySet<string> = new Set([
 
 /**
  * Per-node override of the type-parameter emission order. Each value
- * must enumerate exactly the set of attributes that surface as type
- * parameters for the node — no missing, no extras — otherwise both
- * generators throw at startup rather than silently drop or reorder
- * type parameters.
+ * lists attributes that surface as type parameters for the node, in
+ * their emission order. Both generators throw at startup when an entry
+ * names an attribute the node does not surface, rather than silently
+ * drop it. Type parameters an entry does not list, e.g. the base
+ * `plugins`, are appended after the listed ones.
  *
  * In v2 `docs` is a `string | textNode` child attribute, so it now
  * surfaces as a leading type parameter on every documented node; the
