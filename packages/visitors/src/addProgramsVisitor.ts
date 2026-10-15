@@ -1,6 +1,6 @@
 import { CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES, CodamaError } from '@codama/errors';
 import { camelCase } from '@codama/fragments/casing';
-import { IdentifierString, programNode, ProgramNodeInput } from '@codama/nodes';
+import { IdentifierString, programNode, ProgramNodeInput, rootNode } from '@codama/nodes';
 import { rootNodeVisitor } from '@codama/visitors-core';
 
 /**
@@ -28,9 +28,9 @@ export function addProgramsVisitor(programs: ProgramNodeInput[]) {
                 root,
             });
         }
-        return {
-            ...root,
+        return rootNode(root.program, {
             additionalPrograms: [...(root.additionalPrograms ?? []), ...newPrograms],
-        };
+            plugins: root.plugins,
+        });
     });
 }

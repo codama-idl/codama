@@ -1,5 +1,5 @@
 import { CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES, CodamaError } from '@codama/errors';
-import { identifierString, programNode, rootNode } from '@codama/nodes';
+import { identifierString, pluginNode, programNode, rootNode } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
@@ -7,33 +7,33 @@ import { addProgramsVisitor } from '../src';
 
 test.each([
     {
+        existingIdentifier: 'myProgram',
         location: 'main program',
-        existingIdentifier: 'myProgram',
         newIdentifier: 'myProgram',
     },
     {
+        existingIdentifier: 'my_program',
         location: 'main program',
-        existingIdentifier: 'my_program',
         newIdentifier: 'myProgram',
     },
     {
-        location: 'additional program',
         existingIdentifier: 'myProgram',
-        newIdentifier: 'myProgram',
-    },
-    {
         location: 'additional program',
-        existingIdentifier: 'my_program',
         newIdentifier: 'myProgram',
     },
     {
-        location: 'new program',
+        existingIdentifier: 'my_program',
+        location: 'additional program',
+        newIdentifier: 'myProgram',
+    },
+    {
         existingIdentifier: 'myProgram',
+        location: 'new program',
         newIdentifier: 'myProgram',
     },
     {
-        location: 'new program',
         existingIdentifier: 'my_program',
+        location: 'new program',
         newIdentifier: 'myProgram',
     },
 ])(
@@ -112,7 +112,7 @@ test('it reports all conflicting identifiers once without adding any programs', 
     expect(node).toStrictEqual(originalNode);
 });
 
-test('it creates an empty additional programs array when the input is empty and the field is absent', () => {
+test('it keeps additional programs absent when the input is empty and the field is absent', () => {
     // Given a root with no additional programs field.
     const mainProgram = programNode({
         identifier: 'mainProgram',
@@ -124,8 +124,9 @@ test('it creates an empty additional programs array when the input is empty and 
     // When we add no programs.
     const result = visit(node, addProgramsVisitor([]));
 
-    // Then an empty array is added without changing the original root.
-    expect(result).toStrictEqual({ ...node, additionalPrograms: [] });
+    // Then the field stays absent and the original root is unchanged.
+    expect(result).toStrictEqual(node);
+    expect(result).not.toHaveProperty('additionalPrograms');
     expect(result.program).toBe(mainProgram);
     expect(node).not.toHaveProperty('additionalPrograms');
 });
@@ -147,6 +148,23 @@ test('it preserves existing programs when the input is empty', () => {
     expect(result).toStrictEqual(node);
     expect(result.program).toBe(mainProgram);
     expect(node.additionalPrograms).toStrictEqual([existingProgram]);
+});
+
+test('it returns a frozen root and preserves root plugins when adding programs', () => {
+    // Given a root with a plugin.
+    const publicKey = '11111111111111111111111111111111';
+    const mainProgram = programNode({ identifier: 'mainProgram', publicKey });
+    const plugins = [pluginNode('my.plugin', { answer: 42 })];
+    const node = rootNode(mainProgram, { plugins });
+
+    // When we add a program.
+    const newProgram = programNode({ identifier: 'newProgram', publicKey });
+    const result = visit(node, addProgramsVisitor([newProgram]));
+
+    // Then the result is frozen and retains the root's plugins.
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(result).toStrictEqual(rootNode(mainProgram, { additionalPrograms: [newProgram], plugins }));
+    expect(node).toStrictEqual(rootNode(mainProgram, { plugins }));
 });
 
 test('it adds programs to a root with no additional programs', () => {
