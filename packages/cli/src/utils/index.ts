@@ -4,6 +4,7 @@ export * from './fs';
 export * from './import';
 export * from './logs';
 export * from './nodes';
+export * from './optionalDependency';
 export * from './packageInstall';
 export * from './packageJson';
 export * from './packageManager';
