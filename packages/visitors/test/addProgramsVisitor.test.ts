@@ -65,7 +65,7 @@ test.each([
                 context: {
                     __code: CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES,
                     duplicatedProgramNames: [identifierString(newIdentifier)],
-                    root: originalNode,
+                    path: [originalNode],
                 },
             });
         }
@@ -105,7 +105,7 @@ test('it reports all conflicting identifiers once without adding any programs', 
                     identifierString('existingProgram'),
                     identifierString('anotherProgram'),
                 ],
-                root: originalNode,
+                path: [originalNode],
             },
         });
     }

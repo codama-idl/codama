@@ -25,7 +25,7 @@ export function addProgramsVisitor(programs: ProgramNodeInput[]) {
         if (duplicatedProgramNames.size > 0) {
             throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES, {
                 duplicatedProgramNames: [...duplicatedProgramNames],
-                root,
+                path: [root],
             });
         }
         return rootNode(root.program, {

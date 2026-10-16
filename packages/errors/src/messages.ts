@@ -4,76 +4,76 @@
  */
 
 import {
-  CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
-  CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
-  CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING,
-  CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING,
-  CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
-  CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
-  CODAMA_ERROR__CANNOT_RESOLVE_PATH,
-  CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
-  CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
-  CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
-  CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
-  CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING,
-  CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS,
-  CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
-  CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
-  CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
-  CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
-  CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
-  CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
-  CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT,
-  CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND,
-  CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
-  CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT,
-  CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
-  CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
-  CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
-  CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
-  CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
-  CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
-  CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
-  CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY,
-  CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
-  CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
-  CODAMA_ERROR__INVALID_BRANDED_STRING,
-  CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
-  CODAMA_ERROR__INVALID_TICKS_PER_SECOND,
-  CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
-  CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
-  CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
-  CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS,
-  CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE,
-  CODAMA_ERROR__UNEXPECTED_NODE_KIND,
-  CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
-  CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
-  CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
-  CODAMA_ERROR__UNSUPPORTED_VERSION,
-  CODAMA_ERROR__VERSION_MISMATCH,
-  CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
-  CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
-  CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES,
-  CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
-  CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
-  CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS,
-  CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK,
-  CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR,
-  CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
-  CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
-  CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND,
-  CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE,
-  CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND,
-  CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND,
-  CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND,
-  CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
-  CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
-  CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
-  CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
-  CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
-  CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
-  CodamaErrorCode,
-} from "./codes";
+    CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING,
+    CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
+    CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
+    CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
+    CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
+    CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
+    CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS,
+    CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
+    CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT,
+    CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND,
+    CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
+    CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT,
+    CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
+    CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
+    CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
+    CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY,
+    CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND,
+    CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
+    CODAMA_ERROR__INVALID_BRANDED_STRING,
+    CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
+    CODAMA_ERROR__INVALID_TICKS_PER_SECOND,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
+    CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE,
+    CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
+    CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS,
+    CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING,
+    CODAMA_ERROR__UNRECOGNIZED_NODE_KIND,
+    CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT,
+    CODAMA_ERROR__UNSUPPORTED_VERSION,
+    CODAMA_ERROR__VERSION_MISMATCH,
+    CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
+    CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES,
+    CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
+    CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
+    CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS,
+    CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK,
+    CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR,
+    CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
+    CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+    CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE,
+    CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+    CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER,
+    CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES,
+    CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
+    CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
+    CodamaErrorCode,
+} from './codes';
 
 /**
  * WARNING:
@@ -81,141 +81,107 @@ import {
  *   - `$path` renders the node path of the context as node selectors, e.g. `[programNode]token.[accountNode]mint`.
  */
 export const CodamaErrorMessages: Readonly<{
-  // This type makes this data structure exhaustive with respect to `SolanaErrorCode`.
-  // TypeScript will fail to build this project if add an error code without a message.
-  [P in CodamaErrorCode]: string;
+    // This type makes this data structure exhaustive with respect to `SolanaErrorCode`.
+    // TypeScript will fail to build this project if add an error code without a message.
+    [P in CodamaErrorCode]: string;
 }> = {
-  [CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]:
-    "Account type [$name] is missing from the IDL types.",
-  [CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING]:
-    "Argument name [$name] is missing from the instruction definition.",
-  [CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING]:
-    "Event type [$name] is missing from the IDL types.",
-  [CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING]:
-    "Generic type [$name] is missing from the IDL types.",
-  [CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]:
-    "Seed kind [$kind] is not implemented.",
-  [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]:
-    "Unrecognized Anchor IDL type [$idlType].",
-  [CODAMA_ERROR__CANNOT_RESOLVE_PATH]:
-    "Cannot resolve segment [$segment] of path [$pathString] from $path.",
-  [CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE]:
-    "Defined type $path has no finite value, so no codec can encode or decode it.",
-  [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]:
-    "Discriminator field $path has no default value.",
-  [CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND]:
-    "Could not find the field [$field] of discriminator $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]: "Missing account $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]:
-    "Resolver [$resolverName] not provided for $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]:
-    "Cannot convert value to Address: [$value].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]:
-    "Circular dependency detected: [$chain].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]:
-    "Missing data [$pathString] in $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM]:
-    "Expected the items of set $path to be unique, but the item at index [$index] equals the item at index [$firstIndex].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]:
-    "Failed to derive the PDA of $path, since an account it uses resolved to nothing.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA]:
-    "Failed to encode the data of $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER]:
-    "Resolver [$resolverName] threw an error while resolving $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT]:
-    "Failed to validate input: [$message].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]:
-    "Instruction [$instructionName] not found in IDL. Available: [$availableIxs].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]:
-    "Invalid address for account $path: [$value].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT]:
-    "Invalid input for account $path: [$value]. Expected [$expectedType].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION]:
-    "Internal invariant violation: [$message].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]:
-    "Referenced node [$referencedName] not found from $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]:
-    "PDA [$pdaName] not found in IDL. Available: [$available].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: "Missing seed $path.",
+    [CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING]: 'Account type [$name] is missing from the IDL types.',
+    [CODAMA_ERROR__ANCHOR__ARGUMENT_TYPE_MISSING]: 'Argument name [$name] is missing from the instruction definition.',
+    [CODAMA_ERROR__ANCHOR__EVENT_TYPE_MISSING]: 'Event type [$name] is missing from the IDL types.',
+    [CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING]: 'Generic type [$name] is missing from the IDL types.',
+    [CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED]: 'Seed kind [$kind] is not implemented.',
+    [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
+    [CODAMA_ERROR__CANNOT_RESOLVE_PATH]: 'Cannot resolve segment [$segment] of path [$pathString] from $path.',
+    [CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE]:
+        'Defined type $path has no finite value, so no codec can encode or decode it.',
+    [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: 'Discriminator field $path has no default value.',
+    [CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND]: 'Could not find the field [$field] of discriminator $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]: 'Missing account $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]: 'Resolver [$resolverName] not provided for $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: 'Cannot convert value to Address: [$value].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]: 'Circular dependency detected: [$chain].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]: 'Missing data [$pathString] in $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM]:
+        'Expected the items of set $path to be unique, but the item at index [$index] equals the item at index [$firstIndex].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA]:
+        'Failed to derive the PDA of $path, since an account it uses resolved to nothing.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA]: 'Failed to encode the data of $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER]:
+        'Resolver [$resolverName] threw an error while resolving $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT]: 'Failed to validate input: [$message].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]:
+        'Instruction [$instructionName] not found in IDL. Available: [$availableIxs].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: 'Invalid address for account $path: [$value].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT]:
+        'Invalid input for account $path: [$value]. Expected [$expectedType].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION]: 'Internal invariant violation: [$message].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]: 'Referenced node [$referencedName] not found from $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]: 'PDA [$pdaName] not found in IDL. Available: [$available].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: 'Missing seed $path.',
 
-  [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]:
-    "Expected [$expectedType] for account [$accountName], but received [$actualType].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]:
-    "Expected [$expectedType] for $path, but received [$actualType].",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: "Unsupported node $path.",
-  [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY]:
-    "Unsupported optional account strategy [$strategy] for account $path.",
-  [CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND]:
-    "Enum variant [$variant] not found in enum type $path.",
-  [CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED]:
-    "Injected value [$key] is not provided and has no fallback at $path. Values injected into a defined type are provided by the instruction that uses it.",
-  [CODAMA_ERROR__INVALID_BRANDED_STRING]:
-    "Expected a valid [$expected], got [$actual].",
-  [CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER]:
-    "Invalid placeholder [$placeholder] in interpolated intent [$template]. Placeholders are `${data.<path>}`, `${accounts.<account>}` or `${accounts.<account>.data[.<path>]}`.",
-  [CODAMA_ERROR__INVALID_TICKS_PER_SECOND]:
-    "Expected a positive integer number of ticks per second for $path, got [$ticksPerSecond].",
-  [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]:
-    "Could not find the node linked from $path.",
-  [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
-    "Node.js filesystem function [$fsFunction] is not available in your environment.",
-  [CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING]:
-    "Expected a node path containing a program node, e.g. to resolve the links of its last node, got $path.",
-  [CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS]:
-    "No version specified for the following dependencies: [$dependencies]. $message",
-  [CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE]:
-    "Cannot render the encountered node $path.",
-  [CODAMA_ERROR__UNEXPECTED_NODE_KIND]:
-    "Expected node of kind [$expectedKinds], got $path.",
-  [CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING]:
-    "Unrecognized bytes encoding [$encoding].",
-  [CODAMA_ERROR__UNRECOGNIZED_NODE_KIND]: "Unrecognized node kind [$kind].",
-  [CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT]:
-    "Unrecognized number format [$format].",
-  [CODAMA_ERROR__UNSUPPORTED_VERSION]:
-    "Codama IDLs of version [$version] predate the 1.0.0 specification and cannot be upgraded automatically. Please regenerate the IDL from its original source.",
-  [CODAMA_ERROR__VERSION_MISMATCH]:
-    "The provided RootNode version [$rootVersion] is not compatible with the Codama spec version [$codamaVersion] supported by the installed packages. Older versions can be upgraded using the `@codama/upgrade` package; newer versions require updating your Codama dependencies.",
-  [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]:
-    "Account $path does not have a field named [$missingField].",
-  [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:
-    "Cannot add PDAs to program $path because the following PDA names already exist [$duplicatedPdaNames].",
-  [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES]:
-    "Cannot add programs to root $path because the following program identifiers conflict with existing or other new programs after conversion to camelCase [$duplicatedProgramNames].",
-  [CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION]:
-    "Cannot extend visitor with function [$visitFunction] as the base visitor does not support it.",
-  [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES]:
-    "Cannot flatten struct $path since this would cause the following attributes to conflict [$conflictingAttributes].",
-  [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS]:
-    "Cannot flatten the struct of field $path since it carries plugins that would be lost.",
-  [CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK]:
-    "Cannot remove the last path in the node stack.",
-  [CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR]:
-    "Cannot set the discriminator of instruction $path: $reason.",
-  [CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE]:
-    "Cannot use optional account [$seedValueName] as PDA seed $path.",
-  [CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES]:
-    "Circular dependency detected when resolving the default values of instruction $path. Got the following dependency cycle [$formattedCycle].",
-  [CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND]:
-    "Defined type $path does not have a field or variant named [$missingMember].",
-  [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]:
-    "Failed to validate the given node [$formattedHistogram].",
-  [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]:
-    "Cannot find account [$accountName] in instruction $path.",
-  [CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND]:
-    "Cannot find the data field [$pathString] of instruction $path. Note that fields behind a defined type link cannot be updated directly: unwrap the defined type first.",
-  [CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND]:
-    "Could not find an enum data field named [$fieldName] for instruction $path.",
-  [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]:
-    "Dependency [$dependencyName] of kind [$dependencyKind] is not a valid dependency of [$dependent] in instruction $path.",
-  [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]:
-    "Invalid number wrapper [$kind]: $reason.",
-  [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]:
-    "Invalid seed values for PDA [$pdaName] in instruction $path.",
-  [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]:
-    "The value provided at $path is not one of [$expectedKinds].",
-  [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]:
-    "Cannot find key [$key] in RenderMap.",
-  [CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS]:
-    "Unrecognized update keys [$unrecognizedKeys] for [$selector]. Expected any of [$allowedKeys].",
+    [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]:
+        'Expected [$expectedType] for account [$accountName], but received [$actualType].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]:
+        'Expected [$expectedType] for $path, but received [$actualType].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: 'Unsupported node $path.',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY]:
+        'Unsupported optional account strategy [$strategy] for account $path.',
+    [CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND]: 'Enum variant [$variant] not found in enum type $path.',
+    [CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED]:
+        'Injected value [$key] is not provided and has no fallback at $path. Values injected into a defined type are provided by the instruction that uses it.',
+    [CODAMA_ERROR__INVALID_BRANDED_STRING]: 'Expected a valid [$expected], got [$actual].',
+    [CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER]:
+        'Invalid placeholder [$placeholder] in interpolated intent [$template]. Placeholders are `${data.<path>}`, `${accounts.<account>}` or `${accounts.<account>.data[.<path>]}`.',
+    [CODAMA_ERROR__INVALID_TICKS_PER_SECOND]:
+        'Expected a positive integer number of ticks per second for $path, got [$ticksPerSecond].',
+    [CODAMA_ERROR__LINKED_NODE_NOT_FOUND]: 'Could not find the node linked from $path.',
+    [CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE]:
+        'Node.js filesystem function [$fsFunction] is not available in your environment.',
+    [CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING]:
+        'Expected a node path containing a program node, e.g. to resolve the links of its last node, got $path.',
+    [CODAMA_ERROR__RENDERERS__MISSING_DEPENDENCY_VERSIONS]:
+        'No version specified for the following dependencies: [$dependencies]. $message',
+    [CODAMA_ERROR__RENDERERS__UNSUPPORTED_NODE]: 'Cannot render the encountered node $path.',
+    [CODAMA_ERROR__UNEXPECTED_NODE_KIND]: 'Expected node of kind [$expectedKinds], got $path.',
+    [CODAMA_ERROR__UNRECOGNIZED_BYTES_ENCODING]: 'Unrecognized bytes encoding [$encoding].',
+    [CODAMA_ERROR__UNRECOGNIZED_NODE_KIND]: 'Unrecognized node kind [$kind].',
+    [CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT]: 'Unrecognized number format [$format].',
+    [CODAMA_ERROR__UNSUPPORTED_VERSION]:
+        'Codama IDLs of version [$version] predate the 1.0.0 specification and cannot be upgraded automatically. Please regenerate the IDL from its original source.',
+    [CODAMA_ERROR__VERSION_MISMATCH]:
+        'The provided RootNode version [$rootVersion] is not compatible with the Codama spec version [$codamaVersion] supported by the installed packages. Older versions can be upgraded using the `@codama/upgrade` package; newer versions require updating your Codama dependencies.',
+    [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: 'Account $path does not have a field named [$missingField].',
+    [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:
+        'Cannot add PDAs to program $path because the following PDA names already exist [$duplicatedPdaNames].',
+    [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES]:
+        'Cannot add programs to root $path because the following program identifiers conflict with existing or other new programs after conversion to camelCase [$duplicatedProgramNames].',
+    [CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION]:
+        'Cannot extend visitor with function [$visitFunction] as the base visitor does not support it.',
+    [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES]:
+        'Cannot flatten struct $path since this would cause the following attributes to conflict [$conflictingAttributes].',
+    [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS]:
+        'Cannot flatten the struct of field $path since it carries plugins that would be lost.',
+    [CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK]: 'Cannot remove the last path in the node stack.',
+    [CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR]:
+        'Cannot set the discriminator of instruction $path: $reason.',
+    [CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE]:
+        'Cannot use optional account [$seedValueName] as PDA seed $path.',
+    [CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES]:
+        'Circular dependency detected when resolving the default values of instruction $path. Got the following dependency cycle [$formattedCycle].',
+    [CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND]:
+        'Defined type $path does not have a field or variant named [$missingMember].',
+    [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate the given node [$formattedHistogram].',
+    [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]: 'Cannot find account [$accountName] in instruction $path.',
+    [CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND]:
+        'Cannot find the data field [$pathString] of instruction $path. Note that fields behind a defined type link cannot be updated directly: unwrap the defined type first.',
+    [CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND]:
+        'Could not find an enum data field named [$fieldName] for instruction $path.',
+    [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]:
+        'Dependency [$dependencyName] of kind [$dependencyKind] is not a valid dependency of [$dependent] in instruction $path.',
+    [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: 'Invalid number wrapper [$kind]: $reason.',
+    [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]: 'Invalid seed values for PDA [$pdaName] in instruction $path.',
+    [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]: 'The value provided at $path is not one of [$expectedKinds].',
+    [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: 'Cannot find key [$key] in RenderMap.',
+    [CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS]:
+        'Unrecognized update keys [$unrecognizedKeys] for [$selector]. Expected any of [$allowedKeys].',
 };
