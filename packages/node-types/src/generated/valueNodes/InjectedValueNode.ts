@@ -24,9 +24,6 @@ export interface InjectedValueNode<
      * When absent, the key is required: a provider must supply it for the surrounding context to be valid.
      */
     readonly fallback?: TFallback;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

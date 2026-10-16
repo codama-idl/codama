@@ -63,6 +63,24 @@ Here are the available options for the `run` command:
 | `--config <path>`, `-c` | Specifies the path to your configuration file. Defaults to `codama.json` or `codama.js`. |
 | `--idl`, `-i`           | Overrides the `idl` field in your configuration file.                                    |
 
+### `codama upgrade`
+
+Codama IDLs carry the version of the Codama spec they were written for. To upgrade an IDL written for an older version, e.g. a `1.x` IDL for `2.x` renderers, once and for all, use the `upgrade` command, then commit the result:
+
+```sh
+codama upgrade idl.json                   # Upgrades the IDL in place.
+codama upgrade idl.json idl-upgraded.json # Writes the upgraded IDL to another file.
+```
+
+The command uses the [`@codama/upgrade`](https://github.com/codama-idl/codama/tree/main/packages/upgrade) package of your project, so IDLs are upgraded to the version your Codama packages expect. IDLs already on that major are left untouched. If it is not installed, you will be prompted to install it. Alternatively, you can upgrade the IDL every time your scripts run by [using `@codama/upgrade` as a `before` visitor](#upgrading-legacy-idls).
+
+Here are the available options for the `upgrade` command:
+
+| Option      | Description                                                                        |
+| ----------- | ---------------------------------------------------------------------------------- |
+| `<idlPath>` | The path of the Codama IDL to upgrade.                                             |
+| `[outPath]` | As an optional argument, the path of the upgraded IDL. Defaults to the input path. |
+
 ## Configuration file
 
 > [!NOTE]
@@ -254,7 +272,7 @@ In the example below, we rename the `vault` account to `safe` and update the `au
 
 ### Upgrading legacy IDLs
 
-Returns a new IDL upgraded to the latest major version of the Codama standard. Since renderers and other visitors expect the latest version, this is best used as a `before` visitor so any older IDL is upgraded before everything else runs.
+Returns a new IDL upgraded to the latest major version of the Codama standard. Since renderers and other visitors expect the latest version, this is best used as a `before` visitor so any older IDL is upgraded before everything else runs. To upgrade the IDL file itself once instead, use the [`codama upgrade`](#codama-upgrade) command.
 
 See [`@codama/upgrade`](https://github.com/codama-idl/codama/tree/main/packages/upgrade)
 

@@ -1,50 +1,72 @@
-import { type ParsedInstruction, parseInstruction } from '@codama/dynamic-parsers';
-import { getLastNodeFromPath, type RootNode, titleCase } from 'codama';
+import { type ParsableInstruction, type ParsedInstruction, parseInstruction } from '@codama/dynamic-parsers';
+import { getLinkablesFromNode, type RootNode } from 'codama';
 
-import { buildDisplayContext } from './build-display-context';
-import { interpolateIntent } from './interpolate-intent';
-import { listFallback } from './list-fallback';
-import type { GetInstructionDisplayOptions, InstructionDisplay } from './types';
-
-/** A concrete on-chain instruction, as accepted by `@codama/dynamic-parsers`' `parseInstruction`. */
-type Instruction = Parameters<typeof parseInstruction>[1];
+import { createAccountReader } from './accounts';
+import { getDisplayAccountMap } from './dictionary';
+import { displayInstruction } from './display-instruction';
+import type { FetchMaybeAccountsFn, GetInstructionDisplayOptions, InstructionDisplay } from './types';
 
 /**
- * Resolves a concrete instruction into its human-readable display.
+ * Present an instruction to humans, e.g. to clear sign it: parse it, fetch the accounts its
+ * display reads with `fetchAccounts`, if given, then present it as
+ * {@link getInstructionDisplayFromParsedInstruction} does. Returns `null` when the instruction
+ * cannot be parsed, e.g. because it belongs to another program.
  *
- * Parses the raw instruction against the root, then derives its display. Returns `null` when
- * the instruction cannot be identified or decoded — parsing failure is an expected outcome
- * (e.g. when probing an instruction from an unknown program), not an error.
+ * @example
+ * ```ts
+ * const display = await getInstructionDisplay(root, instruction, {
+ *     fetchAccounts: addresses => fetchEncodedAccounts(rpc, addresses),
+ *     formatAddress: address => names.get(address) ?? address,
+ * });
+ * ```
  */
 export async function getInstructionDisplay(
     root: RootNode,
-    instruction: Instruction,
-    options: GetInstructionDisplayOptions = {},
+    instruction: ParsableInstruction,
+    options: GetInstructionDisplayOptions & { readonly fetchAccounts?: FetchMaybeAccountsFn } = {},
 ): Promise<InstructionDisplay | null> {
-    const parsedInstruction = parseInstruction(root, instruction);
-    if (!parsedInstruction) return null;
-    return await getInstructionDisplayFromParsedInstruction(root, parsedInstruction, options);
+    const { fetchAccounts, ...displayOptions } = options;
+    const linkables = displayOptions.linkables ?? getLinkablesFromNode(root);
+    const parsed = parseInstruction(root, instruction, { linkables });
+    if (!parsed) return null;
+    const accounts = fetchAccounts
+        ? await getDisplayAccountMap(root, parsed, fetchAccounts, { accounts: displayOptions.accounts, linkables })
+        : displayOptions.accounts;
+    return getInstructionDisplayFromParsedInstruction(root, parsed, { ...displayOptions, accounts, linkables });
 }
 
 /**
- * Resolves an already-parsed instruction into its human-readable display.
+ * Present a parsed instruction to humans, e.g. to clear sign it: its intent, its interpolated
+ * intent and the rows of its fallback list. Values are formatted with the formatters of
+ * `@codama/dynamic-codecs`, whose options it accepts, and injected values of display nodes, e.g.
+ * the `decimals` of an amount, resolve from the `provides` of the instruction. Values read from
+ * accounts, e.g. the `decimals` of a mint, come from the `accounts` option, e.g. fetched with
+ * `getDisplayAccountMap`.
  *
- * Computes the intent label and renders both display modes — the interpolated sentence and the
- * structured fallback list — leaving the choice between them to the renderer.
+ * Amounts whose decimals cannot be resolved are written in the rows through the `formatDegraded`
+ * option, as their raw value followed by `(raw)` by default, so they cannot be mistaken for scaled
+ * amounts, and make the interpolated intent `null`.
+ *
+ * @example
+ * ```ts
+ * const parsed = parseInstruction(root, instruction);
+ * const display = parsed && getInstructionDisplayFromParsedInstruction(root, parsed, {
+ *     accounts,
+ *     formatAddress: address => names.get(address) ?? address,
+ * });
+ * // { intent: 'Transfer', interpolatedIntent: 'Transfer 1.5 USDC to Alice', fields: [{ label: 'Amount', value: '1.5 USDC' }, …] }
+ * ```
  */
-export async function getInstructionDisplayFromParsedInstruction(
+export function getInstructionDisplayFromParsedInstruction(
     root: RootNode,
-    parsedInstruction: ParsedInstruction,
+    parsed: ParsedInstruction,
     options: GetInstructionDisplayOptions = {},
-): Promise<InstructionDisplay> {
-    const displayContext = await buildDisplayContext(root, parsedInstruction, options);
-    const instruction = getLastNodeFromPath(displayContext.parsedInstruction.path);
-
-    const intent = instruction.display?.intent ?? titleCase(instruction.identifier);
-    const [interpolatedIntent, fields] = await Promise.all([
-        interpolateIntent(displayContext),
-        listFallback(displayContext),
-    ]);
-
-    return { fields, intent, interpolatedIntent };
+): InstructionDisplay {
+    const { accounts = new Map(), linkables = getLinkablesFromNode(root), ...formatOptions } = options;
+    return displayInstruction({
+        formatOptions,
+        linkables,
+        parsed,
+        readAccount: createAccountReader(accounts, linkables),
+    });
 }

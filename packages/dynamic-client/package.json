@@ -63,23 +63,22 @@
     },
     "dependencies": {
         "@codama/dynamic-address-resolution": "workspace:*",
-        "@codama/dynamic-codecs": "workspace:*",
         "@codama/dynamic-instructions": "workspace:*",
         "@codama/errors": "workspace:*",
         "@solana/addresses": "^8.4.0",
-        "@solana/codecs": "^8.4.0",
         "@solana/instructions": "^8.4.0",
         "codama": "workspace:*",
-        "commander": "^15.0.0",
-        "superstruct": "^2.0.2"
+        "commander": "^15.0.0"
     },
     "devDependencies": {
+        "@codama/dynamic-codecs": "workspace:*",
         "@codama/nodes-from-anchor": "workspace:*",
         "@codama/renderers-core": "workspace:*",
         "@metaplex-foundation/mpl-token-metadata-kit": "^0.0.3",
         "@solana-program/program-metadata": "^0.9.3",
         "@solana-program/token": "0.16.1",
         "@solana-program/token-2022": "^0.17.0",
+        "@solana/codecs": "^8.4.0",
         "@solana/kit": "8.4.0",
         "litesvm": "1.4.1",
         "sas-lib": "2.0.0-beta.1"

@@ -14,7 +14,6 @@ import {
     dataValueNode,
     definedTypeLinkNode,
     fieldDiscriminatorNode,
-    identifierString,
     injectedValueNode,
     instructionAccountLinkNode,
     instructionAccountNode,
@@ -358,6 +357,18 @@ test('it updates the byte deltas, discriminators and remaining accounts of an in
     );
 });
 
+test('it updates the return data of an instruction', () => {
+    // Given an instruction without return data.
+    const node = instructionNode({ identifier: 'getPrice' });
+
+    // When we set its return data.
+    const returnData = integerTypeNode('u64');
+    const result = visit(node, updateInstructionsVisitor({ getPrice: { returnData } }));
+
+    // Then we expect it to be set.
+    expect(result).toStrictEqual(instructionNode({ identifier: 'getPrice', returnData }));
+});
+
 test('it deletes instructions', () => {
     // Given a program with two instructions.
     const node = programNode({
@@ -380,17 +391,15 @@ test('it throws when updating missing accounts or data fields', () => {
     expect(() => visit(node, updateInstructionsVisitor({ ix: { accounts: { b: { isWritable: true } } } }))).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND, {
             accountName: 'b',
-            instruction: node,
-            instructionName: identifierString('ix'),
+            path: [node],
         }),
     );
 
     // When we update a field behind the link, then we expect an error.
     expect(() => visit(node, updateInstructionsVisitor({ ix: { data: { amount: { docs: 'Amount.' } } } }))).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND, {
-            instruction: node,
-            instructionName: identifierString('ix'),
-            path: 'amount',
+            path: [node],
+            pathString: 'amount',
         }),
     );
 });
@@ -576,9 +585,8 @@ test('it throws when replacing the type of a data field while updating its neste
         ),
     ).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND, {
-            instruction: node,
-            instructionName: identifierString('ix'),
-            path: 'config.fee',
+            path: [node],
+            pathString: 'config.fee',
         }),
     );
 });

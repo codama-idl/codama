@@ -1,121 +1,104 @@
 {
     "kind": "rootNode",
     "standard": "codama",
-    "version": "1.3.7",
+    "version": "2.0.0",
     "program": {
         "kind": "programNode",
-        "name": "circularAccountRefs",
+        "identifier": "circularAccountRefs",
         "publicKey": "BkppVYrCXNAr7rt6FRVBJ6ZxfcMLkkWUomuebFVnNAAt",
         "version": "0.1.0",
-        "origin": "custom",
-        "docs": ["Test program for circular account reference detection"],
-        "accounts": [],
+        "docs": "Test program for circular account reference detection",
         "instructions": [
             {
                 "kind": "instructionNode",
-                "name": "twoAccountCycle",
-                "docs": ["Test A->B->A circular reference"],
+                "identifier": "twoAccountCycle",
                 "optionalAccountStrategy": "programId",
+                "docs": "Test A->B->A circular reference",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "accountA",
+                        "identifier": "accountA",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "accountValueNode",
-                            "name": "accountB"
+                            "identifier": "accountB"
                         }
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "accountB",
+                        "identifier": "accountB",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "accountValueNode",
-                            "name": "accountA"
+                            "identifier": "accountA"
                         }
                     }
-                ],
-                "arguments": [],
-                "discriminators": []
+                ]
             },
             {
                 "kind": "instructionNode",
-                "name": "selfReference",
-                "docs": ["Test A->A self-reference cycle"],
+                "identifier": "selfReference",
                 "optionalAccountStrategy": "programId",
+                "docs": "Test A->A self-reference cycle",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "accountA",
+                        "identifier": "accountA",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "accountValueNode",
-                            "name": "accountA"
+                            "identifier": "accountA"
                         }
                     }
-                ],
-                "arguments": [],
-                "discriminators": []
+                ]
             },
             {
                 "kind": "instructionNode",
-                "name": "threeAccountCycle",
-                "docs": ["Test A->B->C->A circular reference"],
+                "identifier": "threeAccountCycle",
                 "optionalAccountStrategy": "programId",
+                "docs": "Test A->B->C->A circular reference",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "accountA",
+                        "identifier": "accountA",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "accountValueNode",
-                            "name": "accountB"
+                            "identifier": "accountB"
                         }
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "accountB",
+                        "identifier": "accountB",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "accountValueNode",
-                            "name": "accountC"
+                            "identifier": "accountC"
                         }
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "accountC",
+                        "identifier": "accountC",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "accountValueNode",
-                            "name": "accountA"
+                            "identifier": "accountA"
                         }
                     }
-                ],
-                "arguments": [],
-                "discriminators": []
+                ]
             }
-        ],
-        "definedTypes": [],
-        "pdas": []
-    },
-    "additionalPrograms": []
+        ]
+    }
 }

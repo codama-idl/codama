@@ -2,22 +2,25 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
     CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
 } from '@codama/errors';
 import { getBase16Encoder } from '@solana/codecs';
 import {
+    accountDataValueNode,
     definedTypeLinkNode,
     definedTypeNode,
     injectedValueNode,
     instructionNode,
     integerTypeNode,
     integerValueNode,
+    LinkableDictionary,
     providedNode,
     structFieldTypeNode,
     structTypeNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
-import { encodeInstructionData } from '../../src';
+import { createInstructionDataEncoder, encodeInstructionData } from '../../src';
 import { getInstructionPath } from '../_setup';
 
 const hex = (value: string) => getBase16Encoder().encode(value);
@@ -52,6 +55,20 @@ describe('encodeInstructionData', () => {
         expect(encodeInstructionData(path, { amount: 42 })).toStrictEqual(hex('032a'));
     });
 
+    test('it uses the given linkables rather than recording them', () => {
+        const args = definedTypeNode({ identifier: 'transferArgs', type: data });
+        const path = getInstructionPath(
+            instructionNode({ data: definedTypeLinkNode('transferArgs'), identifier: 'transfer' }),
+            { definedTypes: [args] },
+        );
+        const linkables = new LinkableDictionary();
+        const linkedNodeNotFound = expect.objectContaining({
+            context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+        });
+        expect(() => createInstructionDataEncoder(path, linkables)).toThrow(linkedNodeNotFound);
+        expect(() => encodeInstructionData(path, { amount: 42 }, { linkables })).toThrow(linkedNodeNotFound);
+    });
+
     test('it resolves injected default values from the instruction', () => {
         const fee = structFieldTypeNode({
             defaultValue: injectedValueNode({ key: 'fee' }),
@@ -68,6 +85,25 @@ describe('encodeInstructionData', () => {
         expect(encodeInstructionData(path, {})).toStrictEqual(hex('07'));
     });
 
+    test('it resolves injected default values from parent instructions', () => {
+        // Given a sub-instruction whose fee is provided by its parent.
+        const fee = structFieldTypeNode({
+            defaultValue: injectedValueNode({ key: 'fee' }),
+            identifier: 'fee',
+            type: integerTypeNode('u8'),
+        });
+        const child = instructionNode({ data: structTypeNode([fee]), identifier: 'child' });
+        const parent = instructionNode({
+            identifier: 'parent',
+            provides: [providedNode('fee', integerValueNode('7'))],
+            subInstructions: [child],
+        });
+        const [root, program] = getInstructionPath(parent);
+
+        // Then encoding the sub-instruction uses the provided fee.
+        expect(encodeInstructionData([root, program, parent, child], {})).toStrictEqual(hex('07'));
+    });
+
     test('it throws value type errors as is', () => {
         const instruction = instructionNode({ data, identifier: 'transfer' });
         const path = getInstructionPath(instruction);
@@ -77,8 +113,7 @@ describe('encodeInstructionData', () => {
                     __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
                     actualType: 'string',
                     expectedType: 'integer (number | bigint)',
-                    nodeKind: 'integerTypeNode',
-                    nodePath: [...path, data, amount, amountType],
+                    path: [...path, data, amount, amountType],
                 },
             }),
         );
@@ -103,8 +138,26 @@ describe('encodeInstructionData', () => {
         expect(() => encodeInstructionData(path, { amount: 300 })).toThrow(
             expect.objectContaining({
                 cause: expect.objectContaining({ message: expect.stringContaining('300') }),
-                context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, instructionName: 'transfer' },
+                context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, path },
             }),
         );
+    });
+
+    test('it encodes resolved default values', () => {
+        // Given a fee injected from account data, which codecs cannot read.
+        const fee = structFieldTypeNode({
+            defaultValue: injectedValueNode({ key: 'fee' }),
+            identifier: 'fee',
+            type: integerTypeNode('u8'),
+        });
+        const pay = instructionNode({
+            data: structTypeNode([fee]),
+            identifier: 'pay',
+            provides: [providedNode('fee', accountDataValueNode('config', { path: 'fee' }))],
+        });
+
+        // Then it encodes its value resolved beforehand.
+        const resolvedDefaultValues = new Map([[fee, 5]]);
+        expect(encodeInstructionData(getInstructionPath(pay), {}, { resolvedDefaultValues })).toStrictEqual(hex('05'));
     });
 });

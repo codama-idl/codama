@@ -1,5 +1,5 @@
 import type { ParsedInstruction } from '@codama/dynamic-parsers';
-import type { EncodedAccount, MaybeEncodedAccount } from '@solana/accounts';
+import type { EncodedAccount } from '@solana/accounts';
 import { type Address, getAddressDecoder, getAddressEncoder } from '@solana/addresses';
 import {
     addDecoderSizePrefix,
@@ -25,83 +25,55 @@ import {
     transformDecoder,
     transformEncoder,
 } from '@solana/codecs';
-import { isNode, type RootNode } from 'codama';
+import { getLinkablesFromNode, type LinkableDictionary, type RootNode } from 'codama';
 
-import { buildBaseDisplayContext } from './build-display-context';
-import { collectInjectedNodes } from './collect-injected-nodes';
-import { resolveInjectionTarget } from './resolve-injection-target';
+import { createAccountReader } from './accounts';
+import { displayInstruction } from './display-instruction';
+import type { DisplayAccountMap, DisplayDictionary, DisplayNamedMap, FetchMaybeAccountsFn } from './types';
 
 /**
- * A map from an account address to its fetched on-chain state (Kit's `EncodedAccount`).
+ * Fetch the accounts the display of a parsed instruction reads, e.g. a mint for the `decimals` of
+ * an amount, into a {@link DisplayAccountMap}. Accounts are fetched in rounds, each in a single
+ * call to `fetchAccounts`, since reading an account can reveal the next one to read, e.g. the
+ * mint of a token account for `${accounts.source.data.mint.data.decimals}`. Accounts that do not
+ * exist are left out, and so the values read from them are not presented.
  *
- * The offline counterpart of the display layer's `fetchAccount`: a renderer looks addresses up here
- * rather than reaching an RPC. Only accounts that exist are stored, so a missing key means "no data".
- */
-export type DisplayAccountMap = ReadonlyMap<Address, EncodedAccount>;
-
-/**
- * A map from an address to a human-readable name.
+ * Use the map with `getInstructionDisplayFromParsedInstruction`, or within a
+ * {@link DisplayDictionary}, e.g. to display the instruction offline.
  *
- * Deliberately generic: a `.sol` domain, token symbol, program label, alias — anything that names an
- * address. It lets an offline renderer present addresses the display layer emits as raw base58.
- */
-export type DisplayNamedMap = ReadonlyMap<Address, string>;
-
-/**
- * A serialisable bundle of the external data an offline renderer needs to present an instruction
- * without network access: account state ({@link DisplayAccountMap}) and address names
- * ({@link DisplayNamedMap}).
- */
-export type DisplayDictionary = {
-    /** Fetched on-chain account state, keyed by address. */
-    readonly accounts: DisplayAccountMap;
-    /** Human-readable names, keyed by address. */
-    readonly names: DisplayNamedMap;
-};
-
-/**
- * Fetches multiple on-chain accounts in one call. The batch counterpart of the display layer's
- * `fetchAccount`; wire it to Kit's `fetchEncodedAccounts` for a single `getMultipleAccounts` call.
- */
-export type FetchAccountsFn = (addresses: Address[]) => Promise<MaybeEncodedAccount[]>;
-
-/**
- * Computes the addresses whose account state the display layer would fetch to present the given
- * instruction, i.e. the exact set an offline renderer must pre-fetch. Deduplicated, and derived
- * statically from the IDL and parsed instruction with no network access.
- *
- * @see {@link getDisplayAccountMap}
- */
-export function getRequiredAccountsForDisplay(root: RootNode, parsedInstruction: ParsedInstruction): Address[] {
-    const context = buildBaseDisplayContext(root, parsedInstruction);
-    const accountNames = collectInjectedNodes(context).flatMap(node => {
-        const target = resolveInjectionTarget(node, context.provides);
-        // Only an `accountFieldValueNode` reads account state and therefore triggers a fetch; a bare
-        // `accountValueNode` names an existing instruction account and needs none.
-        return target && isNode(target, 'accountFieldValueNode') ? [target.account] : [];
-    });
-    const addresses = accountNames.flatMap(name => {
-        const address = parsedInstruction.accounts.find(account => account.name === name)?.address;
-        return address ? [address] : [];
-    });
-    return [...new Set(addresses)];
-}
-
-/**
- * Builds the {@link DisplayAccountMap} for an instruction by batch-fetching the accounts its display
- * would read (see {@link getRequiredAccountsForDisplay}). Non-existent accounts are dropped; an empty
- * map is returned when no display value reads account state.
+ * @example
+ * ```ts
+ * const parsed = parseInstruction(root, instruction);
+ * const accounts = await getDisplayAccountMap(root, parsed, addresses => fetchEncodedAccounts(rpc, addresses));
+ * const display = getInstructionDisplayFromParsedInstruction(root, parsed, { accounts });
+ * ```
  */
 export async function getDisplayAccountMap(
     root: RootNode,
-    parsedInstruction: ParsedInstruction,
-    fetchAccounts: FetchAccountsFn,
+    parsed: ParsedInstruction,
+    fetchAccounts: FetchMaybeAccountsFn,
+    options: { accounts?: DisplayAccountMap; linkables?: LinkableDictionary } = {},
 ): Promise<DisplayAccountMap> {
-    const addresses = getRequiredAccountsForDisplay(root, parsedInstruction);
-    if (addresses.length === 0) return new Map();
+    const linkables = options.linkables ?? getLinkablesFromNode(root);
+    const accounts = new Map(options.accounts);
+    const requested = new Set<Address>();
+    for (;;) {
+        // Displaying with the accounts fetched so far reveals the ones it still reads.
+        const missing = new Set<Address>();
+        const readAccount = createAccountReader(accounts, linkables, address => {
+            if (!requested.has(address)) missing.add(address);
+        });
+        displayInstruction({ formatOptions: {}, linkables, parsed, readAccount });
+        if (missing.size === 0) return accounts;
 
-    const accounts = await fetchAccounts(addresses);
-    return new Map(accounts.flatMap(account => (account.exists ? [[account.address, account] as const] : [])));
+        const addresses = [...missing];
+        addresses.forEach(address => requested.add(address));
+        for (const account of await fetchAccounts(addresses)) {
+            if (!account.exists) continue;
+            const { address, data, executable, lamports, programAddress, space } = account;
+            accounts.set(address, { address, data, executable, lamports, programAddress, space });
+        }
+    }
 }
 
 // An `EncodedAccount` minus its address, which is carried as the map key.

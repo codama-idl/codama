@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
-    type Buffer as PmpBuffer,
     getBufferDecoder,
     getMetadataDecoder,
+    type Buffer as PmpBuffer,
     type Metadata as PmpMetadata,
 } from '@solana-program/program-metadata';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';

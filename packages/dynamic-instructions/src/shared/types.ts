@@ -1,5 +1,6 @@
-import type { AccountsInput, DataInput } from '@codama/dynamic-address-resolution';
+import type { AccountsInput, DataInput, FetchAccountsFn } from '@codama/dynamic-address-resolution';
 import type { Instruction } from '@solana/instructions';
+import type { LinkableDictionary } from 'codama';
 
 type AccountName = string;
 
@@ -29,3 +30,29 @@ export type InstructionsBuilderFn<
     TAccounts extends AccountsInput = AccountsInput,
     TSigners extends EitherSigners = EitherSigners,
 > = (input?: InstructionInput<TData, TAccounts, TSigners>) => Promise<Instruction>;
+
+/**
+ * The options of `createInstructionsBuilder`. `fetchAccounts` is required when
+ * `TReadsAccountData` is `true`, i.e. when building the instruction reads account data, as
+ * reported by `readsAccountData` from `@codama/dynamic-address-resolution`.
+ */
+export type CreateInstructionsBuilderOptions<TReadsAccountData extends boolean = boolean> = ([
+    TReadsAccountData,
+] extends [true]
+    ? FetchAccountsOption
+    : Partial<FetchAccountsOption>) & {
+    /**
+     * The linkable nodes of the tree, e.g. from `getLinkablesFromNode(root)`, used to follow links.
+     * Defaults to recording them from the root of the path: pass them to avoid recording them again.
+     */
+    linkables?: LinkableDictionary;
+};
+
+type FetchAccountsOption = {
+    /**
+     * Fetches the accounts whose data default values read, e.g. a mint for the `decimals`
+     * injected into the data of `transferChecked`. Each build fetches every account it reads
+     * once, batching the accounts it requests together.
+     */
+    fetchAccounts: FetchAccountsFn;
+};

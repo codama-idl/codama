@@ -17,7 +17,7 @@ export interface InstructionRemainingAccountsNode<
     // Data.
     /** The identifier of the account-list input exposed to callers. */
     readonly identifier: IdentifierString;
-    /** Whether the remaining-accounts tail may be empty. Defaults to `false`. */
+    /** Whether the remaining accounts may be omitted. Required ones must be provided, possibly as an empty list. Defaults to `false`. */
     readonly isOptional?: boolean;
     /**
      * Whether each remaining account must sign the transaction.
@@ -32,9 +32,6 @@ export interface InstructionRemainingAccountsNode<
     readonly docs?: TDocs;
     /** Display metadata describing how the remaining-accounts group is presented as a whole. */
     readonly display?: TDisplay;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

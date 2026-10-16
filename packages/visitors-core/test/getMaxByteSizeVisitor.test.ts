@@ -19,15 +19,15 @@ import {
     GetNodeFromKind,
     hiddenPrefixTransformNode,
     hiddenSuffixTransformNode,
+    instructionNode,
+    IntegerFormat,
     integerTypeNode,
     integerValueNode,
-    IntegerFormat,
-    instructionNode,
     mapTypeNode,
     optionTypeNode,
     postOffsetTransformNode,
-    preOffsetTransformNode,
     prefixedCountNode,
+    preOffsetTransformNode,
     programLinkNode,
     programNode,
     publicKeyTypeNode,
@@ -50,8 +50,8 @@ import { describe, expect, test } from 'vitest';
 import {
     ByteSizeVisitorKeys,
     getLastNodeFromPath,
+    getLinkablesFromNode,
     getMaxByteSizeVisitor,
-    getRecordLinkablesVisitor,
     LinkableDictionary,
     NodePath,
     NodeStack,
@@ -73,8 +73,7 @@ const expectMaxSizeWithContext = (
 ) => {
     const node = getLastNodeFromPath(nodePath);
     const stack = new NodeStack(nodePath.slice(0, -1));
-    const linkables = new LinkableDictionary();
-    visit(nodePath[0], getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(nodePath[0]);
     expectMaxSize(node, expectedMaxSize, linkables, stack);
 };
 
@@ -168,8 +167,8 @@ describe('durationTypeNode', () => {
 
 describe('fixedPointTypeNode', () => {
     test('it delegates to the underlying number type', () => {
-        expectMaxSize(fixedPointTypeNode(integerTypeNode('u64'), 9), 8);
-        expectMaxSize(fixedPointTypeNode(integerTypeNode('shortU16'), 9), 3);
+        expectMaxSize(fixedPointTypeNode(integerTypeNode('u64'), { scale: 9 }), 8);
+        expectMaxSize(fixedPointTypeNode(integerTypeNode('shortU16'), { scale: 9 }), 3);
     });
 });
 
@@ -211,6 +210,41 @@ describe('definedTypeLinkNode', () => {
         });
 
         expectMaxSizeWithContext([context, definedTypeLinkNode('myType')], null);
+    });
+    test('it follows links to same-named types of other programs', () => {
+        const typeA = definedTypeNode({
+            identifier: 'myType',
+            type: definedTypeLinkNode('myType', { program: programLinkNode('programB') }),
+        });
+        const programA = programNode({ definedTypes: [typeA], identifier: 'programA', publicKey: '1111' });
+        const programB = programNode({
+            definedTypes: [definedTypeNode({ identifier: 'myType', type: integerTypeNode('u32') })],
+            identifier: 'programB',
+            publicKey: '2222',
+        });
+        const context = rootNode(programA, { additionalPrograms: [programB] });
+
+        expectMaxSizeWithContext([context, programA, typeA], 4);
+    });
+    test('it returns null if the linked type is recursive', () => {
+        const context = programNode({
+            definedTypes: [
+                definedTypeNode({
+                    identifier: 'list',
+                    type: structTypeNode([
+                        structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') }),
+                        structFieldTypeNode({
+                            identifier: 'next',
+                            type: zeroableOptionTypeNode(definedTypeLinkNode('list')),
+                        }),
+                    ]),
+                }),
+            ],
+            identifier: 'myProgram',
+            publicKey: '1111',
+        });
+
+        expectMaxSizeWithContext([context, definedTypeLinkNode('list')], null);
     });
     test('it follows linked nodes using the correct paths when jumping between programs', () => {
         const typeA = definedTypeNode({

@@ -1,0 +1,303 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "2.0.0",
+    "program": {
+        "kind": "programNode",
+        "identifier": "vault",
+        "publicKey": "Vau1t11111111111111111111111111111111111111",
+        "version": "1.0.0",
+        "docs": "A vault program.\nIt stores tokens.",
+        "accounts": [
+            {
+                "kind": "accountNode",
+                "identifier": "vaultAccount",
+                "size": 72,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "1"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "owner",
+                            "type": {
+                                "kind": "publicKeyTypeNode"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "config",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "config"
+                            }
+                        }
+                    ]
+                },
+                "pda": {
+                    "kind": "pdaLinkNode",
+                    "identifier": "vaultPda"
+                },
+                "discriminators": [
+                    {
+                        "kind": "fieldDiscriminatorNode",
+                        "path": "discriminator",
+                        "offset": 0
+                    }
+                ]
+            }
+        ],
+        "definedTypes": [
+            {
+                "kind": "definedTypeNode",
+                "identifier": "price",
+                "type": {
+                    "kind": "definedTypeLinkNode",
+                    "identifier": "ratio",
+                    "program": {
+                        "kind": "programLinkNode",
+                        "identifier": "oracle"
+                    }
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "identifier": "action",
+                "docs": "What to do.",
+                "type": {
+                    "kind": "enumTypeNode",
+                    "variants": [
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "stop"
+                        },
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "wait",
+                            "data": {
+                                "kind": "tupleTypeNode",
+                                "items": [
+                                    {
+                                        "kind": "integerTypeNode",
+                                        "format": "u64",
+                                        "endian": "le"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "move",
+                            "data": {
+                                "kind": "structTypeNode",
+                                "fields": [
+                                    {
+                                        "kind": "structFieldTypeNode",
+                                        "identifier": "x",
+                                        "type": {
+                                            "kind": "integerTypeNode",
+                                            "format": "i32",
+                                            "endian": "le"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "size": {
+                        "kind": "integerTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                    }
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "identifier": "config",
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "fee",
+                            "docs": "The fee, in USD.",
+                            "type": {
+                                "kind": "fixedPointTypeNode",
+                                "scale": 2,
+                                "unit": "USD",
+                                "number": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u64",
+                                    "endian": "le"
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "createdAt",
+                            "type": {
+                                "kind": "dateTimeTypeNode",
+                                "number": {
+                                    "kind": "integerTypeNode",
+                                    "format": "i64",
+                                    "endian": "le"
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "label",
+                            "type": {
+                                "kind": "stringTypeNode",
+                                "encoding": "utf8",
+                                "transforms": [
+                                    {
+                                        "kind": "fixedSizeTransformNode",
+                                        "size": 32
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "price",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "price"
+                            },
+                            "defaultValue": {
+                                "kind": "floatValueNode",
+                                "value": "1"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "next",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "action"
+                            },
+                            "defaultValue": {
+                                "kind": "enumValueNode",
+                                "variant": "wait",
+                                "enum": {
+                                    "kind": "definedTypeLinkNode",
+                                    "identifier": "action"
+                                },
+                                "value": {
+                                    "kind": "tupleValueNode",
+                                    "items": [
+                                        {
+                                            "kind": "integerValueNode",
+                                            "value": "3"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "identifier": "vaultPda",
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "stringTypeNode",
+                            "encoding": "utf8"
+                        },
+                        "value": {
+                            "kind": "stringValueNode",
+                            "string": "vault"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "owner",
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    }
+                ]
+            }
+        ],
+        "events": [
+            {
+                "kind": "eventNode",
+                "identifier": "deposited",
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "amount",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "errors": [
+            {
+                "kind": "errorNode",
+                "identifier": "vaultFull",
+                "code": 6000,
+                "message": "The vault is full"
+            }
+        ],
+        "constants": [
+            {
+                "kind": "constantNode",
+                "identifier": "maxRatio",
+                "type": {
+                    "kind": "definedTypeLinkNode",
+                    "identifier": "price"
+                },
+                "value": {
+                    "kind": "floatValueNode",
+                    "value": "2"
+                }
+            }
+        ]
+    },
+    "additionalPrograms": [
+        {
+            "kind": "programNode",
+            "identifier": "oracle",
+            "publicKey": "Orac1e1111111111111111111111111111111111111",
+            "version": "0.1.0",
+            "definedTypes": [
+                {
+                    "kind": "definedTypeNode",
+                    "identifier": "ratio",
+                    "type": {
+                        "kind": "floatTypeNode",
+                        "format": "f64",
+                        "endian": "le"
+                    }
+                }
+            ]
+        }
+    ]
+}

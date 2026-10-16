@@ -15,8 +15,8 @@ import {
     ProvidedNode,
     providedNode,
     StructFieldTypeNodeInput,
-    ValueNode,
     VALUE_NODES,
+    ValueNode,
 } from '@codama/nodes';
 import { getLastNodeFromPath, LinkableDictionary, NodePath, visit } from '@codama/visitors-core';
 
@@ -76,6 +76,7 @@ const INSTRUCTION_UPDATE_KEYS = [
     'plugins',
     'provides',
     'remainingAccounts',
+    'returnData',
     'status',
     'subInstructions',
 ];
@@ -166,8 +167,8 @@ export function updateInstructionsVisitor(map: Record<string, InstructionUpdates
     const linkables = new LinkableDictionary();
 
     const transformer = getUpdateTransformer('instructionNode', resolve, (node, updates, path) => {
-        assertUpdatedAccountsExist(getLastNodeFromPath(path), updates);
-        const updated = updateInstructionShape(node, getLastNodeFromPath(path), updates);
+        assertUpdatedAccountsExist(path, updates);
+        const updated = updateInstructionShape(node, path, updates);
         return fillNewDefaultValues(updated, updates, [...path.slice(0, -1), updated], linkables);
     });
 
@@ -197,13 +198,13 @@ function assertValidInstructionUpdates(selector: string, updates: InstructionUpd
 }
 
 /** Ensure every updated account exists on the original instruction. */
-function assertUpdatedAccountsExist(instruction: InstructionNode, updates: AppliedInstructionUpdates): void {
+function assertUpdatedAccountsExist(path: NodePath<InstructionNode>, updates: AppliedInstructionUpdates): void {
+    const instruction = getLastNodeFromPath(path);
     Object.keys(updates.accounts ?? {}).forEach(accountName => {
         if (!(instruction.accounts ?? []).some(account => account.identifier === accountName)) {
             throw new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND, {
                 accountName,
-                instruction,
-                instructionName: instruction.identifier,
+                path,
             });
         }
     });
@@ -216,7 +217,7 @@ function assertUpdatedAccountsExist(instruction: InstructionNode, updates: Appli
  */
 function updateInstructionShape(
     node: InstructionNode,
-    original: InstructionNode,
+    path: NodePath<InstructionNode>,
     updates: AppliedInstructionUpdates,
 ): InstructionNode {
     const { accounts: accountUpdates = {}, data: dataUpdates = {}, provides, ...otherUpdates } = updates;
@@ -224,9 +225,8 @@ function updateInstructionShape(
     const { type: data, unusedPaths } = applyDataUpdates(node.data, dataUpdates);
     if (unusedPaths.length > 0) {
         throw new CodamaError(CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND, {
-            instruction: original,
-            instructionName: original.identifier,
-            path: unusedPaths[0],
+            path,
+            pathString: unusedPaths[0],
         });
     }
 

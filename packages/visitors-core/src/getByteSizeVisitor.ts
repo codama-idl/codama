@@ -1,4 +1,11 @@
-import { CountNode, isNode, isScalarEnum, REGISTERED_TYPE_NODE_KINDS, RegisteredTypeNode } from '@codama/nodes';
+import {
+    CountNode,
+    DefinedTypeNode,
+    isNode,
+    isScalarEnum,
+    REGISTERED_TYPE_NODE_KINDS,
+    RegisteredTypeNode,
+} from '@codama/nodes';
 
 import { applyByteSizeTransforms, nodeHasTransforms } from './applyByteSizeTransforms';
 import { extendVisitor } from './extendVisitor';
@@ -25,8 +32,9 @@ export function getByteSizeVisitor(
 ): Visitor<number | null, ByteSizeVisitorKeys> {
     const stack = options.stack ?? new NodeStack();
 
-    const visitedDefinedTypes = new Map<string, number | null>();
-    const definedTypeStack: string[] = [];
+    // Keyed by node rather than identifier: same-named types of different programs are distinct.
+    const visitedDefinedTypes = new Map<DefinedTypeNode, number | null>();
+    const visitingDefinedTypes = new Set<DefinedTypeNode>();
 
     const sumSizes = (values: (number | null)[]): number | null =>
         values.reduce((all, one) => (all === null || one === null ? null : all + one), 0 as number | null);
@@ -81,13 +89,11 @@ export function getByteSizeVisitor(
                 },
 
                 visitDefinedType(node, { self }) {
-                    if (visitedDefinedTypes.has(node.identifier)) {
-                        return visitedDefinedTypes.get(node.identifier)!;
-                    }
-                    definedTypeStack.push(node.identifier);
+                    if (visitedDefinedTypes.has(node)) return visitedDefinedTypes.get(node)!;
+                    visitingDefinedTypes.add(node);
                     const child = visit(node.type, self);
-                    definedTypeStack.pop();
-                    visitedDefinedTypes.set(node.identifier, child);
+                    visitingDefinedTypes.delete(node);
+                    visitedDefinedTypes.set(node, child);
                     return child;
                 },
 
@@ -95,10 +101,9 @@ export function getByteSizeVisitor(
                     // Fetch the linked type and return null if not found.
                     const linkedDefinedPath = linkables.getPath(stack.getPath(node.kind));
                     if (!linkedDefinedPath) return null;
-                    const linkedDefinedType = getLastNodeFromPath(linkedDefinedPath);
 
-                    // This prevents infinite recursion by assuming cyclic types don't have a fixed size.
-                    if (definedTypeStack.includes(linkedDefinedType.identifier)) return null;
+                    // Cyclic types have no bounded size, and following them would never end.
+                    if (visitingDefinedTypes.has(getLastNodeFromPath(linkedDefinedPath))) return null;
 
                     return stack.visitPath(linkedDefinedPath, self);
                 },

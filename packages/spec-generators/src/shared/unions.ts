@@ -20,10 +20,9 @@ export function getRegisteredCategoryUnions(spec: Spec): readonly UnionSpec[] {
 
 /**
  * Return the leaf nodes reachable from `union` by walking through
- * nested `{ kind: 'union' }` members recursively. `nestedUnion`
- * members are not followed — they are name-aliased and break the
- * cycle on the TS side. Unknown member references are skipped
- * silently; the spec validator catches those upstream.
+ * nested `{ kind: 'union' }` members recursively. Unknown member
+ * references are skipped silently; the spec validator catches those
+ * upstream.
  */
 export function flattenNodeUnion(union: UnionSpec, spec: Spec): readonly NodeSpec[] {
     const unionByName = new Map(spec.categories.flatMap(c => c.unions).map(u => [u.name, u]));

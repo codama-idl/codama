@@ -1,6 +1,6 @@
 import type { PluginNode } from '../PluginNode';
 import type { InjectableIntegerValueNode } from '../valueNodes/InjectableIntegerValueNode';
-import type { InjectableStringValueNode } from '../valueNodes/InjectableStringValueNode';
+import type { InjectableUnitValueNode } from '../valueNodes/InjectableUnitValueNode';
 
 /**
  * Display metadata that presents an integer as a scaled amount with an optional unit, for quantities whose scale is contextual rather than static — e.g. a raw token amount whose decimals live in the mint account.
@@ -10,7 +10,7 @@ import type { InjectableStringValueNode } from '../valueNodes/InjectableStringVa
  */
 export interface AmountNumberDisplayNode<
     TDecimals extends InjectableIntegerValueNode = InjectableIntegerValueNode,
-    TUnit extends InjectableStringValueNode | undefined = InjectableStringValueNode | undefined,
+    TUnit extends InjectableUnitValueNode | undefined = InjectableUnitValueNode | undefined,
     TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'amountNumberDisplayNode';
@@ -23,13 +23,10 @@ export interface AmountNumberDisplayNode<
      */
     readonly decimals: TDecimals;
     /**
-     * A label appended after the scaled value (e.g. `"USDC"`, `"%"`, `"bps"`). Resolved as a string value: either a literal `stringValueNode` or a key resolved from a surrounding provider.
+     * A unit appended after the scaled value (e.g. `"USDC"`, `"%"`, `"bps"`, or the address of a token mint), presented as described by `InjectableUnitValueNode`.
      * When this input cannot resolve, renderers should present the scaled value without a unit.
      */
     readonly unit?: TUnit;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

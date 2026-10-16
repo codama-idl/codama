@@ -97,6 +97,7 @@ test('it throws when inlined fields collide in camelCase', () => {
     expect(() => flattenStruct(node)).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
             conflictingAttributes: [identifierString('max_supply'), identifierString('maxSupply')],
+            path: [node],
         }),
     );
 });
@@ -112,8 +113,7 @@ test('it throws when a struct to inline carries plugins', () => {
     // When we flatten it, then we expect an error since the plugins would be lost.
     expect(() => flattenStruct(node)).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS, {
-            field,
-            fieldName: identifierString('nested'),
+            path: [node, field],
         }),
     );
 

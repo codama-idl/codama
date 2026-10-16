@@ -16,12 +16,9 @@ export interface InstructionAccountDisplayNode<
     // Children.
     /**
      * An override label shown in the fallback list (e.g. `"To"`).
-     * When absent, renderers derive a label from the account `name`.
+     * When absent, renderers derive a label from the account `identifier`.
      */
     readonly label?: TLabel;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

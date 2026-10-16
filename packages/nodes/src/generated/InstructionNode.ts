@@ -18,6 +18,7 @@ export type InstructionNodeInput<
     TDocs extends string | TextNode | undefined = string | TextNode | undefined,
     TAccounts extends Array<InstructionAccountNode> | undefined = Array<InstructionAccountNode> | undefined,
     TData extends TypeNode | undefined = TypeNode | undefined,
+    TReturnData extends TypeNode | undefined = TypeNode | undefined,
     TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined =
         | Array<InstructionRemainingAccountsNode>
         | undefined,
@@ -34,6 +35,7 @@ export type InstructionNodeInput<
             TDocs,
             TAccounts,
             TData,
+            TReturnData,
             TRemainingAccounts,
             TByteDeltas,
             TDiscriminators,
@@ -50,7 +52,7 @@ export type InstructionNodeInput<
 };
 
 /**
- * A program instruction: its accounts, data, byte-delta hints, discriminators, optional status, and optional sub-instructions.
+ * A program instruction: its accounts, data, return data, byte-delta hints, discriminators, optional status, and optional sub-instructions.
  *
  * ![Diagram](https://github.com/codama-idl/codama/assets/3642397/0d8edced-cfa4-4500-b80c-ebc56181a338)
  */
@@ -58,6 +60,7 @@ export function instructionNode<
     const TDocs extends string | TextNode | undefined = undefined,
     const TAccounts extends Array<InstructionAccountNode> | undefined = [],
     const TData extends TypeNode | undefined = undefined,
+    const TReturnData extends TypeNode | undefined = undefined,
     const TRemainingAccounts extends Array<InstructionRemainingAccountsNode> | undefined = undefined,
     const TByteDeltas extends Array<InstructionByteDeltaNode> | undefined = undefined,
     const TDiscriminators extends Array<DiscriminatorNode> | undefined = undefined,
@@ -71,6 +74,7 @@ export function instructionNode<
         TDocs,
         TAccounts,
         TData,
+        TReturnData,
         TRemainingAccounts,
         TByteDeltas,
         TDiscriminators,
@@ -84,6 +88,7 @@ export function instructionNode<
     TDocs,
     TAccounts,
     TData,
+    TReturnData,
     TRemainingAccounts,
     TByteDeltas,
     TDiscriminators,
@@ -104,6 +109,7 @@ export function instructionNode<
         ...(input.docs !== undefined && { docs: input.docs }),
         ...(input.accounts !== undefined && input.accounts.length > 0 && { accounts: input.accounts as TAccounts }),
         ...(input.data !== undefined && { data: input.data }),
+        ...(input.returnData !== undefined && { returnData: input.returnData }),
         ...(input.remainingAccounts !== undefined &&
             input.remainingAccounts.length > 0 && { remainingAccounts: input.remainingAccounts as TRemainingAccounts }),
         ...(input.byteDeltas !== undefined &&

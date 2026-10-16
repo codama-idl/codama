@@ -1,60 +1,52 @@
 {
     "kind": "rootNode",
     "standard": "codama",
-    "version": "1.3.7",
+    "version": "2.0.0",
     "program": {
         "kind": "programNode",
-        "name": "splAssociatedTokenAccount",
+        "identifier": "splAssociatedTokenAccount",
         "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
         "version": "1.1.1",
-        "docs": [],
-        "accounts": [],
         "instructions": [
             {
                 "kind": "instructionNode",
-                "name": "create",
-                "docs": [],
+                "identifier": "create",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "fundingAddress",
+                        "identifier": "fundingAddress",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "associatedAccountAddress",
+                        "identifier": "associatedAccountAddress",
                         "isWritable": true,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "walletAddress",
+                        "identifier": "walletAddress",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "tokenMintAddress",
+                        "identifier": "tokenMintAddress",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -63,11 +55,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "tokenProgram",
+                        "identifier": "tokenProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -75,76 +66,72 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
-                        },
-                        "docs": [],
-                        "defaultValue": {
-                            "kind": "numberValueNode",
-                            "number": 0
-                        },
-                        "defaultValueStrategy": "omitted"
-                    }
-                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "0"
+                            }
+                        }
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "createIdempotent",
-                "docs": [],
+                "identifier": "createIdempotent",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "fundingAddress",
+                        "identifier": "fundingAddress",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "associatedAccountAddress",
+                        "identifier": "associatedAccountAddress",
                         "isWritable": true,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "walletAddress",
+                        "identifier": "walletAddress",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "tokenMintAddress",
+                        "identifier": "tokenMintAddress",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "systemProgram",
+                        "identifier": "systemProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111",
@@ -153,11 +140,10 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "tokenProgram",
+                        "identifier": "tokenProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -165,92 +151,86 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
-                        },
-                        "docs": [],
-                        "defaultValue": {
-                            "kind": "numberValueNode",
-                            "number": 1
-                        },
-                        "defaultValueStrategy": "omitted"
-                    }
-                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "1"
+                            }
+                        }
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "recoverNested",
-                "docs": [],
+                "identifier": "recoverNested",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "nestedAssociatedAccountAddress",
+                        "identifier": "nestedAssociatedAccountAddress",
                         "isWritable": true,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "nestedTokenMintAddress",
+                        "identifier": "nestedTokenMintAddress",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "destinationAssociatedAccountAddress",
+                        "identifier": "destinationAssociatedAccountAddress",
                         "isWritable": true,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "ownerAssociatedAccountAddress",
+                        "identifier": "ownerAssociatedAccountAddress",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "ownerTokenMintAddress",
+                        "identifier": "ownerTokenMintAddress",
                         "isWritable": false,
                         "isSigner": false,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "walletAddress",
+                        "identifier": "walletAddress",
                         "isWritable": true,
                         "isSigner": true,
-                        "isOptional": false,
-                        "docs": []
+                        "isOptional": false
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "tokenProgram",
+                        "identifier": "tokenProgram",
                         "isWritable": false,
                         "isSigner": false,
                         "isOptional": false,
-                        "docs": [],
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -258,43 +238,42 @@
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
-                        },
-                        "docs": [],
-                        "defaultValue": {
-                            "kind": "numberValueNode",
-                            "number": 2
-                        },
-                        "defaultValueStrategy": "omitted"
-                    }
-                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "2"
+                            }
+                        }
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             }
         ],
-        "definedTypes": [],
-        "pdas": [],
         "errors": [
             {
                 "kind": "errorNode",
-                "name": "invalidOwner",
+                "identifier": "invalidOwner",
                 "code": 0,
                 "message": "Associated token account owner does not match address derivation",
-                "docs": ["InvalidOwner: Associated token account owner does not match address derivation"]
+                "docs": "InvalidOwner: Associated token account owner does not match address derivation"
             }
         ]
-    },
-    "additionalPrograms": []
+    }
 }

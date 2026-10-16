@@ -26,10 +26,21 @@ module.exports = oxlint.defineConfig({
             files: ['packages/cli/**', 'packages/node-types/**', 'packages/nodes/**'],
             rules: { 'sort-keys': 'off' },
         },
+        // The upgrade converters build node structures deliberately in spec attribute order,
+        // so upgraded IDLs serialise like natively written ones.
+        {
+            files: ['packages/upgrade/src/v1ToV2/**'],
+            rules: { 'sort-keys': 'off' },
+        },
         // Generated output is deliberately ordered and machine-written.
         {
             files: ['**/generated/**'],
             rules: { 'sort-keys': 'off' },
         },
     ],
+    rules: {
+        // Sort the members of each import, e.g. `{ a, B, c }`. Import declarations are already sorted by
+        // oxfmt's `sortImports`, whose order this rule's declaration sorting would conflict with.
+        'sort-imports': ['error', { ignoreCase: true, ignoreDeclarationSort: true }],
+    },
 });

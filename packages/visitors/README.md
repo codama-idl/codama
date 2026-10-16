@@ -194,6 +194,8 @@ export type DefinedTypeHistogram = {
         inEvents: number;
         // The number of times the type is used in instruction data.
         inInstructionData: number;
+        // The number of times the type is used in instruction return data.
+        inInstructionReturnData: number;
         // The number of times the type is used in total, including default values, PDA seeds and constants.
         total: number;
     };
@@ -331,6 +333,8 @@ codama.update(transformU8ArraysToBytesVisitor([32, 64]));
 This visitor replaces any `DefinedTypeLinkNode` with the type of the `DefinedTypeNode` it points to and removes the inlined `DefinedTypeNodes` from their programs. By default, it unwraps all defined types, but you can provide an array of identifiers, optionally prefixed by a program identifier, to only unwrap specific types.
 
 Note that if multiple link nodes point to the same defined type, each link node will be replaced by a copy of the defined type. The `transforms` of each link are applied on top of the inlined type.
+
+Defined types in a cycle made only of types to inline, such as `node = struct { next: option<link(node)> }`, are not inlined since inlining them would never end: they are kept in their programs, and so are the links to them. A cycle going through a type that is not inlined ends at its link, so its other types are inlined as usual.
 
 ```ts
 codama.update(unwrapDefinedTypesVisitor(['counter', 'splToken.escrow']));

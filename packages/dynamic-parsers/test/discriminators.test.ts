@@ -7,6 +7,7 @@ import {
     CodamaError,
 } from '@codama/errors';
 import {
+    accountLinkNode,
     accountNode,
     constantDiscriminatorNode,
     constantValueNode,
@@ -17,9 +18,10 @@ import {
     fixedSizeTransformNode,
     integerTypeNode,
     integerValueNode,
-    programLinkNode,
     pathString,
+    programLinkNode,
     programNode,
+    publicKeyTypeNode,
     rootNode,
     sizeDiscriminatorNode,
     stringTypeNode,
@@ -27,7 +29,7 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@codama/nodes';
-import { getRecordLinkablesVisitor, LinkableDictionary, NodeStack, ProvidedScope, visit } from '@codama/visitors-core';
+import { getLinkablesFromNode, LinkableDictionary, NodeStack, ProvidedScope } from '@codama/visitors-core';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { DiscriminatorContext, matchDiscriminators } from '../src/discriminators';
@@ -131,8 +133,7 @@ describe('matchDiscriminators', () => {
             const root = rootNode(programA, { additionalPrograms: [programB] });
 
             // And given a recorded linkables dictionary.
-            const linkables = new LinkableDictionary();
-            visit(root, getRecordLinkablesVisitor(linkables));
+            const linkables = getLinkablesFromNode(root);
 
             // And a stack keeping track of the current visited nodes.
             const stack = new NodeStack([root, programA, account]);
@@ -206,21 +207,18 @@ describe('matchDiscriminators', () => {
             const discriminator = fieldDiscriminatorNode('key');
             const fields = structTypeNode([]);
             expect(() => matchDiscriminators(hex('0102030405'), [discriminator], fields, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('key') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('key'),
+                    path: [discriminator],
+                }),
             );
         });
         test('it throws an error if the discriminator field does not have a default value', () => {
             const discriminator = fieldDiscriminatorNode('key');
-            const fields = structTypeNode([
-                structFieldTypeNode({
-                    identifier: 'key',
-                    type: integerTypeNode('u8'),
-                }),
-            ]);
+            const key = structFieldTypeNode({ identifier: 'key', type: integerTypeNode('u8') });
+            const fields = structTypeNode([key]);
             expect(() => matchDiscriminators(hex('0102030405'), [discriminator], fields, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, {
-                    field: pathString('key'),
-                }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE, { path: [fields, key] }),
             );
         });
         test('it resolves link nodes correctly', () => {
@@ -257,8 +255,7 @@ describe('matchDiscriminators', () => {
             const root = rootNode(programA, { additionalPrograms: [programB] });
 
             // And given a recorded linkables dictionary.
-            const linkables = new LinkableDictionary();
-            visit(root, getRecordLinkablesVisitor(linkables));
+            const linkables = getLinkablesFromNode(root);
 
             // And a stack keeping track of the current visited nodes.
             const stack = new NodeStack([root, programA, account]);
@@ -302,8 +299,7 @@ describe('matchDiscriminators', () => {
                 publicKey: '2222',
             });
             const root = rootNode(programA, { additionalPrograms: [programB] });
-            visit(root, getRecordLinkablesVisitor(linkables));
-            context = getContext(linkables, new NodeStack([root, programA, account]));
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, programA, account]));
 
             // Then the `kind` link resolves within programB, as a u16 at offset 1.
             expect(matchDiscriminators(hex('012a00'), [discriminator], data, context)).toBe(true);
@@ -333,8 +329,7 @@ describe('matchDiscriminators', () => {
                 publicKey: '1111',
             });
             const root = rootNode(program);
-            visit(root, getRecordLinkablesVisitor(linkables));
-            context = getContext(linkables, new NodeStack([root, program, account]));
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, program, account]));
 
             // Then the field is found through the link.
             expect(matchDiscriminators(hex('07'), [discriminator], data, context)).toBe(true);
@@ -349,15 +344,11 @@ describe('matchDiscriminators', () => {
             const account = accountNode({ data, discriminators: [discriminator], identifier: 'myAccount' });
             const program = programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' });
             const root = rootNode(program);
-            visit(root, getRecordLinkablesVisitor(linkables));
-            context = getContext(linkables, new NodeStack([root, program, account]));
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, program, account]));
 
             // Then the dangling link is reported rather than a missing field.
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
                 new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-                    kind: 'definedTypeLinkNode',
-                    linkNode: link,
-                    name: link.identifier,
                     path: [root, program, account, data, header, link],
                 }),
             );
@@ -367,7 +358,10 @@ describe('matchDiscriminators', () => {
             const discriminator = fieldDiscriminatorNode('header.kind');
             const data = structTypeNode([structFieldTypeNode({ identifier: 'header', type: integerTypeNode('u8') })]);
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('header.kind') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('header.kind'),
+                    path: [discriminator],
+                }),
             );
         });
     });
@@ -381,7 +375,7 @@ describe('matchDiscriminators', () => {
                     cause: expect.objectContaining({
                         context: expect.objectContaining({
                             __code: CODAMA_ERROR__CANNOT_RESOLVE_PATH,
-                            path: pathString('header.kind'),
+                            pathString: pathString('header.kind'),
                             segment: 'kind',
                         }),
                     }),
@@ -399,7 +393,42 @@ describe('matchDiscriminators', () => {
                 structFieldTypeNode({ identifier: 'pair', type: tupleTypeNode([integerTypeNode('u8')]) }),
             ]);
             expect(() => matchDiscriminators(hex('00'), [discriminator], data, context)).toThrow(
-                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, { field: pathString('pair[0]') }),
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('pair[0]'),
+                    path: [discriminator],
+                }),
+            );
+        });
+        test('it does not follow account links', () => {
+            // Given a discriminator reading a field of a linked mint, which has a default value.
+            const discriminator = fieldDiscriminatorNode('mint.data.decimals');
+            const mint = accountNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        defaultValue: integerValueNode('6'),
+                        identifier: 'decimals',
+                        type: integerTypeNode('u8'),
+                    }),
+                ]),
+                identifier: 'mint',
+            });
+            const data = structTypeNode([
+                structFieldTypeNode({
+                    identifier: 'mint',
+                    type: publicKeyTypeNode({ accountLink: accountLinkNode('mint') }),
+                }),
+            ]);
+            const token = accountNode({ data, discriminators: [discriminator], identifier: 'token' });
+            const program = programNode({ accounts: [mint, token], identifier: 'myProgram', publicKey: '1111' });
+            const root = rootNode(program);
+            context = getContext(getLinkablesFromNode(root), new NodeStack([root, program, token]));
+
+            // Then the discriminator field is not found, since identifying bytes cannot read other accounts.
+            expect(() => matchDiscriminators(new Uint8Array(32).fill(6), [discriminator], data, context)).toThrow(
+                new CodamaError(CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND, {
+                    field: pathString('mint.data.decimals'),
+                    path: [root, program, token, discriminator],
+                }),
             );
         });
     });

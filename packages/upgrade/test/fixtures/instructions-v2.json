@@ -1,0 +1,298 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "2.0.0",
+    "program": {
+        "kind": "programNode",
+        "identifier": "bank",
+        "publicKey": "Bank111111111111111111111111111111111111111",
+        "version": "2.1.0",
+        "accounts": [
+            {
+                "kind": "accountNode",
+                "identifier": "settings",
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "authority",
+                            "type": {
+                                "kind": "publicKeyTypeNode"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "identifier": "deposit",
+                "optionalAccountStrategy": "programId",
+                "docs": "Deposits into the pool.",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "owner",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "defaultValue": {
+                            "kind": "identityValueNode"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "payer",
+                        "isWritable": true,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "defaultValue": {
+                            "kind": "payerValueNode"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "pool",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "defaultValue": {
+                            "kind": "pdaValueNode",
+                            "pda": {
+                                "kind": "pdaLinkNode",
+                                "identifier": "pool"
+                            },
+                            "seeds": [
+                                {
+                                    "kind": "pdaSeedValueNode",
+                                    "identifier": "owner",
+                                    "value": {
+                                        "kind": "accountValueNode",
+                                        "identifier": "owner"
+                                    }
+                                },
+                                {
+                                    "kind": "pdaSeedValueNode",
+                                    "identifier": "ratio",
+                                    "value": {
+                                        "kind": "floatValueNode",
+                                        "value": "2"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "settings",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "accountLink": {
+                            "kind": "accountLinkNode",
+                            "identifier": "settings"
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "authority",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "defaultValue": {
+                            "kind": "conditionalValueNode",
+                            "condition": {
+                                "kind": "dataValueNode",
+                                "path": "mode"
+                            },
+                            "value": {
+                                "kind": "enumValueNode",
+                                "variant": "delegated",
+                                "enum": {
+                                    "kind": "definedTypeLinkNode",
+                                    "identifier": "mode"
+                                }
+                            },
+                            "ifTrue": {
+                                "kind": "accountDataValueNode",
+                                "account": "settings",
+                                "path": "authority"
+                            },
+                            "ifFalse": {
+                                "kind": "accountValueNode",
+                                "identifier": "owner"
+                            }
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "systemProgram",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "defaultValue": {
+                            "kind": "programLinkNode",
+                            "identifier": "system"
+                        }
+                    }
+                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "3"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "amount",
+                            "docs": "How much to deposit.",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "mode",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "mode"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "poolBump",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "injectedValueNode",
+                                "key": "poolBump"
+                            }
+                        }
+                    ]
+                },
+                "remainingAccounts": [
+                    {
+                        "kind": "instructionRemainingAccountsNode",
+                        "identifier": "coSigners",
+                        "isOptional": true,
+                        "isSigner": true,
+                        "docs": "Co-signers."
+                    }
+                ],
+                "byteDeltas": [
+                    {
+                        "kind": "instructionByteDeltaNode",
+                        "withHeader": true,
+                        "value": {
+                            "kind": "dataValueNode",
+                            "path": "amount"
+                        }
+                    }
+                ],
+                "discriminators": [
+                    {
+                        "kind": "fieldDiscriminatorNode",
+                        "path": "discriminator",
+                        "offset": 0
+                    }
+                ],
+                "provides": [
+                    {
+                        "kind": "providedNode",
+                        "identifier": "poolBump",
+                        "node": {
+                            "kind": "accountBumpValueNode",
+                            "identifier": "pool"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "identifier": "manage",
+                "optionalAccountStrategy": "omitted",
+                "subInstructions": [
+                    {
+                        "kind": "instructionNode",
+                        "identifier": "pause",
+                        "optionalAccountStrategy": "programId"
+                    }
+                ]
+            }
+        ],
+        "definedTypes": [
+            {
+                "kind": "definedTypeNode",
+                "identifier": "mode",
+                "type": {
+                    "kind": "enumTypeNode",
+                    "variants": [
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "simple"
+                        },
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "delegated"
+                        }
+                    ],
+                    "size": {
+                        "kind": "integerTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                    }
+                }
+            }
+        ],
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "identifier": "pool",
+                "seeds": [
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "owner",
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "ratio",
+                        "type": {
+                            "kind": "floatTypeNode",
+                            "format": "f64",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "additionalPrograms": [
+        {
+            "kind": "programNode",
+            "identifier": "system",
+            "publicKey": "11111111111111111111111111111111",
+            "version": "1.0.0"
+        }
+    ]
+}

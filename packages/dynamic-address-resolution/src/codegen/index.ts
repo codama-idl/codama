@@ -6,3 +6,4 @@ export { generateTypes } from './generate-types';
 export { generateTypesFromFile, type GenerateTypesFromFileOptions } from './generate-types-from-file';
 export { getResolutionRefs, type ResolutionRefs } from './get-resolution-refs';
 export { isAccountAutoResolvable } from './is-account-auto-resolvable';
+export { readsAccountData } from '../resolvers/reads-account-data';

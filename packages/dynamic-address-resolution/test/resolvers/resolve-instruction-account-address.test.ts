@@ -11,7 +11,6 @@ import {
 import type { Address } from '@solana/addresses';
 import {
     accountBumpValueNode,
-    accountDataValueNode,
     accountValueNode,
     bytesTypeNode,
     bytesValueNode,
@@ -66,10 +65,7 @@ describe('provided accounts', () => {
 
     test('it throws when a required account without default value is missing', async () => {
         const { path } = getAccountPath(account('myAccount'));
-        const error = new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-            accountName: path[3].identifier,
-            instructionName: path[2].identifier,
-        });
+        const error = new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, { path });
         await expectCodamaError(resolveInstructionAccountAddress({ path }), error);
         await expectCodamaError(resolveInstructionAccountAddress({ accountsInput: { myAccount: null }, path }), error);
     });
@@ -148,7 +144,7 @@ describe('default values', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-                instructionName: path[2].identifier,
+                path: path.slice(0, 3),
                 referencedName: accountValueNode('unknown').identifier,
             }),
         );
@@ -183,8 +179,8 @@ describe('default values', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: {}, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING, {
-                instructionName: path[2].identifier,
-                path: dataValueNode('owner').path,
+                path: path.slice(0, 3),
+                pathString: dataValueNode('owner').path,
             }),
         );
         await expectCodamaError(
@@ -210,18 +206,11 @@ describe('default values', () => {
         }
     });
 
-    test('it does not support account bumps and account data', async () => {
-        const bump = getAccountPath(account('a', { defaultValue: accountBumpValueNode('pda') })).path;
-        const data = getAccountPath(
-            account('a', { defaultValue: accountDataValueNode('mint', { path: 'owner' }) }),
-        ).path;
+    test('it does not support account bumps', async () => {
+        const { path } = getAccountPath(account('a', { defaultValue: accountBumpValueNode('pda') }));
         await expectCodamaError(
-            resolveInstructionAccountAddress({ path: bump }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: 'accountBumpValueNode' }),
-        );
-        await expectCodamaError(
-            resolveInstructionAccountAddress({ path: data }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind: 'accountDataValueNode' }),
+            resolveInstructionAccountAddress({ path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { path: [...path, path[3].defaultValue!] }),
         );
     });
 });
@@ -248,7 +237,7 @@ describe('injected values', () => {
         const { path } = getAccountPath(account('pool', { defaultValue: injected }));
         await expectCodamaError(
             resolveInstructionAccountAddress({ path }),
-            new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: injected, key: injected.key }),
+            new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: injected.key, path: [injected] }),
         );
     });
 });
@@ -346,10 +335,7 @@ describe('conditional values', () => {
         expect(await resolveInstructionAccountAddress({ dataInput: { mode: 3 }, path: optional })).toBeNull();
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: { mode: 3 }, path: required }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                accountName: required[3].identifier,
-                instructionName: required[2].identifier,
-            }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, { path: required }),
         );
     });
 });

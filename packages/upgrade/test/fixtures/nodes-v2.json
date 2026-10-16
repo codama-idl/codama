@@ -1,0 +1,520 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "2.0.0",
+    "program": {
+        "kind": "programNode",
+        "identifier": "showcase",
+        "publicKey": "Show111111111111111111111111111111111111111",
+        "version": "1.0.0",
+        "accounts": [
+            {
+                "kind": "accountNode",
+                "identifier": "marker",
+                "size": 1,
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "flag",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            }
+                        }
+                    ]
+                },
+                "discriminators": [
+                    {
+                        "kind": "sizeDiscriminatorNode",
+                        "size": 1
+                    }
+                ]
+            }
+        ],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "identifier": "ping",
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "program",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "defaultValue": {
+                            "kind": "programIdValueNode"
+                        },
+                        "display": {
+                            "kind": "instructionAccountDisplayNode",
+                            "label": "Program"
+                        }
+                    }
+                ],
+                "discriminators": [
+                    {
+                        "kind": "constantDiscriminatorNode",
+                        "offset": 0,
+                        "constant": {
+                            "kind": "constantValueNode",
+                            "type": {
+                                "kind": "bytesTypeNode"
+                            },
+                            "value": {
+                                "kind": "bytesValueNode",
+                                "data": "ff",
+                                "encoding": "base16"
+                            }
+                        }
+                    }
+                ],
+                "status": {
+                    "kind": "instructionStatusNode",
+                    "lifecycle": "deprecated",
+                    "message": "Use `pong`."
+                },
+                "display": {
+                    "kind": "instructionDisplayNode",
+                    "intent": "Pings the program"
+                }
+            }
+        ],
+        "definedTypes": [
+            {
+                "kind": "definedTypeNode",
+                "identifier": "collections",
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "scores",
+                            "type": {
+                                "kind": "arrayTypeNode",
+                                "item": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u16",
+                                    "endian": "le"
+                                },
+                                "count": {
+                                    "kind": "fixedCountNode",
+                                    "value": 2
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "arrayValueNode",
+                                "items": [
+                                    {
+                                        "kind": "integerValueNode",
+                                        "value": "1"
+                                    },
+                                    {
+                                        "kind": "integerValueNode",
+                                        "value": "2"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "tags",
+                            "type": {
+                                "kind": "setTypeNode",
+                                "item": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u8",
+                                    "endian": "le"
+                                },
+                                "count": {
+                                    "kind": "prefixedCountNode",
+                                    "prefix": {
+                                        "kind": "integerTypeNode",
+                                        "format": "u32",
+                                        "endian": "le"
+                                    }
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "setValueNode",
+                                "items": [
+                                    {
+                                        "kind": "integerValueNode",
+                                        "value": "7"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "weights",
+                            "type": {
+                                "kind": "mapTypeNode",
+                                "key": {
+                                    "kind": "stringTypeNode",
+                                    "encoding": "utf8"
+                                },
+                                "value": {
+                                    "kind": "floatTypeNode",
+                                    "format": "f32",
+                                    "endian": "le"
+                                },
+                                "count": {
+                                    "kind": "remainderCountNode"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "mapValueNode",
+                                "entries": [
+                                    {
+                                        "kind": "mapEntryValueNode",
+                                        "key": {
+                                            "kind": "stringValueNode",
+                                            "string": "base"
+                                        },
+                                        "value": {
+                                            "kind": "floatValueNode",
+                                            "value": "1"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "salt",
+                            "type": {
+                                "kind": "bytesTypeNode"
+                            },
+                            "defaultValue": {
+                                "kind": "bytesValueNode",
+                                "data": "0102",
+                                "encoding": "base16"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "enabled",
+                            "type": {
+                                "kind": "booleanTypeNode",
+                                "size": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u8",
+                                    "endian": "le"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "booleanValueNode",
+                                "boolean": true
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "identifier": "options",
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "delegate",
+                            "type": {
+                                "kind": "optionTypeNode",
+                                "fixed": true,
+                                "item": {
+                                    "kind": "publicKeyTypeNode"
+                                },
+                                "prefix": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u8",
+                                    "endian": "le"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "someValueNode",
+                                "value": {
+                                    "kind": "publicKeyValueNode",
+                                    "publicKey": "11111111111111111111111111111111",
+                                    "identifier": "systemProgram"
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "limit",
+                            "type": {
+                                "kind": "remainderOptionTypeNode",
+                                "item": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u64",
+                                    "endian": "le"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "noneValueNode"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "authority",
+                            "type": {
+                                "kind": "zeroableOptionTypeNode",
+                                "item": {
+                                    "kind": "publicKeyTypeNode"
+                                },
+                                "zeroValue": {
+                                    "kind": "constantValueNode",
+                                    "type": {
+                                        "kind": "publicKeyTypeNode"
+                                    },
+                                    "value": {
+                                        "kind": "publicKeyValueNode",
+                                        "publicKey": "11111111111111111111111111111111"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "settings",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "collections"
+                            },
+                            "defaultValue": {
+                                "kind": "structValueNode",
+                                "fields": [
+                                    {
+                                        "kind": "structFieldValueNode",
+                                        "identifier": "enabled",
+                                        "value": {
+                                            "kind": "booleanValueNode",
+                                            "boolean": false
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "identifier": "wrapped",
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "name",
+                            "type": {
+                                "kind": "stringTypeNode",
+                                "encoding": "utf8",
+                                "display": {
+                                    "kind": "stringDisplayNode",
+                                    "sliceStart": 0,
+                                    "sliceEnd": 8
+                                },
+                                "transforms": [
+                                    {
+                                        "kind": "sizePrefixTransformNode",
+                                        "prefix": {
+                                            "kind": "integerTypeNode",
+                                            "format": "u32",
+                                            "endian": "le"
+                                        }
+                                    }
+                                ]
+                            },
+                            "display": {
+                                "kind": "structFieldDisplayNode",
+                                "skip": "never",
+                                "label": "Name"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "framed",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u32",
+                                "endian": "le",
+                                "transforms": [
+                                    {
+                                        "kind": "hiddenSuffixTransformNode",
+                                        "suffix": [
+                                            {
+                                                "kind": "constantValueNode",
+                                                "type": {
+                                                    "kind": "integerTypeNode",
+                                                    "format": "u8",
+                                                    "endian": "le"
+                                                },
+                                                "value": {
+                                                    "kind": "integerValueNode",
+                                                    "value": "0"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "kind": "hiddenPrefixTransformNode",
+                                        "prefix": [
+                                            {
+                                                "kind": "constantValueNode",
+                                                "type": {
+                                                    "kind": "integerTypeNode",
+                                                    "format": "u8",
+                                                    "endian": "le"
+                                                },
+                                                "value": {
+                                                    "kind": "integerValueNode",
+                                                    "value": "255"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "padded",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u16",
+                                "endian": "be",
+                                "transforms": [
+                                    {
+                                        "kind": "postOffsetTransformNode",
+                                        "offset": 4,
+                                        "strategy": "relative"
+                                    },
+                                    {
+                                        "kind": "preOffsetTransformNode",
+                                        "offset": 2,
+                                        "strategy": "padded"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "terminated",
+                            "type": {
+                                "kind": "stringTypeNode",
+                                "encoding": "utf8",
+                                "transforms": [
+                                    {
+                                        "kind": "sentinelTransformNode",
+                                        "sentinel": {
+                                            "kind": "constantValueNode",
+                                            "type": {
+                                                "kind": "stringTypeNode",
+                                                "encoding": "utf8"
+                                            },
+                                            "value": {
+                                                "kind": "stringValueNode",
+                                                "string": "\u0000"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "identifier": "numbers",
+                "type": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "balance",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
+                                "endian": "le",
+                                "display": {
+                                    "kind": "amountNumberDisplayNode",
+                                    "decimals": {
+                                        "kind": "integerValueNode",
+                                        "value": "9"
+                                    },
+                                    "unit": {
+                                        "kind": "stringValueNode",
+                                        "string": "SOL"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "items",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u32",
+                                "endian": "le",
+                                "display": {
+                                    "kind": "unitNumberDisplayNode",
+                                    "unit": {
+                                        "kind": "stringValueNode",
+                                        "string": "items"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "lockup",
+                            "type": {
+                                "kind": "durationTypeNode",
+                                "ticksPerSecond": 1000,
+                                "number": {
+                                    "kind": "integerTypeNode",
+                                    "format": "i64",
+                                    "endian": "le"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "definedTypeNode",
+                "identifier": "signal",
+                "type": {
+                    "kind": "enumTypeNode",
+                    "variants": [
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "off",
+                            "display": {
+                                "kind": "enumVariantDisplayNode",
+                                "label": "Off"
+                            }
+                        },
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "on",
+                            "discriminator": 5
+                        }
+                    ],
+                    "size": {
+                        "kind": "integerTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                    }
+                }
+            }
+        ]
+    }
+}

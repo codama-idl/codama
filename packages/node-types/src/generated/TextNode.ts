@@ -14,9 +14,6 @@ export interface TextNode<TPlugins extends Array<PluginNode> | undefined = Array
     readonly content: string;
 
     // Children.
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

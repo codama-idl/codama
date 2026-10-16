@@ -15,9 +15,6 @@ export interface ConstantPdaSeedNode<
     readonly type: TType;
     /** The constant value to use as the seed — either a literal value or the program ID placeholder. */
     readonly value: TValue;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

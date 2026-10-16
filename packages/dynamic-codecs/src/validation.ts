@@ -1,6 +1,10 @@
-import { CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
+    CodamaError,
+} from '@codama/errors';
 import { Node } from '@codama/nodes';
-import { Codec, transformCodec } from '@solana/codecs';
+import { Codec, Encoder, getBase16Decoder, transformCodec } from '@solana/codecs';
 
 /** Describe the type of a value in error messages, e.g. `number (1.5)` or `array (length 2)`. */
 export function formatValueType(value: unknown): string {
@@ -31,8 +35,7 @@ export function getUnexpectedValueTypeError(
     return new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE, {
         actualType: formatValueType(value),
         expectedType,
-        nodeKind: nodePath[nodePath.length - 1].kind,
-        nodePath,
+        path: nodePath,
     });
 }
 
@@ -49,5 +52,30 @@ export function assertValueType(
     return transformCodec(codec, (value: unknown) => {
         if (!isValid(value)) throw getUnexpectedValueTypeError(nodePath, expectedType, value);
         return value;
+    });
+}
+
+/**
+ * Reject the items of a set that encode to the same bytes, since sets hold
+ * unique values. Comparing encoded bytes works for any item type, e.g. structs
+ * or tuples, and accounts for encoded default values.
+ *
+ * Each item is encoded once more for the check, and variable-size codecs run it
+ * twice (when sizing and when writing), a cost accepted for its simplicity.
+ */
+export function assertUniqueItems(items: readonly unknown[], item: Encoder<unknown>, nodePath: readonly Node[]): void {
+    const base16 = getBase16Decoder();
+    const indices = new Map<string, number>();
+    items.forEach((itemValue: unknown, index) => {
+        const key = base16.decode(item.encode(itemValue));
+        const firstIndex = indices.get(key);
+        if (firstIndex !== undefined) {
+            throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM, {
+                firstIndex,
+                index,
+                path: nodePath,
+            });
+        }
+        indices.set(key, index);
     });
 }

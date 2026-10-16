@@ -26,9 +26,6 @@ export interface PdaNode<
     readonly docs?: TDocs;
     /** The seeds used to derive the PDA, in order. */
     readonly seeds?: TSeeds;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

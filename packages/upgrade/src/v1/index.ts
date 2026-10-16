@@ -1,20 +1,10 @@
 /**
- * Frozen static snapshot of the v1 Codama node types.
+ * The v1 Codama node types, as consumed by the v1 to v2 upgrade.
  *
- * The `./generated` directory is a hand-maintained static copy of the v1
- * node types as published at `@codama/spec@1.9.2` — it is NOT regenerated
- * by `pnpm generate` (the generator is single-major and only renders the
- * spec on its own branch). Its layout deliberately mirrors the `1.x`
- * branch's `@codama/node-types/src/generated`, so a change to a past major
- * can be ported forward by applying the same patch here. The hand-written
- * siblings (`brands`, `Docs`, `Version`) are frozen v1-shaped copies of
- * their `@codama/node-types` counterparts, keeping the snapshot fully
- * self-contained. See `./README.md`.
+ * These are the published types of the last v1 release, installed under the
+ * `@codama/node-types-v1` alias and pinned exactly, so they never change
+ * unless the pin is deliberately moved.
  *
- * Everything in here is compile-time only: types are erased from the built
- * output, so this snapshot adds zero runtime bytes.
+ * Everything in here is compile-time only and adds zero runtime bytes.
  */
-export * from './brands';
-export * from './Docs';
-export * from './generated';
-export * from './Version';
+export type * from '@codama/node-types-v1';

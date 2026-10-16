@@ -15,8 +15,8 @@ const getConfigMock = vi.mocked(getConfig);
 const importModuleItemMock = vi.mocked(importModuleItem);
 const getRootNodeFromIdlMock = vi.mocked(getRootNodeFromIdl);
 
-function rootNodeWith(name: string): RootNode {
-    return rootNode(programNode({ name, publicKey: '11111111111111111111111111111111' }));
+function rootNodeWith(identifier: string): RootNode {
+    return rootNode(programNode({ identifier, publicKey: '11111111111111111111111111111111' }));
 }
 
 beforeEach(() => {
@@ -33,8 +33,8 @@ test('merges additionalIdls programs into the root node additionalPrograms', asy
 
     const parsed = await getParsedConfig({});
 
-    expect(parsed.rootNode.program.name).toBe('main');
-    expect((parsed.rootNode.additionalPrograms ?? []).map(p => p.name)).toEqual(['a', 'b']);
+    expect(parsed.rootNode.program.identifier).toBe('main');
+    expect((parsed.rootNode.additionalPrograms ?? []).map(p => p.identifier)).toEqual(['a', 'b']);
     // The main root node's other fields are preserved by the merge.
     expect(parsed.rootNode.standard).toBe('codama');
     expect(parsed.rootNode.version).toBe('9.9.9');

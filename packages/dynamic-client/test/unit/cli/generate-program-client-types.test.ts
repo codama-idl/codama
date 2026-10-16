@@ -3,7 +3,14 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import type { RootNode } from 'codama';
+import {
+    accountDataValueNode,
+    instructionAccountNode,
+    instructionNode,
+    programNode,
+    type RootNode,
+    rootNode,
+} from 'codama';
 import { afterAll, describe, expect, test } from 'vitest';
 
 import { generateClientTypes } from '../../../src/cli/commands/generate-client-types/generate-client-types';
@@ -98,5 +105,23 @@ describe('CLI', () => {
         const idl = JSON.parse(readFileSync(idlPath, 'utf-8')) as RootNode;
         const expected = generateClientTypes(idl);
         expect(output).toBe(expected);
+    });
+
+    test('should require fetchAccounts for programs reading account data', () => {
+        // Given an instruction whose authority defaults to the authority of its mint.
+        const authority = instructionAccountNode({
+            defaultValue: accountDataValueNode('mint', { path: 'mintAuthority' }),
+            identifier: 'authority',
+            isSigner: false,
+            isWritable: false,
+        });
+        const mintTo = instructionNode({ accounts: [authority], identifier: 'mintTo' });
+        const burn = instructionNode({ identifier: 'burn' });
+        const root = rootNode(programNode({ identifier: 'token', instructions: [mintTo, burn], publicKey: '1111' }));
+
+        // Then its client requires fetchAccounts.
+        expect(generateClientTypes(root)).toContain('    readsAccountData: true;\n');
+        const other = rootNode(programNode({ identifier: 'token', instructions: [burn], publicKey: '1111' }));
+        expect(generateClientTypes(other)).toContain('    readsAccountData: false;\n');
     });
 });

@@ -10,9 +10,8 @@ import {
     bottomUpTransformerVisitor,
     findProgramNodeFromPath,
     getLastNodeFromPath,
+    getLinkablesFromNode,
     getNodeSelectorFunction,
-    getRecordLinkablesVisitor,
-    LinkableDictionary,
     NodeSelectorFunction,
     NodeStack,
     rootNodeVisitor,
@@ -47,8 +46,7 @@ export function unwrapTupleEnumWithSingleStructVisitor(enumsOrVariantsToUnwrap: 
         selectorFunctions.some(selector => selector(stack.getPath(REGISTERED_NODE_KINDS)));
 
     return rootNodeVisitor(root => {
-        const linkables = new LinkableDictionary();
-        visit(root, getRecordLinkablesVisitor(linkables));
+        const linkables = getLinkablesFromNode(root);
         const typesToPotentiallyUnwrap = new Set<string>();
 
         let newRoot = visit(

@@ -55,7 +55,7 @@ test('it throws when the bytes of a standalone type depend on an injected value'
 
     // Then creating its codec throws.
     expect(() => getNodeValueCodec([definedType])).toThrow(
-        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: tag, key: tag.key }),
+        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: tag.key, path: [tag] }),
     );
 });
 
@@ -105,7 +105,7 @@ test('it only resolves injected default values when they are needed', () => {
     // Then encoding only throws when the default value is needed.
     expect(codec.encode({ decimals: 6 })).toStrictEqual(hex('06'));
     expect(() => codec.encode({})).toThrow(
-        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { injectedValue: decimals, key: decimals.key }),
+        new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: decimals.key, path: [decimals] }),
     );
 });
 

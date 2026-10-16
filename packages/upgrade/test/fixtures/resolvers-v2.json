@@ -1,0 +1,328 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "2.0.0",
+    "program": {
+        "kind": "programNode",
+        "identifier": "token_2022",
+        "publicKey": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "version": "3.0.0",
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "identifier": "burn",
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "mint",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "destination",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveDestination",
+                                    "dependsOn": ["accounts.mint"],
+                                    "docs": "Finds where the refund goes."
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "edition",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveBurnEdition",
+                                    "dependsOn": ["accounts.mint"]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "tokenRecord",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveBurnTokenRecord",
+                                    "dependsOn": ["data.tokenStandard", "accounts.mint"]
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "8"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "amount",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            },
+                            "plugins": [
+                                {
+                                    "kind": "pluginNode",
+                                    "namespace": "codama.resolver",
+                                    "payload": {
+                                        "name": "resolveBurnAmount",
+                                        "dependsOn": ["data.tokenStandard"]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "remainingAccounts": [
+                    {
+                        "kind": "instructionRemainingAccountsNode",
+                        "identifier": "remainingAccounts",
+                        "isWritable": true,
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveHookAccounts"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "byteDeltas": [
+                    {
+                        "kind": "instructionByteDeltaNode",
+                        "withHeader": false,
+                        "subtract": true,
+                        "value": {
+                            "kind": "integerValueNode",
+                            "value": "0"
+                        },
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveFreedBytes"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "plugins": [
+                    {
+                        "kind": "pluginNode",
+                        "namespace": "codama.extraArgument",
+                        "payload": {
+                            "identifier": "tokenStandard",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "tokenStandard"
+                            },
+                            "defaultValue": {
+                                "kind": "enumValueNode",
+                                "variant": "fungible",
+                                "enum": {
+                                    "kind": "definedTypeLinkNode",
+                                    "identifier": "tokenStandard"
+                                }
+                            },
+                            "defaultValueStrategy": "optional",
+                            "docs": "The standard of the token."
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "identifier": "mint_to",
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "fee_vault",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "remainingAccounts",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": "An account that happens to share the default name of resolved remaining accounts."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "record",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveMint_toRecord",
+                                    "dependsOn": ["accounts.fee_vault", "data.fee_rate"]
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "fee_rate",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u16",
+                                "endian": "le"
+                            }
+                        }
+                    ]
+                },
+                "remainingAccounts": [
+                    {
+                        "kind": "instructionRemainingAccountsNode",
+                        "identifier": "remainingAccounts1",
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveSigners"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "plugins": [
+                    {
+                        "kind": "pluginNode",
+                        "namespace": "codama.extraArgument",
+                        "payload": {
+                            "identifier": "memo_text",
+                            "type": {
+                                "kind": "stringTypeNode",
+                                "encoding": "utf8"
+                            },
+                            "defaultValueStrategy": "omitted"
+                        },
+                        "plugins": [
+                            {
+                                "kind": "pluginNode",
+                                "namespace": "codama.resolver",
+                                "payload": {
+                                    "name": "resolveMemo",
+                                    "dependsOn": ["data.fee_rate"]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "definedTypes": [
+            {
+                "kind": "definedTypeNode",
+                "identifier": "tokenStandard",
+                "type": {
+                    "kind": "enumTypeNode",
+                    "variants": [
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "fungible"
+                        },
+                        {
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "programmable"
+                        }
+                    ],
+                    "size": {
+                        "kind": "integerTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                    }
+                }
+            }
+        ],
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "identifier": "recordPda",
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "stringTypeNode",
+                            "encoding": "utf8"
+                        },
+                        "value": {
+                            "kind": "stringValueNode",
+                            "string": "record"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "fee_vault",
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "fee_rate",
+                        "type": {
+                            "kind": "integerTypeNode",
+                            "format": "u16",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

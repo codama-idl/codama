@@ -15,10 +15,11 @@ export function flattenInstructionDataVisitor() {
     return bottomUpTransformerVisitor([
         {
             select: '[instructionNode]',
-            transform: instruction => {
+            transform: (instruction, stack) => {
                 assertIsNode(instruction, 'instructionNode');
                 if (!isNode(instruction.data, 'structTypeNode')) return instruction;
-                return instructionNode({ ...instruction, data: flattenStruct(instruction.data) });
+                const dataPath = [...stack.getPath(), instruction.data];
+                return instructionNode({ ...instruction, data: flattenStruct(instruction.data, '*', dataPath) });
             },
         },
     ]);

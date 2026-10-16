@@ -27,6 +27,7 @@ const counts = (overrides: Partial<Record<string, number>>) => ({
     inDefinedTypes: 0,
     inEvents: 0,
     inInstructionData: 0,
+    inInstructionReturnData: 0,
     total: 0,
     ...overrides,
 });
@@ -128,6 +129,36 @@ test('it counts instruction data that is itself a link as a direct use', () => {
     expect(histogram).toStrictEqual({
         'customProgram.argsA': counts({ directlyAsInstructionData: 1, inInstructionData: 1, total: 1 }),
         'customProgram.argsB': counts({ inInstructionData: 1, total: 1 }),
+    });
+});
+
+test('it counts defined types used inside instruction return data', () => {
+    // Given an instruction whose data and return data link to defined types.
+    const node = programNode({
+        definedTypes: [
+            definedTypeNode({ identifier: 'price', type: integerTypeNode('u64') }),
+            definedTypeNode({ identifier: 'args', type: structTypeNode([]) }),
+        ],
+        identifier: 'customProgram',
+        instructions: [
+            instructionNode({
+                data: definedTypeLinkNode('args'),
+                identifier: 'getPrice',
+                returnData: structTypeNode([
+                    structFieldTypeNode({ identifier: 'price', type: definedTypeLinkNode('price') }),
+                ]),
+            }),
+        ],
+        publicKey: '1111',
+    });
+
+    // When we get its defined type histogram.
+    const histogram = visit(node, getDefinedTypeHistogramVisitor());
+
+    // Then we expect return data uses to be counted separately from data uses.
+    expect(histogram).toStrictEqual({
+        'customProgram.args': counts({ directlyAsInstructionData: 1, inInstructionData: 1, total: 1 }),
+        'customProgram.price': counts({ inInstructionReturnData: 1, total: 1 }),
     });
 });
 

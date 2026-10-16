@@ -1,20 +1,29 @@
+import { getNodeValueCodec } from '@codama/dynamic-codecs';
 import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CodamaError,
 } from '@codama/errors';
+import type { EncodedAccount } from '@solana/accounts';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { AccountRole } from '@solana/instructions';
 import {
+    accountDataValueNode,
+    accountLinkNode,
+    accountNode,
     dataValueNode,
     instructionAccountNode,
     type InstructionAccountNodeInput,
     instructionNode,
+    type InstructionNode,
     type InstructionNodeInput,
     instructionRemainingAccountsNode,
     integerTypeNode,
+    LinkableDictionary,
+    pdaLinkNode,
     pdaNode,
     pdaSeedValueNode,
     pdaValueNode,
@@ -26,9 +35,9 @@ import {
     structTypeNode,
     variablePdaSeedNode,
 } from 'codama';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
-import { createAccountMetas } from '../../src';
+import { createAccountMetas, type FetchAccountsFn } from '../../src';
 import { generateAddress, getInstructionPath, PROGRAM_ADDRESS } from '../_setup';
 
 const RENT = 'SysvarRent111111111111111111111111111111111' as Address;
@@ -107,13 +116,28 @@ describe('accounts', () => {
         ]);
     });
 
+    test('it uses the given linkables rather than recording them', async () => {
+        // Given an account defaulting to a PDA of the program, and linkables that do not record it.
+        const vault = pdaNode({ identifier: 'vault', seeds: [] });
+        const path = getInstructionPath(
+            instruction({ accounts: [account('vault', { defaultValue: pdaValueNode(pdaLinkNode('vault')) })] }),
+            { pdas: [vault] },
+        );
+
+        // Then the PDA link cannot be resolved from them.
+        await expect(createAccountMetas({ linkables: new LinkableDictionary(), path })).rejects.toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
+        );
+    });
+
     test('it throws when a required account is missing', async () => {
         const path = getInstructionPath(instruction({ accounts: [account('mint')] }));
         await expectCodamaError(
             createAccountMetas({ path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                accountName: 'mint',
-                instructionName: 'testInstruction',
+                path: [...path, (path[path.length - 1] as InstructionNode).accounts![0]],
             }),
         );
     });
@@ -126,7 +150,7 @@ describe('accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { mint: 'abc' }, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS, {
-                accountName: 'mint',
+                path: [...path, (path[path.length - 1] as InstructionNode).accounts![0]],
                 value: '"abc"',
             }),
         );
@@ -271,8 +295,10 @@ describe('remaining accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { multisig: multisigAddress }, path: multisigPath }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                accountName: 'signers',
-                instructionName: 'testInstruction',
+                path: [
+                    ...multisigPath,
+                    (multisigPath[multisigPath.length - 1] as InstructionNode).remainingAccounts![0],
+                ],
             }),
         );
     });
@@ -282,8 +308,11 @@ describe('remaining accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { multisig: multisigAddress, signers: a }, path: multisigPath }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT, {
-                accountName: 'signers',
                 expectedType: 'Address[]',
+                path: [
+                    ...multisigPath,
+                    (multisigPath[multisigPath.length - 1] as InstructionNode).remainingAccounts![0],
+                ],
                 value: `"${a}"`,
             }),
         );
@@ -300,5 +329,47 @@ describe('remaining accounts', () => {
                 expectedType: 'Address | PublicKey',
             }),
         );
+    });
+});
+
+describe('account data', () => {
+    test('it fetches the accounts read by all accounts in a single call', async () => {
+        // Given two accounts defaulting to the data of two other accounts.
+        const holder = accountNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'owner', type: publicKeyTypeNode() })]),
+            identifier: 'holder',
+        });
+        const holderAccount = (identifier: string) => account(identifier, { accountLink: accountLinkNode('holder') });
+        const ownerOf = (identifier: string) => accountDataValueNode(identifier, { path: 'owner' });
+        const path = getInstructionPath(
+            instruction({
+                accounts: [
+                    holderAccount('first'),
+                    holderAccount('second'),
+                    account('firstOwner', { defaultValue: ownerOf('first') }),
+                    account('secondOwner', { defaultValue: ownerOf('second') }),
+                ],
+            }),
+            { accounts: [holder] },
+        );
+        const [first, second] = await Promise.all([generateAddress(), generateAddress()]);
+        const data = getNodeValueCodec([path[0], path[1], holder]).encode({ owner: RENT }) as Uint8Array;
+        const fetchAccounts = vi.fn<FetchAccountsFn>(addresses =>
+            Promise.resolve(
+                addresses.map((address): EncodedAccount => ({
+                    address,
+                    data,
+                    executable: false,
+                    lamports: 0n as EncodedAccount['lamports'],
+                    programAddress: PROGRAM_ADDRESS,
+                    space: BigInt(data.length),
+                })),
+            ),
+        );
+
+        // Then both are fetched together.
+        const accountMetas = await createAccountMetas({ accounts: { first, second }, fetchAccounts, path });
+        expect(accountMetas.map(meta => meta.address)).toEqual([first, second, RENT, RENT]);
+        expect(fetchAccounts.mock.calls).toEqual([[[first, second]]]);
     });
 });

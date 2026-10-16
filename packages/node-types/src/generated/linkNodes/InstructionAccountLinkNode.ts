@@ -19,9 +19,6 @@ export interface InstructionAccountLinkNode<
      * The instruction link may itself point to a different program if needed.
      */
     readonly instruction?: TInstruction;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

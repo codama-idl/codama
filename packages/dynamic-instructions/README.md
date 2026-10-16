@@ -22,7 +22,7 @@ pnpm install @codama/dynamic-instructions
 
 ## Types generation
 
-This package can emit TypeScript types per instruction: `${Name}InstructionDataArgs`, `${Name}Accounts` and `${Name}AccountsWithData`, `${Name}Signers` aliases, plus an aggregate `${Program}InstructionBuilders` map.
+This package can emit TypeScript types per instruction: `${Name}InstructionDataArgs`, `${Name}Accounts` and `${Name}AccountsWithData`, `${Name}Signers` aliases, `${Name}ReadsAccountData` flags, plus an aggregate `${Program}InstructionBuilders` map.
 
 The `${Name}InstructionDataArgs` and `${Name}Accounts` types are emitted by [`@codama/dynamic-address-resolution/codegen`](../dynamic-address-resolution/README.md) and re-used here, since the accounts that may be omitted depend on the resolution rules.
 
@@ -44,9 +44,9 @@ const source = generateTypes(idl);
 
 ## Functions
 
-Every function takes the path of the instruction from the root node, e.g. `[root, root.program, instruction]`, so links and injected values resolve from the program defining the instruction, which may be an additional program.
+Every function takes the path of the instruction from the root node, e.g. `[root, root.program, instruction]`, so links and injected values resolve from the program defining the instruction, which may be an additional program. Links are followed using the linkable nodes of the tree, which every function records from the root of the path unless given as a `linkables` option, e.g. from `getLinkablesFromNode(root)`, to avoid recording them again.
 
-### `createInstructionsBuilder(path)`
+### `createInstructionsBuilder(path, options?)`
 
 Creates an async function building the `Instruction` (`@solana/instructions`) of an instruction. It encodes the provided data, resolves the accounts that are not provided from their default values, and uses the address of the program defining the instruction.
 
@@ -73,7 +73,19 @@ import type {
 const build = createInstructionsBuilder<TransferInstructionDataArgs, TransferAccounts, TransferSigners>(path);
 ```
 
-### `encodeInstructionData(path, data?)`
+Default values may read the data of accounts, e.g. the `decimals` of a mint injected into the data of `transferChecked`. Pass a `fetchAccounts` option returning these accounts: each build fetches every account it reads once, in as few calls as possible. The generated `${Name}ReadsAccountData` types make it required for the instructions reading account data. See [Reading account data](../dynamic-address-resolution/README.md#reading-account-data).
+
+```ts
+const build = createInstructionsBuilder<
+    TransferCheckedInstructionDataArgs,
+    TransferCheckedAccounts,
+    TransferCheckedSigners,
+    TransferCheckedReadsAccountData // true: `fetchAccounts` is required
+>([root, root.program, transferChecked], { fetchAccounts });
+const instruction = await build({ accounts: { authority, destination, mint, source }, data: { amount: 42n } });
+```
+
+### `encodeInstructionData(path, data?, options?)`
 
 Encodes the data of an instruction using its codec from [`@codama/dynamic-codecs`](../dynamic-codecs/README.md), including the default values of its fields, e.g. discriminators.
 
@@ -83,9 +95,11 @@ const bytes = encodeInstructionData([root, root.program, transfer], { amount: 1_
 
 Codama errors raised while encoding are thrown as is, e.g. a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error for a value of the wrong type. Other encoding errors, e.g. an integer out of range, throw a `CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` error whose `cause` is the original error. Use `createInstructionDataEncoder(path)` to create the codec once and encode several times.
 
-### `createAccountMetas({ path, accounts?, data?, signers? })`
+Default values injected from account data cannot be evaluated while encoding: resolve them with `resolveInstructionDataDefaultValues` from [`@codama/dynamic-address-resolution`](../dynamic-address-resolution/README.md#reading-account-data) and pass them as the `resolvedDefaultValues` option. The encoder then creates a codec for these values on each call, since they differ from one instruction to the next.
 
-Creates the `AccountMeta`s of an instruction: its accounts, in order, followed by its remaining accounts. Accounts that are not provided are resolved from their default values, e.g. PDAs derived from the data, and optional accounts provided as `null` follow the `optionalAccountStrategy` of the instruction.
+### `createAccountMetas({ path, accounts?, data?, fetchAccounts?, signers? })`
+
+Creates the `AccountMeta`s of an instruction: its accounts, in order, followed by its remaining accounts. Accounts that are not provided are resolved from their default values, e.g. PDAs derived from the data, and optional accounts provided as `null` follow the `optionalAccountStrategy` of the instruction. Default values reading account data fetch these accounts with `fetchAccounts`, shared by all the accounts.
 
 ```ts
 const accountMetas = await createAccountMetas({
@@ -97,99 +111,84 @@ const accountMetas = await createAccountMetas({
 
 ## Instruction display (clear signing)
 
-Given an IDL enriched with `display` metadata (per [sRFC 39](https://github.com/solana-foundation/SRFCs/discussions/4)), this package resolves a concrete instruction into human-readable text for user verification. The result carries both presentation modes and lets the renderer choose:
+Given an IDL enriched with `display` metadata, this package presents a concrete instruction to humans, e.g. to clear sign it. The result carries both presentation modes and lets the renderer choose:
 
 ```ts
 type InstructionDisplay = {
-    // A short imperative label, e.g. "Transfer" (derived from the instruction name when absent).
+    // A short imperative label, e.g. "Transfer", derived from the instruction identifier when absent.
     intent: string;
-    // The interpolated sentence, e.g. "Transfer 1.5 USDC to toly.sol", or `null` when a
-    // placeholder cannot be resolved (the renderer then falls back to `fields`).
+    // The interpolated sentence, e.g. "Transfer 1.5 USDC to Alice", or `null` when it cannot be
+    // presented with confidence, in which case the renderer falls back to `fields`.
     interpolatedIntent: string | null;
-    // The structured fallback list of labelled fields, e.g. [{ label: 'Amount', value: '1.5 USDC' }].
+    // The rows of the fallback list, e.g. [{ label: 'Amount', value: '1.5 USDC' }].
     fields: { label: string; value: string }[];
 };
 ```
 
 ### `getInstructionDisplay(root, instruction, options?)`
 
-Parses a raw `Instruction` (`@solana/instructions`) against the root and resolves its display. Returns `null` when the instruction cannot be identified or decoded (e.g. an instruction from an unknown program).
+Parses an instruction (`@solana/instructions`), fetches the accounts its display reads with the `fetchAccounts` option, if given, and presents it. Returns `null` when the instruction cannot be parsed, e.g. because it belongs to another program. It accepts the options of `getInstructionDisplayFromParsedInstruction`.
 
 ```ts
+import { fetchEncodedAccounts } from '@solana/accounts';
 import { getInstructionDisplay } from '@codama/dynamic-instructions';
 
-const display = await getInstructionDisplay(root, instruction);
-// => { intent: 'Transfer', interpolatedIntent: 'Transfer 1500000 to 3Wnd5…5PxJX', fields: [...] } | null
+const display = await getInstructionDisplay(root, instruction, {
+    fetchAccounts: addresses => fetchEncodedAccounts(rpc, addresses),
+    formatAddress: address => names.get(address) ?? address,
+});
+// { intent: 'Transfer', interpolatedIntent: 'Transfer 1.5 USDC to Alice', fields: [{ label: 'Amount', value: '1.5 USDC' }, …] } | null
 ```
 
 ### `getInstructionDisplayFromParsedInstruction(root, parsedInstruction, options?)`
 
-The same, starting from an already-parsed instruction (`ParsedInstruction` from [`@codama/dynamic-parsers`](../dynamic-parsers/README.md)). Useful when you have already called `parseInstruction`.
+Presents an instruction parsed with `parseInstruction` from [`@codama/dynamic-parsers`](../dynamic-parsers/README.md), synchronously. Values are formatted with the formatters of [`@codama/dynamic-codecs`](../dynamic-codecs/README.md#formatting), whose options it accepts, e.g. `formatAddress` to name addresses or `numberFormat` for a locale. Values read from accounts come from the `accounts` option, e.g. from `getDisplayAccountMap`.
 
 ```ts
 import { parseInstruction } from '@codama/dynamic-parsers';
 import { getInstructionDisplayFromParsedInstruction } from '@codama/dynamic-instructions';
 
 const parsed = parseInstruction(root, instruction);
-if (parsed) {
-    const display = await getInstructionDisplayFromParsedInstruction(root, parsed);
-}
+const display =
+    parsed &&
+    getInstructionDisplayFromParsedInstruction(root, parsed, {
+        accounts,
+        formatAddress: address => names.get(address) ?? address,
+    });
 ```
 
-### Options
+- **Rows:** one per data field, then one per account and remaining account. Optional accounts that are omitted, by leaving them out or by passing the program address, are left out, and remaining accounts are shown even when the IDL declares no groups for them. Labels come from display nodes, or from identifiers in title case. Flattened structs are replaced by their prefixed fields, and lists of addresses show one numbered row per address. Other structs, lists and maps show as a single row, e.g. `Config: Fee: 25, Owner: Alice`, and empty values, e.g. an empty list or string, show as `Empty`.
+- **Skipped members:** members skipped `always` are left out, and so are members skipped `whenInjected` whose value another row presents through an injection, e.g. a mint whose decimals scale an amount. When that value cannot be presented, e.g. because the mint is not available, the member is shown. Only rows that are always shown count, so members skipped `whenInjected` never hide one another.
+- **Value labels:** a field matching one of its value labels shows the label rather than its formatted value, wherever it is, e.g. within a nested struct, and in the sentence.
+- **Addresses:** every address, in public key fields, account rows, placeholders and address units, goes through the `formatAddress` option.
+- **Injected values:** injected values of display nodes, e.g. the `decimals` of an amount, resolve from the `provides` of the instruction and its parents: literal values, accounts, the program, values of the instruction data, or values of account data. Paths crossing account links read the data of the linked accounts, with a `.data` segment, e.g. `${data.mint.data.decimals}`.
+- **Degraded values:** an amount whose decimals cannot be resolved shows its raw value followed by `(raw)`, or as the `formatDegraded` option presents it, so it cannot be mistaken for a scaled amount, and makes the sentence `null`. So do placeholders referring to omitted accounts, empty values, or account data that is not available.
 
-Some display values live in on-chain account state (e.g. a token's `decimals`/`symbol` injected into an amount, or interpolation paths that read an account field). Supply `fetchAccount` to resolve them; without it, such values degrade gracefully and visibly: an amount whose scale cannot be resolved renders marked as raw in the field list (e.g. `1500000 (raw)`) so it cannot be mistaken for a scaled amount, any sentence referencing it is suppressed (`interpolatedIntent` becomes `null`, falling back to the fields), and `whenInjected` members remain visible.
+## Display dictionary
 
-`fetchAccount` returns Kit's `MaybeEncodedAccount` — an `exists` flag plus, when the account exists, its raw bytes. No decoding is required on your side: the display layer decodes the bytes itself using the referenced account's `accountLink` from the IDL, which already describes the layout. This makes `fetchEncodedAccount` a drop-in.
-
-```ts
-import type { Address } from '@solana/addresses';
-import { fetchEncodedAccount } from '@solana/accounts';
-
-const display = await getInstructionDisplay(root, instruction, {
-    // Forward Kit's MaybeEncodedAccount for an address.
-    fetchAccount: (address: Address) => fetchEncodedAccount(rpc, address),
-});
-```
-
-Address presentation (`.sol` names, address-book aliases, truncation) is intentionally left to the renderer: `fields` and `interpolatedIntent` contain raw base58 addresses that the consuming wallet/UI formats as it sees fit.
-
-## Offline display dictionary
-
-An offline renderer — typically a hardware wallet — cannot reach an RPC to resolve the values above, nor a name service to present addresses. The **display dictionary** is a serialisable bundle of exactly that external data, assembled by an online companion and handed to the device so it can resolve a display with no network access.
-
-```ts
-type DisplayDictionary = {
-    // Fetched on-chain account state, keyed by address (the offline counterpart of `fetchAccount`).
-    accounts: ReadonlyMap<Address, EncodedAccount>;
-    // Human-readable names, keyed by address — a `.sol` domain, token symbol, program label, alias…
-    names: ReadonlyMap<Address, string>;
-};
-```
-
-Only accounts that exist are stored: a missing key means "no data for this address", which is all the renderer can act on. It cannot, nor does it need to, distinguish an account that was never fetched from one that does not exist on-chain — both degrade the display the same way.
-
-The `names` map is deliberately generic: it names an address, whatever the source. This is how an offline renderer recovers the presentation the online layer would delegate to it.
-
-### Building the dictionary (online)
-
-`getRequiredAccountsForDisplay(root, parsedInstruction)` returns the addresses whose account state a display would read — computed statically from the IDL and the instruction, with no network access. `getDisplayAccountMap` uses it to batch-fetch those accounts into the `accounts` map:
+Values read from accounts, e.g. the `decimals` of a mint, need these accounts. `getDisplayAccountMap` fetches the accounts a display reads, in as few calls as possible: each round fetches the accounts it knows about in a single call, and reading them reveals the next ones, e.g. the mint of a token account. Accounts that do not exist are left out.
 
 ```ts
 import { fetchEncodedAccounts } from '@solana/accounts';
-import { parseInstruction } from '@codama/dynamic-parsers';
-import { getDisplayAccountMap, getDisplayDictionaryCodec } from '@codama/dynamic-instructions';
+import { getDisplayAccountMap, getInstructionDisplayFromParsedInstruction } from '@codama/dynamic-instructions';
 
-const parsed = parseInstruction(root, instruction);
 const accounts = await getDisplayAccountMap(root, parsed, addresses => fetchEncodedAccounts(rpc, addresses));
-
-const dictionary = { accounts, names /* built from your own name sources */ };
-const bytes = getDisplayDictionaryCodec().encode(dictionary);
+const display = getInstructionDisplayFromParsedInstruction(root, parsed, { accounts });
 ```
 
-> [!NOTE]
-> A filler for the `names` map is **not** provided: its data comes from sources Codama has no opinion on (name services, token registries, curated label lists). Populate it yourself from whichever sources you trust.
+To display instructions offline, e.g. on a hardware wallet, bundle these accounts with names of addresses, from sources you trust, into a `DisplayDictionary` and serialise it with `getDisplayDictionaryCodec`. Offline, the display reads the same accounts, and names addresses through `formatAddress`.
 
-### Consuming the dictionary (offline)
+```ts
+// Online
+const dictionary: DisplayDictionary = { accounts, names };
+const bytes = getDisplayDictionaryCodec().encode(dictionary);
 
-`fetchAccounts` (batch) is the counterpart of the display layer's `fetchAccount`; wire it to Kit's `fetchEncodedAccounts` for a single `getMultipleAccounts` round-trip. The bundle is encoded with byte codecs — `getDisplayDictionaryCodec` (and per-map `getDisplayAccountMapCodec` / `getDisplayNamedMapCodec`, each also available as split `…Encoder` / `…Decoder`). The offline renderer decodes it and resolves the display from the maps: account bytes are decoded through the IDL's `accountLink` exactly as online, and addresses are named from `names`.
+// Offline
+const { accounts, names } = getDisplayDictionaryCodec().decode(bytes);
+const display = getInstructionDisplayFromParsedInstruction(root, parsed, {
+    accounts,
+    formatAddress: address => names.get(address) ?? address,
+});
+```
+
+The maps also have their own codecs: `getDisplayAccountMapCodec` and `getDisplayNamedMapCodec`, each with its encoder and decoder.

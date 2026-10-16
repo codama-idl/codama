@@ -10,6 +10,7 @@ import {
     instructionNode,
     integerTypeNode,
     integerValueNode,
+    optionTypeNode,
     programNode,
     providedNode,
     rootNode,
@@ -88,4 +89,34 @@ test('it encodes enum default values using the linked enum', () => {
     const codec = getNodeValueCodec([root, root.program, instruction]);
     expect(codec.encode({})).toStrictEqual(hex('01'));
     expect(codec.encode({ state: 'initialized' })).toStrictEqual(hex('00'));
+});
+
+test('it encodes instruction data of recursive types', () => {
+    // Given an instruction whose data is a linked list.
+    const list = definedTypeNode({
+        identifier: 'list',
+        type: structTypeNode([
+            structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') }),
+            structFieldTypeNode({
+                identifier: 'next',
+                type: optionTypeNode(definedTypeLinkNode('list'), { prefix: integerTypeNode('u8') }),
+            }),
+        ]),
+    });
+    const instruction = instructionNode({ data: definedTypeLinkNode('list'), identifier: 'myInstruction' });
+    const program = programNode({
+        definedTypes: [list],
+        identifier: 'myProgram',
+        instructions: [instruction],
+        publicKey: '1111',
+    });
+    const root = rootNode(program);
+
+    // When we get its codec.
+    const codec = getNodeValueCodec([root, program, instruction]);
+
+    // Then it encodes and decodes the whole list.
+    const value = { next: { __option: 'Some', value: { next: { __option: 'None' }, value: 2n } }, value: 1n };
+    expect(codec.encode(value)).toStrictEqual(hex('01010200'));
+    expect(codec.decode(hex('01010200'))).toStrictEqual(value);
 });

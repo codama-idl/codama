@@ -1,9 +1,13 @@
+import { getNodeCodec, isDecodedNode } from '@codama/dynamic-codecs';
+import { CODAMA_ERROR__LINKED_NODE_NOT_FOUND } from '@codama/errors';
 import {
     accountNode,
     bytesTypeNode,
     constantDiscriminatorNode,
     constantValueNode,
     constantValueNodeFromBytes,
+    definedTypeLinkNode,
+    definedTypeNode,
     eventNode,
     fieldDiscriminatorNode,
     fixedSizeTransformNode,
@@ -13,6 +17,7 @@ import {
     instructionRemainingAccountsNode,
     integerTypeNode,
     integerValueNode,
+    optionTypeNode,
     programNode,
     rootNode,
     sizePrefixTransformNode,
@@ -21,10 +26,18 @@ import {
     structTypeNode,
     tupleTypeNode,
 } from '@codama/nodes';
+import { LinkableDictionary } from '@codama/visitors-core';
 import { AccountRole } from '@solana/instructions';
 import { describe, expect, test } from 'vitest';
 
-import { parseAccountData, parseData, parseEventData, parseInstruction, parseInstructionData } from '../src';
+import {
+    matchesAccountData,
+    parseAccountData,
+    parseData,
+    parseEventData,
+    parseInstruction,
+    parseInstructionData,
+} from '../src';
 import { hex } from './_setup';
 
 describe('parseAccountData', () => {
@@ -56,10 +69,33 @@ describe('parseAccountData', () => {
             }),
         );
         const result = parseAccountData(root, hex('090500416c6963652a'));
-        expect(result).toStrictEqual({
-            data: { age: 42n, discriminator: 9n, firstname: 'Alice' },
-            path: [root, root.program, account],
+        expect(result).toStrictEqual(getNodeCodec([root, root.program, account]).decode(hex('090500416c6963652a')));
+    });
+
+    test('it returns the decoded account with its path, value and offsets', () => {
+        const account = accountNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u32') })]),
+            identifier: 'myAccount',
         });
+        const root = rootNode(programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' }));
+        const result = parseAccountData(root, hex('2a000000'));
+        expect(result).toMatchObject({
+            path: [root, root.program, account],
+            postOffset: 4,
+            preOffset: 0,
+            value: { value: 42n },
+        });
+    });
+
+    test('it returns the decoded data of the account', () => {
+        const account = accountNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u32') })]),
+            identifier: 'myAccount',
+        });
+        const root = rootNode(programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' }));
+        const result = parseAccountData(root, hex('2a000000'));
+        expect(isDecodedNode(result?.data, 'structTypeNode')).toBe(true);
+        expect(result?.data.value).toStrictEqual({ value: 42n });
     });
 
     test('it decodes a single account without discriminator', () => {
@@ -78,9 +114,39 @@ describe('parseAccountData', () => {
         // When we parse account data that matches no discriminator.
         const result = parseAccountData(root, hex('2a000000'));
         // Then we expect the single account to be decoded via the fallback.
-        expect(result).toStrictEqual({
-            data: { value: 42n },
+        expect(result).toMatchObject({
             path: [root, root.program, account],
+            value: { value: 42n },
+        });
+    });
+
+    test('it parses account data of recursive types', () => {
+        // Given an account holding a linked list.
+        const list = definedTypeNode({
+            identifier: 'list',
+            type: structTypeNode([
+                structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') }),
+                structFieldTypeNode({
+                    identifier: 'next',
+                    type: optionTypeNode(definedTypeLinkNode('list'), { prefix: integerTypeNode('u8') }),
+                }),
+            ]),
+        });
+        const account = accountNode({ data: definedTypeLinkNode('list'), identifier: 'myAccount' });
+        const root = rootNode(
+            programNode({ accounts: [account], definedTypes: [list], identifier: 'myProgram', publicKey: '1111' }),
+        );
+
+        // When we parse its data.
+        const result = parseAccountData(root, hex('01010200'));
+
+        // Then we get the whole list.
+        expect(result).toMatchObject({
+            path: [root, root.program, account],
+            value: {
+                next: { __option: 'Some', value: { next: { __option: 'None' }, value: 2n } },
+                value: 1n,
+            },
         });
     });
 });
@@ -114,9 +180,9 @@ describe('parseInstructionData', () => {
             }),
         );
         const result = parseInstructionData(root, hex('090500416c6963652a'));
-        expect(result).toStrictEqual({
-            data: { age: 42n, discriminator: 9n, firstname: 'Alice' },
+        expect(result).toMatchObject({
             path: [root, root.program, instruction],
+            value: { age: 42n, discriminator: 9n, firstname: 'Alice' },
         });
     });
 
@@ -138,9 +204,9 @@ describe('parseInstructionData', () => {
         const result = parseInstructionData(root, hex('48656c6c6f'));
 
         // Then we expect instruction to be decoded.
-        expect(result).toStrictEqual({
-            data: { message: 'Hello' },
+        expect(result).toMatchObject({
             path: [root, root.program, instruction],
+            value: { message: 'Hello' },
         });
     });
 
@@ -266,9 +332,9 @@ describe('parseEventData', () => {
             }),
         );
         const result = parseEventData(root, hex('090500416c6963652a'));
-        expect(result).toStrictEqual({
-            data: { age: 42n, discriminator: 9n, firstname: 'Alice' },
+        expect(result).toMatchObject({
             path: [root, root.program, event],
+            value: { age: 42n, discriminator: 9n, firstname: 'Alice' },
         });
     });
     test('it parses tuple event data from a root node', () => {
@@ -301,9 +367,9 @@ describe('parseEventData', () => {
             }),
         );
         const result = parseEventData(root, hex('01022a000000'));
-        expect(result).toStrictEqual({
-            data: [42n],
+        expect(result).toMatchObject({
             path: [root, root.program, event],
+            value: [42n],
         });
     });
 
@@ -323,9 +389,9 @@ describe('parseEventData', () => {
         // When we parse event data that matches no discriminator.
         const result = parseEventData(root, hex('2a000000'));
         // Then we expect the event to be decoded via the fallback.
-        expect(result).toStrictEqual({
-            data: { value: 42n },
+        expect(result).toMatchObject({
             path: [root, root.program, event],
+            value: { value: 42n },
         });
     });
 });
@@ -356,11 +422,10 @@ describe('parseInstruction', () => {
         // When we parse the instruction.
         const result = parseInstruction(root, instruction);
 
-        // Then we expect the decoded data, the instruction path, and the account meta with its node name.
+        // Then we expect the decoded instruction and the account meta with its identifier.
         expect(result).toStrictEqual({
-            accounts: [{ address: '1111', name: 'signer', role: AccountRole.READONLY_SIGNER }],
-            data: { message: 'Hello' },
-            path: [root, root.program, memoInstruction],
+            ...getNodeCodec([root, root.program, memoInstruction]).decode(hex('48656c6c6f')),
+            accounts: [{ address: '1111', identifier: 'signer', role: AccountRole.READONLY_SIGNER }],
             remainingAccounts: [],
         });
     });
@@ -448,16 +513,64 @@ describe('parseInstruction', () => {
         const result = parseInstruction(root, instruction);
 
         // Then we expect the additional program's instruction, not the main program's.
-        expect(result).toStrictEqual({
+        expect(result).toMatchObject({
             accounts: [
-                { address: 'payer111', name: 'payer', role: AccountRole.WRITABLE_SIGNER },
-                { address: 'ata11111', name: 'ata', role: AccountRole.WRITABLE },
+                { address: 'payer111', identifier: 'payer', role: AccountRole.WRITABLE_SIGNER },
+                { address: 'ata11111', identifier: 'ata', role: AccountRole.WRITABLE },
             ],
-            data: { discriminator: 1n },
             path: [root, additionalProgram, additionalInstruction],
             remainingAccounts: [],
+            value: { discriminator: 1n },
         });
     });
+    test('it returns no remaining accounts when there are no account metas beyond the named accounts', () => {
+        const instruction = instructionNode({
+            accounts: [instructionAccountNode({ identifier: 'source', isSigner: false, isWritable: true })],
+            identifier: 'close',
+        });
+        const root = rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }));
+        const result = parseInstruction(root, {
+            accounts: [{ address: 'source11', role: AccountRole.WRITABLE }],
+            data: hex(''),
+            programAddress: '1111',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+        expect(result?.remainingAccounts).toStrictEqual([]);
+    });
+
+    test('it only names the account metas that are provided', () => {
+        const instruction = instructionNode({
+            accounts: [
+                instructionAccountNode({ identifier: 'source', isSigner: false, isWritable: true }),
+                instructionAccountNode({ identifier: 'destination', isSigner: false, isWritable: true }),
+            ],
+            identifier: 'transfer',
+        });
+        const root = rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }));
+        const result = parseInstruction(root, {
+            accounts: [{ address: 'source11', role: AccountRole.WRITABLE }],
+            data: hex(''),
+            programAddress: '1111',
+        } as unknown as Parameters<typeof parseInstruction>[1]);
+        expect(result?.accounts).toStrictEqual([
+            { address: 'source11', identifier: 'source', role: AccountRole.WRITABLE },
+        ]);
+    });
+
+    test('it decodes instruction bytes with the given bytes encoding', () => {
+        const instruction = instructionNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'payload', type: bytesTypeNode() })]),
+            identifier: 'myInstruction',
+        });
+        const root = rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' }));
+        const instructionToParse = {
+            accounts: [],
+            data: hex('0102'),
+            programAddress: '1111',
+        } as unknown as Parameters<typeof parseInstruction>[1];
+        const result = parseInstruction(root, instructionToParse, { bytesEncoding: 'base16' });
+        expect(result?.value).toStrictEqual({ payload: ['base16', '0102'] });
+    });
+
     test('it returns undefined when the identified data cannot be decoded', () => {
         // Given an instruction whose discriminator matches one-byte data but whose full
         // arguments require more bytes than provided.
@@ -536,9 +649,9 @@ describe('parseData', () => {
         // When we parse only the account node kind and no discriminator matches.
         const result = parseData(root, hex('2a000000'), 'accountNode');
         // Then we expect the single account to be decoded via the fallback.
-        expect(result).toStrictEqual({
-            data: { value: 42n },
+        expect(result).toMatchObject({
             path: [root, root.program, account],
+            value: { value: 42n },
         });
     });
 
@@ -570,5 +683,110 @@ describe('parseData', () => {
         const result = parseData(root, hex('2a000000'));
         // Then we expect no result because two candidates are ambiguous.
         expect(result).toBeUndefined();
+    });
+
+    test('it decodes bytes with the given bytes encoding', () => {
+        const account = accountNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'payload', type: bytesTypeNode() })]),
+            identifier: 'myAccount',
+        });
+        const root = rootNode(programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' }));
+        const result = parseData(root, hex('0102'), 'accountNode', { bytesEncoding: 'base16' });
+        expect(result?.value).toStrictEqual({ payload: ['base16', '0102'] });
+    });
+});
+
+describe('linkables', () => {
+    // A single account and instruction without discriminators, whose data links to a defined type.
+    const amount = definedTypeNode({ identifier: 'amount', type: integerTypeNode('u8') });
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: definedTypeLinkNode('amount') })]);
+    const root = rootNode(
+        programNode({
+            accounts: [accountNode({ data, identifier: 'myAccount' })],
+            definedTypes: [amount],
+            identifier: 'myProgram',
+            instructions: [instructionNode({ data, identifier: 'myInstruction' })],
+            publicKey: '1111',
+        }),
+    );
+    const linkedNodeNotFound = expect.objectContaining({
+        context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+    });
+
+    test('it parses data using the given linkables rather than recording them', () => {
+        const linkables = new LinkableDictionary();
+        expect(() => parseAccountData(root, hex('2a'), { linkables })).toThrow(linkedNodeNotFound);
+        expect(() => parseData(root, hex('2a'), 'accountNode', { linkables })).toThrow(linkedNodeNotFound);
+    });
+
+    test('it parses instructions using the given linkables rather than recording them', () => {
+        const instruction = { accounts: [], data: hex('2a'), programAddress: '1111' } as unknown as Parameters<
+            typeof parseInstruction
+        >[1];
+        expect(() => parseInstruction(root, instruction, { linkables: new LinkableDictionary() })).toThrow(
+            linkedNodeNotFound,
+        );
+    });
+});
+
+describe('matchesAccountData', () => {
+    // A mint discriminated by its first byte, and an account without discriminators.
+    const mint = accountNode({
+        data: structTypeNode([
+            structFieldTypeNode({
+                defaultValue: integerValueNode('1'),
+                defaultValueStrategy: 'omitted',
+                identifier: 'discriminator',
+                type: integerTypeNode('u8'),
+            }),
+            structFieldTypeNode({ identifier: 'decimals', type: integerTypeNode('u8') }),
+        ]),
+        discriminators: [fieldDiscriminatorNode('discriminator')],
+        identifier: 'mint',
+    });
+    const anything = accountNode({ data: structTypeNode([]), identifier: 'anything' });
+    const root = rootNode(programNode({ accounts: [mint, anything], identifier: 'myProgram', publicKey: '1111' }));
+
+    test('it matches bytes matching the discriminators of the account', () => {
+        expect(matchesAccountData([root, root.program, mint], hex('0106'))).toBe(true);
+    });
+
+    test('it does not match bytes of another account', () => {
+        expect(matchesAccountData([root, root.program, mint], hex('0206'))).toBe(false);
+    });
+
+    test('it matches any bytes for accounts without discriminators', () => {
+        expect(matchesAccountData([root, root.program, anything], hex('ff'))).toBe(true);
+    });
+
+    test('it uses the given linkables rather than recording them', () => {
+        // Given a mint discriminated by a field of a linked type.
+        const header = definedTypeNode({
+            identifier: 'header',
+            type: structTypeNode([
+                structFieldTypeNode({
+                    defaultValue: integerValueNode('1'),
+                    identifier: 'kind',
+                    type: integerTypeNode('u8'),
+                }),
+            ]),
+        });
+        const linked = accountNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'header', type: definedTypeLinkNode('header') })]),
+            discriminators: [fieldDiscriminatorNode('header.kind')],
+            identifier: 'linked',
+        });
+        const linkedRoot = rootNode(
+            programNode({ accounts: [linked], definedTypes: [header], identifier: 'myProgram', publicKey: '1111' }),
+        );
+        expect(() =>
+            matchesAccountData([linkedRoot, linkedRoot.program, linked], hex('01'), {
+                linkables: new LinkableDictionary(),
+            }),
+        ).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
+        );
     });
 });

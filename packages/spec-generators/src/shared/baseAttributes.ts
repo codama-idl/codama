@@ -23,9 +23,10 @@ export function withBaseAttributes(spec: Spec): Spec {
         ...spec,
         categories: spec.categories.map(category => ({
             ...category,
-            nodes: category.nodes.map(
-                (node): NodeSpec => ({ ...node, attributes: [...node.attributes, ...baseAttributes] }),
-            ),
+            nodes: category.nodes.map((node): NodeSpec => ({
+                ...node,
+                attributes: [...node.attributes, ...baseAttributes],
+            })),
         })),
     };
 }

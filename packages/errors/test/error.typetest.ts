@@ -12,8 +12,7 @@ Object.values(CodamaErrorCodeModule) satisfies CodamaErrorCode[];
 
 const unexpectedNodeKindError = new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
     expectedKinds: ['integerTypeNode', 'stringTypeNode'],
-    kind: 'publicKeyTypeNode',
-    node: {} as PublicKeyTypeNode,
+    path: [{} as PublicKeyTypeNode],
 });
 
 {
@@ -29,7 +28,6 @@ const unexpectedNodeKindError = new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KI
     // @ts-expect-error Missing part of the context.
     new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
         expectedKinds: ['integerTypeNode', 'stringTypeNode'],
-        node: {} as PublicKeyTypeNode,
     });
     new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
         // @ts-expect-error Wrong context attribute.

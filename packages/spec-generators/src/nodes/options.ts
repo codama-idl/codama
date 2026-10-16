@@ -23,7 +23,7 @@ export { type AttributeOverride, NODE_CONFIGS, type NodeConstructorConfig } from
 export interface RenderOptions extends SharedRenderOptions {
     /**
      * Per-node constructor configuration: positional args, attribute
-     * overrides, defaults, coercions. Omitted means "use the v1
+     * overrides, defaults, coercions. Omitted means "use the
      * defaults" ({@link NODE_CONFIGS}).
      */
     readonly nodeConfigs?: ReadonlyMap<string, NodeConstructorConfig>;

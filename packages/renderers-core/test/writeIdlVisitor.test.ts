@@ -12,7 +12,7 @@ test.runIf(__NODEJS__)('it writes the visited root node as JSON to the given pat
     const { join } = await import('node:path');
 
     // Given a root node and a path inside a directory that does not exist yet.
-    const node = rootNode(programNode({ name: 'myProgram', publicKey: '1111' }));
+    const node = rootNode(programNode({ identifier: 'myProgram', publicKey: '1111' }));
     const directory = mkdtempSync(join(tmpdir(), 'writeIdlVisitor-'));
     const path = join(directory, 'nested', 'idl.json');
 

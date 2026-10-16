@@ -1,6 +1,13 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "compilerOptions": { "lib": ["ES2022"] },
+    "compilerOptions": {
+        "lib": ["ES2022"],
+        // TypeScript deduplicates packages of the same name and version, so while the workspace
+        // `@codama/node-types` is still versioned 1.11.0, the `@codama/node-types-v1` alias would
+        // resolve to the workspace v2 types. Mapping the alias to its files bypasses that. Safe to
+        // remove once the workspace `@codama/node-types` is past 1.11.0.
+        "paths": { "@codama/node-types-v1": ["./node_modules/@codama/node-types-v1/dist/types/index.d.ts"] }
+    },
     "display": "@codama/upgrade",
     "extends": "../../tsconfig.json",
     "include": ["src", "test"]

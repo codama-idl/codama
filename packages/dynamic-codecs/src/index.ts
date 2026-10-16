@@ -5,6 +5,11 @@ import { CodecVisitorOptions, getNodeValueCodecVisitor } from './codecs';
 import { getValueNodeVisitor } from './values';
 
 export * from './codecs';
+export * from './decoded';
+export * from './format';
+export * from './formatted';
+export * from './path';
+export * from './valueLabels';
 export * from './values';
 
 export type { ReadonlyUint8Array };

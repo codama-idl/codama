@@ -78,8 +78,7 @@ test('it throws when a variant with data is encoded without data', () => {
         __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
         actualType: "variant 'move' without data",
         expectedType: "{ __kind: 'move', data }",
-        nodeKind: 'enumVariantTypeNode',
-        nodePath: [move],
+        path: [move],
     };
     expect(() => codec.encode({ __kind: 'move', data: undefined })).toThrow(expect.objectContaining({ context }));
     // Unlike enums, standalone variants are not encoded from their identifier.

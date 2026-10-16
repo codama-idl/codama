@@ -1,4 +1,4 @@
-import { publicKeyTypeNode } from '@codama/nodes';
+import { accountLinkNode, publicKeyTypeNode } from '@codama/nodes';
 import { test } from 'vitest';
 
 import {
@@ -24,4 +24,17 @@ test('deleteNodesVisitor', () => {
 
 test('debugStringVisitor', () => {
     expectDebugStringVisitor(node, `publicKeyTypeNode`);
+});
+
+test('it visits the account link of public keys', () => {
+    const linkedNode = publicKeyTypeNode({ accountLink: accountLinkNode('mint') });
+    expectMergeVisitorCount(linkedNode, 2);
+    expectIdentityVisitor(linkedNode);
+    expectDeleteNodesVisitor(linkedNode, '[accountLinkNode]', publicKeyTypeNode());
+    expectDebugStringVisitor(
+        linkedNode,
+        `
+publicKeyTypeNode
+|   accountLinkNode [mint]`,
+    );
 });

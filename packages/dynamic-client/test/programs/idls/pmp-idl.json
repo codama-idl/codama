@@ -1,140 +1,63 @@
 {
     "kind": "rootNode",
     "standard": "codama",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "program": {
         "kind": "programNode",
-        "name": "programMetadata",
+        "identifier": "programMetadata",
         "publicKey": "ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S",
         "version": "0.0.0",
-        "pdas": [
-            {
-                "kind": "pdaNode",
-                "name": "canonical",
-                "docs": ["The canonical derivation for metadata accounts managed by the program authority itself."],
-                "seeds": [
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "program",
-                        "docs": ["The program to which the metadata belongs."],
-                        "type": { "kind": "publicKeyTypeNode" }
-                    },
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "seed",
-                        "docs": ["The seed deriving the metadata account."],
-                        "type": { "kind": "definedTypeLinkNode", "name": "seed" }
-                    }
-                ]
-            },
-            {
-                "kind": "pdaNode",
-                "name": "nonCanonical",
-                "docs": ["The derivation for metadata accounts managed by third-party authorities."],
-                "seeds": [
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "program",
-                        "docs": ["The program to which the metadata belongs."],
-                        "type": { "kind": "publicKeyTypeNode" }
-                    },
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "authority",
-                        "docs": ["The third-party authority managing this metadata account."],
-                        "type": { "kind": "publicKeyTypeNode" }
-                    },
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "seed",
-                        "docs": ["The seed deriving the metadata account."],
-                        "type": { "kind": "definedTypeLinkNode", "name": "seed" }
-                    }
-                ]
-            },
-            {
-                "kind": "pdaNode",
-                "name": "metadata",
-                "docs": [
-                    "The derivation for metadata accounts, canonical or not, depending if an authority is provided."
-                ],
-                "seeds": [
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "program",
-                        "docs": ["The program to which the metadata belongs."],
-                        "type": { "kind": "publicKeyTypeNode" }
-                    },
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "authority",
-                        "docs": ["The third-party authority managing this metadata account, if non-canonical."],
-                        "type": {
-                            "kind": "remainderOptionTypeNode",
-                            "item": { "kind": "publicKeyTypeNode" }
-                        }
-                    },
-                    {
-                        "kind": "variablePdaSeedNode",
-                        "name": "seed",
-                        "docs": ["The seed deriving the metadata account."],
-                        "type": { "kind": "definedTypeLinkNode", "name": "seed" }
-                    }
-                ]
-            }
-        ],
         "accounts": [
             {
                 "kind": "accountNode",
-                "name": "buffer",
-                "docs": [],
+                "identifier": "buffer",
                 "data": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "discriminator",
-                            "docs": [],
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "accountDiscriminator"
+                                "identifier": "accountDiscriminator"
                             },
                             "defaultValue": {
                                 "kind": "enumValueNode",
+                                "variant": "buffer",
                                 "enum": {
                                     "kind": "definedTypeLinkNode",
-                                    "name": "accountDiscriminator"
-                                },
-                                "variant": "buffer"
-                            },
-                            "defaultValueStrategy": "omitted"
-                        },
-                        {
-                            "kind": "structFieldTypeNode",
-                            "name": "program",
-                            "docs": [],
-                            "type": {
-                                "kind": "zeroableOptionTypeNode",
-                                "item": { "kind": "publicKeyTypeNode" }
+                                    "identifier": "accountDiscriminator"
+                                }
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "authority",
-                            "docs": [],
+                            "identifier": "program",
                             "type": {
                                 "kind": "zeroableOptionTypeNode",
-                                "item": { "kind": "publicKeyTypeNode" }
+                                "item": {
+                                    "kind": "publicKeyTypeNode"
+                                }
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "canonical",
-                            "docs": [],
+                            "identifier": "authority",
+                            "type": {
+                                "kind": "zeroableOptionTypeNode",
+                                "item": {
+                                    "kind": "publicKeyTypeNode"
+                                }
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "canonical",
                             "type": {
                                 "kind": "booleanTypeNode",
                                 "size": {
-                                    "kind": "numberTypeNode",
+                                    "kind": "integerTypeNode",
                                     "format": "u8",
                                     "endian": "le"
                                 }
@@ -142,73 +65,80 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "seed",
-                            "docs": [],
+                            "identifier": "seed",
                             "type": {
-                                "kind": "postOffsetTypeNode",
-                                "offset": 14,
-                                "strategy": "padded",
-                                "type": { "kind": "definedTypeLinkNode", "name": "seed" }
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "seed",
+                                "transforms": [
+                                    {
+                                        "kind": "postOffsetTransformNode",
+                                        "offset": 14,
+                                        "strategy": "padded"
+                                    }
+                                ]
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "data",
-                            "docs": [],
-                            "type": { "kind": "bytesTypeNode" }
+                            "identifier": "data",
+                            "type": {
+                                "kind": "bytesTypeNode"
+                            }
                         }
                     ]
                 },
-                "pda": { "kind": "pdaLinkNode", "name": "metadata" }
+                "pda": {
+                    "kind": "pdaLinkNode",
+                    "identifier": "metadata"
+                }
             },
             {
                 "kind": "accountNode",
-                "name": "metadata",
-                "docs": [],
+                "identifier": "metadata",
                 "data": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "discriminator",
-                            "docs": [],
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
                             "type": {
                                 "kind": "definedTypeLinkNode",
-                                "name": "accountDiscriminator"
+                                "identifier": "accountDiscriminator"
                             },
                             "defaultValue": {
                                 "kind": "enumValueNode",
+                                "variant": "metadata",
                                 "enum": {
                                     "kind": "definedTypeLinkNode",
-                                    "name": "accountDiscriminator"
-                                },
-                                "variant": "metadata"
-                            },
-                            "defaultValueStrategy": "omitted"
+                                    "identifier": "accountDiscriminator"
+                                }
+                            }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "program",
-                            "docs": [],
-                            "type": { "kind": "publicKeyTypeNode" }
+                            "identifier": "program",
+                            "type": {
+                                "kind": "publicKeyTypeNode"
+                            }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "authority",
-                            "docs": [],
+                            "identifier": "authority",
                             "type": {
                                 "kind": "zeroableOptionTypeNode",
-                                "item": { "kind": "publicKeyTypeNode" }
+                                "item": {
+                                    "kind": "publicKeyTypeNode"
+                                }
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "mutable",
-                            "docs": [],
+                            "identifier": "mutable",
                             "type": {
                                 "kind": "booleanTypeNode",
                                 "size": {
-                                    "kind": "numberTypeNode",
+                                    "kind": "integerTypeNode",
                                     "format": "u8",
                                     "endian": "le"
                                 }
@@ -216,12 +146,11 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "canonical",
-                            "docs": [],
+                            "identifier": "canonical",
                             "type": {
                                 "kind": "booleanTypeNode",
                                 "size": {
-                                    "kind": "numberTypeNode",
+                                    "kind": "integerTypeNode",
                                     "format": "u8",
                                     "endian": "le"
                                 }
@@ -229,190 +158,227 @@
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "seed",
-                            "docs": [],
-                            "type": { "kind": "definedTypeLinkNode", "name": "seed" }
-                        },
-                        {
-                            "kind": "structFieldTypeNode",
-                            "name": "encoding",
-                            "docs": [],
-                            "type": { "kind": "definedTypeLinkNode", "name": "encoding" }
-                        },
-                        {
-                            "kind": "structFieldTypeNode",
-                            "name": "compression",
-                            "docs": [],
-                            "type": { "kind": "definedTypeLinkNode", "name": "compression" }
-                        },
-                        {
-                            "kind": "structFieldTypeNode",
-                            "name": "format",
-                            "docs": [],
-                            "type": { "kind": "definedTypeLinkNode", "name": "format" }
-                        },
-                        {
-                            "kind": "structFieldTypeNode",
-                            "name": "dataSource",
-                            "docs": [],
-                            "type": { "kind": "definedTypeLinkNode", "name": "dataSource" }
-                        },
-                        {
-                            "kind": "structFieldTypeNode",
-                            "name": "dataLength",
-                            "docs": [],
+                            "identifier": "seed",
                             "type": {
-                                "kind": "postOffsetTypeNode",
-                                "offset": 5,
-                                "strategy": "padded",
-                                "type": {
-                                    "kind": "numberTypeNode",
-                                    "format": "u32",
-                                    "endian": "le"
-                                }
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "seed"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "data",
-                            "docs": [],
-                            "type": { "kind": "bytesTypeNode" }
+                            "identifier": "encoding",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "encoding"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "compression",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "compression"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "format",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "format"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "dataSource",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "dataSource"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "dataLength",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u32",
+                                "endian": "le",
+                                "transforms": [
+                                    {
+                                        "kind": "postOffsetTransformNode",
+                                        "offset": 5,
+                                        "strategy": "padded"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "data",
+                            "type": {
+                                "kind": "bytesTypeNode"
+                            }
                         }
                     ]
                 },
-                "pda": { "kind": "pdaLinkNode", "name": "metadata" }
+                "pda": {
+                    "kind": "pdaLinkNode",
+                    "identifier": "metadata"
+                }
             }
         ],
         "instructions": [
             {
                 "kind": "instructionNode",
-                "name": "write",
-                "docs": [],
+                "identifier": "write",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "buffer",
-                        "docs": ["The buffer to write to."],
+                        "identifier": "buffer",
+                        "isWritable": true,
                         "isSigner": false,
-                        "isWritable": true
+                        "docs": "The buffer to write to."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["The authority of the buffer."],
-                        "isSigner": true,
-                        "isWritable": false
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "sourceBuffer",
-                        "docs": [
-                            "Buffer to copy the data from.",
-                            "You may use the `data` argument instead of this account to pass data directly."
-                        ],
-                        "isSigner": false,
+                        "identifier": "authority",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": true,
+                        "docs": "The authority of the buffer."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "sourceBuffer",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Buffer to copy the data from.\nYou may use the `data` argument instead of this account to pass data directly."
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "0"
+                            }
                         },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 0 }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "offset",
-                        "docs": ["The offset to write to."],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u32",
-                            "endian": "le"
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "offset",
+                            "docs": "The offset to write to.",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u32",
+                                "endian": "le"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "data",
+                            "docs": "The data to write at the provided offset.\nYou may use the `source_buffer` account instead of this argument to copy from an existing buffer.",
+                            "type": {
+                                "kind": "remainderOptionTypeNode",
+                                "item": {
+                                    "kind": "bytesTypeNode"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "noneValueNode"
+                            }
                         }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "data",
-                        "docs": [
-                            "The data to write at the provided offset.",
-                            "You may use the `source_buffer` account instead of this argument to copy from an existing buffer."
-                        ],
-                        "defaultValue": { "kind": "noneValueNode" },
-                        "type": {
-                            "kind": "remainderOptionTypeNode",
-                            "item": { "kind": "bytesTypeNode" }
-                        }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "initialize",
-                "docs": [],
+                "identifier": "initialize",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "metadata",
-                        "docs": ["Metadata account the initialize."],
-                        "isSigner": false,
+                        "identifier": "metadata",
                         "isWritable": true,
+                        "isSigner": false,
+                        "docs": "Metadata account the initialize.",
                         "defaultValue": {
                             "kind": "conditionalValueNode",
                             "condition": {
                                 "kind": "accountValueNode",
-                                "name": "programData"
+                                "identifier": "programData"
                             },
                             "ifTrue": {
                                 "kind": "pdaValueNode",
-                                "pda": { "kind": "pdaLinkNode", "name": "canonical" },
+                                "pda": {
+                                    "kind": "pdaLinkNode",
+                                    "identifier": "canonical"
+                                },
                                 "seeds": [
                                     {
                                         "kind": "pdaSeedValueNode",
-                                        "name": "program",
-                                        "value": { "kind": "accountValueNode", "name": "program" }
+                                        "identifier": "program",
+                                        "value": {
+                                            "kind": "accountValueNode",
+                                            "identifier": "program"
+                                        }
                                     },
                                     {
                                         "kind": "pdaSeedValueNode",
-                                        "name": "seed",
-                                        "value": { "kind": "argumentValueNode", "name": "seed" }
+                                        "identifier": "seed",
+                                        "value": {
+                                            "kind": "dataValueNode",
+                                            "path": "seed"
+                                        }
                                     }
                                 ]
                             },
                             "ifFalse": {
                                 "kind": "pdaValueNode",
-                                "pda": { "kind": "pdaLinkNode", "name": "nonCanonical" },
+                                "pda": {
+                                    "kind": "pdaLinkNode",
+                                    "identifier": "nonCanonical"
+                                },
                                 "seeds": [
                                     {
                                         "kind": "pdaSeedValueNode",
-                                        "name": "program",
-                                        "value": { "kind": "accountValueNode", "name": "program" }
+                                        "identifier": "program",
+                                        "value": {
+                                            "kind": "accountValueNode",
+                                            "identifier": "program"
+                                        }
                                     },
                                     {
                                         "kind": "pdaSeedValueNode",
-                                        "name": "authority",
-                                        "value": { "kind": "accountValueNode", "name": "authority" }
+                                        "identifier": "authority",
+                                        "value": {
+                                            "kind": "accountValueNode",
+                                            "identifier": "authority"
+                                        }
                                     },
                                     {
                                         "kind": "pdaSeedValueNode",
-                                        "name": "seed",
-                                        "value": { "kind": "argumentValueNode", "name": "seed" }
+                                        "identifier": "seed",
+                                        "value": {
+                                            "kind": "dataValueNode",
+                                            "path": "seed"
+                                        }
                                     }
                                 ]
                             }
@@ -420,626 +386,686 @@
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Authority (for canonical, must match program upgrade authority)."],
+                        "identifier": "authority",
+                        "isWritable": false,
                         "isSigner": true,
-                        "isWritable": false
+                        "docs": "Authority (for canonical, must match program upgrade authority)."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
-                        "isSigner": false,
-                        "isWritable": false
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
-                        "isSigner": false,
+                        "identifier": "program",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": false,
+                        "docs": "Program account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "system",
-                        "docs": ["System program."],
-                        "isSigner": false,
+                        "identifier": "programData",
                         "isWritable": false,
+                        "isSigner": false,
                         "isOptional": true,
+                        "docs": "Program data account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "system",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "System program.",
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111"
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
-                        },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 1 }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "seed",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "seed" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "encoding",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "encoding" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "compression",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "compression" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "format",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "format" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "dataSource",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "dataSource" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "data",
-                        "docs": [],
-                        "defaultValue": { "kind": "noneValueNode" },
-                        "type": {
-                            "kind": "remainderOptionTypeNode",
-                            "item": { "kind": "bytesTypeNode" }
-                        }
-                    }
-                ],
-                "discriminators": [
-                    {
-                        "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
-                        "offset": 0
-                    }
-                ]
-            },
-            {
-                "kind": "instructionNode",
-                "name": "setAuthority",
-                "docs": [],
-                "optionalAccountStrategy": "programId",
-                "accounts": [
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "account",
-                        "docs": ["Metadata or buffer account."],
-                        "isSigner": false,
-                        "isWritable": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Current authority account."],
-                        "isSigner": true,
-                        "isWritable": false
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
-                        "isSigner": false,
-                        "isWritable": false,
-                        "isOptional": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
-                        "isSigner": false,
-                        "isWritable": false,
-                        "isOptional": true
-                    }
-                ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
-                        },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 2 }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "newAuthority",
-                        "docs": [],
-                        "type": {
-                            "kind": "optionTypeNode",
-                            "item": { "kind": "publicKeyTypeNode" },
-                            "prefix": {
-                                "kind": "numberTypeNode",
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
                                 "format": "u8",
                                 "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "1"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "seed",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "seed"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "encoding",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "encoding"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "compression",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "compression"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "format",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "format"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "dataSource",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "dataSource"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "data",
+                            "type": {
+                                "kind": "remainderOptionTypeNode",
+                                "item": {
+                                    "kind": "bytesTypeNode"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "noneValueNode"
                             }
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "setData",
-                "docs": [],
+                "identifier": "setAuthority",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "metadata",
-                        "docs": ["Metadata account."],
-                        "isSigner": false,
-                        "isWritable": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Authority account."],
-                        "isSigner": true,
-                        "isWritable": false
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "buffer",
-                        "docs": ["Buffer account to copy data from."],
-                        "isSigner": false,
+                        "identifier": "account",
                         "isWritable": true,
-                        "isOptional": true
+                        "isSigner": false,
+                        "docs": "Metadata or buffer account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
-                        "isSigner": false,
+                        "identifier": "authority",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": true,
+                        "docs": "Current authority account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
-                        "isSigner": false,
+                        "identifier": "program",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "programData",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program data account."
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "2"
+                            }
                         },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 3 }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "encoding",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "encoding" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "compression",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "compression" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "format",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "format" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "dataSource",
-                        "docs": [],
-                        "type": { "kind": "definedTypeLinkNode", "name": "dataSource" }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "data",
-                        "defaultValue": { "kind": "noneValueNode" },
-                        "docs": [],
-                        "type": {
-                            "kind": "remainderOptionTypeNode",
-                            "item": { "kind": "bytesTypeNode" }
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "newAuthority",
+                            "type": {
+                                "kind": "optionTypeNode",
+                                "item": {
+                                    "kind": "publicKeyTypeNode"
+                                },
+                                "prefix": {
+                                    "kind": "integerTypeNode",
+                                    "format": "u8",
+                                    "endian": "le"
+                                }
+                            }
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "setImmutable",
-                "docs": [],
+                "identifier": "setData",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "metadata",
-                        "docs": ["Metadata account."],
+                        "identifier": "metadata",
+                        "isWritable": true,
                         "isSigner": false,
-                        "isWritable": true
+                        "docs": "Metadata account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Authority account."],
+                        "identifier": "authority",
+                        "isWritable": false,
                         "isSigner": true,
-                        "isWritable": false
+                        "docs": "Authority account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
+                        "identifier": "buffer",
+                        "isWritable": true,
                         "isSigner": false,
-                        "isWritable": false,
-                        "isOptional": true
+                        "isOptional": true,
+                        "docs": "Buffer account to copy data from."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
-                        "isSigner": false,
+                        "identifier": "program",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "programData",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program data account."
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "3"
+                            }
                         },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 4 }
-                    }
-                ],
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "encoding",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "encoding"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "compression",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "compression"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "format",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "format"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "dataSource",
+                            "type": {
+                                "kind": "definedTypeLinkNode",
+                                "identifier": "dataSource"
+                            }
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "data",
+                            "type": {
+                                "kind": "remainderOptionTypeNode",
+                                "item": {
+                                    "kind": "bytesTypeNode"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "noneValueNode"
+                            }
+                        }
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "trim",
-                "docs": [],
+                "identifier": "setImmutable",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "account",
-                        "docs": ["Buffer or metadata account."],
+                        "identifier": "metadata",
+                        "isWritable": true,
                         "isSigner": false,
-                        "isWritable": true
+                        "docs": "Metadata account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Authority account."],
+                        "identifier": "authority",
+                        "isWritable": false,
                         "isSigner": true,
-                        "isWritable": false
+                        "docs": "Authority account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
-                        "isSigner": false,
+                        "identifier": "program",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
-                        "isSigner": false,
+                        "identifier": "programData",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program data account."
+                    }
+                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "4"
+                            }
+                        }
+                    ]
+                },
+                "discriminators": [
+                    {
+                        "kind": "fieldDiscriminatorNode",
+                        "path": "discriminator",
+                        "offset": 0
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "identifier": "trim",
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "account",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "docs": "Buffer or metadata account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "destination",
-                        "docs": ["Destination account."],
-                        "isSigner": false,
-                        "isWritable": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "rent",
-                        "docs": ["Rent sysvar account."],
-                        "isSigner": false,
+                        "identifier": "authority",
                         "isWritable": false,
+                        "isSigner": true,
+                        "docs": "Authority account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "program",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "programData",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program data account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "destination",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "docs": "Destination account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "rent",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "docs": "Rent sysvar account.",
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "SysvarRent111111111111111111111111111111111"
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
-                        },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 5 }
-                    }
-                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "5"
+                            }
+                        }
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "close",
-                "docs": [],
+                "identifier": "close",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "account",
-                        "docs": ["Account to close."],
+                        "identifier": "account",
+                        "isWritable": true,
                         "isSigner": false,
-                        "isWritable": true
+                        "docs": "Account to close."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Authority account."],
+                        "identifier": "authority",
+                        "isWritable": false,
                         "isSigner": true,
-                        "isWritable": false
+                        "docs": "Authority account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
-                        "isSigner": false,
+                        "identifier": "program",
                         "isWritable": false,
-                        "isOptional": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
                         "isSigner": false,
-                        "isWritable": false,
-                        "isOptional": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "destination",
-                        "docs": ["Destination account."],
-                        "isSigner": false,
-                        "isWritable": true
-                    }
-                ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
-                        },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 6 }
-                    }
-                ],
-                "discriminators": [
-                    {
-                        "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
-                        "offset": 0
-                    }
-                ]
-            },
-            {
-                "kind": "instructionNode",
-                "name": "allocate",
-                "docs": [],
-                "optionalAccountStrategy": "programId",
-                "accounts": [
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "buffer",
-                        "docs": ["Buffer account to allocate."],
-                        "isSigner": false,
-                        "isWritable": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Authority account."],
-                        "isSigner": true,
-                        "isWritable": false
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
-                        "isSigner": false,
-                        "isWritable": false,
-                        "isOptional": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
-                        "isSigner": false,
-                        "isWritable": false,
-                        "isOptional": true
-                    },
-                    {
-                        "kind": "instructionAccountNode",
-                        "name": "system",
-                        "docs": ["System program."],
-                        "isSigner": false,
-                        "isWritable": false,
                         "isOptional": true,
+                        "docs": "Program account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "programData",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program data account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "destination",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "docs": "Destination account."
+                    }
+                ],
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "6"
+                            }
+                        }
+                    ]
+                },
+                "discriminators": [
+                    {
+                        "kind": "fieldDiscriminatorNode",
+                        "path": "discriminator",
+                        "offset": 0
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "identifier": "allocate",
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "buffer",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "docs": "Buffer account to allocate."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "authority",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "docs": "Authority account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "program",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "programData",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program data account."
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "identifier": "system",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "System program.",
                         "defaultValue": {
                             "kind": "publicKeyValueNode",
                             "publicKey": "11111111111111111111111111111111"
                         }
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "7"
+                            }
                         },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 7 }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "seed",
-                        "docs": ["The seed of the metadata for PDA buffers."],
-                        "defaultValue": { "kind": "noneValueNode" },
-                        "type": {
-                            "kind": "remainderOptionTypeNode",
-                            "item": {
-                                "kind": "definedTypeLinkNode",
-                                "name": "seed"
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "seed",
+                            "docs": "The seed of the metadata for PDA buffers.",
+                            "type": {
+                                "kind": "remainderOptionTypeNode",
+                                "item": {
+                                    "kind": "definedTypeLinkNode",
+                                    "identifier": "seed"
+                                }
+                            },
+                            "defaultValue": {
+                                "kind": "noneValueNode"
                             }
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
             },
             {
                 "kind": "instructionNode",
-                "name": "extend",
-                "docs": [],
+                "identifier": "extend",
                 "optionalAccountStrategy": "programId",
                 "accounts": [
                     {
                         "kind": "instructionAccountNode",
-                        "name": "account",
-                        "docs": ["Buffer or metadata account."],
+                        "identifier": "account",
+                        "isWritable": true,
                         "isSigner": false,
-                        "isWritable": true
+                        "docs": "Buffer or metadata account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "authority",
-                        "docs": ["Authority account."],
+                        "identifier": "authority",
+                        "isWritable": false,
                         "isSigner": true,
-                        "isWritable": false
+                        "docs": "Authority account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "program",
-                        "docs": ["Program account."],
-                        "isSigner": false,
+                        "identifier": "program",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program account."
                     },
                     {
                         "kind": "instructionAccountNode",
-                        "name": "programData",
-                        "docs": ["Program data account."],
-                        "isSigner": false,
+                        "identifier": "programData",
                         "isWritable": false,
-                        "isOptional": true
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": "Program data account."
                     }
                 ],
-                "arguments": [
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "discriminator",
-                        "docs": [],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u8",
-                            "endian": "le"
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "discriminator",
+                            "defaultValueStrategy": "omitted",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u8",
+                                "endian": "le"
+                            },
+                            "defaultValue": {
+                                "kind": "integerValueNode",
+                                "value": "8"
+                            }
                         },
-                        "defaultValueStrategy": "omitted",
-                        "defaultValue": { "kind": "numberValueNode", "number": 8 }
-                    },
-                    {
-                        "kind": "instructionArgumentNode",
-                        "name": "length",
-                        "docs": ["Length (in bytes) to add to the account size."],
-                        "type": {
-                            "kind": "numberTypeNode",
-                            "format": "u16",
-                            "endian": "le"
+                        {
+                            "kind": "structFieldTypeNode",
+                            "identifier": "length",
+                            "docs": "Length (in bytes) to add to the account size.",
+                            "type": {
+                                "kind": "integerTypeNode",
+                                "format": "u16",
+                                "endian": "le"
+                            }
                         }
-                    }
-                ],
+                    ]
+                },
                 "discriminators": [
                     {
                         "kind": "fieldDiscriminatorNode",
-                        "name": "discriminator",
+                        "path": "discriminator",
                         "offset": 0
                     }
                 ]
@@ -1048,36 +1074,39 @@
         "definedTypes": [
             {
                 "kind": "definedTypeNode",
-                "name": "seed",
-                "docs": [],
+                "identifier": "seed",
                 "type": {
-                    "kind": "fixedSizeTypeNode",
-                    "size": 16,
-                    "type": { "kind": "stringTypeNode", "encoding": "utf8" }
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8",
+                    "transforms": [
+                        {
+                            "kind": "fixedSizeTransformNode",
+                            "size": 16
+                        }
+                    ]
                 }
             },
             {
                 "kind": "definedTypeNode",
-                "name": "accountDiscriminator",
-                "docs": [],
+                "identifier": "accountDiscriminator",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "empty"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "empty"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "buffer"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "buffer"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "metadata"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "metadata"
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1085,30 +1114,29 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "encoding",
-                "docs": [],
+                "identifier": "encoding",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "none"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "none"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "utf8"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "utf8"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "base58"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "base58"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "base64"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "base64"
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1116,26 +1144,25 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "compression",
-                "docs": [],
+                "identifier": "compression",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "none"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "none"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "gzip"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "gzip"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "zlib"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "zlib"
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1143,30 +1170,29 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "format",
-                "docs": [],
+                "identifier": "format",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "none"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "none"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "json"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "json"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "yaml"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "yaml"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "toml"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "toml"
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1174,26 +1200,25 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "dataSource",
-                "docs": [],
+                "identifier": "dataSource",
                 "type": {
                     "kind": "enumTypeNode",
                     "variants": [
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "direct"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "direct"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "url"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "url"
                         },
                         {
-                            "kind": "enumEmptyVariantTypeNode",
-                            "name": "external"
+                            "kind": "enumVariantTypeNode",
+                            "identifier": "external"
                         }
                     ],
                     "size": {
-                        "kind": "numberTypeNode",
+                        "kind": "integerTypeNode",
                         "format": "u8",
                         "endian": "le"
                     }
@@ -1201,35 +1226,33 @@
             },
             {
                 "kind": "definedTypeNode",
-                "name": "externalData",
-                "docs": [],
+                "identifier": "externalData",
                 "type": {
                     "kind": "structTypeNode",
                     "fields": [
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "address",
-                            "docs": [],
-                            "type": { "kind": "publicKeyTypeNode" }
+                            "identifier": "address",
+                            "type": {
+                                "kind": "publicKeyTypeNode"
+                            }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "offset",
-                            "docs": [],
+                            "identifier": "offset",
                             "type": {
-                                "kind": "numberTypeNode",
+                                "kind": "integerTypeNode",
                                 "format": "u32",
                                 "endian": "le"
                             }
                         },
                         {
                             "kind": "structFieldTypeNode",
-                            "name": "length",
-                            "docs": [],
+                            "identifier": "length",
                             "type": {
                                 "kind": "zeroableOptionTypeNode",
                                 "item": {
-                                    "kind": "numberTypeNode",
+                                    "kind": "integerTypeNode",
                                     "format": "u32",
                                     "endian": "le"
                                 }
@@ -1239,7 +1262,98 @@
                 }
             }
         ],
-        "errors": []
-    },
-    "additionalPrograms": []
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "identifier": "canonical",
+                "docs": "The canonical derivation for metadata accounts managed by the program authority itself.",
+                "seeds": [
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "program",
+                        "docs": "The program to which the metadata belongs.",
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "seed",
+                        "docs": "The seed deriving the metadata account.",
+                        "type": {
+                            "kind": "definedTypeLinkNode",
+                            "identifier": "seed"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "identifier": "nonCanonical",
+                "docs": "The derivation for metadata accounts managed by third-party authorities.",
+                "seeds": [
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "program",
+                        "docs": "The program to which the metadata belongs.",
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "authority",
+                        "docs": "The third-party authority managing this metadata account.",
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "seed",
+                        "docs": "The seed deriving the metadata account.",
+                        "type": {
+                            "kind": "definedTypeLinkNode",
+                            "identifier": "seed"
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "pdaNode",
+                "identifier": "metadata",
+                "docs": "The derivation for metadata accounts, canonical or not, depending if an authority is provided.",
+                "seeds": [
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "program",
+                        "docs": "The program to which the metadata belongs.",
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "authority",
+                        "docs": "The third-party authority managing this metadata account, if non-canonical.",
+                        "type": {
+                            "kind": "remainderOptionTypeNode",
+                            "item": {
+                                "kind": "publicKeyTypeNode"
+                            }
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "identifier": "seed",
+                        "docs": "The seed deriving the metadata account.",
+                        "type": {
+                            "kind": "definedTypeLinkNode",
+                            "identifier": "seed"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
 }

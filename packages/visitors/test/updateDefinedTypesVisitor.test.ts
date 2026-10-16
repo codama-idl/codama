@@ -1,5 +1,6 @@
 import { CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND, CodamaError } from '@codama/errors';
 import {
+    accountLinkNode,
     accountNode,
     assertIsNode,
     dataValueNode,
@@ -9,12 +10,12 @@ import {
     enumValueNode,
     enumVariantTypeNode,
     fixedSizeTransformNode,
-    identifierString,
     instructionAccountNode,
     instructionNode,
     integerTypeNode,
     programLinkNode,
     programNode,
+    publicKeyTypeNode,
     rootNode,
     structFieldTypeNode,
     structTypeNode,
@@ -156,9 +157,8 @@ test('it throws when renaming a member that does not exist', () => {
     // When we try to rename it, then we expect an error.
     expect(() => visit(definedType, updateDefinedTypesVisitor({ myType: { data: { missing: 'b' } } }))).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND, {
-            definedType,
             missingMember: 'missing',
-            name: identifierString('myType'),
+            path: [definedType],
         }),
     );
 });
@@ -209,5 +209,47 @@ test('it merges updates from several entries matching the same defined type', ()
             structFieldTypeNode({ identifier: 'x', type: integerTypeNode('u8') }),
             structFieldTypeNode({ identifier: 'y', type: integerTypeNode('u8') }),
         ]),
+    );
+});
+
+test('it repoints paths crossing account links to the same defined type', () => {
+    // Given nodes linking to their parent node, whose data is a defined type.
+    const linkedNode = () => publicKeyTypeNode({ accountLink: accountLinkNode('node') });
+    const node = programNode({
+        accounts: [accountNode({ data: definedTypeLinkNode('nodeData'), identifier: 'node' })],
+        definedTypes: [
+            definedTypeNode({
+                identifier: 'nodeData',
+                type: structTypeNode([
+                    structFieldTypeNode({ identifier: 'parent', type: linkedNode() }),
+                    structFieldTypeNode({ identifier: 'value', type: integerTypeNode('u8') }),
+                ]),
+            }),
+        ],
+        identifier: 'myProgram',
+        instructions: [
+            instructionNode({
+                accounts: [
+                    instructionAccountNode({
+                        defaultValue: dataValueNode('node.data.parent.data.value'),
+                        identifier: 'grandParentValue',
+                        isSigner: false,
+                        isWritable: false,
+                    }),
+                ],
+                data: structTypeNode([structFieldTypeNode({ identifier: 'node', type: linkedNode() })]),
+                identifier: 'read',
+            }),
+        ],
+        publicKey: '1111',
+    });
+
+    // When we rename the value of the node data.
+    const result = visit(node, updateDefinedTypesVisitor({ nodeData: { data: { value: 'amount' } } }));
+
+    // Then the path reading it through two account links points to the new field.
+    assertIsNode(result, 'programNode');
+    expect(result.instructions?.[0].accounts?.[0].defaultValue).toStrictEqual(
+        dataValueNode('node.data.parent.data.amount'),
     );
 });

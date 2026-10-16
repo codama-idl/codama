@@ -5,6 +5,7 @@ import type { InstructionDisplayNode } from './InstructionDisplayNode';
 import type { StringDisplayNode } from './StringDisplayNode';
 import type { StructFieldDisplayNode } from './StructFieldDisplayNode';
 import type { UnitNumberDisplayNode } from './UnitNumberDisplayNode';
+import type { ValueLabelDisplayNode } from './ValueLabelDisplayNode';
 
 /** Every node tagged as display metadata. */
 export type RegisteredDisplayNode =
@@ -14,4 +15,5 @@ export type RegisteredDisplayNode =
     | InstructionDisplayNode
     | StringDisplayNode
     | StructFieldDisplayNode
-    | UnitNumberDisplayNode;
+    | UnitNumberDisplayNode
+    | ValueLabelDisplayNode;

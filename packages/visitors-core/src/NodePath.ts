@@ -1,8 +1,32 @@
-import { assertIsNode, GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
+import {
+    CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CodamaError,
+    getNodePathString,
+} from '@codama/errors';
+import { GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
 
-export type NodePath<TNode extends Node | undefined = undefined> = TNode extends undefined
+/**
+ * The nodes leading to a node, from the root to that node included.
+ *
+ * Without a node type, any list of nodes. With one, a list ending at a node of
+ * that type. Unions are not distributed: `NodePath<AccountNode | PdaNode>` is a
+ * path ending at either node, not one path type per member, so a path built
+ * from a node only known as a union, e.g. `[...stack.getPath(), node]`, is
+ * accepted.
+ */
+export type NodePath<TNode extends Node | undefined = undefined> = NodePathImpl<TNode, TNode>;
+
+/**
+ * Distributes over `TCheck` to tell paths without a node type apart, but ends
+ * every path at the whole `TNode`, without `undefined`, so unions are not
+ * split into one path type per member. Distributing, rather than checking
+ * `[TNode] extends [undefined]`, keeps the type resolvable for generic node
+ * types, e.g. `NodePath<TLinkNode>`.
+ */
+type NodePathImpl<TCheck, TNode> = TCheck extends undefined
     ? readonly Node[]
-    : readonly [...(readonly Node[]), TNode];
+    : readonly [...(readonly Node[]), Exclude<TNode, undefined>];
 
 export function getLastNodeFromPath<TNode extends Node>(path: NodePath<TNode>): TNode {
     return path[path.length - 1] as TNode;
@@ -28,6 +52,18 @@ export function findLastNodeFromPath<TKind extends NodeKind>(
 
 export function findProgramNodeFromPath(path: NodePath): ProgramNode | undefined {
     return findLastNodeFromPath(path, 'programNode');
+}
+
+/**
+ * Assert that the path contains a program node, e.g. to resolve the links of
+ * its last node, which are resolved from the closest program of their path.
+ *
+ * @throws `CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING` when it does not.
+ */
+export function assertNodePathHasProgram(path: NodePath): void {
+    if (!findProgramNodeFromPath(path)) {
+        throw new CodamaError(CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING, { path });
+    }
 }
 
 export function findInstructionNodeFromPath(path: NodePath): InstructionNode | undefined {
@@ -64,7 +100,9 @@ export function assertIsNodePath<TKind extends NodeKind>(
     path: NodePath | null | undefined,
     kind: TKind | TKind[],
 ): asserts path is NodePath<GetNodeFromKind<TKind>> {
-    assertIsNode(isFilledNodePath(path) ? getLastNodeFromPath<Node>(path) : null, kind);
+    if (isNodePath(path, kind)) return;
+    const expectedKinds = Array.isArray(kind) ? kind : [kind];
+    throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, { expectedKinds, path: path ?? [] });
 }
 
 export function nodePathToStringArray(path: NodePath): string[] {
@@ -73,6 +111,11 @@ export function nodePathToStringArray(path: NodePath): string[] {
     });
 }
 
+/**
+ * Render a path as node selectors joined by dots, leaving out a leading root node, as error
+ * messages do, e.g. `[programNode]token.[accountNode]mint`. See `getNodePathString` from
+ * `@codama/errors`.
+ */
 export function nodePathToString(path: NodePath): string {
-    return nodePathToStringArray(path).join(' > ');
+    return getNodePathString(path);
 }

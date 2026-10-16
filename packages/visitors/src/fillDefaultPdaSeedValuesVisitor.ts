@@ -64,9 +64,7 @@ export function fillDefaultPdaSeedValuesVisitor(
                 );
                 if (strictMode && !allSeedsAreValid(foundPda, seeds, accountIdentifiers, dataPaths)) {
                     throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES, {
-                        instruction,
-                        instructionName: instruction.identifier,
-                        pda: foundPda,
+                        path: instructionPath,
                         pdaName: foundPda.identifier,
                     });
                 }

@@ -1,7 +1,13 @@
 export type { ProgramDerivedAddress } from '@solana/addresses';
 
 export { isPublicKeyLike, toAddress } from '@codama/dynamic-address-resolution';
-export type { AddressInput, PublicKeyLike, AccountsInput, ArgumentsInput } from '@codama/dynamic-address-resolution';
+export type {
+    AccountsInput,
+    AddressInput,
+    DataInput,
+    FetchAccountsFn,
+    PublicKeyLike,
+} from '@codama/dynamic-address-resolution';
 
 export { CodamaError, isCodamaError } from '@codama/errors';
 export {
@@ -10,7 +16,6 @@ export {
     CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS,
     CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
-    CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
@@ -31,6 +36,7 @@ export { createProgramClient } from './program-client/create-program-client';
 export type {
     CreateProgramClientOptions,
     IdlInput,
+    PdaOptions,
     ProgramClient,
     ProgramMethodBuilder,
 } from './program-client/create-program-client';

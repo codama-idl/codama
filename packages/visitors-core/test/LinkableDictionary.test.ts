@@ -10,7 +10,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getRecordLinkablesVisitor, LinkableDictionary, visit } from '../src';
+import { getLinkablesFromNode, LinkableDictionary } from '../src';
 
 test('it lists the recorded paths of each linkable kind across programs', () => {
     // Given two programs with one linkable node of each kind.
@@ -39,8 +39,7 @@ test('it lists the recorded paths of each linkable kind across programs', () => 
     const root = rootNode(programA, { additionalPrograms: [programB] });
 
     // When we record its linkables.
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // Then we can list the full paths of each kind, in recording order.
     const [instructionA, instructionB] = [programA.instructions![0], programB.instructions![0]];

@@ -15,9 +15,6 @@ export interface ConstantDiscriminatorNode<
     // Children.
     /** The constant value expected at the offset. */
     readonly constant: TConstant;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

@@ -1,14 +1,16 @@
 import type { PluginNode } from '../PluginNode';
 import type { DisplaySkip } from '../shared/displaySkip';
 import type { TextNode } from '../TextNode';
+import type { ValueLabelDisplayNode } from './ValueLabelDisplayNode';
 
 /**
- * Display metadata for a named member: its label, whether it is shown in the fallback list, and whether it is flattened into its parent.
- * Value presentation is carried by the member's type; this node only addresses naming and composition.
+ * Display metadata for a named member: its label, whether it is shown in the fallback list, whether it is flattened into its parent, and labels for specific values.
+ * Value presentation is otherwise carried by the member's type; this node addresses naming and composition, and value labels override the presentation of the values they match.
  */
 export interface StructFieldDisplayNode<
     TLabel extends string | TextNode | undefined = string | TextNode | undefined,
     TFlattenPrefix extends string | TextNode | undefined = string | TextNode | undefined,
+    TValueLabels extends Array<ValueLabelDisplayNode> | undefined = Array<ValueLabelDisplayNode> | undefined,
     TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'structFieldDisplayNode';
@@ -26,7 +28,7 @@ export interface StructFieldDisplayNode<
     // Children.
     /**
      * An override label shown for the member (e.g. `"Amount"`).
-     * When absent, renderers derive a label from the member `name`.
+     * When absent, renderers derive a label from the member `identifier`.
      */
     readonly label?: TLabel;
     /**
@@ -35,8 +37,10 @@ export interface StructFieldDisplayNode<
      */
     readonly flattenPrefix?: TFlattenPrefix;
     /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
+     * Labels presented instead of specific values of the member, e.g. `"All"` for `u64::MAX`. When the member's raw decoded value, before any display formatting, matches a label's `value` structurally, renderers present the label instead of the formatted value, including in interpolated intents.
+     * When several labels match, the first one wins. A matching label is presented as the member's single value, even when `flatten` is `true`.
      */
+    readonly valueLabels?: TValueLabels;
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

@@ -90,6 +90,9 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@solana/accounts':
+        specifier: ^8.4.0
+        version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
       '@solana/addresses':
         specifier: ^8.4.0
         version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
@@ -112,9 +115,6 @@ importers:
       '@codama/dynamic-address-resolution':
         specifier: workspace:*
         version: link:../dynamic-address-resolution
-      '@codama/dynamic-codecs':
-        specifier: workspace:*
-        version: link:../dynamic-codecs
       '@codama/dynamic-instructions':
         specifier: workspace:*
         version: link:../dynamic-instructions
@@ -122,9 +122,6 @@ importers:
         specifier: workspace:*
         version: link:../errors
       '@solana/addresses':
-        specifier: ^8.4.0
-        version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
-      '@solana/codecs':
         specifier: ^8.4.0
         version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
       '@solana/instructions':
@@ -136,10 +133,10 @@ importers:
       commander:
         specifier: ^15.0.0
         version: 15.0.0
-      superstruct:
-        specifier: ^2.0.2
-        version: 2.0.2
     devDependencies:
+      '@codama/dynamic-codecs':
+        specifier: workspace:*
+        version: link:../dynamic-codecs
       '@codama/nodes-from-anchor':
         specifier: workspace:*
         version: link:../nodes-from-anchor
@@ -158,6 +155,9 @@ importers:
       '@solana-program/token-2022':
         specifier: ^0.17.0
         version: 0.17.0(@solana/kit@8.4.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6))(@solana/sysvars@8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2))
+      '@solana/codecs':
+        specifier: ^8.4.0
+        version: 8.4.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)
       '@solana/kit':
         specifier: 8.4.0
         version: 8.4.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)
@@ -344,8 +344,8 @@ importers:
         specifier: workspace:*
         version: link:../fragments
       '@codama/spec':
-        specifier: 2.0.0-rc.0
-        version: 2.0.0-rc.0
+        specifier: 2.0.0-rc.3
+        version: 2.0.0-rc.3
     devDependencies:
       '@types/node':
         specifier: ^26
@@ -368,6 +368,12 @@ importers:
       '@codama/errors':
         specifier: workspace:*
         version: link:../errors
+      '@codama/node-types':
+        specifier: workspace:*
+        version: link:../node-types
+      '@codama/node-types-v1':
+        specifier: npm:@codama/node-types@1.11.0
+        version: '@codama/node-types@1.11.0'
       '@codama/nodes':
         specifier: workspace:*
         version: link:../nodes
@@ -507,14 +513,17 @@ packages:
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
+  '@codama/node-types@1.11.0':
+    resolution: {integrity: sha512-QfTvw+q8TLHHHAKvmbhklYTcb5dnO8PO8I4HaON5j/nWSM999r46nTOSyOx8yQ5kPN/mBJy3lpU93cvVrDrmNg==}
+
   '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/1c42099ad47946663c997cb77a0b96db8ebacd96':
     resolution: {tarball: https://codeload.github.com/codama-idl/release-tools/tar.gz/1c42099ad47946663c997cb77a0b96db8ebacd96}
     version: 1.0.0
     engines: {node: '>=20'}
     hasBin: true
 
-  '@codama/spec@2.0.0-rc.0':
-    resolution: {integrity: sha512-479s9KRHADsxExMwQGN1Yx7sb2AfTXF3I5vh4Giasp86Koz5+HceCLTqhvcpUmVHRlj/030Fov3h1M89FOlh/A==}
+  '@codama/spec@2.0.0-rc.3':
+    resolution: {integrity: sha512-6nOqA1oZMh4FiN1bMF1lkymsMuEQFjMY3TQs7WeVa6Wa86SLIZyrclqChNi8a5GaO8FNMWC8bnn43w7B5V1KOQ==}
     engines: {node: '>=22.12.0'}
 
   '@esbuild/aix-ppc64@0.27.0':
@@ -3062,10 +3071,6 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
-  superstruct@2.0.2:
-    resolution: {integrity: sha512-uV+TFRZdXsqXTL2pRvujROjdZQ4RAlBUS5BTh9IGm+jTqQntYThciG/qu57Gs69yjnVUSqdxF9YLmSnpupBW9A==}
-    engines: {node: '>=14.0.0'}
-
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
     engines: {node: '>=0.8'}
@@ -3407,9 +3412,11 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
+  '@codama/node-types@1.11.0': {}
+
   '@codama/release-tools@https://codeload.github.com/codama-idl/release-tools/tar.gz/1c42099ad47946663c997cb77a0b96db8ebacd96': {}
 
-  '@codama/spec@2.0.0-rc.0': {}
+  '@codama/spec@2.0.0-rc.3': {}
 
   '@esbuild/aix-ppc64@0.27.0':
     optional: true
@@ -5755,8 +5762,6 @@ snapshots:
       mz: 2.7.0
       pirates: 4.0.7
       ts-interface-checker: 0.1.13
-
-  superstruct@2.0.2: {}
 
   thenify-all@1.6.0:
     dependencies:

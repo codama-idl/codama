@@ -2,7 +2,7 @@ import { type Address } from '@solana/addresses';
 import { getCredentialDecoder } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import { createCredential, loadSasProgram, programClient } from './sas-test-utils';
 
 describe('SAS: changeAuthorizedSigners', () => {
@@ -43,7 +43,7 @@ describe('SAS: changeAuthorizedSigners', () => {
                 .changeAuthorizedSigners({ signers: [authority] })
                 .accounts({ authority, credential: undefined as unknown as Address, payer: authority })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[credential\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]credential\./);
     });
 
     test('should throw ValidationError when signers arg is invalid', async () => {
@@ -54,6 +54,11 @@ describe('SAS: changeAuthorizedSigners', () => {
                 .changeAuthorizedSigners({ signers: { a: 42 } as unknown as Address[] })
                 .accounts({ authority, credential: credentialPda, payer: authority })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "signers"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'signers', kind: 'structFieldTypeNode' },
+                { actualType: 'object', nodeKind: 'arrayTypeNode' },
+            ),
+        );
     });
 });

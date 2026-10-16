@@ -29,7 +29,7 @@ describe('codamaTypeToTS', () => {
     test('it maps numbers', () => {
         expect(codamaTypeToTS(integerTypeNode('u8'), [])).toBe('number | bigint');
         expect(codamaTypeToTS(integerTypeNode('i128'), [])).toBe('number | bigint');
-        expect(codamaTypeToTS(fixedPointTypeNode(integerTypeNode('u64'), 6), [])).toBe('number | bigint');
+        expect(codamaTypeToTS(fixedPointTypeNode(integerTypeNode('u64'), { scale: 6 }), [])).toBe('number | bigint');
         expect(codamaTypeToTS(dateTimeTypeNode(integerTypeNode('i64')), [])).toBe('number | bigint');
         expect(codamaTypeToTS(durationTypeNode(integerTypeNode('u32')), [])).toBe('number | bigint');
         expect(codamaTypeToTS(floatTypeNode('f64'), [])).toBe('number');

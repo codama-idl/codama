@@ -16,9 +16,6 @@ export interface StructFieldValueNode<
     // Children.
     /** The concrete value of the field. */
     readonly value: TValue;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

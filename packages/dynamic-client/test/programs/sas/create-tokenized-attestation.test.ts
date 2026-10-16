@@ -8,7 +8,7 @@ import {
 } from 'sas-lib';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { SvmTestContext } from '../test-utils';
+import { SvmTestContext, valueTypeError } from '../test-utils';
 import {
     createCredential,
     createSchema,
@@ -159,7 +159,7 @@ describe('SAS: createTokenizedAttestation', () => {
                     tokenProgram: ctx.TOKEN_2022_PROGRAM_ADDRESS,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Missing account \[schemaMint\]/);
+        ).rejects.toThrow(/Missing account .*\[instructionAccountNode\]schemaMint\./);
     });
 
     test('should throw error with invalid argument', async () => {
@@ -204,6 +204,11 @@ describe('SAS: createTokenizedAttestation', () => {
                     tokenProgram: ctx.TOKEN_2022_PROGRAM_ADDRESS,
                 })
                 .instruction(),
-        ).rejects.toThrow(/Invalid argument "data"/);
+        ).rejects.toThrow(
+            valueTypeError(
+                { identifier: 'data', kind: 'structFieldTypeNode' },
+                { actualType: 'object', nodeKind: 'bytesTypeNode' },
+            ),
+        );
     });
 });

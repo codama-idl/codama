@@ -13,10 +13,11 @@ import {
     visitOrElse,
 } from 'codama';
 
-import { getAccountInput, getInstruction, getProgramAddress, getRequiredDataValue } from '../resolvers/context';
+import { getAccountInput, getProgramAddress } from '../resolvers/context';
 import { resolveAccountValueNodeAddress } from '../resolvers/resolve-account-value-node-address';
 import { resolveConditionalValueNodeCondition } from '../resolvers/resolve-conditional';
 import { resolvePdaAddress } from '../resolvers/resolve-pda-address';
+import { getAccountDataValue, getRequiredDataValue } from '../resolvers/resolve-value';
 import type { ResolutionContext } from '../resolvers/types';
 import { toAddress, toAddressOrThrow } from '../shared/address';
 
@@ -40,8 +41,7 @@ type AccountDefaultValueSupportedNodeKind = (typeof ACCOUNT_DEFAULT_VALUE_SUPPOR
 export function unexpectedAccountDefaultValueNode(node: Node): never {
     throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
         expectedKinds: [...ACCOUNT_DEFAULT_VALUE_SUPPORTED_NODE_KINDS],
-        kind: node.kind,
-        node,
+        path: [node],
     });
 }
 
@@ -54,20 +54,22 @@ export function createAccountDefaultValueVisitor(
     const requireProvidedAccount = () => {
         if (accountAddressInput === undefined || accountAddressInput === null) {
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                accountName: ixAccountNode.identifier,
-                instructionName: getInstruction(ctx).identifier,
+                path: [...ctx.instructionPath, ixAccountNode],
             });
         }
         return Promise.resolve(toAddress(accountAddressInput));
     };
-    const unsupported = (nodeKind: AccountDefaultValueSupportedNodeKind) =>
-        Promise.reject(new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { nodeKind }));
+    // A default value injected by a provider is not within the account, so its path is the value itself.
+    const unsupported = (node: Node) => {
+        const path = ixAccountNode.defaultValue === node ? [...ctx.instructionPath, ixAccountNode, node] : [node];
+        return Promise.reject(new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE, { path }));
+    };
 
     const visitor: Visitor<Promise<Address | null>, AccountDefaultValueSupportedNodeKind> = {
-        visitAccountBumpValue: () => unsupported('accountBumpValueNode'),
+        visitAccountBumpValue: node => unsupported(node),
 
-        // Resolving account data would require fetching the account.
-        visitAccountDataValue: () => unsupported('accountDataValueNode'),
+        visitAccountDataValue: async node =>
+            toAddressOrThrow(await getAccountDataValue(ctx, node), ixAccountNode.identifier),
 
         visitAccountValue: async node => await resolveAccountValueNodeAddress(node, ctx),
 
@@ -77,15 +79,14 @@ export function createAccountDefaultValueVisitor(
                 // No matching branch: optional accounts resolve using the optional account strategy.
                 if (ixAccountNode.isOptional) return null;
                 throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    accountName: ixAccountNode.identifier,
-                    instructionName: getInstruction(ctx).identifier,
+                    path: [...ctx.instructionPath, ixAccountNode],
                 });
             }
             return await visitOrElse(branch, visitor, unexpectedAccountDefaultValueNode);
         },
 
-        visitDataValue: node =>
-            Promise.resolve(toAddressOrThrow(getRequiredDataValue(ctx, node.path), ixAccountNode.identifier)),
+        visitDataValue: async node =>
+            toAddressOrThrow(await getRequiredDataValue(ctx, node.path), ixAccountNode.identifier),
 
         visitIdentityValue: requireProvidedAccount,
 

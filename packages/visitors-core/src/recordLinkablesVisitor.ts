@@ -1,4 +1,4 @@
-import { isNode, type NodeKind } from '@codama/nodes';
+import { isNode, type Node, type NodeKind } from '@codama/nodes';
 
 import { interceptFirstVisitVisitor } from './interceptFirstVisitVisitor';
 import { interceptVisitor } from './interceptVisitor';
@@ -8,6 +8,23 @@ import { pipe } from './pipe';
 import { recordNodeStackVisitor } from './recordNodeStackVisitor';
 import { visit, Visitor } from './visitor';
 import { voidVisitor } from './voidVisitor';
+
+/**
+ * Record the linkable nodes of the tree under the given node, e.g. a root node, into a new
+ * `LinkableDictionary`. Use it in entry points, then pass the dictionary to the functions they
+ * compose, so the tree is only walked once.
+ *
+ * @example
+ * ```ts
+ * const linkables = getLinkablesFromNode(root);
+ * resolveTypePath([root, program, instruction, instruction.data], pathString('config.fee'), linkables);
+ * ```
+ */
+export function getLinkablesFromNode(node: Node): LinkableDictionary {
+    const linkables = new LinkableDictionary();
+    visit(node, getRecordLinkablesVisitor(linkables));
+    return linkables;
+}
 
 export function getRecordLinkablesVisitor<TNodeKind extends NodeKind>(
     linkables: LinkableDictionary,

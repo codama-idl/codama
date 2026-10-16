@@ -14,9 +14,6 @@ export interface SizePrefixTransformNode<
     // Children.
     /** The integer type used as the size prefix. */
     readonly prefix: TPrefix;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

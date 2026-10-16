@@ -1,7 +1,7 @@
-import { REGISTERED_NODE_KINDS, type Node, type NodeKind } from '@codama/nodes';
+import { type Node, type NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes';
 
 import { staticVisitor } from '../staticVisitor';
-import { type Visitor, visit as baseVisit } from '../visitor';
+import { visit as baseVisit, type Visitor } from '../visitor';
 
 /**
  * Merge visitor: traverses the tree collecting per-node values into
@@ -150,6 +150,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('publicKeyTypeNode')) {
         visitor.visitPublicKeyType = function visitPublicKeyType(node) {
             return merge(node, [
+                ...(node.accountLink ? visit(this)(node.accountLink) : []),
                 ...(node.transforms ?? []).flatMap(visit(this)),
                 ...(node.plugins ?? []).flatMap(visit(this)),
             ]);
@@ -583,6 +584,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...(node.flattenPrefix !== undefined && typeof node.flattenPrefix !== 'string'
                     ? visit(this)(node.flattenPrefix)
                     : []),
+                ...(node.valueLabels ?? []).flatMap(visit(this)),
                 ...(node.plugins ?? []).flatMap(visit(this)),
             ]);
         };
@@ -591,6 +593,16 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('unitNumberDisplayNode')) {
         visitor.visitUnitNumberDisplay = function visitUnitNumberDisplay(node) {
             return merge(node, [...visit(this)(node.unit), ...(node.plugins ?? []).flatMap(visit(this))]);
+        };
+    }
+
+    if (keys.includes('valueLabelDisplayNode')) {
+        visitor.visitValueLabelDisplay = function visitValueLabelDisplay(node) {
+            return merge(node, [
+                ...visit(this)(node.value),
+                ...(node.label !== undefined && typeof node.label !== 'string' ? visit(this)(node.label) : []),
+                ...(node.plugins ?? []).flatMap(visit(this)),
+            ]);
         };
     }
 
@@ -744,6 +756,7 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
                 ...(node.status ? visit(this)(node.status) : []),
                 ...(node.accounts ?? []).flatMap(visit(this)),
                 ...(node.data ? visit(this)(node.data) : []),
+                ...(node.returnData ? visit(this)(node.returnData) : []),
                 ...(node.remainingAccounts ?? []).flatMap(visit(this)),
                 ...(node.byteDeltas ?? []).flatMap(visit(this)),
                 ...(node.discriminators ?? []).flatMap(visit(this)),

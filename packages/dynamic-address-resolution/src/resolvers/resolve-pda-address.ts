@@ -20,8 +20,9 @@ import {
 import { toAddress, toAddressOrThrow } from '../shared/address';
 import { OPTIONAL_NODE_KINDS } from '../shared/nodes';
 import { resolvePdaSeedValue } from '../visitors/pda-seed-value';
-import { encodeValue, getInstruction, getProgramAddress, getRequiredDataValue, getValue } from './context';
+import { encodeValue, getProgramAddress, getValue } from './context';
 import { resolveAccountValueNodeAddress } from './resolve-account-value-node-address';
+import { getRequiredDataValue } from './resolve-value';
 import type { ResolutionContext } from './types';
 
 /**
@@ -35,18 +36,18 @@ export async function resolvePdaAddress(
 ): Promise<ProgramDerivedAddress> {
     const pdaPath = getPdaPath(node, ctx);
     const programAddress = node.programId
-        ? await resolvePdaProgramAddress(node.programId, ctx, accountName)
+        ? await resolvePdaProgramAddress(node.programId, ctx, accountName, pdaPath)
         : getPdaProgramAddress(pdaPath);
 
     return await derivePda(pdaPath, programAddress, ctx, async seedNode => {
         const seedValueNode = (node.seeds ?? []).find(seed => seed.identifier === seedNode.identifier);
         if (!seedValueNode) {
             throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND, {
-                instructionName: getInstruction(ctx).identifier,
+                path: pdaPath,
                 referencedName: seedNode.identifier,
             });
         }
-        return await resolvePdaSeedValue(seedValueNode.value, ctx);
+        return await resolvePdaSeedValue(seedValueNode.value, ctx, [...pdaPath, seedNode]);
     });
 }
 
@@ -68,15 +69,14 @@ async function resolvePdaProgramAddress(
     programId: NonNullable<PdaValueNode['programId']>,
     ctx: ResolutionContext,
     accountName: IdentifierString,
+    pdaPath: NodePath<PdaNode>,
 ): Promise<Address> {
     if (isNode(programId, 'dataValueNode')) {
-        return toAddressOrThrow(getRequiredDataValue(ctx, programId.path), accountName);
+        return toAddressOrThrow(await getRequiredDataValue(ctx, programId.path), accountName);
     }
     const address = await resolveAccountValueNodeAddress(programId, ctx);
     if (address === null) {
-        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, {
-            accountName: programId.identifier,
-        });
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, { path: pdaPath });
     }
     return address;
 }
@@ -107,10 +107,7 @@ export async function derivePda(
                 if (OPTIONAL_NODE_KINDS.includes(seedNode.type.kind)) {
                     return encodeValue(ctx, seedPath, seedNode.type, null);
                 }
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, {
-                    pdaName: pdaNode.identifier,
-                    seedName: seedNode.identifier,
-                });
+                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, { path: seedPath });
             }
             return encodeValue(ctx, seedPath, seedNode.type, value);
         }),

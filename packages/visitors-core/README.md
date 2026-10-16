@@ -450,7 +450,7 @@ path satisfies NodePath<AccountNode | InstructionNode>;
 
 // Display paths as strings or arrays of strings.
 nodePathToStringArray(path); // -> ['[rootNode]', '[programNode]token', '[accountNode]mint']
-nodePathToString(path); // -> "[rootNode] > [programNode]token > [accountNode]mint"
+nodePathToString(path); // -> "[programNode]token.[accountNode]mint", as error messages render paths
 ```
 
 ### `NodeStack`
@@ -773,6 +773,14 @@ Note that:
 
 This API may be used with the `recordLinkablesOnFirstVisitVisitor` to record the linkable nodes before the first node visit; as well as the `recordNodeStackVisitor` to keep track of the current node path when accessing the linkable nodes.
 
+### `getLinkablesFromNode`
+
+Records the linkable nodes of the tree under the given node, e.g. a root node, into a new `LinkableDictionary`. Entry points use it once, then pass the dictionary to the functions they compose.
+
+```ts
+const linkables = getLinkablesFromNode(rootNode);
+```
+
 ### `getRecordLinkablesVisitor`
 
 This visitor accepts a `LinkableDictionary` instance and records all linkable nodes it encounters when visiting the nodes.
@@ -780,7 +788,7 @@ This visitor accepts a `LinkableDictionary` instance and records all linkable no
 ```ts
 const linkables = new LinkableDictionary();
 visit(rootNode, getRecordLinkablesVisitor(linkables));
-// Now, all linkable nodes are recorded in the `linkables` dictionary.
+// Now, all linkable nodes are recorded in the `linkables` dictionary, as `getLinkablesFromNode(rootNode)` does.
 ```
 
 ### `recordLinkablesOnFirstVisitVisitor`
@@ -855,6 +863,47 @@ const size = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), 
 ```
 
 By default, this visitor will keep track of its own `NodeStack` but you may provide your own via the `stack` option in order to share the same `NodeStack` across multiple visitors.
+
+### `getDefinedTypeLinksVisitor`
+
+The `getDefinedTypeLinksVisitor` lists the paths of the defined types a node links to, without following these links. Links that cannot be resolved are skipped, and so are the defined types of `EnumValueNodes`, which only reference them. It powers `isDefinedTypeCyclic`.
+
+```ts
+// node = struct { value: link(amount), next: option<link(node)> }
+const stack = new NodeStack();
+stack.visitPath([root, program, node], getDefinedTypeLinksVisitor(linkables, { stack }));
+// ^ [[root, program, amount], [root, program, node]]
+```
+
+### `getHasFiniteValueVisitor`
+
+The `getHasFiniteValueVisitor` tells whether a type has at least one finite value, following links. Options, enums with another variant and collections without a fixed positive count stop a recursion, whereas a struct field or a fixed-size array linking back to its own type never does. It powers `hasDefinedTypeFiniteValue`.
+
+```ts
+// list = struct { next: option<link(list)> }, loop = struct { next: link(loop) }
+const stack = new NodeStack();
+stack.visitPath([root, program, list], getHasFiniteValueVisitor(linkables, { stack })); // true
+stack.visitPath([root, program, loop], getHasFiniteValueVisitor(linkables, { stack })); // false
+```
+
+### `isDefinedTypeCyclic`
+
+The `isDefinedTypeCyclic` helper tells whether a defined type links back to itself, directly or through other defined types, following the links recorded in a `LinkableDictionary`. The path must contain the program defining the type, since links are resolved from it.
+
+```ts
+// node = struct { value: u8, next: option<link(node)> }
+isDefinedTypeCyclic([root, program, node], linkables); // true
+```
+
+### `hasDefinedTypeFiniteValue`
+
+The `hasDefinedTypeFiniteValue` helper tells whether a defined type has at least one finite value, using the `getHasFiniteValueVisitor`. Types lack one when they are cyclic without a way out, or when they contain an enum without variants. As above, the path must contain the program defining the type.
+
+```ts
+// list = struct { next: option<link(list)> }, loop = struct { next: link(loop) }
+hasDefinedTypeFiniteValue([root, program, list], linkables); // true
+hasDefinedTypeFiniteValue([root, program, loop], linkables); // false
+```
 
 ### `getResolvedInstructionInputsVisitor`
 

@@ -1,10 +1,37 @@
-import { CodamaError } from '@codama/errors';
-import { isNode, REGISTERED_NODE_KINDS } from '@codama/nodes';
+import {
+    CODAMA_ERROR__CANNOT_RESOLVE_PATH,
+    CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
+    CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
+    CODAMA_ERROR__INVALID_TICKS_PER_SECOND,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
+    CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+    CodamaError,
+    isCodamaError,
+} from '@codama/errors';
+import {
+    accountValueNode,
+    DateTimeTypeNode,
+    DurationTypeNode,
+    getTextNodeContent,
+    InterpolatedIntentPart,
+    isNode,
+    Node,
+    parseInterpolatedIntent,
+    REGISTERED_NODE_KINDS,
+} from '@codama/nodes';
 import {
     extendVisitor,
+    findProgramNodeFromPath,
+    getLastNodeFromPath,
+    getNodePathUntilLastNode,
     getResolvedInstructionInputsVisitor,
+    hasDefinedTypeFiniteValue,
+    isDefinedTypeCyclic,
+    isNodePath,
+    isValueNodeOfType,
     LinkableDictionary,
     mergeVisitor,
+    NodePath,
     NodeStack,
     pipe,
     ProvidedScope,
@@ -12,10 +39,12 @@ import {
     recordNodeStackVisitor,
     recordProvidedScopeVisitor,
     ResolvedInstructionInput,
+    resolveTypePath,
     visit,
     Visitor,
 } from '@codama/visitors-core';
 
+import { getContextualValueItems } from './contextualValueItems';
 import { getIdentifierCollisionItems } from './identifierCollisions';
 import { ValidationItem, validationItem } from './ValidationItem';
 
@@ -34,15 +63,65 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitAccount(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Account has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Account has no identifier.', stack));
                     }
                     return [...items, ...next(node)];
+                },
+
+                visitAccountBumpValue(node, { next }) {
+                    const path = stack.getPath('accountBumpValueNode');
+                    const account = accountValueNode(node.identifier);
+                    return [...getContextualValueItems(account, path, linkables), ...next(node)];
+                },
+
+                visitAccountDataValue(node, { next }) {
+                    const path = stack.getPath('accountDataValueNode');
+                    return [...getContextualValueItems(node, path, linkables), ...next(node)];
+                },
+
+                visitAccountLink(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    if (!linkables.has(stack.getPath(node.kind))) {
+                        items.push(
+                            validationItem('error', `Pointing to a missing account named "${node.identifier}"`, stack),
+                        );
+                    }
+                    return [...items, ...next(node)];
+                },
+
+                visitAccountValue(node, { next }) {
+                    const path = stack.getPath('accountValueNode');
+                    return [...getContextualValueItems(node, path, linkables), ...next(node)];
+                },
+
+                visitDataValue(node, { next }) {
+                    const path = stack.getPath('dataValueNode');
+                    return [...getContextualValueItems(node, path, linkables), ...next(node)];
+                },
+
+                visitDateTimeType(node, { next }) {
+                    return [...getTicksPerSecondItems(stack.getPath('dateTimeTypeNode')), ...next(node)];
                 },
 
                 visitDefinedType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Defined type has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Defined type has no identifier.', stack));
+                    }
+
+                    // A cyclic type whose every value nests another one cannot be encoded or decoded. The
+                    // cyclic check matches the codecs, which only throw for links back to their own type:
+                    // an enum without variants alone is reported by its own warning. Links can only be
+                    // resolved within a program, so types outside one are skipped.
+                    const path = stack.getPath('definedTypeNode');
+                    if (
+                        findProgramNodeFromPath(path) &&
+                        isDefinedTypeCyclic(path, linkables) &&
+                        !hasDefinedTypeFiniteValue(path, linkables)
+                    ) {
+                        // Keep the error creating its codec would throw, so both report it the same way.
+                        const cause = new CodamaError(CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE, { path });
+                        items.push(validationItem('error', cause.message, stack, cause));
                     }
                     return [...items, ...next(node)];
                 },
@@ -50,15 +129,12 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitDefinedTypeLink(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(
-                            validationItem('error', 'Pointing to a defined type with no identifier.', node, stack),
-                        );
+                        items.push(validationItem('error', 'Pointing to a defined type with no identifier.', stack));
                     } else if (!linkables.has(stack.getPath(node.kind))) {
                         items.push(
                             validationItem(
                                 'error',
                                 `Pointing to a missing defined type named "${node.identifier}"`,
-                                node,
                                 stack,
                             ),
                         );
@@ -66,11 +142,15 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     return [...items, ...next(node)];
                 },
 
+                visitDurationType(node, { next }) {
+                    return [...getTicksPerSecondItems(stack.getPath('durationTypeNode')), ...next(node)];
+                },
+
                 visitEnumType(node, { next }) {
                     const items = [] as ValidationItem[];
                     const variants = node.variants ?? [];
                     if (variants.length === 0) {
-                        items.push(validationItem('warn', 'Enum has no variants.', node, stack));
+                        items.push(validationItem('warn', 'Enum has no variants.', stack));
                     }
                     items.push(...getIdentifierCollisionItems(variants, 'Enum variant', '', stack));
                     return [...items, ...next(node)];
@@ -79,7 +159,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitEnumVariantType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Enum variant has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Enum variant has no identifier.', stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -87,13 +167,67 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitError(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Error has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Error has no identifier.', stack));
                     }
                     if (typeof node.code !== 'number') {
-                        items.push(validationItem('error', 'Error has no code.', node, stack));
+                        items.push(validationItem('error', 'Error has no code.', stack));
                     }
                     if (!node.message) {
-                        items.push(validationItem('warn', 'Error has no message.', node, stack));
+                        items.push(validationItem('warn', 'Error has no message.', stack));
+                    }
+                    return [...items, ...next(node)];
+                },
+
+                visitFieldDiscriminator(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    const path = stack.getPath('fieldDiscriminatorNode');
+                    const ownerPath = getNodePathUntilLastNode(path, ['accountNode', 'eventNode', 'instructionNode']);
+                    if (!ownerPath) return next(node);
+                    const owner = getLastNodeFromPath(ownerPath);
+                    if (!owner.data) {
+                        items.push(
+                            validationItem(
+                                'error',
+                                `Field discriminator path "${node.path}" cannot be resolved as there is no data.`,
+                                stack,
+                            ),
+                        );
+                    } else {
+                        try {
+                            // Identification only reads the bytes being identified, so account links are not followed.
+                            const resolved = resolveTypePath([...ownerPath, owner.data], node.path, linkables);
+                            if (!isNodePath(resolved, 'structFieldTypeNode')) {
+                                const message = `Field discriminator path "${node.path}" must point to a struct field.`;
+                                items.push(validationItem('error', message, stack));
+                            }
+                        } catch (error) {
+                            if (isCodamaError(error, CODAMA_ERROR__CANNOT_RESOLVE_PATH)) {
+                                const lastNode = getLastNodeFromPath(error.context.path as NodePath<Node>);
+                                const message =
+                                    isNode(lastNode, 'publicKeyTypeNode') &&
+                                    lastNode.accountLink &&
+                                    error.context.segment === 'data'
+                                        ? `Field discriminator path "${node.path}" must not cross an account link.`
+                                        : error.message;
+                                items.push(validationItem('error', message, stack, error));
+                            } else if (!isCodamaError(error, CODAMA_ERROR__LINKED_NODE_NOT_FOUND)) {
+                                throw error;
+                            }
+                        }
+                    }
+                    return [...items, ...next(node)];
+                },
+
+                visitFixedPointType(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    if (!Number.isSafeInteger(node.scale) || node.scale <= 0) {
+                        items.push(
+                            validationItem(
+                                'error',
+                                `Fixed-point scale must be a positive integer, got ${node.scale}.`,
+                                stack,
+                            ),
+                        );
                     }
                     return [...items, ...next(node)];
                 },
@@ -103,11 +237,12 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     // Only injections consumed within an instruction have a
                     // known final context to resolve against. Injections
                     // within a provided node or another injection's fallback
-                    // are resolved as part of the value that consumes them.
+                    // are resolved as part of the value that consumes them,
+                    // and value labels report injections on their own.
                     const ancestors = stack.getPath().slice(0, -1);
                     const isWithinInstruction = ancestors.some(ancestor => isNode(ancestor, 'instructionNode'));
                     const isNested = ancestors.some(ancestor =>
-                        isNode(ancestor, ['providedNode', 'injectedValueNode']),
+                        isNode(ancestor, ['providedNode', 'injectedValueNode', 'valueLabelDisplayNode']),
                     );
                     if (isWithinInstruction && !isNested) {
                         if (scope.resolve(node, { kinds: REGISTERED_NODE_KINDS }) === undefined) {
@@ -115,7 +250,6 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                                 validationItem(
                                     'error',
                                     `Injected value "${node.key}" is not provided and has no fallback.`,
-                                    node,
                                     stack,
                                 ),
                             );
@@ -127,11 +261,16 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitInstruction(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Instruction has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Instruction has no identifier.', stack));
                     }
                     (node.accounts ?? []).forEach(account => {
                         if (!account.identifier) {
-                            items.push(validationItem('error', 'Instruction account has no identifier.', node, stack));
+                            items.push(
+                                validationItem('error', 'Instruction account has no identifier.', [
+                                    ...stack.getPath(),
+                                    account,
+                                ]),
+                            );
                         }
                     });
 
@@ -163,8 +302,23 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     try {
                         inputs = visit(node, resolverVisitor);
                     } catch (error) {
-                        if (!(error instanceof CodamaError)) throw error;
-                        items.push(validationItem('error', error.message, node, stack));
+                        if (!isCodamaError(error)) throw error;
+                        // Invalid dependencies are reported by the contextual values they stem from, e.g. an
+                        // unknown account or an unresolvable data path, so they are not reported twice.
+                        // A value provided by a parent instruction is validated in the parent's context, so an
+                        // injection that is only invalid in a sub-instruction is not reported. Sub-instructions
+                        // are expected to go in v3, so this case is deliberately left uncovered.
+                        const isReportedByDependency =
+                            isCodamaError(
+                                error,
+                                CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+                            ) &&
+                            getContextualValueItems(
+                                error.context.dependency,
+                                stack.getPath('instructionNode'),
+                                linkables,
+                            ).length > 0;
+                        if (!isReportedByDependency) items.push(validationItem('error', error.message, stack, error));
                     }
 
                     // A bump can only be derived from an account that is not a signer.
@@ -178,13 +332,30 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                                     'error',
                                     `Data field "${input.path}" cannot default to the bump of the "${bumpAccount}" ` +
                                         'account as it may be a signer.',
-                                    node,
                                     stack,
                                 ),
                             );
                         }
                     });
 
+                    return [...items, ...next(node)];
+                },
+
+                visitInstructionDisplay(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    const path = stack.getPath('instructionDisplayNode');
+                    let parts: InterpolatedIntentPart[] = [];
+                    try {
+                        parts = node.interpolatedIntent
+                            ? parseInterpolatedIntent(getTextNodeContent(node.interpolatedIntent))
+                            : [];
+                    } catch (error) {
+                        if (!isCodamaError(error, CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER)) throw error;
+                        items.push(validationItem('error', error.message, stack, error));
+                    }
+                    parts.forEach(part => {
+                        if (typeof part !== 'string') items.push(...getContextualValueItems(part, path, linkables));
+                    });
                     return [...items, ...next(node)];
                 },
 
@@ -197,13 +368,13 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitProgram(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Program has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Program has no identifier.', stack));
                     }
                     if (!node.publicKey) {
-                        items.push(validationItem('error', 'Program has no public key.', node, stack));
+                        items.push(validationItem('error', 'Program has no public key.', stack));
                     }
                     if (!node.version) {
-                        items.push(validationItem('warn', 'Program has no version.', node, stack));
+                        items.push(validationItem('warn', 'Program has no version.', stack));
                     }
 
                     // Check for identifier collisions within each collection of the program.
@@ -228,7 +399,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitStructFieldType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
-                        items.push(validationItem('error', 'Struct field has no identifier.', node, stack));
+                        items.push(validationItem('error', 'Struct field has no identifier.', stack));
                     }
                     return [...items, ...next(node)];
                 },
@@ -244,12 +415,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     const items = [] as ValidationItem[];
                     if ((node.plugins ?? []).length === 0) {
                         items.push(
-                            validationItem(
-                                'info',
-                                'Text node has no plugins; use a plain string instead.',
-                                node,
-                                stack,
-                            ),
+                            validationItem('info', 'Text node has no plugins; use a plain string instead.', stack),
                         );
                     }
                     return [...items, ...next(node)];
@@ -258,7 +424,29 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 visitTupleType(node, { next }) {
                     const items = [] as ValidationItem[];
                     if ((node.items ?? []).length === 0) {
-                        items.push(validationItem('warn', 'Tuple has no items.', node, stack));
+                        items.push(validationItem('warn', 'Tuple has no items.', stack));
+                    }
+                    return [...items, ...next(node)];
+                },
+
+                visitValueLabelDisplay(node, { next }) {
+                    const items = [] as ValidationItem[];
+                    const fieldPath = getNodePathUntilLastNode(stack.getPath(), 'structFieldTypeNode');
+                    if (fieldPath && isNode(node.value, ['injectedValueNode', 'constantValueNode'])) {
+                        const kind = isNode(node.value, 'injectedValueNode') ? 'an injected' : 'a constant';
+                        items.push(
+                            validationItem('error', `Value labels must be concrete values, got ${kind} value.`, stack),
+                        );
+                    } else if (fieldPath) {
+                        const field = getLastNodeFromPath(fieldPath);
+                        try {
+                            if (!isValueNodeOfType(node.value, [...fieldPath, field.type], linkables)) {
+                                const message = `Value label does not match the type of field "${field.identifier}".`;
+                                items.push(validationItem('error', message, stack));
+                            }
+                        } catch (error) {
+                            if (!isCodamaError(error, CODAMA_ERROR__LINKED_NODE_NOT_FOUND)) throw error;
+                        }
                     }
                     return [...items, ...next(node)];
                 },
@@ -271,4 +459,13 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
         v => recordProvidedScopeVisitor(v, scope),
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
+}
+
+/** The items of a date-time or duration whose `ticksPerSecond` is not a positive integer. */
+function getTicksPerSecondItems(path: NodePath<DateTimeTypeNode | DurationTypeNode>): ValidationItem[] {
+    const { ticksPerSecond } = getLastNodeFromPath(path);
+    if (ticksPerSecond === undefined || (Number.isSafeInteger(ticksPerSecond) && ticksPerSecond > 0)) return [];
+    // Keep the error formatting it would throw, so both report it the same way.
+    const cause = new CodamaError(CODAMA_ERROR__INVALID_TICKS_PER_SECOND, { path, ticksPerSecond });
+    return [validationItem('error', cause.message, path, cause)];
 }

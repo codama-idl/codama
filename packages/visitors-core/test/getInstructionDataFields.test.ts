@@ -11,7 +11,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getInstructionDataFields, getRecordLinkablesVisitor, LinkableDictionary, visit } from '../src';
+import { getInstructionDataFields, getLinkablesFromNode } from '../src';
 
 test('it lists nested data fields with their paths, following links', () => {
     // Given an instruction whose data nests an inline struct and a linked struct.
@@ -37,8 +37,7 @@ test('it lists nested data fields with their paths, following links', () => {
         instructions: [instruction],
         publicKey: '1111',
     });
-    const linkables = new LinkableDictionary();
-    visit(program, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(program);
 
     // When we list its data fields.
     const paths = getInstructionDataFields([program, instruction], linkables).map(({ path }) => path);
@@ -47,7 +46,7 @@ test('it lists nested data fields with their paths, following links', () => {
     expect(paths).toStrictEqual(['amount', 'config', 'config.fee', 'extra', 'extra.flag']);
 });
 
-test('it follows each defined type at most once', () => {
+test('it does not follow cycles', () => {
     // Given an instruction whose data is a self-referencing defined type.
     const instruction = instructionNode({ data: definedTypeLinkNode('node'), identifier: 'myInstruction' });
     const program = programNode({
@@ -61,11 +60,41 @@ test('it follows each defined type at most once', () => {
         instructions: [instruction],
         publicKey: '1111',
     });
-    const linkables = new LinkableDictionary();
-    visit(program, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(program);
 
     // When we list its data fields, then the cycle is not followed.
     expect(getInstructionDataFields([program, instruction], linkables).map(({ path }) => path)).toStrictEqual(['next']);
+});
+
+test('it follows a defined type once per branch', () => {
+    // Given sibling fields linking to the same defined type.
+    const instruction = instructionNode({
+        data: structTypeNode([
+            structFieldTypeNode({ identifier: 'a', type: definedTypeLinkNode('config') }),
+            structFieldTypeNode({ identifier: 'b', type: definedTypeLinkNode('config') }),
+        ]),
+        identifier: 'myInstruction',
+    });
+    const program = programNode({
+        definedTypes: [
+            definedTypeNode({
+                identifier: 'config',
+                type: structTypeNode([structFieldTypeNode({ identifier: 'fee', type: integerTypeNode('u16') })]),
+            }),
+        ],
+        identifier: 'myProgram',
+        instructions: [instruction],
+        publicKey: '1111',
+    });
+    const linkables = getLinkablesFromNode(program);
+
+    // When we list its data fields, then both siblings are expanded.
+    expect(getInstructionDataFields([program, instruction], linkables).map(({ path }) => path)).toStrictEqual([
+        'a',
+        'a.fee',
+        'b',
+        'b.fee',
+    ]);
 });
 
 test('it follows same-named defined types from different programs', () => {
@@ -98,8 +127,7 @@ test('it follows same-named defined types from different programs', () => {
         publicKey: '2222',
     });
     const root = rootNode(programA, { additionalPrograms: [programB] });
-    const linkables = new LinkableDictionary();
-    visit(root, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(root);
 
     // When we list its data fields, then the fields of both types are listed.
     expect(getInstructionDataFields([root, programA, instruction], linkables).map(({ path }) => path)).toStrictEqual([

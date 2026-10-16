@@ -6,15 +6,20 @@
 import { CodamaErrorCode } from './codes';
 import { encodeContextObject } from './context';
 import { CodamaErrorMessages } from './messages';
+import { formatContextPath } from './node-path';
 
 export function getHumanReadableErrorMessage<TErrorCode extends CodamaErrorCode>(
     code: TErrorCode,
     context: object = {},
 ): string {
     const messageFormatString = CodamaErrorMessages[code];
-    const message = messageFormatString.replace(/(?<!\\)\$(\w+)/g, (substring, variableName) =>
-        variableName in context ? `${context[variableName as keyof typeof context] as string}` : substring,
-    );
+    const message = messageFormatString.replace(/(?<!\\)\$(\w+)/g, (substring, variableName: string) => {
+        if (!(variableName in context)) return substring;
+        const value: unknown = context[variableName as keyof typeof context];
+        // Node paths render as node selectors, e.g. `[programNode]token.[accountNode]mint`.
+        if (variableName === 'path') return formatContextPath(value);
+        return `${value as string}`;
+    });
     return message;
 }
 

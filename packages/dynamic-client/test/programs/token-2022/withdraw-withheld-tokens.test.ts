@@ -35,8 +35,8 @@ describe('Token 2022 Program: withdrawWithheldTokens', () => {
 
         // Harvest fees from destination to mint
         const harvestIx = await token2022Client.methods
-            .harvestWithheldTokensToMint({ sources: [destination] })
-            .accounts({ mint })
+            .harvestWithheldTokensToMint()
+            .accounts({ mint, sources: [destination] })
             .instruction();
         await ctx.sendInstruction(harvestIx, [payer]);
 
@@ -75,8 +75,8 @@ describe('Token 2022 Program: withdrawWithheldTokens', () => {
 
         // Withdraw directly from accounts
         const withdrawIx = await token2022Client.methods
-            .withdrawWithheldTokensFromAccounts({ numTokenAccounts: 1, sources: [destination] })
-            .accounts({ feeReceiver, mint, withdrawWithheldAuthority: withdrawAuthority })
+            .withdrawWithheldTokensFromAccounts({ numTokenAccounts: 1 })
+            .accounts({ feeReceiver, mint, sources: [destination], withdrawWithheldAuthority: withdrawAuthority })
             .signers(['withdrawWithheldAuthority'])
             .instruction();
         await ctx.sendInstruction(withdrawIx, [payer, withdrawAuthority]);

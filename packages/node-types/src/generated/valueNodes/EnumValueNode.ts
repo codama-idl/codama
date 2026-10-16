@@ -1,12 +1,12 @@
 import type { IdentifierString } from '../../brands';
 import type { DefinedTypeLinkNode } from '../linkNodes/DefinedTypeLinkNode';
 import type { PluginNode } from '../PluginNode';
-import type { EnumValuePayload } from './EnumValuePayload';
+import type { ValueNode } from './ValueNode';
 
 /** A concrete value of a defined enum: a variant identifier plus an optional payload. */
 export interface EnumValueNode<
     TEnum extends DefinedTypeLinkNode = DefinedTypeLinkNode,
-    TValue extends EnumValuePayload | undefined = EnumValuePayload | undefined,
+    TValue extends ValueNode | undefined = ValueNode | undefined,
     TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'enumValueNode';
@@ -22,13 +22,10 @@ export interface EnumValueNode<
      */
     readonly enum: TEnum;
     /**
-     * The variant payload — a struct value for struct variants or a tuple value for tuple variants.
-     * Omitted for unit variants.
+     * The value of the variant's `data` — any value node matching its type, e.g. a struct value for a struct payload or an integer value for an integer payload.
+     * Omitted for variants without data.
      */
     readonly value?: TValue;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

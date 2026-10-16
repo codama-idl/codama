@@ -1,10 +1,17 @@
-import { CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, CodamaError } from '@codama/errors';
-import { getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
+import {
+    CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING,
+    CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
+    CodamaError,
+} from '@codama/errors';
+import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { getU32Encoder, getUtf8Encoder } from '@solana/codecs';
 import {
     constantPdaSeedNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     integerTypeNode,
     integerValueNode,
+    LinkableDictionary,
     pdaNode,
     programIdValueNode,
     programNode,
@@ -50,6 +57,35 @@ describe('resolveStandalonePda', () => {
         expect(await resolveStandalonePda({ path: getPdaPath(pda) })).toEqual(expected);
     });
 
+    test('it encodes seeds of linked types', async () => {
+        // Given a seed whose type is a defined type of the program.
+        const pda = pdaNode({
+            identifier: 'counter',
+            seeds: [variablePdaSeedNode('count', definedTypeLinkNode('count'))],
+        });
+        const count = definedTypeNode({ identifier: 'count', type: integerTypeNode('u32') });
+        const root = rootNode(
+            programNode({ definedTypes: [count], identifier: 'test', pdas: [pda], publicKey: PROGRAM_ADDRESS }),
+        );
+        const path = [root, root.program, pda] as const;
+
+        // Then it is encoded using the linked type.
+        const expected = await getProgramDerivedAddress({
+            programAddress: PROGRAM_ADDRESS,
+            seeds: [getU32Encoder().encode(42)],
+        });
+        expect(await resolveStandalonePda({ path, seedsInput: { count: 42 } })).toEqual(expected);
+
+        // And given linkables are used rather than recorded again.
+        await expect(
+            resolveStandalonePda({ linkables: new LinkableDictionary(), path, seedsInput: { count: 42 } }),
+        ).rejects.toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ __code: CODAMA_ERROR__LINKED_NODE_NOT_FOUND }),
+            }),
+        );
+    });
+
     test('it derives PDAs from variable seeds', async () => {
         const pda = pdaNode({
             identifier: 'test',
@@ -86,10 +122,50 @@ describe('resolveStandalonePda', () => {
         await expect(resolveStandalonePda({ path: getPdaPath(pda) })).rejects.toThrow(
             expect.objectContaining({
                 context: new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING, {
-                    pdaName: pda.identifier,
-                    seedName: pda.seeds![0].identifier,
+                    path: [...getPdaPath(pda), pda.seeds![0]],
                 }).context,
             }),
         );
+    });
+
+    describe('program address', () => {
+        const pdaSeeds = [
+            constantPdaSeedNode(stringTypeNode('utf8'), stringValueNode('vault')),
+            constantPdaSeedNode(publicKeyTypeNode(), programIdValueNode()),
+        ];
+
+        async function deriveFrom(programAddress: Address) {
+            return await getProgramDerivedAddress({
+                programAddress,
+                seeds: [getUtf8Encoder().encode('vault'), getAddressEncoder().encode(programAddress)],
+            });
+        }
+
+        test('it derives PDAs from the program defining them by default', async () => {
+            const pda = pdaNode({ identifier: 'vault', seeds: pdaSeeds });
+            expect(await resolveStandalonePda({ path: getPdaPath(pda) })).toEqual(await deriveFrom(PROGRAM_ADDRESS));
+        });
+
+        test('it derives PDAs from their own programId', async () => {
+            const pdaProgram = await generateAddress();
+            const pda = pdaNode({ identifier: 'vault', programId: pdaProgram, seeds: pdaSeeds });
+            expect(await resolveStandalonePda({ path: getPdaPath(pda) })).toEqual(await deriveFrom(pdaProgram));
+        });
+
+        test('it derives PDAs from the given programId over the one of the PDA', async () => {
+            const [pdaProgram, givenProgram] = await Promise.all([generateAddress(), generateAddress()]);
+            const pda = pdaNode({ identifier: 'vault', programId: pdaProgram, seeds: pdaSeeds });
+            expect(await resolveStandalonePda({ path: getPdaPath(pda), programId: givenProgram })).toEqual(
+                await deriveFrom(givenProgram),
+            );
+        });
+
+        test('it accepts the given programId as a base58 string', async () => {
+            const givenProgram = await generateAddress();
+            const pda = pdaNode({ identifier: 'vault', seeds: pdaSeeds });
+            expect(await resolveStandalonePda({ path: getPdaPath(pda), programId: `${givenProgram}` })).toEqual(
+                await deriveFrom(givenProgram),
+            );
+        });
     });
 });

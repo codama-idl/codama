@@ -49,7 +49,9 @@ describe('generatePdaTypes', () => {
         expect(typeBlock).toContain('export type ConfigSeeds');
         expect(typeBlock).toContain('authority: Address;');
         expect(typeBlock).toContain('export type MyProgramPdas');
-        expect(typeBlock).toContain('config: (seeds: ConfigSeeds) => Promise<ProgramDerivedAddress>;');
+        expect(typeBlock).toContain(
+            'config: (seeds: ConfigSeeds, options?: { programId?: Address }) => Promise<ProgramDerivedAddress>;',
+        );
     });
 
     test('should discover inline PDAs on instruction account defaults', () => {
@@ -79,7 +81,9 @@ describe('generatePdaTypes', () => {
         const { mapTypeName, typeBlock } = generatePdaTypes(root);
         expect(mapTypeName).toBe('InlineProgramPdas');
         expect(typeBlock).toContain('export type InlineSeeds');
-        expect(typeBlock).toContain('inline: (seeds: InlineSeeds) => Promise<ProgramDerivedAddress>;');
+        expect(typeBlock).toContain(
+            'inline: (seeds: InlineSeeds, options?: { programId?: Address }) => Promise<ProgramDerivedAddress>;',
+        );
     });
 
     test('should emit seedless variant for PDAs with only constant seeds', () => {
@@ -97,7 +101,9 @@ describe('generatePdaTypes', () => {
         );
         const { typeBlock } = generatePdaTypes(root);
         expect(typeBlock).not.toContain('FixedSeeds');
-        expect(typeBlock).toContain('fixed: (seeds?: Record<string, unknown>) => Promise<ProgramDerivedAddress>;');
+        expect(typeBlock).toContain(
+            'fixed: (seeds?: Record<string, unknown>, options?: { programId?: Address }) => Promise<ProgramDerivedAddress>;',
+        );
     });
 
     test('should use string seed type', () => {

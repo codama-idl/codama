@@ -1,37 +1,48 @@
-import { CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS, CodamaError } from '@codama/errors';
 import {
+    CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER,
+    CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS,
+    CodamaError,
+    isCodamaError,
+} from '@codama/errors';
+import {
+    accountBumpValueNode,
+    AccountDataValueNode,
     accountDataValueNode,
     accountLinkNode,
     AccountNode,
+    AccountValueNode,
     accountValueNode,
-    accountBumpValueNode,
     assertIsNode,
+    DataValueNode,
     dataValueNode,
     definedTypeLinkNode,
     DefinedTypeNode,
     enumValueNode,
     fieldDiscriminatorNode,
+    GetNodeFromKind,
     IdentifierString,
+    identifierString,
     instructionAccountLinkNode,
     InstructionAccountNode,
     instructionDisplayNode,
     instructionLinkNode,
     InstructionNode,
+    InterpolatedIntentPart,
     isNode,
-    identifierString,
-    GetNodeFromKind,
     Node,
     NodeKind,
+    parseInterpolatedIntent,
+    pdaLinkNode,
+    PdaNode,
+    printInterpolatedIntent,
+    programLinkNode,
+    ProgramNode,
     structFieldTypeNode,
     StructFieldTypeNodeInput,
     structTypeNode,
-    tupleTypeNode,
-    pdaLinkNode,
-    PdaNode,
-    programLinkNode,
-    ProgramNode,
     TextNode,
     textNode,
+    tupleTypeNode,
     TypeNode,
     ValueNode,
 } from '@codama/nodes';
@@ -286,6 +297,35 @@ function getRenameReferencesTransformers(
 ): BottomUpNodeTransformerWithSelector[] {
     const resolvePaths = createPathResolver(renames, linkables);
 
+    /** Repoint an `accountValueNode` within `path` to its renamed instruction account. */
+    const renameAccountValue = (node: AccountValueNode, path: NodePath): AccountValueNode => {
+        const newIdentifier = getInstructionAccountRename(path, node.identifier, renames);
+        return newIdentifier ? accountValueNode(newIdentifier, { ...node }) : node;
+    };
+
+    /** Repoint the path of a `dataValueNode` within `path` to the renamed fields of its instruction data. */
+    const renameDataValue = (node: DataValueNode, path: NodePath): DataValueNode => {
+        const instructionPath = getNodePathUntilLastNode(path, 'instructionNode');
+        if (!instructionPath) return node;
+        const newPath = resolvePaths.fromInstruction(node.path, instructionPath);
+        return newPath === node.path ? node : dataValueNode(newPath, { ...node });
+    };
+
+    /** Repoint an `accountDataValueNode` within `path` to its renamed instruction account and account fields. */
+    const renameAccountDataValue = (node: AccountDataValueNode, path: NodePath): AccountDataValueNode => {
+        const newAccount = getInstructionAccountRename(path, node.account, renames);
+        const instructionPath = getNodePathUntilLastNode(path, 'instructionNode');
+        const account = instructionPath
+            ? getLastNodeFromPath(instructionPath).accounts?.find(a => a.identifier === node.account)
+            : undefined;
+        const newPath =
+            node.path && instructionPath && account
+                ? resolvePaths.fromInstructionAccount(node.path, instructionPath, account)
+                : node.path;
+        if (!newAccount && newPath === node.path) return node;
+        return accountDataValueNode(newAccount ?? node.account, { ...node, path: newPath });
+    };
+
     return [
         {
             select: '[programLinkNode]',
@@ -348,38 +388,23 @@ function getRenameReferencesTransformers(
             select: '[accountValueNode|accountBumpValueNode]',
             transform: (node, stack) => {
                 assertIsNode(node, ['accountValueNode', 'accountBumpValueNode']);
+                if (isNode(node, 'accountValueNode')) return renameAccountValue(node, stack.getPath());
                 const newIdentifier = getInstructionAccountRename(stack.getPath(), node.identifier, renames);
-                if (!newIdentifier) return node;
-                return isNode(node, 'accountValueNode')
-                    ? accountValueNode(newIdentifier, { ...node })
-                    : accountBumpValueNode(newIdentifier, { ...node });
+                return newIdentifier ? accountBumpValueNode(newIdentifier, { ...node }) : node;
             },
         },
         {
             select: '[dataValueNode]',
             transform: (node, stack) => {
                 assertIsNode(node, 'dataValueNode');
-                const instructionPath = getNodePathUntilLastNode(stack.getPath(), 'instructionNode');
-                if (!instructionPath) return node;
-                const path = resolvePaths.fromInstruction(node.path, instructionPath);
-                return path === node.path ? node : dataValueNode(path, { ...node });
+                return renameDataValue(node, stack.getPath());
             },
         },
         {
             select: '[accountDataValueNode]',
             transform: (node, stack) => {
                 assertIsNode(node, 'accountDataValueNode');
-                const newAccount = getInstructionAccountRename(stack.getPath(), node.account, renames);
-                const instructionPath = getNodePathUntilLastNode(stack.getPath(), 'instructionNode');
-                const account = instructionPath
-                    ? getLastNodeFromPath(instructionPath).accounts?.find(a => a.identifier === node.account)
-                    : undefined;
-                const path =
-                    node.path && instructionPath && account
-                        ? resolvePaths.fromInstructionAccount(node.path, instructionPath, account)
-                        : node.path;
-                if (!newAccount && path === node.path) return node;
-                return accountDataValueNode(newAccount ?? node.account, { ...node, path });
+                return renameAccountDataValue(node, stack.getPath());
             },
         },
         {
@@ -402,21 +427,24 @@ function getRenameReferencesTransformers(
                 assertIsNode(node, 'instructionDisplayNode');
                 const instructionPath = getNodePathUntilLastNode(stack.getPath(), 'instructionNode');
                 if (!instructionPath || node.interpolatedIntent === undefined) return node;
-                const renameIntent = (intent: string): string =>
-                    intent.replace(
-                        /\$\{(data|accounts)((?:\.[A-Za-z_][A-Za-z0-9_]*|\[(?:0|[1-9][0-9]*)\])*)\}/g,
-                        (placeholder: string, root: string, rest: string) => {
-                            if (root === 'accounts') {
-                                const account = rest.slice(1);
-                                const newAccount = getInstructionAccountRename(instructionPath, account, renames);
-                                return newAccount ? `\${accounts.${newAccount}}` : placeholder;
-                            }
-                            const path = rest.startsWith('.') ? rest.slice(1) : rest;
-                            const newPath = resolvePaths.fromInstruction(path, instructionPath);
-                            if (newPath === path) return placeholder;
-                            return `\${data${newPath.startsWith('[') ? '' : '.'}${newPath}}`;
-                        },
-                    );
+                // Placeholders are renamed as the contextual values they are equivalent to. Invalid
+                // intents are kept as they are, for validators to report.
+                const renameIntent = (intent: string): string => {
+                    let parts: InterpolatedIntentPart[];
+                    try {
+                        parts = parseInterpolatedIntent(intent);
+                    } catch (error) {
+                        if (isCodamaError(error, CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER)) return intent;
+                        throw error;
+                    }
+                    const newParts = parts.map(part => {
+                        if (typeof part === 'string') return part;
+                        if (isNode(part, 'dataValueNode')) return renameDataValue(part, instructionPath);
+                        if (isNode(part, 'accountValueNode')) return renameAccountValue(part, instructionPath);
+                        return renameAccountDataValue(part, instructionPath);
+                    });
+                    return newParts.every((part, i) => part === parts[i]) ? intent : printInterpolatedIntent(newParts);
+                };
                 const intent = node.interpolatedIntent;
                 const newIntent: string | TextNode =
                     typeof intent === 'string'
@@ -478,7 +506,9 @@ type PathOwner =
 /**
  * Rewrite path expressions (e.g. `config.fee`) whose segments point to
  * renamed struct fields, walking the original types from the path's root
- * and following defined type links.
+ * and following defined type links. Paths reading account state, i.e. data
+ * and account data paths, also follow account links with a `.data` segment,
+ * e.g. `mint.data.decimals`.
  */
 function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) {
     const getFieldRename = (owner: PathOwner, prefix: string, identifier: string): IdentifierString | undefined => {
@@ -494,7 +524,13 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
         }
     };
 
-    const rewrite = (path: string, root: TypeNode | undefined, rootOwner: PathOwner, rootContext: NodePath): string => {
+    const rewrite = (
+        path: string,
+        root: TypeNode | undefined,
+        rootOwner: PathOwner,
+        rootContext: NodePath,
+        options: { followAccountLinks: boolean },
+    ): string => {
         const segments = parsePath(path);
         let type = root;
         let owner = rootOwner;
@@ -518,6 +554,20 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
                 type = definedType.type;
             }
             if (!type) break;
+
+            // A `.data` segment on a linked public key enters the data of its account, e.g. `mint.data.decimals`.
+            if (isNode(type, 'publicKeyTypeNode')) {
+                const entersData = segment.kind === 'field' && segment.identifier === 'data';
+                if (!options.followAccountLinks || !entersData || !type.accountLink) break;
+                const accountPath = linkables.getPath([...context, type.accountLink]);
+                if (!accountPath) break;
+                followedDefinedTypes.clear();
+                owner = { kind: 'account', path: accountPath };
+                context = accountPath;
+                prefix = '';
+                type = getLastNodeFromPath(accountPath).data;
+                continue;
+            }
 
             if (segment.kind === 'field') {
                 if (!isNode(type, 'structTypeNode')) break;
@@ -543,7 +593,9 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
     return {
         fromInstruction(path: string, instructionPath: NodePath<InstructionNode>): string {
             const instruction = getLastNodeFromPath(instructionPath);
-            return rewrite(path, instruction.data, { kind: 'instruction', path: instructionPath }, instructionPath);
+            return rewrite(path, instruction.data, { kind: 'instruction', path: instructionPath }, instructionPath, {
+                followAccountLinks: true,
+            });
         },
         fromInstructionAccount(
             path: string,
@@ -554,23 +606,28 @@ function createPathResolver(renames: RenamePlan, linkables: LinkableDictionary) 
             const accountPath = linkables.getPath([...instructionPath, instructionAccount.accountLink]);
             if (!accountPath) return path;
             const account = getLastNodeFromPath(accountPath);
-            return rewrite(path, account.data, { kind: 'account', path: accountPath }, accountPath);
+            return rewrite(path, account.data, { kind: 'account', path: accountPath }, accountPath, {
+                followAccountLinks: true,
+            });
         },
+        /** Field discriminators never cross account links: they only read the bytes they identify. */
         fromOwner(path: string, ownerPath: NodePath<Node>): string {
+            const options = { followAccountLinks: false };
             if (isNodePath(ownerPath, 'accountNode')) {
                 return rewrite(
                     path,
                     getLastNodeFromPath(ownerPath).data,
                     { kind: 'account', path: ownerPath },
                     ownerPath,
+                    options,
                 );
             }
             if (isNodePath(ownerPath, 'instructionNode')) {
                 const instruction = getLastNodeFromPath(ownerPath);
-                return rewrite(path, instruction.data, { kind: 'instruction', path: ownerPath }, ownerPath);
+                return rewrite(path, instruction.data, { kind: 'instruction', path: ownerPath }, ownerPath, options);
             }
             if (isNodePath(ownerPath, 'eventNode')) {
-                return rewrite(path, getLastNodeFromPath(ownerPath).data, { kind: 'none' }, ownerPath);
+                return rewrite(path, getLastNodeFromPath(ownerPath).data, { kind: 'none' }, ownerPath, options);
             }
             return path;
         },

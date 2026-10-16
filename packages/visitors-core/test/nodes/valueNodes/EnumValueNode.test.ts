@@ -49,3 +49,20 @@ enumValueNode [person]
 |   |   |   integerValueNode [42]`,
     );
 });
+
+test('non-struct payloads', () => {
+    const nodeWithInteger = enumValueNode(definedTypeLinkNode('operation'), 'amount', {
+        value: integerValueNode('42'),
+    });
+
+    expectMergeVisitorCount(nodeWithInteger, 3);
+    expectIdentityVisitor(nodeWithInteger);
+    expectDeleteNodesVisitor(nodeWithInteger, '[integerValueNode]', enumValueNode(nodeWithInteger.enum, 'amount'));
+    expectDebugStringVisitor(
+        nodeWithInteger,
+        `
+enumValueNode [amount]
+|   definedTypeLinkNode [operation]
+|   integerValueNode [42]`,
+    );
+});

@@ -1,0 +1,349 @@
+{
+    "kind": "rootNode",
+    "standard": "codama",
+    "version": "1.7.0",
+    "program": {
+        "kind": "programNode",
+        "name": "token-2022",
+        "publicKey": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "version": "3.0.0",
+        "docs": [],
+        "definedTypes": [
+            {
+                "kind": "definedTypeNode",
+                "name": "tokenStandard",
+                "docs": [],
+                "type": {
+                    "kind": "enumTypeNode",
+                    "size": {
+                        "kind": "numberTypeNode",
+                        "format": "u8",
+                        "endian": "le"
+                    },
+                    "variants": [
+                        {
+                            "kind": "enumEmptyVariantTypeNode",
+                            "name": "fungible"
+                        },
+                        {
+                            "kind": "enumEmptyVariantTypeNode",
+                            "name": "programmable"
+                        }
+                    ]
+                }
+            }
+        ],
+        "accounts": [],
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "name": "recordPda",
+                "docs": [],
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": {
+                            "kind": "stringTypeNode",
+                            "encoding": "utf8"
+                        },
+                        "value": {
+                            "kind": "stringValueNode",
+                            "string": "record"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "fee-vault",
+                        "docs": [],
+                        "type": {
+                            "kind": "publicKeyTypeNode"
+                        }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "fee-rate",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u16",
+                            "endian": "le"
+                        }
+                    }
+                ]
+            }
+        ],
+        "errors": [],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "name": "burn",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "mint",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "destination",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveDestination",
+                            "docs": ["Finds where the refund goes."],
+                            "dependsOn": [
+                                {
+                                    "kind": "accountValueNode",
+                                    "name": "mint"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "edition",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "conditionalValueNode",
+                            "condition": {
+                                "kind": "resolverValueNode",
+                                "name": "resolveIsNonFungible",
+                                "docs": [],
+                                "dependsOn": [
+                                    {
+                                        "kind": "accountValueNode",
+                                        "name": "mint"
+                                    }
+                                ]
+                            },
+                            "ifTrue": {
+                                "kind": "accountValueNode",
+                                "name": "mint"
+                            }
+                        }
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "tokenRecord",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "conditionalValueNode",
+                            "condition": {
+                                "kind": "argumentValueNode",
+                                "name": "tokenStandard"
+                            },
+                            "value": {
+                                "kind": "enumValueNode",
+                                "enum": {
+                                    "kind": "definedTypeLinkNode",
+                                    "name": "tokenStandard"
+                                },
+                                "variant": "programmable"
+                            },
+                            "ifTrue": {
+                                "kind": "accountValueNode",
+                                "name": "mint"
+                            }
+                        }
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "discriminator",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u8",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "numberValueNode",
+                            "number": 8
+                        },
+                        "defaultValueStrategy": "omitted"
+                    },
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "amount",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u64",
+                            "endian": "le"
+                        },
+                        "defaultValue": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveBurnAmount",
+                            "docs": [],
+                            "dependsOn": [
+                                {
+                                    "kind": "argumentValueNode",
+                                    "name": "tokenStandard"
+                                }
+                            ]
+                        },
+                        "defaultValueStrategy": "omitted"
+                    }
+                ],
+                "extraArguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "tokenStandard",
+                        "docs": ["The standard of the token."],
+                        "type": {
+                            "kind": "definedTypeLinkNode",
+                            "name": "tokenStandard"
+                        },
+                        "defaultValue": {
+                            "kind": "enumValueNode",
+                            "enum": {
+                                "kind": "definedTypeLinkNode",
+                                "name": "tokenStandard"
+                            },
+                            "variant": "fungible"
+                        },
+                        "defaultValueStrategy": "optional"
+                    }
+                ],
+                "remainingAccounts": [
+                    {
+                        "kind": "instructionRemainingAccountsNode",
+                        "isWritable": true,
+                        "docs": [],
+                        "value": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveHookAccounts",
+                            "docs": []
+                        }
+                    }
+                ],
+                "byteDeltas": [
+                    {
+                        "kind": "instructionByteDeltaNode",
+                        "withHeader": false,
+                        "subtract": true,
+                        "value": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveFreedBytes",
+                            "docs": []
+                        }
+                    }
+                ]
+            },
+            {
+                "kind": "instructionNode",
+                "name": "mint-to",
+                "docs": [],
+                "optionalAccountStrategy": "programId",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "fee-vault",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": []
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "remainingAccounts",
+                        "isWritable": false,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": ["An account that happens to share the default name of resolved remaining accounts."]
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "record",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": true,
+                        "docs": [],
+                        "defaultValue": {
+                            "kind": "conditionalValueNode",
+                            "condition": {
+                                "kind": "resolverValueNode",
+                                "name": "resolveHasRecord",
+                                "docs": [],
+                                "dependsOn": [
+                                    {
+                                        "kind": "accountValueNode",
+                                        "name": "fee-vault"
+                                    }
+                                ]
+                            },
+                            "ifTrue": {
+                                "kind": "pdaValueNode",
+                                "pda": {
+                                    "kind": "pdaLinkNode",
+                                    "name": "recordPda"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "arguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "fee-rate",
+                        "docs": [],
+                        "type": {
+                            "kind": "numberTypeNode",
+                            "format": "u16",
+                            "endian": "le"
+                        }
+                    }
+                ],
+                "extraArguments": [
+                    {
+                        "kind": "instructionArgumentNode",
+                        "name": "memo-text",
+                        "docs": [],
+                        "type": {
+                            "kind": "stringTypeNode",
+                            "encoding": "utf8"
+                        },
+                        "defaultValue": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveMemo",
+                            "docs": [],
+                            "dependsOn": [
+                                {
+                                    "kind": "argumentValueNode",
+                                    "name": "fee-rate"
+                                }
+                            ]
+                        },
+                        "defaultValueStrategy": "omitted"
+                    }
+                ],
+                "remainingAccounts": [
+                    {
+                        "kind": "instructionRemainingAccountsNode",
+                        "docs": [],
+                        "value": {
+                            "kind": "resolverValueNode",
+                            "name": "resolveSigners",
+                            "docs": []
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

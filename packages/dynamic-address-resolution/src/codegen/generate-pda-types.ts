@@ -4,7 +4,8 @@ import { codamaTypeToTS } from './codama-type-to-ts';
 import { collectPdaNodesFromIdl } from './collect-pda-nodes';
 
 /**
- * Generate `${Pda}Seeds` types and the aggregate `${Program}Pdas` map type.
+ * Generate `${Pda}Seeds` types and the aggregate `${Program}Pdas` map type, whose
+ * functions take an optional `programId` overriding the program deriving the PDA.
  *
  * Returns the type block with the aggregate map type name. `mapTypeName` is `null` when the program has no PDAs.
  */
@@ -40,7 +41,7 @@ export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; t
         const typeName = pascalCase(pdaName);
         const seedsParam =
             getVariableSeedNodes(pdaNode).length > 0 ? `seeds: ${typeName}Seeds` : `seeds?: Record<string, unknown>`;
-        output += `    ${pdaName}: (${seedsParam}) => Promise<ProgramDerivedAddress>;\n`;
+        output += `    ${pdaName}: (${seedsParam}, options?: { programId?: Address }) => Promise<ProgramDerivedAddress>;\n`;
     }
     output += '};\n\n';
 

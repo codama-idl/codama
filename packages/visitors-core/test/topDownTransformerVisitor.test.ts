@@ -1,8 +1,8 @@
 import {
     assertIsNode,
     definedTypeNode,
-    isNode,
     integerTypeNode,
+    isNode,
     programNode,
     publicKeyTypeNode,
     tupleTypeNode,

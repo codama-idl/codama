@@ -1,4 +1,4 @@
-import { getNodeCodec } from '@codama/dynamic-codecs';
+import { getNodeValueCodec } from '@codama/dynamic-codecs';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { getU64Encoder, type Option, unwrapOption } from '@solana/codecs';
 import type { RootNode } from 'codama';
@@ -307,12 +307,12 @@ function decodeDataAccount1(
     root: RootNode,
     data: Uint8Array,
 ): { bump: number; input: bigint; optionalInput: string | null } {
-    const accountNode = (root.program.accounts ?? []).find(a => a.name === 'dataAccount1');
+    const accountNode = (root.program.accounts ?? []).find(a => a.identifier === 'dataAccount1');
     if (!accountNode) {
         throw new Error('Could not find account node "dataAccount1" in IDL');
     }
 
-    const codec = getNodeCodec([root, root.program, accountNode]);
+    const codec = getNodeValueCodec([root, root.program, accountNode]);
     const decoded = codec.decode(Uint8Array.from(data)) as {
         bump: number;
         input: bigint;

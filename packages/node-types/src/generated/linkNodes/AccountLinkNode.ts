@@ -16,9 +16,6 @@ export interface AccountLinkNode<
     // Children.
     /** The program the referenced account belongs to. When omitted, the surrounding program is assumed. */
     readonly program?: TProgram;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

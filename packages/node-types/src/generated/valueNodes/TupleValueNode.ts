@@ -11,9 +11,6 @@ export interface TupleValueNode<
     // Children.
     /** The positional items of the tuple, in order. */
     readonly items?: TItems;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

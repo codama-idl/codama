@@ -11,9 +11,6 @@ export interface StructValueNode<
     // Children.
     /** The named fields of the struct value. */
     readonly fields?: TFields;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

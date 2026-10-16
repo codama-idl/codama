@@ -118,6 +118,30 @@ test('it does not unwrap defined type link nodes that are used in more than one 
     expect(result).toStrictEqual(node);
 });
 
+test('it does not unwrap defined types also used as instruction return data', () => {
+    // Given a type used as instruction data and as instruction return data.
+    const node = rootNode(
+        programNode({
+            definedTypes: [definedTypeNode({ identifier: 'myType', type: structA })],
+            identifier: 'MyProgram',
+            instructions: [
+                instructionNode({
+                    data: definedTypeLinkNode('myType'),
+                    identifier: 'myInstruction',
+                    returnData: definedTypeLinkNode('myType'),
+                }),
+            ],
+            publicKey: '1111',
+        }),
+    );
+
+    // When we try to unwrap defined type link nodes for instruction data.
+    const result = visit(node, unwrapInstructionDataDefinedTypesVisitor());
+
+    // Then we expect the same node.
+    expect(result).toStrictEqual(node);
+});
+
 test('it only unwraps defined type link nodes if they are used directly', () => {
     // Given a link node nested inside an array in the instruction data.
     const node = rootNode(

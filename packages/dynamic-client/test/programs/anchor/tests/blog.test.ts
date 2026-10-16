@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { getNodeCodec } from '@codama/dynamic-codecs';
+import { getNodeValueCodec } from '@codama/dynamic-codecs';
 import { type Address, getProgramDerivedAddress } from '@solana/addresses';
 import { beforeEach, describe, expect, test } from 'vitest';
 
@@ -163,7 +163,7 @@ describe('blog', () => {
             const decoded = decodeAccount('reaction', reactionPda);
             expect(decoded.post).toBe(postPda);
             expect(decoded.user).toBe(reactor);
-            expect(decoded.kind).toBe(1);
+            expect(decoded.kind).toBe(1n);
         });
 
         test('should derive distinct PDAs for different reaction kinds on the same post', async () => {
@@ -196,8 +196,8 @@ describe('blog', () => {
             const [likePda] = await programClient.pdas.reaction({ kind: 0, post: postPda, user: reactor });
             const [lovePda] = await programClient.pdas.reaction({ kind: 1, post: postPda, user: reactor });
 
-            expect(decodeAccount('reaction', likePda).kind).toBe(0);
-            expect(decodeAccount('reaction', lovePda).kind).toBe(1);
+            expect(decodeAccount('reaction', likePda).kind).toBe(0n);
+            expect(decodeAccount('reaction', lovePda).kind).toBe(1n);
         });
     });
 
@@ -225,10 +225,10 @@ describe('blog', () => {
             });
             const decoded = decodeAccount('dailyDigest', digestPda);
             expect(decoded.profile).toBe(profilePda);
-            expect(decoded.year).toBe(2026);
-            expect(decoded.month).toBe(2);
-            expect(decoded.day).toBe(25);
-            expect(decoded.postCount).toBe(0);
+            expect(decoded.year).toBe(2026n);
+            expect(decoded.month).toBe(2n);
+            expect(decoded.day).toBe(25n);
+            expect(decoded.postCount).toBe(0n);
         });
 
         test('should derive distinct PDAs for different dates', async () => {
@@ -257,9 +257,9 @@ describe('blog', () => {
             for (const date of dates) {
                 const [pda] = await programClient.pdas.dailyDigest({ profile: profilePda, ...date });
                 const decoded = decodeAccount('dailyDigest', pda);
-                expect(decoded.year).toBe(date.year);
-                expect(decoded.month).toBe(date.month);
-                expect(decoded.day).toBe(date.day);
+                expect(decoded.year).toBe(BigInt(date.year));
+                expect(decoded.month).toBe(BigInt(date.month));
+                expect(decoded.day).toBe(BigInt(date.day));
             }
         });
     });
@@ -362,10 +362,10 @@ describe('blog', () => {
     });
 
     function decodeAccount(name: string, pda: Address) {
-        const accountNode = (programClient.root.program.accounts ?? []).find(a => a.name === name);
+        const accountNode = (programClient.root.program.accounts ?? []).find(a => a.identifier === name);
         if (!accountNode) throw new Error(`Account node "${name}" not found in IDL`);
 
-        const codec = getNodeCodec([programClient.root, programClient.root.program, accountNode]);
+        const codec = getNodeValueCodec([programClient.root, programClient.root.program, accountNode]);
         const data = ctx.requireEncodedAccount(pda).data;
         return codec.decode(Uint8Array.from(data)) as Record<string, unknown>;
     }

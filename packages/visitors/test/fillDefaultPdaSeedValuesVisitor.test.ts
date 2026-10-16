@@ -19,7 +19,7 @@ import {
     structTypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
-import { getRecordLinkablesVisitor, LinkableDictionary, visit } from '@codama/visitors-core';
+import { getLinkablesFromNode, visit } from '@codama/visitors-core';
 import { expect, test } from 'vitest';
 
 import { fillDefaultPdaSeedValuesVisitor } from '../src';
@@ -43,8 +43,7 @@ const setup = (instruction: InstructionNode, extra: Partial<Parameters<typeof pr
         publicKey: '1111',
         ...extra,
     });
-    const linkables = new LinkableDictionary();
-    visit(program, getRecordLinkablesVisitor(linkables));
+    const linkables = getLinkablesFromNode(program);
     return { linkables, path: [program, instruction] as const };
 };
 

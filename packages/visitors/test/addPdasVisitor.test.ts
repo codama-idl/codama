@@ -96,8 +96,7 @@ test('it fails to add a PDA if its name conflicts with an existing PDA on the pr
     expect(fn).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
             duplicatedPdaNames: [identifierString('myPda')],
-            program: node,
-            programName: identifierString('myProgram'),
+            path: [node],
         }),
     );
 });
@@ -166,8 +165,7 @@ test('it fails to add a PDA whose identifier collides in camelCase with an exist
     expect(fn).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES, {
             duplicatedPdaNames: [identifierString('myPda')],
-            program: node,
-            programName: identifierString('myProgram'),
+            path: [node],
         }),
     );
 });

@@ -2,7 +2,7 @@ import { getU64Decoder } from '@solana/codecs';
 import { describe, expect, test } from 'vitest';
 
 import { SvmTestContext } from '../test-utils';
-import { createMint, TOKEN_2022_ACCOUNT_SIZE, token2022Client } from './token-2022-test-utils';
+import { createMint, token2022Client, TOKEN_2022_ACCOUNT_SIZE } from './token-2022-test-utils';
 
 describe('Token 2022 Program: getAccountDataSize', () => {
     test('should return the required account size for a given mint', async () => {

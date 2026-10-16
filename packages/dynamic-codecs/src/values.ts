@@ -1,6 +1,7 @@
 import { CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, CodamaError } from '@codama/errors';
-import { assertIsNode, bytesTypeNode, ValueNode, VALUE_NODE_KINDS } from '@codama/nodes';
+import { assertIsNode, bytesTypeNode, VALUE_NODE_KINDS, ValueNode } from '@codama/nodes';
 import {
+    getLastNodeFromPath,
     LinkableDictionary,
     NodeStack,
     pipe,
@@ -57,14 +58,14 @@ export function getValueNodeVisitor(
             return visit(bytesTypeNode(), codecVisitor).decode(bytes);
         },
         visitEnumValue(node) {
-            const enumType = linkables.getOrThrow([...stack.getPath(node.kind), node.enum]).type;
+            const enumPath = linkables.getPathOrThrow([...stack.getPath(node.kind), node.enum]);
+            const enumType = getLastNodeFromPath(enumPath).type;
             assertIsNode(enumType, 'enumTypeNode');
             const variants = enumType.variants ?? [];
             const variantIndex = variants.findIndex(variant => variant.identifier === node.variant);
             if (variantIndex < 0) {
                 throw new CodamaError(CODAMA_ERROR__ENUM_VARIANT_NOT_FOUND, {
-                    enum: enumType,
-                    enumName: node.enum.identifier,
+                    path: [...enumPath, enumType],
                     variant: node.variant,
                 });
             }

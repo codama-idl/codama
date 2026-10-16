@@ -87,13 +87,7 @@ export class LinkableDictionary {
         const linkablePath = this.getPath(linkPath);
 
         if (!linkablePath) {
-            const linkNode = getLastNodeFromPath(linkPath);
-            throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
-                kind: linkNode.kind,
-                linkNode,
-                name: linkNode.identifier,
-                path: linkPath,
-            });
+            throw new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, { path: linkPath });
         }
 
         return linkablePath;

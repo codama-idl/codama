@@ -47,9 +47,6 @@ export interface InstructionAccountNode<
     readonly accountLink?: TAccountLink;
     /** Display metadata describing how the account is presented. */
     readonly display?: TDisplay;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

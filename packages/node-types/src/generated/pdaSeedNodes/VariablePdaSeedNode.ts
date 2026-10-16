@@ -20,9 +20,6 @@ export interface VariablePdaSeedNode<
     readonly docs?: TDocs;
     /** The expected type of the seed value. */
     readonly type: TType;
-    /**
-     * Namespaced plugins with custom structured data.
-     * The universal extension point for renderer-specific or not-yet-standardised metadata.
-     */
+    /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }
