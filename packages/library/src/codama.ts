@@ -12,8 +12,10 @@ export interface Codama {
 }
 
 export function createFromRoot(root: RootNode): Codama {
+    assertIsNode(root, 'rootNode');
+    validateCodamaVersion(root.version);
+    assertIsNode(root.program, 'programNode');
     let currentRoot = root;
-    validateCodamaVersion(currentRoot.version);
     return {
         accept<T>(visitor: Visitor<T, 'rootNode'>): T {
             return visit(currentRoot, visitor);
