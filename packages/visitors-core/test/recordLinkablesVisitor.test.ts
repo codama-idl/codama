@@ -332,6 +332,39 @@ test('it can throw an exception when trying to retrieve a missing linked node', 
     expect(getMissingAccount).toThrow(new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, { path: [node, linkNode] }));
 });
 
+test('it forgets the linkable nodes of previously visited trees', () => {
+    // Given a first tree defining a type and a second tree linking to it without defining it.
+    const rootA = rootNode(
+        programNode({
+            definedTypes: [definedTypeNode({ identifier: 'direction', type: integerTypeNode('u8') })],
+            identifier: 'myProgram',
+            publicKey: '1111',
+        }),
+    );
+    const link = definedTypeLinkNode('direction');
+    const wrapper = definedTypeNode({ identifier: 'wrapper', type: link });
+    const rootB = rootNode(programNode({ definedTypes: [wrapper], identifier: 'myProgram', publicKey: '1111' }));
+
+    // And a reused recordLinkablesOnFirstVisitVisitor extending a visitor that resolves defined type links.
+    const linkables = new LinkableDictionary();
+    const stack = new NodeStack();
+    const baseVisitor = interceptVisitor(voidVisitor(), (node, next) => {
+        stack.push(node);
+        if (isNode(node, 'definedTypeLinkNode')) linkables.getOrThrow(stack.getPath('definedTypeLinkNode'));
+        next(node);
+        stack.pop();
+    });
+    const visitor = recordLinkablesOnFirstVisitVisitor(baseVisitor, linkables);
+    visit(rootA, visitor);
+
+    // When we visit the second tree, then the link does not resolve to the first tree's type.
+    expect(() => visit(rootB, visitor)).toThrow(
+        new CodamaError(CODAMA_ERROR__LINKED_NODE_NOT_FOUND, {
+            path: [rootB, rootB.program, wrapper, link],
+        }),
+    );
+});
+
 test('it gets the linkable nodes of the tree under a node', () => {
     // Given a root node with an additional program.
     const node = rootNode(programNode({ identifier: 'programA', publicKey: '1111' }), {

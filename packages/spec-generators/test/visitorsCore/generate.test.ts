@@ -87,6 +87,13 @@ describe('getRenderMap', () => {
         expect(entry.content).toMatch(/arrayTypeNode:\s*'typeNodes\/ArrayTypeNode'/);
     });
 
+    it('re-exports the visitors but not the test-path map from the index', () => {
+        const entry = getFromRenderMap(map, 'index.ts');
+        expect(entry.content).toContain("export * from './identityVisitor';");
+        expect(entry.content).toContain("export * from './mergeVisitor';");
+        expect(entry.content).not.toContain('nodeTestPaths');
+    });
+
     it('resolves the relative helper imports for the merge visitor', () => {
         const entry = getFromRenderMap(map, 'mergeVisitor.ts');
         const importKeys = [...entry.imports.keys()];

@@ -81,6 +81,21 @@ export class LinkableDictionary {
         return this;
     }
 
+    /**
+     * Forget every recorded linkable node, e.g. before recording the
+     * linkable nodes of another tree.
+     *
+     * @example
+     * ```ts
+     * linkables.clear();
+     * visit(otherRoot, getRecordLinkablesVisitor(linkables));
+     * ```
+     */
+    clear(): this {
+        this.programs.clear();
+        return this;
+    }
+
     getPathOrThrow<TLinkNode extends LinkNode>(
         linkPath: NodePath<TLinkNode>,
     ): NodePath<GetLinkableFromLinkNode<TLinkNode>> {

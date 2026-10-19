@@ -2,7 +2,7 @@ export * from './bottomUpTransformerVisitor';
 export * from './consoleLogVisitor';
 export * from './deleteNodesVisitor';
 export * from './extendVisitor';
-// Generated visitors (mergeVisitor, raw identityVisitor, NODE_TEST_PATHS).
+// Generated visitors (mergeVisitor, raw identityVisitor).
 // The raw `identityVisitor` is shadowed by the wrapper below.
 export * from './generated';
 export * from './getByteSizeVisitor';

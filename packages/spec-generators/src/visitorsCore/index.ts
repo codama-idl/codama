@@ -53,25 +53,38 @@ export function getRenderMap(spec: Spec, options: RenderOptions): RenderMap<Frag
     validateRenderOptions(spec, options);
     const augmentedSpec = withBaseAttributes(spec);
     const scope = buildRenderScope(options);
-    const specPages = getSpecPagesRenderMap(augmentedSpec, scope);
-    const indexPages = getIndexPagesRenderMap(specPages, scope.symbolicModules);
-    return mergeRenderMaps([specPages, indexPages]);
+    const publicPages = getPublicPagesRenderMap(augmentedSpec, scope);
+    const testPages = getTestPagesRenderMap(augmentedSpec, scope);
+    // Only public pages are re-exported, so test-only pages stay out of the package's API.
+    const indexPages = getIndexPagesRenderMap(publicPages, scope.symbolicModules);
+    return mergeRenderMaps([publicPages, testPages, indexPages]);
+}
+
+/** Emit one page per visitor, at the root of the generator's output directory. */
+function getPublicPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragment> {
+    return createPagesRenderMap(scope, [
+        ['visitor:identityVisitor', getIdentityVisitorFragment(spec, NODE_CONFIGS, scope)],
+        ['visitor:mergeVisitor', getMergeVisitorFragment(spec, scope)],
+    ]);
 }
 
 /**
- * Emit one page per visitor plus the test-path coverage map. Three
- * files in total, all at the root of the generator's output directory.
+ * Emit the test-path coverage map, at the root of the generator's output
+ * directory. Tests import it directly, as it is not part of the index.
  */
-function getSpecPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragment> {
+function getTestPagesRenderMap(spec: Spec, scope: RenderScope): RenderMap<Fragment> {
+    return createPagesRenderMap(scope, [['visitor:nodeTestPaths', getNodeTestPathsFragment(spec, scope)]]);
+}
+
+/** Wrap each body into a page at the path its symbolic module resolves to. */
+function createPagesRenderMap(
+    scope: RenderScope,
+    pages: readonly (readonly [SymbolicModule, Fragment])[],
+): RenderMap<Fragment> {
     const entries: Record<Path, Fragment> = {};
-    const emit = (symbolicKey: SymbolicModule, body: Fragment): void => {
+    for (const [symbolicKey, body] of pages) {
         const path = resolveEntryPath(scope.symbolicModules, symbolicKey);
         entries[`${path}.ts`] = getPageFragment(body, scope.symbolicModules, path);
-    };
-
-    emit('visitor:identityVisitor', getIdentityVisitorFragment(spec, NODE_CONFIGS, scope));
-    emit('visitor:mergeVisitor', getMergeVisitorFragment(spec, scope));
-    emit('visitor:nodeTestPaths', getNodeTestPathsFragment(spec, scope));
-
+    }
     return createRenderMap(entries);
 }
