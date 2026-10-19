@@ -29,9 +29,9 @@ import {
 export {
     type GenerateOptions,
     IDENTITY_VISITOR_WALK_ORDER,
+    KINDS_CONSTANT_UNIONS,
     MERGE_VISITOR_WALK_ORDER,
     type RenderOptions,
-    UNION_ALIAS_NAMES,
     validateRenderOptions,
 } from './options';
 

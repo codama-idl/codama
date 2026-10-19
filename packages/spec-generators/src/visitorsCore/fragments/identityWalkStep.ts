@@ -38,7 +38,7 @@ export function getIdentityWalkStep(
     attr: AttributeSpec,
     config: NodeConstructorConfig | undefined,
     spec: Spec,
-    options: Pick<ResolvedRenderOptions, 'unionAliasNames'>,
+    options: Pick<ResolvedRenderOptions, 'kindsConstantUnions'>,
 ): IdentityWalkStep {
     const localName = getSafeLocalName(attr, config);
     const fieldAccess = `node.${attr.name}`;

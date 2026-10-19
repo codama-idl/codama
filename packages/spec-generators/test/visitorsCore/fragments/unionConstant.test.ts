@@ -3,18 +3,18 @@ import { defineCategory, defineNode, defineUnion, node, union } from '@codama/sp
 import { describe, expect, it } from 'vitest';
 
 import { getUnionKindListFragment } from '../../../src/visitorsCore/fragments/unionConstant';
-import { UNION_ALIAS_NAMES } from '../../../src/visitorsCore/options';
+import { KINDS_CONSTANT_UNIONS } from '../../../src/visitorsCore/options';
 
 const spec: Spec = {
     categories: [
         defineCategory('topLevel', {
             nodes: [defineNode('aNode', { attributes: [] }), defineNode('bNode', { attributes: [] })],
             unions: [
-                // Resolves to a known alias.
+                // Resolves to its kinds constant.
                 defineUnion('typeNode', { members: ['aNode'] }),
-                // No alias — gets inlined as a literal.
+                // Not listed: gets inlined as a literal.
                 defineUnion('ableNode', { members: ['aNode', 'bNode'] }),
-                // Composite: one nested union with alias plus extra leaf nodes.
+                // Composite: one listed nested union plus extra leaf nodes.
                 defineUnion('ableOrTypeNode', { members: [union('typeNode'), 'bNode'] }),
             ],
         }),
@@ -22,12 +22,12 @@ const spec: Spec = {
     version: '1.0.0',
 };
 
-const options = { unionAliasNames: UNION_ALIAS_NAMES };
+const options = { kindsConstantUnions: KINDS_CONSTANT_UNIONS };
 
 describe('getUnionKindListFragment', () => {
-    it('resolves a known union name to its plural-noun alias constant', () => {
+    it('resolves a listed union name to its kinds constant', () => {
         const result = getUnionKindListFragment('typeNode', spec, options);
-        expect(result.content).toBe('TYPE_NODES');
+        expect(result.content).toBe('TYPE_NODE_KINDS');
         expect([...result.imports.keys()]).toContain('@codama/nodes');
     });
 
@@ -36,9 +36,9 @@ describe('getUnionKindListFragment', () => {
         expect(result.content).toBe(`['aNode', 'bNode']`);
     });
 
-    it('mixes alias spreads and inline kinds for a composite union', () => {
+    it('mixes kinds constant spreads and inline kinds for a composite union', () => {
         const result = getUnionKindListFragment('ableOrTypeNode', spec, options);
-        expect(result.content).toBe(`[...TYPE_NODES, 'bNode']`);
+        expect(result.content).toBe(`[...TYPE_NODE_KINDS, 'bNode']`);
     });
 
     it('throws when the union name is not declared in the spec', () => {
@@ -47,8 +47,8 @@ describe('getUnionKindListFragment', () => {
         );
     });
 
-    it('throws when an inline union contains a nested union without an alias', () => {
-        const composedWithoutAlias: Spec = {
+    it('throws when an inline union contains an unlisted nested union', () => {
+        const composedWithUnlistedUnion: Spec = {
             categories: [
                 defineCategory('topLevel', {
                     nodes: [defineNode('aNode', { attributes: [] })],
@@ -60,8 +60,8 @@ describe('getUnionKindListFragment', () => {
             ],
             version: '1.0.0',
         };
-        expect(() => getUnionKindListFragment('outerNode', composedWithoutAlias, options)).toThrow(
-            /outerNode" contains a nested union "leafNode" with no entry in unionAliasNames/,
+        expect(() => getUnionKindListFragment('outerNode', composedWithUnlistedUnion, options)).toThrow(
+            /outerNode" contains a nested union "leafNode" with no entry in kindsConstantUnions/,
         );
     });
 });

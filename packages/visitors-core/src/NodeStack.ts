@@ -1,7 +1,11 @@
-import { CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK,
+    CodamaError,
+    getNodePathString,
+} from '@codama/errors';
 import { GetNodeFromKind, Node, NodeKind } from '@codama/nodes';
 
-import { assertIsNodePath, getLastNodeFromPath, NodePath, nodePathToString } from './NodePath';
+import { assertIsNodePath, getLastNodeFromPath, NodePath } from './NodePath';
 import { visit, Visitor } from './visitor';
 
 type MutableNodePath = Node[];
@@ -112,6 +116,6 @@ export class NodeStack {
     }
 
     public toString(): string {
-        return nodePathToString(this.getPath());
+        return getNodePathString(this.getPath());
     }
 }

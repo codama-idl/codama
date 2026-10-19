@@ -1,4 +1,12 @@
-import { assertIsNode, DefinedTypeNode, IdentifierString, isNode, Node, programNode, TYPE_NODES } from '@codama/nodes';
+import {
+    assertIsNode,
+    DefinedTypeNode,
+    IdentifierString,
+    isNode,
+    Node,
+    programNode,
+    TYPE_NODE_KINDS,
+} from '@codama/nodes';
 import {
     extendVisitor,
     findProgramNodeFromPath,
@@ -123,7 +131,7 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
                     const definedType = getLastNodeFromPath(definedTypePath);
 
                     const type = stack.withPath(definedTypePath, () => visit(definedType.type, self));
-                    assertIsNode(type, TYPE_NODES);
+                    assertIsNode(type, TYPE_NODE_KINDS);
 
                     return inlineDefinedType(link, type, {
                         definedTypeProgram: findProgramNodeFromPath(definedTypePath)?.identifier,

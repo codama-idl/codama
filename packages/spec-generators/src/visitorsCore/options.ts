@@ -18,24 +18,22 @@ export {
 } from '../shared';
 
 /**
- * Map from a spec union name to the `@codama/nodes` plural-noun alias
- * the visitors should reference in `assertIsNode` /
+ * Spec unions the visitors reference through their `@codama/nodes`
+ * `*_KINDS` constant in `assertIsNode` /
  * `removeNullAndAssertIsNodeFilter` calls (e.g. `'typeNode'` →
- * `'TYPE_NODES'`). Unions absent from this map are expanded inline as
- * a literal kind array.
+ * `TYPE_NODE_KINDS`). Unions absent from this set are expanded inline
+ * as a literal kind array.
  */
-export const UNION_ALIAS_NAMES: ReadonlyMap<string, string> = new Map([
-    ['contextualValueNode', 'CONTEXTUAL_VALUE_NODES'],
-    ['countNode', 'COUNT_NODES'],
-    ['discriminatorNode', 'DISCRIMINATOR_NODES'],
-    ['instructionInputValueNode', 'INSTRUCTION_INPUT_VALUE_NODES'],
-    ['linkNode', 'LINK_NODES'],
-    ['pdaSeedNode', 'PDA_SEED_NODES'],
-    // `transformNode` is a new v2 union with no v1 legacy plural alias;
-    // reference its canonical generated kinds array directly.
-    ['transformNode', 'TRANSFORM_NODE_KINDS'],
-    ['typeNode', 'TYPE_NODES'],
-    ['valueNode', 'VALUE_NODES'],
+export const KINDS_CONSTANT_UNIONS: ReadonlySet<string> = new Set([
+    'contextualValueNode',
+    'countNode',
+    'discriminatorNode',
+    'instructionInputValueNode',
+    'linkNode',
+    'pdaSeedNode',
+    'transformNode',
+    'typeNode',
+    'valueNode',
 ]);
 
 /**
@@ -115,17 +113,17 @@ export interface RenderOptions extends SharedRenderOptions {
      */
     readonly identityVisitorWalkOrder?: ReadonlyMap<string, readonly string[]>;
     /**
+     * Spec unions referenced through their `@codama/nodes` `*_KINDS`
+     * constant rather than expanded inline. Omitted means "use the
+     * defaults" ({@link KINDS_CONSTANT_UNIONS}).
+     */
+    readonly kindsConstantUnions?: ReadonlySet<string>;
+    /**
      * Per-node override of the merge visitor's child-attribute walk
      * order. Omitted means "use the defaults"
      * ({@link MERGE_VISITOR_WALK_ORDER}).
      */
     readonly mergeVisitorWalkOrder?: ReadonlyMap<string, readonly string[]>;
-    /**
-     * Map from spec union names to the `@codama/nodes` plural-noun
-     * alias constants. Omitted means "use the defaults"
-     * ({@link UNION_ALIAS_NAMES}).
-     */
-    readonly unionAliasNames?: ReadonlyMap<string, string>;
 }
 
 /** Options consumed by {@link generateVisitorsCore}, the disk-writing entry point. */
@@ -146,7 +144,7 @@ export type ResolvedRenderOptions = Required<RenderOptions>;
  *   - `helper:<name>`  — a hand-written sibling above `generated/`
  *                        (`staticVisitor`, `visit`, `Visitor`).
  *
- * Imports from `@codama/nodes` (node constructors, kind aliases,
+ * Imports from `@codama/nodes` (node constructors, kinds constants,
  * assertion helpers) do NOT use this resolver: renderers call
  * `use(<identifier>, '@codama/nodes')` directly and the fragment
  * pipeline passes the bare specifier through.
@@ -159,14 +157,14 @@ export function resolveRenderOptions(options: RenderOptions): ResolvedRenderOpti
     return {
         ...resolveSharedRenderOptions(options),
         identityVisitorWalkOrder: options.identityVisitorWalkOrder ?? IDENTITY_VISITOR_WALK_ORDER,
+        kindsConstantUnions: options.kindsConstantUnions ?? KINDS_CONSTANT_UNIONS,
         mergeVisitorWalkOrder: options.mergeVisitorWalkOrder ?? MERGE_VISITOR_WALK_ORDER,
-        unionAliasNames: options.unionAliasNames ?? UNION_ALIAS_NAMES,
     };
 }
 
 /**
  * Cross-check the caller-supplied options against the spec at
- * generation time. Catches stale `unionAliasNames` keys, stale walk-
+ * generation time. Catches stale `kindsConstantUnions` entries, stale walk-
  * order overrides, and walk-order entries that don't match a node's
  * child-attribute set exactly.
  */
@@ -177,10 +175,10 @@ export function validateRenderOptions(spec: Spec, options: RenderOptions): void 
     const nodeByKind = new Map(allNodes.map(n => [n.kind, n]));
     const validUnionNames = new Set(spec.categories.flatMap(c => c.unions).map(u => u.name));
 
-    if (options.unionAliasNames) {
-        for (const unionName of options.unionAliasNames.keys()) {
+    if (options.kindsConstantUnions) {
+        for (const unionName of options.kindsConstantUnions) {
             if (!validUnionNames.has(unionName)) {
-                throw new Error(`unionAliasNames references unknown union "${unionName}".`);
+                throw new Error(`kindsConstantUnions references unknown union "${unionName}".`);
             }
         }
     }

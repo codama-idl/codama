@@ -10,14 +10,14 @@ import {
     DataValueNode,
     dataValueNode,
     IdentifierString,
-    INSTRUCTION_INPUT_VALUE_NODES,
+    INSTRUCTION_INPUT_VALUE_NODE_KINDS,
     InstructionAccountNode,
     InstructionInputValueNode,
     InstructionNode,
     isNode,
     PathString,
     StructFieldTypeNode,
-    VALUE_NODES,
+    VALUE_NODE_KINDS,
 } from '@codama/nodes';
 
 import { getInstructionDataFields } from './getInstructionDataFields';
@@ -104,7 +104,7 @@ export function getResolvedInstructionInputsVisitor(
         defaultValue: InstructionInputValueNode | undefined,
     ): InstructionInputValueNode | undefined {
         if (defaultValue === undefined) return undefined;
-        return scope.resolve(defaultValue, { kinds: INSTRUCTION_INPUT_VALUE_NODES });
+        return scope.resolve(defaultValue, { kinds: INSTRUCTION_INPUT_VALUE_NODE_KINDS });
     }
 
     function resolveInstructionInput(instruction: InstructionNode, input: InstructionInput): void {
@@ -295,7 +295,7 @@ export function getResolvedInstructionInputsVisitor(
             if (!value) return false;
             // Skip static value defaults unless explicitly requested — there's
             // nothing to resolve for a plain literal.
-            return includeDataValueNodes || !isNode(value, VALUE_NODES);
+            return includeDataValueNodes || !isNode(value, VALUE_NODE_KINDS);
         });
 
         const inputs: InstructionInput[] = [...(node.accounts ?? []).map(getAccountInput), ...dataInputs];

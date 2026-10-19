@@ -13,8 +13,8 @@ import {
 import {
     generateVisitorsCore,
     IDENTITY_VISITOR_WALK_ORDER,
+    KINDS_CONSTANT_UNIONS,
     MERGE_VISITOR_WALK_ORDER,
-    UNION_ALIAS_NAMES,
 } from './visitorsCore';
 
 export interface GenerateResult {
@@ -67,10 +67,10 @@ export function generate(): GenerateResult {
         const outputDir = joinPath(getRepoDirectory(), 'packages', 'visitors-core', 'src', 'generated');
         generateVisitorsCore(spec, {
             identityVisitorWalkOrder: IDENTITY_VISITOR_WALK_ORDER,
+            kindsConstantUnions: KINDS_CONSTANT_UNIONS,
             mergeVisitorWalkOrder: MERGE_VISITOR_WALK_ORDER,
             outputDir,
             targetSpecMajor: specMajor,
-            unionAliasNames: UNION_ALIAS_NAMES,
         });
         outputs.push({ generator: 'visitorsCore', outputDir });
     }

@@ -110,7 +110,7 @@ const visitor: Visitor<number, 'numberTypeNode' | 'stringTypeNode'> = voidVisito
 });
 
 // This visitor accepts all type nodes.
-const visitor: Visitor<number, TypeNode['kind']> = voidVisitor({ keys: TYPE_NODES });
+const visitor: Visitor<number, TypeNode['kind']> = voidVisitor({ keys: TYPE_NODE_KINDS });
 
 // This visitor accepts all nodes.
 const visitor: Visitor<number> = voidVisitor();
@@ -447,10 +447,14 @@ if (isNodePath(path as NodePath, ['AccountNode', 'InstructionNode'])) {
 // Assert that a path finishes with a node matching the provided kind or kinds.
 assertIsNodePath(path as NodePath, ['AccountNode', 'InstructionNode']);
 path satisfies NodePath<AccountNode | InstructionNode>;
+```
 
-// Display paths as strings or arrays of strings.
-nodePathToStringArray(path); // -> ['[rootNode]', '[programNode]token', '[accountNode]mint']
-nodePathToString(path); // -> "[programNode]token.[accountNode]mint", as error messages render paths
+To display a path as a string, the way error messages render it, use `getNodePathString` from `@codama/errors`.
+
+```ts
+import { getNodePathString } from '@codama/errors';
+
+getNodePathString(path); // -> "[programNode]token.[accountNode]mint"
 ```
 
 ### `NodeStack`
@@ -535,7 +539,7 @@ const visitor = pipe(
     baseVisitor,
     v =>
         interceptVisitor(v, (node, next) => {
-            console.log(nodePathToString(stack.getPath()));
+            console.log(stack.toString());
             return next(node);
         }),
     v => recordNodeStackVisitor(v, stack),

@@ -6,7 +6,7 @@ import {
     publicKeyTypeNode,
     stringTypeNode,
     tupleTypeNode,
-    TYPE_NODES,
+    TYPE_NODE_KINDS,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
@@ -63,9 +63,12 @@ test('it can create partial transformer visitors', () => {
 
     // And a transformer visitor that wraps every node into another tuple node
     // but that does not transform public key nodes.
-    const visitor = bottomUpTransformerVisitor([node => (isNode(node, TYPE_NODES) ? tupleTypeNode([node]) : node)], {
-        keys: ['tupleTypeNode', 'integerTypeNode'],
-    });
+    const visitor = bottomUpTransformerVisitor(
+        [node => (isNode(node, TYPE_NODE_KINDS) ? tupleTypeNode([node]) : node)],
+        {
+            keys: ['tupleTypeNode', 'integerTypeNode'],
+        },
+    );
 
     // When we visit the tree using that visitor.
     const result = visit(node, visitor);

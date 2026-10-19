@@ -3,7 +3,7 @@ import {
     accountValueNode,
     assertIsNode,
     dataValueNode,
-    INSTRUCTION_INPUT_VALUE_NODES,
+    INSTRUCTION_INPUT_VALUE_NODE_KINDS,
     InstructionInputValueNode,
     InstructionNode,
     isNode,
@@ -47,7 +47,7 @@ export function fillDefaultPdaSeedValuesVisitor(
     const dataPaths = new Set<string>(getInstructionDataFields(instructionPath, linkables).map(({ path }) => path));
     const accountIdentifiers = new Set<string>((instruction.accounts ?? []).map(account => account.identifier));
 
-    return pipe(identityVisitor({ keys: INSTRUCTION_INPUT_VALUE_NODES }), v =>
+    return pipe(identityVisitor({ keys: INSTRUCTION_INPUT_VALUE_NODE_KINDS }), v =>
         extendVisitor(v, {
             visitPdaValue(node, { next }) {
                 const visitedNode = next(node);

@@ -18,7 +18,7 @@ import {
     stringValueNode,
     structFieldValueNode,
     structValueNode,
-    VALUE_NODES,
+    VALUE_NODE_KINDS,
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
@@ -93,7 +93,7 @@ test('it resolves injections nested within a node', () => {
     ]);
 
     // Then the nested injection is replaced by its provided node.
-    expect(scope.resolve(node, { kinds: VALUE_NODES })).toEqual(
+    expect(scope.resolve(node, { kinds: VALUE_NODE_KINDS })).toEqual(
         structValueNode([
             structFieldValueNode('name', stringValueNode('Alice')),
             structFieldValueNode('age', integerValueNode('42')),
@@ -109,7 +109,7 @@ test('it treats a node with an unresolvable nested injection as unresolvable', (
     ]);
 
     // Then the whole value is unresolvable rather than partially resolved.
-    expect(new ProvidedScope().resolve(node, { kinds: VALUE_NODES })).toBeUndefined();
+    expect(new ProvidedScope().resolve(node, { kinds: VALUE_NODE_KINDS })).toBeUndefined();
 });
 
 test('it does not require the fallback of a nested injection whose key is provided', () => {
@@ -126,7 +126,7 @@ test('it does not require the fallback of a nested injection whose key is provid
 
 test('it returns a node without injections as-is', () => {
     const node = structValueNode([structFieldValueNode('name', stringValueNode('Alice'))]);
-    expect(new ProvidedScope().resolve(node, { kinds: VALUE_NODES })).toBe(node);
+    expect(new ProvidedScope().resolve(node, { kinds: VALUE_NODE_KINDS })).toBe(node);
 });
 
 test('it attributes a wrong-kind fallback of a provided injection to its provider', () => {
@@ -154,7 +154,7 @@ test('it resolves injections within a provided node against the outer frames', (
     );
 
     // Then the nested injection resolves outside the frame providing the struct.
-    expect(scope.resolve(injectedValueNode({ key: 'person' }), { kinds: VALUE_NODES })).toEqual(
+    expect(scope.resolve(injectedValueNode({ key: 'person' }), { kinds: VALUE_NODE_KINDS })).toEqual(
         structValueNode([structFieldValueNode('age', integerValueNode('1'))]),
     );
 });
@@ -206,7 +206,7 @@ test('resolveOrThrow names the nested injection that resolves to nothing', () =>
     ]);
 
     // Then the error names the nested injection rather than the struct.
-    expect(() => new ProvidedScope().resolveOrThrow(node, { kinds: VALUE_NODES })).toThrow(
+    expect(() => new ProvidedScope().resolveOrThrow(node, { kinds: VALUE_NODE_KINDS })).toThrow(
         new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: age.key, path: [age] }),
     );
 });
@@ -217,7 +217,7 @@ test('resolveOrThrow names the injection a provided chain dead-ends on', () => {
     const scope = new ProvidedScope([providedNode('person', structValueNode([structFieldValueNode('age', missing)]))]);
 
     // Then the error names the innermost unresolvable injection.
-    expect(() => scope.resolveOrThrow(injectedValueNode({ key: 'person' }), { kinds: VALUE_NODES })).toThrow(
+    expect(() => scope.resolveOrThrow(injectedValueNode({ key: 'person' }), { kinds: VALUE_NODE_KINDS })).toThrow(
         new CodamaError(CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED, { key: missing.key, path: [missing] }),
     );
 });

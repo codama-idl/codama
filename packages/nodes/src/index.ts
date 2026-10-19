@@ -17,17 +17,3 @@ export * from './Node';
 export * from './ProgramNode';
 export * from './TextNode';
 export * from './TypeNode';
-
-// Legacy plural-noun aliases preserved for API stability. Each maps to
-// the canonical `*_NODE_KINDS` name generated from the matching spec
-// union.
-export {
-    CONTEXTUAL_VALUE_NODE_KINDS as CONTEXTUAL_VALUE_NODES,
-    INSTRUCTION_INPUT_VALUE_NODE_KINDS as INSTRUCTION_INPUT_VALUE_NODES,
-    REGISTERED_COUNT_NODE_KINDS as COUNT_NODES,
-    REGISTERED_DISCRIMINATOR_NODE_KINDS as DISCRIMINATOR_NODES,
-    REGISTERED_LINK_NODE_KINDS as LINK_NODES,
-    REGISTERED_PDA_SEED_NODE_KINDS as PDA_SEED_NODES,
-    TYPE_NODE_KINDS as TYPE_NODES,
-    VALUE_NODE_KINDS as VALUE_NODES,
-} from './generated';
