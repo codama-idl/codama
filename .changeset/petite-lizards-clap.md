@@ -9,6 +9,6 @@ Add helpers to detect cyclic defined types and defined types without any finite 
 - `isDefinedTypeCyclic(path, linkables)` tells whether a defined type links back to itself, directly or through other defined types.
 - `hasDefinedTypeFiniteValue(path, linkables)` tells whether a defined type has at least one finite value.
 
-Both helpers resolve links from the program of the given path and throw `CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING` when it has none.
+`isDefinedTypeCyclic` and `hasDefinedTypeFiniteValue` resolve links from the program of the given path and throw `CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING` when it has none.
 
 `getByteSizeVisitor` and `getMaxByteSizeVisitor` now track the defined types being visited by node rather than by name, so a link to a same-named type of another program is no longer mistaken for a cycle, and links back to a type being visited still return `null`.

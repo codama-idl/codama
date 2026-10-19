@@ -21,7 +21,7 @@ Rename the visitors built around instruction arguments now that Codama v2 stores
 
 **Sub-instructions follow the enum.** `createSubInstructionsFromEnumDataVisitor` names each sub-instruction `${instruction}_${variant}` without any casing transformation, instead of camelCasing it. Its discriminator field is named `${instruction}_${variant}_discriminator`, uses the enum's `size` instead of always `u8`, and defaults to the variant's `discriminator` (falling back to its index). Struct payloads are inlined, and enums carrying transforms keep the discriminator and payload grouped in a struct carrying them, so the wire format is preserved. Both the instruction data and the enum field may be linked. It throws `CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND` when the instruction has no data, no such field, or a field that is not an enum.
 
-**Histogram keys renamed.** `DefinedTypeHistogram` is keyed by identifiers (`IdentifierString`) rather than camelCase names, and its counters follow the new data model.
+**Histogram keys renamed.** `DefinedTypeHistogram` is keyed by `program.type` identifiers, or by the type identifier alone outside of a program, rather than by camelCase names, and its counters follow the new data model.
 
 ```diff
   {
