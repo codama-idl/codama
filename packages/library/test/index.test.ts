@@ -50,7 +50,7 @@ test('it rejects root updates without a program node with a Codama error', () =>
         }),
     );
     const orphanRoot = { kind: 'rootNode', version: CODAMA_VERSION } as never;
-    expect(() => codama.update(() => orphanRoot)).toThrow(CodamaError);
+    expect(() => codama.update(rootNodeVisitor(() => orphanRoot))).toThrow(CodamaError);
 });
 
 test('it exports visitors', () => {
