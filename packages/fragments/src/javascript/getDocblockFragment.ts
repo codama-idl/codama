@@ -1,3 +1,4 @@
+import { splitLines } from '../core/splitLines';
 import type { Fragment } from './fragment';
 import { fragment } from './fragment';
 
@@ -14,7 +15,7 @@ import { fragment } from './fragment';
  * ```
  *
  * Items containing line breaks (`\n` or `\r\n`) are split into separate
- * lines first. Single-line input renders as a one-line block
+ * lines first, ignoring a single trailing line break per item. Single-line input renders as a one-line block
  * (`/** line *\/`); multi-line input renders as a standard multi-line
  * JSDoc block. Empty lines render as bare ` *` lines, useful for
  * paragraph breaks inside a docblock.
@@ -67,11 +68,6 @@ export function getDocblockFragment(
     if (safeLines.length === 1) return fragment`/** ${safeLines[0]} */${lineJump}`;
     const prefixedLines = safeLines.map(line => (line ? ` * ${line}` : ' *'));
     return fragment`/**\n${prefixedLines.join('\n')}\n */${lineJump}`;
-}
-
-/** Split a docs item on its line breaks (`\r\n` or `\n`). */
-function splitLines(item: string): string[] {
-    return item.split(/\r?\n/);
 }
 
 /** Escape any `*\/` sequences in a docblock line so user input can't close the comment. */

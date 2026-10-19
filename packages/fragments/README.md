@@ -255,7 +255,7 @@ Both interpolated fragments propagated their imports into `struct`. The outer fr
 
 Two small helpers cover the most repetitive bits of code generators.
 
-`getDocblockFragment(lines)` builds a JSDoc block from an array of lines. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Items containing line breaks (`\n` or `\r\n`) are split into separate lines. Any `*/` sequences inside the lines are silently defanged so user-supplied content cannot accidentally close the comment early.
+`getDocblockFragment(lines)` builds a JSDoc block from an array of lines. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Items containing line breaks (`\n` or `\r\n`) are split into separate lines, ignoring a single trailing line break per item. Any `*/` sequences inside the lines are silently defanged so user-supplied content cannot accidentally close the comment early.
 
 ```ts
 import { fragment, getDocblockFragment } from '@codama/fragments/javascript';
@@ -460,7 +460,7 @@ body = addFragmentImportAlias(body, 'solana_program::program_error::ProgramError
 
 ### Common helpers
 
-`getDocblockFragment(lines)` builds a Rust doc-comment block. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Items containing line breaks (`\n` or `\r\n`), as docs from Anchor IDLs often do, are split so that every line gets its own prefix. Pass `{ internal: true }` to emit inner doc comments (`//!`) instead of outer ones (`///`).
+`getDocblockFragment(lines)` builds a Rust doc-comment block. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Items containing line breaks (`\n` or `\r\n`), as docs from Anchor IDLs often do, are split so that every line gets its own prefix, ignoring a single trailing line break per item. Pass `{ internal: true }` to emit inner doc comments (`//!`) instead of outer ones (`///`).
 
 ```ts
 import { fragment, getDocblockFragment } from '@codama/fragments/rust';

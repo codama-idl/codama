@@ -58,6 +58,21 @@ describe('getDocblockFragment', () => {
         expect(f?.content).toBe('/**\n * First line.\n *\n * Second paragraph.\n * Last line.\n */');
     });
 
+    it('ignores a trailing line feed in an item', () => {
+        const f = getDocblockFragment(['Hello.\n']);
+        expect(f?.content).toBe('/** Hello. */');
+    });
+
+    it('ignores a trailing carriage return line feed in an item', () => {
+        const f = getDocblockFragment(['First line.\r\n', 'Second line.']);
+        expect(f?.content).toBe('/**\n * First line.\n * Second line.\n */');
+    });
+
+    it('only ignores one trailing line break in an item', () => {
+        const f = getDocblockFragment(['First paragraph.\n\n', 'Second paragraph.']);
+        expect(f?.content).toBe('/**\n * First paragraph.\n *\n * Second paragraph.\n */');
+    });
+
     it('returns a fragment carrying no imports', () => {
         const f = getDocblockFragment(['Hello.']);
         expect(f?.imports.size).toBe(0);

@@ -1,3 +1,4 @@
+import { splitLines } from '../core/splitLines';
 import type { Fragment } from './fragment';
 import { fragment } from './fragment';
 
@@ -16,9 +17,9 @@ import { fragment } from './fragment';
  * Each line is prefixed with `///` (outer doc) by default, or `//!`
  * (inner doc) when `internal` is `true`. Items containing line breaks
  * (`\n` or `\r\n`), as docs from Anchor IDLs often do, are split so every
- * line is prefixed. Empty lines render as a bare prefix line (`///` or
- * `//!` with no trailing space), useful for paragraph breaks inside a doc
- * comment.
+ * line is prefixed, ignoring a single trailing line break per item. Empty
+ * lines render as a bare prefix line (`///` or `//!` with no trailing
+ * space), useful for paragraph breaks inside a doc comment.
  *
  * @param lines - The lines of the doc comment, or `undefined`. Each item
  * may itself span several lines. Empty array and `undefined` both return
@@ -64,9 +65,4 @@ export function getDocblockFragment(
     const lineJump = options.withLineJump ? '\n' : '';
     const prefixedLines = lines.flatMap(splitLines).map(line => (line ? `${prefix} ${line}` : prefix));
     return fragment`${prefixedLines.join('\n')}${lineJump}`;
-}
-
-/** Split a docs item on its line breaks (`\r\n` or `\n`). */
-function splitLines(item: string): string[] {
-    return item.split(/\r?\n/);
 }

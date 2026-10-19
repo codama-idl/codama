@@ -2,7 +2,7 @@
 '@codama/fragments': major
 ---
 
-Let Rust import maps import a path under several local names, so merging a fragment that uses `crate::Mint` with one that uses it `as TokenMint` keeps both `use` statements instead of only the last one merged. Also split the items given to the Rust and JavaScript `getDocblockFragment` helpers on line breaks, so multi-line docs (common in Anchor IDLs) no longer leak unprefixed lines into the generated code.
+Let Rust import maps import a path under several local names, so merging a fragment that uses `crate::Mint` with one that uses it `as TokenMint` keeps both `use` statements instead of only the last one merged.
 
 **BREAKING CHANGES**
 
