@@ -1,4 +1,5 @@
 import { getNodeValueCodec } from '@codama/dynamic-codecs';
+import { CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY } from '@codama/errors';
 import { type Address, getAddressEncoder, getProgramDerivedAddress } from '@solana/addresses';
 import { getU64Encoder, type Option, unwrapOption } from '@solana/codecs';
 import type { RootNode } from 'codama';
@@ -244,13 +245,27 @@ describe('anchor-example: commonIxs', () => {
         test('SelfReferencePdaIx: should throw AccountError for A->A cycle', async () => {
             await expect(
                 programClient.methods.selfReferencePda().accounts({ signer: payer }).instruction(),
-            ).rejects.toThrow(/Circular dependency detected: \[recursive -> recursive\]/);
+            ).rejects.toThrow(
+                expect.objectContaining({
+                    context: expect.objectContaining({
+                        __code: CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
+                        formattedCycle: 'recursive -> recursive',
+                    }),
+                }),
+            );
         });
 
         test('TwoNodeCyclePdaIx: should throw AccountError for A->B->A pattern in two-node cycle', async () => {
             await expect(
                 programClient.methods.twoNodeCyclePda().accounts({ signer: payer }).instruction(),
-            ).rejects.toThrow(/Circular dependency detected: \[pda[AB] -> pda[AB] -> pda[AB]\]/);
+            ).rejects.toThrow(
+                expect.objectContaining({
+                    context: expect.objectContaining({
+                        __code: CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
+                        formattedCycle: expect.stringMatching(/^pda[AB] -> pda[AB] -> pda[AB]$/),
+                    }),
+                }),
+            );
         });
     });
 

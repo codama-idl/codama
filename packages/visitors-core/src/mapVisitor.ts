@@ -2,9 +2,18 @@ import { GetNodeFromKind, NodeKind, REGISTERED_NODE_KINDS } from '@codama/nodes'
 
 import { getVisitFunctionName, GetVisitorFunctionName, Visitor } from './visitor';
 
+/**
+ * Map the value a visitor returns for the visited node, which the map function also receives.
+ * Nodes visited recursively by the base visitor are not mapped.
+ *
+ * @example
+ * ```ts
+ * const visitor = mapVisitor(baseVisitor, (value: string, node): string => `${node.kind}: ${value}`);
+ * ```
+ */
 export function mapVisitor<TReturnFrom, TReturnTo, TNodeKind extends NodeKind>(
     visitor: Visitor<TReturnFrom, TNodeKind>,
-    map: (from: TReturnFrom) => TReturnTo,
+    map: (from: TReturnFrom, node: GetNodeFromKind<TNodeKind>) => TReturnTo,
 ): Visitor<TReturnTo, TNodeKind> {
     const registeredVisitFunctions = REGISTERED_NODE_KINDS.map(getVisitFunctionName);
     return Object.fromEntries(
@@ -18,7 +27,7 @@ export function mapVisitor<TReturnFrom, TReturnTo, TNodeKind extends NodeKind>(
                 [
                     castedKey,
                     (node: GetNodeFromKind<TNodeKind>) =>
-                        map((visitor[castedKey] as (node: GetNodeFromKind<TNodeKind>) => TReturnFrom)(node)),
+                        map((visitor[castedKey] as (node: GetNodeFromKind<TNodeKind>) => TReturnFrom)(node), node),
                 ],
             ];
         }),

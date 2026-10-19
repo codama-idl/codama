@@ -7,6 +7,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
+    CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
     CodamaError,
@@ -146,6 +147,25 @@ describe('account data values', () => {
             path,
         });
         expect(address).toBe(authority);
+    });
+
+    test('it throws when the account data read is not an address', async () => {
+        // Given an owner defaulting to the decimals of the provided mint.
+        const owner = account('owner', { defaultValue: accountDataValueNode('mint', { path: 'decimals' }) });
+        const { path, root } = getAccountPath({ accounts: [mintAccount(), owner] });
+        const fetchAccounts = getFetchAccounts([
+            encodeAccount(root, 'mint', MINT_ADDRESS, { decimals: 6, mintAuthority: await generateAddress() }),
+        ]);
+
+        // Then the error carries the path of the owner.
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ accountsInput: { mint: MINT_ADDRESS }, fetchAccounts, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
+                actualType: 'bigint',
+                expectedType: 'Address | PublicKey',
+                path,
+            }),
+        );
     });
 
     test('it resolves the account it reads from its own default value', async () => {
@@ -328,7 +348,11 @@ describe('account data values', () => {
         const { path } = getAccountPath({ accounts: [self] });
         await expectCodamaError(
             resolveInstructionAccountAddress({ fetchAccounts: getFetchAccounts([]), path }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY, { chain: 'mint -> mint' }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY, {
+                cycle: [path, path],
+                formattedCycle: 'mint -> mint',
+                path: path.slice(0, 3),
+            }),
         );
     });
 
@@ -515,6 +539,19 @@ describe('data values crossing account links', () => {
         );
     });
 
+    test('it throws when the linked public key is not an address', async () => {
+        const owner = account('owner', { defaultValue: dataValueNode('mint.data.mintAuthority') });
+        const { path } = getAccountPath({ accounts: [owner], data });
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ dataInput: { mint: 42 }, fetchAccounts: getFetchAccounts([]), path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
+                actualType: 'number',
+                expectedType: 'Address | PublicKey',
+                path: [...path.slice(0, 3), data, data.fields![0]],
+            }),
+        );
+    });
+
     test('it derives PDA seeds from the data of linked accounts', async () => {
         const authority = await generateAddress();
         const seed = pdaSeedValueNode('authority', dataValueNode('mint.data.mintAuthority'));
@@ -587,10 +624,13 @@ describe('data defaults injected from account data', () => {
         // Given a mint defaulting to the authority, which defaults to the authority of the mint.
         const self = mintAccount({ defaultValue: dataValueNode('authority') });
         const { path } = getAccountPath({ accounts: [self], data, provides });
+        const authorityPath = [...path.slice(0, 3), data, data.fields![0]];
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: {}, fetchAccounts: getFetchAccounts([]), path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY, {
-                chain: 'data.authority -> mint -> data.authority',
+                cycle: [authorityPath, path, authorityPath],
+                formattedCycle: 'data.authority -> mint -> data.authority',
+                path: path.slice(0, 3),
             }),
         );
     });

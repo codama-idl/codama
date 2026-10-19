@@ -87,9 +87,9 @@ export function setNumberWrappersVisitor(map: NumberWrapperMap) {
                 : '[integerTypeNode]';
             return {
                 select: [`${selector}.${kinds}`, path => isValueNumber(path)],
-                transform: node => {
+                transform: (node, stack) => {
                     if (isNode(node, 'floatTypeNode')) return wrapFloat(node, wrapper);
-                    if (isNode(node, 'integerTypeNode')) return wrapInteger(node, wrapper);
+                    if (isNode(node, 'integerTypeNode')) return wrapInteger(node, wrapper, stack.getPath());
                     return node;
                 },
             };
@@ -122,7 +122,7 @@ function assertValidWrapper(wrapper: NumberWrapper): void {
     }
 }
 
-function wrapInteger(number: IntegerTypeNode, wrapper: NumberWrapper): TypeNode {
+function wrapInteger(number: IntegerTypeNode, wrapper: NumberWrapper, path: NodePath): TypeNode {
     switch (wrapper.kind) {
         case 'Unit':
             return integerTypeNode(number.format, { ...number, unit: wrapper.unit });
@@ -137,17 +137,21 @@ function wrapInteger(number: IntegerTypeNode, wrapper: NumberWrapper): TypeNode 
                 display: amountNumberDisplayNode({ decimals: wrapper.decimals, unit: wrapper.unit }),
             });
         default:
-            return wrapIntegerInTypeNode(number, wrapper);
+            return wrapIntegerInTypeNode(number, wrapper, path);
     }
 }
 
-/** Wrap an integer in a fixed point, date-time or duration, which carries its transforms. */
+/**
+ * Wrap an integer in a fixed point, date-time or duration, which carries its transforms. The path
+ * leads to the integer and is reported when it cannot be wrapped.
+ */
 function wrapIntegerInTypeNode(
     number: IntegerTypeNode,
     wrapper: Extract<NumberWrapper, { kind: 'DateTime' | 'Duration' | 'FixedPoint' | 'SolAmount' }>,
+    path: NodePath,
 ): TypeNode {
     if (number.unit !== undefined || number.display !== undefined) {
-        throw invalidWrapper(wrapper, 'the wrapped integer must not carry a unit or display');
+        throw invalidWrapper(wrapper, 'the wrapped integer must not carry a unit or display', path);
     }
     const { transforms } = number;
     const inner = integerTypeNode(number.format, { ...number, transforms: undefined });
@@ -159,7 +163,7 @@ function wrapIntegerInTypeNode(
         case 'FixedPoint':
         case 'SolAmount': {
             if (number.format === 'shortU16') {
-                throw invalidWrapper(wrapper, 'a fixed point cannot wrap a variable-size `shortU16` integer');
+                throw invalidWrapper(wrapper, 'a fixed point cannot wrap a variable-size `shortU16` integer', path);
             }
             return wrapper.kind === 'SolAmount'
                 ? fixedPointTypeNode(inner, { scale: 9, transforms, unit: 'SOL' })
@@ -184,6 +188,12 @@ function wrapFloat(number: FloatTypeNode, wrapper: NumberWrapper): TypeNode {
     }
 }
 
-function invalidWrapper(wrapper: NumberWrapper, reason: string): CodamaError {
-    return new CodamaError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, { kind: wrapper.kind, reason, wrapper });
+/** The error of an invalid wrapper, with the path of the number it wraps, if any. */
+function invalidWrapper(wrapper: NumberWrapper, reason: string, path: NodePath = []): CodamaError {
+    return new CodamaError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, {
+        kind: wrapper.kind,
+        path,
+        reason,
+        wrapper,
+    });
 }

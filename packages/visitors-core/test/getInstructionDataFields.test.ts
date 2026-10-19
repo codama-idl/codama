@@ -135,3 +135,36 @@ test('it follows same-named defined types from different programs', () => {
         'remote.amount',
     ]);
 });
+
+test('it returns the node path of each data field, through linked defined types', () => {
+    // Given an instruction whose data nests an inline struct and a linked struct.
+    const fee = structFieldTypeNode({ identifier: 'fee', type: integerTypeNode('u16') });
+    const configType = structTypeNode([fee]);
+    const config = structFieldTypeNode({ identifier: 'config', type: configType });
+    const flag = structFieldTypeNode({ identifier: 'flag', type: integerTypeNode('u8') });
+    const extraType = definedTypeNode({ identifier: 'extra', type: structTypeNode([flag]) });
+    const extra = structFieldTypeNode({ identifier: 'extra', type: definedTypeLinkNode('extra') });
+    const data = structTypeNode([config, extra]);
+    const instruction = instructionNode({ data, identifier: 'myInstruction' });
+    const program = programNode({
+        definedTypes: [extraType],
+        identifier: 'myProgram',
+        instructions: [instruction],
+        publicKey: '1111',
+    });
+    const root = rootNode(program);
+    const linkables = getLinkablesFromNode(root);
+
+    // When we list its data fields.
+    const fieldPaths = getInstructionDataFields([root, program, instruction], linkables).map(
+        ({ fieldPath }) => fieldPath,
+    );
+
+    // Then each field has a path from the root, crossing the linked defined type.
+    expect(fieldPaths).toStrictEqual([
+        [root, program, instruction, data, config],
+        [root, program, instruction, data, config, configType, fee],
+        [root, program, instruction, data, extra],
+        [root, program, extraType, extraType.type, flag],
+    ]);
+});

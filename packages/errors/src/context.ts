@@ -3,16 +3,7 @@
  * @see https://github.com/anza-xyz/kit/blob/main/packages/errors
  */
 
-import type {
-    AccountValueNode,
-    DataValueNode,
-    IdentifierString,
-    InstructionAccountNode,
-    Node,
-    NodeKind,
-    PathString,
-    StructFieldTypeNode,
-} from '@codama/node-types';
+import type { IdentifierString, Node, NodeKind, PathString } from '@codama/node-types';
 
 import {
     CODAMA_ERROR__ANCHOR__ACCOUNT_TYPE_MISSING,
@@ -170,7 +161,18 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         value: string;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]: {
-        chain: string;
+        /**
+         * The paths of the accounts and data fields being resolved, in order, ending with the one
+         * closing the cycle, e.g. `[path(a), path(b), path(a)]`.
+         */
+        cycle: NodePath[];
+        /**
+         * The cycle, as the identifiers of its accounts and the paths of its data fields prefixed by
+         * `data.`, e.g. `a -> data.config.fee -> a`.
+         */
+        formattedCycle: string;
+        /** The path of the instruction. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]: {
         /** The path of the instruction. */
@@ -211,7 +213,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]: {
         availableIxs: string[];
+        /** The name the instruction was looked up by. */
         instructionName: string;
+        /** The path of the program the instruction was looked up in. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: {
         /** The path of the instruction account. */
@@ -234,7 +239,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]: {
         available: string;
+        /** The name the PDA was looked up by. */
         pdaName: string;
+        /** The path of the program the PDA was looked up in. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: {
         /** The path of the missing seed. */
@@ -242,9 +250,13 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
 
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]: {
-        accountName: string;
         actualType: string;
         expectedType: string;
+        /**
+         * The path of the node the value should be the address of: an instruction account, remaining
+         * accounts, the PDA it is the program ID of, or the data field whose account link is crossed.
+         */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]: {
         actualType: string;
@@ -356,6 +368,7 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_REMOVE_LAST_PATH_IN_NODE_STACK]: {
+        /** The last path of the node stack. */
         path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR]: {
@@ -370,7 +383,13 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         seedValueName: IdentifierString;
     };
     [CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES]: {
-        cycle: (InstructionAccountNode | StructFieldTypeNode)[];
+        /**
+         * The paths of the accounts and data fields being resolved, in order, ending with the one
+         * closing the cycle, e.g. `[path(a), path(b), path(a)]`. Data fields within a linked defined
+         * type have a path through that defined type.
+         */
+        cycle: NodePath[];
+        /** The cycle, as the identifiers of its accounts and the paths of its data fields, e.g. `a -> config.fee -> a`. */
         formattedCycle: string;
         /** The path of the instruction. */
         path: NodePath;
@@ -382,6 +401,8 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: {
         formattedHistogram: string;
+        /** The path of the validated node, e.g. `[root]`. */
+        path: NodePath;
         validationItems: readonly ValidationItem[];
     };
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]: {
@@ -401,9 +422,9 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         path: NodePath;
     };
     [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]: {
-        /** The invalid dependency, which is not part of the tree. */
-        dependency: AccountValueNode | DataValueNode;
+        /** The kind of the invalid dependency, i.e. whether it refers to an account or to data. */
         dependencyKind: 'accountValueNode' | 'dataValueNode';
+        /** The account identifier or data path the invalid dependency refers to, e.g. `owner` or `config.fee`. */
         dependencyName: IdentifierString | PathString;
         /**
          * The instruction account or data field depending on it, e.g. `owner` or `config.fee`. Data
@@ -416,7 +437,13 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: {
         kind: string;
+        /**
+         * The path of the number to wrap, or an empty path when the wrapper is invalid on its own,
+         * e.g. of an unknown kind.
+         */
+        path: NodePath;
         reason: string;
+        /** The wrapper, as given to the visitor. */
         wrapper: object;
     };
     [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]: {
@@ -452,7 +479,10 @@ export function decodeEncodedContext(encodedContext: string): object {
 }
 
 function encodeValue(value: unknown): string {
-    if (Array.isArray(value)) {
+    // Node paths are encoded as node selectors, since nodes cannot be encoded as strings.
+    if (isNonEmptyNodePath(value)) {
+        return encodeURIComponent(formatContextPath(value));
+    } else if (Array.isArray(value)) {
         const commaSeparatedValues = value.map(encodeValue).join('%2C%20' /* ", " */);
         return '%5B' /* "[" */ + commaSeparatedValues + /* "]" */ '%5D';
     } else if (typeof value === 'bigint') {
@@ -469,6 +499,19 @@ function encodeValue(value: unknown): string {
             ),
         );
     }
+}
+
+/**
+ * Whether the value is a path of nodes, e.g. an item of a list of node paths. Since nodes only sit
+ * in contexts within node paths, any non-empty list of nodes is one. Empty paths are only
+ * recognised under the `path` key, as they cannot be told apart from other empty lists.
+ */
+function isNonEmptyNodePath(value: unknown): value is NodePath {
+    return Array.isArray(value) && value.length > 0 && value.every(isNode);
+}
+
+function isNode(value: unknown): value is Node {
+    return typeof value === 'object' && value !== null && typeof (value as { kind?: unknown }).kind === 'string';
 }
 
 function encodeObjectContextEntry([key, value]: [string, unknown]): `${typeof key}=${string}` {

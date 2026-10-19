@@ -76,9 +76,9 @@ describe('provided accounts', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ accountsInput: { myAccount: [address] }, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                accountName: path[3].identifier,
                 actualType: 'array (length 1)',
                 expectedType: 'Address | PublicKey',
+                path,
             }),
         );
     });
@@ -166,10 +166,22 @@ describe('default values', () => {
 
     test('it throws on circular account dependencies', async () => {
         const target = account('a', { defaultValue: accountValueNode('b') });
-        const { path } = getAccountPath(target, { accounts: [account('b', { defaultValue: accountValueNode('a') })] });
+        const { instruction, path } = getAccountPath(target, {
+            accounts: [account('b', { defaultValue: accountValueNode('a') })],
+        });
+        const instructionPath = path.slice(0, 3);
+        const [b, a] = instruction.accounts!;
         await expectCodamaError(
             resolveInstructionAccountAddress({ path }),
-            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY, { chain: 'b -> a -> b' }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY, {
+                cycle: [
+                    [...instructionPath, b],
+                    [...instructionPath, a],
+                    [...instructionPath, b],
+                ],
+                formattedCycle: 'b -> a -> b',
+                path: instructionPath,
+            }),
         );
     });
 
@@ -200,9 +212,9 @@ describe('default values', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: { owner: 42 }, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                accountName: path[3].identifier,
                 actualType: 'number',
                 expectedType: 'Address | PublicKey',
+                path,
             }),
         );
     });

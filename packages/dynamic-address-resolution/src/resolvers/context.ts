@@ -54,18 +54,22 @@ export function createResolutionContext<TAccounts extends AccountsInput, TData e
 /**
  * The address provided for the given account, if any. Throws
  * `UNEXPECTED_ADDRESS_TYPE` when given a list of addresses, which only
- * remaining accounts accept.
+ * remaining accounts accept, with the path of the account, or of the
+ * instruction if it has no such account.
  */
 export function getAccountInput(
-    ctx: Pick<ResolutionContext, 'accountsInput'>,
+    ctx: Pick<ResolutionContext, 'accountsInput' | 'instructionPath'>,
     accountName: IdentifierString,
 ): AddressInput | null | undefined {
     const input = ctx.accountsInput?.[accountName];
     if (Array.isArray(input)) {
+        const account = (getLastNodeFromPath(ctx.instructionPath).accounts ?? []).find(
+            account => account.identifier === accountName,
+        );
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-            accountName,
             actualType: formatValueType(input),
             expectedType: 'Address | PublicKey',
+            path: account ? [...ctx.instructionPath, account] : ctx.instructionPath,
         });
     }
     return input as AddressInput | null | undefined;

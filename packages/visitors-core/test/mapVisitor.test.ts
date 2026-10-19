@@ -42,3 +42,15 @@ test('it creates partial visitors from partial visitors', () => {
     // @ts-expect-error PublicKeyTypeNode is not supported.
     expect(() => visit(node.items[1], visitorB)).toThrow();
 });
+
+test('it gives the visited node to the map function', () => {
+    // Given a node and a visitor returning the number of its direct items.
+    const node = tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]);
+    const visitorA = staticVisitor(() => 2, { keys: ['tupleTypeNode'] });
+
+    // When we map that visitor using the visited node.
+    const visitorB = mapVisitor(visitorA, (value, visitedNode) => `${visitedNode.kind}: ${value}`);
+
+    // Then the map function receives the visited node.
+    expect(visit(node, visitorB)).toBe('tupleTypeNode: 2');
+});

@@ -82,7 +82,7 @@ export async function resolveInstructionAccountAddress<
         });
     }
 
-    const addressInput = getAccountInput({ accountsInput }, ixAccountNode.identifier);
+    const addressInput = getAccountInput({ accountsInput, instructionPath }, ixAccountNode.identifier);
     if (addressInput !== undefined && addressInput !== null) {
         return toAddress(addressInput);
     }

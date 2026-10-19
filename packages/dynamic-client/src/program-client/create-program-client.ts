@@ -135,6 +135,7 @@ export function createProgramClient<TClient = ProgramClient>(
                     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND, {
                         availableIxs: [...instructions.keys()],
                         instructionName: prop,
+                        path: [root, root.program],
                     });
                 }
 
@@ -163,6 +164,7 @@ export function createProgramClient<TClient = ProgramClient>(
                               const available = [...pdaPaths.keys()].join(', ');
                               throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND, {
                                   available,
+                                  path: [root, root.program],
                                   pdaName: prop,
                               });
                           }

@@ -69,7 +69,7 @@ export function createAccountDefaultValueVisitor(
         visitAccountBumpValue: node => unsupported(node),
 
         visitAccountDataValue: async node =>
-            toAddressOrThrow(await getAccountDataValue(ctx, node), ixAccountNode.identifier),
+            toAddressOrThrow(await getAccountDataValue(ctx, node), [...ctx.instructionPath, ixAccountNode]),
 
         visitAccountValue: async node => await resolveAccountValueNodeAddress(node, ctx),
 
@@ -81,7 +81,7 @@ export function createAccountDefaultValueVisitor(
         },
 
         visitDataValue: async node =>
-            toAddressOrThrow(await getRequiredDataValue(ctx, node.path), ixAccountNode.identifier),
+            toAddressOrThrow(await getRequiredDataValue(ctx, node.path), [...ctx.instructionPath, ixAccountNode]),
 
         visitIdentityValue: requireProvidedAccount,
 
@@ -92,7 +92,7 @@ export function createAccountDefaultValueVisitor(
 
         visitPayerValue: requireProvidedAccount,
 
-        visitPdaValue: async node => (await resolvePdaAddress(node, ctx, ixAccountNode.identifier))[0],
+        visitPdaValue: async node => (await resolvePdaAddress(node, ctx))[0],
 
         visitProgramIdValue: () => Promise.resolve(getProgramAddress(ctx.instructionPath)),
 

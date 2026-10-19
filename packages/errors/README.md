@@ -70,6 +70,8 @@ import { getNodePathString } from '@codama/errors';
 getNodePathString(e.context.path); // "[programNode]token.[accountNode]mint"
 ```
 
+Other nodes an error refers to are given as node paths too, never as nodes on their own, e.g. the `cycle` of `CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES` lists the path of each account and data field in the cycle. Production errors encode every node path as its node selectors.
+
 ## Contributing
 
 ### Adding a new error

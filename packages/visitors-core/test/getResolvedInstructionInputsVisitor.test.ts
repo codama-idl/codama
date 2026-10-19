@@ -1,4 +1,5 @@
 import {
+    CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
     CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
     CodamaError,
@@ -6,6 +7,8 @@ import {
 import {
     accountBumpValueNode,
     accountValueNode,
+    conditionalValueNode,
+    dataValueNode,
     definedTypeLinkNode,
     definedTypeNode,
     injectedValueNode,
@@ -619,6 +622,113 @@ test('it reports invalid dependencies of data fields within linked types with th
                 dependent: 'config.fee',
                 path: [root, program, node],
             }),
+        }),
+    );
+});
+
+test('it reports invalid dependencies by the kind and name of what they refer to', () => {
+    // Given an account defaulting to an account the instruction does not have.
+    const owner = instructionAccountNode({
+        defaultValue: accountValueNode('missing'),
+        identifier: 'owner',
+        isSigner: false,
+        isWritable: false,
+    });
+    const node = instructionNode({ accounts: [owner], identifier: 'myInstruction' });
+
+    // Then the error names the invalid dependency, rather than carrying a node outside of the tree.
+    expect(() => resolve(node)).toThrow(
+        expect.objectContaining({
+            context: {
+                __code: CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
+                dependencyKind: 'accountValueNode',
+                dependencyName: 'missing',
+                dependent: 'owner',
+                path: [node],
+            },
+        }),
+    );
+});
+
+test('it reports cycles between accounts with the paths of the accounts', () => {
+    // Given an instruction whose account defaults depend on each other.
+    const a = instructionAccountNode({
+        defaultValue: accountValueNode('b'),
+        identifier: 'a',
+        isSigner: false,
+        isWritable: false,
+    });
+    const b = instructionAccountNode({
+        defaultValue: accountValueNode('a'),
+        identifier: 'b',
+        isSigner: false,
+        isWritable: false,
+    });
+    const node = instructionNode({ accounts: [a, b], identifier: 'myInstruction' });
+
+    // Then the cycle lists the path of each account.
+    expect(() => resolve(node)).toThrow(
+        new CodamaError(CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES, {
+            cycle: [
+                [node, a],
+                [node, b],
+                [node, a],
+            ],
+            formattedCycle: 'a -> b -> a',
+            path: [node],
+        }),
+    );
+});
+
+test('it reports cycles through data fields of linked types with the paths of the fields', () => {
+    // Given an account whose default depends on a field of a linked type, injected from that account.
+    const fee = structFieldTypeNode({
+        defaultValue: injectedValueNode({ key: 'fee' }),
+        identifier: 'fee',
+        type: publicKeyTypeNode(),
+    });
+    const config = definedTypeNode({ identifier: 'config', type: structTypeNode([fee]) });
+    const authority = instructionAccountNode({
+        defaultValue: conditionalValueNode({
+            condition: dataValueNode('config.fee'),
+            ifTrue: publicKeyValueNode('11111111111111111111111111111111'),
+        }),
+        identifier: 'authority',
+        isSigner: false,
+        isWritable: false,
+    });
+    const node = instructionNode({
+        accounts: [authority],
+        data: structTypeNode([structFieldTypeNode({ identifier: 'config', type: definedTypeLinkNode('config') })]),
+        identifier: 'myInstruction',
+        provides: [providedNode('fee', accountValueNode('authority'))],
+    });
+    const program = programNode({
+        definedTypes: [config],
+        identifier: 'myProgram',
+        instructions: [node],
+        publicKey: '1111',
+    });
+    const root = rootNode(program);
+
+    // When we get its resolved inputs.
+    const visitor = getResolvedInstructionInputsVisitor(getLinkablesFromNode(root), {
+        stack: new NodeStack([root, program]),
+    });
+
+    // Then the cycle lists the path of the account and the path of the field, through its defined type.
+    expect(() => visit(node, visitor)).toThrow(
+        expect.objectContaining({
+            context: {
+                __code: CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+                cycle: [
+                    [root, program, node, authority],
+                    [root, program, config, config.type, fee],
+                    [root, program, node, authority],
+                ],
+                formattedCycle: 'authority -> config.fee -> authority',
+                path: [root, program, node],
+            },
         }),
     );
 });

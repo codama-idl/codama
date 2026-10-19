@@ -324,7 +324,7 @@ visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
 
 ### `mapVisitor`
 
-The `mapVisitor` function accepts a base visitor of type `Visitor<T>` and a function of type `(value: T) => U`; and returns a new visitor of type `Visitor<U>`.
+The `mapVisitor` function accepts a base visitor of type `Visitor<T>` and a function of type `(value: T, node: Node) => U`; and returns a new visitor of type `Visitor<U>`. The function receives the value returned by the base visitor and the visited node.
 
 ```ts
 // Gets a nested string representation of node kinds.

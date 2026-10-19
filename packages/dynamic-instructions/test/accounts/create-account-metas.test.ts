@@ -158,9 +158,9 @@ describe('accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { mint: [address] }, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                accountName: 'mint',
                 actualType: 'array (length 1)',
                 expectedType: 'Address | PublicKey',
+                path: [...path, (path[path.length - 1] as InstructionNode).accounts![0]],
             }),
         );
     });
@@ -324,9 +324,12 @@ describe('remaining accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { multisig: multisigAddress, signers }, path: multisigPath }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                accountName: 'signers[1]',
                 actualType: 'number',
                 expectedType: 'Address | PublicKey',
+                path: [
+                    ...multisigPath,
+                    (multisigPath[multisigPath.length - 1] as InstructionNode).remainingAccounts![0],
+                ],
             }),
         );
     });

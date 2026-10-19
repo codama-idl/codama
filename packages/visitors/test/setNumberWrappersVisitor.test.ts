@@ -135,8 +135,26 @@ test('it reports the wrapper kind and reason', () => {
     expect(() => setNumberWrappersVisitor({ value: { kind: 'FixedPoint', scale: 0 } })).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, {
             kind: 'FixedPoint',
+            path: [],
             reason: 'a fixed point must have a non-zero scale; use a `Unit` wrapper instead',
             wrapper: { kind: 'FixedPoint', scale: 0 },
+        }),
+    );
+});
+
+test('it reports the path of the number that cannot be wrapped', () => {
+    // Given a struct whose field is a variable-size integer.
+    const number = integerTypeNode('shortU16');
+    const field = structFieldTypeNode({ identifier: 'value', type: number });
+    const node = structTypeNode([field]);
+
+    // When we wrap it in a fixed point, then the error carries the path of the integer.
+    expect(() => visit(node, setNumberWrappersVisitor({ value: { kind: 'SolAmount' } }))).toThrow(
+        new CodamaError(CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER, {
+            kind: 'SolAmount',
+            path: [node, field, number],
+            reason: 'a fixed point cannot wrap a variable-size `shortU16` integer',
+            wrapper: { kind: 'SolAmount' },
         }),
     );
 });

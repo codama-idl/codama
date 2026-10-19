@@ -18,13 +18,14 @@ import { describe, expect, test } from 'vitest';
 import { createProgramClient, type ProgramClient } from '../../../src';
 import type { MplTokenMetadataProgramClient } from '../../programs/generated/mpl-token-metadata-idl-types';
 import type { SystemProgramClient } from '../../programs/generated/system-program-idl-types';
-import { createTestProgramClient, loadIdl, SvmTestContext } from '../../programs/test-utils';
+import { createTestProgramClient, loadIdl, loadRoot, SvmTestContext } from '../../programs/test-utils';
 
 describe('createProgramClient', () => {
     describe('methods', () => {
         const programClient = createTestProgramClient('system-program-idl.json');
 
         test('should throw when accessing a non-existent instruction', () => {
+            const root = loadRoot('system-program-idl.json');
             expect(() => programClient.methods.nonExistentMethod).toThrow(
                 expect.objectContaining({
                     context: expect.objectContaining({
@@ -45,6 +46,7 @@ describe('createProgramClient', () => {
                             'upgradeNonceAccount',
                         ],
                         instructionName: 'nonExistentMethod',
+                        path: [root, root.program],
                     }),
                 }),
             );
@@ -94,6 +96,7 @@ describe('createProgramClient', () => {
         const pdaClient = createTestProgramClient<MplTokenMetadataProgramClient>('mpl-token-metadata-idl.json');
 
         test('should throw when accessing a non-existent PDA', () => {
+            const root = loadRoot('mpl-token-metadata-idl.json');
             // @ts-expect-error - testing a non-existent PDA
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             expect(() => pdaClient.pdas.nonExistentPda).toThrow(
@@ -102,6 +105,7 @@ describe('createProgramClient', () => {
                         __code: CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND,
                         available:
                             'metadata, deprecatedMasterEditionV1, masterEdition, editionMarker, editionMarkerV2, tokenRecord, metadataDelegateRecord, collectionAuthorityRecord, holderDelegateRecord, useAuthorityRecord',
+                        path: [root, root.program],
                         pdaName: 'nonExistentPda',
                     }),
                 }),

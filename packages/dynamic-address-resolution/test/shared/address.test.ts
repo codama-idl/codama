@@ -1,4 +1,6 @@
+import { CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, CodamaError } from '@codama/errors';
 import { type Address, address } from '@solana/addresses';
+import { instructionAccountNode, instructionNode } from 'codama';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import {
@@ -7,6 +9,7 @@ import {
     isPublicKeyLike,
     type PublicKeyLike,
     toAddress,
+    toAddressOrThrow,
 } from '../../src/shared/address';
 import { generateAddress } from '../test-utils';
 
@@ -75,6 +78,25 @@ describe('toAddress', () => {
             // @ts-expect-error testing invalid inputs
             expect(() => toAddress(input)).toThrow(/Cannot convert value to Address/);
         }
+    });
+});
+
+describe('toAddressOrThrow', () => {
+    test('should convert address convertible values', () => {
+        const addr = '11111111111111111111111111111111';
+        expect(toAddressOrThrow(addr, [])).toBe(addr);
+    });
+
+    test('should throw with the given path for values that are not address convertible', () => {
+        const account = instructionAccountNode({ identifier: 'mint', isSigner: false, isWritable: false });
+        const path = [instructionNode({ accounts: [account], identifier: 'myInstruction' }), account];
+        expect(() => toAddressOrThrow(42, path)).toThrow(
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
+                actualType: 'number',
+                expectedType: 'Address | PublicKey',
+                path,
+            }),
+        );
     });
 });
 

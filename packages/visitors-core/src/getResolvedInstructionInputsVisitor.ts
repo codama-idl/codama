@@ -22,6 +22,7 @@ import {
 
 import { getInstructionDataFields } from './getInstructionDataFields';
 import { LinkableDictionary } from './LinkableDictionary';
+import { NodePath } from './NodePath';
 import { NodeStack } from './NodeStack';
 import { pipe } from './pipe';
 import { ProvidedScope } from './ProvidedScope';
@@ -53,10 +54,18 @@ export type ResolvedInstructionDataField = {
 
 export type InstructionDependency = AccountValueNode | DataValueNode;
 
-/** An input in the dependency graph — an account, or a data field addressed by its path. */
+/**
+ * An input in the dependency graph, i.e. an account or a data field addressed by its key, with
+ * the path of its node, used to report cycles.
+ */
 type InstructionInput = AccountInput | DataInput;
-type AccountInput = { key: IdentifierString; kind: 'account'; node: InstructionAccountNode };
-type DataInput = { key: PathString; kind: 'data'; node: StructFieldTypeNode };
+type AccountInput = {
+    key: IdentifierString;
+    kind: 'account';
+    node: InstructionAccountNode;
+    path: NodePath<InstructionAccountNode>;
+};
+type DataInput = { key: PathString; kind: 'data'; node: StructFieldTypeNode; path: NodePath<StructFieldTypeNode> };
 
 /**
  * Resolve the default values of an instruction's accounts and data fields,
@@ -111,7 +120,7 @@ export function getResolvedInstructionInputsVisitor(
             throw new CodamaError(
                 CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
                 {
-                    cycle: cycle.map(entry => entry.node),
+                    cycle: cycle.map(entry => entry.path),
                     formattedCycle: cycle.map(entry => entry.key).join(' -> '),
                     path: stack.getPath('instructionNode'),
                 },
@@ -226,7 +235,7 @@ export function getResolvedInstructionInputsVisitor(
                 if (!dependencyAccount) {
                     throwInvalidDependency(parent, dependency, dependency.identifier);
                 }
-                input = { key: dependencyAccount.identifier, kind: 'account', node: dependencyAccount };
+                input = getAccountInput(dependencyAccount);
             } else if (isNode(dependency, 'dataValueNode')) {
                 const dependencyField = findFieldByPath(dataFields, dependency.path);
                 if (!dependencyField) {
@@ -240,13 +249,17 @@ export function getResolvedInstructionInputsVisitor(
         });
     }
 
+    function getAccountInput(account: InstructionAccountNode): AccountInput {
+        const path = [...stack.getPath('instructionNode'), account] as const;
+        return { key: account.identifier, kind: 'account', node: account, path };
+    }
+
     function throwInvalidDependency(
         parent: InstructionInput,
         dependency: InstructionDependency,
         dependencyName: IdentifierString | PathString,
     ): never {
         throw new CodamaError(CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY, {
-            dependency,
             dependencyKind: dependency.kind,
             dependencyName,
             dependent: parent.key,
@@ -266,7 +279,7 @@ export function getResolvedInstructionInputsVisitor(
         // The stack already contains the visited instruction since this visitor is
         // wrapped in `recordNodeStackVisitor` (see the `pipe` below).
         dataFields = getInstructionDataFields(stack.getPath('instructionNode'), linkables).map(
-            ({ field, path }): DataInput => ({ key: path, kind: 'data', node: field }),
+            ({ field, fieldPath, path }): DataInput => ({ key: path, kind: 'data', node: field, path: fieldPath }),
         );
         dataDefaults = new Map(
             dataFields.map(field => [field.key, resolveDefaultValue(asInstructionInputValue(field.node.defaultValue))]),
@@ -285,14 +298,7 @@ export function getResolvedInstructionInputsVisitor(
             return includeDataValueNodes || !isNode(value, VALUE_NODES);
         });
 
-        const inputs: InstructionInput[] = [
-            ...(node.accounts ?? []).map(account => ({
-                key: account.identifier,
-                kind: 'account' as const,
-                node: account,
-            })),
-            ...dataInputs,
-        ];
+        const inputs: InstructionInput[] = [...(node.accounts ?? []).map(getAccountInput), ...dataInputs];
 
         inputs.forEach(input => resolveInstructionInput(node, input));
 

@@ -103,7 +103,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]: 'Missing account $path.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]: 'Resolver [$resolverName] not provided for $path.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: 'Cannot convert value to Address: [$value].',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]: 'Circular dependency detected: [$chain].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]:
+        'Circular dependency detected when resolving the accounts and data of instruction $path. Got the following dependency cycle [$formattedCycle].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]: 'Missing data [$pathString] in $path.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM]:
         'Expected the items of set $path to be unique, but the item at index [$index] equals the item at index [$firstIndex].',
@@ -116,17 +117,18 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING]:
         'Cannot read the data of account $path without a `fetchAccounts` function to fetch it.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]:
-        'Instruction [$instructionName] not found in IDL. Available: [$availableIxs].',
+        'Instruction [$instructionName] not found in program $path. Available: [$availableIxs].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: 'Invalid address for account $path: [$value].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT]:
         'Invalid input for account $path: [$value]. Expected [$expectedType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION]: 'Internal invariant violation: [$message].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]: 'Referenced node [$referencedName] not found from $path.',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]: 'PDA [$pdaName] not found in IDL. Available: [$available].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]:
+        'PDA [$pdaName] not found in program $path. Available: [$available].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: 'Missing seed $path.',
 
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]:
-        'Expected [$expectedType] for account [$accountName], but received [$actualType].',
+        'Expected an address of type [$expectedType] for $path, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]:
         'Expected [$expectedType] for $path, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: 'Unsupported node $path.',
@@ -176,7 +178,7 @@ export const CodamaErrorMessages: Readonly<{
         'Circular dependency detected when resolving the default values of instruction $path. Got the following dependency cycle [$formattedCycle].',
     [CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND]:
         'Defined type $path does not have a field or variant named [$missingMember].',
-    [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate the given node [$formattedHistogram].',
+    [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate node $path [$formattedHistogram].',
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]: 'Cannot find account [$accountName] in instruction $path.',
     [CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND]:
         'Cannot find the data field [$pathString] of instruction $path. Note that fields behind a defined type link cannot be updated directly: unwrap the defined type first.',
@@ -184,7 +186,7 @@ export const CodamaErrorMessages: Readonly<{
         'Could not find an enum data field named [$fieldName] for instruction $path.',
     [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]:
         'Dependency [$dependencyName] of kind [$dependencyKind] is not a valid dependency of [$dependent] in instruction $path.',
-    [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: 'Invalid number wrapper [$kind]: $reason.',
+    [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: 'Invalid number wrapper [$kind] for number $path: $reason.',
     [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]: 'Invalid seed values for PDA [$pdaName] in instruction $path.',
     [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]: 'The value provided at $path is not one of [$expectedKinds].',
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: 'Cannot find key [$key] in RenderMap.',

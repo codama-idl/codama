@@ -33,14 +33,22 @@ export async function resolveAccountValueNodeAddress(
         });
     }
 
-    detectCircularDependency(node.identifier, ctx.resolutionPath);
-    return await resolveAccountAddress(account, { ...ctx, resolutionPath: [...ctx.resolutionPath, node.identifier] });
+    const entry = { key: node.identifier, path: [...ctx.instructionPath, account] };
+    detectCircularDependency(entry, ctx);
+    return await resolveAccountAddress(account, { ...ctx, resolutionPath: [...ctx.resolutionPath, entry] });
 }
 
-export function detectCircularDependency(nodeName: string, resolutionPath: ResolutionPath) {
-    if (resolutionPath.includes(nodeName)) {
+/** Throw `CIRCULAR_ACCOUNT_DEPENDENCY` when the given entry is already being resolved. */
+export function detectCircularDependency(
+    entry: ResolutionPath[number],
+    ctx: Pick<ResolutionContext, 'instructionPath' | 'resolutionPath'>,
+) {
+    if (ctx.resolutionPath.some(({ key }) => key === entry.key)) {
+        const cycle = [...ctx.resolutionPath, entry];
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY, {
-            chain: [...resolutionPath, nodeName].join(' -> '),
+            cycle: cycle.map(({ path }) => path),
+            formattedCycle: cycle.map(({ key }) => key).join(' -> '),
+            path: ctx.instructionPath,
         });
     }
 }
