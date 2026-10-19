@@ -174,6 +174,8 @@ export default {
 };
 ```
 
+Visitors may also be asynchronous. If a visitor returns a promise, the CLI waits for it to settle before running the next visitor and uses the `RootNode` it resolves to, if any. Visitors therefore always run one after the other, and the command fails if any of them rejects.
+
 ## Recipes
 
 There are plenty of existing visitors that you can use in your Codama scripts. The "[Available visitors](https://github.com/codama-idl/codama?tab=readme-ov-file#available-visitors)" section of the Codama README aims to list as many of them as possible. This includes visitors maintained by various teams across the ecosystem.
