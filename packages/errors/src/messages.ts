@@ -53,6 +53,7 @@ import {
     CODAMA_ERROR__VERSION_MISMATCH,
     CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND,
     CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES,
+    CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES,
     CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION,
     CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
     CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS,
@@ -152,6 +153,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND]: 'Account $path does not have a field named [$missingField].',
     [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES]:
         'Cannot add PDAs to program $path because the following PDA names already exist [$duplicatedPdaNames].',
+    [CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PROGRAM_NAMES]:
+        'Cannot add programs to root $path because the following program identifiers conflict with existing or other new programs after conversion to camelCase [$duplicatedProgramNames].',
     [CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION]:
         'Cannot extend visitor with function [$visitFunction] as the base visitor does not support it.',
     [CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES]:
