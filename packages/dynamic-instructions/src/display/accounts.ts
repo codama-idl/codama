@@ -10,11 +10,9 @@ import type { Address } from '@solana/addresses';
 import {
     type AccountLinkNode,
     type AccountNode,
-    findProgramNodeFromPath,
     getLastNodeFromPath,
     type LinkableDictionary,
     type NodePath,
-    parseOptionalAccountStrategy,
 } from 'codama';
 
 import type { DisplayAccountMap } from './types';
@@ -72,22 +70,13 @@ function decodeAccount(
 }
 
 /**
- * The address of a named account of a parsed instruction, or `undefined` when it is omitted.
- *
- * Optional accounts are omitted either by leaving them out, with the `omitted` strategy, or by
- * passing the address of the program, with the `programId` strategy, the default. The parser
- * keeps that address in the slot, so it is treated as omitted here, rather than presented as a
- * real account.
+ * The address of a named account of a parsed instruction, or `undefined` when it is omitted or
+ * unidentified. The parser leaves out optional accounts that are omitted, either by leaving them
+ * out, with the `omitted` strategy, or by passing the address of the program, with the
+ * `programId` strategy, the default.
  */
 export function getAccountAddress(parsed: ParsedInstruction, identifier: string): Address | undefined {
-    const address = parsed.accounts.find(account => account.identifier === identifier)?.address;
-    if (address === undefined) return undefined;
-    const instruction = getLastNodeFromPath(parsed.path);
-    const account = (instruction.accounts ?? []).find(account => account.identifier === identifier);
-    if (!account?.isOptional || parseOptionalAccountStrategy(instruction.optionalAccountStrategy) !== 'programId') {
-        return address;
-    }
-    return address === findProgramNodeFromPath(parsed.path)?.publicKey ? undefined : address;
+    return parsed.accounts.find(account => account.identifier === identifier)?.address;
 }
 
 /** The decoded data of a named account of the instruction, using its `accountLink`, if available. */

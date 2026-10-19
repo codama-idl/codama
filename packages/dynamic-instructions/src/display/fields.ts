@@ -32,10 +32,12 @@ type Row = DisplayField & {
 
 /**
  * The rows of the fallback list of an instruction: its data fields, then its accounts, then its
- * remaining accounts. Members skipped `always` are left out, and so are members skipped
- * `whenInjected` whose value another row presents through an injection, e.g. a mint whose
- * decimals and address scale and name an amount. Only rows that are always shown count, so
- * members skipped `whenInjected` never hide one another.
+ * unidentified accounts, then its remaining accounts. Unidentified accounts, whose identity the
+ * parser cannot tell, are shown as `Unidentified Account`, since the signer passes them. Members
+ * skipped `always` are left out, and so are members skipped `whenInjected` whose value another
+ * row presents through an injection, e.g. a mint whose decimals and address scale and name an
+ * amount. Only rows that are always shown count, so members skipped `whenInjected` never hide
+ * one another.
  */
 export function getDisplayFields(context: DisplayContext): DisplayField[] {
     const formatAddress = (address: Address) =>
@@ -43,6 +45,11 @@ export function getDisplayFields(context: DisplayContext): DisplayField[] {
     const rows = [
         ...getDataRows(context),
         ...getAccountRows(context, formatAddress),
+        ...getNumberedRows(
+            'Unidentified Account',
+            context.parsed.unidentifiedAccounts.map(meta => meta.address),
+            formatAddress,
+        ),
         ...getRemainingAccountRows(context, formatAddress),
     ];
     const surfaced = new Set(rows.flatMap(row => (row.skip === 'never' ? [...row.reads] : [])));

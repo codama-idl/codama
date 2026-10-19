@@ -526,6 +526,29 @@ describe('accounts', () => {
         ]);
     });
 
+    test('it shows unidentified accounts without naming them', () => {
+        // Given two optional accounts, with the `omitted` strategy.
+        const instruction = {
+            accounts: [
+                account('source'),
+                account('referrer', { isOptional: true }),
+                account('memo', { isOptional: true }),
+                account('destination'),
+            ],
+            optionalAccountStrategy: 'omitted' as const,
+        };
+
+        // When one of them is left out: the middle account could be either of them.
+        const accounts = [readonly(ALICE), readonly(CAROL), readonly(BOB)];
+
+        // Then we expect it shown as unidentified, rather than under a name that may be wrong.
+        expect(display(instruction, { accounts }, { formatAddress }).fields).toStrictEqual([
+            { label: 'Source', value: 'Alice' },
+            { label: 'Destination', value: 'Bob' },
+            { label: 'Unidentified Account', value: 'Carol' },
+        ]);
+    });
+
     test('it groups remaining accounts by signer role, numbering them', () => {
         const instruction = {
             accounts: [account('multisig')],

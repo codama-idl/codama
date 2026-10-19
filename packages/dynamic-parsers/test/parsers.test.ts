@@ -13,6 +13,7 @@ import {
     fixedSizeTransformNode,
     hiddenPrefixTransformNode,
     instructionAccountNode,
+    InstructionNode,
     instructionNode,
     instructionRemainingAccountsNode,
     integerTypeNode,
@@ -28,12 +29,13 @@ import {
 } from '@codama/nodes';
 import { LinkableDictionary } from '@codama/visitors-core';
 import { AccountRole } from '@solana/instructions';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import {
     matchesAccountData,
     parseAccountData,
     parseData,
+    ParseDataOptions,
     parseEventData,
     parseInstruction,
     parseInstructionData,
@@ -427,6 +429,7 @@ describe('parseInstruction', () => {
             ...getNodeCodec([root, root.program, memoInstruction]).decode(hex('48656c6c6f')),
             accounts: [{ address: '1111', identifier: 'signer', role: AccountRole.READONLY_SIGNER }],
             remainingAccounts: [],
+            unidentifiedAccounts: [],
         });
     });
 
@@ -554,6 +557,181 @@ describe('parseInstruction', () => {
         expect(result?.accounts).toStrictEqual([
             { address: 'source11', identifier: 'source', role: AccountRole.WRITABLE },
         ]);
+    });
+
+    describe('optional accounts', () => {
+        const required = (identifier: string) =>
+            instructionAccountNode({ identifier, isSigner: false, isWritable: true });
+        const optional = (identifier: string) =>
+            instructionAccountNode({ identifier, isOptional: true, isSigner: false, isWritable: true });
+        const meta = (address: string) => ({ address, role: AccountRole.WRITABLE });
+        const parse = (instruction: InstructionNode, addresses: string[]) =>
+            parseInstruction(
+                rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' })),
+                {
+                    accounts: addresses.map(meta),
+                    data: hex(''),
+                    programAddress: '1111',
+                } as unknown as Parameters<typeof parseInstruction>[1],
+            );
+
+        test('it leaves out optional accounts omitted with the program address', () => {
+            // Given an optional `referrer` between two accounts, with the default `programId` strategy.
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination')],
+                identifier: 'transfer',
+            });
+
+            // When the referrer is omitted by passing the program address in its slot.
+            const result = parse(instruction, ['source11', '1111', 'dest1111']);
+
+            // Then we expect the referrer to be absent, rather than named after the program address.
+            expect(result).toMatchObject({
+                accounts: [
+                    { ...meta('source11'), identifier: 'source' },
+                    { ...meta('dest1111'), identifier: 'destination' },
+                ],
+                remainingAccounts: [],
+                unidentifiedAccounts: [],
+            });
+        });
+
+        test('it names required accounts holding the program address with the programId strategy', () => {
+            const instruction = instructionNode({ accounts: [required('program')], identifier: 'invoke' });
+            expect(parse(instruction, ['1111'])?.accounts).toStrictEqual([{ ...meta('1111'), identifier: 'program' }]);
+        });
+
+        test('it names optional accounts holding the program address with the omitted strategy', () => {
+            const instruction = instructionNode({
+                accounts: [optional('referrer')],
+                identifier: 'refer',
+                optionalAccountStrategy: 'omitted',
+            });
+            expect(parse(instruction, ['1111'])?.accounts).toStrictEqual([{ ...meta('1111'), identifier: 'referrer' }]);
+        });
+
+        test('it names all accounts when every optional account is present with the omitted strategy', () => {
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination')],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+            });
+            expect(parse(instruction, ['source11', 'refer111', 'dest1111'])).toMatchObject({
+                accounts: [
+                    { ...meta('source11'), identifier: 'source' },
+                    { ...meta('refer111'), identifier: 'referrer' },
+                    { ...meta('dest1111'), identifier: 'destination' },
+                ],
+                remainingAccounts: [],
+                unidentifiedAccounts: [],
+            });
+        });
+
+        test('it shifts the accounts after an omitted optional account with the omitted strategy', () => {
+            // Given an optional `referrer` between two accounts, with the `omitted` strategy.
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination')],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+            });
+
+            // When the referrer is left out, so only two metas are provided.
+            const result = parse(instruction, ['source11', 'dest1111']);
+
+            // Then we expect the second meta to be the destination, not the referrer.
+            expect(result).toMatchObject({
+                accounts: [
+                    { ...meta('source11'), identifier: 'source' },
+                    { ...meta('dest1111'), identifier: 'destination' },
+                ],
+                remainingAccounts: [],
+                unidentifiedAccounts: [],
+            });
+        });
+
+        test('it leaves accounts unidentified when the omitted optional accounts are ambiguous', () => {
+            // Given two optional accounts, with the `omitted` strategy.
+            const instruction = instructionNode({
+                accounts: [
+                    required('source'),
+                    optional('referrer'),
+                    required('destination'),
+                    optional('memo'),
+                    required('authority'),
+                ],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+            });
+
+            // When one of them is left out: it could be either of them.
+            const result = parse(instruction, ['source11', 'middle11', 'middle22', 'auth1111']);
+
+            // Then we expect the accounts whose position is certain to be named, and the others unidentified.
+            expect(result).toMatchObject({
+                accounts: [
+                    { ...meta('source11'), identifier: 'source' },
+                    { ...meta('auth1111'), identifier: 'authority' },
+                ],
+                remainingAccounts: [],
+                unidentifiedAccounts: [meta('middle11'), meta('middle22')],
+            });
+        });
+
+        test('it leaves accounts unidentified when they could be omitted optional accounts or remaining accounts', () => {
+            // Given an optional account followed by a required one and remaining accounts, with the `omitted` strategy.
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination')],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+                remainingAccounts: [instructionRemainingAccountsNode('signers')],
+            });
+
+            // When four metas are provided: the referrer may be present, or omitted with one more remaining account.
+            const result = parse(instruction, ['source11', 'middle11', 'middle22', 'signer11']);
+
+            // Then we expect the ambiguous metas unidentified, and only the ones beyond all named accounts as remaining.
+            expect(result).toMatchObject({
+                accounts: [{ ...meta('source11'), identifier: 'source' }],
+                remainingAccounts: [meta('signer11')],
+                unidentifiedAccounts: [meta('middle11'), meta('middle22')],
+            });
+        });
+
+        test('it leaves accounts unidentified when fewer metas than required accounts are provided with the omitted strategy', () => {
+            // Given an optional account followed by two required ones, with the `omitted` strategy.
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination'), required('authority')],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+            });
+
+            // When only two metas are provided: the second one could be the referrer or the destination.
+            const result = parse(instruction, ['source11', 'middle11']);
+
+            // Then we expect it unidentified.
+            expect(result).toMatchObject({
+                accounts: [{ ...meta('source11'), identifier: 'source' }],
+                remainingAccounts: [],
+                unidentifiedAccounts: [meta('middle11')],
+            });
+        });
+
+        test('it names all accounts when too few metas are provided for remaining accounts with the omitted strategy', () => {
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination')],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+                remainingAccounts: [instructionRemainingAccountsNode('signers')],
+            });
+            expect(parse(instruction, ['source11', 'dest1111'])).toMatchObject({
+                accounts: [
+                    { ...meta('source11'), identifier: 'source' },
+                    { ...meta('dest1111'), identifier: 'destination' },
+                ],
+                remainingAccounts: [],
+                unidentifiedAccounts: [],
+            });
+        });
     });
 
     test('it decodes instruction bytes with the given bytes encoding', () => {
@@ -693,6 +871,12 @@ describe('parseData', () => {
         const root = rootNode(programNode({ accounts: [account], identifier: 'myProgram', publicKey: '1111' }));
         const result = parseData(root, hex('0102'), 'accountNode', { bytesEncoding: 'base16' });
         expect(result?.value).toStrictEqual({ payload: ['base16', '0102'] });
+    });
+});
+
+describe('ParseDataOptions', () => {
+    test('it does not accept options that are only used when encoding', () => {
+        expectTypeOf<ParseDataOptions>().not.toHaveProperty('resolvedDefaultValues');
     });
 });
 

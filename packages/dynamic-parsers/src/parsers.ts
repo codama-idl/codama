@@ -8,7 +8,15 @@ import {
     getNodeCodec,
     ReadonlyUint8Array,
 } from '@codama/dynamic-codecs';
-import { AccountNode, EventNode, IdentifierString, InstructionNode, RootNode } from '@codama/nodes';
+import {
+    AccountNode,
+    EventNode,
+    IdentifierString,
+    InstructionAccountNode,
+    InstructionNode,
+    parseOptionalAccountStrategy,
+    RootNode,
+} from '@codama/nodes';
 import {
     getLastNodeFromPath,
     getLinkablesFromNode,
@@ -31,8 +39,11 @@ import { identifyData, IdentifyDataOptions } from './identify';
 type ParsableNode = AccountNode | EventNode | InstructionNode;
 type ParsableNodeKind = ParsableNode['kind'];
 
-/** Options of the parsers: how to identify the bytes and how to decode them. */
-export type ParseDataOptions = CodecVisitorOptions & IdentifyDataOptions;
+/**
+ * Options of the parsers: how to identify the bytes and how to decode them. The
+ * `resolvedDefaultValues` of the codecs are left out, since they only apply when encoding.
+ */
+export type ParseDataOptions = Omit<CodecVisitorOptions, 'resolvedDefaultValues'> & IdentifyDataOptions;
 
 /**
  * Identify the account of some bytes and decode them with it.
@@ -128,27 +139,45 @@ export type ParsableInstruction = Instruction &
     InstructionWithAccounts<readonly (AccountLookupMeta | AccountMeta)[]> &
     InstructionWithData<ReadonlyUint8Array>;
 
-/** The named accounts of a parsed instruction, each pairing its `AccountMeta` with its identifier. */
+/**
+ * The named accounts of a parsed instruction, each pairing its `AccountMeta` with its identifier,
+ * in the order of the instruction. Only present accounts whose identity is certain are named.
+ */
 export type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { identifier: IdentifierString }>;
 
 /**
- * A parsed instruction: its decoded node, plus its named {@link ParsedInstructionAccounts} and
- * the `remainingAccounts` beyond them, e.g. the signers of a multisig.
+ * A parsed instruction: its decoded node, plus the account metas of the instruction, split into
+ * its named {@link ParsedInstructionAccounts}, its `unidentifiedAccounts` and its
+ * `remainingAccounts`.
+ *
+ * - `accounts`: the present accounts whose identity is certain, each with its identifier.
+ *   Optional accounts that are absent are left out, including those passed as the address of
+ *   the program with the `programId` strategy, the default.
+ * - `unidentifiedAccounts`: the account metas whose identity is ambiguous, which can only happen
+ *   with the `omitted` strategy. Since absent optional accounts are left out, the accounts after
+ *   them shift, so when several sets of optional accounts may be absent, or when remaining
+ *   accounts may follow, the metas that could be different accounts are left unidentified
+ *   rather than mislabelled.
+ * - `remainingAccounts`: the account metas beyond all named accounts, e.g. the signers of a
+ *   multisig.
  */
 export type ParsedInstruction = DecodedInstructionNode & {
     readonly accounts: ParsedInstructionAccounts;
     readonly remainingAccounts: readonly (AccountLookupMeta | AccountMeta)[];
+    readonly unidentifiedAccounts: readonly (AccountLookupMeta | AccountMeta)[];
 };
 
 /**
  * Parse an instruction, as defined in `@solana/instructions`: identify it within the program
- * of its `programAddress`, decode its data and name its accounts.
+ * of its `programAddress`, decode its data and name its accounts, following the
+ * `optionalAccountStrategy` of the instruction, see {@link ParsedInstruction}.
  *
  * @example
  * ```ts
  * const parsed = parseInstruction(root, instruction);
  * parsed?.value; // { amount: 42n }
  * parsed?.accounts; // [{ address, role, identifier: 'source' }, …]
+ * parsed?.unidentifiedAccounts; // [], unless optional accounts are omitted ambiguously
  * parsed?.remainingAccounts; // [{ address, role }, …]
  * ```
  *
@@ -165,14 +194,90 @@ export function parseInstruction(
         programAddress: instruction.programAddress,
     });
     if (!decoded) return undefined;
-    const namedAccounts = getLastNodeFromPath(decoded.path).accounts ?? [];
-    const accounts: ParsedInstructionAccounts = namedAccounts.flatMap((account, index) => {
-        const accountMeta = instruction.accounts[index];
-        if (!accountMeta) return [];
-        return [{ ...accountMeta, identifier: account.identifier }];
+    return { ...decoded, ...identifyInstructionAccounts(getLastNodeFromPath(decoded.path), instruction) };
+}
+
+/**
+ * Split the account metas of an instruction into named, unidentified and remaining accounts.
+ *
+ * With the `programId` strategy, every named account has a slot, so each meta is identified by
+ * its position. With the `omitted` strategy, a meta is identified only if it is the same account,
+ * or a remaining account, for every number of omitted optional accounts consistent with the
+ * number of metas, and for every choice of the optional accounts omitted.
+ */
+function identifyInstructionAccounts(
+    instructionNode: InstructionNode,
+    instruction: ParsableInstruction,
+): Pick<ParsedInstruction, 'accounts' | 'remainingAccounts' | 'unidentifiedAccounts'> {
+    const namedAccounts = instructionNode.accounts ?? [];
+    const isProgramIdStrategy = parseOptionalAccountStrategy(instructionNode.optionalAccountStrategy) === 'programId';
+    const omittedCounts = isProgramIdStrategy
+        ? [0]
+        : getPossibleOmittedCounts(instructionNode, instruction.accounts.length);
+
+    // For a given number of omitted optional accounts, the account at each position lies between
+    // the ones found by omitting the last optional accounts and by omitting the first ones. So the
+    // account at a position is certain when all these bounds agree, `null` marking positions
+    // beyond the named accounts, i.e. remaining accounts.
+    const bounds = omittedCounts.flatMap(omitted => [
+        omitOptionalAccounts(namedAccounts, omitted, 'last'),
+        omitOptionalAccounts(namedAccounts, omitted, 'first'),
+    ]);
+
+    const accounts: Array<AccountMeta & { identifier: IdentifierString }> = [];
+    const remainingAccounts: Array<AccountLookupMeta | AccountMeta> = [];
+    const unidentifiedAccounts: Array<AccountLookupMeta | AccountMeta> = [];
+    instruction.accounts.forEach((meta, index) => {
+        const candidates = new Set(bounds.map(present => present[index] ?? null));
+        const [account] = candidates;
+        if (candidates.size > 1 || account === undefined) {
+            unidentifiedAccounts.push(meta);
+        } else if (account === null) {
+            remainingAccounts.push(meta);
+        } else if (!(isProgramIdStrategy && account.isOptional && meta.address === instruction.programAddress)) {
+            // With the `programId` strategy, an optional account holding the program address is absent.
+            accounts.push({ ...meta, identifier: account.identifier });
+        }
     });
-    const remainingAccounts = instruction.accounts.slice(namedAccounts.length);
-    return { ...decoded, accounts, remainingAccounts };
+    return { accounts, remainingAccounts, unidentifiedAccounts };
+}
+
+/**
+ * The numbers of optional accounts that may be omitted, with the `omitted` strategy, given the
+ * number of account metas. Without remaining accounts, the metas beyond the named accounts tell
+ * how many optional accounts are omitted. With remaining accounts, any number of them may follow
+ * the named accounts, so any number of optional accounts may be omitted, as long as the metas can
+ * hold the named accounts that are left. When there are fewer metas than required accounts, the
+ * instruction is malformed, so any number of optional accounts may be omitted.
+ */
+function getPossibleOmittedCounts(instructionNode: InstructionNode, metaCount: number): number[] {
+    const namedAccounts = instructionNode.accounts ?? [];
+    const optionalCount = namedAccounts.filter(account => account.isOptional).length;
+    const minOmitted = Math.max(0, namedAccounts.length - metaCount);
+    const hasRemainingAccounts = (instructionNode.remainingAccounts ?? []).length > 0;
+    if (minOmitted > optionalCount) return getRange(0, optionalCount);
+    return hasRemainingAccounts ? getRange(minOmitted, optionalCount) : [minOmitted];
+}
+
+/** The named accounts left after omitting the given number of optional accounts, either the first or the last ones. */
+function omitOptionalAccounts(
+    namedAccounts: readonly InstructionAccountNode[],
+    omitted: number,
+    which: 'first' | 'last',
+): InstructionAccountNode[] {
+    const ordered = which === 'first' ? [...namedAccounts] : [...namedAccounts].reverse();
+    let left = omitted;
+    const kept = ordered.filter(account => {
+        if (left === 0 || !account.isOptional) return true;
+        left -= 1;
+        return false;
+    });
+    return which === 'first' ? kept : kept.reverse();
+}
+
+/** The integers from `start` to `end`, both included. */
+function getRange(start: number, end: number): number[] {
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
 }
 
 /**
