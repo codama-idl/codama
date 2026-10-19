@@ -40,6 +40,19 @@ test('it validates the root structure at the JSON boundary', () => {
     expect(codama.getRoot().program.name).toBe('myProgram');
 });
 
+test('it rejects root updates without a program node with a Codama error', () => {
+    const codama = createFromJson(
+        JSON.stringify({
+            kind: 'rootNode',
+            standard: 'codama',
+            version: CODAMA_VERSION,
+            program: { kind: 'programNode', name: 'myProgram', publicKey: '1111' },
+        }),
+    );
+    const orphanRoot = { kind: 'rootNode', version: CODAMA_VERSION } as never;
+    expect(() => codama.update(() => orphanRoot)).toThrow(CodamaError);
+});
+
 test('it exports visitors', () => {
     expect(typeof identityVisitor).toBe('function');
 });
