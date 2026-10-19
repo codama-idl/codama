@@ -32,6 +32,7 @@ export function createFromRoot(root: RootNode): Codama {
         update(visitor: Visitor<Node | null, 'rootNode'>): void {
             const newRoot = visit(currentRoot, visitor);
             assertIsNode(newRoot, 'rootNode');
+            assertIsNode(newRoot.program, 'programNode');
             currentRoot = newRoot;
         },
     };
