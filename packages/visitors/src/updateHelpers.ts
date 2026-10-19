@@ -25,6 +25,7 @@ import {
     instructionAccountLinkNode,
     InstructionAccountNode,
     instructionDisplayNode,
+    InstructionDisplayNode,
     instructionLinkNode,
     InstructionNode,
     InterpolatedIntentPart,
@@ -40,7 +41,6 @@ import {
     structFieldTypeNode,
     StructFieldTypeNodeInput,
     structTypeNode,
-    TextNode,
     textNode,
     tupleTypeNode,
     TypeNode,
@@ -426,33 +426,13 @@ function getRenameReferencesTransformers(
             transform: (node, stack) => {
                 assertIsNode(node, 'instructionDisplayNode');
                 const instructionPath = getNodePathUntilLastNode(stack.getPath(), 'instructionNode');
-                if (!instructionPath || node.interpolatedIntent === undefined) return node;
-                // Placeholders are renamed as the contextual values they are equivalent to. Invalid
-                // intents are kept as they are, for validators to report.
-                const renameIntent = (intent: string): string => {
-                    let parts: InterpolatedIntentPart[];
-                    try {
-                        parts = parseInterpolatedIntent(intent);
-                    } catch (error) {
-                        if (isCodamaError(error, CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER)) return intent;
-                        throw error;
-                    }
-                    const newParts = parts.map(part => {
-                        if (typeof part === 'string') return part;
-                        if (isNode(part, 'dataValueNode')) return renameDataValue(part, instructionPath);
-                        if (isNode(part, 'accountValueNode')) return renameAccountValue(part, instructionPath);
-                        return renameAccountDataValue(part, instructionPath);
-                    });
-                    return newParts.every((part, i) => part === parts[i]) ? intent : printInterpolatedIntent(newParts);
-                };
-                const intent = node.interpolatedIntent;
-                const newIntent: string | TextNode =
-                    typeof intent === 'string'
-                        ? renameIntent(intent)
-                        : renameIntent(intent.content) === intent.content
-                          ? intent
-                          : textNode({ ...intent, content: renameIntent(intent.content) });
-                return newIntent === intent ? node : instructionDisplayNode({ ...node, interpolatedIntent: newIntent });
+                if (!instructionPath) return node;
+                // Placeholders are renamed as the contextual values they are equivalent to.
+                return mapInterpolatedIntentPlaceholders(node, part => {
+                    if (isNode(part, 'dataValueNode')) return renameDataValue(part, instructionPath);
+                    if (isNode(part, 'accountValueNode')) return renameAccountValue(part, instructionPath);
+                    return renameAccountDataValue(part, instructionPath);
+                });
             },
         },
         {
@@ -487,7 +467,42 @@ function getInstructionAccountRename(
     return instructionPath ? renames.instructionAccounts?.(instructionPath)?.get(identifier) : undefined;
 }
 
-function serializePath(segments: PathSegment[]): string {
+/**
+ * Map the placeholders of an instruction display's interpolated intent,
+ * given as the contextual values they are equivalent to (e.g. a
+ * `dataValueNode` for `${data.amount}`). The display itself is returned
+ * when no placeholder changes. Invalid intents are kept as they are, for
+ * validators to report.
+ */
+export function mapInterpolatedIntentPlaceholders(
+    node: InstructionDisplayNode,
+    map: (placeholder: InterpolatedIntentPlaceholder) => InterpolatedIntentPlaceholder,
+): InstructionDisplayNode {
+    const intent = node.interpolatedIntent;
+    if (intent === undefined) return node;
+    const mapIntent = (template: string): string => {
+        let parts: InterpolatedIntentPart[];
+        try {
+            parts = parseInterpolatedIntent(template);
+        } catch (error) {
+            if (isCodamaError(error, CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER)) return template;
+            throw error;
+        }
+        const newParts = parts.map(part => (typeof part === 'string' ? part : map(part)));
+        return newParts.every((part, i) => part === parts[i]) ? template : printInterpolatedIntent(newParts);
+    };
+    const content = typeof intent === 'string' ? intent : intent.content;
+    const newContent = mapIntent(content);
+    if (newContent === content) return node;
+    const newIntent = typeof intent === 'string' ? newContent : textNode({ ...intent, content: newContent });
+    return instructionDisplayNode({ ...node, interpolatedIntent: newIntent });
+}
+
+/** A placeholder of an interpolated intent, as the contextual value it is equivalent to. */
+type InterpolatedIntentPlaceholder = Exclude<InterpolatedIntentPart, string>;
+
+/** Print path segments back into a path expression, the inverse of `parsePath`. */
+export function serializePath(segments: PathSegment[]): string {
     return segments
         .map((segment, i) => {
             if (segment.kind === 'index') return `[${segment.index}]`;

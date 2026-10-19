@@ -1,4 +1,4 @@
-import { assertIsNode } from '@codama/nodes';
+import { assertIsNode, isNode } from '@codama/nodes';
 import {
     BottomUpNodeTransformerWithSelector,
     bottomUpTransformerVisitor,
@@ -18,6 +18,9 @@ import { inlineDefinedType } from './inlineDefinedTypeHelpers';
  * The link's own `transforms` are layered on top of the inlined type, and
  * links inside a type inlined into another program are qualified with the
  * type's original program.
+ *
+ * The link of an `enumValueNode` names the enum its variant belongs to and
+ * cannot be replaced by a type, so it is kept even when selected.
  */
 export function unwrapTypeDefinedLinksVisitor(definedLinksType: string[]) {
     const linkables = new LinkableDictionary();
@@ -26,10 +29,12 @@ export function unwrapTypeDefinedLinksVisitor(definedLinksType: string[]) {
         select: ['[definedTypeLinkNode]', selector],
         transform: (link, stack) => {
             assertIsNode(link, 'definedTypeLinkNode');
+            const path = stack.getPath();
+            if (isNode(path[path.length - 2], 'enumValueNode')) return link;
             const definedTypePath = linkables.getPathOrThrow(stack.getPath('definedTypeLinkNode'));
             return inlineDefinedType(link, getLastNodeFromPath(definedTypePath).type, {
                 definedTypeProgram: findProgramNodeFromPath(definedTypePath)?.identifier,
-                linkProgram: findProgramNodeFromPath(stack.getPath())?.identifier,
+                linkProgram: findProgramNodeFromPath(path)?.identifier,
             });
         },
     }));

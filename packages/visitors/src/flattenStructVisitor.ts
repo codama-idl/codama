@@ -1,11 +1,8 @@
-import {
-    CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES,
-    CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS,
-    CodamaError,
-} from '@codama/errors';
-import { camelCase } from '@codama/fragments/casing';
-import { assertIsNode, isNode, Node, StructFieldTypeNode, StructTypeNode, structTypeNode } from '@codama/nodes';
+import { CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, CodamaError } from '@codama/errors';
+import { Node, StructTypeNode } from '@codama/nodes';
 import { BottomUpNodeTransformerWithSelector, bottomUpTransformerVisitor, NodePath } from '@codama/visitors-core';
+
+import { getFlattenedStruct } from './flattenStructHelpers';
 
 export type FlattenStructOptions = string[] | '*';
 
@@ -50,37 +47,12 @@ export const flattenStruct = (
     options: FlattenStructOptions = '*',
     path: NodePath = [node],
 ): StructTypeNode => {
-    assertIsNode(node, 'structTypeNode');
-    const shouldInline = (field: StructFieldTypeNode): boolean =>
-        (options === '*' || options.includes(field.identifier)) &&
-        isNode(field.type, 'structTypeNode') &&
-        (field.type.transforms ?? []).length === 0;
-    const inlinedFields = (node.fields ?? []).flatMap(field => {
-        if (!shouldInline(field)) return [field];
-        const struct = field.type as StructTypeNode;
-        if ((struct.plugins ?? []).length > 0) {
-            throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS, {
-                path: [...path, field],
-            });
-        }
-        return struct.fields ?? [];
-    });
-
-    const fieldsByCamelCase = new Map<string, StructFieldTypeNode[]>();
-    inlinedFields.forEach(field => {
-        const key = camelCase(field.identifier);
-        fieldsByCamelCase.set(key, [...(fieldsByCamelCase.get(key) ?? []), field]);
-    });
-    const conflictingAttributes = [...fieldsByCamelCase.values()]
-        .filter(fields => fields.length > 1)
-        .flatMap(fields => [...new Set(fields.map(field => field.identifier))]);
-
+    const { conflictingAttributes, struct } = getFlattenedStruct(node, options, path);
     if (conflictingAttributes.length > 0) {
         throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES, {
             conflictingAttributes,
             path,
         });
     }
-
-    return structTypeNode(inlinedFields, { ...node });
+    return struct;
 };

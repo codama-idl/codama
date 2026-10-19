@@ -131,6 +131,8 @@ codama.update(fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, strict
 
 This visitor flattens the fields of type `StructTypeNode` inside the `data` of every instruction such that their fields are no longer nested. This can be useful to simplify the data structure of an instruction. Linked data is left untouched since the defined type may be shared; use `unwrapInstructionDataDefinedTypesVisitor` first to flatten it.
 
+Data paths of the instruction going through an inlined field are repointed accordingly, e.g. a PDA seed reading `params.seed` reads `seed` once `params` is inlined. This covers `DataValueNodes`, `FieldDiscriminatorNodes` and `${data.…}` placeholders of interpolated intents. An instruction is left unflattened when inlining would make two fields share a camelCase form (e.g. `amount` and `params.amount`), or when one of its data paths refers to an inlined field as a whole (e.g. `params`).
+
 ```ts
 codama.update(flattenInstructionDataVisitor());
 ```
@@ -315,6 +317,8 @@ Note that if multiple link nodes point to the same defined type, each link node 
 
 Defined types in a cycle made only of types to inline, such as `node = struct { next: option<link(node)> }`, are not inlined since inlining them would never end: they are kept in their programs, and so are the links to them. A cycle going through a type that is not inlined ends at its link, so its other types are inlined as usual.
 
+The link of an `EnumValueNode` names the enum of its variant and cannot be replaced by a type: it is kept, and so is the `DefinedTypeNode` it points to, while other links to that type are still inlined.
+
 ```ts
 codama.update(unwrapDefinedTypesVisitor(['counter', 'splToken.escrow']));
 ```
@@ -339,7 +343,7 @@ codama.update(unwrapTupleEnumWithSingleStructVisitor());
 
 This visitor replaces any `DefinedTypeLinkNode` matching the provided `NodeSelectors` with the type of the `DefinedTypeNode` it points to, applying the `transforms` of the link on top of it.
 
-Contrary to the `unwrapDefinedTypesVisitor` though, it only replaces the requested `DefinedTypeLinkNodes` and does not remove the associated `DefinedTypeNode` from its `ProgramNode`.
+Contrary to the `unwrapDefinedTypesVisitor` though, it only replaces the requested `DefinedTypeLinkNodes` and does not remove the associated `DefinedTypeNode` from its `ProgramNode`. The links of `EnumValueNodes` are never replaced, since they name the enum of their variant.
 
 ```ts
 codama.update(unwrapTypeDefinedLinksVisitor(['[accountNode]counter.data', '[instructionNode]transfer.config']));

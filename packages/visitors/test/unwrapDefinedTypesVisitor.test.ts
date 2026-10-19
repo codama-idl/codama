@@ -5,6 +5,9 @@ import {
     constantNode,
     definedTypeLinkNode,
     definedTypeNode,
+    enumTypeNode,
+    enumValueNode,
+    enumVariantTypeNode,
     eventNode,
     fixedSizeTransformNode,
     integerTypeNode,
@@ -19,6 +22,7 @@ import {
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
+    TypeNode,
     variablePdaSeedNode,
 } from '@codama/nodes';
 import { visit } from '@codama/visitors-core';
@@ -339,4 +343,99 @@ test('it inlines defined types in a cycle going through a type not to inline', (
             publicKey: '1111',
         }),
     );
+});
+
+const directionType = () => enumTypeNode([enumVariantTypeNode('up'), enumVariantTypeNode('down')]);
+
+test('it keeps the links of enum values and the defined types they target', () => {
+    // Given a field linking to an enum type, whose default value is a variant of that enum.
+    const headingField = (type: TypeNode) =>
+        structFieldTypeNode({ defaultValue: enumValueNode('direction', 'up'), identifier: 'heading', type });
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([headingField(definedTypeLinkNode('direction'))]),
+                identifier: 'myAccount',
+            }),
+        ],
+        definedTypes: [definedTypeNode({ identifier: 'direction', type: directionType() })],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we unwrap the enum type.
+    const result = visit(node, unwrapDefinedTypesVisitor(['direction']));
+
+    // Then the field type is inlined, while the enum value keeps its link and the type it targets is kept.
+    expect(result).toStrictEqual(
+        programNode({
+            accounts: [accountNode({ data: structTypeNode([headingField(directionType())]), identifier: 'myAccount' })],
+            definedTypes: [definedTypeNode({ identifier: 'direction', type: directionType() })],
+            identifier: 'myProgram',
+            publicKey: '1111',
+        }),
+    );
+});
+
+test('it keeps the defined types targeted by enum values in the program of their links', () => {
+    // Given programA with an enum value linking to an enum of programB, and its own type sharing its name.
+    const directionLink = () => definedTypeLinkNode('direction', { program: programLinkNode('programB') });
+    const programA = programNode({
+        constants: [constantNode('defaultDirection', directionLink(), enumValueNode(directionLink(), 'up'))],
+        definedTypes: [definedTypeNode({ identifier: 'direction', type: integerTypeNode('u8') })],
+        identifier: 'programA',
+        publicKey: '1111',
+    });
+    const programB = programNode({
+        definedTypes: [definedTypeNode({ identifier: 'direction', type: directionType() })],
+        identifier: 'programB',
+        publicKey: '2222',
+    });
+
+    // When we unwrap every defined type.
+    const result = visit(rootNode(programA, { additionalPrograms: [programB] }), unwrapDefinedTypesVisitor('*'));
+
+    // Then only the enum of programB is kept.
+    expect(result).toStrictEqual(
+        rootNode(
+            programNode({
+                constants: [constantNode('defaultDirection', directionType(), enumValueNode(directionLink(), 'up'))],
+                identifier: 'programA',
+                publicKey: '1111',
+            }),
+            { additionalPrograms: [programB] },
+        ),
+    );
+});
+
+test('it removes the defined types not targeted by enum values', () => {
+    // Given an enum value targeting one type, and a field linking to another type.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([
+                    structFieldTypeNode({ identifier: 'amount', type: definedTypeLinkNode('amount') }),
+                    structFieldTypeNode({
+                        defaultValue: enumValueNode('direction', 'up'),
+                        identifier: 'heading',
+                        type: integerTypeNode('u8'),
+                    }),
+                ]),
+                identifier: 'myAccount',
+            }),
+        ],
+        definedTypes: [
+            definedTypeNode({ identifier: 'amount', type: integerTypeNode('u64') }),
+            definedTypeNode({ identifier: 'direction', type: directionType() }),
+        ],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we unwrap every defined type.
+    const result = visit(node, unwrapDefinedTypesVisitor('*'));
+
+    // Then the type not targeted by the enum value is removed.
+    assertIsNode(result, 'programNode');
+    expect(result.definedTypes).toStrictEqual([definedTypeNode({ identifier: 'direction', type: directionType() })]);
 });
