@@ -40,7 +40,12 @@ let myVisitorForProgramNodesOnly: Visitor<number, 'programNode'>;
 let myVisitorForTypeNodesOnly: Visitor<number, TypeNode['kind']>;
 ```
 
-The definition of the `Visitor` type is an object such that, for each supported node kind, a function that accepts a node of that kind and returns a value of type `T` is defined. The name of the function must be camel-cased, start with `visit` and finish with the name of the node kind without the `Node` suffix. For instance, the function for the `programNode` kind is named `visitProgram`.
+The definition of the `Visitor` type is an object such that, for each supported node kind, a function that accepts a node of that kind and returns a value of type `T` is defined. The name of the function must be camel-cased, start with `visit` and finish with the name of the node kind without the `Node` suffix. For instance, the function for the `programNode` kind is named `visitProgram`. The `getVisitFunctionName` helper returns that name for any node kind.
+
+```ts
+getVisitFunctionName('structFieldTypeNode');
+// ^ "visitStructFieldType"
+```
 
 ### Writing your own visitor
 
@@ -48,17 +53,19 @@ To write a custom visitor, you may simply define an object with the appropriate 
 
 ```ts
 const accountCounterVisitor: Visitor<number, 'programNode'> = {
-    visitProgram: (node: ProgramNode) => node.accounts.length,
+    visitProgram: (node: ProgramNode) => (node.accounts ?? []).length,
 };
 ```
 
-Note that it is recommended to return visitors from functions so we can easily reuse them and parameterize them. Additionally, this allows our code to be tree-shaken by the bundler. As we will see in this documentation, all provided visitors are returned from functions even if they don't take any parameter.
+Note that optional arrays such as `accounts` are omitted from nodes when empty, hence the `?? []`.
+
+It is recommended to return visitors from functions so we can easily reuse them and parameterise them. Additionally, this allows our code to be tree-shaken by the bundler. As we will see in this documentation, all provided visitors are returned from functions even if they don't take any parameter.
 
 Here's our previous example updated to accept a `multiplier` parameter.
 
 ```ts
 const accountCounterVisitor = (multiplier = 1): Visitor<number, 'programNode'> => ({
-    visitProgram: (node: ProgramNode) => node.accounts.length * multiplier,
+    visitProgram: (node: ProgramNode) => (node.accounts ?? []).length * multiplier,
 });
 ```
 
@@ -72,13 +79,14 @@ Once we have a visitor, we can visit any node it supports by calling the `visit`
 const counter: number = visit(programNode, accountCounterVisitor());
 ```
 
-The `visitOrElse` function can also be used to gracefully handle the case where the node is not supported by the visitor. In this case, a fallback logic — provided as a third argument — is used to compute the result.
+The `visitOrElse` function can also be used to gracefully handle the case where the node is not supported by the visitor. In this case, the fallback function provided as a third argument is used to compute the result.
 
 ```ts
-const counter: number = visit(stringTypeNode, accountCounterVisitor(), () => 0);
+const counter: number = visitOrElse(stringTypeNode('utf8'), accountCounterVisitor(), () => 0);
+// ^ 0
 ```
 
-Also note that, if you are using [the `Codama` interface](../library/README#codama) — which is a simple wrapper around a `RootNode` — you may visit that root node using the provided helpers:
+Also note that, if you are using [the `Codama` interface](../library/README.md#codama), which is a simple wrapper around a `RootNode`, you may visit that root node using the provided helpers:
 
 ```ts
 // Runs the visitor and returns the result.
@@ -96,24 +104,24 @@ Therefore, let's start by exploring the core visitors provided by this package.
 
 ### Filtering node kinds
 
-Before we list each available core visitor, it is important to know that each of these functions optionally accepts a node kind or an array of node kinds **as a `keys` attribute in their `options`**. This allows us to restrict the visitor to a specific set of nodes and will return a `Visitor<T, U>` instance where `U` is the union of the provided node kinds.
+Before we list each available core visitor, it is important to know that each of these functions optionally accepts an array of node kinds **as a `keys` attribute in their `options`**. This allows us to restrict the visitor to a specific set of nodes and will return a `Visitor<T, U>` instance where `U` is the union of the provided node kinds. The node kind arrays exported by `@codama/nodes`, such as `TYPE_NODE_KINDS` or `REGISTERED_NODE_KINDS`, can be used here.
 
 Here are some examples:
 
 ```ts
 // This visitor only accepts `ProgramNodes`.
-const visitor: Visitor<number, 'programNode'> = voidVisitor({ keys: 'programNode' });
+const visitor: Visitor<void, 'programNode'> = voidVisitor({ keys: ['programNode'] });
 
-// This visitor accepts both `NumberTypeNodes` and `StringTypeNodes`.
-const visitor: Visitor<number, 'numberTypeNode' | 'stringTypeNode'> = voidVisitor({
-    keys: ['numberTypeNode', 'stringTypeNode'],
+// This visitor accepts both `IntegerTypeNodes` and `StringTypeNodes`.
+const visitor: Visitor<void, 'integerTypeNode' | 'stringTypeNode'> = voidVisitor({
+    keys: ['integerTypeNode', 'stringTypeNode'],
 });
 
 // This visitor accepts all type nodes.
-const visitor: Visitor<number, TypeNode['kind']> = voidVisitor({ keys: TYPE_NODE_KINDS });
+const visitor: Visitor<void, TypeNode['kind']> = voidVisitor({ keys: TYPE_NODE_KINDS });
 
 // This visitor accepts all nodes.
-const visitor: Visitor<number> = voidVisitor();
+const visitor: Visitor<void> = voidVisitor();
 ```
 
 In the following sections describing the core visitors, this exact pattern can be used to restrict the visitors to specific node kinds. We won't cover this for each visitor but know that you can achieve this via the `keys` option of each function.
@@ -135,8 +143,8 @@ The `staticVisitor` accepts a function that is used for every node. The provided
 
 ```ts
 const visitor: Visitor<string> = staticVisitor(node => `Visiting ${node.kind}`);
-const kind = visit(numberTypeNode('u32'), visitor);
-// ^ "Visiting numberTypeNode"
+const kind = visit(integerTypeNode('u32'), visitor);
+// ^ "Visiting integerTypeNode"
 ```
 
 This visitor can be used to create simple visitors where each node shares a similar logic or to provide a starting point for more complex visitors.
@@ -146,11 +154,11 @@ This visitor can be used to create simple visitors where each node shares a simi
 The `identityVisitor` traverses the nodes and returns a deep copy of the visited node.
 
 ```ts
-const node = visit(numberTypeNode('u32'), identityVisitor());
-// ^ A different instance of numberTypeNode('u32')
+const node = visit(integerTypeNode('u32'), identityVisitor());
+// ^ A different instance of integerTypeNode('u32')
 ```
 
-Note that the returned visitor is of type `Visitor<Node | null>` meaning this visitor allows for nodes to be deleted — i.e. marked as `null`. The `identityVisitor` can resolve nested `null` references depending on the node kind. For instance, if a `tupleTypeNode` contains two items and the first one is `null` — after having visited its children — then, the `tupleTypeNode` will only contain the second item. It is also possible for a nested `null` reference to bubble up if it cannot be resolved.
+Note that the returned visitor is of type `Visitor<Node | null>` meaning this visitor allows for nodes to be deleted, i.e. marked as `null`. The `identityVisitor` can resolve nested `null` references depending on the node kind. For instance, if a `tupleTypeNode` contains two items and the first one is `null` after having visited its children, then the `tupleTypeNode` will only contain the second item. It is also possible for a nested `null` reference to bubble up if it cannot be resolved, e.g. when a required child is deleted.
 
 Here are some examples of this behaviour by overriding the `visitPublicKeyType` function to return `null`.
 
@@ -158,10 +166,10 @@ Here are some examples of this behaviour by overriding the `visitPublicKeyType` 
 const visitor = identityVisitor();
 visitor.visitPublicKeyType = () => null;
 
-const node = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
-// ^ tupleTypeNode([numberTypeNode('u32')])
+const node = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ tupleTypeNode([integerTypeNode('u32')])
 
-const node = visit(definedTypeNode({ name: 'address', type: publicKeyTypeNode() }), visitor);
+const node = visit(definedTypeNode({ identifier: 'address', type: publicKeyTypeNode() }), visitor);
 // ^ null
 ```
 
@@ -169,7 +177,7 @@ Also note that, because the visitor is of type `Node | null`, it is technically 
 
 ```ts
 const visitor = identityVisitor();
-visitor.visitPublicKeyType = () => fixedSizeTypeNode(stringTypeNode('base58'), 32);
+visitor.visitPublicKeyType = () => addTypeNodeTransforms(stringTypeNode('base58'), [fixedSizeTransformNode(32)]);
 ```
 
 ### `nonNullableIdentityVisitor`
@@ -177,8 +185,8 @@ visitor.visitPublicKeyType = () => fixedSizeTypeNode(stringTypeNode('base58'), 3
 The `nonNullableIdentityVisitor` works the same way as the `identityVisitor` but it does not allow nodes to be deleted. That is, its return type must be a `Node` and not `Node | null`.
 
 ```ts
-const node = visit(numberTypeNode('u32'), nonNullableIdentityVisitor());
-// ^ A different instance of numberTypeNode('u32')
+const node = visit(integerTypeNode('u32'), nonNullableIdentityVisitor());
+// ^ A different instance of integerTypeNode('u32')
 ```
 
 ### `mergeVisitor`
@@ -188,16 +196,18 @@ The `mergeVisitor` returns a `Visitor<T>` by accepting two functions such that:
 - The first function is used on the leaves of the Codama IDL and returns a type `T`.
 - The second function is used to merge the values `T[]` of the children of a node and aggregate them into a type `T`.
 
+Note that, since every node may carry children such as `plugins` or `transforms`, the merge function is also called on nodes that have no children, with an empty array of values.
+
 For instance, here is how we can use the `mergeVisitor` to create a nested string representation of node kinds.
 
 ```ts
 const visitor = mergeVisitor(
     (node): string => node.kind,
-    (node, values: string[]): string => `${node.kind}(${values.join(',')})`,
+    (node, values: string[]): string => (values.length > 0 ? `${node.kind}(${values.join(',')})` : node.kind),
 );
 
-const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
-// ^ "tupleTypeNode(numberTypeNode,publicKeyTypeNode)"
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ "tupleTypeNode(integerTypeNode,publicKeyTypeNode)"
 ```
 
 Here's another example, counting the number of traversed nodes.
@@ -205,10 +215,10 @@ Here's another example, counting the number of traversed nodes.
 ```ts
 const visitor = mergeVisitor(
     () => 1,
-    (, values) => values.reduce((a, b) => a + b, 1),
+    (_, values) => values.reduce((a, b) => a + b, 1),
 );
 
-const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
 // ^ 3
 ```
 
@@ -224,7 +234,7 @@ The `extendVisitor` function accepts a base visitor and a set of function wrappe
 
 Each function wrapper is given the `node` being visited and an object composed of two elements:
 
-- `next`: A function that can be called to delegate to the base visitor — e.g. `next(node)`.
+- `next`: A function that can be called to delegate to the base visitor, e.g. `next(node)`.
 - `self`: The visitor itself, allowing for recursive calls.
 
 To illustrate this, consider the following base visitor that counts the number of nodes.
@@ -243,7 +253,7 @@ const visitor = extendVisitor(baseVisitor, {
     visitPublicKeyType: (node, { next }) => next(node) + 10,
 });
 
-const result = visit(tupleTypeNode([publicKeyTypeNode(), numberTypeNode('u32')]), visitor);
+const result = visit(tupleTypeNode([publicKeyTypeNode(), integerTypeNode('u32')]), visitor);
 // ^ 13
 ```
 
@@ -253,16 +263,18 @@ Another example is to make use of the `self` property to recursively call the ex
 
 ```ts
 const visitor = extendVisitor(baseVisitor, {
-    visitTupleType: (node, { self }) => visit(node.items[0], self) + 1,
+    visitTupleType: (node, { self }) => visit((node.items ?? [])[0], self) + 1,
 });
 
-const result = visit(tupleTypeNode([tupleTypeNode([publicKeyTypeNode()]), numberTypeNode('u32')]), visitor);
+const result = visit(tupleTypeNode([tupleTypeNode([publicKeyTypeNode()]), integerTypeNode('u32')]), visitor);
 // ^ 3
 ```
 
+Overriding a function that the base visitor does not define throws a `CODAMA_ERROR__VISITORS__CANNOT_EXTEND_MISSING_VISIT_FUNCTION` error.
+
 ### `interceptVisitor`
 
-The `interceptVisitor` allows us to wrap every visiting function of a provided visitor into a given function. This function has access to the node being visited and a `next` function that can be called to delegate to the base visitor.
+The `interceptVisitor` allows us to wrap every visiting function of a provided visitor into a given function. This function has access to the node being visited, a `next` function that can be called to delegate to the base visitor and, as a third argument, the visitor itself (`self`).
 
 For instance, the following visitor intercepts a `voidVisitor` and captures events when visiting nodes.
 
@@ -274,11 +286,11 @@ const visitor = interceptVisitor(voidVisitor(), (node, next) => {
     events.push(`up:${node.kind}`);
 });
 
-visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
 // events === [
 //     'down:tupleTypeNode',
-//     'down:numberTypeNode',
-//     'up:numberTypeNode',
+//     'down:integerTypeNode',
+//     'up:integerTypeNode',
 //     'down:publicKeyTypeNode',
 //     'up:publicKeyTypeNode',
 //     'up:tupleTypeNode',
@@ -299,7 +311,7 @@ const visitor = interceptFirstVisitVisitor(voidVisitor(), (node, next) => {
     events.push(`up:${node.kind}`);
 });
 
-visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
 // events === [
 //     'down:tupleTypeNode',
 //     'up:tupleTypeNode',
@@ -313,13 +325,13 @@ The `tapVisitor` function allows us to tap into the visiting functions of a prov
 Note that the provided function must not return a value as it is only used for side effects.
 
 ```ts
-let numberOfNumberNodes = 0;
-const visitor = tapVisitor(voidVisitor(), 'numberTypeNode', node => {
-    numberOfNumberNodes++;
+let numberOfIntegerNodes = 0;
+const visitor = tapVisitor(voidVisitor(), 'integerTypeNode', () => {
+    numberOfIntegerNodes++;
 });
 
-visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
-// numberOfNumberNodes === 1
+visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// numberOfIntegerNodes === 1
 ```
 
 ### `mapVisitor`
@@ -329,15 +341,15 @@ The `mapVisitor` function accepts a base visitor of type `Visitor<T>` and a func
 ```ts
 // Gets a nested string representation of node kinds.
 const baseVisitor = mergeVisitor(
-    node => node.kind as string,
-    (node, values) => `${node.kind}(${values.join(',')})`,
+    (node): string => node.kind,
+    (node, values) => (values.length > 0 ? `${node.kind}(${values.join(',')})` : node.kind),
 );
 
 // Counts the number of characters in the string representation.
 const visitor = mapVisitor(baseVisitor, (value: string): number => value.length);
 
-const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
-// ^ 47
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ 48
 ```
 
 ### `pipe`
@@ -356,30 +368,36 @@ const visitor = pipe(
 
 For instance, here's an example using the `pipe` function to transform an `identityVisitor` into a visitor that:
 
-- Transforms all number types into `u64` numbers.
+- Transforms all integer types into `u64` integers.
 - Logs the amount of items in tuple types.
-- Wraps the visited node in a `DefinedTypeNode` labelled "gift".
+- Wraps the visited type node, but not its children, in a `DefinedTypeNode` labelled "gift".
 
 ```ts
 const visitor = pipe(
     // Starts with the identity visitor.
     identityVisitor(),
     v =>
-        // Extends the visitor to make all number types u64.
+        // Extends the visitor to make all integer types u64.
         extendVisitor(v, {
-            visitNumberType: node => numberTypeNode('u64'),
+            visitIntegerType: () => integerTypeNode('u64'),
         }),
     v =>
         // Log the amount of items in tuple types.
         tapVisitor(v, 'tupleTypeNode', node => {
-            console.log(node.items.length);
+            console.log((node.items ?? []).length);
         }),
     v =>
-        // Wrap the visited node in a `DefinedTypeNode` labelled "gift".
-        interceptVisitor(v, node => (node, next) => {
-            return definedTypeNode({ name: 'gift', type: next(node) });
+        // Wrap the visited type node in a `DefinedTypeNode` labelled "gift".
+        interceptFirstVisitVisitor(v, (node, next) => {
+            const result = next(node);
+            if (!isNode(result, TYPE_NODE_KINDS)) return result;
+            return definedTypeNode({ identifier: 'gift', type: result });
         }),
 );
+
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// Logs 2.
+// ^ definedTypeNode({ identifier: 'gift', type: tupleTypeNode([integerTypeNode('u64'), publicKeyTypeNode()]) })
 ```
 
 ### `singleNodeVisitor`
@@ -387,9 +405,9 @@ const visitor = pipe(
 The `singleNodeVisitor` function is a simple primitive that creates a `Visitor` that only visits a single node kind. It accepts a node kind and a function that is used to visit that node kind. Any other node kind will not be supported by the visitor.
 
 ```ts
-const visitor = singleNodeVisitor('tupleTypeNode', node => node.items.length);
+const visitor = singleNodeVisitor('tupleTypeNode', node => (node.items ?? []).length);
 
-const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
 // ^ 2
 ```
 
@@ -411,7 +429,7 @@ const visitor = rootNodeVisitor((root: RootNode) => {
 
 ### `NodePath`
 
-The `NodePath` type defines an immutable array of `Nodes` that represents any path of nodes in the Codama IDL. It accepts an optional type parameter that tells us the type of the last node in the path. For instance `NodePath<NumberTypeNode>` represents a path of node ending with a `NumberTypeNode`.
+The `NodePath` type defines an immutable array of `Nodes` that represents any path of nodes in the Codama IDL, from the root to a node included. It accepts an optional type parameter that tells us the type of the last node in the path. For instance `NodePath<IntegerTypeNode>` represents a path of nodes ending with an `IntegerTypeNode`.
 
 Additionally, there are several utility functions to use with `NodePath` instances:
 
@@ -427,29 +445,33 @@ const firstProgramNode: ProgramNode | undefined = findFirstNodeFromPath(path, 'p
 const lastProgramNode: ProgramNode | undefined = findLastNodeFromPath(path, 'programNode');
 
 // Access the last program/instruction node in the path (sugar for `findLastNodeFromPath`).
-const programNode: ProgramNode | undefined = findProgramNodeFromPath(path);
-const instructionNode: InstructionNode | undefined = findInstructionNodeFromPath(path);
+const program: ProgramNode | undefined = findProgramNodeFromPath(path);
+const instruction: InstructionNode | undefined = findInstructionNodeFromPath(path);
 
-// Get the subpath of a path from the beginning to the last node matching a specific kind.
-const subpath: NodePath = getNodePathUntilLastNode(path, 'programNode');
+// Assert that the path contains a program node, e.g. before resolving the links of its last node.
+assertNodePathHasProgram(path);
+
+// Get the subpath of a path from the beginning to the last node matching a specific kind, if any.
+const subpath: NodePath<ProgramNode> | undefined = getNodePathUntilLastNode(path, 'programNode');
 // ^ [rootNode, programNode]
 
 // Check that a path is not empty.
-if (isFilledNodePath(path as NodePath)) {
-    path satisfies NodePath<Node>;
+const anyPath: NodePath = [rootNode, programNode, accountNode];
+if (isFilledNodePath(anyPath)) {
+    anyPath satisfies NodePath<Node>;
 }
 
 // Check that a path finishes with a node matching the provided kind or kinds.
-if (isNodePath(path as NodePath, ['AccountNode', 'InstructionNode'])) {
-    path satisfies NodePath<AccountNode | InstructionNode>;
+if (isNodePath(anyPath, ['accountNode', 'instructionNode'])) {
+    anyPath satisfies NodePath<AccountNode | InstructionNode>;
 }
 
 // Assert that a path finishes with a node matching the provided kind or kinds.
-assertIsNodePath(path as NodePath, ['AccountNode', 'InstructionNode']);
-path satisfies NodePath<AccountNode | InstructionNode>;
+assertIsNodePath(anyPath, ['accountNode', 'instructionNode']);
+anyPath satisfies NodePath<AccountNode | InstructionNode>;
 ```
 
-To display a path as a string, the way error messages render it, use `getNodePathString` from `@codama/errors`.
+To display a path as a string, the way error messages render it, use `getNodePathString` from `@codama/errors`. A leading root node is left out.
 
 ```ts
 import { getNodePathString } from '@codama/errors';
@@ -464,29 +486,28 @@ The `NodeStack` class is a utility that allows us to record the path of nodes th
 For instance, consider the following node:
 
 ```ts
-const node = definedTypeNode({
-    name: 'myType',
-    type: tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]),
-});
+const integer = integerTypeNode('u32');
+const tuple = tupleTypeNode([integer, publicKeyTypeNode()]);
+const node = definedTypeNode({ identifier: 'myType', type: tuple });
 ```
 
-In this example, the `numberTypeNode` can be reached using the following stack:
+In this example, the `integerTypeNode` can be reached using the following stack:
 
 ```ts
-const stack = new NodeStack()
-    .push(node) // -> definedTypeNode.
-    .push(node.type) // -> tupleTypeNode.
-    .push(node.type.items[0]); // -> numberTypeNode.
+const stack = new NodeStack();
+stack.push(node); // -> definedTypeNode.
+stack.push(tuple); // -> tupleTypeNode.
+stack.push(integer); // -> integerTypeNode.
 ```
 
 Once you have access to a `NodeStack` instance, you may use the following methods:
 
 ```ts
-// Push a node to the stack.
-nodeStack.push(node);
+// Create a stack whose current path is the given path.
+const nodeStack = new NodeStack([rootNode, programNode]);
 
-// Pop the last node out of the stack.
-const lastNode = nodeStack.pop();
+// Push a node to the stack.
+nodeStack.push(accountNode);
 
 // Peek at the last node in the stack.
 const lastNode = nodeStack.peek();
@@ -495,20 +516,26 @@ const lastNode = nodeStack.peek();
 const path: NodePath = nodeStack.getPath();
 
 // Get a `NodePath` whilst asserting on the last node kind.
-const path: NodePath<AccountNode> = nodeStack.getPath('accountNode');
+const accountPath: NodePath<AccountNode> = nodeStack.getPath('accountNode');
+
+// Pop the last node out of the stack.
+const poppedNode = nodeStack.pop();
 
 // Check if the stack is empty.
 const isEmpty = nodeStack.isEmpty();
 
 // Clone the stack.
 const clonedStack = nodeStack.clone();
+
+// Render the current path as a string, like `getNodePathString`.
+const pathString = nodeStack.toString();
 ```
 
-Additionally, it is possible to save and restore multiple node paths within a `NodeStack` by using the `pushPath` and `popPath` methods. This is for more advanced uses cases where you need to jump from one part of the tree, to a different part of the tree, and back — without loosing the context of the original path. An application of this is when we need to follow a node from a `LinkNode` (see ["Resolving link nodes"](#resolving-link-nodes) below for more details).
+Additionally, it is possible to save and restore multiple node paths within a `NodeStack` by using the `pushPath` and `popPath` methods. This is for more advanced use cases where you need to jump from one part of the tree to a different part of the tree, and back, without losing the context of the original path. An application of this is when we need to follow a node from a `LinkNode` (see ["Resolving link nodes"](#resolving-link-nodes) below for more details).
 
 ```ts
 // Save the current path and push a new path.
-stack.pushPath([rootNode, programNode, linkableNode]);
+stack.pushPath([rootNode, programNode, definedType]);
 
 // Pop the current path and restore the previous path.
 const previousPath = stack.popPath();
@@ -546,18 +573,19 @@ const visitor = pipe(
 );
 ```
 
-Also note that some core visitors such as the `bottomUpTransformerVisitor` or the `getByteSizeVisitor` use a `NodeStack` internally to keep track of the current path. If you use these visitor within another visitor, you may wish to provide your own `NodeStack` instance as an option so that the same `NodeStack` is used across all visitors throughout the traversal.
+Also note that some core visitors such as the `bottomUpTransformerVisitor` or the `getByteSizeVisitor` use a `NodeStack` internally to keep track of the current path. If you use these visitors within another visitor, you may wish to provide your own `NodeStack` instance as an option so that the same `NodeStack` is used across all visitors throughout the traversal.
 
 ```ts
 const stack = new NodeStack();
-const byteSizeVisitor = getByteSizeVisitor(..., { stack });
+const byteSizeVisitor = getByteSizeVisitor(linkables, { stack });
 
 const visitor = pipe(
     voidVisitor(),
-    v => tapVisitor(v, 'definedTypeNode', node => {
-        const byteSize = visit(node, byteSizeVisitor);
-        console.log(`The byte size of ${node.name} is ${byteSize}`);
-    }),
+    v =>
+        tapVisitor(v, 'definedTypeNode', node => {
+            const byteSize = visit(node, byteSizeVisitor);
+            console.log(`The byte size of ${node.identifier} is ${byteSize}`);
+        }),
     v => recordNodeStackVisitor(v, stack),
 );
 ```
@@ -568,18 +596,18 @@ When visiting a tree of nodes, it is often useful to be explicit about the paths
 
 To that end, the `NodeSelector` type represents a node selection that can take two forms:
 
-- A `NodeSelectorFunction` of type `(path: NodePath) => boolean`. In this case, the provided function is used to determine if the last node in the provided `NodePath` should be selected.
+- A `NodeSelectorFunction` of type `(path: NodePath<Node>) => boolean`. In this case, the provided function is used to determine if the last node in the provided `NodePath` should be selected.
 - A `NodeSelectorPath` of type `string`. In this case, the provided string uses a simple syntax to select nodes.
 
 The `NodeSelectorPath` syntax is as follows:
 
-- Plain text is used to match the name of a node, if any. For instance, `token` will match any node named "token".
-- Square brackets `[]` are used to match the kind of a node. For instance, `[programNode]` will match any `ProgramNode`.
-- Plain text and square brackets can be combined to match both the name and the kind of a node. For instance, `[programNode]token` will match any `ProgramNode` named "token".
-- Plain texts and/or square brackets can be chained using dots `.` to match several nodes in the current `NodeStack`.
-- Dot-separated paths must follow the provided order but do not need to be contiguous or exhaustive. This means that `a.b.c` will match a `NodeStack` that looks like `x.a.y.b.z.c` but not `b.a.c`.
-- The last item of a dot-separated path must match the last node of the `NodeStack`. For instance, `a.b` will not match `a.b.x`.
-- The wildcard `*` can be used at the end of the path to match any node within the matching path. For instance, `a.b.*` will match `a.b.x`.
+- Plain text is used to match the identifier of a node, if any. For instance, `token` will match any node whose identifier is "token".
+- Square brackets `[]` are used to match the kind of a node. For instance, `[programNode]` will match any `ProgramNode`. Several kinds can be separated by a pipe `|`, e.g. `[accountNode|instructionNode]`.
+- Plain text and square brackets can be combined to match both the identifier and the kind of a node. For instance, `[programNode]token` will match any `ProgramNode` whose identifier is "token".
+- The wildcard `*` matches any node.
+- Selectors can be chained using dots `.` to match several nodes in the current `NodePath`.
+- Dot-separated paths must follow the provided order but do not need to be contiguous or exhaustive. This means that `a.b.c` will match a path that looks like `x.a.y.b.z.c` but not `b.a.c`.
+- The last item of a dot-separated path must match the last node of the path. For instance, `a.b` will not match `a.b.x` but `a.b.*` will.
 
 Here are some examples:
 
@@ -588,10 +616,10 @@ Here are some examples:
 // Matches any `AccountNode`.
 
 'mint';
-// Matches any node named "mint".
+// Matches any node whose identifier is "mint".
 
 '[accountNode]mint';
-// Matches any `AccountNode` named "mint".
+// Matches any `AccountNode` whose identifier is "mint".
 
 '[programNode]token.[accountNode]mint';
 // Matches any `AccountNode` named "mint" within a `ProgramNode` named "token".
@@ -603,7 +631,12 @@ Here are some examples:
 // Matches any node named "amount" within a `StructTypeNode` within any node named "token".
 ```
 
-The `NodeSelector` type is used by various visitors such as the `bottomUpTransformerVisitor` or the `deleteNodesVisitor` to help us select the nodes we want to transform or delete.
+The `NodeSelector` type is used by various visitors such as the `bottomUpTransformerVisitor` or the `deleteNodesVisitor` to help us select the nodes we want to transform or delete. If you need to evaluate selectors yourself, `getNodeSelectorFunction` turns any `NodeSelector` into a `NodeSelectorFunction`, and `getConjunctiveNodeSelectorFunction` does the same for an array of selectors that must all match.
+
+```ts
+const isMintAccount = getNodeSelectorFunction('[programNode]token.[accountNode]mint');
+isMintAccount([rootNode, programNode, accountNode]); // -> true
+```
 
 ## Transforming nodes
 
@@ -616,24 +649,24 @@ The `bottomUpTransformerVisitor` traverses the nodes and intercepts them on the 
 This visitor accepts an array of `transformers` where each transformer is an object with the following properties:
 
 - `select`: A `NodeSelector` or an array of `NodeSelectors` used to select the nodes we want to transform. When multiple selectors are provided, they must all match for the node to be selected.
-- `transform`: A function that accepts the selected node and its `NodeStack`; and returns a new node or `null` to delete the node.
+- `transform`: A function that accepts the selected node and the `NodeStack`; and returns a new node or `null` to delete the node.
 
 Here are a few examples:
 
 ```ts
 const visitor = bottomUpTransformerVisitor([
     {
-        // Transform all numbers into u64 numbers.
-        select: '[numberTypeNode]',
-        transform: () => numberTypeNode('u64'),
+        // Transform all integers into u64 integers.
+        select: '[integerTypeNode]',
+        transform: () => integerTypeNode('u64'),
     },
     {
-        // Delete all account nodes that start with "m".
+        // Delete all account nodes of the "token" program that start with "m".
         select: [
-            '[accountNode]',
+            '[programNode]token.*',
             path => {
                 const node = getLastNodeFromPath(path);
-                return 'identifier' in node && node.identifier.startsWith('m');
+                return isNode(node, 'accountNode') && node.identifier.startsWith('m');
             },
         ],
         transform: () => null,
@@ -641,7 +674,10 @@ const visitor = bottomUpTransformerVisitor([
     {
         // Prefix all fields inside a defined type with "super".
         select: '[definedTypeNode]metadata.[structFieldTypeNode]',
-        transform: node => structFieldTypeNode({ ...node, name: `super${pascalCase(node.name)}` }),
+        transform: node => {
+            assertIsNode(node, 'structFieldTypeNode');
+            return structFieldTypeNode({ ...node, identifier: `super${pascalCase(node.identifier)}` });
+        },
     },
 ]);
 ```
@@ -650,12 +686,12 @@ Additionally, `transformers` can be provided directly as functions. In this case
 
 ```ts
 const visitor = bottomUpTransformerVisitor([
-    (node, stack) => {
-        if (!isNode(node, numberTypeNode)) {
+    node => {
+        if (!isNode(node, 'integerTypeNode')) {
             return node;
         }
         const swappedEndian = node.endian === 'be' ? 'le' : 'be';
-        return numberTypeNode(node.format, swappedEndian);
+        return integerTypeNode(node.format, { endian: swappedEndian });
     },
 ]);
 ```
@@ -669,15 +705,19 @@ The `topDownTransformerVisitor` works the same way as the `bottomUpTransformerVi
 ```ts
 const visitor = topDownTransformerVisitor([
     {
-        // Half the amount of all accounts and instructions in programs.
+        // Halve the amount of accounts and instructions in programs.
         // The other half won't be visited on the way down.
         select: '[programNode]',
-        transform: node =>
-            programNode({
+        transform: node => {
+            assertIsNode(node, 'programNode');
+            const accounts = node.accounts ?? [];
+            const instructions = node.instructions ?? [];
+            return programNode({
                 ...node,
-                accounts: node.accounts.slice(0, Math.floor(node.accounts.length / 2)),
-                instructions: node.instructions.slice(0, Math.floor(node.instructions.length / 2)),
-            }),
+                accounts: accounts.slice(0, Math.floor(accounts.length / 2)),
+                instructions: instructions.slice(0, Math.floor(instructions.length / 2)),
+            }) as typeof node;
+        },
     },
 ]);
 ```
@@ -686,11 +726,11 @@ Here as well, you may use the `stack` option to provide your own `NodeStack` ins
 
 ### `deleteNodesVisitor`
 
-The `deleteNodesVisitor` accepts an array of `NodeSelectors` and deletes all the nodes that match any of the provided selectors. Therefore, it is equivalent to using a transformer visitor such that the `transform` function returns `null` for the selected nodes.
+The `deleteNodesVisitor` accepts an array of `NodeSelectors` and deletes all the nodes that match any of the provided selectors. Therefore, it is equivalent to using a `topDownTransformerVisitor` such that the `transform` function returns `null` for the selected nodes.
 
 ```ts
-// Deletes all account nodes named "mint" and all number type nodes.
-const visitor = deleteNodesVisitor(['[accountNode]mint', '[numberTypeNode]']);
+// Deletes all account nodes named "mint" and all integer type nodes.
+const visitor = deleteNodesVisitor(['[accountNode]mint', '[integerTypeNode]']);
 ```
 
 Here as well, you may use the `stack` option to provide your own `NodeStack` instance.
@@ -705,17 +745,17 @@ The `getDebugStringVisitor` provides a string representation of the nodes that c
 
 ```ts
 const visitor = getDebugStringVisitor();
-const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
-// ^ "tupleTypeNode(numberTypeNode[u32], publicKeyTypeNode)"
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ "tupleTypeNode(integerTypeNode[u32], publicKeyTypeNode)"
 ```
 
-However, you can provide the `indent` option to get a more readable string representation.
+However, you can provide the `indent` option to get a more readable string representation. The `indentSeparator` option, which defaults to `"|   "`, customises the indentation.
 
 ```ts
 const visitor = getDebugStringVisitor({ indent: true });
-const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
 // tupleTypeNode
-// |   numberTypeNode [u32]
+// |   integerTypeNode [u32]
 // |   publicKeyTypeNode
 ```
 
@@ -727,8 +767,14 @@ The `getUniqueHashStringVisitor` provides a unique string representation of the 
 
 ```ts
 const visitor = getUniqueHashStringVisitor();
-const result = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
-// ^ '{"items":[{"endian":"le","format":"u32","kind":"numberTypeNode"},{"kind":"publicKeyTypeNode"}],"kind":"tupleTypeNode"}'
+const result = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ '{"items":[{"endian":"le","format":"u32","kind":"integerTypeNode"},{"kind":"publicKeyTypeNode"}],"kind":"tupleTypeNode"}'
+```
+
+Use the `removeDocs` option to ignore documentation, so nodes only differing by their docs output the same string.
+
+```ts
+const visitor = getUniqueHashStringVisitor({ removeDocs: true });
 ```
 
 ### `consoleLogVisitor`
@@ -744,7 +790,7 @@ const visitor = consoleLogVisitor(getDebugStringVisitor({ indent: true }));
 
 ### `LinkableDictionary`
 
-The `LinkableDictionary` type is a utility that allows us to store and access linkable nodes — such as `ProgramNodes`, `AccountNodes` or `PdaNodes` — from their respective [link nodes](../nodes/linkNodes/README.md).
+The `LinkableDictionary` type is a utility that allows us to store and access linkable nodes from their respective link nodes, e.g. a `DefinedTypeNode` from a `DefinedTypeLinkNode`. Linkable nodes are `ProgramNodes`, `AccountNodes`, `DefinedTypeNodes`, `PdaNodes`, `InstructionNodes` and `InstructionAccountNodes`, as listed by the `LINKABLE_NODES` constant.
 
 It offers the following API:
 
@@ -754,11 +800,14 @@ const linkables = new LinkableDictionary();
 // Record linkable nodes via their full path.
 linkables.recordPath([rootNode, programNode, accountNode]);
 
+// Check whether the linkable node of a link node was recorded.
+const hasProgram: boolean = linkables.has([...somePath, programLinkNode]);
+
 // Get a linkable node using the full path of a link node, or return undefined if it is not found.
-const programNode: ProgramNode | undefined = linkables.get([...somePath, programLinkNode]);
+const program: ProgramNode | undefined = linkables.get([...somePath, programLinkNode]);
 
 // Get a linkable node using the full path of a link node, or throw an error if it is not found.
-const programNode: ProgramNode = linkables.getOrThrow([...somePath, programLinkNode]);
+const program: ProgramNode = linkables.getOrThrow([...somePath, programLinkNode]);
 
 // Get the path of a linkable node using the full path of a link node, or return undefined if it is not found.
 const accountPath: NodePath<AccountNode> | undefined = linkables.getPath([...somePath, accountLinkNode]);
@@ -769,14 +818,15 @@ const accountPath: NodePath<AccountNode> = linkables.getPathOrThrow([...somePath
 // List the paths of every recorded linkable node of a given kind, across all programs.
 const accountPaths: NodePath<AccountNode>[] = linkables.getRecordedPathsOfKind('accountNode');
 
-// Forget every recorded linkable node.
+// Forget every recorded linkable node, e.g. before recording the linkable nodes of another tree.
 linkables.clear();
 ```
 
 Note that:
 
-- The path of the recorded node must be provided when recording a linkable node.
-- The path of the link node must be provided when getting a linkable node (or its path) from it.
+- The path of the recorded node must be provided when recording a linkable node. Nodes outside of a program are not recorded.
+- The path of the link node must be provided when getting a linkable node (or its path) from it. Links without an explicit `program` are resolved from the closest program of that path.
+- `getOrThrow` and `getPathOrThrow` throw a `CODAMA_ERROR__LINKED_NODE_NOT_FOUND` error when the linked node is not found.
 
 This API may be used with the `recordLinkablesOnFirstVisitVisitor` to record the linkable nodes before the first node visit; as well as the `recordNodeStackVisitor` to keep track of the current node path when accessing the linkable nodes.
 
@@ -812,11 +862,11 @@ Here's an example that records a `LinkableDictionary` and uses it to log the amo
 const linkables = new LinkableDictionary();
 const stack = new NodeStack();
 const visitor = pipe(
-    baseVisitor,
+    voidVisitor(),
     v =>
         tapVisitor(v, 'pdaLinkNode', node => {
             const pdaNode = linkables.getOrThrow(stack.getPath(node.kind));
-            console.log(`${pdaNode.seeds.length} seeds`);
+            console.log(`${(pdaNode.seeds ?? []).length} seeds`);
         }),
     v => recordNodeStackVisitor(v, stack),
     v => recordLinkablesOnFirstVisitVisitor(v, linkables),
@@ -829,12 +879,12 @@ Some nodes point into nested data using a path expression, such as a `dataValueN
 
 ### `resolveTypePath`
 
-The `resolveTypePath` function follows a path expression from a source type and returns the full `NodePath` of the node it points to. The source may be any type node, struct field, enum variant or `definedTypeLinkNode`. It requires a `LinkableDictionary` to follow links along the way.
+The `resolveTypePath` function follows a path expression from a source type and returns the full `NodePath` of the node it points to. The source is a `TypePath`, i.e. a path ending with any type node, struct field, enum variant or `definedTypeLinkNode`. It requires a `LinkableDictionary` to follow links along the way.
 
 ```ts
 // Given instruction data such as `struct { config: link(config) }`
 // where the `config` defined type is `struct { fees: array(u16) }`.
-const source = [root, program, instruction, instruction.data];
+const source: TypePath = [root, program, instruction, instructionData];
 const path = resolveTypePath(source, pathString('config.fees[0]'), linkables);
 // ^ [root, program, configType, configStruct, feesField, feesArray, u16]
 
@@ -846,7 +896,16 @@ Note that:
 
 - Links are followed through the path of their definitions, so any further links resolve in the program that defines them. Here, the returned path goes through `configType` rather than the instruction.
 - The last node is returned as addressed. For instance, resolving `config` above returns the struct field whose type is the link, without following it.
+- Indices into arrays and sets are not checked against their count, as they select the item type.
 - If a segment cannot be followed, a `CODAMA_ERROR__CANNOT_RESOLVE_PATH` error is thrown, naming the segment and the path of the node it was applied to. Dangling links throw a `CODAMA_ERROR__LINKED_NODE_NOT_FOUND` error.
+
+With the `followAccountLinks` option, a `.data` segment applied to a public key whose type carries an `accountLink` continues into the data of the linked account. For instance, `mint.data.decimals` resolves to the `decimals` field of the account the `mint` field links to.
+
+```ts
+// Given a `mint: publicKey` field linking to a `mint` account whose data is `struct { decimals: u8 }`.
+resolveTypePath(source, pathString('mint.data.decimals'), linkables, { followAccountLinks: true });
+// ^ [root, program, mintAccount, mintStruct, decimalsField]
+```
 
 The `parsePath` helper splits a path expression into its segments.
 
@@ -855,21 +914,90 @@ parsePath('config.fees[0]');
 // ^ [{ kind: 'field', identifier: 'config' }, { kind: 'field', identifier: 'fees' }, { kind: 'index', index: 0 }]
 ```
 
-## Other useful visitors
+### `getInstructionDataFields`
 
-This package provides a few other visitors that may help build more complex visitors.
+The `getInstructionDataFields` helper lists every struct field addressable within the `data` of an instruction, with its full path, following `definedTypeLinkNodes`. The instruction path must contain its program for linked data to be followed.
+
+```ts
+// data: struct { amount: u64, config: struct { fee: u16 } }
+getInstructionDataFields([root, program, instruction], linkables).map(({ path }) => path);
+// ^ ['amount', 'config', 'config.fee']
+```
+
+## Resolving injected values
+
+Instructions may provide values to the nodes they contain through their `provides` attribute, which `injectedValueNodes` consume by key.
+
+### `ProvidedScope`
+
+The `ProvidedScope` class holds the `providedNodes` visible at a point of the tree, as a stack of frames where each instruction contributes one frame. Resolution is lexical: the innermost frame providing a key wins and outer frames remain visible.
+
+```ts
+const scope = new ProvidedScope([providedNode('decimals', integerValueNode('6'))]);
+
+// Resolve every injection within a node, or return undefined if one is not provided.
+scope.resolve(injectedValueNode({ key: 'decimals' }), { kinds: ['integerValueNode'] });
+// ^ integerValueNode('6')
+
+// Same, but throw a `CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED` error instead of returning undefined.
+scope.resolveOrThrow(injectedValueNode({ key: 'decimals' }), { kinds: ['integerValueNode'] });
+
+// Get the innermost provider of a key, open and close frames, or clone the scope.
+scope.get(identifierString('decimals'));
+scope.push([providedNode('authority', accountValueNode('owner'))]);
+scope.pop();
+scope.clone();
+```
+
+The `kinds` option tells which node kinds the resolved node may be. When no frame provides a key, the `fallback` of the injection is used, if any. The `getProvidedScopeFromPath` helper creates the scope of every instruction along a path, outermost first.
+
+```ts
+const scope = getProvidedScopeFromPath([root, program, parentInstruction, childInstruction]);
+```
+
+### `recordProvidedScopeVisitor`
+
+The `recordProvidedScopeVisitor` keeps a `ProvidedScope` in sync with the traversal, the same way `recordNodeStackVisitor` does for a `NodeStack`: every instruction with `provides` opens a frame for the duration of its visit.
+
+```ts
+const scope = new ProvidedScope();
+const visitor = pipe(
+    voidVisitor(),
+    v =>
+        tapVisitor(v, 'injectedValueNode', node => {
+            console.log(scope.get(node.key));
+        }),
+    v => recordProvidedScopeVisitor(v, scope),
+);
+```
+
+## Byte sizes
 
 ### `getByteSizeVisitor`
 
-The `getByteSizeVisitor` calculates the byte size of a given `TypeNode`. It returns a `number` if the byte size is fixed or `null` if it is variable. It requires a `LinkableDictionary` instance to resolve any link nodes it encounters.
+The `getByteSizeVisitor` calculates the byte size of a given `TypeNode`, including any transforms it carries. It returns a `number` if the byte size is fixed or `null` if it is variable. It also supports `AccountNodes`, `InstructionNodes` and `DefinedTypeNodes` by measuring their data or type. It requires a `LinkableDictionary` instance to resolve any link nodes it encounters.
 
 ```ts
 const visitor = getByteSizeVisitor(linkables);
-const size = visit(tupleTypeNode([numberTypeNode('u32'), publicKeyTypeNode()]), visitor);
-// ^ 36 (4 bytes for the u32 number and 32 bytes for the public key)
+const size = visit(tupleTypeNode([integerTypeNode('u32'), publicKeyTypeNode()]), visitor);
+// ^ 36 (4 bytes for the u32 integer and 32 bytes for the public key)
 ```
 
-By default, this visitor will keep track of its own `NodeStack` but you may provide your own via the `stack` option in order to share the same `NodeStack` across multiple visitors.
+By default, this visitor will keep track of its own `NodeStack` but you may provide your own via the `stack` option in order to share the same `NodeStack` across multiple visitors. Links are resolved from the closest program of that stack, so visit linked types with their full path, e.g. using `stack.visitPath`.
+
+### `getMaxByteSizeVisitor`
+
+The `getMaxByteSizeVisitor` works the same way as the `getByteSizeVisitor` but returns the maximum byte size a type may take, or `null` if it is unbounded. For instance, an option counts its item even when it is not fixed, and an enum counts its largest variant.
+
+```ts
+const visitor = getMaxByteSizeVisitor(linkables);
+const size = visit(optionTypeNode(publicKeyTypeNode()), visitor);
+// ^ 33 (1 byte for the u8 prefix and 32 bytes for the public key)
+```
+
+## Cyclic types
+
+Defined types may link to themselves, directly or through other defined types. The following helpers detect such cycles and whether a recursive type can ever be created. Links are resolved from the closest program of the visited path, so the paths provided must contain the program defining the type.
 
 ### `getDefinedTypeLinksVisitor`
 
@@ -895,7 +1023,7 @@ stack.visitPath([root, program, loop], getHasFiniteValueVisitor(linkables, { sta
 
 ### `isDefinedTypeCyclic`
 
-The `isDefinedTypeCyclic` helper tells whether a defined type links back to itself, directly or through other defined types, following the links recorded in a `LinkableDictionary`. The path must contain the program defining the type, since links are resolved from it.
+The `isDefinedTypeCyclic` helper tells whether a defined type links back to itself, directly or through other defined types, following the links recorded in a `LinkableDictionary`. It throws a `CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING` error if the path does not contain a program.
 
 ```ts
 // node = struct { value: u8, next: option<link(node)> }
@@ -912,26 +1040,71 @@ hasDefinedTypeFiniteValue([root, program, list], linkables); // true
 hasDefinedTypeFiniteValue([root, program, loop], linkables); // false
 ```
 
+## Other useful helpers
+
+This package provides a few other helpers that may help build more complex visitors.
+
+### `isValueNodeOfType`
+
+The `isValueNodeOfType` helper tells whether a value node structurally matches the type at the end of the given path, following links to defined types. Ranges are not checked, e.g. `integerValueNode('256')` is a value of a `u8`, and injected or constant values never match since they are not concrete.
+
+```ts
+isValueNodeOfType(noneValueNode(), [root, program, optionTypeNode(integerTypeNode('u64'))], linkables); // true
+isValueNodeOfType(stringValueNode('All'), [root, program, integerTypeNode('u64')], linkables); // false
+```
+
 ### `getResolvedInstructionInputsVisitor`
 
-The `getResolvedInstructionInputsVisitor` visits `InstructionNodes` only and returns an array of instruction accounts and arguments in the order they should be rendered for their default values to be resolved.
+The `getResolvedInstructionInputsVisitor` visits `InstructionNodes` only and returns an array of instruction accounts and data fields in the order they should be rendered for their default values to be resolved. Each entry contains the input `node` (an `InstructionAccountNode` or a `StructFieldTypeNode` with its `path`), its `resolvedDefaultValue`, with any injected value resolved, and the inputs it `dependsOn`.
 
-For instance, say we have an instruction with two accounts and one argument such that `argumentA` defaults to `accountB` and `accountA` is a PDA that uses `argumentA` as a seed. Therefore, the visitor will return an array in the order `[accountB, argumentA, accountA]`.
+For instance, say we have an instruction with a `vault` account defaulting to a PDA derived from the `authority` account and the `index` data field. The visitor will then return the inputs in the order `[authority, index, vault]`.
 
-This is mostly useful when rendering client code for instructions.
+```ts
+const instruction = instructionNode({
+    identifier: 'createVault',
+    accounts: [
+        instructionAccountNode({
+            identifier: 'vault',
+            isSigner: false,
+            isWritable: true,
+            defaultValue: pdaValueNode('vault', {
+                seeds: [
+                    pdaSeedValueNode('authority', accountValueNode('authority')),
+                    pdaSeedValueNode('index', dataValueNode('index')),
+                ],
+            }),
+        }),
+        instructionAccountNode({ identifier: 'authority', isSigner: true, isWritable: false }),
+    ],
+    data: structTypeNode([structFieldTypeNode({ identifier: 'index', type: integerTypeNode('u8') })]),
+});
+
+const stack = new NodeStack([root, program]);
+const inputs = visit(instruction, getResolvedInstructionInputsVisitor(linkables, { stack }));
+inputs.map(input => input.node.identifier);
+// ^ ['authority', 'index', 'vault']
+```
+
+It accepts the following options:
+
+- `stack`: The ancestry of the visited instruction. It must contain the program of the instruction for linked `data` types to be followed.
+- `scope`: A `ProvidedScope` holding the providers enclosing the visited instruction, e.g. its parent instructions. The `provides` of the instruction itself are always added.
+- `includeDataValueNodes`: Whether to include data fields whose default value is a static value. Defaults to `false`.
+
+This is mostly useful when rendering client code for instructions. The helpers it relies on are exported as well: `getDependencies` lists the accounts and data fields a default value depends on, and `deduplicateInstructionDependencies` removes duplicates from such a list.
 
 ### `removeDocsVisitor`
 
-The `removeDocsVisitor` goes through all nodes that have a `docs` property and clears its content.
+The `removeDocsVisitor` goes through all nodes that have a `docs` property and removes it.
 
 ```ts
 const node = definedTypeNode({
-    name: 'authority',
+    identifier: 'authority',
     type: publicKeyTypeNode(),
-    docs: ['The authority of the account'],
+    docs: 'The authority of the account',
 });
 const updatedNode = visit(node, removeDocsVisitor());
-// ^ definedTypeNode({ name: 'authority', type: publicKeyTypeNode() })
+// ^ definedTypeNode({ identifier: 'authority', type: publicKeyTypeNode() })
 ```
 
-This is used internally by the `getUniqueHashStringVisitor` to get a unique identifier for a node regardless of its documentation.
+This is used by the `getUniqueHashStringVisitor` when its `removeDocs` option is enabled, to get a unique identifier for a node regardless of its documentation.
