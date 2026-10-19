@@ -118,5 +118,8 @@
     "browserslist": [
         "supports bigint and not dead",
         "maintained node versions"
-    ]
+    ],
+    "engines": {
+        "node": ">=22.12.0"
+    }
 }

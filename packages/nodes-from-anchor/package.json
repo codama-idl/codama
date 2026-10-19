@@ -45,7 +45,8 @@
     "scripts": {
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
-        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit && pnpm test:exports",
+        "test:exports": "node test/exports/module.mjs && node --no-experimental-require-module test/exports/commonjs.cjs",
         "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
         "test:types": "tsc --noEmit",
         "test:unit": "vitest run"
@@ -61,5 +62,8 @@
     "browserslist": [
         "supports bigint and not dead",
         "maintained node versions"
-    ]
+    ],
+    "engines": {
+        "node": ">=22.12.0"
+    }
 }
