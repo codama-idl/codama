@@ -182,7 +182,8 @@ function mergeProvidedNodes(entries: readonly ProvidedEntry[]): v2.ProvidedNode[
  *
  * Injections whose key the instruction provides as a v1 provided node are
  * left out: they resolve to the same value, or the provided nodes conflict,
- * see {@link mergeProvidedNodes}.
+ * see {@link mergeProvidedNodes}. So are injections within defaults v2
+ * drops, which nothing resolves in v2, see {@link getV1DroppedDefaults}.
  *
  * @throws `CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY` for the
  * first such injection.
@@ -235,13 +236,16 @@ function getV1Providers(path: V1NodePath<v1.InstructionNode>): V1Provider[] {
  * instruction providing its key, so these are the injections within the
  * nodes of the instruction, following defined type links, and those its
  * sub-instructions leave to it, see {@link getV1InjectionsLeftToParent}.
+ * Injections within defaults v2 drops are left out, see
+ * {@link getV1DroppedDefaults}.
  */
 function getV1InjectionsResolvedByInstruction(path: V1NodePath<v1.InstructionNode>): V1InjectionsByKey {
     const instruction = getLastV1NodeFromPath(path);
     const providedValues = new Set(getV1Providers(path).map(provider => getLastV1NodeFromPath(provider.path)));
+    const droppedDefaults = getV1DroppedDefaults(instruction);
     const ownInjections = getV1InjectionPaths(
         path,
-        node => node.kind === 'instructionNode' || providedValues.has(node),
+        node => node.kind === 'instructionNode' || providedValues.has(node) || droppedDefaults.has(node),
     );
     const subInstructionInjections = (instruction.subInstructions ?? []).flatMap(subInstruction => [
         ...getV1InjectionsLeftToParent([...path, subInstruction]).values(),
@@ -263,6 +267,23 @@ function getV1InjectionsLeftToParent(path: V1NodePath<v1.InstructionNode>): V1In
     );
     const injectionsInProvidedValues = providers.flatMap(provider => getV1InjectionPaths(provider.path));
     return getV1InjectionsByKey([...unprovidedInjections, ...injectionsInProvidedValues]);
+}
+
+/**
+ * The defaults of a v1 instruction whose injections v2 cannot resolve: the
+ * argument and account defaults v2 cannot express, which become
+ * `codama.resolver` plugins without a default, and the defaults of extra
+ * arguments, which become opaque `codama.extraArgument` plugin payloads.
+ */
+function getV1DroppedDefaults(instruction: v1.InstructionNode): ReadonlySet<v1.Node> {
+    const extraArguments = getV1ExtraArgumentNames(instruction);
+    const inputs = [...(instruction.arguments ?? []), ...(instruction.accounts ?? [])];
+    return new Set([
+        ...inputs.flatMap(({ defaultValue }) =>
+            defaultValue && !isV1InputValueRepresentable(defaultValue, extraArguments) ? [defaultValue] : [],
+        ),
+        ...(instruction.extraArguments ?? []).flatMap(({ defaultValue }) => (defaultValue ? [defaultValue] : [])),
+    ]);
 }
 
 function getV1InjectionsByKey(injections: readonly V1NodePath<v1.InjectedValueNode>[]): V1InjectionsByKey {

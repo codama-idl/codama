@@ -509,6 +509,79 @@ describe('provided keys', () => {
         );
     });
 
+    test('it throws when an argument default of a sub-instruction would be injected into one of its nodes instead of a provided node of its parent', () => {
+        // Given a parent providing `decimals` as a v1 provided node, which v1 injections resolve to.
+        const amount = getAmountArgument();
+        const child = {
+            arguments: [amount, decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transferV1',
+            optionalAccountStrategy: 'programId',
+        } as unknown as v1.InstructionNode;
+        const instruction = {
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            provides: [{ kind: 'providedNode', name: 'decimals', node: { kind: 'numberValueNode', number: 6 } }],
+            subInstructions: [child],
+        } as unknown as v1.InstructionNode;
+
+        // Then providing the `decimals` argument default of the sub-instruction would shadow the parent.
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            getConflictError(
+                'decimals',
+                [...programPath, instruction, child, decimalsArgument],
+                [...programPath, instruction, child, amount, ...getDecimalsInjectionPath(amount)],
+            ),
+        );
+    });
+
+    test('it provides argument defaults whose key is only injected into a default v2 cannot express', () => {
+        // Given an injection within a default relying on a resolver, which becomes a resolver plugin.
+        const instruction = {
+            arguments: [
+                {
+                    defaultValue: {
+                        condition: { kind: 'resolverValueNode', name: 'resolveHasFee' },
+                        ifTrue: { key: 'decimals', kind: 'injectedValueNode' },
+                        kind: 'conditionalValueNode',
+                    },
+                    kind: 'instructionArgumentNode',
+                    name: 'feeDecimals',
+                    type: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
+                },
+                decimalsArgument,
+            ],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+        } as unknown as v1.InstructionNode;
+        expect(instructionNodeFromV1([...programPath, instruction]).provides).toStrictEqual([
+            providedNode('decimals', accountDataValueNode('mint', { path: 'decimals' })),
+        ]);
+    });
+
+    test('it provides argument defaults whose key is only injected into the default of an extra argument', () => {
+        // Given an injection within the default of an extra argument, which becomes an opaque plugin payload.
+        const instruction = {
+            arguments: [decimalsArgument],
+            extraArguments: [
+                {
+                    defaultValue: { key: 'decimals', kind: 'injectedValueNode' },
+                    kind: 'instructionArgumentNode',
+                    name: 'feeDecimals',
+                    type: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
+                },
+            ],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+        } as unknown as v1.InstructionNode;
+        expect(instructionNodeFromV1([...programPath, instruction]).provides).toStrictEqual([
+            providedNode('decimals', accountDataValueNode('mint', { path: 'decimals' })),
+        ]);
+    });
+
     test('it provides argument defaults whose key is only injected where another provider resolves it', () => {
         // Given a sub-instruction providing the `decimals` it injects, and a value provided by the
         // instruction itself injecting `decimals`, which resolves from the instructions around it.
