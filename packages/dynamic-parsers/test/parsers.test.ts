@@ -564,12 +564,12 @@ describe('parseInstruction', () => {
             instructionAccountNode({ identifier, isSigner: false, isWritable: true });
         const optional = (identifier: string) =>
             instructionAccountNode({ identifier, isOptional: true, isSigner: false, isWritable: true });
-        const meta = (address: string) => ({ address, role: AccountRole.WRITABLE });
-        const parse = (instruction: InstructionNode, addresses: string[]) =>
+        const meta = (address: string, role: AccountRole = AccountRole.WRITABLE) => ({ address, role });
+        const parse = (instruction: InstructionNode, metas: (ReturnType<typeof meta> | string)[]) =>
             parseInstruction(
                 rootNode(programNode({ identifier: 'myProgram', instructions: [instruction], publicKey: '1111' })),
                 {
-                    accounts: addresses.map(meta),
+                    accounts: metas.map(item => (typeof item === 'string' ? meta(item) : item)),
                     data: hex(''),
                     programAddress: '1111',
                 } as unknown as Parameters<typeof parseInstruction>[1],
@@ -728,6 +728,107 @@ describe('parseInstruction', () => {
                     { ...meta('source11'), identifier: 'source' },
                     { ...meta('dest1111'), identifier: 'destination' },
                 ],
+                remainingAccounts: [],
+                unidentifiedAccounts: [],
+            });
+        });
+
+        test('it names all accounts when the roles of the accounts tell which optional accounts are omitted', () => {
+            // Given an optional read-only `referrer` before a writable `destination`, and remaining accounts.
+            const instruction = instructionNode({
+                accounts: [
+                    required('source'),
+                    instructionAccountNode({
+                        identifier: 'referrer',
+                        isOptional: true,
+                        isSigner: 'either',
+                        isWritable: false,
+                    }),
+                    required('destination'),
+                ],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+                remainingAccounts: [instructionRemainingAccountsNode('signers')],
+            });
+
+            // When the second meta is read-only, so it cannot be the destination.
+            const metas = [
+                meta('source11'),
+                meta('refer111', AccountRole.READONLY),
+                meta('dest1111'),
+                meta('signer11', AccountRole.READONLY_SIGNER),
+            ];
+            const result = parse(instruction, metas);
+
+            // Then we expect the referrer to be present, so every account is named.
+            expect(result).toMatchObject({
+                accounts: [
+                    { ...metas[0], identifier: 'source' },
+                    { ...metas[1], identifier: 'referrer' },
+                    { ...metas[2], identifier: 'destination' },
+                ],
+                remainingAccounts: [metas[3]],
+                unidentifiedAccounts: [],
+            });
+        });
+
+        test('it names all accounts when the roles of the remaining accounts tell which optional accounts are omitted', () => {
+            // Given an optional account followed by a required one and signer remaining accounts.
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination')],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+                remainingAccounts: [instructionRemainingAccountsNode('signers', { isSigner: true })],
+            });
+
+            // When the third meta is not a signer, so it cannot be a remaining account.
+            const metas = ['source11', 'refer111', 'dest1111', meta('signer11', AccountRole.WRITABLE_SIGNER)];
+            const result = parse(instruction, metas);
+
+            // Then we expect the referrer to be present, so every account is named.
+            expect(result).toMatchObject({
+                accounts: [
+                    { ...meta('source11'), identifier: 'source' },
+                    { ...meta('refer111'), identifier: 'referrer' },
+                    { ...meta('dest1111'), identifier: 'destination' },
+                ],
+                remainingAccounts: [meta('signer11', AccountRole.WRITABLE_SIGNER)],
+                unidentifiedAccounts: [],
+            });
+        });
+
+        test('it leaves accounts unidentified when their roles exceed the roles of every account they could be', () => {
+            // Given an optional account followed by a required one and signer remaining accounts.
+            const instruction = instructionNode({
+                accounts: [required('source'), optional('referrer'), required('destination')],
+                identifier: 'transfer',
+                optionalAccountStrategy: 'omitted',
+                remainingAccounts: [instructionRemainingAccountsNode('signers', { isSigner: true })],
+            });
+
+            // When the third meta is a signer: it could be the non-signer destination, since roles are
+            // merged across the instructions of a transaction, or a remaining account.
+            const signer = (address: string) => meta(address, AccountRole.WRITABLE_SIGNER);
+            const result = parse(instruction, ['source11', 'middle11', signer('middle22'), signer('signer11')]);
+
+            // Then we expect the ambiguous metas to stay unidentified.
+            expect(result).toMatchObject({
+                accounts: [{ ...meta('source11'), identifier: 'source' }],
+                remainingAccounts: [signer('signer11')],
+                unidentifiedAccounts: [meta('middle11'), signer('middle22')],
+            });
+        });
+
+        test('it ignores the roles of the accounts when they contradict every placement of the metas', () => {
+            // Given a single writable account.
+            const instruction = instructionNode({ accounts: [required('source')], identifier: 'close' });
+
+            // When its meta is read-only.
+            const result = parse(instruction, [meta('source11', AccountRole.READONLY)]);
+
+            // Then we expect it to be named after its position nonetheless.
+            expect(result).toMatchObject({
+                accounts: [{ ...meta('source11', AccountRole.READONLY), identifier: 'source' }],
                 remainingAccounts: [],
                 unidentifiedAccounts: [],
             });

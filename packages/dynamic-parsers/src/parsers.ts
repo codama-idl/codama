@@ -14,6 +14,7 @@ import {
     IdentifierString,
     InstructionAccountNode,
     InstructionNode,
+    InstructionRemainingAccountsNode,
     parseOptionalAccountStrategy,
     RootNode,
 } from '@codama/nodes';
@@ -25,12 +26,14 @@ import {
     NodeStack,
     ProvidedScope,
 } from '@codama/visitors-core';
-import type {
-    AccountLookupMeta,
-    AccountMeta,
-    Instruction,
-    InstructionWithAccounts,
-    InstructionWithData,
+import {
+    type AccountLookupMeta,
+    type AccountMeta,
+    type Instruction,
+    type InstructionWithAccounts,
+    type InstructionWithData,
+    isSignerRole,
+    isWritableRole,
 } from '@solana/instructions';
 
 import { matchDiscriminators } from './discriminators';
@@ -157,7 +160,8 @@ export type ParsedInstructionAccounts = ReadonlyArray<AccountMeta & { identifier
  *   with the `omitted` strategy. Since absent optional accounts are left out, the accounts after
  *   them shift, so when several sets of optional accounts may be absent, or when remaining
  *   accounts may follow, the metas that could be different accounts are left unidentified
- *   rather than mislabelled.
+ *   rather than mislabelled. The roles of the metas narrow down the accounts they could be,
+ *   since a meta never has fewer privileges than its account declares.
  * - `remainingAccounts`: the account metas beyond all named accounts, e.g. the signers of a
  *   multisig.
  */
@@ -200,37 +204,28 @@ export function parseInstruction(
 /**
  * Split the account metas of an instruction into named, unidentified and remaining accounts.
  *
- * With the `programId` strategy, every named account has a slot, so each meta is identified by
- * its position. With the `omitted` strategy, a meta is identified only if it is the same account,
- * or a remaining account, for every number of omitted optional accounts consistent with the
- * number of metas, and for every choice of the optional accounts omitted.
+ * A meta is identified only if every placement of the metas consistent with the instruction
+ * agrees on it, see {@link getAccountCandidates}. Placements are first required to respect the
+ * roles of the accounts. If none does, the roles of the metas contradict the declared ones,
+ * so placements are found regardless of roles instead.
  */
 function identifyInstructionAccounts(
     instructionNode: InstructionNode,
     instruction: ParsableInstruction,
 ): Pick<ParsedInstruction, 'accounts' | 'remainingAccounts' | 'unidentifiedAccounts'> {
-    const namedAccounts = instructionNode.accounts ?? [];
     const isProgramIdStrategy = parseOptionalAccountStrategy(instructionNode.optionalAccountStrategy) === 'programId';
-    const omittedCounts = isProgramIdStrategy
-        ? [0]
-        : getPossibleOmittedCounts(instructionNode, instruction.accounts.length);
-
-    // For a given number of omitted optional accounts, the account at each position lies between
-    // the ones found by omitting the last optional accounts and by omitting the first ones. So the
-    // account at a position is certain when all these bounds agree, `null` marking positions
-    // beyond the named accounts, i.e. remaining accounts.
-    const bounds = omittedCounts.flatMap(omitted => [
-        omitOptionalAccounts(namedAccounts, omitted, 'last'),
-        omitOptionalAccounts(namedAccounts, omitted, 'first'),
-    ]);
+    const candidatesByMeta =
+        getAccountCandidates(instructionNode, instruction.accounts, { isProgramIdStrategy, useRoles: true }) ??
+        getAccountCandidates(instructionNode, instruction.accounts, { isProgramIdStrategy, useRoles: false }) ??
+        [];
 
     const accounts: Array<AccountMeta & { identifier: IdentifierString }> = [];
     const remainingAccounts: Array<AccountLookupMeta | AccountMeta> = [];
     const unidentifiedAccounts: Array<AccountLookupMeta | AccountMeta> = [];
     instruction.accounts.forEach((meta, index) => {
-        const candidates = new Set(bounds.map(present => present[index] ?? null));
+        const candidates = candidatesByMeta[index] ?? new Set();
         const [account] = candidates;
-        if (candidates.size > 1 || account === undefined) {
+        if (candidates.size !== 1 || account === undefined) {
             unidentifiedAccounts.push(meta);
         } else if (account === null) {
             remainingAccounts.push(meta);
@@ -243,41 +238,94 @@ function identifyInstructionAccounts(
 }
 
 /**
- * The numbers of optional accounts that may be omitted, with the `omitted` strategy, given the
- * number of account metas. Without remaining accounts, the metas beyond the named accounts tell
- * how many optional accounts are omitted. With remaining accounts, any number of them may follow
- * the named accounts, so any number of optional accounts may be omitted, as long as the metas can
- * hold the named accounts that are left. When there are fewer metas than required accounts, the
- * instruction is malformed, so any number of optional accounts may be omitted.
+ * The accounts each meta may be, `null` marking a remaining account, over every placement of the
+ * metas consistent with the instruction, or `undefined` if there is no such placement.
+ *
+ * A placement assigns the metas, in order, to the named accounts left after omitting some optional
+ * accounts, which only the `omitted` strategy allows, followed by remaining accounts. Remaining
+ * accounts may only follow every named account, and only when the instruction declares some,
+ * except that metas beyond all named accounts are always remaining accounts. When there are fewer
+ * metas than required accounts, the instruction is malformed, so the metas may stop at any account.
+ *
+ * With `useRoles`, a placement must also respect the roles of the accounts. Since the roles of an
+ * account are merged across the instructions of a transaction, a meta may have more privileges
+ * than its account declares, but never fewer: a signer account cannot hold a non-signer meta, and
+ * a writable account cannot hold a read-only meta.
+ *
+ * Placements are counted with a forward and a backward reachability table over the states
+ * `(i, j)`, where the first `i` named accounts hold the first `j` metas, so a meta may be a given
+ * account if a placement reaches the state before it and completes from the state after it.
  */
-function getPossibleOmittedCounts(instructionNode: InstructionNode, metaCount: number): number[] {
+function getAccountCandidates(
+    instructionNode: InstructionNode,
+    metas: readonly (AccountLookupMeta | AccountMeta)[],
+    options: { isProgramIdStrategy: boolean; useRoles: boolean },
+): Array<Set<InstructionAccountNode | null>> | undefined {
     const namedAccounts = instructionNode.accounts ?? [];
-    const optionalCount = namedAccounts.filter(account => account.isOptional).length;
-    const minOmitted = Math.max(0, namedAccounts.length - metaCount);
-    const hasRemainingAccounts = (instructionNode.remainingAccounts ?? []).length > 0;
-    if (minOmitted > optionalCount) return getRange(0, optionalCount);
-    return hasRemainingAccounts ? getRange(minOmitted, optionalCount) : [minOmitted];
+    const remainingAccounts = instructionNode.remainingAccounts ?? [];
+    const [accountCount, metaCount] = [namedAccounts.length, metas.length];
+    const canOmit = (account: InstructionAccountNode) => !options.isProgramIdStrategy && !!account.isOptional;
+    const fits = (roles: AccountRoles, meta: AccountLookupMeta | AccountMeta) =>
+        !options.useRoles || hasRoles(meta, roles);
+    const canHold = (i: number, j: number) => j < metaCount && fits(namedAccounts[i], metas[j]);
+    const isMalformed = metaCount < namedAccounts.filter(account => !canOmit(account)).length;
+
+    // Whether the metas from `j` onwards can all be remaining accounts, after every named account.
+    const tailFits = Array.from({ length: metaCount + 1 }, () => true);
+    for (let j = metaCount - 1; j >= 0; j--) {
+        const fitsRemaining =
+            remainingAccounts.length > 0
+                ? remainingAccounts.some(remaining => fits(remaining, metas[j]))
+                : j >= accountCount;
+        tailFits[j] = tailFits[j + 1] && fitsRemaining;
+    }
+    const isEnd = (i: number, j: number) => (i === accountCount && tailFits[j]) || (isMalformed && j === metaCount);
+
+    const getTable = () => Array.from({ length: accountCount + 1 }, () => Array<boolean>(metaCount + 1).fill(false));
+    const reached = getTable();
+    reached[0][0] = true;
+    for (let i = 0; i < accountCount; i++) {
+        for (let j = 0; j <= metaCount; j++) {
+            if (!reached[i][j]) continue;
+            if (canOmit(namedAccounts[i])) reached[i + 1][j] = true;
+            if (canHold(i, j)) reached[i + 1][j + 1] = true;
+        }
+    }
+    const completes = getTable();
+    for (let i = accountCount; i >= 0; i--) {
+        for (let j = metaCount; j >= 0; j--) {
+            completes[i][j] =
+                isEnd(i, j) ||
+                (i < accountCount &&
+                    ((canOmit(namedAccounts[i]) && completes[i + 1][j]) || (canHold(i, j) && completes[i + 1][j + 1])));
+        }
+    }
+    if (!completes[0][0]) return undefined;
+
+    const candidates = metas.map(() => new Set<InstructionAccountNode | null>());
+    for (let i = 0; i < accountCount; i++) {
+        for (let j = 0; j < metaCount; j++) {
+            if (reached[i][j] && canHold(i, j) && completes[i + 1][j + 1]) candidates[j].add(namedAccounts[i]);
+        }
+    }
+    // Every meta from the first one that can start the remaining accounts may be a remaining account.
+    const firstRemaining = reached[accountCount].findIndex((isReached, j) => isReached && tailFits[j]);
+    if (firstRemaining >= 0) candidates.slice(firstRemaining).forEach(set => set.add(null));
+    return candidates;
 }
 
-/** The named accounts left after omitting the given number of optional accounts, either the first or the last ones. */
-function omitOptionalAccounts(
-    namedAccounts: readonly InstructionAccountNode[],
-    omitted: number,
-    which: 'first' | 'last',
-): InstructionAccountNode[] {
-    const ordered = which === 'first' ? [...namedAccounts] : [...namedAccounts].reverse();
-    let left = omitted;
-    const kept = ordered.filter(account => {
-        if (left === 0 || !account.isOptional) return true;
-        left -= 1;
-        return false;
-    });
-    return which === 'first' ? kept : kept.reverse();
-}
+/** The roles an account declares, as both named and remaining accounts do. */
+type AccountRoles = Pick<InstructionAccountNode | InstructionRemainingAccountsNode, 'isSigner' | 'isWritable'>;
 
-/** The integers from `start` to `end`, both included. */
-function getRange(start: number, end: number): number[] {
-    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+/**
+ * Whether a meta has the roles an account declares: a signer account needs a signer meta and a
+ * writable account needs a writable meta. Accounts that may or may not sign, i.e. `'either'`,
+ * accept any meta.
+ */
+function hasRoles(meta: AccountLookupMeta | AccountMeta, roles: AccountRoles): boolean {
+    return (
+        (roles.isSigner !== true || isSignerRole(meta.role)) && (roles.isWritable !== true || isWritableRole(meta.role))
+    );
 }
 
 /**

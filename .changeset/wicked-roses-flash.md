@@ -15,7 +15,7 @@ Label the accounts of parsed instructions according to the `optionalAccountStrat
 + parsed.accounts; // [{ address: A, identifier: 'source' }, { address: B, identifier: 'destination' }]
 ```
 
-**Accounts are named by identity rather than position with the `omitted` strategy.** The accounts after an omitted optional account are named after their shifted position. When the omitted optional accounts cannot be told from the number of metas, e.g. one of two optional accounts, or remaining accounts may follow, the ambiguous metas are returned in the new `unidentifiedAccounts` list of `ParsedInstruction` instead of `accounts` or `remainingAccounts`.
+**Accounts are named by identity rather than position with the `omitted` strategy.** The accounts after an omitted optional account are named after their shifted position. When the omitted optional accounts cannot be told from the number of metas, e.g. one of two optional accounts, or remaining accounts may follow, the ambiguous metas are returned in the new `unidentifiedAccounts` list of `ParsedInstruction` instead of `accounts` or `remainingAccounts`. The roles of the metas narrow this down, since a meta that is not a signer cannot be an account declared as a signer, and a read-only meta cannot be an account declared as writable.
 
 ```diff
  // Accounts: source, referrer (optional), memo (optional), destination. Metas: [A, B, C].

@@ -111,6 +111,15 @@ parsed.accounts; // [{ address: A, identifier: 'source' }, { address: C, identif
 parsed.unidentifiedAccounts; // [{ address: B }]: either the referrer or the memo.
 ```
 
+Declaring remaining accounts on an instruction with optional accounts under the `omitted` strategy can therefore leave accounts unidentified, even when every optional account is present, since any number of them may be omitted in favour of more remaining accounts. The roles of the account metas help disambiguate. Since roles are merged across the instructions of a transaction, a meta may have more privileges than its account declares, but never fewer. So a meta that is not a signer cannot be an account declared as a signer, and a read-only meta cannot be an account declared as writable, and the same goes for remaining accounts declaring `isSigner` or `isWritable`. Accounts declaring `isSigner: 'either'` accept any meta. If the roles of the metas contradict every possible placement, they are ignored.
+
+```ts
+// Accounts: source, referrer (optional, read-only), destination (writable), then remaining signers.
+// Metas:    [A, B (read-only), C, D], with the `omitted` strategy.
+parsed.accounts; // [{ address: A, identifier: 'source' }, { address: B, identifier: 'referrer' }, { address: C, identifier: 'destination' }]
+parsed.remainingAccounts; // [{ address: D }]: B cannot be the writable destination, so the referrer is present.
+```
+
 It uses the instruction's `programAddress` to restrict the search to the matching program, including any of the root node's `additionalPrograms`. When no program of the root matches that address, nothing is parsed: matching an unknown program against another program's candidates would confidently misattribute the data, which matters when the result is displayed to end users (e.g. clear signing). It accepts the `bytesEncoding` and `linkables` options.
 
 ## Discriminators
