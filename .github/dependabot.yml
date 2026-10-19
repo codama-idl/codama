@@ -1,5 +1,12 @@
 # Dependabot version updates. Opens PRs to keep dependency versions fresh.
 # Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# This file is inert while `1.x` is the default branch, since Dependabot only
+# reads its config from the default branch. Until then, the `1.x` config
+# duplicates every entry with `target-branch: main` to keep this branch updated
+# (see #1259). Once `main` becomes the default branch at 2.0.0 stable, add a copy
+# of each entry below with `target-branch: '1.x'` so that `1.x` keeps receiving
+# updates, and keep both copies in sync.
 version: 2
 updates:
   - package-ecosystem: 'npm'
