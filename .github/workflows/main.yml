@@ -70,10 +70,14 @@ jobs:
       - name: Build and run tests
         run: pnpm test
 
+      # Generated output does not depend on the Node.js version, and the generate script
+      # formats it with oxfmt, which fails to load its TypeScript config on Node.js 22.
       - name: Regenerate output from the pinned @codama/spec
+        if: matrix.node == env.NODE_VERSION
         run: pnpm generate
 
       - name: Ensure working directory is clean
+        if: matrix.node == env.NODE_VERSION
         run: |
           git status
           test -z "$(git status --porcelain)"
