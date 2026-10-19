@@ -81,7 +81,7 @@ To add a new error in Codama, follow these steps:
 1. Add a new exported error code constant to `src/codes.ts`. Find the most appropriate group for your error and ensure it is appended to the end of that group.
 2. Add that new constant to the `CodamaErrorCode` union in `src/codes.ts`.
 3. If you would like the new error to encapsulate context about the error itself define that context in `src/context.ts`. Errors about a node carry its `path` rather than the node itself, its kind or its identifier.
-4. Add the error's message to `src/messages.ts`. Any context values that you defined above will be interpolated into the message wherever you write `$key`, where `key` is the index of a value in the context (eg. ``'Unrecognized node `$kind`.'``). Node paths, and lists of node paths, render as node selectors. Wrap the parts of a message that use optional context values in `{{...}}` so they are only rendered when these values are defined (eg. `'Invalid account $path{{ at index [$index]}}.'`).
+4. Add the error's message to `src/messages.ts`. Any context values that you defined above will be interpolated into the message wherever you write `$key`, where `key` is the index of a value in the context (eg. ``'Unrecognized node `$kind`.'``). Node paths, and lists of node paths, render as node selectors.
 5. Publish a new version of `@codama/errors` using changesets — maintainers will handle this via tha changesets CI workflow.
 6. Bump the version of `@codama/errors` or `codama` in the consumer package from which the error is thrown.
 

@@ -82,7 +82,6 @@ import {
  *   - Don't change the meaning of an error message.
  *   - `$path`, and any other node path of the context, renders as node selectors, e.g. `[programNode]token.[accountNode]mint`.
  *     Lists of node paths render as lists of node selectors.
- *   - `{{...}}` marks an optional section, only rendered when all its variables are defined, e.g. `{{ at index [$index]}}`.
  */
 export const CodamaErrorMessages: Readonly<{
     // This type makes this data structure exhaustive with respect to `SolanaErrorCode`.
@@ -130,7 +129,7 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: 'Missing seed $path.',
 
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]:
-        'Expected an address of type [$expectedType] for $path{{ at index [$index]}}, but received [$actualType].',
+        'Expected an address of type [$expectedType] for $path, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]:
         'Expected [$expectedType] for $path, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: 'Unsupported node $path.',
