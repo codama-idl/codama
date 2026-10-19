@@ -541,6 +541,57 @@ test('it reports nested duplicates that are not siblings of an earlier duplicate
     ]);
 });
 
+test('it reports sub-instructions colliding with a top-level instruction once converted to camelCase', () => {
+    // Given a top-level instruction "transferTokens" and a sub-instruction "transfer_tokens".
+    const nestedTransfer = instructionNode({ identifier: 'transfer_tokens' });
+    const parent = instructionNode({ identifier: 'parent', subInstructions: [nestedTransfer] });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [instructionNode({ identifier: 'transferTokens' }), parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the sub-instruction is reported as a casing collision within the program.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Instruction identifier "transfer_tokens" collides with "transferTokens" once converted to camelCase across the instructions and sub-instructions of program "test".',
+            [node, parent, nestedTransfer],
+        ),
+    ]);
+});
+
+test('it does not report sibling instructions colliding once converted to camelCase twice', () => {
+    // Given sub-instructions "transferTokens" and "transfer_tokens" of the same parent.
+    const nestedTransfer = instructionNode({ identifier: 'transfer_tokens' });
+    const parent = instructionNode({
+        identifier: 'parent',
+        subInstructions: [instructionNode({ identifier: 'transferTokens' }), nestedTransfer],
+    });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the collision is only reported by the collision check of its sibling set.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Sub-instruction identifier "transfer_tokens" collides with "transferTokens" once converted to camelCase in instruction "parent".',
+            [node, parent, nestedTransfer],
+        ),
+    ]);
+});
+
 test('it reports errors raised when resolving instruction default values', () => {
     // Given an instruction whose account defaults depend on each other.
     const node = instructionNode({
