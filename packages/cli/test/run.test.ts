@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import type { RootNode } from '@codama/nodes';
 import { programNode, rootNode } from '@codama/nodes';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
@@ -13,7 +15,8 @@ vi.mock('../src/utils/packageInstall', () => ({ installMissingDependencies: vi.f
 const importModuleItemMock = vi.mocked(importModuleItem);
 const installMissingDependenciesMock = vi.mocked(installMissingDependencies);
 
-const configPath = '/root/codama.json';
+const root = path.resolve('/root');
+const configPath = path.join(root, 'codama.json');
 
 function rootNodeWith(identifier: string): RootNode {
     return rootNode(programNode({ identifier, publicKey: '11111111111111111111111111111111' }));
@@ -21,9 +24,9 @@ function rootNodeWith(identifier: string): RootNode {
 
 function mockModules(config: Config, visitors: Record<string, unknown>): void {
     const modules: Record<string, unknown> = {
-        '/root/idl.json': rootNodeWith('original'),
+        [path.join(root, 'idl.json')]: rootNodeWith('original'),
         [configPath]: config,
-        ...Object.fromEntries(Object.entries(visitors).map(([name, visitor]) => [`/root/${name}`, visitor])),
+        ...Object.fromEntries(Object.entries(visitors).map(([name, visitor]) => [path.join(root, name), visitor])),
     };
     importModuleItemMock.mockImplementation(({ from }) => Promise.resolve(modules[from]));
 }
