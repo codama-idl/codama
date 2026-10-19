@@ -18,7 +18,7 @@ import {
 } from 'codama';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { generateClientTypes } from '../../../src/cli/commands/generate-client-types/generate-client-types';
+import { generateClientTypes } from '../../../src/codegen';
 
 const CLI_PATH = path.resolve('bin/cli.cjs');
 

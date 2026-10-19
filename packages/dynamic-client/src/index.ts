@@ -40,5 +40,3 @@ export type {
     ProgramClient,
     ProgramMethodBuilder,
 } from './program-client/create-program-client';
-
-export { generateClientTypes } from './cli/commands/generate-client-types/generate-client-types';

@@ -231,10 +231,10 @@ This reads the IDL file and writes a `*-types.ts` file to the output directory c
 
 ### `generateClientTypes(idl)`
 
-The same is available as a TypeScript function:
+The same is available as a TypeScript function from the Node-only `@codama/dynamic-client/codegen` subpath, which keeps code generation out of the main entry and its browser bundles:
 
 ```ts
-import { generateClientTypes } from '@codama/dynamic-client';
+import { generateClientTypes } from '@codama/dynamic-client/codegen';
 import type { RootNode } from 'codama';
 import { readFileSync, writeFileSync } from 'node:fs';
 
