@@ -31,7 +31,10 @@ export function generateDefinedTypes(idl: RootNode): string {
         if (!aliases.has(definedType)) aliases.set(definedType, path);
     };
 
-    // Collect the aliases referenced by the instruction data and PDA seed types.
+    // Collect the aliases referenced by the instruction data and PDA seed types. These type paths
+    // must mirror every `codamaTypeToTS` call site of the other generators, namely the instruction
+    // data of `generateResolutionInputTypes` and the variable PDA seeds of `generatePdaTypes`, or
+    // the aliases they reference would never be emitted. Update them together.
     const typePaths: NodePath<TypeNode>[] = [
         ...(idl.program.instructions ?? []).flatMap(ix => (ix.data ? [[idl, idl.program, ix, ix.data] as const] : [])),
         ...[...collectPdaNodesFromIdl(idl).values()].flatMap(pda =>
