@@ -24,8 +24,8 @@ export type SymbolicModuleMap = ReadonlyMap<SymbolicModule, Path>;
 /**
  * Resolve a symbolic key to a safe output path. Throws if the key is
  * missing from the map or points outside `generated/`. Generators
- * that drive an `emit(key, body)` style closure call this from inside
- * their `getSpecPagesRenderMap`.
+ * call this for every symbolic key they emit a page for, to get the
+ * path that page is written to.
  */
 export function resolveEntryPath(modules: SymbolicModuleMap, symbolicKey: SymbolicModule): Path {
     const path = modules.get(symbolicKey);
