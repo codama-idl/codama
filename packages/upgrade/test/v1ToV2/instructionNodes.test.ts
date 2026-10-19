@@ -1,4 +1,8 @@
-import { CODAMA_ERROR__UNEXPECTED_NODE_KIND, CodamaError } from '@codama/errors';
+import {
+    CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY,
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
+    CodamaError,
+} from '@codama/errors';
 import {
     accountBumpValueNode,
     accountDataValueNode,
@@ -10,6 +14,7 @@ import {
     enumValueNode,
     fieldDiscriminatorNode,
     floatValueNode,
+    type IdentifierString,
     identityValueNode,
     injectedValueNode,
     instructionAccountNode,
@@ -259,6 +264,276 @@ describe('arguments', () => {
                 identifier: 'createItem',
             }),
         );
+    });
+});
+
+describe('provided keys', () => {
+    // An argument whose default is provided under its name, e.g. the decimals of a mint.
+    const decimalsArgument = {
+        defaultValue: { account: 'mint', kind: 'accountFieldValueNode', path: 'decimals' },
+        kind: 'instructionArgumentNode',
+        name: 'decimals',
+        type: { endian: 'le', format: 'u8', kind: 'numberTypeNode' },
+    } as unknown as v1.InstructionArgumentNode;
+
+    // An argument injecting `decimals` into its display, defaulting to 9 decimals when not provided.
+    const getAmountArgument = (type?: v1.TypeNode) =>
+        ({
+            kind: 'instructionArgumentNode',
+            name: 'amount',
+            type: type ?? {
+                display: {
+                    decimals: {
+                        fallback: { kind: 'numberValueNode', number: 9 },
+                        key: 'decimals',
+                        kind: 'injectedValueNode',
+                    },
+                    kind: 'amountNumberDisplayNode',
+                },
+                endian: 'le',
+                format: 'u64',
+                kind: 'numberTypeNode',
+            },
+        }) as unknown as v1.InstructionArgumentNode;
+    const getDecimalsInjectionPath = (argument: v1.InstructionArgumentNode) => {
+        const type = argument.type as v1.NumberTypeNode;
+        const display = type.display as v1.AmountNumberDisplayNode;
+        return [type, display, display.decimals as v1.InjectedValueNode];
+    };
+
+    const getConflictError = (key: string, path: readonly v1.Node[], conflictingPath: readonly v1.Node[]) =>
+        expect.objectContaining({
+            context: new CodamaError(CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY, {
+                conflictingPath: conflictingPath as never,
+                key: key as IdentifierString,
+                path: path as never,
+            }).context,
+        });
+
+    test('it throws when an argument default and a provided node of its instruction provide different values under the same key', () => {
+        const provided = { kind: 'providedNode', name: 'decimals', node: { kind: 'numberValueNode', number: 6 } };
+        const instruction = {
+            arguments: [decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            provides: [provided],
+        } as unknown as v1.InstructionNode;
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            getConflictError(
+                'decimals',
+                [...programPath, instruction, decimalsArgument],
+                [...programPath, instruction, provided as v1.ProvidedNode],
+            ),
+        );
+    });
+
+    test('it throws when the defaults of two arguments are provided under the same key once their names are converted', () => {
+        const first = { ...decimalsArgument, name: 'mint-decimals' } as v1.InstructionArgumentNode;
+        const second = {
+            ...decimalsArgument,
+            defaultValue: { account: 'otherMint', kind: 'accountFieldValueNode', path: 'decimals' },
+            name: 'mint_decimals',
+        } as v1.InstructionArgumentNode;
+        const instruction = {
+            arguments: [first, second],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+        } as unknown as v1.InstructionNode;
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            getConflictError(
+                'mint_decimals',
+                [...programPath, instruction, second],
+                [...programPath, instruction, first],
+            ),
+        );
+    });
+
+    test('it throws when two provided nodes of an instruction provide different values under the same key once their names are converted', () => {
+        const first = { kind: 'providedNode', name: 'max-fee', node: { kind: 'numberValueNode', number: 1 } };
+        const second = { kind: 'providedNode', name: 'max_fee', node: { kind: 'numberValueNode', number: 2 } };
+        const instruction = {
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            provides: [first, second],
+        } as unknown as v1.InstructionNode;
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            getConflictError(
+                'max_fee',
+                [...programPath, instruction, second as v1.ProvidedNode],
+                [...programPath, instruction, first as v1.ProvidedNode],
+            ),
+        );
+    });
+
+    test('it provides identical values under the same key once', () => {
+        const instruction = {
+            arguments: [
+                {
+                    defaultValue: { kind: 'identityValueNode' },
+                    kind: 'instructionArgumentNode',
+                    name: 'owner',
+                    type: { kind: 'publicKeyTypeNode' },
+                },
+            ],
+            kind: 'instructionNode',
+            name: 'create',
+            optionalAccountStrategy: 'programId',
+            provides: [{ kind: 'providedNode', name: 'owner', node: { kind: 'identityValueNode' } }],
+        } as unknown as v1.InstructionNode;
+        expect(instructionNodeFromV1([...programPath, instruction])).toStrictEqual(
+            instructionNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        defaultValue: injectedValueNode({ key: 'owner' }),
+                        identifier: 'owner',
+                        type: publicKeyTypeNode(),
+                    }),
+                ]),
+                identifier: 'create',
+                provides: [providedNode('owner', identityValueNode())],
+            }),
+        );
+    });
+
+    test('it throws when an argument default would be injected into a node of its instruction', () => {
+        // Given an amount display injecting `decimals`, which v1 resolves to its fallback.
+        const amount = getAmountArgument();
+        const instruction = {
+            arguments: [amount, decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+        } as unknown as v1.InstructionNode;
+
+        // Then providing the `decimals` argument default would change what the display resolves.
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            getConflictError(
+                'decimals',
+                [...programPath, instruction, decimalsArgument],
+                [...programPath, instruction, amount, ...getDecimalsInjectionPath(amount)],
+            ),
+        );
+    });
+
+    test('it provides argument defaults injected into a node of their instruction when a provided node provides the same value', () => {
+        // Given a provided node already providing the default of the `decimals` argument to the amount display.
+        const instruction = {
+            arguments: [getAmountArgument(), decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            provides: [{ kind: 'providedNode', name: 'decimals', node: decimalsArgument.defaultValue }],
+        } as unknown as v1.InstructionNode;
+        expect(instructionNodeFromV1([...programPath, instruction]).provides).toStrictEqual([
+            providedNode('decimals', accountDataValueNode('mint', { path: 'decimals' })),
+        ]);
+    });
+
+    test('it throws when an argument default would be injected into a node of a sub-instruction', () => {
+        const amount = getAmountArgument();
+        const child = {
+            arguments: [amount],
+            kind: 'instructionNode',
+            name: 'transferV1',
+            optionalAccountStrategy: 'programId',
+        } as unknown as v1.InstructionNode;
+        const instruction = {
+            arguments: [decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            subInstructions: [child],
+        } as unknown as v1.InstructionNode;
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            getConflictError(
+                'decimals',
+                [...programPath, instruction, decimalsArgument],
+                [...programPath, instruction, child, amount, ...getDecimalsInjectionPath(amount)],
+            ),
+        );
+    });
+
+    test('it throws when an argument default would be injected into a defined type its instruction links to', () => {
+        const amountType = getAmountArgument().type as v1.NumberTypeNode;
+        const definedType = { kind: 'definedTypeNode', name: 'tokenAmount', type: amountType };
+        const program = { ...root.program, definedTypes: [definedType] } as unknown as v1.ProgramNode;
+        const rootWithAmount = { ...root, program } as v1.RootNode;
+        const amount = getAmountArgument({ kind: 'definedTypeLinkNode', name: 'tokenAmount' } as v1.TypeNode);
+        const instruction = {
+            arguments: [amount, decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+        } as unknown as v1.InstructionNode;
+        expect(() => instructionNodeFromV1([rootWithAmount, program, instruction])).toThrow(
+            getConflictError(
+                'decimals',
+                [rootWithAmount, program, instruction, decimalsArgument],
+                [
+                    rootWithAmount,
+                    program,
+                    definedType as v1.DefinedTypeNode,
+                    ...getDecimalsInjectionPath({ type: amountType } as v1.InstructionArgumentNode),
+                ],
+            ),
+        );
+    });
+
+    test('it throws when an argument default would be injected into a value a sub-instruction provides', () => {
+        // Given a sub-instruction providing the `decimals` argument of its parent, as values a provider
+        // injects resolve from the instructions around it.
+        const injected = { key: 'decimals', kind: 'injectedValueNode' };
+        const provided = { kind: 'providedNode', name: 'feeDecimals', node: injected };
+        const child = {
+            kind: 'instructionNode',
+            name: 'transferV1',
+            optionalAccountStrategy: 'programId',
+            provides: [provided],
+        } as unknown as v1.InstructionNode;
+        const instruction = {
+            arguments: [decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            subInstructions: [child],
+        } as unknown as v1.InstructionNode;
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            getConflictError(
+                'decimals',
+                [...programPath, instruction, decimalsArgument],
+                [...programPath, instruction, child, provided as v1.ProvidedNode, injected as v1.InjectedValueNode],
+            ),
+        );
+    });
+
+    test('it provides argument defaults whose key is only injected where another provider resolves it', () => {
+        // Given a sub-instruction providing the `decimals` it injects, and a value provided by the
+        // instruction itself injecting `decimals`, which resolves from the instructions around it.
+        const amount = getAmountArgument();
+        const child = {
+            arguments: [amount],
+            kind: 'instructionNode',
+            name: 'transferV1',
+            optionalAccountStrategy: 'programId',
+            provides: [{ kind: 'providedNode', name: 'decimals', node: { kind: 'numberValueNode', number: 6 } }],
+        } as unknown as v1.InstructionNode;
+        const instruction = {
+            arguments: [decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            provides: [
+                { kind: 'providedNode', name: 'feeDecimals', node: { key: 'decimals', kind: 'injectedValueNode' } },
+            ],
+            subInstructions: [child],
+        } as unknown as v1.InstructionNode;
+        expect(instructionNodeFromV1([...programPath, instruction]).provides).toStrictEqual([
+            providedNode('feeDecimals', injectedValueNode({ key: 'decimals' })),
+            providedNode('decimals', accountDataValueNode('mint', { path: 'decimals' })),
+        ]);
     });
 });
 

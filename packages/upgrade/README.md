@@ -86,6 +86,8 @@ Most v1 nodes have a direct v2 counterpart. Information that v2 can no longer ex
 
 Names keep their v1 spelling, except for dashes in hand-written names, which become underscores, e.g. `token-2022` becomes `token_2022`, including where plugins reference them, such as resolver dependencies. Any other name that is not a valid v2 identifier throws a `CODAMA_ERROR__INVALID_BRANDED_STRING` error. Tuple variants holding a single item stay tuples, so generated APIs are unchanged.
 
+Since contextual argument defaults are provided under the name of their argument, that name must not already be in use as a key within the instruction. Providing a different value under the key of another provided value, e.g. a v1 `providedNode('decimals', …)` next to a `decimals` argument with a contextual default, or under the key of a v1 `injectedValueNode` the argument default would then resolve, e.g. the `decimals` of an amount display, throws a `CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY` error. Identical values provided under the same key are provided once. Rename the argument, the provided node or the injected key in the v1 IDL to upgrade it.
+
 Inputs resolved by a `codama.resolver` plugin have no default value in v2, since only renderers and clients know how to compute them. Validators therefore treat them like any other input without a default, e.g. an optional account resolved in v1 and used as a PDA seed is reported with a `CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE` error. Make such accounts required, or give them a default value, if the program always expects them.
 
 ## How it works
