@@ -1,7 +1,13 @@
 # Dependabot version updates. Opens PRs to keep dependency versions fresh.
 # Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Dependabot only reads this file from the default branch (`1.x` until 2.0.0 is
+# stable), so every entry is duplicated with `target-branch: main` to keep the
+# v2 line updated too. Keep both copies in sync. Once `main` becomes the default
+# branch, its own config takes over and should target `1.x` instead.
 version: 2
 updates:
+  # npm packages of the default branch (`1.x`).
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
@@ -32,7 +38,34 @@ updates:
           - 'oxlint-tsgolint'
           - '@solana-config/oxc'
 
-  # GitHub Actions used across .github/workflows/*.
+  # npm packages of `main` (the v2 line), same settings as above.
+  - package-ecosystem: 'npm'
+    directory: '/'
+    target-branch: main
+    schedule:
+      interval: daily
+      time: '01:00'
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 10
+    groups:
+      solana-kit:
+        patterns:
+          - '@solana/accounts'
+          - '@solana/addresses'
+          - '@solana/codecs*'
+          - '@solana/instructions'
+          - '@solana/kit'
+      solana-program:
+        patterns:
+          - '@solana-program/*'
+      oxc:
+        patterns:
+          - 'oxlint'
+          - 'oxfmt'
+          - 'oxlint-tsgolint'
+          - '@solana-config/oxc'
+
+  # GitHub Actions used across .github/workflows/* of the default branch (`1.x`).
   # Third-party actions are pinned to commit SHAs and this keeps the pins from rotting.
   - package-ecosystem: 'github-actions'
     directory: '/'
@@ -46,6 +79,22 @@ updates:
           - '*'
         # Minor and patch bumps are grouped into one PR.
         # Majors are split out so each can be reviewed on its own.
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  # GitHub Actions of `main` (the v2 line), same settings as above.
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    target-branch: main
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - '*'
         update-types:
           - 'minor'
           - 'patch'
