@@ -377,6 +377,40 @@ test('it keeps the links of enum values and the defined types they target', () =
     );
 });
 
+test('it keeps the links of enum values inside inlined defined types', () => {
+    // Given an account linking to a struct type whose field defaults to a variant of an enum type.
+    const configType = (headingType: TypeNode) =>
+        structTypeNode([
+            structFieldTypeNode({
+                defaultValue: enumValueNode(definedTypeLinkNode('direction'), 'up'),
+                identifier: 'heading',
+                type: headingType,
+            }),
+        ]);
+    const node = programNode({
+        accounts: [accountNode({ data: definedTypeLinkNode('config'), identifier: 'myAccount' })],
+        definedTypes: [
+            definedTypeNode({ identifier: 'config', type: configType(definedTypeLinkNode('direction')) }),
+            definedTypeNode({ identifier: 'direction', type: directionType() }),
+        ],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we unwrap both types.
+    const result = visit(node, unwrapDefinedTypesVisitor(['config', 'direction']));
+
+    // Then both types are inlined, while the enum value keeps its link and the enum type is kept.
+    expect(result).toStrictEqual(
+        programNode({
+            accounts: [accountNode({ data: configType(directionType()), identifier: 'myAccount' })],
+            definedTypes: [definedTypeNode({ identifier: 'direction', type: directionType() })],
+            identifier: 'myProgram',
+            publicKey: '1111',
+        }),
+    );
+});
+
 test('it keeps the defined types targeted by enum values in the program of their links', () => {
     // Given programA with an enum value linking to an enum of programB, and its own type sharing its name.
     const directionLink = () => definedTypeLinkNode('direction', { program: programLinkNode('programB') });

@@ -131,7 +131,9 @@ codama.update(fillDefaultPdaSeedValuesVisitor(instructionPath, linkables, strict
 
 This visitor flattens the fields of type `StructTypeNode` inside the `data` of every instruction such that their fields are no longer nested. This can be useful to simplify the data structure of an instruction. Linked data is left untouched since the defined type may be shared; use `unwrapInstructionDataDefinedTypesVisitor` first to flatten it.
 
-Data paths of the instruction going through an inlined field are repointed accordingly, e.g. a PDA seed reading `params.seed` reads `seed` once `params` is inlined. This covers `DataValueNodes`, `FieldDiscriminatorNodes` and `${data.…}` placeholders of interpolated intents. An instruction is left unflattened when inlining would make two fields share a camelCase form (e.g. `amount` and `params.amount`), or when one of its data paths refers to an inlined field as a whole (e.g. `params`).
+Data paths of the instruction going through an inlined field are repointed accordingly, e.g. a PDA seed reading `params.seed` reads `seed` once `params` is inlined. This covers `DataValueNodes`, `FieldDiscriminatorNodes` and `${data.…}` placeholders of interpolated intents.
+
+Each struct field is inlined on its own, and a field is kept nested, while the others are still inlined, when one of the instruction's data paths refers to it as a whole (e.g. `params` or `params[0]`), or when one of its fields would share a camelCase form with another resulting field (e.g. `amount` and `params.amount`). Every field involved in such a conflict is kept nested, regardless of field order, until no conflict remains. For instance, with a `params` PDA seed, `struct { params: struct { seed }, config: struct { fee } }` becomes `struct { params: struct { seed }, fee }`.
 
 ```ts
 codama.update(flattenInstructionDataVisitor());

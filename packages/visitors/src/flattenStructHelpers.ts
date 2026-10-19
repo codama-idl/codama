@@ -38,9 +38,7 @@ export type FlattenedStruct = {
 export function getFlattenedStruct(node: Node, options: string[] | '*', path: NodePath): FlattenedStruct {
     assertIsNode(node, 'structTypeNode');
     const shouldInline = (field: StructFieldTypeNode): boolean =>
-        (options === '*' || options.includes(field.identifier)) &&
-        isNode(field.type, 'structTypeNode') &&
-        (field.type.transforms ?? []).length === 0;
+        (options === '*' || options.includes(field.identifier)) && isInlinableStructField(field);
     const inlinedFields: IdentifierString[] = [];
     const fields = (node.fields ?? []).flatMap(field => {
         if (!shouldInline(field)) return [field];
@@ -64,4 +62,15 @@ export function getFlattenedStruct(node: Node, options: string[] | '*', path: No
         .flatMap(conflictingFields => [...new Set(conflictingFields.map(field => field.identifier))]);
 
     return { conflictingAttributes, inlinedFields, struct: structTypeNode(fields, { ...node }) };
+}
+
+/**
+ * Whether the fields of `field` can be inlined into its parent struct, i.e.
+ * whether it is a struct without `transforms`, since inlining its fields
+ * would drop the transforms and change the wire format.
+ */
+export function isInlinableStructField(
+    field: StructFieldTypeNode,
+): field is StructFieldTypeNode & { type: StructTypeNode } {
+    return isNode(field.type, 'structTypeNode') && (field.type.transforms ?? []).length === 0;
 }
