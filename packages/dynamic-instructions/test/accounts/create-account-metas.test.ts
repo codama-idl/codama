@@ -318,7 +318,7 @@ describe('remaining accounts', () => {
         );
     });
 
-    test('it throws when a remaining account is not an address', async () => {
+    test('it throws with the index of a remaining account that is not an address', async () => {
         const [multisigAddress, a] = await Promise.all([generateAddress(), generateAddress()]);
         const signers = [a, 123] as unknown as Address[];
         await expectCodamaError(
@@ -326,6 +326,7 @@ describe('remaining accounts', () => {
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
                 actualType: 'number',
                 expectedType: 'Address | PublicKey',
+                index: 1,
                 path: [
                     ...multisigPath,
                     (multisigPath[multisigPath.length - 1] as InstructionNode).remainingAccounts![0],

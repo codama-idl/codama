@@ -253,6 +253,11 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         actualType: string;
         expectedType: string;
         /**
+         * The index of the value within the list it was given in, e.g. the remaining accounts, or
+         * nothing when the value was not given in a list.
+         */
+        index?: number;
+        /**
          * The path of the node the value should be the address of: an instruction account, remaining
          * accounts, the PDA it is the program ID of, or the data field whose account link is crossed.
          */
@@ -505,8 +510,15 @@ function encodeValue(value: unknown): string {
  * Whether the value is a path of nodes, e.g. an item of a list of node paths. Since nodes only sit
  * in contexts within node paths, any non-empty list of nodes is one. Empty paths are only
  * recognised under the `path` key, as they cannot be told apart from other empty lists.
+ *
+ * This is used both to encode production contexts and to render messages.
+ *
+ * Note that nodes are detected structurally: any non-empty array of objects with a string `kind`
+ * matches, e.g. a `PathSegment[]` would too, and would render as node selectors rather than as
+ * itself. Whoever adds a context field holding such a list must account for it, e.g. by
+ * formatting it as a string first.
  */
-function isNonEmptyNodePath(value: unknown): value is NodePath {
+export function isNonEmptyNodePath(value: unknown): value is NodePath {
     return Array.isArray(value) && value.length > 0 && value.every(isNode);
 }
 

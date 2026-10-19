@@ -185,7 +185,7 @@ const address = await resolveInstructionAccountAddress<TransferAccounts, Transfe
 ## Helpers
 
 - `toAddress(input)` normalises any `AddressInput`, i.e. an `Address`, a base58 string, or a legacy `PublicKey`-like object with `.toBase58()`, into an `Address`.
-- `toAddressOrThrow(value, path)` converts a value to an `Address` like `toAddress`, but throws `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE` with the given node path when the value is not address convertible, e.g. `[root, program, instruction, account]` for the address of an instruction account.
+- `toAddressOrThrow(value, path, index?)` converts a value to an `Address` like `toAddress`, but throws `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE` with the given node path when the value is not address convertible, e.g. `[root, program, instruction, account]` for the address of an instruction account. Pass the `index` of the value when it was given in a list, e.g. the remaining accounts, so the error carries it.
 - `isPublicKeyLike(value)` is a duck-typed guard for legacy `PublicKey` objects.
 - `isAddressConvertible(value)` returns `true` when `value` can be passed to `toAddress`.
 - `OPTIONAL_NODE_KINDS` lists the type node kinds treated as optional.

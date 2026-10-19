@@ -1,6 +1,6 @@
 import { CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, CodamaError } from '@codama/errors';
 import { type Address, address } from '@solana/addresses';
-import { instructionAccountNode, instructionNode } from 'codama';
+import { instructionAccountNode, instructionNode, instructionRemainingAccountsNode } from 'codama';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import {
@@ -95,6 +95,17 @@ describe('toAddressOrThrow', () => {
                 actualType: 'number',
                 expectedType: 'Address | PublicKey',
                 path,
+            }),
+        );
+    });
+
+    test('should throw with the given index for list items that are not address convertible', () => {
+        const remainingAccounts = instructionRemainingAccountsNode('signers');
+        const instruction = instructionNode({ identifier: 'myInstruction', remainingAccounts: [remainingAccounts] });
+        const path = [instruction, remainingAccounts];
+        expect(() => toAddressOrThrow(42, path, 1)).toThrow(
+            expect.objectContaining({
+                context: expect.objectContaining({ index: 1, path }),
             }),
         );
     });

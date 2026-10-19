@@ -162,8 +162,8 @@ function getRemainingAccountMetas(
     // but may need refinement for programs where 'either' accounts are sometimes non-signers.
     const isSigner = remainingAccounts.isSigner === true || remainingAccounts.isSigner === 'either';
     const role = getAccountRole(isSigner, Boolean(remainingAccounts.isWritable));
-    return (addresses as unknown[]).map((address): AccountMeta => ({
-        address: toAddressOrThrow(address, [...instructionPath, remainingAccounts]),
+    return (addresses as unknown[]).map((address, index): AccountMeta => ({
+        address: toAddressOrThrow(address, [...instructionPath, remainingAccounts], index),
         role,
     }));
 }

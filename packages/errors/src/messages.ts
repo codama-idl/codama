@@ -80,7 +80,9 @@ import {
 /**
  * WARNING:
  *   - Don't change the meaning of an error message.
- *   - `$path` renders the node path of the context as node selectors, e.g. `[programNode]token.[accountNode]mint`.
+ *   - `$path`, and any other node path of the context, renders as node selectors, e.g. `[programNode]token.[accountNode]mint`.
+ *     Lists of node paths render as lists of node selectors.
+ *   - `{{...}}` marks an optional section, only rendered when all its variables are defined, e.g. `{{ at index [$index]}}`.
  */
 export const CodamaErrorMessages: Readonly<{
     // This type makes this data structure exhaustive with respect to `SolanaErrorCode`.
@@ -128,7 +130,7 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: 'Missing seed $path.',
 
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]:
-        'Expected an address of type [$expectedType] for $path, but received [$actualType].',
+        'Expected an address of type [$expectedType] for $path{{ at index [$index]}}, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]:
         'Expected [$expectedType] for $path, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: 'Unsupported node $path.',
@@ -186,7 +188,7 @@ export const CodamaErrorMessages: Readonly<{
         'Could not find an enum data field named [$fieldName] for instruction $path.',
     [CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY]:
         'Dependency [$dependencyName] of kind [$dependencyKind] is not a valid dependency of [$dependent] in instruction $path.',
-    [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: 'Invalid number wrapper [$kind] for number $path: $reason.',
+    [CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER]: 'Invalid number wrapper [$kind]: $reason.',
     [CODAMA_ERROR__VISITORS__INVALID_PDA_SEED_VALUES]: 'Invalid seed values for PDA [$pdaName] in instruction $path.',
     [CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE]: 'The value provided at $path is not one of [$expectedKinds].',
     [CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND]: 'Cannot find key [$key] in RenderMap.',

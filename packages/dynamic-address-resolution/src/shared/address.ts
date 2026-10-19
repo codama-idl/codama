@@ -34,13 +34,15 @@ export function toAddress(input: AddressInput): Address {
 /**
  * Convert a value to an address, throwing `UNEXPECTED_ADDRESS_TYPE` with the given path when it is
  * not address convertible. The path leads to the node the value should be the address of, e.g. an
- * instruction account or remaining accounts.
+ * instruction account or remaining accounts. The index, if given, is the position of the value
+ * within the list it was given in, e.g. the remaining accounts.
  */
-export function toAddressOrThrow(value: unknown, path: NodePath): Address {
+export function toAddressOrThrow(value: unknown, path: NodePath, index?: number): Address {
     if (!isAddressConvertible(value)) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
             actualType: formatValueType(value),
             expectedType: 'Address | PublicKey',
+            ...(index === undefined ? {} : { index }),
             path,
         });
     }

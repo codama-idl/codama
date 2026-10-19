@@ -34,7 +34,7 @@ Carry node paths in the remaining error contexts. Contexts that still held nodes
 | `VISITORS__FAILED_TO_VALIDATE_NODE` (1200008) | | `path` of the validated node |
 | `DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND` (2500000) | | `path` of the program |
 | `DYNAMIC_CLIENT__PDA_NOT_FOUND` (2500001) | | `path` of the program |
-| `DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE` (2500005) | `accountName` | `path` of the account, remaining accounts, PDA or data field |
+| `DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE` (2500005) | `accountName` | `path` of the account, remaining accounts, PDA or data field, and the `index` of the remaining account at fault |
 | `DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY` (2500008) | `chain` | `path` of the instruction, `cycle`, `formattedCycle` |
 
 **`toAddressOrThrow` takes a node path.** The second argument of `toAddressOrThrow` from `@codama/dynamic-address-resolution` is now the path of the node the value should be the address of, rather than an account name.
@@ -43,5 +43,7 @@ Carry node paths in the remaining error contexts. Contexts that still held nodes
 - toAddressOrThrow(value, 'mint');
 + toAddressOrThrow(value, [root, program, instruction, mint]);
 ```
+
+It also takes an optional `index` for values given in a list, e.g. `toAddressOrThrow(value, [root, program, instruction, signers], 1)`.
 
 **Messages changed accordingly.** The messages of these errors now render their `path`, e.g. `Circular dependency detected: [a -> b -> a].` becomes `Circular dependency detected when resolving the accounts and data of instruction [programNode]token.[instructionNode]transfer. Got the following dependency cycle [a -> b -> a].`.
