@@ -5,11 +5,16 @@ import path from 'node:path';
 
 import {
     accountDataValueNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     instructionAccountNode,
     instructionNode,
+    optionTypeNode,
     programNode,
     type RootNode,
     rootNode,
+    structFieldTypeNode,
+    structTypeNode,
 } from 'codama';
 import { afterAll, describe, expect, test } from 'vitest';
 
@@ -123,5 +128,22 @@ describe('CLI', () => {
         expect(generateClientTypes(root)).toContain('    readsAccountData: true;\n');
         const other = rootNode(programNode({ identifier: 'token', instructions: [burn], publicKey: '1111' }));
         expect(generateClientTypes(other)).toContain('    readsAccountData: false;\n');
+    });
+
+    test('should emit the aliases of the recursive types it references', () => {
+        const node = definedTypeNode({
+            identifier: 'node',
+            type: structTypeNode([
+                structFieldTypeNode({ identifier: 'next', type: optionTypeNode(definedTypeLinkNode('node')) }),
+            ]),
+        });
+        const push = instructionNode({ data: definedTypeLinkNode('node'), identifier: 'push' });
+        const root = rootNode(
+            programNode({ definedTypes: [node], identifier: 'list', instructions: [push], publicKey: '1111' }),
+        );
+
+        const output = generateClientTypes(root);
+        expect(output).toContain('export type NodeArgs = { next?: NodeArgs | null };');
+        expect(output).toContain('export type PushInstructionDataArgs = { next?: NodeArgs | null };');
     });
 });

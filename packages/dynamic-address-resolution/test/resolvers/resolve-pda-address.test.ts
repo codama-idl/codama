@@ -212,6 +212,51 @@ describe('variable seeds', () => {
         expect(await resolveInstructionAccountAddress({ path })).toBe(await derive([pubkey(owner)]));
     });
 
+    test('it resolves seeds from injected account values', async () => {
+        // Given an owner seed injected from the authority account.
+        const authority = await generateAddress();
+        const defaultValue = pdaValueNode(pdaLinkNode('vault'), {
+            seeds: [pdaSeedValueNode('owner', injectedValueNode({ key: 'owner' }))],
+        });
+        const { path } = getAccountPath(
+            account('vault', { defaultValue }),
+            {
+                accounts: [account('authority')],
+                provides: [providedNode('owner', accountValueNode('authority'))],
+            },
+            { pdas: [ownerPda] },
+        );
+
+        // Then the seed is the address of that account.
+        expect(await resolveInstructionAccountAddress({ accountsInput: { authority }, path })).toBe(
+            await derive([pubkey(authority)]),
+        );
+    });
+
+    test('it throws for the seed whose injected account resolves to nothing', async () => {
+        // Given an owner seed injected from an optional account omitted from the instruction.
+        const defaultValue = pdaValueNode(pdaLinkNode('vault'), {
+            seeds: [pdaSeedValueNode('owner', injectedValueNode({ key: 'owner' }))],
+        });
+        const { path } = getAccountPath(
+            account('vault', { defaultValue }),
+            {
+                accounts: [account('authority', { isOptional: true })],
+                optionalAccountStrategy: 'omitted',
+                provides: [providedNode('owner', accountValueNode('authority'))],
+            },
+            { pdas: [ownerPda] },
+        );
+
+        // Then the error points at that seed.
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ accountsInput: { authority: null }, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA, {
+                path: [...path.slice(0, 2), ownerPda, ownerPda.seeds![0]],
+            }),
+        );
+    });
+
     test('it encodes missing remainder option seeds as zero bytes', async () => {
         const pda = pdaNode({
             identifier: 'vault',

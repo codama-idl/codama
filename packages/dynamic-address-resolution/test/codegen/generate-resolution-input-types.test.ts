@@ -1,13 +1,21 @@
 import {
+    booleanTypeNode,
+    definedTypeLinkNode,
+    definedTypeNode,
     instructionNode,
     instructionRemainingAccountsNode,
     integerTypeNode,
     integerValueNode,
+    optionTypeNode,
     payerValueNode,
     programIdValueNode,
+    programLinkNode,
+    programNode,
+    rootNode,
     stringTypeNode,
     structFieldTypeNode,
     structTypeNode,
+    type TypeNode,
 } from 'codama';
 import { describe, expect, test } from 'vitest';
 
@@ -35,6 +43,61 @@ describe('generateResolutionInputTypes', () => {
         );
         expect(output).toContain(
             'export type TransferInstructionDataArgs = { amount: number | bigint; memo: string };',
+        );
+    });
+
+    test('it references recursive data types by their alias', () => {
+        // Given data holding a linked list node, whose next node links back to it.
+        const node = definedTypeNode({
+            identifier: 'node',
+            type: structTypeNode([
+                structFieldTypeNode({ identifier: 'next', type: optionTypeNode(definedTypeLinkNode('node')) }),
+            ]),
+        });
+        const push = instructionNode({
+            data: structTypeNode([structFieldTypeNode({ identifier: 'head', type: definedTypeLinkNode('node') })]),
+            identifier: 'push',
+        });
+        const root = rootNode(
+            programNode({ definedTypes: [node], identifier: 'p', instructions: [push], publicKey: '1111' }),
+        );
+
+        // Then the link back to the node is referenced by its alias.
+        expect(generateResolutionInputTypes(root)).toContain(
+            'export type PushInstructionDataArgs = { head: { next?: NodeArgs | null } };',
+        );
+    });
+
+    test('it resolves linked data types from other programs', () => {
+        // Given data linking to the arguments of another program, also defined differently by its own program.
+        const args = (type: TypeNode) =>
+            definedTypeNode({
+                identifier: 'args',
+                type: structTypeNode([structFieldTypeNode({ identifier: 'value', type })]),
+            });
+        const set = instructionNode({
+            data: definedTypeLinkNode('args', { program: programLinkNode('other') }),
+            identifier: 'set',
+        });
+        const root = rootNode(
+            programNode({
+                definedTypes: [args(booleanTypeNode())],
+                identifier: 'p',
+                instructions: [set],
+                publicKey: '1111',
+            }),
+            {
+                additionalPrograms: [
+                    programNode({
+                        definedTypes: [args(integerTypeNode('u64'))],
+                        identifier: 'other',
+                        publicKey: '2222',
+                    }),
+                ],
+            },
+        );
+        expect(generateResolutionInputTypes(root)).toContain(
+            'export type SetInstructionDataArgs = { value: number | bigint };',
         );
     });
 

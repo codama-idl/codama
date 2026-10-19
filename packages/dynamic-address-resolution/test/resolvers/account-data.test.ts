@@ -4,6 +4,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
@@ -330,6 +331,17 @@ describe('account data values', () => {
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY, { chain: 'mint -> mint' }),
         );
     });
+
+    test('it throws when reading account data without fetchAccounts', async () => {
+        const owner = account('owner', { defaultValue: accountDataValueNode('mint', { path: 'mintAuthority' }) });
+        const { path, root } = getAccountPath({ accounts: [mintAccount(), owner] });
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ accountsInput: { mint: MINT_ADDRESS }, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING, {
+                path: [root, root.program, mint],
+            }),
+        );
+    });
 });
 
 describe('data values crossing account links', () => {
@@ -490,6 +502,17 @@ describe('data values crossing account links', () => {
             }),
         );
         expect(fetchAccounts).not.toHaveBeenCalled();
+    });
+
+    test('it throws when crossing account links without fetchAccounts', async () => {
+        const owner = account('owner', { defaultValue: dataValueNode('mint.data.mintAuthority') });
+        const { path, root } = getAccountPath({ accounts: [owner], data });
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ dataInput: { mint: MINT_ADDRESS }, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING, {
+                path: [root, root.program, mint],
+            }),
+        );
     });
 
     test('it derives PDA seeds from the data of linked accounts', async () => {

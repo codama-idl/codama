@@ -1,4 +1,11 @@
-import { type DefinedTypeNode, type InstructionNode, type RootNode } from 'codama';
+import {
+    getLastNodeFromPath,
+    getLinkablesFromNode,
+    type InstructionNode,
+    type LinkableDictionary,
+    type NodePath,
+    type RootNode,
+} from 'codama';
 
 import { codamaTypeToTS } from './codama-type-to-ts';
 import { getResolutionRefs } from './get-resolution-refs';
@@ -7,19 +14,23 @@ import { isAccountAutoResolvable } from './is-account-auto-resolvable';
 /**
  * Emits the input types required for address resolution of each instruction:
  * `${Name}InstructionDataArgs` and `${Name}Accounts`, whose remaining accounts
- * are named account lists.
+ * are named account lists. Recursive data types are referenced by the aliases
+ * `generateDefinedTypes` emits.
  */
 export function generateResolutionInputTypes(idl: RootNode): string {
-    const definedTypes = idl.program.definedTypes ?? [];
-    return (idl.program.instructions ?? []).map(ix => generateTypeBlockForInstruction(ix, definedTypes)).join('');
+    const linkables = getLinkablesFromNode(idl);
+    return (idl.program.instructions ?? [])
+        .map(ix => generateTypeBlockForInstruction([idl, idl.program, ix], linkables))
+        .join('');
 }
 
-function generateTypeBlockForInstruction(ix: InstructionNode, definedTypes: DefinedTypeNode[]): string {
-    const refs = getResolutionRefs(ix, definedTypes);
+function generateTypeBlockForInstruction(path: NodePath<InstructionNode>, linkables: LinkableDictionary): string {
+    const ix = getLastNodeFromPath(path);
+    const refs = getResolutionRefs(path, linkables);
     let output = '';
 
-    if (refs.dataRef) {
-        output += `export type ${refs.dataRef} = ${codamaTypeToTS(ix.data, definedTypes)};\n\n`;
+    if (refs.dataRef && ix.data) {
+        output += `export type ${refs.dataRef} = ${codamaTypeToTS([...path, ix.data], linkables)};\n\n`;
     }
 
     const accounts = [

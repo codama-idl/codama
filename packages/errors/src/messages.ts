@@ -24,6 +24,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT,
@@ -108,6 +109,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER]:
         'Resolver [$resolverName] threw an error while resolving $path.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT]: 'Failed to validate input: [$message].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING]:
+        'Cannot read the data of account $path without a `fetchAccounts` function to fetch it.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]:
         'Instruction [$instructionName] not found in IDL. Available: [$availableIxs].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: 'Invalid address for account $path: [$value].',

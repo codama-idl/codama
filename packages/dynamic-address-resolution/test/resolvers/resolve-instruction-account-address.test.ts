@@ -107,6 +107,20 @@ describe('optional accounts', () => {
         expect(await resolveInstructionAccountAddress({ path })).toBe(OTHER_ADDRESS);
         expect(await resolveInstructionAccountAddress({ accountsInput: { myAccount: null }, path })).toBeNull();
     });
+
+    test('it throws when a required account defaults to an omitted optional account', async () => {
+        // Given a required authority defaulting to an optional delegate, omitted when missing.
+        const { path } = getAccountPath(account('authority', { defaultValue: accountValueNode('delegate') }), {
+            accounts: [account('delegate', { isOptional: true })],
+            optionalAccountStrategy: 'omitted',
+        });
+
+        // Then the authority is missing rather than omitted too.
+        await expectCodamaError(
+            resolveInstructionAccountAddress({ accountsInput: { delegate: null }, path }),
+            new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, { path }),
+        );
+    });
 });
 
 describe('default values', () => {

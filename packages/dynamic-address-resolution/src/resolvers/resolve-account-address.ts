@@ -15,6 +15,8 @@ import type { ResolutionContext } from './types';
 /**
  * Resolve the address of an instruction account that is not provided,
  * using its `defaultValue` or the `optionalAccountStrategy` of its instruction.
+ * Only optional accounts may resolve to `null`, i.e. be omitted: required
+ * accounts whose default value resolves to nothing throw `ACCOUNT_MISSING`.
  */
 export async function resolveAccountAddress(
     ixAccountNode: InstructionAccountNode,
@@ -28,12 +30,13 @@ export async function resolveAccountAddress(
     if (ixAccountNode.defaultValue) {
         const visitor = createAccountDefaultValueVisitor(ixAccountNode, ctx);
         const address = await visitOrElse(ixAccountNode.defaultValue, visitor, unexpectedAccountDefaultValueNode);
+        if (address !== null) return address;
 
-        // A conditional default without a matching branch resolves using the optional account strategy.
-        if (address === null && ixAccountNode.isOptional) {
+        // Default values resolve to nothing through a conditional without a matching branch, or an
+        // optional account that is omitted: optional accounts then use the optional account strategy.
+        if (ixAccountNode.isOptional) {
             return resolveOptionalAccountWithStrategy(ixAccountNode, ctx);
         }
-        return address;
     }
 
     throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {

@@ -1,4 +1,15 @@
-import { instructionAccountNode, instructionNode, integerTypeNode, structFieldTypeNode, structTypeNode } from 'codama';
+import {
+    definedTypeLinkNode,
+    definedTypeNode,
+    instructionAccountNode,
+    instructionNode,
+    integerTypeNode,
+    optionTypeNode,
+    programNode,
+    rootNode,
+    structFieldTypeNode,
+    structTypeNode,
+} from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { generateTypes } from '../../src/codegen/generate-types';
@@ -31,5 +42,22 @@ describe('generateTypes', () => {
         expect(output).toContain(
             'transfer: InstructionsBuilderFn<TransferInstructionDataArgs, TransferAccounts, TransferSigners>',
         );
+    });
+
+    test('it emits the aliases of the recursive types it references', () => {
+        const node = definedTypeNode({
+            identifier: 'node',
+            type: structTypeNode([
+                structFieldTypeNode({ identifier: 'next', type: optionTypeNode(definedTypeLinkNode('node')) }),
+            ]),
+        });
+        const push = instructionNode({ data: definedTypeLinkNode('node'), identifier: 'push' });
+        const root = rootNode(
+            programNode({ definedTypes: [node], identifier: 'list', instructions: [push], publicKey: '1111' }),
+        );
+
+        const output = generateTypes(root);
+        expect(output).toContain('export type NodeArgs = { next?: NodeArgs | null };');
+        expect(output).toContain('export type PushInstructionDataArgs = { next?: NodeArgs | null };');
     });
 });

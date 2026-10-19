@@ -35,6 +35,7 @@ import {
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER,
     CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT,
@@ -190,6 +191,10 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_VALIDATE_INPUT]: {
         message: string;
+    };
+    [CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING]: {
+        /** The path of the account whose data must be read, e.g. `[root, program, mintAccount]`. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]: {
         availableIxs: string[];
