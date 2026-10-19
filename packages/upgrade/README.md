@@ -86,6 +86,8 @@ Most v1 nodes have a direct v2 counterpart. Information that v2 can no longer ex
 
 Names keep their v1 spelling, except for dashes in hand-written names, which become underscores, e.g. `token-2022` becomes `token_2022`, including where plugins reference them, such as resolver dependencies. Any other name that is not a valid v2 identifier throws a `CODAMA_ERROR__INVALID_BRANDED_STRING` error. Tuple variants holding a single item stay tuples, so generated APIs are unchanged.
 
+Inputs resolved by a `codama.resolver` plugin have no default value in v2, since only renderers and clients know how to compute them. Validators therefore treat them like any other input without a default, e.g. an optional account resolved in v1 and used as a PDA seed is reported with a `CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE` error. Make such accounts required, or give them a default value, if the program always expects them.
+
 ## How it works
 
 The package maintains an append-only chain of pure, hand-written functions, each upgrading exactly one major to the next. Upgrading detects the IDL's source major from its `version` attribute, runs every function from that major up to the latest, and restamps the result — so supporting a new major only ever requires one new function, and every older version reaches the latest for free, forever.
