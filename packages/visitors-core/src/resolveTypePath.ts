@@ -20,9 +20,10 @@ export type PathSegment = { identifier: string; kind: 'field' } | { index: numbe
 export type TypePathNode = DefinedTypeLinkNode | RegisteredTypeNode;
 
 /**
- * The path to a {@link TypePathNode}. Unlike `NodePath<TypePathNode>`, which
- * distributes over each node kind, it accepts paths ending with any of them,
- * e.g. `[...instructionPath, instruction.data]`.
+ * The path to a {@link TypePathNode}, i.e. a path ending with any of the node
+ * kinds a type path can start from or resolve to, e.g.
+ * `[...instructionPath, instruction.data]`. Equivalent to
+ * `NodePath<TypePathNode>`.
  */
 export type TypePath = readonly [...(readonly Node[]), TypePathNode];
 

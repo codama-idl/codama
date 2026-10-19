@@ -18,4 +18,4 @@
 '@codama/visitors-core': major
 ---
 
-Start major 2. Release candidates publish under the `rc` dist-tag while this major is in development.
+Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.

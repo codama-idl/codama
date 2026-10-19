@@ -237,7 +237,7 @@ export function getNodeCodec<TNode extends EncodableNodes>(
  * values, e.g. `[root, program, definedType]`.
  *
  * Encoding rejects values of the wrong type, e.g. a string for an integer, with a
- * `DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error whose `nodePath` is the path of the
+ * `DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error whose `path` is the path of the
  * node that rejected the value. Missing values are only accepted by options, which
  * encode them as `None`, structs, whose fields then use their default values, and
  * struct fields with default values.
