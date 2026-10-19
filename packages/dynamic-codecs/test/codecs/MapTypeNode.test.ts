@@ -154,6 +154,17 @@ test('it round-trips non-finite and negative zero floats within complex keys', (
     expect(codec.encode(decoded)).toStrictEqual(bytes);
 });
 
+test('it round-trips whole-number floats within complex keys', () => {
+    // Given a float key of `1.0`, whose JSON form `[1]` parses back as the integer `1n`.
+    const codec = getNodeValueCodec([
+        mapTypeNode(tupleTypeNode([floatTypeNode('f64')]), integerTypeNode('u8'), fixedCountNode(1)),
+    ]);
+    const bytes = hex('000000000000f03f0a');
+    const decoded = codec.decode(bytes);
+    expect(decoded).toStrictEqual({ '[1]': 10n });
+    expect(codec.encode(decoded)).toStrictEqual(bytes);
+});
+
 test('it round-trips integer keys beyond the safe integer range within complex keys', () => {
     const codec = getNodeValueCodec([
         mapTypeNode(tupleTypeNode([integerTypeNode('u64')]), integerTypeNode('u8'), fixedCountNode(1)),

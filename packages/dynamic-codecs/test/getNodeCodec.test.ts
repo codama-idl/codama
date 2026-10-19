@@ -12,6 +12,7 @@ import {
     enumTypeNode,
     enumVariantTypeNode,
     eventNode,
+    fixedCountNode,
     fixedPointTypeNode,
     fixedSizeTransformNode,
     floatTypeNode,
@@ -43,7 +44,7 @@ import {
 import { LinkableDictionary } from '@codama/visitors-core';
 import { describe, expect, test } from 'vitest';
 
-import { getNodeCodec, getNodeValueCodec } from '../src';
+import { assertIsDecodedNode, getNodeCodec, getNodeValueCodec } from '../src';
 import { hex } from './_setup';
 
 describe('leaves', () => {
@@ -384,6 +385,23 @@ describe('composites', () => {
             preOffset: 0,
             value: { 7: 42n },
         });
+    });
+
+    test('it keeps the order of map entries, which objects reorder for integer-like keys', () => {
+        // Given a map whose integer keys are not stored in ascending order.
+        const map = mapTypeNode(integerTypeNode('u8'), integerTypeNode('u8'), fixedCountNode(2));
+        const codec = getNodeCodec([map]);
+
+        // When we decode it.
+        const decoded = codec.decode(hex('070a050b'));
+
+        // Then its entries keep the stored order whereas its object value iterates keys in ascending order.
+        assertIsDecodedNode(decoded, 'mapTypeNode');
+        expect(decoded.entries.map(([key]) => key.value)).toStrictEqual([7n, 5n]);
+        expect(Object.keys(decoded.value)).toStrictEqual(['5', '7']);
+
+        // And re-encoding its object value follows the order of the object.
+        expect(getNodeValueCodec([map]).encode(decoded.value)).toStrictEqual(hex('050b070a'));
     });
 
     test('it encodes composites from their value', () => {

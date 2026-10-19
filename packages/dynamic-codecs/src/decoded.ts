@@ -137,9 +137,11 @@ export type DecodedIntegerTypeNode = DecodedNodeBase<IntegerTypeNode, bigint>;
 /**
  * A decoded map, e.g. `{ value: { 1: 'one' }, entries: [[key, value]] }`. Its value is an object whose
  * keys are the string forms of the decoded keys, e.g. `'1'` for `1n` or `'{"x":1}'` for `{ x: 1n }`.
+ * Since objects iterate integer-like keys in ascending order first, its value may not iterate keys
+ * in their decoded order, unlike its `entries`.
  */
 export type DecodedMapTypeNode = DecodedNodeBase<MapTypeNode, Record<string, unknown>> & {
-    /** The decoded entries of the map, keeping the decoded nodes of their keys. */
+    /** The decoded entries of the map in their decoded order, keeping the decoded nodes of their keys. */
     readonly entries: readonly (readonly [key: DecodedTypeNode, value: DecodedTypeNode])[];
 };
 

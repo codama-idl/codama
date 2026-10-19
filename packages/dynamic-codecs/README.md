@@ -266,7 +266,9 @@ codec.encode('quit'); // 0x00, same as { __kind: 'quit' }
 
 ### Maps
 
-Maps decode to plain objects, so their keys are strings. Keys that decode to strings, such as strings and public keys, are used as they are. Other scalars use their string form, e.g. `"42"` for an integer or `"true"` for a boolean, and variants without data use their identifier, e.g. `"quit"`. Other keys, e.g. structs or tuples, use a deterministic JSON form that keeps the order of their fields and writes integers with all their digits, e.g. `'{"x":1,"y":2}'`. When encoding, keys are parsed back using the key type, so decoded maps encode to the same bytes. The decoded node of a map keeps the decoded values of its keys in its `entries`.
+Maps decode to plain objects, so their keys are strings. Keys that decode to strings, such as strings and public keys, are used as they are. Other scalars use their string form, e.g. `"42"` for an integer or `"true"` for a boolean, and variants without data use their identifier, e.g. `"quit"`. Other keys, e.g. structs or tuples, use a deterministic JSON form that keeps the order of their fields and writes integers with all their digits, e.g. `'{"x":1,"y":2}'`. When encoding, keys are parsed back using the key type and entries are encoded in the iteration order of the object. The decoded node of a map keeps the decoded values of its keys in its `entries`, in the order they were decoded.
+
+Note that JavaScript objects iterate integer-like keys (`'0'` to `'4294967294'`) in ascending numeric order before any other key. Therefore, a decoded map re-encodes to the same bytes unless its integer keys were not stored in ascending order or it mixes such keys with others, e.g. negative integers. For instance, a `map<u8, u8>` storing the keys `7` then `5` decodes to `{ 5: …, 7: … }` and re-encodes with `5` first, whereas its decoded `entries` keep `7` first.
 
 ```ts
 const codec = getNodeValueCodec([
