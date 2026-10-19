@@ -351,7 +351,7 @@ export function deduplicateInstructionDependencies(dependencies: InstructionDepe
 }
 
 /** The account/data references a default value depends on, resolved recursively. */
-export function getDependencies(defaultValue: InstructionInputValueNode | undefined): InstructionDependency[] {
+function getDependencies(defaultValue: InstructionInputValueNode | undefined): InstructionDependency[] {
     if (!defaultValue) return [];
 
     if (isNode(defaultValue, ['accountValueNode', 'accountBumpValueNode'])) {

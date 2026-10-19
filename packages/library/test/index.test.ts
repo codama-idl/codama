@@ -14,6 +14,7 @@ import {
     validateCodamaVersion,
     voidVisitor,
 } from '../src';
+import * as entrypoint from '../src';
 
 test('it exports node helpers', () => {
     expect(typeof rootNode).toBe('function');
@@ -21,6 +22,13 @@ test('it exports node helpers', () => {
 
 test('it exports visitors', () => {
     expect(typeof identityVisitor).toBe('function');
+});
+
+test('it does not export internal helpers', () => {
+    expect(entrypoint).not.toHaveProperty('assertNodePathHasProgram');
+    expect(entrypoint).not.toHaveProperty('getDependencies');
+    expect(entrypoint).not.toHaveProperty('LINKABLE_NODES');
+    expect(entrypoint).not.toHaveProperty('safeCaptureStackTrace');
 });
 
 test('it accepts visitors', () => {

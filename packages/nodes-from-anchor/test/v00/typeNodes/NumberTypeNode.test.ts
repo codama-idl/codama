@@ -1,7 +1,7 @@
 import { floatTypeNode, integerTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src';
+import { typeNodeFromAnchorV00 } from '../../../src/v00/typeNodes/TypeNode';
 
 test('it creates float type nodes', () => {
     expect(typeNodeFromAnchorV00('f32')).toEqual(floatTypeNode('f32'));

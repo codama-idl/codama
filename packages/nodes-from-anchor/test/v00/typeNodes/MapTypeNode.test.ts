@@ -8,7 +8,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src';
+import { typeNodeFromAnchorV00 } from '../../../src/v00/typeNodes/TypeNode';
 
 test('it creates map type nodes', () => {
     expect(typeNodeFromAnchorV00({ hashMap: ['u8', 'bool'] })).toEqual(

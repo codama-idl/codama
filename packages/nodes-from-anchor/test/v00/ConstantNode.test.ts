@@ -16,7 +16,8 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { constantNodeFromAnchorV00, programNodeFromAnchorV00 } from '../../src';
+import { constantNodeFromAnchorV00 } from '../../src/v00/ConstantNode';
+import { programNodeFromAnchorV00 } from '../../src/v00/ProgramNode';
 
 test('it parses constant with number type and value', () => {
     // When we convert an integer constant.

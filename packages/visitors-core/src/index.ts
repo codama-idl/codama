@@ -21,9 +21,22 @@ export * from './interceptFirstVisitVisitor';
 export * from './interceptVisitor';
 export * from './isDefinedTypeCyclic';
 export * from './isValueNodeOfType';
-export * from './LinkableDictionary';
+export { type GetLinkableFromLinkNode, LinkableDictionary, type LinkableNode } from './LinkableDictionary';
 export * from './mapVisitor';
-export * from './NodePath';
+export {
+    assertIsNodePath,
+    findFirstNodeFromPath,
+    findInstructionNodeFromPath,
+    findLastNodeFromPath,
+    findProgramNodeFromPath,
+    getLastNodeFromPath,
+    getNodePathUntilLastNode,
+    isFilledNodePath,
+    isNodePath,
+    type NodePath,
+    nodePathToString,
+    nodePathToStringArray,
+} from './NodePath';
 export * from './NodeSelector';
 export * from './NodeStack';
 export * from './nonNullableIdentityVisitor';

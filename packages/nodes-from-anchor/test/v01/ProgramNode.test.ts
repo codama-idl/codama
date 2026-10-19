@@ -32,7 +32,8 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { getAnchorDiscriminatorV01, programNodeFromAnchorV01 } from '../../src';
+import { getAnchorDiscriminatorV01 } from '../../src/discriminators';
+import { programNodeFromAnchorV01 } from '../../src/v01/ProgramNode';
 
 test('it creates program nodes', () => {
     const node = programNodeFromAnchorV01({

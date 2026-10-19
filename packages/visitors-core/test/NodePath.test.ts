@@ -15,7 +15,7 @@ import {
 } from '@codama/nodes';
 import { expect, expectTypeOf, test } from 'vitest';
 
-import { assertIsNodePath, assertNodePathHasProgram, getLastNodeFromPath, type NodePath } from '../src';
+import { assertIsNodePath, assertNodePathHasProgram, getLastNodeFromPath, type NodePath } from '../src/NodePath';
 
 const program = programNode({ identifier: 'myProgram', publicKey: '1111' });
 const root = rootNode(program);

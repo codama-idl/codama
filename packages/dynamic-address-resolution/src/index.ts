@@ -14,7 +14,6 @@ export type {
 
 // Helpers
 export { isAddressConvertible, isPublicKeyLike, toAddress, toAddressOrThrow } from './shared/address';
-export { OPTIONAL_NODE_KINDS } from './shared/nodes';
 
 // Types
 export type { AccountsInput, DataInput, FetchAccountsFn } from './shared/types';

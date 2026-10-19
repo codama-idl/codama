@@ -11,7 +11,9 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { GenericsV01, getAnchorDiscriminatorV01, instructionNodeFromAnchorV01 } from '../../src';
+import { getAnchorDiscriminatorV01 } from '../../src/discriminators';
+import { instructionNodeFromAnchorV01 } from '../../src/v01/InstructionNode';
+import { GenericsV01 } from '../../src/v01/unwrapGenerics';
 
 const generics = {} as GenericsV01;
 const discriminatorField = structFieldTypeNode({

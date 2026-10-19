@@ -13,7 +13,9 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { eventNodeFromAnchorV01, GenericsV01, getAnchorDiscriminatorV01 } from '../../src';
+import { getAnchorDiscriminatorV01 } from '../../src/discriminators';
+import { eventNodeFromAnchorV01 } from '../../src/v01/EventNode';
+import { GenericsV01 } from '../../src/v01/unwrapGenerics';
 
 const generics = {} as GenericsV01;
 const discriminator = constantValueNode(

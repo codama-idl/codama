@@ -10,7 +10,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { accountNodeFromAnchorV00 } from '../../src';
+import { accountNodeFromAnchorV00 } from '../../src/v00/AccountNode';
 
 test('it creates account nodes', () => {
     // When we convert an Anchor account.

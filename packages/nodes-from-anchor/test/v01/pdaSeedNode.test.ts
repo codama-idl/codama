@@ -16,7 +16,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { pdaSeedNodeFromAnchorV01 } from '../../src';
+import { pdaSeedNodeFromAnchorV01 } from '../../src/v01/PdaSeedNode';
 
 test('it creates a PdaSeedNode from a const Anchor seed', () => {
     const nodes = pdaSeedNodeFromAnchorV01({ kind: 'const', value: [11, 57, 246, 240] }, []);

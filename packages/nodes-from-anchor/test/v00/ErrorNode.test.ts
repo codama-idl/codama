@@ -1,7 +1,7 @@
 import { errorNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { errorNodeFromAnchorV00 } from '../../src';
+import { errorNodeFromAnchorV00 } from '../../src/v00/ErrorNode';
 
 test('it creates error nodes', () => {
     // When we convert an Anchor error without docs.

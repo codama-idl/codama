@@ -1,7 +1,7 @@
 import { arrayTypeNode, fixedCountNode, integerTypeNode, prefixedCountNode, remainderCountNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src';
+import { typeNodeFromAnchorV00 } from '../../../src/v00/typeNodes/TypeNode';
 
 test('it creates array type nodes', () => {
     expect(typeNodeFromAnchorV00({ array: ['u8', 2] })).toEqual(

@@ -1,7 +1,7 @@
 import { programNode, rootNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { rootNodeFromAnchorV01 } from '../../src';
+import { rootNodeFromAnchorV01 } from '../../src/v01/RootNode';
 
 test('it creates root nodes', () => {
     const node = rootNodeFromAnchorV01({

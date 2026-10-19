@@ -1,6 +1,7 @@
 import { dataValueNode, isNode, pdaSeedValueNode, programNode, rootNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
+import * as entrypoint from '../src';
 import { rootNodeFromAnchor } from '../src';
 
 test('it creates root nodes from IDL version 0.0', () => {
@@ -44,5 +45,26 @@ test('it repoints nested argument seeds to the flattened instruction data', () =
     const defaultValue = node.program.instructions?.[0].accounts?.[0].defaultValue;
     expect(isNode(defaultValue, 'pdaValueNode') && defaultValue.seeds).toStrictEqual([
         pdaSeedValueNode('params_seed', dataValueNode('seed')),
+    ]);
+});
+
+test('it only exports the root and program converters alongside their helpers', () => {
+    // When we list the runtime exports of the package entrypoint.
+    const exportNames = Object.keys(entrypoint).sort();
+
+    // Then the per-node converters stay internal.
+    expect(exportNames).toEqual([
+        'defaultVisitor',
+        'extractPdasVisitor',
+        'getAnchorAccountDiscriminatorV00',
+        'getAnchorDiscriminatorV01',
+        'getAnchorEventDiscriminatorV00',
+        'getAnchorInstructionDiscriminatorV00',
+        'programNodeFromAnchorV00',
+        'programNodeFromAnchorV01',
+        'rootNodeFromAnchor',
+        'rootNodeFromAnchorV00',
+        'rootNodeFromAnchorV01',
+        'rootNodeFromAnchorWithoutDefaultVisitor',
     ]);
 });

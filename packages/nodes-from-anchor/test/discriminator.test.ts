@@ -6,7 +6,7 @@ import {
     getAnchorAccountDiscriminatorV00,
     getAnchorEventDiscriminatorV00,
     getAnchorInstructionDiscriminatorV00,
-} from '../src/index.js';
+} from '../src/discriminators';
 import { hex } from '../src/utils';
 
 test('it can compute the discriminator of an Anchor account', () => {
