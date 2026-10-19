@@ -1,15 +1,12 @@
 import { expect, test } from 'vitest';
 
+import * as rendererCore from '../src';
 import { writeIdlVisitor, writeRenderMapVisitor } from '../src';
 
 /**
- * `@codama/renderers-core` is now a thin layer over `@codama/fragments`
- * — every name except {@link writeRenderMapVisitor} and
- * {@link writeIdlVisitor} is forwarded straight through via
- * `export *`. The fragments-side tests cover the underlying
- * primitives; these assertions are the smoke check that the
- * renderer-specific additions are reachable through the package entry
- * point.
+ * `@codama/renderers-core` only exposes the renderer-specific visitors
+ * built on top of `@codama/fragments`. These assertions are the smoke
+ * check that they are reachable through the package entry point.
  */
 test('it exports writeRenderMapVisitor as a function', () => {
     expect(typeof writeRenderMapVisitor).toBe('function');
@@ -17,4 +14,8 @@ test('it exports writeRenderMapVisitor as a function', () => {
 
 test('it exports writeIdlVisitor as a function', () => {
     expect(typeof writeIdlVisitor).toBe('function');
+});
+
+test('it does not re-export the @codama/fragments API', () => {
+    expect(Object.keys(rendererCore).sort()).toEqual(['writeIdlVisitor', 'writeRenderMapVisitor']);
 });

@@ -43,6 +43,21 @@ describe('getDocblockFragment', () => {
         expect(f?.content).toBe('/**\n * Line one.\n * Line *\\/ two.\n * Line three.\n */');
     });
 
+    it('renders a single item containing a line feed as a multi-line docblock', () => {
+        const f = getDocblockFragment(['First line.\nSecond line.']);
+        expect(f?.content).toBe('/**\n * First line.\n * Second line.\n */');
+    });
+
+    it('renders a single item containing a carriage return line feed as a multi-line docblock', () => {
+        const f = getDocblockFragment(['First line.\r\nSecond line.']);
+        expect(f?.content).toBe('/**\n * First line.\n * Second line.\n */');
+    });
+
+    it('prefixes every line of an item containing line breaks in a multi-line docblock', () => {
+        const f = getDocblockFragment(['First line.\n\nSecond paragraph.', 'Last line.']);
+        expect(f?.content).toBe('/**\n * First line.\n *\n * Second paragraph.\n * Last line.\n */');
+    });
+
     it('returns a fragment carrying no imports', () => {
         const f = getDocblockFragment(['Hello.']);
         expect(f?.imports.size).toBe(0);

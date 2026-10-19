@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { writeFile } from '@codama/fragments';
 import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
-import { writeFile } from '@codama/renderers-core';
 import { createFromRoot } from 'codama';
 
 // This script generates Codama IDL from Anchor programs for tests.

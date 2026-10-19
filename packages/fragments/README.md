@@ -16,7 +16,7 @@ pnpm install @codama/fragments
 ```
 
 > [!NOTE]
-> This package is **not** included in the main [`codama`](../library) package. The language-agnostic core primitives are also re-exported from [`@codama/renderers-core`](../renderers-core) for backward compatibility with existing renderers; new code should import from `@codama/fragments` directly.
+> This package is **not** included in the main [`codama`](../library) package.
 
 ## What's a fragment?
 
@@ -119,6 +119,104 @@ import { setFragmentContent } from '@codama/fragments';
 const replaced = setFragmentContent(myFragment, '/* removed */');
 ```
 
+## Render maps
+
+A `RenderMap` is a frozen `ReadonlyMap<Path, TFragment>` that collects the fragments of every file a generator produces. It acts as a middleman between the logic that generates the content and the logic that writes it to the filesystem, so generated code can be inspected and tested without touching the disk, including in environments without a filesystem such as the browser.
+
+Every helper below is a pure function returning a new frozen map, except `writeRenderMap` which writes to the filesystem.
+
+### `createRenderMap`
+
+Creates an empty `RenderMap`, a `RenderMap` with a single file, or one with several files. A custom fragment type extending `BaseFragment` may be provided as a type parameter.
+
+```ts
+import { createRenderMap } from '@codama/fragments';
+import type { Fragment } from '@codama/fragments/javascript';
+
+const empty = createRenderMap<Fragment>();
+const single = createRenderMap('path/to/file.ts', { content: 'file content' });
+const multiple = createRenderMap({
+    'path/to/file.ts': { content: 'file content' },
+    'path/to/another/file.ts': { content: 'another file content' },
+});
+```
+
+Paths should be relative to the base directory later given to `writeRenderMap`. For instance, with `src/generated` as the base directory, `accounts/mint.ts` is written to `src/generated/accounts/mint.ts`.
+
+### `addToRenderMap`, `removeFromRenderMap` and `mergeRenderMaps`
+
+`addToRenderMap` adds or overwrites the file at a given path, `removeFromRenderMap` drops it, and `mergeRenderMaps` combines several maps, later maps overwriting earlier entries at the same path.
+
+```ts
+import { addToRenderMap, createRenderMap, mergeRenderMaps, removeFromRenderMap } from '@codama/fragments';
+
+let renderMap = createRenderMap('programs/token.ts', { content: 'export type TokenProgram = {...}' });
+renderMap = addToRenderMap(renderMap, 'accounts/mint.ts', { content: 'export type MintAccount = {...}' });
+renderMap = removeFromRenderMap(renderMap, 'programs/token.ts');
+const merged = mergeRenderMaps([renderMap, otherRenderMap]);
+```
+
+### `getFromRenderMap` and `renderMapContains`
+
+Since a `RenderMap` is a `ReadonlyMap`, `renderMap.get(path)` returns the fragment at that path or `undefined`. `getFromRenderMap` throws a `CODAMA_ERROR__VISITORS__RENDER_MAP_KEY_NOT_FOUND` error instead when the file is missing. `renderMapContains` checks whether the content of a file includes a string or matches a regular expression.
+
+```ts
+import { getFromRenderMap, renderMapContains } from '@codama/fragments';
+
+const { content } = getFromRenderMap(renderMap, 'accounts/mint.ts');
+const hasMintAccount = renderMapContains(renderMap, 'accounts/mint.ts', /MintAccount/);
+```
+
+### `mapRenderMapContent` and `mapRenderMapContentAsync`
+
+Transform the content of every file, with the relative path of the file as a second argument. `mapRenderMapFragment` and `mapRenderMapFragmentAsync` do the same on whole fragments.
+
+```ts
+import { mapRenderMapContent, mapRenderMapContentAsync } from '@codama/fragments';
+
+const prefixed = mapRenderMapContent(renderMap, (content, path) => `/** File: ${path} */\n\n${content}`);
+const formatted = await mapRenderMapContentAsync(renderMap, content => formatWithPrettier(content));
+```
+
+### `writeRenderMap`
+
+Writes every file of the map under the given base directory.
+
+```ts
+import { writeRenderMap } from '@codama/fragments';
+
+writeRenderMap(renderMap, 'src/generated');
+// Writes src/generated/accounts/mint.ts.
+```
+
+To write the `RenderMap` returned by a visitor, see `writeRenderMapVisitor` in [`@codama/renderers-core`](../renderers-core).
+
+## Filesystem and path helpers
+
+The filesystem helpers delegate to `node:fs` when using the Node.js runtime. In any other environment, such as the browser, they throw a `CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error, which lets generators be imported regardless of the runtime.
+
+```ts
+import { createDirectory, deleteDirectory, fileExists, readFile, readJson, writeFile } from '@codama/fragments';
+
+createDirectory('path/to/directory'); // Recursively.
+deleteDirectory('path/to/directory'); // Recursively, if it exists.
+writeFile('path/to/file.ts', content); // Creates parent directories as needed.
+fileExists('path/to/file.ts');
+const text = readFile('path/to/file.ts'); // UTF-8.
+const json = readJson<MyJsonDefinition>('path/to/file.json');
+```
+
+The path helpers delegate to `node:path` when using the Node.js runtime and fall back to a portable implementation elsewhere, except `relativePath` which is only available on Node.js.
+
+```ts
+import { joinPath, pathBasename, pathDirectory, relativePath } from '@codama/fragments';
+
+const path = joinPath('path', 'to', 'my', 'file.ts'); // 'path/to/my/file.ts'
+pathDirectory(path); // 'path/to/my'
+pathBasename(path); // 'file.ts'
+relativePath('path/to', path); // 'my/file.ts'
+```
+
 ## JavaScript flavor
 
 `@codama/fragments/javascript` provides the concrete machinery for emitting TypeScript and JavaScript source.
@@ -157,7 +255,7 @@ Both interpolated fragments propagated their imports into `struct`. The outer fr
 
 Two small helpers cover the most repetitive bits of code generators.
 
-`getDocblockFragment(lines)` builds a JSDoc block from an array of lines. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Any `*/` sequences inside the lines are silently defanged so user-supplied content cannot accidentally close the comment early.
+`getDocblockFragment(lines)` builds a JSDoc block from an array of lines. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Items containing line breaks (`\n` or `\r\n`) are split into separate lines. Any `*/` sequences inside the lines are silently defanged so user-supplied content cannot accidentally close the comment early.
 
 ```ts
 import { fragment, getDocblockFragment } from '@codama/fragments/javascript';
@@ -354,16 +452,15 @@ body = addFragmentImports(body, ['solana_program::pubkey::Pubkey']);
 When you need an alias, use `addFragmentImportAlias`.
 
 ```ts
-import { addFragmentImportAlias, addFragmentImports, fragment } from '@codama/fragments/rust';
+import { addFragmentImportAlias, fragment } from '@codama/fragments/rust';
 
 let body = fragment`pub fn fail() -> ProgError { ProgError::InvalidArgument }`;
-body = addFragmentImports(body, ['solana_program::program_error::ProgramError']);
 body = addFragmentImportAlias(body, 'solana_program::program_error::ProgramError', 'ProgError');
 ```
 
 ### Common helpers
 
-`getDocblockFragment(lines)` builds a Rust doc-comment block. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Pass `{ internal: true }` to emit inner doc comments (`//!`) instead of outer ones (`///`).
+`getDocblockFragment(lines)` builds a Rust doc-comment block. Empty input returns `undefined`, which composes naturally with the `fragment` tag (interpolated `undefined` renders as the empty string), so optional documentation can be threaded through without explicit checks. Items containing line breaks (`\n` or `\r\n`), as docs from Anchor IDLs often do, are split so that every line gets its own prefix. Pass `{ internal: true }` to emit inner doc comments (`//!`) instead of outer ones (`///`).
 
 ```ts
 import { fragment, getDocblockFragment } from '@codama/fragments/rust';
@@ -381,7 +478,19 @@ const moduleDocs = getDocblockFragment(['Crate-level docs.'], { internal: true }
 
 ### The Rust `ImportMap`
 
-The Rust `ImportMap` is a flat, frozen `ReadonlyMap<ImportPath, ImportInfo>`. The key is the fully-qualified `::`-separated path; the value is `{ importedPath, alias? }`. There is no per-module grouping the way JavaScript imports have, because each Rust `use` statement names a single path.
+The Rust `ImportMap` is a frozen, immutable `ReadonlyMap<ImportPath, ReadonlyMap<UsedIdentifier, ImportInfo>>`. The outer key is the fully-qualified `::`-separated path (e.g. `'crate::Mint'`), and the inner key is the name the path is used under in the consuming code: its last segment for a plain import (`Mint`), or the alias for an aliased one (`TokenMint`). Each `ImportInfo` is `{ importedPath, usedIdentifier }`.
+
+A path can therefore be imported under several local names at once, and every operation keeps them all. This matters when fragments are merged: one fragment may refer to `Mint` while another refers to `TokenMint`, and both need their `use` statement for the generated code to compile.
+
+```ts
+import { addAliasToImportMap, addToImportMap, createImportMap, importMapToString } from '@codama/fragments/rust';
+
+let map = addToImportMap(createImportMap(), 'crate::Mint');
+map = addAliasToImportMap(map, 'crate::Mint', 'TokenMint');
+importMapToString(map);
+// use crate::Mint as TokenMint;
+// use crate::Mint;
+```
 
 Like the JavaScript flavor, every operation returns a new map. There are no methods, no classes, no mutation.
 
@@ -397,7 +506,7 @@ const map = createImportMap();
 
 #### `addToImportMap`
 
-Appends one or more paths. Accepts a single string, an array, or a `Set`. Paths already present in the map are skipped, so any existing aliases are preserved.
+Imports one or more paths under their last segment, as `use foo::Bar;` does. Accepts a single string, an array, or a `Set`. Any alias already recorded for a path is kept alongside the plain import.
 
 ```ts
 import { addToImportMap, createImportMap } from '@codama/fragments/rust';
@@ -409,7 +518,7 @@ map = addToImportMap(map, 'solana_program::pubkey::Pubkey');
 
 #### `addAliasToImportMap`
 
-Records an alias for a path. If the path isn't yet imported, it is added; if it's already present, the alias replaces any existing one.
+Imports a path under an additional local name, as `use foo::Bar as Baz;` does. Any name the path is already imported under, plain or aliased, is kept rather than replaced. An alias equal to the last segment of the path is the plain import.
 
 ```ts
 import { addAliasToImportMap } from '@codama/fragments/rust';
@@ -419,6 +528,8 @@ const aliased = addAliasToImportMap(map, 'solana_program::program_error::Program
 
 #### `removeFromImportMap`
 
+Drops paths from the map, along with every local name they are imported under.
+
 ```ts
 import { removeFromImportMap } from '@codama/fragments/rust';
 
@@ -427,12 +538,15 @@ const trimmed = removeFromImportMap(map, 'borsh::BorshDeserialize');
 
 #### `mergeImportMaps`
 
-Combines multiple maps. When the same path appears in more than one map, the latest occurrence wins on alias conflicts.
+Combines multiple maps. When the same path appears in more than one map, the result imports it under every local name found across them, regardless of the order of the maps. Identical names are recorded once.
 
 ```ts
-import { mergeImportMaps } from '@codama/fragments/rust';
+import { addAliasToImportMap, addToImportMap, createImportMap, mergeImportMaps } from '@codama/fragments/rust';
 
+const mapA = addToImportMap(createImportMap(), 'crate::Mint');
+const mapB = addAliasToImportMap(createImportMap(), 'crate::Mint', 'TokenMint');
 const merged = mergeImportMaps([mapA, mapB]);
+// `crate::Mint` is imported both as `Mint` and as `TokenMint`.
 ```
 
 ### Attaching imports to a fragment
@@ -496,7 +610,7 @@ const externals = getExternalDependencies(map, { generated: 'crate::generated' }
 
 #### `importMapToString`
 
-Renders the map as a block of `use foo::Bar;` (and `use foo::Bar as Baz;`) lines, alphabetized for stable diffs and resolved against the dependency record.
+Renders the map as a block of `use foo::Bar;` (and `use foo::Bar as Baz;`) lines, one per local name, alphabetised for stable diffs and resolved against the dependency record.
 
 ```ts
 import { importMapToString } from '@codama/fragments/rust';
@@ -539,4 +653,4 @@ Real generators take this further. They build dozens of small fragments per file
 
 ## Related packages
 
-- [`@codama/renderers-core`](../renderers-core) — re-exports the language-agnostic core for backward compatibility with existing renderers.
+- [`@codama/renderers-core`](../renderers-core) provides the renderer-specific visitors, `writeRenderMapVisitor` and `writeIdlVisitor`, built on top of this package.

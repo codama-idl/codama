@@ -137,12 +137,12 @@ importers:
       '@codama/dynamic-codecs':
         specifier: workspace:*
         version: link:../dynamic-codecs
+      '@codama/fragments':
+        specifier: workspace:*
+        version: link:../fragments
       '@codama/nodes-from-anchor':
         specifier: workspace:*
         version: link:../nodes-from-anchor
-      '@codama/renderers-core':
-        specifier: workspace:*
-        version: link:../renderers-core
       '@metaplex-foundation/mpl-token-metadata-kit':
         specifier: ^0.0.3
         version: 0.0.3(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@7.0.2)(utf-8-validate@6.0.6)

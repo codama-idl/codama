@@ -46,6 +46,21 @@ describe('getDocblockFragment', () => {
         expect(f?.content).toBe('//! Crate-level docs.\n');
     });
 
+    it('prefixes every line of an item containing line feeds', () => {
+        const f = getDocblockFragment(['First line.\nSecond line.', 'Third line.']);
+        expect(f?.content).toBe('/// First line.\n/// Second line.\n/// Third line.');
+    });
+
+    it('prefixes every line of an item containing carriage return line feeds', () => {
+        const f = getDocblockFragment(['First line.\r\nSecond line.']);
+        expect(f?.content).toBe('/// First line.\n/// Second line.');
+    });
+
+    it('renders empty lines within an item as a bare prefix line', () => {
+        const f = getDocblockFragment(['First line.\n\nSecond paragraph.'], { internal: true });
+        expect(f?.content).toBe('//! First line.\n//!\n//! Second paragraph.');
+    });
+
     it('returns a fragment carrying no imports', () => {
         const f = getDocblockFragment(['Hello.']);
         expect(f?.imports.size).toBe(0);

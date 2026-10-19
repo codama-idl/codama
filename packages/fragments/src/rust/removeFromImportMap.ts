@@ -1,8 +1,9 @@
 import type { ImportMap, ImportPath } from './ImportMap';
 
 /**
- * Drop one or more imported paths from an import map. Paths that aren't
- * present are silently ignored. The input map is not mutated.
+ * Drop one or more imported paths from an import map, along with every
+ * local name they are imported under (plain and aliased). Paths that
+ * aren't present are silently ignored. The input map is not mutated.
  *
  * @param importMap - The import map to trim.
  * @param paths - The Rust paths to remove. May be a single string, an
@@ -11,10 +12,12 @@ import type { ImportMap, ImportPath } from './ImportMap';
  *
  * @example
  * ```ts
- * import { addToImportMap, createImportMap, removeFromImportMap } from '@codama/fragments/rust';
+ * import { addAliasToImportMap, addToImportMap, createImportMap, removeFromImportMap } from '@codama/fragments/rust';
  *
  * let map = addToImportMap(createImportMap(), ['foo::A', 'foo::B']);
+ * map = addAliasToImportMap(map, 'foo::A', 'Alpha');
  * map = removeFromImportMap(map, 'foo::A');
+ * // Only `use foo::B;` remains.
  * ```
  */
 export function removeFromImportMap(

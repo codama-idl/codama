@@ -3,17 +3,36 @@ import { describe, expect, it } from 'vitest';
 import { addAliasToImportMap } from '../../src/rust/addAliasToImportMap';
 import { addToImportMap } from '../../src/rust/addToImportMap';
 import { getExternalDependencies } from '../../src/rust/getExternalDependencies';
-import { createImportMap, RUST_CORE_IMPORTS } from '../../src/rust/ImportMap';
+import {
+    createImportMap,
+    getDefaultUsedIdentifier,
+    type ImportMap,
+    type ImportPath,
+    RUST_CORE_IMPORTS,
+} from '../../src/rust/ImportMap';
 import { importMapToString } from '../../src/rust/importMapToString';
 import { mergeImportMaps } from '../../src/rust/mergeImportMaps';
 import { removeFromImportMap } from '../../src/rust/removeFromImportMap';
 import { resolveImportMap } from '../../src/rust/resolveImportMap';
+
+function getUsedIdentifiers(map: ImportMap, path: ImportPath): string[] {
+    return [...(map.get(path)?.keys() ?? [])].sort();
+}
 
 describe('createImportMap', () => {
     it('returns an empty frozen map', () => {
         const map = createImportMap();
         expect(map.size).toBe(0);
         expect(Object.isFrozen(map)).toBe(true);
+    });
+});
+
+describe('getDefaultUsedIdentifier', () => {
+    it('returns the last segment of a path', () => {
+        expect(getDefaultUsedIdentifier('solana_program::pubkey::Pubkey')).toBe('Pubkey');
+    });
+    it('returns the whole path when it has a single segment', () => {
+        expect(getDefaultUsedIdentifier('borsh')).toBe('borsh');
     });
 });
 
@@ -39,10 +58,20 @@ describe('addToImportMap', () => {
         const map = addToImportMap(createImportMap(), ['foo::A']);
         expect(addToImportMap(map, 'foo::A')).toBe(map);
     });
-    it('preserves an existing alias when the same path is re-added', () => {
+    it('imports a path under its last segment', () => {
+        const map = addToImportMap(createImportMap(), 'foo::bar::Baz');
+        expect(map.get('foo::bar::Baz')?.get('Baz')).toEqual({ importedPath: 'foo::bar::Baz', usedIdentifier: 'Baz' });
+    });
+    it('keeps an existing alias when the same path is added plainly', () => {
         let map = addAliasToImportMap(createImportMap(), 'foo::Bar', 'Baz');
         map = addToImportMap(map, 'foo::Bar');
-        expect(map.get('foo::Bar')?.alias).toBe('Baz');
+        expect(getUsedIdentifiers(map, 'foo::Bar')).toEqual(['Bar', 'Baz']);
+    });
+    it('returns a deeply frozen map', () => {
+        const map = addToImportMap(createImportMap(), 'foo::Bar');
+        expect(Object.isFrozen(map)).toBe(true);
+        expect(Object.isFrozen(map.get('foo::Bar'))).toBe(true);
+        expect(Object.isFrozen(map.get('foo::Bar')?.get('Bar'))).toBe(true);
     });
     it('does not mutate the input map', () => {
         const map = createImportMap();
@@ -54,13 +83,27 @@ describe('addToImportMap', () => {
 describe('addAliasToImportMap', () => {
     it('records an alias for a previously unimported path', () => {
         const map = addAliasToImportMap(createImportMap(), 'foo::Bar', 'Baz');
-        expect(map.get('foo::Bar')?.alias).toBe('Baz');
-        expect(map.get('foo::Bar')?.importedPath).toBe('foo::Bar');
+        expect(map.get('foo::Bar')?.get('Baz')).toEqual({ importedPath: 'foo::Bar', usedIdentifier: 'Baz' });
+        expect(getUsedIdentifiers(map, 'foo::Bar')).toEqual(['Baz']);
     });
-    it('replaces an existing alias for the same path', () => {
+    it('keeps an existing plain import of the same path', () => {
+        let map = addToImportMap(createImportMap(), 'foo::Bar');
+        map = addAliasToImportMap(map, 'foo::Bar', 'Baz');
+        expect(getUsedIdentifiers(map, 'foo::Bar')).toEqual(['Bar', 'Baz']);
+    });
+    it('keeps an existing alias of the same path', () => {
         let map = addAliasToImportMap(createImportMap(), 'foo::Bar', 'A');
         map = addAliasToImportMap(map, 'foo::Bar', 'B');
-        expect(map.get('foo::Bar')?.alias).toBe('B');
+        expect(getUsedIdentifiers(map, 'foo::Bar')).toEqual(['A', 'B']);
+    });
+    it('returns the input map unchanged when the alias is already recorded', () => {
+        const map = addAliasToImportMap(createImportMap(), 'foo::Bar', 'Baz');
+        expect(addAliasToImportMap(map, 'foo::Bar', 'Baz')).toBe(map);
+    });
+    it('treats an alias equal to the last path segment as the plain import', () => {
+        let map = addToImportMap(createImportMap(), 'foo::Bar');
+        map = addAliasToImportMap(map, 'foo::Bar', 'Bar');
+        expect(getUsedIdentifiers(map, 'foo::Bar')).toEqual(['Bar']);
     });
     it('does not mutate the input map', () => {
         const map = createImportMap();
@@ -90,6 +133,12 @@ describe('removeFromImportMap', () => {
         const map = addToImportMap(createImportMap(), 'foo::A');
         expect(removeFromImportMap(map, [])).toBe(map);
     });
+    it('drops every local name of a path', () => {
+        let map = addToImportMap(createImportMap(), ['foo::A', 'foo::B']);
+        map = addAliasToImportMap(map, 'foo::A', 'Alpha');
+        map = removeFromImportMap(map, 'foo::A');
+        expect([...map.keys()]).toEqual(['foo::B']);
+    });
 });
 
 describe('mergeImportMaps', () => {
@@ -109,13 +158,35 @@ describe('mergeImportMaps', () => {
         const a = addAliasToImportMap(createImportMap(), 'foo::A', 'AlphaA');
         const b = addAliasToImportMap(createImportMap(), 'bar::B', 'BravoB');
         const merged = mergeImportMaps([a, b]);
-        expect(merged.get('foo::A')?.alias).toBe('AlphaA');
-        expect(merged.get('bar::B')?.alias).toBe('BravoB');
+        expect(getUsedIdentifiers(merged, 'foo::A')).toEqual(['AlphaA']);
+        expect(getUsedIdentifiers(merged, 'bar::B')).toEqual(['BravoB']);
     });
-    it('lets the latest map win on alias conflicts for the same path', () => {
+    it('keeps both a plain import and an alias of the same path when the alias comes last', () => {
+        const plain = addToImportMap(createImportMap(), 'crate::Mint');
+        const aliased = addAliasToImportMap(createImportMap(), 'crate::Mint', 'TokenMint');
+        expect(getUsedIdentifiers(mergeImportMaps([plain, aliased]), 'crate::Mint')).toEqual(['Mint', 'TokenMint']);
+    });
+    it('keeps both a plain import and an alias of the same path when the plain import comes last', () => {
+        const plain = addToImportMap(createImportMap(), 'crate::Mint');
+        const aliased = addAliasToImportMap(createImportMap(), 'crate::Mint', 'TokenMint');
+        expect(getUsedIdentifiers(mergeImportMaps([aliased, plain]), 'crate::Mint')).toEqual(['Mint', 'TokenMint']);
+    });
+    it('keeps every alias of the same path', () => {
         const a = addAliasToImportMap(createImportMap(), 'foo::A', 'Old');
         const b = addAliasToImportMap(createImportMap(), 'foo::A', 'New');
-        expect(mergeImportMaps([a, b]).get('foo::A')?.alias).toBe('New');
+        expect(getUsedIdentifiers(mergeImportMaps([a, b]), 'foo::A')).toEqual(['New', 'Old']);
+    });
+    it('deduplicates identical local names of the same path', () => {
+        const a = addAliasToImportMap(addToImportMap(createImportMap(), 'foo::A'), 'foo::A', 'Alpha');
+        const b = addAliasToImportMap(addToImportMap(createImportMap(), 'foo::A'), 'foo::A', 'Alpha');
+        expect(getUsedIdentifiers(mergeImportMaps([a, b]), 'foo::A')).toEqual(['A', 'Alpha']);
+    });
+    it('does not mutate the input maps', () => {
+        const a = addToImportMap(createImportMap(), 'foo::A');
+        const b = addAliasToImportMap(createImportMap(), 'foo::A', 'Alpha');
+        mergeImportMaps([a, b]);
+        expect(getUsedIdentifiers(a, 'foo::A')).toEqual(['A']);
+        expect(getUsedIdentifiers(b, 'foo::A')).toEqual(['Alpha']);
     });
 });
 
@@ -130,7 +201,21 @@ describe('resolveImportMap', () => {
         let map = addToImportMap(createImportMap(), 'generated::accounts::AccountNode');
         map = addAliasToImportMap(map, 'generated::accounts::AccountNode', 'AcctNode');
         const resolved = resolveImportMap(map, { generated: 'crate::generated' });
-        expect(resolved.get('crate::generated::accounts::AccountNode')?.alias).toBe('AcctNode');
+        expect(getUsedIdentifiers(resolved, 'crate::generated::accounts::AccountNode')).toEqual([
+            'AccountNode',
+            'AcctNode',
+        ]);
+        expect(resolved.get('crate::generated::accounts::AccountNode')?.get('AcctNode')).toEqual({
+            importedPath: 'crate::generated::accounts::AccountNode',
+            usedIdentifier: 'AcctNode',
+        });
+    });
+    it('unions the local names of paths that resolve to the same path', () => {
+        let map = addToImportMap(createImportMap(), 'crate::generated::Mint');
+        map = addAliasToImportMap(map, 'generated::Mint', 'TokenMint');
+        const resolved = resolveImportMap(map, { generated: 'crate::generated' });
+        expect([...resolved.keys()]).toEqual(['crate::generated::Mint']);
+        expect(getUsedIdentifiers(resolved, 'crate::generated::Mint')).toEqual(['Mint', 'TokenMint']);
     });
     it('leaves unmatched paths unchanged', () => {
         const map = addToImportMap(createImportMap(), 'foo::Bar');
@@ -171,6 +256,11 @@ describe('getExternalDependencies', () => {
         const deps = getExternalDependencies(map, { generated: 'crate::generated' });
         expect(deps).toEqual(new Set(['borsh']));
     });
+    it('reports a crate once when one of its paths is imported under several names', () => {
+        let map = addToImportMap(createImportMap(), 'borsh::BorshSerialize');
+        map = addAliasToImportMap(map, 'borsh::BorshSerialize', 'Ser');
+        expect(getExternalDependencies(map)).toEqual(new Set(['borsh']));
+    });
 });
 
 describe('importMapToString', () => {
@@ -188,6 +278,22 @@ describe('importMapToString', () => {
     });
     it('renders the empty string for an empty map', () => {
         expect(importMapToString(createImportMap())).toBe('');
+    });
+    it('emits one use statement per local name of the same path', () => {
+        let map = addToImportMap(createImportMap(), ['crate::Account', 'crate::Mint']);
+        map = addAliasToImportMap(map, 'crate::Mint', 'TokenMint');
+        expect(importMapToString(map)).toBe('use crate::Account;\nuse crate::Mint as TokenMint;\nuse crate::Mint;');
+    });
+    it('emits the same statements regardless of the order names were added in', () => {
+        let aliasFirst = addAliasToImportMap(createImportMap(), 'crate::Mint', 'TokenMint');
+        aliasFirst = addAliasToImportMap(aliasFirst, 'crate::Mint', 'Mint2');
+        aliasFirst = addToImportMap(aliasFirst, 'crate::Mint');
+        let plainFirst = addToImportMap(createImportMap(), 'crate::Mint');
+        plainFirst = addAliasToImportMap(plainFirst, 'crate::Mint', 'Mint2');
+        plainFirst = addAliasToImportMap(plainFirst, 'crate::Mint', 'TokenMint');
+        const expected = 'use crate::Mint as Mint2;\nuse crate::Mint as TokenMint;\nuse crate::Mint;';
+        expect(importMapToString(aliasFirst)).toBe(expected);
+        expect(importMapToString(plainFirst)).toBe(expected);
     });
     it('sorts the rendered statements alphabetically for stable diffs', () => {
         const map = addToImportMap(createImportMap(), ['zeta::Z', 'alpha::A', 'beta::B']);
