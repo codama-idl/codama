@@ -6,10 +6,11 @@ import {
 import { Node } from '@codama/nodes';
 import { Codec, Encoder, getBase16Decoder, transformCodec } from '@solana/codecs';
 
-/** Describe the type of a value in error messages, e.g. `number (1.5)` or `array (length 2)`. */
+/** Describe the type of a value in error messages, e.g. `number (1.5)`, `bigint (300)` or `array (length 2)`. */
 export function formatValueType(value: unknown): string {
     if (value === null) return 'null';
     if (typeof value === 'number') return `number (${value})`;
+    if (typeof value === 'bigint') return `bigint (${value})`;
     if (value instanceof Uint8Array) return `Uint8Array (length ${value.length})`;
     if (Array.isArray(value)) return `array (length ${value.length})`;
     return typeof value;

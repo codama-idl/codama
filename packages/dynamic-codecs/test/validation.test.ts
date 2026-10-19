@@ -6,10 +6,13 @@ import {
     dateTimeTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
+    durationTypeNode,
     enumTypeNode,
     enumVariantTypeNode,
+    fixedPointTypeNode,
     floatTypeNode,
     instructionNode,
+    IntegerFormat,
     integerTypeNode,
     mapTypeNode,
     Node,
@@ -219,6 +222,125 @@ describe('node paths', () => {
         );
         expect(() => codec.encode({ ...valid, createdAt: 'x' })).toThrow(
             integerError([struct, dateTimeField, dateTime, timestamp]),
+        );
+    });
+});
+
+describe('integer ranges', () => {
+    test('it rejects u8 values above 255', () => {
+        const u8Type = integerTypeNode('u8');
+        expect(() => getNodeValueCodec([u8Type]).encode(256)).toThrow(
+            valueTypeError({ actualType: 'number (256)', expectedType: 'integer between 0 and 255', path: [u8Type] }),
+        );
+    });
+
+    test('it rejects i8 values below -128', () => {
+        const i8Type = integerTypeNode('i8');
+        expect(() => getNodeValueCodec([i8Type]).encode(-129)).toThrow(
+            valueTypeError({
+                actualType: 'number (-129)',
+                expectedType: 'integer between -128 and 127',
+                path: [i8Type],
+            }),
+        );
+    });
+
+    test('it rejects u64 bigints above the maximum u64', () => {
+        const u64Type = integerTypeNode('u64');
+        expect(() => getNodeValueCodec([u64Type]).encode(2n ** 64n)).toThrow(
+            valueTypeError({
+                actualType: 'bigint (18446744073709551616)',
+                expectedType: 'integer between 0 and 18446744073709551615',
+                path: [u64Type],
+            }),
+        );
+    });
+
+    test('it rejects negative shortU16 values', () => {
+        const shortU16Type = integerTypeNode('shortU16');
+        expect(() => getNodeValueCodec([shortU16Type]).encode(-1)).toThrow(
+            valueTypeError({
+                actualType: 'number (-1)',
+                expectedType: 'integer between 0 and 65535',
+                path: [shortU16Type],
+            }),
+        );
+    });
+
+    test.each([
+        ['u8', 0n, 255n],
+        ['u16', 0n, 65535n],
+        ['u32', 0n, 2n ** 32n - 1n],
+        ['u64', 0n, 2n ** 64n - 1n],
+        ['u128', 0n, 2n ** 128n - 1n],
+        ['i8', -128n, 127n],
+        ['i16', -(2n ** 15n), 2n ** 15n - 1n],
+        ['i32', -(2n ** 31n), 2n ** 31n - 1n],
+        ['i64', -(2n ** 63n), 2n ** 63n - 1n],
+        ['i128', -(2n ** 127n), 2n ** 127n - 1n],
+        ['shortU16', 0n, 65535n],
+    ] satisfies [IntegerFormat, bigint, bigint][])(
+        '%s accepts its bounds and rejects values beyond them',
+        (format, min, max) => {
+            const integerType = integerTypeNode(format);
+            const codec = getNodeValueCodec([integerType]);
+            expect(codec.decode(codec.encode(min))).toBe(min);
+            expect(codec.decode(codec.encode(max))).toBe(max);
+            const expectedType = `integer between ${min} and ${max}`;
+            expect(() => codec.encode(max + 1n)).toThrow(
+                valueTypeError({ actualType: `bigint (${max + 1n})`, expectedType, path: [integerType] }),
+            );
+            expect(() => codec.encode(min - 1n)).toThrow(
+                valueTypeError({ actualType: `bigint (${min - 1n})`, expectedType, path: [integerType] }),
+            );
+        },
+    );
+
+    test('it reports the path of nested out-of-range integers', () => {
+        const feeType = integerTypeNode('u8');
+        const fee = structFieldTypeNode({ identifier: 'fee', type: feeType });
+        const configStruct = structTypeNode([fee]);
+        const config = structFieldTypeNode({ identifier: 'config', type: configStruct });
+        const struct = structTypeNode([config]);
+        expect(() => getNodeValueCodec([struct]).encode({ config: { fee: 300 } })).toThrow(
+            valueTypeError({
+                actualType: 'number (300)',
+                expectedType: 'integer between 0 and 255',
+                path: [struct, config, configStruct, fee, feeType],
+            }),
+        );
+    });
+
+    test('it reports the path of out-of-range date-times', () => {
+        const timestamp = integerTypeNode('u32');
+        const dateTime = dateTimeTypeNode(timestamp);
+        expect(() => getNodeValueCodec([dateTime]).encode(-1)).toThrow(
+            valueTypeError({
+                actualType: 'number (-1)',
+                expectedType: 'integer between 0 and 4294967295',
+                path: [dateTime, timestamp],
+            }),
+        );
+    });
+
+    test('it reports the path of out-of-range durations and fixed points', () => {
+        const ticks = integerTypeNode('u8');
+        const duration = durationTypeNode(ticks);
+        expect(() => getNodeValueCodec([duration]).encode(256)).toThrow(
+            valueTypeError({
+                actualType: 'number (256)',
+                expectedType: 'integer between 0 and 255',
+                path: [duration, ticks],
+            }),
+        );
+        const raw = integerTypeNode('i8');
+        const fixedPoint = fixedPointTypeNode(raw, { scale: 2 });
+        expect(() => getNodeValueCodec([fixedPoint]).encode(128n)).toThrow(
+            valueTypeError({
+                actualType: 'bigint (128)',
+                expectedType: 'integer between -128 and 127',
+                path: [fixedPoint, raw],
+            }),
         );
     });
 });

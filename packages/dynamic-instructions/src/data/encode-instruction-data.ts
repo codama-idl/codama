@@ -27,8 +27,9 @@ export type EncodeInstructionDataOptions = {
  * Codama errors raised while encoding are thrown as is, e.g. a
  * `DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error for a value of the wrong type or
  * an `INJECTED_VALUE_NOT_PROVIDED` error for a missing injected default value.
- * Other encoding errors, e.g. an integer out of range, throw a
- * `DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` error whose cause is the original error.
+ * Other encoding errors, e.g. an array with the wrong number of items for its fixed
+ * count, throw a `DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` error whose cause is the
+ * original error.
  *
  * Default values injected from contextual values, e.g. account data, cannot be evaluated while
  * encoding: provide them through the `resolvedDefaultValues` option. The encoder then creates a

@@ -134,7 +134,10 @@ export type DecodedInstructionNode = DecodedNodeBase<InstructionNode, unknown> &
 /** A decoded integer, e.g. `{ value: 42n }`. */
 export type DecodedIntegerTypeNode = DecodedNodeBase<IntegerTypeNode, bigint>;
 
-/** A decoded map, e.g. `{ value: { 1: 'one' }, entries: [[key, value]] }`. */
+/**
+ * A decoded map, e.g. `{ value: { 1: 'one' }, entries: [[key, value]] }`. Its value is an object whose
+ * keys are the string forms of the decoded keys, e.g. `'1'` for `1n` or `'{"x":1}'` for `{ x: 1n }`.
+ */
 export type DecodedMapTypeNode = DecodedNodeBase<MapTypeNode, Record<string, unknown>> & {
     /** The decoded entries of the map, keeping the decoded nodes of their keys. */
     readonly entries: readonly (readonly [key: DecodedTypeNode, value: DecodedTypeNode])[];

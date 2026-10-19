@@ -67,7 +67,7 @@ describe('SAS: changeSchemaDescription', () => {
         ).rejects.toThrow(
             valueTypeError(
                 { identifier: 'description', kind: 'structFieldTypeNode' },
-                { actualType: 'bigint', nodeKind: 'stringTypeNode' },
+                { actualType: 'bigint (42)', nodeKind: 'stringTypeNode' },
             ),
         );
     });
