@@ -34,8 +34,6 @@ export {
     isFilledNodePath,
     isNodePath,
     type NodePath,
-    nodePathToString,
-    nodePathToStringArray,
 } from './NodePath';
 export * from './NodeSelector';
 export * from './NodeStack';
