@@ -8,19 +8,25 @@ import { importModuleItem } from './import';
 import { isRootNode } from './nodes';
 import { promisify } from './promises';
 
-export async function getRootNodeVisitors(
-    visitors: readonly ParsedVisitorConfig[],
-): Promise<Visitor<RootNode, 'rootNode'>[]> {
+/**
+ * A visitor that resolves to the root node to pass to the next visitor.
+ *
+ * Loaded visitors may be synchronous or asynchronous, so the result is
+ * always a promise that settles once the loaded visitor has finished.
+ */
+export type AsyncRootNodeVisitor = Visitor<Promise<RootNode>, 'rootNode'>;
+
+export async function getRootNodeVisitors(visitors: readonly ParsedVisitorConfig[]): Promise<AsyncRootNodeVisitor[]> {
     return await Promise.all(visitors.map(getRootNodeVisitor));
 }
 
-async function getRootNodeVisitor(visitorConfig: ParsedVisitorConfig): Promise<Visitor<RootNode, 'rootNode'>> {
+async function getRootNodeVisitor(visitorConfig: ParsedVisitorConfig): Promise<AsyncRootNodeVisitor> {
     const { item, path } = visitorConfig;
     const identifier = getVisitorIdentifier(visitorConfig);
     const moduleItem = await importModuleItem({ identifier, from: path, item });
     const visitor = await getVisitorFromModuleItem(identifier, moduleItem, visitorConfig);
-    return rootNodeVisitor(root => {
-        const result = visit(root, visitor);
+    return rootNodeVisitor(async root => {
+        const result = await visit(root, visitor);
         return isRootNode(result) ? result : root;
     });
 }

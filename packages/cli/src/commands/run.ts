@@ -1,11 +1,12 @@
 import type { RootNode } from '@codama/nodes';
-import { visit, type Visitor } from '@codama/visitors-core';
+import { visit } from '@codama/visitors-core';
 import { Command } from 'commander';
 import pico from 'picocolors';
 
 import { ScriptName } from '../config';
 import { getParsedConfigFromCommand, ParsedConfig } from '../parsedConfig';
 import {
+    type AsyncRootNodeVisitor,
     CliError,
     getRootNodeVisitors,
     installMissingDependencies,
@@ -34,12 +35,12 @@ async function doRun(explicitScripts: string[], { all }: RunOptions, cmd: Comman
     const parsedConfig = await getParsedConfigFromCommand(cmd);
     const scripts = all ? Object.keys(parsedConfig.scripts) : explicitScripts;
     const plans = await getPlans(parsedConfig, scripts);
-    runPlans(plans, parsedConfig.rootNode);
+    await runPlans(plans, parsedConfig.rootNode);
 }
 
 type RunPlan = {
     script: ScriptName | null;
-    visitors: Visitor<RootNode, 'rootNode'>[];
+    visitors: AsyncRootNodeVisitor[];
 };
 
 async function getPlans(
@@ -65,23 +66,26 @@ async function getPlans(
     return plans;
 }
 
-function runPlans(plans: RunPlan[], rootNode: RootNode): void {
+async function runPlans(plans: RunPlan[], rootNode: RootNode): Promise<void> {
     for (const plan of plans) {
-        const result = runPlan(plan, rootNode);
+        const result = await runPlan(plan, rootNode);
         if (!plan.script) {
             rootNode = result;
         }
     }
 }
 
-function runPlan(plan: RunPlan, rootNode: RootNode): RootNode {
+async function runPlan(plan: RunPlan, rootNode: RootNode): Promise<RootNode> {
     const visitorLength = plan.visitors.length;
     const visitorPluralized = visitorLength === 1 ? 'visitor' : 'visitors';
     const identifier = plan.script
         ? `script "${plan.script}" with ${visitorLength} ${visitorPluralized}`
         : `${visitorLength} before ${visitorPluralized}`;
     logInfo(`Running ${identifier}...`);
-    const newRoot = plan.visitors.reduce(visit, rootNode);
+    let newRoot = rootNode;
+    for (const visitor of plan.visitors) {
+        newRoot = await visit(newRoot, visitor);
+    }
     logSuccess(`Executed ${identifier}!`);
     return newRoot;
 }

@@ -51,3 +51,26 @@ test('leaves the root node unchanged when no additionalIdls are provided', async
     expect(parsed.rootNode).toBe(mainRootNode);
     expect(parsed.rootNode.additionalPrograms).toBeUndefined();
 });
+
+test('parses a single before visitor provided as a string', async () => {
+    getConfigMock.mockResolvedValue([{ before: './my-visitor.js', idl: 'main.json' }, '/root/codama.json']);
+    getRootNodeFromIdlMock.mockResolvedValue(rootNodeWith('main'));
+
+    const parsed = await getParsedConfig({});
+
+    expect(parsed.before).toEqual([{ args: [], index: 0, item: undefined, path: '/root/my-visitor.js', script: null }]);
+});
+
+test('parses a single before visitor provided as an object', async () => {
+    getConfigMock.mockResolvedValue([
+        { before: { args: ['hello', 42], from: './my-visitor.js#myExport' }, idl: 'main.json' },
+        '/root/codama.json',
+    ]);
+    getRootNodeFromIdlMock.mockResolvedValue(rootNodeWith('main'));
+
+    const parsed = await getParsedConfig({});
+
+    expect(parsed.before).toEqual([
+        { args: ['hello', 42], index: 0, item: 'myExport', path: '/root/my-visitor.js', script: null },
+    ]);
+});

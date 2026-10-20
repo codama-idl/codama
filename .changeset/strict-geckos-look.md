@@ -1,0 +1,5 @@
+---
+'@codama/cli': patch
+---
+
+Await asynchronous visitors in `codama run`, so each visitor runs after the previous one has finished, the `RootNode` they resolve to is passed on, and the command fails when one of them rejects.

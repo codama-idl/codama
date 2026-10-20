@@ -9,7 +9,7 @@ export type Config = Readonly<{
     additionalIdls?: readonly string[];
     idl?: string;
     scripts?: ScriptsConfig;
-    before?: readonly VisitorConfig[];
+    before?: ScriptConfig;
 }>;
 
 export type ScriptName = string;

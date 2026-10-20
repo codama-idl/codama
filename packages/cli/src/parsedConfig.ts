@@ -1,7 +1,7 @@
 import { getAllPrograms, type RootNode } from '@codama/nodes';
 import { Command } from 'commander';
 
-import { Config, getConfig, ScriptName, ScriptsConfig, VisitorConfig, VisitorPath } from './config';
+import { Config, getConfig, ScriptConfig, ScriptName, ScriptsConfig, VisitorConfig, VisitorPath } from './config';
 import { ProgramOptions } from './programOptions';
 import {
     CliError,
@@ -56,7 +56,7 @@ async function parseConfig(
     const [mainIdl] = idls;
     const rootNode = mergeRootNodes(idls.map(idl => idl.rootNode));
     const scripts = parseScripts(config.scripts ?? {}, configPath);
-    const visitors = (config.before ?? []).map((v, i) => parseVisitorConfig(v, configPath, i, null));
+    const visitors = parseVisitorConfigs(config.before ?? [], configPath, null);
 
     return { configPath, idlContent: mainIdl.content, idlPath, rootNode, scripts, before: visitors };
 }
@@ -91,10 +91,18 @@ function parseIdlPath(
 
 function parseScripts(scripts: ScriptsConfig, configPath: string | null): ParsedScriptsConfig {
     const entryPromises = Object.entries(scripts).map(([name, scriptConfig]) => {
-        const visitors: readonly VisitorConfig[] = Array.isArray(scriptConfig) ? scriptConfig : [scriptConfig];
-        return [name, visitors.map((v, i) => parseVisitorConfig(v, configPath, i, name))] as const;
+        return [name, parseVisitorConfigs(scriptConfig, configPath, name)] as const;
     });
     return Object.fromEntries(entryPromises);
+}
+
+function parseVisitorConfigs(
+    scriptConfig: ScriptConfig,
+    configPath: string | null,
+    script: ScriptName | null,
+): readonly ParsedVisitorConfig[] {
+    const visitors: readonly VisitorConfig[] = Array.isArray(scriptConfig) ? scriptConfig : [scriptConfig];
+    return visitors.map((v, i) => parseVisitorConfig(v, configPath, i, script));
 }
 
 function parseVisitorConfig<T extends readonly unknown[]>(
