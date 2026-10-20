@@ -96,7 +96,7 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
     [CODAMA_ERROR__CANNOT_RESOLVE_PATH]: 'Cannot resolve segment [$segment] of path [$pathString] from $path.',
     [CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY]:
-        'Cannot upgrade $path to a value provided under key [$key], since another node of its instruction already provides a different value or injects a value under that key. Rename one of them in the v1 IDL.',
+        'Cannot upgrade $path to a value provided under key [$key], since $conflictingPath already provides a different value or injects a value under that key. Rename one of them in the v1 IDL.',
     [CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE]:
         'Defined type $path has no finite value, so no codec can encode or decode it.',
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: 'Discriminator field $path has no default value.',
