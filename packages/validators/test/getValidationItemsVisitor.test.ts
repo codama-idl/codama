@@ -315,6 +315,283 @@ test('it reports duplicate instruction accounts', () => {
     ]);
 });
 
+test('it reports sub-instructions sharing an identifier under different parents', () => {
+    // Given two parent instructions each with a sub-instruction named "shared".
+    const firstShared = instructionNode({ identifier: 'shared' });
+    const secondShared = instructionNode({ identifier: 'shared' });
+    const firstParent = instructionNode({ identifier: 'firstParent', subInstructions: [firstShared] });
+    const secondParent = instructionNode({ identifier: 'secondParent', subInstructions: [secondShared] });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [firstParent, secondParent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the second sub-instruction is reported within the program.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Instruction identifier "shared" is not unique across the instructions and sub-instructions of program "test".',
+            [node, secondParent, secondShared],
+        ),
+    ]);
+});
+
+test('it reports sub-instructions sharing an identifier with a top-level instruction', () => {
+    // Given a top-level instruction and a sub-instruction of another instruction, both named "shared".
+    const topLevelShared = instructionNode({ identifier: 'shared' });
+    const nestedShared = instructionNode({ identifier: 'shared' });
+    const parent = instructionNode({ identifier: 'parent', subInstructions: [nestedShared] });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [topLevelShared, parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the sub-instruction is reported within the program.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Instruction identifier "shared" is not unique across the instructions and sub-instructions of program "test".',
+            [node, parent, nestedShared],
+        ),
+    ]);
+});
+
+test('it reports top-level instructions sharing an identifier with a previous sub-instruction', () => {
+    // Given a sub-instruction named "shared" followed by a top-level instruction of the same name.
+    const nestedShared = instructionNode({ identifier: 'shared' });
+    const parent = instructionNode({ identifier: 'parent', subInstructions: [nestedShared] });
+    const topLevelShared = instructionNode({ identifier: 'shared' });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [parent, topLevelShared],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the top-level instruction is reported, as it comes after the sub-instruction.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Instruction identifier "shared" is not unique across the instructions and sub-instructions of program "test".',
+            [node, topLevelShared],
+        ),
+    ]);
+});
+
+test('it reports deeply nested sub-instructions sharing an identifier', () => {
+    // Given a top-level instruction named "shared" and a grandchild instruction of the same name.
+    const topLevelShared = instructionNode({ identifier: 'shared' });
+    const grandchild = instructionNode({ identifier: 'shared' });
+    const child = instructionNode({ identifier: 'child', subInstructions: [grandchild] });
+    const parent = instructionNode({ identifier: 'parent', subInstructions: [child] });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [topLevelShared, parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the grandchild is reported with its full path.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Instruction identifier "shared" is not unique across the instructions and sub-instructions of program "test".',
+            [node, parent, child, grandchild],
+        ),
+    ]);
+});
+
+test('it does not report sub-instructions with distinct identifiers', () => {
+    // Given nested instructions whose identifiers are all distinct.
+    const node = programNode({
+        identifier: 'test',
+        instructions: [
+            instructionNode({
+                identifier: 'parent',
+                subInstructions: [
+                    instructionNode({
+                        identifier: 'child',
+                        subInstructions: [instructionNode({ identifier: 'grandchild' })],
+                    }),
+                ],
+            }),
+            instructionNode({
+                identifier: 'otherParent',
+                subInstructions: [instructionNode({ identifier: 'otherChild' })],
+            }),
+        ],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then nothing is reported.
+    expect(items).toEqual([]);
+});
+
+test('it does not report sub-instructions sharing an identifier across programs', () => {
+    // Given a top-level instruction and a sub-instruction named "shared" in two different programs.
+    const node = rootNode(
+        programNode({
+            identifier: 'first',
+            instructions: [instructionNode({ identifier: 'shared' })],
+            publicKey: '1111',
+            version: '1.0.0',
+        }),
+        {
+            additionalPrograms: [
+                programNode({
+                    identifier: 'second',
+                    instructions: [
+                        instructionNode({
+                            identifier: 'parent',
+                            subInstructions: [instructionNode({ identifier: 'shared' })],
+                        }),
+                    ],
+                    publicKey: '2222',
+                    version: '1.0.0',
+                }),
+            ],
+        },
+    );
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then nothing is reported, as instructions are only linked within their program.
+    expect(items).toEqual([]);
+});
+
+test('it does not report sibling instructions sharing an identifier twice', () => {
+    // Given duplicated top-level instructions and duplicated sub-instructions of the same parent.
+    const duplicateTopLevel = instructionNode({ identifier: 'topLevel' });
+    const duplicateChild = instructionNode({ identifier: 'child' });
+    const parent = instructionNode({
+        identifier: 'parent',
+        subInstructions: [instructionNode({ identifier: 'child' }), duplicateChild],
+    });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [instructionNode({ identifier: 'topLevel' }), duplicateTopLevel, parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then each duplicate is only reported by the collision check of its sibling set.
+    expect(items).toEqual([
+        validationItem('error', 'Instruction identifier "topLevel" is not unique in program "test".', [
+            node,
+            duplicateTopLevel,
+        ]),
+        validationItem('error', 'Sub-instruction identifier "child" is not unique in instruction "parent".', [
+            node,
+            parent,
+            duplicateChild,
+        ]),
+    ]);
+});
+
+test('it reports nested duplicates that are not siblings of an earlier duplicate', () => {
+    // Given duplicated top-level instructions and a sub-instruction sharing their identifier.
+    const duplicateTopLevel = instructionNode({ identifier: 'shared' });
+    const nestedShared = instructionNode({ identifier: 'shared' });
+    const parent = instructionNode({ identifier: 'parent', subInstructions: [nestedShared] });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [instructionNode({ identifier: 'shared' }), duplicateTopLevel, parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the top-level duplicate is reported among its siblings and the sub-instruction across the program.
+    expect(items).toEqual([
+        validationItem('error', 'Instruction identifier "shared" is not unique in program "test".', [
+            node,
+            duplicateTopLevel,
+        ]),
+        validationItem(
+            'error',
+            'Instruction identifier "shared" is not unique across the instructions and sub-instructions of program "test".',
+            [node, parent, nestedShared],
+        ),
+    ]);
+});
+
+test('it reports sub-instructions colliding with a top-level instruction once converted to camelCase', () => {
+    // Given a top-level instruction "transferTokens" and a sub-instruction "transfer_tokens".
+    const nestedTransfer = instructionNode({ identifier: 'transfer_tokens' });
+    const parent = instructionNode({ identifier: 'parent', subInstructions: [nestedTransfer] });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [instructionNode({ identifier: 'transferTokens' }), parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the sub-instruction is reported as a casing collision within the program.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Instruction identifier "transfer_tokens" collides with "transferTokens" once converted to camelCase across the instructions and sub-instructions of program "test".',
+            [node, parent, nestedTransfer],
+        ),
+    ]);
+});
+
+test('it does not report sibling instructions colliding once converted to camelCase twice', () => {
+    // Given sub-instructions "transferTokens" and "transfer_tokens" of the same parent.
+    const nestedTransfer = instructionNode({ identifier: 'transfer_tokens' });
+    const parent = instructionNode({
+        identifier: 'parent',
+        subInstructions: [instructionNode({ identifier: 'transferTokens' }), nestedTransfer],
+    });
+    const node = programNode({
+        identifier: 'test',
+        instructions: [parent],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+
+    // When we get the validation items using a visitor.
+    const items = visit(node, getValidationItemsVisitor());
+
+    // Then the collision is only reported by the collision check of its sibling set.
+    expect(items).toEqual([
+        validationItem(
+            'error',
+            'Sub-instruction identifier "transfer_tokens" collides with "transferTokens" once converted to camelCase in instruction "parent".',
+            [node, parent, nestedTransfer],
+        ),
+    ]);
+});
+
 test('it reports errors raised when resolving instruction default values', () => {
     // Given an instruction whose account defaults depend on each other.
     const node = instructionNode({

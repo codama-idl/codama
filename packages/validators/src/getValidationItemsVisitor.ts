@@ -45,7 +45,7 @@ import {
 } from '@codama/visitors-core';
 
 import { getContextualValueItems } from './contextualValueItems';
-import { getIdentifierCollisionItems } from './identifierCollisions';
+import { getIdentifierCollisionItems, getNestedInstructionCollisionItems } from './identifierCollisions';
 import { ValidationItem, validationItem } from './ValidationItem';
 
 export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> {
@@ -377,7 +377,8 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                         items.push(validationItem('warn', 'Program has no version.', stack));
                     }
 
-                    // Check for identifier collisions within each collection of the program.
+                    // Check for identifier collisions within each collection of the program,
+                    // and among its instructions at any nesting level.
                     const context = ` in program "${node.identifier}"`;
                     items.push(
                         ...getIdentifierCollisionItems(node.accounts ?? [], 'Account', context, stack),
@@ -387,6 +388,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                         ...getIdentifierCollisionItems(node.events ?? [], 'Event', context, stack),
                         ...getIdentifierCollisionItems(node.errors ?? [], 'Error', context, stack),
                         ...getIdentifierCollisionItems(node.constants ?? [], 'Constant', context, stack),
+                        ...getNestedInstructionCollisionItems(node, stack),
                     );
                     return [...items, ...next(node)];
                 },
