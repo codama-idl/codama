@@ -45,8 +45,12 @@ jobs:
         run: pnpm lint
 
   tests:
-    name: Test
+    name: Test (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -57,7 +61,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ matrix.node }}
           cache: pnpm
 
       - name: Install dependencies
@@ -66,10 +70,14 @@ jobs:
       - name: Build and run tests
         run: pnpm test
 
+      # Generated output does not depend on the Node.js version, and the generate script
+      # formats it with oxfmt, which fails to load its TypeScript config on Node.js 22.
       - name: Regenerate output from the pinned @codama/spec
+        if: matrix.node == env.NODE_VERSION
         run: pnpm generate
 
       - name: Ensure working directory is clean
+        if: matrix.node == env.NODE_VERSION
         run: |
           git status
           test -z "$(git status --porcelain)"
