@@ -1,5 +1,98 @@
 # @codama/node-types
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1262](https://github.com/codama-idl/codama/pull/1262) [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove the deprecated node kind aliases, the `ProgramVersion` type and the duplicate node path formatters. Each has a canonical replacement that was already exported.
+  
+  **BREAKING CHANGES**
+  
+  **Node kind aliases removed.** The legacy `*_NODES` aliases of `@codama/nodes` are removed in favour of the `*_NODE_KINDS` constants generated from the spec.
+  
+  ```diff
+  - import { CONTEXTUAL_VALUE_NODES, COUNT_NODES, DISCRIMINATOR_NODES, INSTRUCTION_INPUT_VALUE_NODES } from '@codama/nodes';
+  - import { LINK_NODES, PDA_SEED_NODES, TYPE_NODES, VALUE_NODES } from '@codama/nodes';
+  + import { CONTEXTUAL_VALUE_NODE_KINDS, COUNT_NODE_KINDS, DISCRIMINATOR_NODE_KINDS, INSTRUCTION_INPUT_VALUE_NODE_KINDS } from '@codama/nodes';
+  + import { LINK_NODE_KINDS, PDA_SEED_NODE_KINDS, TYPE_NODE_KINDS, VALUE_NODE_KINDS } from '@codama/nodes';
+  ```
+  
+  **`ProgramVersion` removed.** Use the `Version` type instead.
+  
+  ```diff
+  - import type { ProgramVersion } from '@codama/node-types';
+  + import type { Version } from '@codama/node-types';
+  ```
+  
+  **Node path formatters removed.** `nodePathToString` and `nodePathToStringArray` are removed from `@codama/visitors-core`. Use `getNodePathString` from `@codama/errors`, which renders paths the way error messages do, or `NodeStack#toString` for the current path of a stack.
+  
+  ```diff
+  - import { nodePathToString, nodePathToStringArray } from '@codama/visitors-core';
+  + import { getNodePathString } from '@codama/errors';
+  
+  - nodePathToString(path);
+  + getNodePathString(path);
+  - nodePathToStringArray(path);
+  + path.map(node => getNodePathString([node]));
+  ```
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Require Node.js 22.12.0 or later.
+  
+  **BREAKING CHANGES**
+  
+  **Node.js 20 is no longer supported.** Every package now declares `"engines": { "node": ">=22.12.0" }`, the first Node.js 22 release that supports `require(esm)` by default. Node.js 20 reached its end of life in April 2026, and some dependencies (e.g. `commander`) already require Node.js 22.12.0.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove the casing helpers and casing brands in favour of `@codama/fragments/casing`, drop the helpers of removed v1 nodes, and add helpers for interpolated intents, text nodes, transforms and the spec's branded strings.
+  
+  New in `@codama/nodes`:
+  
+  - `parseInterpolatedIntent(template)` splits an intent into literal text and the contextual value nodes its placeholders stand for (`${data.config.fees[0]}` → `dataValueNode`, `${accounts.mint}` → `accountValueNode`, `${accounts.mint.data.decimals}` → `accountDataValueNode`), throwing `CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER` on malformed placeholders. `printInterpolatedIntent(parts)` is its inverse, and `InterpolatedIntentPart` the type of the parts.
+  - `getTextNodeContent(value)` reads the plain text of any `string | TextNode` attribute, e.g. `docs`, labels or `instructionStatusNode.message`.
+  - `addTypeNodeTransforms(typeNode, transforms)` appends transforms after those a type node already carries, e.g. to carry the transforms of a replaced type node across.
+  - `identifierString`, `namespaceString`, `pathString`, `integerString` and `decimalString` validate a string against the spec's grammar and return it branded as `IdentifierString`, `NamespaceString`, `PathString`, `IntegerString` or `DecimalString` (new in `@codama/node-types`), throwing `CODAMA_ERROR__INVALID_BRANDED_STRING` otherwise.
+  
+  **BREAKING CHANGES**
+  
+  **Casing helpers moved to `@codama/fragments/casing`.** `capitalize`, `titleCase`, `pascalCase`, `camelCase`, `kebabCase` and `snakeCase` are removed from `@codama/nodes`. Their replacements return a plain `string` and split words as the spec does (see the `@codama/fragments` changelog).
+  
+  ```diff
+  - import { camelCase } from '@codama/nodes';
+  + import { camelCase } from '@codama/fragments/casing';
+  ```
+  
+  **Casing brands removed.** `CamelCaseString`, `PascalCaseString`, `KebabCaseString`, `SnakeCaseString` and `TitleCaseString` are removed from `@codama/node-types` (and their re-exports from `@codama/nodes`), since identifiers no longer mandate a casing. Use `IdentifierString` for node identifiers, or a plain `string` for derived names.
+  
+  **Helpers of removed nodes dropped.** The following `@codama/nodes` helpers are removed along with the nodes they served:
+  
+  - `resolveNestedTypeNode`, `transformNestedTypeNode`, `isNestedTypeNode` and `assertIsNestedTypeNode`, since wrapper type nodes are replaced by `transforms`. Read or append `typeNode.transforms` instead, e.g. with `addTypeNodeTransforms`.
+  - `isSignedInteger`, `isUnsignedInteger`, `isInteger` and `isDecimal`, since `numberTypeNode` is split into `integerTypeNode` and `floatTypeNode`. Check the node kind or `format` instead.
+  - `getAllInstructionArguments`, `structTypeNodeFromInstructionArgumentNodes` and `structFieldTypeNodeFromInstructionArgumentNode`, since instruction arguments now live in `instructionNode.data`.
+  - The `ENUM_VARIANT_TYPE_NODES` alias, since the three enum variant nodes are now a single `enumVariantTypeNode`.
+  
+  **`Docs`, `DocsInput` and `parseDocs` removed.** `docs` attributes are now a single `string | TextNode` rather than an array of paragraphs, so the `Docs` type of `@codama/node-types` and the `DocsInput` type and `parseDocs` helper of `@codama/nodes` are removed. Constructors store `docs` as given; join paragraphs into one Markdown string instead.
+  
+  ```diff
+  - definedTypeNode({ name: 'counter', type, docs: ['A counter.', 'Second paragraph.'] });
+  + definedTypeNode({ identifier: 'counter', type, docs: 'A counter.\n\nSecond paragraph.' });
+  ```
+
+- [#1158](https://github.com/codama-idl/codama/pull/1158) [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Regenerate the node types, constructors and core visitors from the Codama v2 spec (`@codama/spec@2`).
+  
+  The node model changes substantially from v1:
+  
+  - **`name` → `identifier`.** Every named node (`programNode`, `accountNode`, `instructionNode`, links, …) now carries `identifier` instead of `name`, and identifiers preserve their casing — v2 no longer mandates camelCase (`transfer_tokens` and `transferTokens` are both valid; uniqueness is resolved by case-folding).
+  - **Numeric system rework.** `numberTypeNode`/`numberValueNode` split into `integerTypeNode`/`floatTypeNode` and `integerValueNode`/`floatValueNode` (numeric values are string-encoded to stay lossless through JSON). `amountTypeNode`/`solAmountTypeNode` become `fixedPointTypeNode`; new `durationTypeNode`; `dateTimeTypeNode`/`durationTypeNode` carry `ticksPerSecond`.
+  - **Flat transforms.** The wrapper type nodes (`fixedSizeTypeNode`, `sizePrefixTypeNode`, `pre/postOffsetTypeNode`, `sentinelTypeNode`, `hiddenPrefix/SuffixTypeNode`) are removed; every type node instead carries an optional `transforms: transformNode[]` applied innermost-first.
+  - **Instruction data.** `instructionArgumentNode`, `instructionArgumentLinkNode`, `resolverValueNode` and `instructionNode.arguments`/`extraArguments` are removed; instruction arguments live in `instructionNode.data`, reached via path expressions. `argumentValueNode` → `dataValueNode`; `accountFieldValueNode` → `accountDataValueNode`.
+  - **Enum variants unified.** The three variant nodes collapse into a single `enumVariantTypeNode` with an optional `data`.
+  - **Text and docs.** `docs` and text-bearing attributes are the union `string | textNode`; a `textNode` carries structured metadata (plugins). New `textNode`.
+  - **Universal plugins.** Every node gains an optional `plugins: pluginNode[]` base attribute — the extension point for renderer-specific or not-yet-standardised metadata.
+  - **Other.** `programNode.origin` removed (provenance moves to plugins); `pluginNode.name` → `pluginNode.namespace`; `sentinelCountNode` added; path expressions for field references and discriminators.
+  
+  Node factory ergonomics: trailing optional parameters now live in the constructor's `options` bag (e.g. `constantNode(identifier, type, value, { docs })`, `accountLinkNode(identifier, { program })`).
+
 ## 1.11.0
 
 ### Patch Changes

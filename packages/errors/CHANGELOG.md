@@ -1,5 +1,217 @@
 # @codama/errors
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Carry node paths in error contexts. Every error about a node now exposes the `path` of that node (a `NodePath` from the root when the thrower knows it, otherwise only the last node(s), e.g. `[node]`) instead of the node itself, its kind or its name. Add `getNodePathString` to render such paths as node selectors.
+  
+  ```ts
+  import { getNodePathString } from '@codama/errors';
+  
+  getNodePathString(e.context.path); // "[programNode]token.[accountNode]mint"
+  getNodePathString([root]); // "[rootNode]"
+  ```
+  
+  **BREAKING CHANGES**
+  
+  **Node objects, kinds and names removed from error contexts.** Node-related contexts drop fields such as `node`, `kind`, `nodeKind`, `linkNode`, `enum`, `program`, `account`, `instruction`, `pda`, `seed`, `parent` and their redundant `*Name` / `*Kind` companions in favour of a single `path`. The last node of `path` is usually the node the error is about (each context documents where its path ends), and its ancestors are the nodes before it.
+  
+  ```diff
+    if (isCodamaError(e, CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING)) {
+  -     const { accountName, instructionName } = e.context;
+  +     const account = e.context.path.at(-1); // instructionAccountNode
+  +     const instruction = e.context.path.at(-2); // instructionNode
+    }
+    if (isCodamaError(e, CODAMA_ERROR__UNEXPECTED_NODE_KIND)) {
+  -     const { expectedKinds, kind, node } = e.context;
+  +     const { expectedKinds, path } = e.context; // empty path when no node was found
+    }
+  ```
+  
+  Contexts that changed (codes are unchanged unless renamed, see the error codes changeset):
+  
+  | Code | Removed | Added |
+  | --- | --- | --- |
+  | `UNEXPECTED_NODE_KIND` (2) | `kind`, `node` | `path` |
+  | `LINKED_NODE_NOT_FOUND` (4) | `kind`, `linkNode`, `name` | `path` now ends at the link node |
+  | `ENUM_VARIANT_NOT_FOUND` (9) | `enum`, `enumName` | `path` |
+  | `DISCRIMINATOR_FIELD_NOT_FOUND` (10) | | `path`; `field` is now a `PathString` |
+  | `DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE` (11) | `field` | `path` |
+  | `VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES` (1200000) | `program`, `programName` | `path` |
+  | `VISITORS__INVALID_PDA_SEED_VALUES` (1200001) | `instruction`, `instructionName`, `pda` | `path` |
+  | `VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES` (1200002) | `instruction`, `instructionName` | `path`; `cycle` holds `structFieldTypeNode`s instead of `instructionArgumentNode`s |
+  | `VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE` (1200003) | `instruction`, `instructionName`, `instructionAccount`, `instructionAccountName`, `seed`, `seedName` | `path` (ends at the seed value) |
+  | `VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY` (1200004) | `instruction`, `instructionName`, `parent`, `parentKind`, `parentName` | `path`, `dependent` (e.g. `owner` or `config.fee`); `dependencyKind` is `'accountValueNode' \| 'dataValueNode'` |
+  | `VISITORS__ACCOUNT_FIELD_NOT_FOUND` (1200005) | `account`, `name` | `path` |
+  | `VISITORS__INVALID_NUMBER_WRAPPER` (1200006) | | `kind`, `reason`; `wrapper` is now the wrapper object |
+  | `VISITORS__FAILED_TO_VALIDATE_NODE` (1200008) | `validationItems[].node` | `validationItems[].cause` |
+  | `VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND` (1200009) | `argumentName`, `instruction`, `instructionName` | `path`, `fieldName` |
+  | `VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES` (1200010) | | `path` |
+  | `DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND` (2500002) | `instructionName` | `path` |
+  | `DYNAMIC_CLIENT__ACCOUNT_MISSING` (2500003) | `accountName`, `instructionName` | `path` |
+  | `DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS` (2500004) | `accountName` | `path` |
+  | `DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING` (2500007) | `accountName` | `path` |
+  | `DYNAMIC_CLIENT__UNSUPPORTED_OPTIONAL_ACCOUNT_STRATEGY` (2500009) | `accountName`, `instructionName` | `path` |
+  | `DYNAMIC_CLIENT__FAILED_TO_DERIVE_PDA` (2500010) | `accountName` | `path` (ends at the seed, or at the PDA for its program ID) |
+  | `DYNAMIC_CLIENT__DATA_MISSING` (2500011) | `argumentName`, `instructionName` | `path`, `pathString` (e.g. `config.fee`) |
+  | `DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT` (2500013) | `argumentName` | `path` |
+  | `DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` (2500014) | `nodeKind` | `path` (the node that rejected the value) |
+  | `DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` (2500015) | `argumentName`, `instructionName` | `path` |
+  | `DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER` (2500016) | `targetKind`, `targetName` | `path` |
+  | `DYNAMIC_CLIENT__UNSUPPORTED_NODE` (2500018) | `nodeKind` | `path` |
+  | `RENDERERS__UNSUPPORTED_NODE` (2800000) | `kind`, `node` | `path` |
+  
+  **`path` always means a node path.** In every context, `path` is a `NodePath`. Path expressions (e.g. `config.fees[0]`) live under `pathString` instead (`CANNOT_RESOLVE_PATH`, `DYNAMIC_CLIENT__DATA_MISSING`, `VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND`), or `field` for discriminators. Identifier fields that remain (e.g. `variant`, `missingField`, `pdaName`) are typed `IdentifierString` instead of `CamelCaseString`.
+  
+  **Messages render node paths.** Error messages render `$path` with `getNodePathString` (root omitted, an empty path renders as `none`) and many message texts changed accordingly, e.g. `Missing account [mint] in [transfer] instruction.` becomes `Missing account [programNode]token.[instructionNode]transfer.[instructionAccountNode]mint.`. Production-encoded contexts encode `path` as that same string, since nodes cannot be encoded, so decoded production contexts hold a string rather than nodes. Update any code matching on message texts.
+
+- [#1264](https://github.com/codama-idl/codama/pull/1264) [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Trim public exports that were only meant for internal use, so the public API only exposes what consumers need.
+  
+  **BREAKING CHANGES**
+  
+  **`@codama/errors` no longer exports `safeCaptureStackTrace`.** It was unused, even by `CodamaError`, and is also gone from `codama`, which re-exports it. Call `Error.captureStackTrace` directly if you need it.
+  
+  **`@codama/fragments/javascript` no longer exports `preferIncoming`.** Use `mergeImportMaps` or `addToImportMap`, which apply the same conflict-resolution rule.
+  
+  **`@codama/dynamic-address-resolution` no longer exports `OPTIONAL_NODE_KINDS`.** Check the type node kind directly, e.g. `isNode(type, ['optionTypeNode', 'remainderOptionTypeNode', 'zeroableOptionTypeNode'])`.
+  
+  **`@codama/nodes-from-anchor` only exports its root and program converters.** The per-node converters, their options types and the generics helpers are now internal. Convert whole IDLs with `rootNodeFromAnchor` (or `rootNodeFromAnchorV00`, `rootNodeFromAnchorV01`, `programNodeFromAnchorV00` and `programNodeFromAnchorV01`) and pick the nodes you need from the result. The removed exports are:
+  
+  - `accountNodeFromAnchorV00`, `arrayTypeNodeFromAnchorV00`, `constantNodeFromAnchorV00`, `definedTypeNodeFromAnchorV00`, `enumTypeNodeFromAnchorV00`, `enumVariantTypeNodeFromAnchorV00`, `errorNodeFromAnchorV00`, `eventNodeFromAnchorV00`, `instructionAccountNodeFromAnchorV00`, `instructionAccountNodesFromAnchorV00`, `instructionNodeFromAnchorV00`, `mapTypeNodeFromAnchorV00`, `optionTypeNodeFromAnchorV00`, `pdaNodeFromAnchorV00`, `pdaSeedTypeNodeFromAnchorV00`, `setTypeNodeFromAnchorV00`, `structFieldTypeNodeFromAnchorV00`, `structTypeNodeFromAnchorV00`, `tupleTypeNodeFromAnchorV00`, `typeNodeFromAnchorV00` and `InstructionAccountNodeFromAnchorV00Options`.
+  - `accountNodeFromAnchorV01`, `arrayTypeNodeFromAnchorV01`, `constantNodeFromAnchorV01`, `definedTypeNodeFromAnchorV01`, `enumTypeNodeFromAnchorV01`, `enumVariantTypeNodeFromAnchorV01`, `errorNodeFromAnchorV01`, `eventNodeFromAnchorV01`, `instructionAccountNodeFromAnchorV01`, `instructionAccountNodesFromAnchorV01`, `instructionNodeFromAnchorV01`, `optionTypeNodeFromAnchorV01`, `pdaSeedNodeFromAnchorV01`, `structFieldTypeNodeFromAnchorV01`, `structTypeNodeFromAnchorV01`, `tupleTypeNodeFromAnchorV01`, `typeNodeFromAnchorV01`, `unwrapGenericTypeFromAnchorV01`, `extractGenerics`, `GenericsV01`, `InstructionAccountNodeFromAnchorV01Options` and `PdaSeedNodeFromAnchorV01Options`.
+  - `extractPdasFromProgram`: use `extractPdasVisitor` instead.
+  
+  ```diff
+  - import { accountNodeFromAnchorV01 } from '@codama/nodes-from-anchor';
+  - const account = accountNodeFromAnchorV01(idl.accounts[0], idl.types, generics);
+  + import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
+  + const account = rootNodeFromAnchor(idl).program.accounts?.[0];
+  ```
+  
+  **`@codama/visitors-core` no longer exports `LINKABLE_NODES`, `getDependencies` and `assertNodePathHasProgram`.** These are also gone from `@codama/visitors` and `codama`, which re-export it. Use `findProgramNodeFromPath` to check that a path has a program, and `getResolvedInstructionInputsVisitor` to resolve instruction input dependencies.
+
+- [#1261](https://github.com/codama-idl/codama/pull/1261) [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Carry node paths in the remaining error contexts. Contexts that still held nodes or account names now hold node paths instead, e.g. the `cycle` of a circular dependency lists the path of each account and data field it goes through. Production-encoded contexts encode lists of node paths as lists of node selectors. `getInstructionDataFields` now returns the `fieldPath` of each field, and `mapVisitor` gives the visited node to its map function.
+  
+  **BREAKING CHANGES**
+  
+  **Nodes and account names replaced by node paths in error contexts.** The following contexts changed, completing the move to node paths.
+  
+  ```diff
+    if (isCodamaError(e, CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY)) {
+  -     const { chain } = e.context; // "a -> b -> a"
+  +     const { cycle, formattedCycle, path } = e.context; // formattedCycle: "a -> b -> a"
+  +     const account = cycle[0].at(-1); // instructionAccountNode a
+    }
+    if (isCodamaError(e, CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE)) {
+  -     const { accountName } = e.context;
+  +     const account = e.context.path.at(-1); // e.g. instructionAccountNode
+    }
+  ```
+  
+  | Code | Removed | Added |
+  | --- | --- | --- |
+  | `VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES` (1200002) | | `cycle` holds the path of each account and data field instead of the nodes themselves |
+  | `VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY` (1200004) | `dependency` | use `dependencyKind` and `dependencyName` |
+  | `VISITORS__INVALID_NUMBER_WRAPPER` (1200006) | | `path` of the number to wrap (empty when the wrapper is invalid on its own) |
+  | `VISITORS__FAILED_TO_VALIDATE_NODE` (1200008) | | `path` of the validated node |
+  | `DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND` (2500000) | | `path` of the program |
+  | `DYNAMIC_CLIENT__PDA_NOT_FOUND` (2500001) | | `path` of the program |
+  | `DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE` (2500005) | `accountName` | `path` of the account, remaining accounts, PDA or data field, and the `index` of the remaining account at fault |
+  | `DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY` (2500008) | `chain` | `path` of the instruction, `cycle`, `formattedCycle` |
+  
+  **`toAddressOrThrow` takes a node path.** The second argument of `toAddressOrThrow` from `@codama/dynamic-address-resolution` is now the path of the node the value should be the address of, rather than an account name.
+  
+  ```diff
+  - toAddressOrThrow(value, 'mint');
+  + toAddressOrThrow(value, [root, program, instruction, mint]);
+  ```
+  
+  It also takes an optional `index` for values given in a list, e.g. `toAddressOrThrow(value, [root, program, instruction, signers], 1)`, which the error carries in its context (it is not rendered in the message).
+  
+  **Messages changed accordingly.** The messages of these errors now render their `path`, e.g. `Circular dependency detected: [a -> b -> a].` becomes `Circular dependency detected when resolving the accounts and data of instruction [programNode]token.[instructionNode]transfer. Got the following dependency cycle [a -> b -> a].`.
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Require Node.js 22.12.0 or later.
+  
+  **BREAKING CHANGES**
+  
+  **Node.js 20 is no longer supported.** Every package now declares `"engines": { "node": ">=22.12.0" }`, the first Node.js 22 release that supports `require(esm)` by default. Node.js 20 reached its end of life in April 2026, and some dependencies (e.g. `commander`) already require Node.js 22.12.0.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Add, rename and remove error codes for Codama v2. Renamed codes keep their number, and removed codes are never reused.
+  
+  New codes:
+  
+  - `CODAMA_ERROR__INVALID_BRANDED_STRING` (13): `{ actual, expected }`.
+  - `CODAMA_ERROR__INJECTED_VALUE_NOT_PROVIDED` (14): `{ key, path }`.
+  - `CODAMA_ERROR__CANNOT_RESOLVE_PATH` (15): `{ path, pathString, segment }`.
+  - `CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING` (16): `{ path }`.
+  - `CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE` (17): `{ path }`.
+  - `CODAMA_ERROR__INVALID_TICKS_PER_SECOND` (18): `{ path, ticksPerSecond }`.
+  - `CODAMA_ERROR__INVALID_INTERPOLATED_INTENT_PLACEHOLDER` (19): `{ placeholder, template }`.
+  - `CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE` (1200013): `{ expectedKinds, path }`.
+  - `CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS` (1200014): `{ path }`.
+  - `CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS` (1200015): `{ allowedKeys, selector, unrecognizedKeys }`.
+  - `CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND` (1200016): `{ path, pathString }`.
+  - `CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND` (1200017): `{ accountName, path }`.
+  - `CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND` (1200018): `{ missingMember, path }`.
+  - `CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR` (1200019): `{ path, reason }`.
+  - `CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING` (2500020): `{ path }`.
+  - `CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM` (2500021): `{ firstIndex, index, path }`.
+  
+  **BREAKING CHANGES**
+  
+  **Renamed error codes.** Codama v2 replaces instruction arguments with instruction data, so the codes referring to arguments are renamed after what they now cover (data, account inputs such as remaining accounts, or any value). Their numbers are unchanged.
+  
+  | Before | After | Code |
+  | --- | --- | --- |
+  | `CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_ARGUMENT_NOT_FOUND` | `CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND` | 1200009 |
+  | `CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING` | `CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING` | 2500011 |
+  | `CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ARGUMENT_INPUT` | `CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT` | 2500013 |
+  | `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ARGUMENT_TYPE` | `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` | 2500014 |
+  | `CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_ARGUMENT` | `CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA` | 2500015 |
+  
+  ```diff
+  - import { CODAMA_ERROR__DYNAMIC_CLIENT__ARGUMENT_MISSING } from '@codama/errors';
+  + import { CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING } from '@codama/errors';
+  ```
+  
+  **Removed error codes.** The following codes are not thrown by any Codama v2 package and are removed. Their numbers will not be reused.
+  
+  - `CODAMA_ERROR__UNEXPECTED_NESTED_NODE_KIND` (3): nested type nodes no longer exist since type wrappers became transforms.
+  - `CODAMA_ERROR__ANCHOR__TYPE_PATH_MISSING` (2100003).
+  - `CODAMA_ERROR__ANCHOR__PROGRAM_ID_KIND_UNIMPLEMENTED` (2100005).
+  - `CODAMA_ERROR__DYNAMIC_CLIENT__DEFAULT_VALUE_MISSING` (2500012).
+  
+  **Deprecated resolver error codes.** `CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING` (2500007) and `CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_EXECUTE_RESOLVER` (2500016) are still exported but deprecated, since Codama v2 removes `resolverValueNode` and they are no longer thrown.
+
+### Minor Changes
+
+- [#1258](https://github.com/codama-idl/codama/pull/1258) [`1f0fb88`](https://github.com/codama-idl/codama/commit/1f0fb881c3334110ea673772dcdb832c1e3885df) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Reject v1 instructions whose upgrade would provide clashing values under the same key, instead of producing conflicting `provides` entries. Providing a contextual argument default under a key already provided with a different value, or under the key of a v1 injection it would then resolve, now throws the new `CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY` error, while identical values are provided once.
+
+- [#1256](https://github.com/codama-idl/codama/pull/1256) [`e92df74`](https://github.com/codama-idl/codama/commit/e92df74ea8495d419c74e5d42c4aa74293eae393) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix gaps in dynamic account address resolution and type generation. Required accounts whose default value resolves to nothing, e.g. an omitted optional account, now throw `CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING` instead of being left out of the instruction, PDA seeds injected from an `accountValueNode` resolve to the address of that account, and reading account data without `fetchAccounts` throws the new `CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING` (2500022) error instead of a `TypeError`. Generated types follow the program of defined type links, and reference recursive defined types through `${Type}Args` aliases emitted by the new `generateDefinedTypes` function instead of overflowing the stack.
+  
+  **BREAKING CHANGES**
+  
+  **Path-based codegen helpers.** `codamaTypeToTS` and `getResolutionRefs` from `@codama/dynamic-address-resolution/codegen` take the path of their type or instruction, and optional linkables, instead of the defined types of the main program, so that links resolve within the right program.
+  
+  ```diff
+  - codamaTypeToTS(instruction.data, root.program.definedTypes);
+  - getResolutionRefs(instruction, root.program.definedTypes);
+  + codamaTypeToTS([root, root.program, instruction, instruction.data]);
+  + getResolutionRefs([root, root.program, instruction]);
+  ```
+
+- [#1261](https://github.com/codama-idl/codama/pull/1261) [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Render every node path of an error context as node selectors in error messages, not only `path`, as well as lists of node paths, e.g. a `cycle`. `getNodePathString` falls back to the `name` of nodes that have no `identifier`, so v1 nodes render too.
+
+- [#1221](https://github.com/codama-idl/codama/pull/1221) [`b869cef`](https://github.com/codama-idl/codama/commit/b869cefbe05a2ccd1fed9fb9750ad9de0abe66b8) Thanks [@tsiklic1](https://github.com/tsiklic1)! - Add `addProgramsVisitor` to append programs to a root node's additional programs, rejecting identifiers that collide with existing or other new programs after conversion to camelCase.
+
+### Patch Changes
+
+- Updated dependencies [[`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6), [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391)]:
+  - @codama/node-types@2.0.0-rc.0
+
 ## 1.11.0
 
 ### Minor Changes
