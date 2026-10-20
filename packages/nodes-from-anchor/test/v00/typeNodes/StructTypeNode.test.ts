@@ -7,7 +7,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { typeNodeFromAnchorV00 } from '../../../src';
+import { typeNodeFromAnchorV00 } from '../../../src/v00/typeNodes/TypeNode';
 
 test('it creates struct type nodes', () => {
     // When we convert the Anchor type.

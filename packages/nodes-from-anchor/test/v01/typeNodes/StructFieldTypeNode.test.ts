@@ -1,7 +1,8 @@
 import { integerTypeNode, structFieldTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { GenericsV01, structFieldTypeNodeFromAnchorV01 } from '../../../src';
+import { structFieldTypeNodeFromAnchorV01 } from '../../../src/v01/typeNodes/StructFieldTypeNode';
+import { GenericsV01 } from '../../../src/v01/unwrapGenerics';
 
 const generics = {} as GenericsV01;
 

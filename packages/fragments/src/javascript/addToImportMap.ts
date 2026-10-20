@@ -1,6 +1,7 @@
 import type { ImportInfo, ImportInput, ImportMap, Module, UsedIdentifier } from './ImportMap';
 import { parseImportInput } from './ImportMap';
-import { mergeImportMaps, preferIncoming } from './mergeImportMaps';
+import { mergeImportMaps } from './mergeImportMaps';
+import { preferIncoming } from './preferIncoming';
 
 /**
  * Append imports to a module entry, returning a new frozen import map. The

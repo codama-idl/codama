@@ -1,7 +1,7 @@
 import { integerTypeNode, structFieldTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { structFieldTypeNodeFromAnchorV00 } from '../../../src';
+import { structFieldTypeNodeFromAnchorV00 } from '../../../src/v00/typeNodes/StructFieldTypeNode';
 
 test('it creates struct field type nodes', () => {
     // When we convert an Anchor field.

@@ -9,7 +9,9 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { accountNodeFromAnchorV01, GenericsV01, getAnchorDiscriminatorV01 } from '../../src';
+import { getAnchorDiscriminatorV01 } from '../../src/discriminators';
+import { accountNodeFromAnchorV01 } from '../../src/v01/AccountNode';
+import { GenericsV01 } from '../../src/v01/unwrapGenerics';
 
 const generics = {} as GenericsV01;
 

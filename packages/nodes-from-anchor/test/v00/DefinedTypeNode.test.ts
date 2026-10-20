@@ -1,7 +1,7 @@
 import { definedTypeNode, integerTypeNode, structFieldTypeNode, structTypeNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { definedTypeNodeFromAnchorV00 } from '../../src';
+import { definedTypeNodeFromAnchorV00 } from '../../src/v00/DefinedTypeNode';
 
 test('it creates defined type nodes', () => {
     // When we convert an Anchor defined type.

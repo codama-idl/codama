@@ -19,6 +19,8 @@ export type GenerateTypesFromFileOptions = {
  * - Reads a Codama IDL JSON.
  * - Runs a generator function.
  * - Writes the result to `<output-dir>/<idl-filename>-<outputFileSuffix>.ts`
+ *
+ * @internal Only meant for the type-generation CLIs of the `@codama/dynamic-*` packages.
  */
 export function generateTypesFromFile(opts: GenerateTypesFromFileOptions): void {
     const { codamaIdlPath, outputDirPath, generate, outputFileSuffix } = opts;

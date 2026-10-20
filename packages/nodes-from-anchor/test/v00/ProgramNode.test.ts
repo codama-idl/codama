@@ -16,7 +16,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { programNodeFromAnchorV00 } from '../../src';
+import { programNodeFromAnchorV00 } from '../../src/v00/ProgramNode';
 
 test('it creates program nodes', () => {
     // When we convert a Shank program.

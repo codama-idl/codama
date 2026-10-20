@@ -17,11 +17,11 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
+import { IdlV01InstructionAccountItem } from '../../src/v01/idl';
 import {
-    IdlV01InstructionAccountItem,
     instructionAccountNodeFromAnchorV01,
     instructionAccountNodesFromAnchorV01,
-} from '../../src';
+} from '../../src/v01/InstructionAccountNode';
 
 test('it creates instruction account nodes', () => {
     const node = instructionAccountNodeFromAnchorV01(

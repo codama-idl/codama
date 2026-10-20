@@ -448,9 +448,6 @@ const lastProgramNode: ProgramNode | undefined = findLastNodeFromPath(path, 'pro
 const program: ProgramNode | undefined = findProgramNodeFromPath(path);
 const instruction: InstructionNode | undefined = findInstructionNodeFromPath(path);
 
-// Assert that the path contains a program node, e.g. before resolving the links of its last node.
-assertNodePathHasProgram(path);
-
 // Get the subpath of a path from the beginning to the last node matching a specific kind, if any.
 const subpath: NodePath<ProgramNode> | undefined = getNodePathUntilLastNode(path, 'programNode');
 // ^ [rootNode, programNode]
@@ -790,7 +787,7 @@ const visitor = consoleLogVisitor(getDebugStringVisitor({ indent: true }));
 
 ### `LinkableDictionary`
 
-The `LinkableDictionary` type is a utility that allows us to store and access linkable nodes from their respective link nodes, e.g. a `DefinedTypeNode` from a `DefinedTypeLinkNode`. Linkable nodes are `ProgramNodes`, `AccountNodes`, `DefinedTypeNodes`, `PdaNodes`, `InstructionNodes` and `InstructionAccountNodes`, as listed by the `LINKABLE_NODES` constant.
+The `LinkableDictionary` type is a utility that allows us to store and access linkable nodes from their respective link nodes, e.g. a `DefinedTypeNode` from a `DefinedTypeLinkNode`. Linkable nodes are `ProgramNodes`, `AccountNodes`, `DefinedTypeNodes`, `PdaNodes`, `InstructionNodes` and `InstructionAccountNodes`.
 
 It offers the following API:
 
@@ -1091,7 +1088,7 @@ It accepts the following options:
 - `scope`: A `ProvidedScope` holding the providers enclosing the visited instruction, e.g. its parent instructions. The `provides` of the instruction itself are always added.
 - `includeDataValueNodes`: Whether to include data fields whose default value is a static value. Defaults to `false`.
 
-This is mostly useful when rendering client code for instructions. The helpers it relies on are exported as well: `getDependencies` lists the accounts and data fields a default value depends on, and `deduplicateInstructionDependencies` removes duplicates from such a list.
+This is mostly useful when rendering client code for instructions. The `deduplicateInstructionDependencies` helper it relies on is exported as well, and removes duplicate accounts and data fields from a list of dependencies.
 
 ### `removeDocsVisitor`
 

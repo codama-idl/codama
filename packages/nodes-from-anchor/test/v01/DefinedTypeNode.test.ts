@@ -10,7 +10,8 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { definedTypeNodeFromAnchorV01, GenericsV01 } from '../../src';
+import { definedTypeNodeFromAnchorV01 } from '../../src/v01/DefinedTypeNode';
+import { GenericsV01 } from '../../src/v01/unwrapGenerics';
 
 test('it creates defined type nodes', () => {
     const node = definedTypeNodeFromAnchorV01(

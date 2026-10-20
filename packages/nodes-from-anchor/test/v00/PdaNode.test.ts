@@ -10,7 +10,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { pdaNodeFromAnchorV00 } from '../../src';
+import { pdaNodeFromAnchorV00 } from '../../src/v00/PdaNode';
 
 test('it creates PDA nodes', () => {
     // When we convert an account with seeds into a PDA.

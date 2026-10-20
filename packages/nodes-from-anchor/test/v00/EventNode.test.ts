@@ -11,7 +11,8 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { eventNodeFromAnchorV00, getAnchorEventDiscriminatorV00 } from '../../src';
+import { getAnchorEventDiscriminatorV00 } from '../../src/discriminators';
+import { eventNodeFromAnchorV00 } from '../../src/v00/EventNode';
 
 test('it creates event nodes with anchor discriminators', () => {
     // When we convert an Anchor event.

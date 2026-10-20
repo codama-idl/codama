@@ -12,7 +12,7 @@ import {
 } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { instructionNodeFromAnchorV00 } from '../../src';
+import { instructionNodeFromAnchorV00 } from '../../src/v00/InstructionNode';
 
 test('it creates instruction nodes', () => {
     // When we convert an Anchor instruction without origin.

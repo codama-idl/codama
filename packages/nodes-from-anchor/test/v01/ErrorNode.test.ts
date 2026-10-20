@@ -1,7 +1,7 @@
 import { errorNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { errorNodeFromAnchorV01 } from '../../src';
+import { errorNodeFromAnchorV01 } from '../../src/v01/ErrorNode';
 
 test('it creates error nodes', () => {
     const node = errorNodeFromAnchorV01({

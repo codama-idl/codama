@@ -1,7 +1,7 @@
 import { programNode, rootNode } from '@codama/nodes';
 import { expect, test } from 'vitest';
 
-import { rootNodeFromAnchorV00 } from '../../src';
+import { rootNodeFromAnchorV00 } from '../../src/v00/RootNode';
 
 test('it creates root nodes', () => {
     // When we convert an Anchor IDL into a root node.

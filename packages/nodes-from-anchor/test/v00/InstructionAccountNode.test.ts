@@ -21,7 +21,10 @@ import {
 import { getBase58Codec } from '@solana/codecs';
 import { expect, test } from 'vitest';
 
-import { instructionAccountNodeFromAnchorV00, instructionAccountNodesFromAnchorV00 } from '../../src';
+import {
+    instructionAccountNodeFromAnchorV00,
+    instructionAccountNodesFromAnchorV00,
+} from '../../src/v00/InstructionAccountNode';
 
 test('it creates instruction account nodes', () => {
     // When we convert an Anchor instruction account.
