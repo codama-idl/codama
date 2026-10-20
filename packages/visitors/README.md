@@ -140,7 +140,7 @@ This visitor fills any missing `PdaSeedValueNodes` from `PdaValueNodes` using th
 - Otherwise, if its identifier matches a top-level field of the instruction's `data` (following defined type links), then a new `PdaSeedValueNode` will be added with a `DataValueNode` pointing to that field.
 - Otherwise, no `PdaSeedValueNode` will be added.
 
-It also requires a [`LinkableDictionary`](../visitors-core/README.md#linkable-dictionary) to resolve any link nodes and an optional `strictMode` boolean to throw an error if seeds are still missing after the visitor has run.
+It also requires a [`LinkableDictionary`](../visitors-core/README.md#linkabledictionary) to resolve any link nodes and an optional `strictMode` boolean to throw an error if seeds are still missing after the visitor has run.
 
 Note that this visitor is mainly used for internal purposes.
 
