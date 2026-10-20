@@ -619,7 +619,15 @@ test('it reports errors raised when resolving instruction default values', () =>
     const [a, b] = node.accounts!;
     const cause = new CodamaError(
         CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
-        { cycle: [a, b, a], formattedCycle: 'a -> b -> a', path: [node] },
+        {
+            cycle: [
+                [node, a],
+                [node, b],
+                [node, a],
+            ],
+            formattedCycle: 'a -> b -> a',
+            path: [node],
+        },
     );
     expect(items).toEqual([validationItem('error', cause.message, [node], cause)]);
     expect(
@@ -628,7 +636,15 @@ test('it reports errors raised when resolving instruction default values', () =>
             CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
         ),
     ).toBe(true);
-    expect(items[0].cause?.context).toMatchObject({ formattedCycle: 'a -> b -> a', path: [node] });
+    expect(items[0].cause?.context).toMatchObject({
+        cycle: [
+            [node, a],
+            [node, b],
+            [node, a],
+        ],
+        formattedCycle: 'a -> b -> a',
+        path: [node],
+    });
 });
 
 test('it reports a data field defaulting to the bump of a potential signer', () => {
@@ -1236,6 +1252,44 @@ test('it reports account bump values of unknown accounts once', () => {
     // Then the bump value is reported, rather than the invalid dependency it also is.
     expect(visit(node, getValidationItemsVisitor())).toEqual([
         validationItem('error', 'Account "missing" is not an account of instruction "create".', [node, account, value]),
+    ]);
+});
+
+test('it reports account value defaults of unknown accounts once, even when a data field shares their name', () => {
+    // Given an account defaulting to an unknown account named after a data field.
+    const value = accountValueNode('mint');
+    const account = instructionAccountNode({
+        defaultValue: value,
+        identifier: 'owner',
+        isSigner: false,
+        isWritable: false,
+    });
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'mint', type: publicKeyTypeNode() })]);
+    const node = instructionNode({ accounts: [account], data, identifier: 'transfer' });
+
+    // Then only the account value is reported, not the invalid dependency it also is.
+    expect(visit(node, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Account "mint" is not an account of instruction "transfer".', [node, account, value]),
+    ]);
+});
+
+test('it reports data value defaults whose path cannot be resolved once, even when an account shares their name', () => {
+    // Given an account defaulting to a value conditioned on a missing data path named after an account.
+    const value = dataValueNode('authority');
+    const defaultValue = conditionalValueNode({ condition: value, ifTrue: payerValueNode() });
+    const account = instructionAccountNode({ defaultValue, identifier: 'payer', isSigner: true, isWritable: true });
+    const authority = instructionAccountNode({ identifier: 'authority', isSigner: false, isWritable: false });
+    const data = structTypeNode([structFieldTypeNode({ identifier: 'amount', type: integerTypeNode('u64') })]);
+    const node = instructionNode({ accounts: [account, authority], data, identifier: 'transfer' });
+
+    // Then only the path is reported, not the invalid dependency it also is.
+    const cause = new CodamaError(CODAMA_ERROR__CANNOT_RESOLVE_PATH, {
+        path: [node, data],
+        pathString: pathString('authority'),
+        segment: 'authority',
+    });
+    expect(visit(node, getValidationItemsVisitor())).toStrictEqual([
+        validationItem('error', cause.message, [node, account, defaultValue, value], cause),
     ]);
 });
 

@@ -31,6 +31,11 @@ describe('getNodePathString', () => {
         expect(getNodePathString([root])).toBe('[rootNode]');
     });
 
+    test('it falls back to the name of nodes that have no identifier', () => {
+        const v1Account = { kind: 'accountNode', name: 'mint' } as unknown as Node;
+        expect(getNodePathString([root, program, v1Account])).toBe('[programNode]token.[accountNode]mint');
+    });
+
     test('it renders an empty path as an empty string', () => {
         expect(getNodePathString([])).toBe('');
     });
@@ -56,7 +61,15 @@ describe('error messages', () => {
         );
     });
 
-    test('it only renders the `path` key as a node path', () => {
+    test('it encodes lists of node paths of production errors as lists of node selectors', () => {
+        const encoded = encodeContextObject({ cycle: [[root, program, account], [field]], path: [root, program] });
+        expect(decodeEncodedContext(encoded)).toEqual({
+            cycle: '[[programNode]token.[accountNode]mint, [structFieldTypeNode]decimals]',
+            path: '[programNode]token',
+        });
+    });
+
+    test('it renders lists that are not node paths as is', () => {
         const message = getHumanReadableErrorMessage(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
             expectedKinds: ['accountNode', 'pdaNode'],
             path: [account],

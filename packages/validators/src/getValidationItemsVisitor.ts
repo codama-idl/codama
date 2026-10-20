@@ -10,6 +10,7 @@ import {
 } from '@codama/errors';
 import {
     accountValueNode,
+    dataValueNode,
     DateTimeTypeNode,
     DurationTypeNode,
     getTextNodeContent,
@@ -314,7 +315,9 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                                 CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
                             ) &&
                             getContextualValueItems(
-                                error.context.dependency,
+                                error.context.dependencyKind === 'accountValueNode'
+                                    ? accountValueNode(error.context.dependencyName)
+                                    : dataValueNode(error.context.dependencyName),
                                 stack.getPath('instructionNode'),
                                 linkables,
                             ).length > 0;

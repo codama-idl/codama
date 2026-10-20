@@ -158,9 +158,9 @@ describe('accounts', () => {
         await expectCodamaError(
             createAccountMetas({ accounts: { mint: [address] }, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                accountName: 'mint',
                 actualType: 'array (length 1)',
                 expectedType: 'Address | PublicKey',
+                path: [...path, (path[path.length - 1] as InstructionNode).accounts![0]],
             }),
         );
     });
@@ -318,15 +318,19 @@ describe('remaining accounts', () => {
         );
     });
 
-    test('it throws when a remaining account is not an address', async () => {
+    test('it throws with the index of a remaining account that is not an address', async () => {
         const [multisigAddress, a] = await Promise.all([generateAddress(), generateAddress()]);
         const signers = [a, 123] as unknown as Address[];
         await expectCodamaError(
             createAccountMetas({ accounts: { multisig: multisigAddress, signers }, path: multisigPath }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                accountName: 'signers[1]',
                 actualType: 'number',
                 expectedType: 'Address | PublicKey',
+                index: 1,
+                path: [
+                    ...multisigPath,
+                    (multisigPath[multisigPath.length - 1] as InstructionNode).remainingAccounts![0],
+                ],
             }),
         );
     });

@@ -163,7 +163,7 @@ function getRemainingAccountMetas(
     const isSigner = remainingAccounts.isSigner === true || remainingAccounts.isSigner === 'either';
     const role = getAccountRole(isSigner, Boolean(remainingAccounts.isWritable));
     return (addresses as unknown[]).map((address, index): AccountMeta => ({
-        address: toAddressOrThrow(address, `${accountName}[${index}]`),
+        address: toAddressOrThrow(address, [...instructionPath, remainingAccounts], index),
         role,
     }));
 }

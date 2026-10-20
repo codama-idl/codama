@@ -9,7 +9,6 @@ import { getProgramDerivedAddress } from '@solana/addresses';
 import type { ReadonlyUint8Array } from '@solana/codecs';
 import {
     getLastNodeFromPath,
-    type IdentifierString,
     isNode,
     type NodePath,
     type PdaNode,
@@ -29,14 +28,10 @@ import type { ResolutionContext } from './types';
  * Derive the PDA of a `pdaValueNode`, using the program address it provides,
  * or the one of the PDA, or the address of the program defining the PDA.
  */
-export async function resolvePdaAddress(
-    node: PdaValueNode,
-    ctx: ResolutionContext,
-    accountName: IdentifierString,
-): Promise<ProgramDerivedAddress> {
+export async function resolvePdaAddress(node: PdaValueNode, ctx: ResolutionContext): Promise<ProgramDerivedAddress> {
     const pdaPath = getPdaPath(node, ctx);
     const programAddress = node.programId
-        ? await resolvePdaProgramAddress(node.programId, ctx, accountName, pdaPath)
+        ? await resolvePdaProgramAddress(node.programId, ctx, pdaPath)
         : getPdaProgramAddress(pdaPath);
 
     return await derivePda(pdaPath, programAddress, ctx, async seedNode => {
@@ -68,11 +63,10 @@ export function getPdaProgramAddress(pdaPath: NodePath<PdaNode>): Address {
 async function resolvePdaProgramAddress(
     programId: NonNullable<PdaValueNode['programId']>,
     ctx: ResolutionContext,
-    accountName: IdentifierString,
     pdaPath: NodePath<PdaNode>,
 ): Promise<Address> {
     if (isNode(programId, 'dataValueNode')) {
-        return toAddressOrThrow(await getRequiredDataValue(ctx, programId.path), accountName);
+        return toAddressOrThrow(await getRequiredDataValue(ctx, programId.path), pdaPath);
     }
     const address = await resolveAccountValueNodeAddress(programId, ctx);
     if (address === null) {

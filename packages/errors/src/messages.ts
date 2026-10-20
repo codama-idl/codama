@@ -80,7 +80,8 @@ import {
 /**
  * WARNING:
  *   - Don't change the meaning of an error message.
- *   - `$path` renders the node path of the context as node selectors, e.g. `[programNode]token.[accountNode]mint`.
+ *   - `$path`, and any other node path of the context, renders as node selectors, e.g. `[programNode]token.[accountNode]mint`.
+ *     Lists of node paths render as lists of node selectors.
  */
 export const CodamaErrorMessages: Readonly<{
     // This type makes this data structure exhaustive with respect to `SolanaErrorCode`.
@@ -95,7 +96,7 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE]: 'Unrecognized Anchor IDL type [$idlType].',
     [CODAMA_ERROR__CANNOT_RESOLVE_PATH]: 'Cannot resolve segment [$segment] of path [$pathString] from $path.',
     [CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY]:
-        'Cannot upgrade $path to a value provided under key [$key], since another node of its instruction already provides a different value or injects a value under that key. Rename one of them in the v1 IDL.',
+        'Cannot upgrade $path to a value provided under key [$key], since $conflictingPath already provides a different value or injects a value under that key. Rename one of them in the v1 IDL.',
     [CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE]:
         'Defined type $path has no finite value, so no codec can encode or decode it.',
     [CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE]: 'Discriminator field $path has no default value.',
@@ -103,7 +104,8 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING]: 'Missing account $path.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_RESOLVER_MISSING]: 'Resolver [$resolverName] not provided for $path.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__CANNOT_CONVERT_TO_ADDRESS]: 'Cannot convert value to Address: [$value].',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]: 'Circular dependency detected: [$chain].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY]:
+        'Circular dependency detected when resolving the accounts and data of instruction $path. Got the following dependency cycle [$formattedCycle].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING]: 'Missing data [$pathString] in $path.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM]:
         'Expected the items of set $path to be unique, but the item at index [$index] equals the item at index [$firstIndex].',
@@ -116,17 +118,18 @@ export const CodamaErrorMessages: Readonly<{
     [CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING]:
         'Cannot read the data of account $path without a `fetchAccounts` function to fetch it.',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND]:
-        'Instruction [$instructionName] not found in IDL. Available: [$availableIxs].',
+        'Instruction [$instructionName] not found in program $path. Available: [$availableIxs].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_ADDRESS]: 'Invalid address for account $path: [$value].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVALID_ACCOUNT_INPUT]:
         'Invalid input for account $path: [$value]. Expected [$expectedType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION]: 'Internal invariant violation: [$message].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND]: 'Referenced node [$referencedName] not found from $path.',
-    [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]: 'PDA [$pdaName] not found in IDL. Available: [$available].',
+    [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_NOT_FOUND]:
+        'PDA [$pdaName] not found in program $path. Available: [$available].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__PDA_SEED_MISSING]: 'Missing seed $path.',
 
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE]:
-        'Expected [$expectedType] for account [$accountName], but received [$actualType].',
+        'Expected an address of type [$expectedType] for $path, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE]:
         'Expected [$expectedType] for $path, but received [$actualType].',
     [CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE]: 'Unsupported node $path.',
@@ -176,7 +179,7 @@ export const CodamaErrorMessages: Readonly<{
         'Circular dependency detected when resolving the default values of instruction $path. Got the following dependency cycle [$formattedCycle].',
     [CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND]:
         'Defined type $path does not have a field or variant named [$missingMember].',
-    [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate the given node [$formattedHistogram].',
+    [CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE]: 'Failed to validate node $path [$formattedHistogram].',
     [CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND]: 'Cannot find account [$accountName] in instruction $path.',
     [CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND]:
         'Cannot find the data field [$pathString] of instruction $path. Note that fields behind a defined type link cannot be updated directly: unwrap the defined type first.',

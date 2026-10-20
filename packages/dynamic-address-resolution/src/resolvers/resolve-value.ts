@@ -167,7 +167,7 @@ async function getValueAtPath(
             segment.kind === 'field' && segment.identifier === 'data' ? getLinkedAccountPath(typePath, ctx) : undefined;
         if (accountPath) {
             if (current === undefined || current === null) return undefined;
-            const address = toAddressOrThrow(current, currentPath);
+            const address = toAddressOrThrow(current, typePath);
             current = await readAccountData(ctx, address, accountPath);
             currentSource = [...accountPath, getLastNodeFromPath(accountPath).data];
             typePath = currentSource;
@@ -214,9 +214,9 @@ export async function getFieldDefaultValue(
     const contextualValue = getContextualDefaultValue(ctx, field);
     if (!contextualValue) return getValue(ctx, fieldPath.slice(0, -1) as NodePath, field.defaultValue);
 
-    const dependency = `data.${path}`;
-    detectCircularDependency(dependency, ctx.resolutionPath);
-    return await resolveValue(contextualValue, { ...ctx, resolutionPath: [...ctx.resolutionPath, dependency] });
+    const entry = { key: `data.${path}`, path: fieldPath };
+    detectCircularDependency(entry, ctx);
+    return await resolveValue(contextualValue, { ...ctx, resolutionPath: [...ctx.resolutionPath, entry] });
 }
 
 /**

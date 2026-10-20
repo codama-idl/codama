@@ -4,11 +4,15 @@ import { mapVisitor, Visitor } from '@codama/visitors-core';
 
 import { getLevelIndex, LogLevel, ValidationItem } from './ValidationItem';
 
+/**
+ * Throw `CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE` when the validation items of the visited
+ * node include items of the given level or above, carrying the path of the visited node, e.g. `[root]`.
+ */
 export function throwValidatorItemsVisitor<TNodeKind extends NodeKind = NodeKind>(
     visitor: Visitor<readonly ValidationItem[], TNodeKind>,
     throwLevel: LogLevel = 'error',
 ): Visitor<void, TNodeKind> {
-    return mapVisitor(visitor, validationItems => {
+    return mapVisitor(visitor, (validationItems, node) => {
         const levelHistogram = [...validationItems]
             .sort((a, b) => getLevelIndex(b.level) - getLevelIndex(a.level))
             .reduce(
@@ -28,6 +32,7 @@ export function throwValidatorItemsVisitor<TNodeKind extends NodeKind = NodeKind
                 .join(', ');
             throw new CodamaError(CODAMA_ERROR__VISITORS__FAILED_TO_VALIDATE_NODE, {
                 formattedHistogram,
+                path: [node],
                 validationItems,
             });
         }

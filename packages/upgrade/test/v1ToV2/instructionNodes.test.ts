@@ -328,6 +328,23 @@ describe('provided keys', () => {
         );
     });
 
+    test('it names both conflicting nodes in the error message', () => {
+        const provided = { kind: 'providedNode', name: 'decimals', node: { kind: 'numberValueNode', number: 6 } };
+        const instruction = {
+            arguments: [decimalsArgument],
+            kind: 'instructionNode',
+            name: 'transfer',
+            optionalAccountStrategy: 'programId',
+            provides: [provided],
+        } as unknown as v1.InstructionNode;
+        expect(() => instructionNodeFromV1([...programPath, instruction])).toThrow(
+            'Cannot upgrade [programNode]myProgram.[instructionNode]transfer.[instructionArgumentNode]decimals ' +
+                'to a value provided under key [decimals], since ' +
+                '[programNode]myProgram.[instructionNode]transfer.[providedNode]decimals ' +
+                'already provides a different value or injects a value under that key.',
+        );
+    });
+
     test('it throws when the defaults of two arguments are provided under the same key once their names are converted', () => {
         const first = { ...decimalsArgument, name: 'mint-decimals' } as v1.InstructionArgumentNode;
         const second = {

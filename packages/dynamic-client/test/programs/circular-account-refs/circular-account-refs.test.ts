@@ -1,3 +1,4 @@
+import { CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY } from '@codama/errors';
 import { address } from '@solana/addresses';
 import { describe, expect, test } from 'vitest';
 
@@ -9,19 +10,36 @@ describe('Circular Account References (Without PDA Seeds)', () => {
 
     test('should throw AccountError for A->A self-reference', async () => {
         await expect(programClient.methods.selfReference().accounts({}).instruction()).rejects.toThrow(
-            /Circular dependency detected: \[accountA -> accountA\]/,
+            expect.objectContaining({
+                context: expect.objectContaining({
+                    __code: CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
+                    formattedCycle: 'accountA -> accountA',
+                }),
+            }),
         );
     });
 
     test('should throw AccountError for A->B->A two-node cycle', async () => {
         await expect(programClient.methods.twoAccountCycle().accounts({}).instruction()).rejects.toThrow(
-            /Circular dependency detected: \[account(A|B) -> account(A|B) -> account(A|B)\]/,
+            expect.objectContaining({
+                context: expect.objectContaining({
+                    __code: CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
+                    formattedCycle: expect.stringMatching(/^account(A|B) -> account(A|B) -> account(A|B)$/),
+                }),
+            }),
         );
     });
 
     test('should throw AccountError for A->B->C->A three-node cycle', async () => {
         await expect(programClient.methods.threeAccountCycle().accounts({}).instruction()).rejects.toThrow(
-            /Circular dependency detected: \[account(A|B|C) -> account(A|B|C) -> account(A|B|C) -> account(A|B|C)\]/,
+            expect.objectContaining({
+                context: expect.objectContaining({
+                    __code: CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY,
+                    formattedCycle: expect.stringMatching(
+                        /^account(A|B|C) -> account(A|B|C) -> account(A|B|C) -> account(A|B|C)$/,
+                    ),
+                }),
+            }),
         );
     });
 

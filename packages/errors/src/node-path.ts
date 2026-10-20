@@ -5,8 +5,9 @@ import type { Node } from '@codama/node-types';
  * `[programNode]token.[accountNode]mint.[structTypeNode].[structFieldTypeNode]decimals`.
  *
  * Each node renders as its kind in brackets followed by its identifier, if it has one, and
- * nodes are separated by dots. A leading root node is left out, since every full path starts
- * with it, unless it is the only node of the path.
+ * nodes are separated by dots. Nodes without an identifier fall back to their `name`, if any,
+ * so v1 nodes, e.g. when upgraded by `@codama/upgrade`, render too. A leading root node is
+ * left out, since every full path starts with it, unless it is the only node of the path.
  *
  * @example
  * ```ts
@@ -21,8 +22,11 @@ export function getNodePathString(path: readonly Node[]): string {
 }
 
 function getNodeString(node: Node): string {
-    const identifier = (node as { identifier?: unknown }).identifier;
-    return typeof identifier === 'string' ? `[${node.kind}]${identifier}` : `[${node.kind}]`;
+    const { identifier, name } = node as { identifier?: unknown; name?: unknown };
+    if (typeof identifier === 'string') return `[${node.kind}]${identifier}`;
+    // v1 nodes are named rather than identified.
+    if (typeof name === 'string') return `[${node.kind}]${name}`;
+    return `[${node.kind}]`;
 }
 
 /**

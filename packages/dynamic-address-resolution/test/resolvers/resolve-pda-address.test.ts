@@ -431,9 +431,9 @@ describe('program addresses', () => {
         await expectCodamaError(
             resolveInstructionAccountAddress({ dataInput: { program: 42 }, path }),
             new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-                accountName: path[3].identifier,
                 actualType: 'number',
                 expectedType: 'Address | PublicKey',
+                path: [...path.slice(0, 2), pda],
             }),
         );
     });

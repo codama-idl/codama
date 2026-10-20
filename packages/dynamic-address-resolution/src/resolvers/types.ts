@@ -3,10 +3,11 @@ import type { InstructionNode, LinkableDictionary, NodePath, ProvidedScope } fro
 import type { AccountsInput, DataInput, FetchAccountsFn } from '../shared/types';
 
 /**
- * The accounts being resolved, by identifier, and the data fields whose default values are being
- * resolved, as `data.` followed by their path, used to detect circular dependencies.
+ * The accounts being resolved, keyed by identifier, and the data fields whose default values are
+ * being resolved, keyed by `data.` followed by their path, used to detect circular dependencies.
+ * Each entry also holds the path of its node, from the root, to report them.
  */
-export type ResolutionPath = readonly string[];
+export type ResolutionPath = readonly { key: string; path: NodePath }[];
 
 /**
  * Shared context threaded through the account and PDA resolution pipeline.

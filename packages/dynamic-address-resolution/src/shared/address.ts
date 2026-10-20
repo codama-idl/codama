@@ -5,6 +5,7 @@ import {
 } from '@codama/errors';
 import type { Address } from '@solana/addresses';
 import { address, isAddress } from '@solana/addresses';
+import type { NodePath } from 'codama';
 
 import { formatValueType, safeStringify } from './util';
 
@@ -31,16 +32,18 @@ export function toAddress(input: AddressInput): Address {
 }
 
 /**
- * Convert a value to the address of the given account, throwing
- * `UNEXPECTED_ADDRESS_TYPE` when it is not address convertible. The account
- * name may locate an item of remaining accounts, e.g. `signers[1]`.
+ * Convert a value to an address, throwing `UNEXPECTED_ADDRESS_TYPE` with the given path when it is
+ * not address convertible. The path leads to the node the value should be the address of, e.g. an
+ * instruction account or remaining accounts. The index, if given, is the position of the value
+ * within the list it was given in, e.g. the remaining accounts.
  */
-export function toAddressOrThrow(value: unknown, accountName: string): Address {
+export function toAddressOrThrow(value: unknown, path: NodePath, index?: number): Address {
     if (!isAddressConvertible(value)) {
         throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE, {
-            accountName,
             actualType: formatValueType(value),
             expectedType: 'Address | PublicKey',
+            ...(index === undefined ? {} : { index }),
+            path,
         });
     }
     return toAddress(value);
