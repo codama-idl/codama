@@ -12,6 +12,9 @@ import { getLinkablesFromNode, pascalCase, type RootNode } from 'codama';
  * Generate the TypeScript types of a strongly-typed program client for a
  * Codama IDL of the latest major. Use `upgrade` from `@codama/upgrade` first
  * for IDLs of older majors.
+ *
+ * This is exported from the Node-only `@codama/dynamic-client/codegen`
+ * subpath so that the main entry stays free of code generation.
  */
 export function generateClientTypes(idl: RootNode): string {
     const programName = pascalCase(idl.program.identifier);

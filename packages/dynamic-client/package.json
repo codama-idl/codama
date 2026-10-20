@@ -25,6 +25,7 @@
         "./dist/types",
         "./dist/index.*",
         "./dist/cli.*",
+        "./dist/codegen.*",
         "./bin/*"
     ],
     "type": "commonjs",
@@ -36,17 +37,31 @@
         "./dist/index.node.mjs": "./dist/index.browser.mjs"
     },
     "types": "./dist/types/index.d.ts",
+    "typesVersions": {
+        "*": {
+            "codegen": [
+                "./dist/types/codegen/index.d.ts"
+            ]
+        }
+    },
     "react-native": "./dist/index.react-native.mjs",
     "exports": {
-        "types": "./dist/types/index.d.ts",
-        "react-native": "./dist/index.react-native.mjs",
-        "browser": {
-            "import": "./dist/index.browser.mjs",
-            "require": "./dist/index.browser.cjs"
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "react-native": "./dist/index.react-native.mjs",
+            "browser": {
+                "import": "./dist/index.browser.mjs",
+                "require": "./dist/index.browser.cjs"
+            },
+            "node": {
+                "import": "./dist/index.node.mjs",
+                "require": "./dist/index.node.cjs"
+            }
         },
-        "node": {
-            "import": "./dist/index.node.mjs",
-            "require": "./dist/index.node.cjs"
+        "./codegen": {
+            "types": "./dist/types/codegen/index.d.ts",
+            "import": "./dist/codegen.node.mjs",
+            "require": "./dist/codegen.node.cjs"
         }
     },
     "scripts": {

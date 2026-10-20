@@ -8,5 +8,5 @@
         "rootDir": "./src"
     },
     "extends": "./tsconfig.json",
-    "include": ["src/index.ts", "src/types"]
+    "include": ["src/index.ts", "src/codegen/index.ts"]
 }
