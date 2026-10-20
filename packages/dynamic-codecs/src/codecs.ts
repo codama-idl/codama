@@ -115,6 +115,7 @@ import type {
     GetDecodedNode,
 } from './decoded';
 import { getLazyCodec } from './lazy';
+import { getMapKeyParser, getMapKeyString } from './mapKeys';
 import { getCodecFromBytesEncoding } from './utils';
 import {
     assertUniqueItems,
@@ -782,25 +783,38 @@ export function getNodeCodecVisitor(
             return visitLinkedNode(node);
         },
         visitIntegerType(node) {
-            const codec = getIntegerCodec(node) as Codec<unknown>;
-            return getLeafCodec(assertValueType(codec, stack.getPath(), 'integer (number | bigint)', isInteger));
+            const nodePath = stack.getPath();
+            // Reject integers out of range here, since the errors of the codecs do not report a path.
+            const [min, max] = getIntegerRange(node);
+            const inRange = assertValueType(
+                getIntegerCodec(node) as Codec<unknown>,
+                nodePath,
+                `integer between ${min} and ${max}`,
+                value => {
+                    const integer = BigInt(value as bigint | number);
+                    return min <= integer && integer <= max;
+                },
+            );
+            return getLeafCodec(assertValueType(inRange, nodePath, 'integer (number | bigint)', isInteger));
         },
         visitMapType(node) {
             const nodePath = stack.getPath('mapTypeNode');
             const entry = getTupleCodec([visit(node.key, this), visit(node.value, this)]);
-            // Maps are represented as objects in order to be compatible with JSON.
+            // Maps are represented as objects in order to be compatible with JSON, so their
+            // keys are strings, parsed back into values of the key type when encoding.
+            const parseKey = getMapKeyParser([...nodePath, node.key], linkables);
             return getCompositeCodec(
                 getCollectionCodec(entry, node.count),
                 value => {
                     if (!isObjectRecord(value)) throw getUnexpectedValueTypeError(nodePath, 'object', value);
                     return Object.entries(value).map(
-                        ([key, entryValue]) => [{ value: key }, { value: entryValue }] as const,
+                        ([key, entryValue]) => [{ value: parseKey(key) }, { value: entryValue }] as const,
                     );
                 },
                 decodedEntries => {
                     const entries = decodedEntries as (readonly [DecodedTypeNode, DecodedTypeNode])[];
                     const value = Object.fromEntries(
-                        entries.map(([key, entryValue]) => [key.value as PropertyKey, entryValue.value]),
+                        entries.map(([key, entryValue]) => [getMapKeyString(key.value), entryValue.value]),
                     );
                     return { entries, path: nodePath, value } satisfies Unranged<DecodedMapTypeNode>;
                 },
@@ -981,6 +995,39 @@ function getIntegerCodec(node: IntegerTypeNode): Codec<bigint | number, bigint> 
             return getI128Codec(config);
         case 'shortU16':
             return toBigInt(getShortU16Codec());
+        default:
+            throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT, {
+                format: node.format satisfies never,
+            });
+    }
+}
+
+/** The smallest and largest values of an integer format, e.g. `[0n, 255n]` for `u8`. */
+function getIntegerRange(node: IntegerTypeNode): [min: bigint, max: bigint] {
+    const unsigned = (bits: bigint): [bigint, bigint] => [0n, 2n ** bits - 1n];
+    const signed = (bits: bigint): [bigint, bigint] => [-(2n ** (bits - 1n)), 2n ** (bits - 1n) - 1n];
+    switch (node.format) {
+        case 'u8':
+            return unsigned(8n);
+        case 'u16':
+        case 'shortU16':
+            return unsigned(16n);
+        case 'u32':
+            return unsigned(32n);
+        case 'u64':
+            return unsigned(64n);
+        case 'u128':
+            return unsigned(128n);
+        case 'i8':
+            return signed(8n);
+        case 'i16':
+            return signed(16n);
+        case 'i32':
+            return signed(32n);
+        case 'i64':
+            return signed(64n);
+        case 'i128':
+            return signed(128n);
         default:
             throw new CodamaError(CODAMA_ERROR__UNRECOGNIZED_NUMBER_FORMAT, {
                 format: node.format satisfies never,

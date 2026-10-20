@@ -228,7 +228,7 @@ Values are raw JavaScript values that stay close to the bytes. For instance, a f
 | [`EnumTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/EnumTypeNode.md)                       | `{ __kind: "move", __discriminator: 2, data: { x: 1n } }`    | See [Enums](#enums). Variants without data also encode from their identifier.                                            |
 | [`ArrayTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/ArrayTypeNode.md)                     | `[1n, 2n, 3n]`                                               |                                                                                                                          |
 | [`SetTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/SetTypeNode.md)                         | `[1n, 2n, 3n]`                                               | Same as arrays. Encoding rejects duplicate items, see [Invalid values](#invalid-values).                                 |
-| [`MapTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/MapTypeNode.md)                         | `{ key1: "value1", key2: "value2" }`                         | An object.                                                                                                               |
+| [`MapTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/MapTypeNode.md)                         | `{ key1: "value1", key2: "value2" }`                         | An object, whose keys are strings whatever the key type. See [Maps](#maps).                                              |
 | [`OptionTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/OptionTypeNode.md)                   | `{ __option: "Some", value: 42n }` or `{ __option: "None" }` | Option objects, rather than `T \| null`, keep nested options distinct. Also encodes from a value, `null` or `undefined`. |
 | [`RemainderOptionTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/RemainderOptionTypeNode.md) | `{ __option: "Some", value: 42n }` or `{ __option: "None" }` | Same as options.                                                                                                         |
 | [`ZeroableOptionTypeNode`](https://github.com/codama-idl/spec/blob/main/docs/typeNodes/ZeroableOptionTypeNode.md)   | `{ __option: "Some", value: 42n }` or `{ __option: "None" }` | Same as options.                                                                                                         |
@@ -264,6 +264,20 @@ codec.decode(hex('020a')); // { __kind: 'move', __discriminator: 2, data: { x: 1
 codec.encode('quit'); // 0x00, same as { __kind: 'quit' }
 ```
 
+### Maps
+
+Maps decode to plain objects, so their keys are strings. Keys that decode to strings, such as strings and public keys, are used as they are. Other scalars use their string form, e.g. `"42"` for an integer or `"true"` for a boolean, and variants without data use their identifier, e.g. `"quit"`. Other keys, e.g. structs or tuples, use a deterministic JSON form that keeps the order of their fields and writes integers with all their digits, e.g. `'{"x":1,"y":2}'`. When encoding, keys are parsed back using the key type and entries are encoded in the iteration order of the object. The decoded node of a map keeps the decoded values of its keys in its `entries`, in the order they were decoded.
+
+Note that JavaScript objects iterate integer-like keys (`'0'` to `'4294967294'`) in ascending numeric order before any other key. Therefore, a decoded map re-encodes to the same bytes unless its integer keys were not stored in ascending order or it mixes such keys with others, e.g. negative integers. For instance, a `map<u8, u8>` storing the keys `7` then `5` decodes to `{ 5: …, 7: … }` and re-encodes with `5` first, whereas its decoded `entries` keep `7` first.
+
+```ts
+const codec = getNodeValueCodec([
+    mapTypeNode(integerTypeNode('u64'), stringTypeNode('utf8'), prefixedCountNode(integerTypeNode('u32'))),
+]);
+codec.decode(bytes); // { "42": "Alice" }
+codec.encode({ 42: 'Alice' }); // same as { "42": "Alice" }
+```
+
 ### Default values
 
 Struct fields with a `defaultValue` do not need to be provided when encoding. Fields whose `defaultValueStrategy` is `omitted`, such as discriminators, always encode their default value, even if a value is provided. Other fields encode their default value when missing from the input.
@@ -292,7 +306,7 @@ A missing struct encodes as a struct whose fields are all missing, so their defa
 
 ### Invalid values
 
-Encoding throws a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error when a value does not match its type, e.g. a string for an integer or a missing field without a default value, rather than encoding unexpected bytes. Structs and maps must be plain objects, so `Map`s or class instances are rejected. Its `path` context is the path of the node that rejected the value, from the root.
+Encoding throws a `CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE` error when a value does not match its type, e.g. a string for an integer, an integer out of the range of its format, a map key that does not parse as its key type or a missing field without a default value, rather than encoding unexpected bytes. Structs and maps must be plain objects, so `Map`s or class instances are rejected. Its `path` context is the path of the node that rejected the value, from the root.
 
 Sets also throw a `CODAMA_ERROR__DYNAMIC_CLIENT__DUPLICATE_SET_ITEM` error when two items encode to the same bytes, e.g. `[42, 42n]`. Its context gives the `index` of the duplicate, the `firstIndex` of the item it equals and the `path` of the set. Decoding keeps duplicates, so existing data reads as it is.
 

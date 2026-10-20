@@ -12,6 +12,7 @@ import {
 } from '@codama/visitors-core';
 
 import { CodecVisitorOptions, getConstantValueBytes, getNodeValueCodecVisitor } from './codecs';
+import { getMapKeyString } from './mapKeys';
 
 /**
  * A visitor that returns the raw JavaScript value of the visited value node, in the
@@ -83,8 +84,11 @@ export function getValueNodeVisitor(
             return BigInt(node.value);
         },
         visitMapValue(node) {
+            // Keys use the same strings as decoded maps, which map codecs parse back when encoding.
             return Object.fromEntries(
-                (node.entries ?? []).map(entry => [visit(entry.key, this), visit(entry.value, this)] as const),
+                (node.entries ?? []).map(
+                    entry => [getMapKeyString(visit(entry.key, this)), visit(entry.value, this)] as const,
+                ),
             ) as unknown;
         },
         visitNoneValue() {

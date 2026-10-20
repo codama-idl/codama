@@ -5,10 +5,13 @@ import {
     CODAMA_ERROR__LINKED_NODE_NOT_FOUND,
 } from '@codama/errors';
 import { getBase16Encoder } from '@solana/codecs';
+import { SOLANA_ERROR__CODECS__INVALID_NUMBER_OF_ITEMS } from '@solana/kit';
 import {
     accountDataValueNode,
+    arrayTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
+    fixedCountNode,
     injectedValueNode,
     instructionNode,
     integerTypeNode,
@@ -133,11 +136,32 @@ describe('encodeInstructionData', () => {
         );
     });
 
-    test('it wraps other encoding errors', () => {
+    test('it throws out-of-range integers as value type errors', () => {
         const path = getInstructionPath(instructionNode({ data, identifier: 'transfer' }));
         expect(() => encodeInstructionData(path, { amount: 300 })).toThrow(
             expect.objectContaining({
-                cause: expect.objectContaining({ message: expect.stringContaining('300') }),
+                context: {
+                    __code: CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_VALUE_TYPE,
+                    actualType: 'number (300)',
+                    expectedType: 'integer between 0 and 255',
+                    path: [...path, data, amount, amountType],
+                },
+            }),
+        );
+    });
+
+    test('it wraps other encoding errors', () => {
+        // Given a fixed-count array, which Kit checks the number of items of.
+        const items = structFieldTypeNode({
+            identifier: 'items',
+            type: arrayTypeNode(integerTypeNode('u8'), fixedCountNode(2)),
+        });
+        const path = getInstructionPath(instructionNode({ data: structTypeNode([items]), identifier: 'store' }));
+        expect(() => encodeInstructionData(path, { items: [1, 2, 3] })).toThrow(
+            expect.objectContaining({
+                cause: expect.objectContaining({
+                    context: expect.objectContaining({ __code: SOLANA_ERROR__CODECS__INVALID_NUMBER_OF_ITEMS }),
+                }),
                 context: { __code: CODAMA_ERROR__DYNAMIC_CLIENT__FAILED_TO_ENCODE_DATA, path },
             }),
         );
