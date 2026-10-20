@@ -22,6 +22,7 @@ import {
     CODAMA_ERROR__ANCHOR__SEED_KIND_UNIMPLEMENTED,
     CODAMA_ERROR__ANCHOR__UNRECOGNIZED_IDL_TYPE,
     CODAMA_ERROR__CANNOT_RESOLVE_PATH,
+    CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY,
     CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_HAS_NO_DEFAULT_VALUE,
     CODAMA_ERROR__DISCRIMINATOR_FIELD_NOT_FOUND,
@@ -130,6 +131,17 @@ export type CodamaErrorContext = DefaultUnspecifiedErrorContextToUndefined<{
         pathString: PathString;
         /** The segment that could not be followed, e.g. `fees` or `[0]`. */
         segment: string;
+    };
+    [CODAMA_ERROR__CANNOT_UPGRADE_CONFLICTING_PROVIDED_KEY]: {
+        /**
+         * The path of the v1 node already using the key within the instruction: another node
+         * providing a different value, or an injection the provided value would resolve instead.
+         */
+        conflictingPath: NodePath;
+        /** The key both nodes use. */
+        key: IdentifierString;
+        /** The path of the v1 node whose value would be provided under the key, e.g. an instruction argument. */
+        path: NodePath;
     };
     [CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE]: {
         /** The path of the defined type. */

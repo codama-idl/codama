@@ -4,7 +4,13 @@ import type { Node } from '@codama/node-types';
 import type * as v1 from '../v1';
 import type * as v2 from '../v2';
 import { linkNodeFromV1 } from './linkNodes';
-import { getLastV1NodeFromPath, getV1InstructionFromPath, getV1LinkedPdaPath, V1NodePath } from './paths';
+import {
+    getLastV1NodeFromPath,
+    getV1InstructionFromPath,
+    getV1LinkedDefinedTypePath,
+    getV1LinkedPdaPath,
+    V1NodePath,
+} from './paths';
 import { pdaNodeFromV1 } from './pdaNodes';
 import { compactAndFreeze, docsFromV1, identifierFromV1, pathFromV1 } from './shared';
 import { valueNodeFromV1 } from './valueNodes';
@@ -301,6 +307,52 @@ export function resolverPluginNodeFromV1(
 
 function capitalise(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/**
+ * The paths of the v1 injected values held by the last node of a path,
+ * following defined type links, e.g. into the defined type of an argument.
+ * Each linked defined type is visited once. Nodes matching `skip`, and the
+ * nodes they hold, are left out.
+ *
+ * @example
+ * ```ts
+ * // The injection within the amount display of an argument.
+ * getV1InjectionPaths([root, program, instruction, argument]);
+ * // [[root, program, instruction, argument, numberType, amountDisplay, injectedValue]]
+ * ```
+ */
+export function getV1InjectionPaths(
+    path: V1NodePath<v1.Node>,
+    skip: (node: v1.Node) => boolean = () => false,
+): V1NodePath<v1.InjectedValueNode>[] {
+    const injections: V1NodePath<v1.InjectedValueNode>[] = [];
+    const followed = new Set<v1.DefinedTypeNode>();
+    const visitChildren = (parentPath: V1NodePath<v1.Node>): void => {
+        Object.values(getLastV1NodeFromPath(parentPath)).forEach(child => visitChild(parentPath, child));
+    };
+    const visitChild = (parentPath: V1NodePath<v1.Node>, child: unknown): void => {
+        if (Array.isArray(child)) {
+            child.forEach(item => visitChild(parentPath, item));
+            return;
+        }
+        if (typeof child !== 'object' || child === null || !('kind' in child)) return;
+        const node = child as v1.Node;
+        if (skip(node)) return;
+        const nodePath: V1NodePath<v1.Node> = [...parentPath, node];
+        if (node.kind === 'injectedValueNode') injections.push(nodePath as V1NodePath<v1.InjectedValueNode>);
+        if (node.kind === 'definedTypeLinkNode') {
+            const definedTypePath = getV1LinkedDefinedTypePath(nodePath as V1NodePath<v1.DefinedTypeLinkNode>);
+            const definedType = definedTypePath ? getLastV1NodeFromPath(definedTypePath) : undefined;
+            if (definedTypePath && definedType && !followed.has(definedType)) {
+                followed.add(definedType);
+                visitChildren(definedTypePath);
+            }
+        }
+        visitChildren(nodePath);
+    };
+    visitChildren(path);
+    return injections;
 }
 
 /** Whether a v1 node or any node it holds matches the given predicate, visiting nodes depth-first. */
