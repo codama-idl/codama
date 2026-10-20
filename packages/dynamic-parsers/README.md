@@ -81,7 +81,11 @@ All the functions above accept the following options.
 
 ### `parseInstruction(rootNode, instruction, options?)`
 
-Parses an `Instruction`, as defined in `@solana/instructions`. It returns a `ParsedInstruction`: the decoded instruction node, plus its named `accounts`, each `AccountMeta` carrying the `identifier` of its instruction account, and the `remainingAccounts` beyond them, e.g. the signers of a multisig.
+Parses an `Instruction`, as defined in `@solana/instructions`. It returns a `ParsedInstruction`: the decoded instruction node, plus its account metas, split into three lists.
+
+- `accounts`: the named accounts whose identity is certain, each `AccountMeta` carrying the `identifier` of its instruction account, in order.
+- `unidentifiedAccounts`: the account metas whose identity is ambiguous, see below.
+- `remainingAccounts`: the account metas beyond all named accounts, e.g. the signers of a multisig.
 
 ```ts
 const parsed = parseInstruction(rootNode, instruction);
@@ -90,8 +94,30 @@ const parsed = parseInstruction(rootNode, instruction);
 if (parsed) {
     parsed.value; // { amount: 42n }
     parsed.accounts; // [{ address, role, identifier: 'source' }, ...]
+    parsed.unidentifiedAccounts; // []
     parsed.remainingAccounts; // [{ address, role }, ...]
 }
+```
+
+Absent optional accounts are never named, following the `optionalAccountStrategy` of the instruction.
+
+- `programId`, the default: absent optional accounts are passed as the address of the program. Their slot is left out of `accounts`, and so is the program address it holds.
+- `omitted`: absent optional accounts are left out, so the accounts after them shift. When the number of account metas tells which optional accounts are absent, every account is named. Otherwise, e.g. when one of two optional accounts is absent, or when remaining accounts may follow the named accounts, the accounts whose position is certain are named, and the others are returned as `unidentifiedAccounts`, rather than under a name that may be wrong.
+
+```ts
+// Accounts: source, referrer (optional), memo (optional), destination.
+// Metas:    [A, B, C], with the `omitted` strategy.
+parsed.accounts; // [{ address: A, identifier: 'source' }, { address: C, identifier: 'destination' }]
+parsed.unidentifiedAccounts; // [{ address: B }]: either the referrer or the memo.
+```
+
+Declaring remaining accounts on an instruction with optional accounts under the `omitted` strategy can therefore leave accounts unidentified, even when every optional account is present, since any number of them may be omitted in favour of more remaining accounts. The roles of the account metas help disambiguate. Since roles are merged across the instructions of a transaction, a meta may have more privileges than its account declares, but never fewer. So a meta that is not a signer cannot be an account declared as a signer, and a read-only meta cannot be an account declared as writable, and the same goes for remaining accounts declaring `isSigner` or `isWritable`. Accounts declaring `isSigner: 'either'` accept any meta. If the roles of the metas contradict every possible placement, they are ignored.
+
+```ts
+// Accounts: source, referrer (optional, read-only), destination (writable), then remaining signers.
+// Metas:    [A, B (read-only), C, D], with the `omitted` strategy.
+parsed.accounts; // [{ address: A, identifier: 'source' }, { address: B, identifier: 'referrer' }, { address: C, identifier: 'destination' }]
+parsed.remainingAccounts; // [{ address: D }]: B cannot be the writable destination, so the referrer is present.
 ```
 
 It uses the instruction's `programAddress` to restrict the search to the matching program, including any of the root node's `additionalPrograms`. When no program of the root matches that address, nothing is parsed: matching an unknown program against another program's candidates would confidently misattribute the data, which matters when the result is displayed to end users (e.g. clear signing). It accepts the `bytesEncoding` and `linkables` options.
