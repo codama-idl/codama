@@ -1,29 +1,29 @@
 import { type Fragment, fragment, mergeFragments, use } from '@codama/fragments/javascript';
 import type { Spec, UnionSpec } from '@codama/spec';
 
+import { kindsArrayConstantName } from '../../nodes/kindsArrayConstantName';
 import { type ResolvedRenderOptions } from '../options';
 
 /**
  * Render the kind-list expression for a `union('<Name>')` reference.
  *
- * If `<Name>` is listed in `options.unionAliasNames`, the result is a
- * `use(<alias>, '@codama/nodes')` fragment — emitting `<alias>` in
- * the generated body. Otherwise the union is expanded inline: each
- * member leaf kind becomes a `'kind'` literal, and any nested
- * `union('X')` member is rendered as a `...spread` of `X`'s alias
- * (the nested union must itself have an alias entry).
+ * If `<Name>` is listed in `options.kindsConstantUnions`, the result
+ * is a `use(<NAME>_KINDS, '@codama/nodes')` fragment, emitting the
+ * union's generated kinds constant in the body. Otherwise the union is
+ * expanded inline: each member leaf kind becomes a `'kind'` literal,
+ * and any nested `union('X')` member is rendered as a `...spread` of
+ * `X`'s kinds constant (the nested union must itself be listed).
  *
- * Returns the bare expression — e.g. `TYPE_NODES`,
- * `['pdaLinkNode', 'pdaNode']`, or `[...VALUE_NODES, 'programIdValueNode']`.
+ * Returns the bare expression, e.g. `TYPE_NODE_KINDS`,
+ * `['pdaLinkNode', 'pdaNode']`, or `[...VALUE_NODE_KINDS, 'programIdValueNode']`.
  */
 export function getUnionKindListFragment(
     unionName: string,
     spec: Spec,
-    options: Pick<ResolvedRenderOptions, 'unionAliasNames'>,
+    options: Pick<ResolvedRenderOptions, 'kindsConstantUnions'>,
 ): Fragment {
-    const alias = options.unionAliasNames.get(unionName);
-    if (alias !== undefined) {
-        return use(alias, '@codama/nodes');
+    if (options.kindsConstantUnions.has(unionName)) {
+        return use(kindsArrayConstantName(unionName), '@codama/nodes');
     }
 
     const union = findUnion(spec, unionName);
@@ -35,25 +35,27 @@ export function getUnionKindListFragment(
 }
 
 /**
- * Render a union as an inline `[…]` literal — one entry per member.
+ * Render a union as an inline `[…]` literal, one entry per member.
  * `kind: 'node'` members become `'kind'` string literals; `kind:
- * 'union'` members become a `...spread` of the alias for the nested
- * union (which must be present in `options.unionAliasNames`).
+ * 'union'` members become a `...spread` of the nested union's kinds
+ * constant (the nested union must be in `options.kindsConstantUnions`).
  */
-function renderInlineUnionList(union: UnionSpec, options: Pick<ResolvedRenderOptions, 'unionAliasNames'>): Fragment {
+function renderInlineUnionList(
+    union: UnionSpec,
+    options: Pick<ResolvedRenderOptions, 'kindsConstantUnions'>,
+): Fragment {
     const parts = union.members.map((member): Fragment => {
         if (member.kind === 'node') {
             return fragment`'${member.name}'`;
         }
-        const alias = options.unionAliasNames.get(member.name);
-        if (alias === undefined) {
+        if (!options.kindsConstantUnions.has(member.name)) {
             throw new Error(
-                `union "${union.name}" contains a nested union "${member.name}" with no entry in unionAliasNames; ` +
+                `union "${union.name}" contains a nested union "${member.name}" with no entry in kindsConstantUnions; ` +
                     `extend the table or flatten the union manually.`,
             );
         }
-        const aliasFragment = use(alias, '@codama/nodes');
-        return fragment`...${aliasFragment}`;
+        const kindsFragment = use(kindsArrayConstantName(member.name), '@codama/nodes');
+        return fragment`...${kindsFragment}`;
     });
     return mergeFragments(parts, ps => `[${ps.join(', ')}]`);
 }

@@ -17,12 +17,12 @@ import {
     constantNode,
     constantPdaSeedNode,
     constantValueNode,
-    COUNT_NODES,
+    COUNT_NODE_KINDS,
     dataValueNode,
     dateTimeTypeNode,
     definedTypeLinkNode,
     definedTypeNode,
-    DISCRIMINATOR_NODES,
+    DISCRIMINATOR_NODE_KINDS,
     durationTypeNode,
     enumTypeNode,
     enumValueNode,
@@ -40,7 +40,7 @@ import {
     hiddenSuffixTransformNode,
     identityValueNode,
     injectedValueNode,
-    INSTRUCTION_INPUT_VALUE_NODES,
+    INSTRUCTION_INPUT_VALUE_NODE_KINDS,
     instructionAccountDisplayNode,
     instructionAccountLinkNode,
     instructionAccountNode,
@@ -60,7 +60,7 @@ import {
     noneValueNode,
     optionTypeNode,
     payerValueNode,
-    PDA_SEED_NODES,
+    PDA_SEED_NODE_KINDS,
     pdaLinkNode,
     pdaNode,
     pdaSeedValueNode,
@@ -99,9 +99,9 @@ import {
     TRANSFORM_NODE_KINDS,
     tupleTypeNode,
     tupleValueNode,
-    TYPE_NODES,
+    TYPE_NODE_KINDS,
     unitNumberDisplayNode,
-    VALUE_NODES,
+    VALUE_NODE_KINDS,
     valueLabelDisplayNode,
     variablePdaSeedNode,
     zeroableOptionTypeNode,
@@ -130,10 +130,10 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitArrayType = function visitArrayType(node) {
             const count = visit(this)(node.count);
             if (count === null) return null;
-            assertIsNode(count, COUNT_NODES);
+            assertIsNode(count, COUNT_NODE_KINDS);
             const item = visit(this)(node.item);
             if (item === null) return null;
-            assertIsNode(item, TYPE_NODES);
+            assertIsNode(item, TYPE_NODE_KINDS);
             return arrayTypeNode(item, count, {
                 ...node,
                 transforms: node.transforms
@@ -242,7 +242,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                 docs = visited;
             }
             const data = node.data ? (visit(this)(node.data) ?? undefined) : undefined;
-            if (data) assertIsNode(data, TYPE_NODES);
+            if (data) assertIsNode(data, TYPE_NODE_KINDS);
             const display = node.display ? (visit(this)(node.display) ?? undefined) : undefined;
             if (display) assertIsNode(display, 'enumVariantDisplayNode');
             return enumVariantTypeNode(node.identifier, {
@@ -315,13 +315,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitMapType = function visitMapType(node) {
             const count = visit(this)(node.count);
             if (count === null) return null;
-            assertIsNode(count, COUNT_NODES);
+            assertIsNode(count, COUNT_NODE_KINDS);
             const key = visit(this)(node.key);
             if (key === null) return null;
-            assertIsNode(key, TYPE_NODES);
+            assertIsNode(key, TYPE_NODE_KINDS);
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, TYPE_NODES);
+            assertIsNode(value, TYPE_NODE_KINDS);
             return mapTypeNode(key, value, count, {
                 ...node,
                 transforms: node.transforms
@@ -341,7 +341,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             assertIsNode(prefix, 'integerTypeNode');
             const item = visit(this)(node.item);
             if (item === null) return null;
-            assertIsNode(item, TYPE_NODES);
+            assertIsNode(item, TYPE_NODE_KINDS);
             return optionTypeNode(item, {
                 ...node,
                 prefix,
@@ -376,7 +376,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitRemainderOptionType = function visitRemainderOptionType(node) {
             const item = visit(this)(node.item);
             if (item === null) return null;
-            assertIsNode(item, TYPE_NODES);
+            assertIsNode(item, TYPE_NODE_KINDS);
             return remainderOptionTypeNode(item, {
                 ...node,
                 transforms: node.transforms
@@ -393,10 +393,10 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitSetType = function visitSetType(node) {
             const count = visit(this)(node.count);
             if (count === null) return null;
-            assertIsNode(count, COUNT_NODES);
+            assertIsNode(count, COUNT_NODE_KINDS);
             const item = visit(this)(node.item);
             if (item === null) return null;
-            assertIsNode(item, TYPE_NODES);
+            assertIsNode(item, TYPE_NODE_KINDS);
             return setTypeNode(item, count, {
                 ...node,
                 transforms: node.transforms
@@ -436,9 +436,9 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             }
             const type = visit(this)(node.type);
             if (type === null) return null;
-            assertIsNode(type, TYPE_NODES);
+            assertIsNode(type, TYPE_NODE_KINDS);
             const defaultValue = node.defaultValue ? (visit(this)(node.defaultValue) ?? undefined) : undefined;
-            if (defaultValue) assertIsNode(defaultValue, VALUE_NODES);
+            if (defaultValue) assertIsNode(defaultValue, VALUE_NODE_KINDS);
             const display = node.display ? (visit(this)(node.display) ?? undefined) : undefined;
             if (display) assertIsNode(display, 'structFieldDisplayNode');
             return structFieldTypeNode({
@@ -474,7 +474,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('tupleTypeNode')) {
         visitor.visitTupleType = function visitTupleType(node) {
             return tupleTypeNode(
-                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(TYPE_NODES)),
+                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(TYPE_NODE_KINDS)),
                 {
                     ...node,
                     transforms: node.transforms
@@ -492,7 +492,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitZeroableOptionType = function visitZeroableOptionType(node) {
             const item = visit(this)(node.item);
             if (item === null) return null;
-            assertIsNode(item, TYPE_NODES);
+            assertIsNode(item, TYPE_NODE_KINDS);
             const zeroValue = node.zeroValue ? (visit(this)(node.zeroValue) ?? undefined) : undefined;
             if (zeroValue) assertIsNode(zeroValue, 'constantValueNode');
             return zeroableOptionTypeNode(item, {
@@ -600,7 +600,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('arrayValueNode')) {
         visitor.visitArrayValue = function visitArrayValue(node) {
             return arrayValueNode(
-                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODES)),
+                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODE_KINDS)),
                 {
                     ...node,
                     plugins: node.plugins
@@ -637,10 +637,10 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitConstantValue = function visitConstantValue(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
-            assertIsNode(type, TYPE_NODES);
+            assertIsNode(type, TYPE_NODE_KINDS);
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, VALUE_NODES);
+            assertIsNode(value, VALUE_NODE_KINDS);
             return constantValueNode(type, value, {
                 ...node,
                 plugins: node.plugins
@@ -656,7 +656,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             if (enumLink === null) return null;
             assertIsNode(enumLink, 'definedTypeLinkNode');
             const value = node.value ? (visit(this)(node.value) ?? undefined) : undefined;
-            if (value) assertIsNode(value, VALUE_NODES);
+            if (value) assertIsNode(value, VALUE_NODE_KINDS);
             return enumValueNode(enumLink, node.variant, {
                 ...node,
                 value,
@@ -681,7 +681,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('injectedValueNode')) {
         visitor.visitInjectedValue = function visitInjectedValue(node) {
             const fallback = node.fallback ? (visit(this)(node.fallback) ?? undefined) : undefined;
-            if (fallback) assertIsNode(fallback, VALUE_NODES);
+            if (fallback) assertIsNode(fallback, VALUE_NODE_KINDS);
             return injectedValueNode({
                 ...node,
                 fallback,
@@ -707,10 +707,10 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitMapEntryValue = function visitMapEntryValue(node) {
             const key = visit(this)(node.key);
             if (key === null) return null;
-            assertIsNode(key, VALUE_NODES);
+            assertIsNode(key, VALUE_NODE_KINDS);
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, VALUE_NODES);
+            assertIsNode(value, VALUE_NODE_KINDS);
             return mapEntryValueNode(key, value, {
                 ...node,
                 plugins: node.plugins
@@ -759,7 +759,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('setValueNode')) {
         visitor.visitSetValue = function visitSetValue(node) {
             return setValueNode(
-                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODES)),
+                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODE_KINDS)),
                 {
                     ...node,
                     plugins: node.plugins
@@ -774,7 +774,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitSomeValue = function visitSomeValue(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, VALUE_NODES);
+            assertIsNode(value, VALUE_NODE_KINDS);
             return someValueNode(value, {
                 ...node,
                 plugins: node.plugins
@@ -799,7 +799,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitStructFieldValue = function visitStructFieldValue(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, VALUE_NODES);
+            assertIsNode(value, VALUE_NODE_KINDS);
             return structFieldValueNode(node.identifier, value, {
                 ...node,
                 plugins: node.plugins
@@ -826,7 +826,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('tupleValueNode')) {
         visitor.visitTupleValue = function visitTupleValue(node) {
             return tupleValueNode(
-                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODES)),
+                (node.items ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(VALUE_NODE_KINDS)),
                 {
                     ...node,
                     plugins: node.plugins
@@ -925,10 +925,10 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitConstantPdaSeed = function visitConstantPdaSeed(node) {
             const type = visit(this)(node.type);
             if (type === null) return null;
-            assertIsNode(type, TYPE_NODES);
+            assertIsNode(type, TYPE_NODE_KINDS);
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, ['programIdValueNode', ...VALUE_NODES]);
+            assertIsNode(value, ['programIdValueNode', ...VALUE_NODE_KINDS]);
             return constantPdaSeedNode(type, value, {
                 ...node,
                 plugins: node.plugins
@@ -948,7 +948,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             }
             const type = visit(this)(node.type);
             if (type === null) return null;
-            assertIsNode(type, TYPE_NODES);
+            assertIsNode(type, TYPE_NODE_KINDS);
             return variablePdaSeedNode(node.identifier, type, {
                 ...node,
                 docs,
@@ -1182,7 +1182,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitValueLabelDisplay = function visitValueLabelDisplay(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, VALUE_NODES);
+            assertIsNode(value, VALUE_NODE_KINDS);
             let label = node.label;
             if (typeof label !== 'string') {
                 const visited = visit(this)(label);
@@ -1251,11 +1251,11 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             if (condition === null) return null;
             assertIsNode(condition, ['accountValueNode', 'dataValueNode']);
             const value = node.value ? (visit(this)(node.value) ?? undefined) : undefined;
-            if (value) assertIsNode(value, VALUE_NODES);
+            if (value) assertIsNode(value, VALUE_NODE_KINDS);
             const ifTrue = node.ifTrue ? (visit(this)(node.ifTrue) ?? undefined) : undefined;
-            if (ifTrue) assertIsNode(ifTrue, INSTRUCTION_INPUT_VALUE_NODES);
+            if (ifTrue) assertIsNode(ifTrue, INSTRUCTION_INPUT_VALUE_NODE_KINDS);
             const ifFalse = node.ifFalse ? (visit(this)(node.ifFalse) ?? undefined) : undefined;
-            if (ifFalse) assertIsNode(ifFalse, INSTRUCTION_INPUT_VALUE_NODES);
+            if (ifFalse) assertIsNode(ifFalse, INSTRUCTION_INPUT_VALUE_NODE_KINDS);
             return conditionalValueNode({
                 ...node,
                 condition,
@@ -1295,7 +1295,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
         visitor.visitPdaSeedValue = function visitPdaSeedValue(node) {
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, ['accountValueNode', 'dataValueNode', ...VALUE_NODES]);
+            assertIsNode(value, ['accountValueNode', 'dataValueNode', ...VALUE_NODE_KINDS]);
             return pdaSeedValueNode(node.identifier, value, {
                 ...node,
                 plugins: node.plugins
@@ -1344,7 +1344,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             }
             const data = visit(this)(node.data);
             if (data === null) return null;
-            assertIsNode(data, TYPE_NODES);
+            assertIsNode(data, TYPE_NODE_KINDS);
             const pda = node.pda ? (visit(this)(node.pda) ?? undefined) : undefined;
             if (pda) assertIsNode(pda, 'pdaLinkNode');
             return accountNode({
@@ -1353,7 +1353,9 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                 data,
                 pda,
                 discriminators: node.discriminators
-                    ? node.discriminators.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(DISCRIMINATOR_NODES))
+                    ? node.discriminators
+                          .map(visit(this))
+                          .filter(removeNullAndAssertIsNodeFilter(DISCRIMINATOR_NODE_KINDS))
                     : undefined,
                 plugins: node.plugins
                     ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
@@ -1372,10 +1374,10 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             }
             const type = visit(this)(node.type);
             if (type === null) return null;
-            assertIsNode(type, TYPE_NODES);
+            assertIsNode(type, TYPE_NODE_KINDS);
             const value = visit(this)(node.value);
             if (value === null) return null;
-            assertIsNode(value, VALUE_NODES);
+            assertIsNode(value, VALUE_NODE_KINDS);
             return constantNode(node.identifier, type, value, {
                 ...node,
                 docs,
@@ -1396,7 +1398,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             }
             const type = visit(this)(node.type);
             if (type === null) return null;
-            assertIsNode(type, TYPE_NODES);
+            assertIsNode(type, TYPE_NODE_KINDS);
             return definedTypeNode({
                 ...node,
                 docs,
@@ -1444,13 +1446,15 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             }
             const data = visit(this)(node.data);
             if (data === null) return null;
-            assertIsNode(data, TYPE_NODES);
+            assertIsNode(data, TYPE_NODE_KINDS);
             return eventNode({
                 ...node,
                 docs,
                 data,
                 discriminators: node.discriminators
-                    ? node.discriminators.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(DISCRIMINATOR_NODES))
+                    ? node.discriminators
+                          .map(visit(this))
+                          .filter(removeNullAndAssertIsNodeFilter(DISCRIMINATOR_NODE_KINDS))
                     : undefined,
                 plugins: node.plugins
                     ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
@@ -1468,7 +1472,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                 docs = visited;
             }
             const defaultValue = node.defaultValue ? (visit(this)(node.defaultValue) ?? undefined) : undefined;
-            if (defaultValue) assertIsNode(defaultValue, INSTRUCTION_INPUT_VALUE_NODES);
+            if (defaultValue) assertIsNode(defaultValue, INSTRUCTION_INPUT_VALUE_NODE_KINDS);
             const accountLink = node.accountLink ? (visit(this)(node.accountLink) ?? undefined) : undefined;
             if (accountLink) assertIsNode(accountLink, 'accountLinkNode');
             const display = node.display ? (visit(this)(node.display) ?? undefined) : undefined;
@@ -1505,9 +1509,9 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             const status = node.status ? (visit(this)(node.status) ?? undefined) : undefined;
             if (status) assertIsNode(status, 'instructionStatusNode');
             const data = node.data ? (visit(this)(node.data) ?? undefined) : undefined;
-            if (data) assertIsNode(data, TYPE_NODES);
+            if (data) assertIsNode(data, TYPE_NODE_KINDS);
             const returnData = node.returnData ? (visit(this)(node.returnData) ?? undefined) : undefined;
-            if (returnData) assertIsNode(returnData, TYPE_NODES);
+            if (returnData) assertIsNode(returnData, TYPE_NODE_KINDS);
             let docs = node.docs;
             if (docs !== undefined && typeof docs !== 'string') {
                 const visited = visit(this)(docs) ?? undefined;
@@ -1530,7 +1534,9 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                           .filter(removeNullAndAssertIsNodeFilter('instructionByteDeltaNode'))
                     : undefined,
                 discriminators: node.discriminators
-                    ? node.discriminators.map(visit(this)).filter(removeNullAndAssertIsNodeFilter(DISCRIMINATOR_NODES))
+                    ? node.discriminators
+                          .map(visit(this))
+                          .filter(removeNullAndAssertIsNodeFilter(DISCRIMINATOR_NODE_KINDS))
                     : undefined,
                 docs,
                 remainingAccounts: node.remainingAccounts
@@ -1602,7 +1608,7 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
             return pdaNode({
                 ...node,
                 docs,
-                seeds: (node.seeds ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(PDA_SEED_NODES)),
+                seeds: (node.seeds ?? []).map(visit(this)).filter(removeNullAndAssertIsNodeFilter(PDA_SEED_NODE_KINDS)),
                 plugins: node.plugins
                     ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
                     : undefined,

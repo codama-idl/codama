@@ -10,7 +10,7 @@ import { getRebuildCallFragment } from './rebuildCall';
 
 type IdentityScope = Pick<
     ResolvedRenderOptions,
-    'identityVisitorWalkOrder' | 'mergeVisitorWalkOrder' | 'unionAliasNames'
+    'identityVisitorWalkOrder' | 'mergeVisitorWalkOrder' | 'kindsConstantUnions'
 >;
 
 /**

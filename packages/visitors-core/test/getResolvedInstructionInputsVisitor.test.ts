@@ -12,7 +12,7 @@ import {
     definedTypeLinkNode,
     definedTypeNode,
     injectedValueNode,
-    INSTRUCTION_INPUT_VALUE_NODES,
+    INSTRUCTION_INPUT_VALUE_NODE_KINDS,
     instructionAccountNode,
     InstructionNode,
     instructionNode,
@@ -347,7 +347,7 @@ test('it throws when a provided value is not an instruction input value node', (
     // When we get its resolved inputs, then it throws.
     expect(() => resolve(node)).toThrow(
         new CodamaError(CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE, {
-            expectedKinds: INSTRUCTION_INPUT_VALUE_NODES,
+            expectedKinds: INSTRUCTION_INPUT_VALUE_NODE_KINDS,
             path: [provider, provider.node],
         }),
     );

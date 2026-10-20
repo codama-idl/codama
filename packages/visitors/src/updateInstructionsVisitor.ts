@@ -15,7 +15,7 @@ import {
     ProvidedNode,
     providedNode,
     StructFieldTypeNodeInput,
-    VALUE_NODES,
+    VALUE_NODE_KINDS,
     ValueNode,
 } from '@codama/nodes';
 import { getLastNodeFromPath, LinkableDictionary, NodePath, visit } from '@codama/visitors-core';
@@ -193,7 +193,7 @@ function assertValidInstructionUpdates(selector: string, updates: InstructionUpd
     });
     Object.entries(updates.data ?? {}).forEach(([path, fieldUpdates]) => {
         assertValidUpdateKeys(`${selector}.data.${path}`, fieldUpdates, INSTRUCTION_DATA_UPDATE_KEYS);
-        if (fieldUpdates.defaultValue) assertIsNode(fieldUpdates.defaultValue, VALUE_NODES);
+        if (fieldUpdates.defaultValue) assertIsNode(fieldUpdates.defaultValue, VALUE_NODE_KINDS);
     });
 }
 

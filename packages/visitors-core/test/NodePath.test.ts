@@ -15,13 +15,7 @@ import {
 } from '@codama/nodes';
 import { expect, expectTypeOf, test } from 'vitest';
 
-import {
-    assertIsNodePath,
-    assertNodePathHasProgram,
-    getLastNodeFromPath,
-    type NodePath,
-    nodePathToString,
-} from '../src';
+import { assertIsNodePath, assertNodePathHasProgram, getLastNodeFromPath, type NodePath } from '../src';
 
 const program = programNode({ identifier: 'myProgram', publicKey: '1111' });
 const root = rootNode(program);
@@ -87,12 +81,5 @@ test('it asserts the kind of the last node of a path, reporting the whole path',
         expect.objectContaining({
             context: { __code: CODAMA_ERROR__UNEXPECTED_NODE_KIND, expectedKinds: ['accountNode'], path: [] },
         }),
-    );
-});
-
-test('it renders paths as error messages do', () => {
-    const account = accountNode({ identifier: 'mint' });
-    expect(nodePathToString([root, program, account, account.data])).toBe(
-        '[programNode]myProgram.[accountNode]mint.[structTypeNode]',
     );
 });

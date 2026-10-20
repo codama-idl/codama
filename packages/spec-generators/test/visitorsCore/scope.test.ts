@@ -27,19 +27,19 @@ describe('buildRenderScope', () => {
         expect(scope.symbolicModules.get('helper:Visitor')).toBe('../visitor');
     });
 
-    it('defaults the walk-order and union-alias tables when omitted from options', () => {
+    it('defaults the walk-order and kinds-constant union tables when omitted from options', () => {
         const scope = buildRenderScope(options);
         // The defaulted maps carry the live v2 spec content; assert
         // a representative key from each rather than the full set.
-        expect(scope.unionAliasNames.get('typeNode')).toBe('TYPE_NODES');
+        expect(scope.kindsConstantUnions.has('typeNode')).toBe(true);
         expect(scope.mergeVisitorWalkOrder.get('arrayTypeNode')).toEqual(['count', 'item', 'transforms']);
         expect(scope.identityVisitorWalkOrder.get('programNode')?.[0]).toBe('accounts');
     });
 
-    it('honours caller-supplied unionAliasNames overrides', () => {
-        const custom = new Map([['typeNode', 'CUSTOM_TYPE_NODES']]);
-        const scope = buildRenderScope({ ...options, unionAliasNames: custom });
-        expect(scope.unionAliasNames.get('typeNode')).toBe('CUSTOM_TYPE_NODES');
+    it('honours caller-supplied kindsConstantUnions overrides', () => {
+        const custom = new Set(['customNode']);
+        const scope = buildRenderScope({ ...options, kindsConstantUnions: custom });
+        expect(scope.kindsConstantUnions).toBe(custom);
     });
 
     it('emits a frozen scope', () => {

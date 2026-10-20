@@ -2,7 +2,6 @@ import {
     CODAMA_ERROR__NODE_PATH_PROGRAM_MISSING,
     CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CodamaError,
-    getNodePathString,
 } from '@codama/errors';
 import { GetNodeFromKind, InstructionNode, isNode, Node, NodeKind, ProgramNode } from '@codama/nodes';
 
@@ -103,19 +102,4 @@ export function assertIsNodePath<TKind extends NodeKind>(
     if (isNodePath(path, kind)) return;
     const expectedKinds = Array.isArray(kind) ? kind : [kind];
     throw new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, { expectedKinds, path: path ?? [] });
-}
-
-export function nodePathToStringArray(path: NodePath): string[] {
-    return path.map((node): string => {
-        return 'identifier' in node ? `[${node.kind}]${node.identifier}` : `[${node.kind}]`;
-    });
-}
-
-/**
- * Render a path as node selectors joined by dots, leaving out a leading root node, as error
- * messages do, e.g. `[programNode]token.[accountNode]mint`. See `getNodePathString` from
- * `@codama/errors`.
- */
-export function nodePathToString(path: NodePath): string {
-    return getNodePathString(path);
 }

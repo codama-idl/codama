@@ -62,3 +62,8 @@ test('visitPath restores the previous path when the visit throws', () => {
     expect(() => stack.visitPath([root, root.program, slot], visitor)).toThrow('boom');
     expect(stack.getPath()).toStrictEqual([root, root.program, owner]);
 });
+
+test('toString renders the current path as error messages do', () => {
+    const stack = new NodeStack([root, root.program, slot, slot.type]);
+    expect(stack.toString()).toBe('[programNode]myProgram.[definedTypeNode]slot.[integerTypeNode]');
+});

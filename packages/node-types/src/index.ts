@@ -16,6 +16,3 @@ export * from './generated';
 // kept outside `./generated/` because they don't depend on the spec.
 export * from './brands';
 export * from './Version';
-
-// Hand-written deprecated aliases — see each file for rationale.
-export * from './ProgramVersion';
