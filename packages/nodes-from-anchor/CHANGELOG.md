@@ -1,5 +1,89 @@
 # @codama/nodes-from-anchor
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Convert Anchor IDLs into Codama v2 IDLs. Alongside the new node model, the conversion now captures more of the Anchor IDL:
+  
+  - Instruction account `relations` become `anchor.relations` plugins listing the accounts that must hold the account's address in their data. Legacy (v00) relations are flipped to follow the direction of current (v01) IDLs.
+  - PDA seeds can point to nested instruction arguments, following links to defined types, e.g. a `params.seed` seed becomes a `params_seed` seed whose value is `dataValueNode('params.seed')`. Only the PDAs of nested account seeds, e.g. `mint.authority`, are still skipped, since they require fetching the account.
+  - Legacy (v00) instruction accounts get PDA default values from their `pda` attribute.
+  - Instruction `returns` become the instruction's `returnData`.
+  - Type aliases (`kind: 'type'`) of current (v01) IDLs resolve to their aliased type.
+  - Programs, accounts and events carry their docs.
+  
+  **BREAKING CHANGES**
+  
+  **Identifiers keep the IDL's casing.** Names are no longer camelCased, so the identifiers of programs, accounts, instructions, arguments, types, events, errors and PDAs match the Anchor IDL, e.g. `transfer_tokens` in current (v01) IDLs. Discriminators are still derived from the names Anchor hashes.
+  
+  **Instruction arguments become instruction data.** Instructions store their discriminator and arguments as the fields of a `data` struct, and PDA seeds refer to them through `dataValueNode`s. The `instructionArgumentNodeFromAnchorV00` and `instructionArgumentNodeFromAnchorV01` helpers are removed: use `structFieldTypeNodeFromAnchorV00` and `structFieldTypeNodeFromAnchorV01` instead. The instruction account helpers take these data fields and an options bag instead of a positional prefix, and `pdaSeedNodeFromAnchorV01` returns `undefined` for seeds that cannot be expressed statically.
+  
+  ```diff
+  - instructionAccountNodesFromAnchorV00(accounts, prefix);
+  + instructionAccountNodesFromAnchorV00(accounts, dataFields, { definedTypes, prefix });
+  - instructionAccountNodesFromAnchorV01(accounts, instructionArguments, prefix);
+  + instructionAccountNodesFromAnchorV01(accounts, dataFields, { definedTypes, prefix });
+  - pdaSeedNodeFromAnchorV01(seed, instructionArguments, prefix);
+  + pdaSeedNodeFromAnchorV01(seed, dataFields, { definedTypes, prefix });
+  ```
+  
+  The same applies to `instructionAccountNodeFromAnchorV00` and `instructionAccountNodeFromAnchorV01`.
+  
+  **Enum variant helpers unified.** The `enumEmptyVariantTypeNodeFromAnchorV0x`, `enumStructVariantTypeNodeFromAnchorV0x` and `enumTupleVariantTypeNodeFromAnchorV0x` helpers are replaced by `enumVariantTypeNodeFromAnchorV00` and `enumVariantTypeNodeFromAnchorV01`, which return an `enumVariantTypeNode` with a struct, tuple or no `data`.
+  
+  **Lossless numbers.** Numbers become `integerTypeNode`s or `floatTypeNode`s, and integer constants become string-encoded `integerValueNode`s, so 64- and 128-bit constants are no longer rounded.
+  
+  **No program origin.** Programs no longer carry an `origin`, which v2 removes.
+
+- [#1264](https://github.com/codama-idl/codama/pull/1264) [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Trim public exports that were only meant for internal use, so the public API only exposes what consumers need.
+  
+  **BREAKING CHANGES**
+  
+  **`@codama/errors` no longer exports `safeCaptureStackTrace`.** It was unused, even by `CodamaError`, and is also gone from `codama`, which re-exports it. Call `Error.captureStackTrace` directly if you need it.
+  
+  **`@codama/fragments/javascript` no longer exports `preferIncoming`.** Use `mergeImportMaps` or `addToImportMap`, which apply the same conflict-resolution rule.
+  
+  **`@codama/dynamic-address-resolution` no longer exports `OPTIONAL_NODE_KINDS`.** Check the type node kind directly, e.g. `isNode(type, ['optionTypeNode', 'remainderOptionTypeNode', 'zeroableOptionTypeNode'])`.
+  
+  **`@codama/nodes-from-anchor` only exports its root and program converters.** The per-node converters, their options types and the generics helpers are now internal. Convert whole IDLs with `rootNodeFromAnchor` (or `rootNodeFromAnchorV00`, `rootNodeFromAnchorV01`, `programNodeFromAnchorV00` and `programNodeFromAnchorV01`) and pick the nodes you need from the result. The removed exports are:
+  
+  - `accountNodeFromAnchorV00`, `arrayTypeNodeFromAnchorV00`, `constantNodeFromAnchorV00`, `definedTypeNodeFromAnchorV00`, `enumTypeNodeFromAnchorV00`, `enumVariantTypeNodeFromAnchorV00`, `errorNodeFromAnchorV00`, `eventNodeFromAnchorV00`, `instructionAccountNodeFromAnchorV00`, `instructionAccountNodesFromAnchorV00`, `instructionNodeFromAnchorV00`, `mapTypeNodeFromAnchorV00`, `optionTypeNodeFromAnchorV00`, `pdaNodeFromAnchorV00`, `pdaSeedTypeNodeFromAnchorV00`, `setTypeNodeFromAnchorV00`, `structFieldTypeNodeFromAnchorV00`, `structTypeNodeFromAnchorV00`, `tupleTypeNodeFromAnchorV00`, `typeNodeFromAnchorV00` and `InstructionAccountNodeFromAnchorV00Options`.
+  - `accountNodeFromAnchorV01`, `arrayTypeNodeFromAnchorV01`, `constantNodeFromAnchorV01`, `definedTypeNodeFromAnchorV01`, `enumTypeNodeFromAnchorV01`, `enumVariantTypeNodeFromAnchorV01`, `errorNodeFromAnchorV01`, `eventNodeFromAnchorV01`, `instructionAccountNodeFromAnchorV01`, `instructionAccountNodesFromAnchorV01`, `instructionNodeFromAnchorV01`, `optionTypeNodeFromAnchorV01`, `pdaSeedNodeFromAnchorV01`, `structFieldTypeNodeFromAnchorV01`, `structTypeNodeFromAnchorV01`, `tupleTypeNodeFromAnchorV01`, `typeNodeFromAnchorV01`, `unwrapGenericTypeFromAnchorV01`, `extractGenerics`, `GenericsV01`, `InstructionAccountNodeFromAnchorV01Options` and `PdaSeedNodeFromAnchorV01Options`.
+  - `extractPdasFromProgram`: use `extractPdasVisitor` instead.
+  
+  ```diff
+  - import { accountNodeFromAnchorV01 } from '@codama/nodes-from-anchor';
+  - const account = accountNodeFromAnchorV01(idl.accounts[0], idl.types, generics);
+  + import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
+  + const account = rootNodeFromAnchor(idl).program.accounts?.[0];
+  ```
+  
+  **`@codama/visitors-core` no longer exports `LINKABLE_NODES`, `getDependencies` and `assertNodePathHasProgram`.** These are also gone from `@codama/visitors` and `codama`, which re-export it. Use `findProgramNodeFromPath` to check that a path has a program, and `getResolvedInstructionInputsVisitor` to resolve instruction input dependencies.
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Require Node.js 22.12.0 or later.
+  
+  **BREAKING CHANGES**
+  
+  **Node.js 20 is no longer supported.** Every package now declares `"engines": { "node": ">=22.12.0" }`, the first Node.js 22 release that supports `require(esm)` by default. Node.js 20 reached its end of life in April 2026, and some dependencies (e.g. `commander`) already require Node.js 22.12.0.
+
+### Patch Changes
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Inline `@noble/hashes` in CommonJS builds so `require` works on Node.js versions without `require(esm)` support.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Fix the instruction discriminators of legacy (v00) IDLs and the error thrown for unknown generic types:
+  
+  - Instruction names containing acronyms now hash to the name Anchor uses, e.g. `setHTTPConfig` hashes `global:set_http_config` instead of `global:set_h_t_t_p_config`.
+  - Shank instruction discriminators below 16 are zero-padded to a full byte, e.g. `0a` instead of `a`.
+  - References to an unknown generic type in current (v01) IDLs throw a `CODAMA_ERROR__ANCHOR__GENERIC_TYPE_MISSING` error instead of a `TypeError`.
+- Updated dependencies [[`cedeb1e`](https://github.com/codama-idl/codama/commit/cedeb1e45d0434219895cfa90a9cdf3410da7ac0), [`1f0fb88`](https://github.com/codama-idl/codama/commit/1f0fb881c3334110ea673772dcdb832c1e3885df), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6), [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`e92df74`](https://github.com/codama-idl/codama/commit/e92df74ea8495d419c74e5d42c4aa74293eae393), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`cedeb1e`](https://github.com/codama-idl/codama/commit/cedeb1e45d0434219895cfa90a9cdf3410da7ac0), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`b869cef`](https://github.com/codama-idl/codama/commit/b869cefbe05a2ccd1fed9fb9750ad9de0abe66b8), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7)]:
+  - @codama/visitors@2.0.0-rc.0
+  - @codama/errors@2.0.0-rc.0
+  - @codama/fragments@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+
 ## 1.5.6
 
 ### Patch Changes

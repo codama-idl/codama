@@ -1,5 +1,98 @@
 # codama
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1262](https://github.com/codama-idl/codama/pull/1262) [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove the deprecated node kind aliases, the `ProgramVersion` type and the duplicate node path formatters. Each has a canonical replacement that was already exported.
+  
+  **BREAKING CHANGES**
+  
+  **Node kind aliases removed.** The legacy `*_NODES` aliases of `@codama/nodes` are removed in favour of the `*_NODE_KINDS` constants generated from the spec.
+  
+  ```diff
+  - import { CONTEXTUAL_VALUE_NODES, COUNT_NODES, DISCRIMINATOR_NODES, INSTRUCTION_INPUT_VALUE_NODES } from '@codama/nodes';
+  - import { LINK_NODES, PDA_SEED_NODES, TYPE_NODES, VALUE_NODES } from '@codama/nodes';
+  + import { CONTEXTUAL_VALUE_NODE_KINDS, COUNT_NODE_KINDS, DISCRIMINATOR_NODE_KINDS, INSTRUCTION_INPUT_VALUE_NODE_KINDS } from '@codama/nodes';
+  + import { LINK_NODE_KINDS, PDA_SEED_NODE_KINDS, TYPE_NODE_KINDS, VALUE_NODE_KINDS } from '@codama/nodes';
+  ```
+  
+  **`ProgramVersion` removed.** Use the `Version` type instead.
+  
+  ```diff
+  - import type { ProgramVersion } from '@codama/node-types';
+  + import type { Version } from '@codama/node-types';
+  ```
+  
+  **Node path formatters removed.** `nodePathToString` and `nodePathToStringArray` are removed from `@codama/visitors-core`. Use `getNodePathString` from `@codama/errors`, which renders paths the way error messages do, or `NodeStack#toString` for the current path of a stack.
+  
+  ```diff
+  - import { nodePathToString, nodePathToStringArray } from '@codama/visitors-core';
+  + import { getNodePathString } from '@codama/errors';
+  
+  - nodePathToString(path);
+  + getNodePathString(path);
+  - nodePathToStringArray(path);
+  + path.map(node => getNodePathString([node]));
+  ```
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Support Codama v2 IDLs and keep exporting the `camelCase`, `capitalize`, `kebabCase`, `pascalCase`, `snakeCase` and `titleCase` helpers, now re-exported from `@codama/fragments` since `@codama/nodes` no longer provides them.
+  
+  **BREAKING CHANGES**
+  
+  **1.x IDLs are rejected.** `createFromRoot` and `createFromJson` now expect IDLs on the 2.x major and throw a `CODAMA_ERROR__VERSION_MISMATCH` error for 1.x IDLs. Upgrade them first, either once with the new `codama upgrade` command or on the fly with `@codama/upgrade`.
+  
+  ```diff
+  + import { upgradeFromJson } from '@codama/upgrade';
+  - const codama = createFromJson(v1Json);
+  + const codama = createFromRoot(upgradeFromJson(v1Json));
+  ```
+  
+  **Casing helpers return plain strings.** The casing helpers return `string` rather than branded types such as `CamelCaseString`, and split words following the Codama v2 casing rules, e.g. `titleCase('HTTPServer')` now returns `Http Server`.
+
+- [#1264](https://github.com/codama-idl/codama/pull/1264) [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Trim public exports that were only meant for internal use, so the public API only exposes what consumers need.
+  
+  **BREAKING CHANGES**
+  
+  **`@codama/errors` no longer exports `safeCaptureStackTrace`.** It was unused, even by `CodamaError`, and is also gone from `codama`, which re-exports it. Call `Error.captureStackTrace` directly if you need it.
+  
+  **`@codama/fragments/javascript` no longer exports `preferIncoming`.** Use `mergeImportMaps` or `addToImportMap`, which apply the same conflict-resolution rule.
+  
+  **`@codama/dynamic-address-resolution` no longer exports `OPTIONAL_NODE_KINDS`.** Check the type node kind directly, e.g. `isNode(type, ['optionTypeNode', 'remainderOptionTypeNode', 'zeroableOptionTypeNode'])`.
+  
+  **`@codama/nodes-from-anchor` only exports its root and program converters.** The per-node converters, their options types and the generics helpers are now internal. Convert whole IDLs with `rootNodeFromAnchor` (or `rootNodeFromAnchorV00`, `rootNodeFromAnchorV01`, `programNodeFromAnchorV00` and `programNodeFromAnchorV01`) and pick the nodes you need from the result. The removed exports are:
+  
+  - `accountNodeFromAnchorV00`, `arrayTypeNodeFromAnchorV00`, `constantNodeFromAnchorV00`, `definedTypeNodeFromAnchorV00`, `enumTypeNodeFromAnchorV00`, `enumVariantTypeNodeFromAnchorV00`, `errorNodeFromAnchorV00`, `eventNodeFromAnchorV00`, `instructionAccountNodeFromAnchorV00`, `instructionAccountNodesFromAnchorV00`, `instructionNodeFromAnchorV00`, `mapTypeNodeFromAnchorV00`, `optionTypeNodeFromAnchorV00`, `pdaNodeFromAnchorV00`, `pdaSeedTypeNodeFromAnchorV00`, `setTypeNodeFromAnchorV00`, `structFieldTypeNodeFromAnchorV00`, `structTypeNodeFromAnchorV00`, `tupleTypeNodeFromAnchorV00`, `typeNodeFromAnchorV00` and `InstructionAccountNodeFromAnchorV00Options`.
+  - `accountNodeFromAnchorV01`, `arrayTypeNodeFromAnchorV01`, `constantNodeFromAnchorV01`, `definedTypeNodeFromAnchorV01`, `enumTypeNodeFromAnchorV01`, `enumVariantTypeNodeFromAnchorV01`, `errorNodeFromAnchorV01`, `eventNodeFromAnchorV01`, `instructionAccountNodeFromAnchorV01`, `instructionAccountNodesFromAnchorV01`, `instructionNodeFromAnchorV01`, `optionTypeNodeFromAnchorV01`, `pdaSeedNodeFromAnchorV01`, `structFieldTypeNodeFromAnchorV01`, `structTypeNodeFromAnchorV01`, `tupleTypeNodeFromAnchorV01`, `typeNodeFromAnchorV01`, `unwrapGenericTypeFromAnchorV01`, `extractGenerics`, `GenericsV01`, `InstructionAccountNodeFromAnchorV01Options` and `PdaSeedNodeFromAnchorV01Options`.
+  - `extractPdasFromProgram`: use `extractPdasVisitor` instead.
+  
+  ```diff
+  - import { accountNodeFromAnchorV01 } from '@codama/nodes-from-anchor';
+  - const account = accountNodeFromAnchorV01(idl.accounts[0], idl.types, generics);
+  + import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
+  + const account = rootNodeFromAnchor(idl).program.accounts?.[0];
+  ```
+  
+  **`@codama/visitors-core` no longer exports `LINKABLE_NODES`, `getDependencies` and `assertNodePathHasProgram`.** These are also gone from `@codama/visitors` and `codama`, which re-export it. Use `findProgramNodeFromPath` to check that a path has a program, and `getResolvedInstructionInputsVisitor` to resolve instruction input dependencies.
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Require Node.js 22.12.0 or later.
+  
+  **BREAKING CHANGES**
+  
+  **Node.js 20 is no longer supported.** Every package now declares `"engines": { "node": ">=22.12.0" }`, the first Node.js 22 release that supports `require(esm)` by default. Node.js 20 reached its end of life in April 2026, and some dependencies (e.g. `commander`) already require Node.js 22.12.0.
+
+### Patch Changes
+
+- Updated dependencies [[`cedeb1e`](https://github.com/codama-idl/codama/commit/cedeb1e45d0434219895cfa90a9cdf3410da7ac0), [`1f0fb88`](https://github.com/codama-idl/codama/commit/1f0fb881c3334110ea673772dcdb832c1e3885df), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6), [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`e92df74`](https://github.com/codama-idl/codama/commit/e92df74ea8495d419c74e5d42c4aa74293eae393), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`cedeb1e`](https://github.com/codama-idl/codama/commit/cedeb1e45d0434219895cfa90a9cdf3410da7ac0), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`eb01f83`](https://github.com/codama-idl/codama/commit/eb01f832387455f55800fe82e93fd7e2e0c484e5), [`23a8cbd`](https://github.com/codama-idl/codama/commit/23a8cbdb0af36aab9701558dda224f24cb831b0c), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`b869cef`](https://github.com/codama-idl/codama/commit/b869cefbe05a2ccd1fed9fb9750ad9de0abe66b8), [`23a8cbd`](https://github.com/codama-idl/codama/commit/23a8cbdb0af36aab9701558dda224f24cb831b0c), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7)]:
+  - @codama/visitors@2.0.0-rc.0
+  - @codama/errors@2.0.0-rc.0
+  - @codama/fragments@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+  - @codama/cli@2.0.0-rc.0
+  - @codama/validators@2.0.0-rc.0
+
 ## 1.11.0
 
 ### Patch Changes

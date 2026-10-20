@@ -1,5 +1,37 @@
 # @codama/renderers-core
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Require Node.js 22.12.0 or later.
+  
+  **BREAKING CHANGES**
+  
+  **Node.js 20 is no longer supported.** Every package now declares `"engines": { "node": ">=22.12.0" }`, the first Node.js 22 release that supports `require(esm)` by default. Node.js 20 reached its end of life in April 2026, and some dependencies (e.g. `commander`) already require Node.js 22.12.0.
+
+- [#1252](https://github.com/codama-idl/codama/pull/1252) [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Stop re-exporting `@codama/fragments`, so this package only exports `writeRenderMapVisitor` and `writeIdlVisitor`.
+  
+  **BREAKING CHANGES**
+  
+  **Fragments APIs are no longer re-exported.** Fragment primitives, casing helpers, filesystem and path helpers, and the `RenderMap` data operations must be imported from `@codama/fragments` directly.
+  
+  ```diff
+  - import { addToRenderMap, createRenderMap, deleteDirectory, writeRenderMapVisitor } from '@codama/renderers-core';
+  + import { addToRenderMap, createRenderMap, deleteDirectory } from '@codama/fragments';
+  + import { writeRenderMapVisitor } from '@codama/renderers-core';
+  ```
+
+### Patch Changes
+
+- Updated dependencies [[`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`1f0fb88`](https://github.com/codama-idl/codama/commit/1f0fb881c3334110ea673772dcdb832c1e3885df), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6), [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`e92df74`](https://github.com/codama-idl/codama/commit/e92df74ea8495d419c74e5d42c4aa74293eae393), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`b869cef`](https://github.com/codama-idl/codama/commit/b869cefbe05a2ccd1fed9fb9750ad9de0abe66b8), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391)]:
+  - @codama/visitors-core@2.0.0-rc.0
+  - @codama/errors@2.0.0-rc.0
+  - @codama/fragments@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+
 ## 1.4.1
 
 ### Patch Changes

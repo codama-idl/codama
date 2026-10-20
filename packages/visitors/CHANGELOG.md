@@ -1,5 +1,277 @@
 # @codama/visitors
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1262](https://github.com/codama-idl/codama/pull/1262) [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Remove the deprecated node kind aliases, the `ProgramVersion` type and the duplicate node path formatters. Each has a canonical replacement that was already exported.
+  
+  **BREAKING CHANGES**
+  
+  **Node kind aliases removed.** The legacy `*_NODES` aliases of `@codama/nodes` are removed in favour of the `*_NODE_KINDS` constants generated from the spec.
+  
+  ```diff
+  - import { CONTEXTUAL_VALUE_NODES, COUNT_NODES, DISCRIMINATOR_NODES, INSTRUCTION_INPUT_VALUE_NODES } from '@codama/nodes';
+  - import { LINK_NODES, PDA_SEED_NODES, TYPE_NODES, VALUE_NODES } from '@codama/nodes';
+  + import { CONTEXTUAL_VALUE_NODE_KINDS, COUNT_NODE_KINDS, DISCRIMINATOR_NODE_KINDS, INSTRUCTION_INPUT_VALUE_NODE_KINDS } from '@codama/nodes';
+  + import { LINK_NODE_KINDS, PDA_SEED_NODE_KINDS, TYPE_NODE_KINDS, VALUE_NODE_KINDS } from '@codama/nodes';
+  ```
+  
+  **`ProgramVersion` removed.** Use the `Version` type instead.
+  
+  ```diff
+  - import type { ProgramVersion } from '@codama/node-types';
+  + import type { Version } from '@codama/node-types';
+  ```
+  
+  **Node path formatters removed.** `nodePathToString` and `nodePathToStringArray` are removed from `@codama/visitors-core`. Use `getNodePathString` from `@codama/errors`, which renders paths the way error messages do, or `NodeStack#toString` for the current path of a stack.
+  
+  ```diff
+  - import { nodePathToString, nodePathToStringArray } from '@codama/visitors-core';
+  + import { getNodePathString } from '@codama/errors';
+  
+  - nodePathToString(path);
+  + getNodePathString(path);
+  - nodePathToStringArray(path);
+  + path.map(node => getNodePathString([node]));
+  ```
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Rework the `update*Visitor` functions for Codama v2: they match and rename nodes by exact `identifier`, reject unknown or missing targets, and repoint every reference to the nodes and members they rename.
+  
+  **BREAKING CHANGES**
+  
+  **`name` → `identifier`.** Every update visitor (`updateAccountsVisitor`, `updateDefinedTypesVisitor`, `updateErrorsVisitor`, `updateInstructionsVisitor` and `updateProgramsVisitor`) renames with `identifier`, including instruction accounts and data fields. Selector keys and new identifiers are used as given rather than camelCased.
+  
+  ```diff
+    updateInstructionsVisitor({
+        send: {
+  -         name: 'transfer',
+  -         accounts: { owner: { name: 'authority' } },
+  +         identifier: 'transfer',
+  +         accounts: { owner: { identifier: 'authority' } },
+        },
+    });
+  ```
+  
+  **Unknown keys throw.** An update containing an unrecognised key, such as v1's `name`, throws `CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS` instead of being silently ignored.
+  
+  **`arguments` → path-keyed `data`.** `updateInstructionsVisitor` updates the fields of the instruction's inline `data` struct, keyed by path, and `InstructionArgumentUpdates` is replaced by `InstructionDataUpdates`. Fields behind a `definedTypeLinkNode` cannot be updated since the defined type may be shared: unwrap it first. Default values must be `ValueNode`s, so contextual defaults are expressed with an `injectedValueNode` and a matching `provides` entry.
+  
+  ```diff
+    updateInstructionsVisitor({
+        transfer: {
+  -         arguments: {
+  -             amount: { defaultValue: numberValueNode(1) },
+  -             bump: { defaultValue: accountBumpValueNode('vault') },
+  -         },
+  +         data: {
+  +             amount: { defaultValue: integerValueNode('1') },
+  +             'config.decimals': { identifier: 'mintDecimals' },
+  +             bump: { defaultValue: injectedValueNode({ key: 'bump' }) },
+  +         },
+  +         provides: { bump: accountBumpValueNode('vault') },
+        },
+    });
+  ```
+  
+  **`provides` merged by key.** `provides` is a record merged by identifier with the instruction's `ProvidedNode`s, where a `null` value removes an entry.
+  
+  **Missing targets throw.** Updating an instruction account or a data field that does not exist throws `CODAMA_ERROR__VISITORS__INSTRUCTION_ACCOUNT_NOT_FOUND` or `CODAMA_ERROR__VISITORS__INSTRUCTION_DATA_FIELD_NOT_FOUND`. In v1, unknown arguments were silently added as extra arguments. Renaming a missing account field or defined type member throws `CODAMA_ERROR__VISITORS__ACCOUNT_FIELD_NOT_FOUND` or `CODAMA_ERROR__VISITORS__DEFINED_TYPE_MEMBER_NOT_FOUND`.
+  
+  **Updates are merged per node.** All entries matching a node, such as `transfer` and `myProgram.transfer`, are merged and applied at once against the original node, and a `delete` entry wins over the others. Nodes supplied by the updates, such as default values or provided nodes, must use the new identifiers.
+  
+  **Renames repoint every reference.** References are resolved through the linked nodes rather than matched by name, so links from other programs are handled and their `program` and other attributes are kept.
+  
+  - Renaming a program, account, PDA, defined type or instruction renames every link pointing to it. Renaming an account also renames the PDA of the same program sharing its identifier.
+  - Renaming an instruction account repoints the `accountValueNode`, `accountBumpValueNode`, `accountDataValueNode`, `instructionAccountLinkNode` and `${accounts.…}` placeholders pointing to it.
+  - Renaming instruction data fields, account data fields or struct fields of a defined type repoints every path going through them, such as `dataValueNode`s, `accountDataValueNode`s, `fieldDiscriminatorNode`s and `${data.…}` placeholders, following defined type links and crossing account links through `.data` segments (e.g. `mint.data.decimals`).
+  - Renaming the variants of an enum defined type repoints the `enumValueNode`s of that type.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Rename the visitors built around instruction arguments now that Codama v2 stores them as a struct in `instructionNode.data`, and remove the helpers that no longer apply.
+  
+  **BREAKING CHANGES**
+  
+  **Instruction argument visitors renamed.** Each visitor keeps its purpose but now operates on the instruction's `data`.
+  
+  ```diff
+  - flattenInstructionDataArgumentsVisitor()
+  + flattenInstructionDataVisitor()
+  - unwrapInstructionArgsDefinedTypesVisitor()
+  + unwrapInstructionDataDefinedTypesVisitor()
+  - createSubInstructionsFromEnumArgsVisitor({ mint: 'mintArgs' })
+  + createSubInstructionsFromEnumDataVisitor({ mint: 'mintArgs' })
+  ```
+  
+  **`flattenInstructionArguments` removed.** The helper and its `FlattenInstructionArgumentsConfig` type are gone. Use `flattenStruct` on the instruction's `data` struct instead. `flattenInstructionDataVisitor` only flattens inline struct data: linked data is left untouched since the defined type may be shared, so run `unwrapInstructionDataDefinedTypesVisitor` first to flatten it.
+  
+  **Sub-instructions follow the enum.** `createSubInstructionsFromEnumDataVisitor` names each sub-instruction `${instruction}_${variant}` without any casing transformation, instead of camelCasing it. Its discriminator field is named `${instruction}_${variant}_discriminator`, uses the enum's `size` instead of always `u8`, and defaults to the variant's `discriminator` (falling back to its index). Struct payloads are inlined, and enums carrying transforms keep the discriminator and payload grouped in a struct carrying them, so the wire format is preserved. Both the instruction data and the enum field may be linked. It throws `CODAMA_ERROR__VISITORS__INSTRUCTION_ENUM_DATA_FIELD_NOT_FOUND` when the instruction has no data, no such field, or a field that is not an enum.
+  
+  **Histogram keys renamed.** `DefinedTypeHistogram` is keyed by `program.type` identifiers, or by the type identifier alone outside of a program, rather than by camelCase names, and its counters follow the new data model.
+  
+  ```diff
+    {
+  -     directlyAsInstructionArgs: number;
+  +     directlyAsInstructionData: number;
+        inAccounts: number;
+        inDefinedTypes: number;
+        inEvents: number;
+  -     inInstructionArgs: number;
+  +     inInstructionData: number;
+  +     inInstructionReturnData: number;
+        total: number;
+    }
+  ```
+  
+  `directlyAsInstructionData` counts uses as an instruction's `data` itself or as the type of one of its top-level fields. `total` now counts every `definedTypeLinkNode`, including those in default values, PDA seeds and constants, and links with an explicit `program` are keyed by that program rather than the program they appear in.
+
+- [#1264](https://github.com/codama-idl/codama/pull/1264) [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Trim public exports that were only meant for internal use, so the public API only exposes what consumers need.
+  
+  **BREAKING CHANGES**
+  
+  **`@codama/errors` no longer exports `safeCaptureStackTrace`.** It was unused, even by `CodamaError`, and is also gone from `codama`, which re-exports it. Call `Error.captureStackTrace` directly if you need it.
+  
+  **`@codama/fragments/javascript` no longer exports `preferIncoming`.** Use `mergeImportMaps` or `addToImportMap`, which apply the same conflict-resolution rule.
+  
+  **`@codama/dynamic-address-resolution` no longer exports `OPTIONAL_NODE_KINDS`.** Check the type node kind directly, e.g. `isNode(type, ['optionTypeNode', 'remainderOptionTypeNode', 'zeroableOptionTypeNode'])`.
+  
+  **`@codama/nodes-from-anchor` only exports its root and program converters.** The per-node converters, their options types and the generics helpers are now internal. Convert whole IDLs with `rootNodeFromAnchor` (or `rootNodeFromAnchorV00`, `rootNodeFromAnchorV01`, `programNodeFromAnchorV00` and `programNodeFromAnchorV01`) and pick the nodes you need from the result. The removed exports are:
+  
+  - `accountNodeFromAnchorV00`, `arrayTypeNodeFromAnchorV00`, `constantNodeFromAnchorV00`, `definedTypeNodeFromAnchorV00`, `enumTypeNodeFromAnchorV00`, `enumVariantTypeNodeFromAnchorV00`, `errorNodeFromAnchorV00`, `eventNodeFromAnchorV00`, `instructionAccountNodeFromAnchorV00`, `instructionAccountNodesFromAnchorV00`, `instructionNodeFromAnchorV00`, `mapTypeNodeFromAnchorV00`, `optionTypeNodeFromAnchorV00`, `pdaNodeFromAnchorV00`, `pdaSeedTypeNodeFromAnchorV00`, `setTypeNodeFromAnchorV00`, `structFieldTypeNodeFromAnchorV00`, `structTypeNodeFromAnchorV00`, `tupleTypeNodeFromAnchorV00`, `typeNodeFromAnchorV00` and `InstructionAccountNodeFromAnchorV00Options`.
+  - `accountNodeFromAnchorV01`, `arrayTypeNodeFromAnchorV01`, `constantNodeFromAnchorV01`, `definedTypeNodeFromAnchorV01`, `enumTypeNodeFromAnchorV01`, `enumVariantTypeNodeFromAnchorV01`, `errorNodeFromAnchorV01`, `eventNodeFromAnchorV01`, `instructionAccountNodeFromAnchorV01`, `instructionAccountNodesFromAnchorV01`, `instructionNodeFromAnchorV01`, `optionTypeNodeFromAnchorV01`, `pdaSeedNodeFromAnchorV01`, `structFieldTypeNodeFromAnchorV01`, `structTypeNodeFromAnchorV01`, `tupleTypeNodeFromAnchorV01`, `typeNodeFromAnchorV01`, `unwrapGenericTypeFromAnchorV01`, `extractGenerics`, `GenericsV01`, `InstructionAccountNodeFromAnchorV01Options` and `PdaSeedNodeFromAnchorV01Options`.
+  - `extractPdasFromProgram`: use `extractPdasVisitor` instead.
+  
+  ```diff
+  - import { accountNodeFromAnchorV01 } from '@codama/nodes-from-anchor';
+  - const account = accountNodeFromAnchorV01(idl.accounts[0], idl.types, generics);
+  + import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
+  + const account = rootNodeFromAnchor(idl).program.accounts?.[0];
+  ```
+  
+  **`@codama/visitors-core` no longer exports `LINKABLE_NODES`, `getDependencies` and `assertNodePathHasProgram`.** These are also gone from `@codama/visitors` and `codama`, which re-export it. Use `findProgramNodeFromPath` to check that a path has a program, and `getResolvedInstructionInputsVisitor` to resolve instruction input dependencies.
+
+- [#1261](https://github.com/codama-idl/codama/pull/1261) [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Carry node paths in the remaining error contexts. Contexts that still held nodes or account names now hold node paths instead, e.g. the `cycle` of a circular dependency lists the path of each account and data field it goes through. Production-encoded contexts encode lists of node paths as lists of node selectors. `getInstructionDataFields` now returns the `fieldPath` of each field, and `mapVisitor` gives the visited node to its map function.
+  
+  **BREAKING CHANGES**
+  
+  **Nodes and account names replaced by node paths in error contexts.** The following contexts changed, completing the move to node paths.
+  
+  ```diff
+    if (isCodamaError(e, CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY)) {
+  -     const { chain } = e.context; // "a -> b -> a"
+  +     const { cycle, formattedCycle, path } = e.context; // formattedCycle: "a -> b -> a"
+  +     const account = cycle[0].at(-1); // instructionAccountNode a
+    }
+    if (isCodamaError(e, CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE)) {
+  -     const { accountName } = e.context;
+  +     const account = e.context.path.at(-1); // e.g. instructionAccountNode
+    }
+  ```
+  
+  | Code | Removed | Added |
+  | --- | --- | --- |
+  | `VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES` (1200002) | | `cycle` holds the path of each account and data field instead of the nodes themselves |
+  | `VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY` (1200004) | `dependency` | use `dependencyKind` and `dependencyName` |
+  | `VISITORS__INVALID_NUMBER_WRAPPER` (1200006) | | `path` of the number to wrap (empty when the wrapper is invalid on its own) |
+  | `VISITORS__FAILED_TO_VALIDATE_NODE` (1200008) | | `path` of the validated node |
+  | `DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND` (2500000) | | `path` of the program |
+  | `DYNAMIC_CLIENT__PDA_NOT_FOUND` (2500001) | | `path` of the program |
+  | `DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE` (2500005) | `accountName` | `path` of the account, remaining accounts, PDA or data field, and the `index` of the remaining account at fault |
+  | `DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY` (2500008) | `chain` | `path` of the instruction, `cycle`, `formattedCycle` |
+  
+  **`toAddressOrThrow` takes a node path.** The second argument of `toAddressOrThrow` from `@codama/dynamic-address-resolution` is now the path of the node the value should be the address of, rather than an account name.
+  
+  ```diff
+  - toAddressOrThrow(value, 'mint');
+  + toAddressOrThrow(value, [root, program, instruction, mint]);
+  ```
+  
+  It also takes an optional `index` for values given in a list, e.g. `toAddressOrThrow(value, [root, program, instruction, signers], 1)`, which the error carries in its context (it is not rendered in the message).
+  
+  **Messages changed accordingly.** The messages of these errors now render their `path`, e.g. `Circular dependency detected: [a -> b -> a].` becomes `Circular dependency detected when resolving the accounts and data of instruction [programNode]token.[instructionNode]transfer. Got the following dependency cycle [a -> b -> a].`.
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Require Node.js 22.12.0 or later.
+  
+  **BREAKING CHANGES**
+  
+  **Node.js 20 is no longer supported.** Every package now declares `"engines": { "node": ">=22.12.0" }`, the first Node.js 22 release that supports `require(esm)` by default. Node.js 20 reached its end of life in April 2026, and some dependencies (e.g. `commander`) already require Node.js 22.12.0.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Adapt `setNumberWrappersVisitor`, `setInstructionDiscriminatorsVisitor`, `setInstructionAccountDefaultValuesVisitor` and `fillDefaultPdaSeedValuesVisitor` to the Codama v2 numeric system and instruction data.
+  
+  **BREAKING CHANGES**
+  
+  **New `NumberWrapper` kinds.** `setNumberWrappersVisitor` targets `integerTypeNode`s (and `floatTypeNode`s for `Unit` and `UnitDisplay`). The `Amount` wrapper is removed in favour of `FixedPoint`, and new kinds cover durations, units and displays.
+  
+  ```diff
+    setNumberWrappersVisitor({
+        lamports: { kind: 'SolAmount' },
+  -     timestamp: { kind: 'DateTime' },
+  -     supply: { kind: 'Amount', decimals: 6, unit: 'USDC' },
+  +     timestamp: { kind: 'DateTime', ticksPerSecond: 1 },
+  +     supply: { kind: 'FixedPoint', scale: 6, unit: 'USDC' },
+  +     lockup: { kind: 'Duration' },
+  +     percent: { kind: 'Unit', unit: '%' },
+  +     amount: { kind: 'AmountDisplay', decimals: injectedValueNode({ key: 'decimals' }) },
+    });
+  ```
+  
+  `SolAmount` becomes a `fixedPointTypeNode` of scale 9 in `SOL`, and `AmountDisplay` and `UnitDisplay` set the number's `display`. Wrappers carry the `transforms` of the number they wrap, and integers used as sizes or prefixes, as well as numbers within the type of a constant, are left untouched. It throws `CODAMA_ERROR__VISITORS__INVALID_NUMBER_WRAPPER` for an unknown kind, a zero fixed-point scale, a fixed point wrapping a `shortU16`, or a wrapped integer that already carries a `unit` or `display`.
+  
+  **`setInstructionDiscriminatorsVisitor` options.** The exported `InstructionDiscriminator` options use `identifier` instead of `name`, and unknown keys throw `CODAMA_ERROR__VISITORS__UNRECOGNIZED_UPDATE_KEYS`. The `type` defaults to `integerTypeNode('u8')` and must have a fixed size.
+  
+  ```diff
+    setInstructionDiscriminatorsVisitor({
+  -     transfer: { name: 'kind', type: numberTypeNode('u32'), value: numberValueNode(1) },
+  +     transfer: { identifier: 'kind', type: integerTypeNode('u32'), value: integerValueNode('1') },
+    });
+  ```
+  
+  The discriminator is added as the first field of inline struct data without transforms (or absent data), with a `fieldDiscriminatorNode`. Otherwise, such as for linked data or data with a size prefix, it is added as a `hiddenPrefixTransformNode` on the data with a `constantDiscriminatorNode`, leaving any shared defined type untouched. The offsets of existing field and constant discriminators and the size of existing size discriminators are shifted by the discriminator's size. It throws `CODAMA_ERROR__VISITORS__CANNOT_SET_INSTRUCTION_DISCRIMINATOR` if the data already has a field with that identifier, if the `optional` strategy is used with a hidden prefix, or if the type has no fixed size.
+  
+  **Exact account matching in `setInstructionAccountDefaultValuesVisitor`.** String `account` and `instruction` rules match identifiers exactly instead of after camelCasing. The rules from `getCommonInstructionAccountDefaultRules` match both the camelCase and snake_case identifiers of common accounts (e.g. `systemProgram` and `system_program`). Sub-instructions now get default values too, and the given rules array is no longer sorted in place. Only rules whose PDA seeds cannot all be filled are skipped: any other error is now thrown rather than swallowed.
+  
+  **`fillDefaultPdaSeedValuesVisitor` fills `dataValueNode`s.** Variable seeds that do not match an account are filled with a `dataValueNode` when the instruction's data has a top-level field with the seed's identifier, following defined type links, instead of an `argumentValueNode`. Seeds match accounts and fields by exact identifier, and other attributes of the `pdaValueNode` are kept.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Adapt the remaining structural visitors to Codama v2 identifiers, flat transforms and plugins, matching identifiers exactly and refusing transformations that would silently lose information.
+  
+  **BREAKING CHANGES**
+  
+  **Exact identifier matching.** Identifiers given to `addPdasVisitor`, `flattenStructVisitor`, `setStructDefaultValuesVisitor`, `setAccountDiscriminatorFromFieldVisitor`, `transformDefinedTypesIntoAccountsVisitor` and `unwrapDefinedTypesVisitor` are matched exactly instead of after camelCasing, since v2 identifiers keep their casing.
+  
+  **camelCase collisions throw.** `addPdasVisitor` throws `CODAMA_ERROR__VISITORS__CANNOT_ADD_DUPLICATED_PDA_NAMES` when a new PDA shares a camelCase form with an existing or another new PDA of the same program. `flattenStruct` and `flattenStructVisitor` throw `CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_CONFLICTING_ATTRIBUTES` when two resulting fields share a camelCase form, following the spec's casing-collision rule.
+  
+  **Flattening preserves the wire format.** `flattenStruct` keeps struct fields whose struct carries `transforms` as they are, and throws `CODAMA_ERROR__VISITORS__CANNOT_FLATTEN_STRUCT_WITH_PLUGINS` when a struct to inline carries `plugins`. The flattened struct keeps its own attributes.
+  
+  **Inlining applies link transforms.** `unwrapDefinedTypesVisitor`, `unwrapTypeDefinedLinksVisitor` and `unwrapTupleEnumWithSingleStructVisitor` layer the `transforms` of the replaced link or tuple on top of the inlined type, and qualify the links inside a type inlined into another program with its original program.
+  
+  **Cyclic defined types are not inlined.** `unwrapDefinedTypesVisitor` keeps defined types in a cycle made only of types to inline, such as `node = struct { next: option<link(node)> }`, along with the links to them, since inlining them would never end.
+  
+  **Inline struct data required.** `setAccountDiscriminatorFromFieldVisitor` requires the account data to be an inline `structTypeNode`, since changing a linked defined type would affect every node using it. `setStructDefaultValuesVisitor` no longer has dedicated handling for instruction arguments: it updates the inline `data` struct of selected instructions like any other struct, and contextual defaults are expressed with an `injectedValueNode` and a matching `provides` entry.
+  
+  **Other behaviour changes.**
+  
+  - `addPdasVisitor` accepts full `PdaNodeInput`s, keeping every attribute such as `plugins`.
+  - `deduplicateIdenticalDefinedTypesVisitor` repoints links to the removed copies at the kept one, and only treats types as identical when every defined type they link to without an explicit program is itself deduplicated across the same programs.
+  - `transformDefinedTypesIntoAccountsVisitor` accepts defined types of any type, not only structs, and keeps their `docs` and `plugins`.
+  - `transformU8ArraysToBytesVisitor` produces a `bytesTypeNode` with a `fixedSizeTransformNode`, only converts plain `u8` items (without `unit`, `display`, `transforms` or `plugins`) and keeps the array's own `transforms` and `plugins`.
+  - `unwrapTupleEnumWithSingleStructVisitor` unwraps `enumVariantTypeNode`s whose data is a tuple with a single struct item or link to one, and removes the linked defined types that are no longer used.
+
+### Minor Changes
+
+- [#1221](https://github.com/codama-idl/codama/pull/1221) [`b869cef`](https://github.com/codama-idl/codama/commit/b869cefbe05a2ccd1fed9fb9750ad9de0abe66b8) Thanks [@tsiklic1](https://github.com/tsiklic1)! - Add `addProgramsVisitor` to append programs to a root node's additional programs, rejecting identifiers that collide with existing or other new programs after conversion to camelCase.
+
+### Patch Changes
+
+- [#1250](https://github.com/codama-idl/codama/pull/1250) [`cedeb1e`](https://github.com/codama-idl/codama/commit/cedeb1e45d0434219895cfa90a9cdf3410da7ac0) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Keep the links of enum values in `unwrapDefinedTypesVisitor` and `unwrapTypeDefinedLinksVisitor`, along with the defined types they target, instead of throwing on any enum default value.
+
+- [#1250](https://github.com/codama-idl/codama/pull/1250) [`cedeb1e`](https://github.com/codama-idl/codama/commit/cedeb1e45d0434219895cfa90a9cdf3410da7ac0) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Repoint the data paths going through inlined fields in `flattenInstructionDataVisitor`, e.g. a `params.seed` PDA seed becomes `seed`. It no longer throws on conflicts: a struct field is kept nested, while the others are still inlined, when inlining it would produce conflicting fields or when a data path refers to it as a whole, e.g. a `params` PDA seed.
+- Updated dependencies [[`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`1f0fb88`](https://github.com/codama-idl/codama/commit/1f0fb881c3334110ea673772dcdb832c1e3885df), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6), [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`e92df74`](https://github.com/codama-idl/codama/commit/e92df74ea8495d419c74e5d42c4aa74293eae393), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`b869cef`](https://github.com/codama-idl/codama/commit/b869cefbe05a2ccd1fed9fb9750ad9de0abe66b8), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391)]:
+  - @codama/visitors-core@2.0.0-rc.0
+  - @codama/errors@2.0.0-rc.0
+  - @codama/fragments@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+
 ## 1.11.0
 
 ### Minor Changes

@@ -1,5 +1,120 @@
 # @codama/validators
 
+## 2.0.0-rc.0
+
+### Major Changes
+
+- [#1157](https://github.com/codama-idl/codama/pull/1157) [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d) Thanks [@codama-releases](https://github.com/apps/codama-releases)! - Release Codama v2, supporting IDLs of the v2 standard. Upgrade v1 IDLs with the `codama upgrade` command or the `@codama/upgrade` package.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Validate Codama v2 IDLs with new rules covering identifier collisions, contextual values, paths, interpolated intents, numeric attributes, value labels and cyclic defined types.
+  
+  **BREAKING CHANGES**
+  
+  **Identifier-based messages.** Items refer to identifiers instead of names, e.g. `Account has no identifier.` instead of `Account has no name.`, and the `Program has no origin.` info item is removed along with `programNode.origin`. The bump check now reads `Data field "…" cannot default to the bump of the "…" account as it may be a signer.`
+  
+  **Identifier collisions.** Duplicated identifiers and distinct identifiers sharing a camelCase form are reported as errors, against the offending entry, among programs, each collection of a program, struct fields, enum variants, variable PDA seeds, and the accounts, remaining accounts, provided values and sub-instructions of an instruction. This replaces the former duplicated struct field, instruction account and instruction argument checks.
+  
+  **New error-level rules.**
+  
+  - Account links pointing to a missing account.
+  - Contextual values within instructions: `dataValueNode` paths must resolve within the instruction data, `accountValueNode`, `accountBumpValueNode` and `accountDataValueNode` accounts must be accounts of the instruction, and `accountDataValueNode`s need an account link and a path resolving within the linked account's data. Paths may cross account links through a `.data` segment (e.g. `mint.data.decimals`).
+  - Injected values consumed by an instruction that are neither provided nor have a fallback.
+  - Field discriminator paths must resolve to a struct field of their account, event or instruction data, and must not cross an account link.
+  - Interpolated intents of instruction displays must have valid placeholders, and their `${data.…}` and `${accounts.…}` placeholders are checked like the contextual values they stand for.
+  - `fixedPointTypeNode` scales must be positive integers, and `ticksPerSecond` of `dateTimeTypeNode`s and `durationTypeNode`s must be positive integers.
+  - Value labels on struct fields must be concrete values matching the field's type, not injected or constant values.
+  - Defined types in a cycle without any finite value, such as `loop = struct { next: link(loop) }`, are reported on every type of the cycle, carrying the `CODAMA_ERROR__DEFINED_TYPE_HAS_NO_FINITE_VALUE` error their codecs would throw as `cause`. Types outside a program are not checked.
+  
+  **New info-level rule.** A `textNode` without plugins suggests using a plain string instead.
+
+- [#1261](https://github.com/codama-idl/codama/pull/1261) [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Carry node paths in the remaining error contexts. Contexts that still held nodes or account names now hold node paths instead, e.g. the `cycle` of a circular dependency lists the path of each account and data field it goes through. Production-encoded contexts encode lists of node paths as lists of node selectors. `getInstructionDataFields` now returns the `fieldPath` of each field, and `mapVisitor` gives the visited node to its map function.
+  
+  **BREAKING CHANGES**
+  
+  **Nodes and account names replaced by node paths in error contexts.** The following contexts changed, completing the move to node paths.
+  
+  ```diff
+    if (isCodamaError(e, CODAMA_ERROR__DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY)) {
+  -     const { chain } = e.context; // "a -> b -> a"
+  +     const { cycle, formattedCycle, path } = e.context; // formattedCycle: "a -> b -> a"
+  +     const account = cycle[0].at(-1); // instructionAccountNode a
+    }
+    if (isCodamaError(e, CODAMA_ERROR__DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE)) {
+  -     const { accountName } = e.context;
+  +     const account = e.context.path.at(-1); // e.g. instructionAccountNode
+    }
+  ```
+  
+  | Code | Removed | Added |
+  | --- | --- | --- |
+  | `VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES` (1200002) | | `cycle` holds the path of each account and data field instead of the nodes themselves |
+  | `VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY` (1200004) | `dependency` | use `dependencyKind` and `dependencyName` |
+  | `VISITORS__INVALID_NUMBER_WRAPPER` (1200006) | | `path` of the number to wrap (empty when the wrapper is invalid on its own) |
+  | `VISITORS__FAILED_TO_VALIDATE_NODE` (1200008) | | `path` of the validated node |
+  | `DYNAMIC_CLIENT__INSTRUCTION_NOT_FOUND` (2500000) | | `path` of the program |
+  | `DYNAMIC_CLIENT__PDA_NOT_FOUND` (2500001) | | `path` of the program |
+  | `DYNAMIC_CLIENT__UNEXPECTED_ADDRESS_TYPE` (2500005) | `accountName` | `path` of the account, remaining accounts, PDA or data field, and the `index` of the remaining account at fault |
+  | `DYNAMIC_CLIENT__CIRCULAR_ACCOUNT_DEPENDENCY` (2500008) | `chain` | `path` of the instruction, `cycle`, `formattedCycle` |
+  
+  **`toAddressOrThrow` takes a node path.** The second argument of `toAddressOrThrow` from `@codama/dynamic-address-resolution` is now the path of the node the value should be the address of, rather than an account name.
+  
+  ```diff
+  - toAddressOrThrow(value, 'mint');
+  + toAddressOrThrow(value, [root, program, instruction, mint]);
+  ```
+  
+  It also takes an optional `index` for values given in a list, e.g. `toAddressOrThrow(value, [root, program, instruction, signers], 1)`, which the error carries in its context (it is not rendered in the message).
+  
+  **Messages changed accordingly.** The messages of these errors now render their `path`, e.g. `Circular dependency detected: [a -> b -> a].` becomes `Circular dependency detected when resolving the accounts and data of instruction [programNode]token.[instructionNode]transfer. Got the following dependency cycle [a -> b -> a].`.
+
+- [#1260](https://github.com/codama-idl/codama/pull/1260) [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Require Node.js 22.12.0 or later.
+  
+  **BREAKING CHANGES**
+  
+  **Node.js 20 is no longer supported.** Every package now declares `"engines": { "node": ">=22.12.0" }`, the first Node.js 22 release that supports `require(esm)` by default. Node.js 20 reached its end of life in April 2026, and some dependencies (e.g. `commander`) already require Node.js 22.12.0.
+
+- [#1248](https://github.com/codama-idl/codama/pull/1248) [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Drop the `node` attribute of validation items in favour of their `path`, and keep the `CodamaError` a validation item stems from as its `cause`.
+  
+  **BREAKING CHANGES**
+  
+  **`ValidationItem.node` removed.** The node an item is about is now the last node of its `path`, which `ValidationItem<TNode>` can type. Items about identifier collisions and instruction accounts without identifiers now lead to the offending entry rather than its parent.
+  
+  ```diff
+  - const node = item.node;
+  + const node = getLastNodeFromPath(item.path);
+  ```
+  
+  **`ValidationItem.cause` added.** Items matching a `CodamaError`, whether thrown while validating (e.g. a cyclic dependency between instruction inputs) or the error a codec would throw (e.g. a defined type without a finite value), keep it as their `cause`, so consumers can match its code and context rather than its message.
+  
+  ```ts
+  const cycles = items.filter(item =>
+      isCodamaError(
+          item.cause,
+          CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
+      ),
+  );
+  ```
+  
+  **`validationItem` signature changed.** The `node` parameter is removed and an optional `cause` is appended. Passing an empty path, or a `NodeStack` whose path is empty, throws `CODAMA_ERROR__UNEXPECTED_NODE_KIND`, since an item must be about a node.
+  
+  ```diff
+  - validationItem('warn', 'Program has no version.', program, stack);
+  + validationItem('warn', 'Program has no version.', stack);
+  + validationItem('error', error.message, stack, error);
+  ```
+
+### Minor Changes
+
+- [#1254](https://github.com/codama-idl/codama/pull/1254) [`eb01f83`](https://github.com/codama-idl/codama/commit/eb01f832387455f55800fe82e93fd7e2e0c484e5) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Report instructions whose identifier collides with another instruction or sub-instruction of their program, at any nesting level, whether as an exact duplicate or once converted to camelCase, since instruction links would otherwise resolve to the wrong instruction and renderers would write flattened instructions to the same file. Collisions within the same set of sibling instructions are still only reported once, by the existing identifier collision check.
+
+### Patch Changes
+
+- Updated dependencies [[`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`1f0fb88`](https://github.com/codama-idl/codama/commit/1f0fb881c3334110ea673772dcdb832c1e3885df), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`e1cce0d`](https://github.com/codama-idl/codama/commit/e1cce0d1b1841c82f58896381b628c2beb6962d6), [`64d52eb`](https://github.com/codama-idl/codama/commit/64d52eb19d4d853337fd1fbc3a874b1647e7960d), [`e92df74`](https://github.com/codama-idl/codama/commit/e92df74ea8495d419c74e5d42c4aa74293eae393), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`909960f`](https://github.com/codama-idl/codama/commit/909960ff465c07d0fa63f977fe01bb53c9111806), [`3f76a7f`](https://github.com/codama-idl/codama/commit/3f76a7f841a195a86d1fa812ba1d781b1acb1a43), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`bb09077`](https://github.com/codama-idl/codama/commit/bb09077c6f7e7590836d5c2f02c9fd7dca310b20), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`3ad402a`](https://github.com/codama-idl/codama/commit/3ad402a5bf132263c989921f9e049468861319b7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`277eae1`](https://github.com/codama-idl/codama/commit/277eae120b39ab578232e86547fda6281a928ddb), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`b869cef`](https://github.com/codama-idl/codama/commit/b869cefbe05a2ccd1fed9fb9750ad9de0abe66b8), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`7f8beda`](https://github.com/codama-idl/codama/commit/7f8beda9e468638f05b9c5de20c8ea80a5d740a7), [`08d72e7`](https://github.com/codama-idl/codama/commit/08d72e75f10c587091c6e3384acf3d3e2c09d391)]:
+  - @codama/visitors-core@2.0.0-rc.0
+  - @codama/errors@2.0.0-rc.0
+  - @codama/fragments@2.0.0-rc.0
+  - @codama/nodes@2.0.0-rc.0
+
 ## 1.11.0
 
 ### Patch Changes
