@@ -75,13 +75,8 @@ export function createAccountDefaultValueVisitor(
 
         visitConditionalValue: async node => {
             const branch = await resolveConditionalValueNodeCondition(node, ixAccountNode, ctx);
-            if (branch === undefined) {
-                // No matching branch: optional accounts resolve using the optional account strategy.
-                if (ixAccountNode.isOptional) return null;
-                throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING, {
-                    path: [...ctx.instructionPath, ixAccountNode],
-                });
-            }
+            // No matching branch resolves to nothing, see `resolveAccountAddress`.
+            if (branch === undefined) return null;
             return await visitOrElse(branch, visitor, unexpectedAccountDefaultValueNode);
         },
 

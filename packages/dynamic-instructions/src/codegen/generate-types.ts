@@ -1,4 +1,4 @@
-import { generateResolutionInputTypes } from '@codama/dynamic-address-resolution/codegen';
+import { generateDefinedTypes, generateResolutionInputTypes } from '@codama/dynamic-address-resolution/codegen';
 import type { RootNode } from 'codama';
 
 import { generateInstructionBuildersMap, generateReadsAccountDataTypes } from './generate-instruction-builder';
@@ -6,6 +6,7 @@ import { generateSignerTypes } from './generate-signer-types';
 
 /**
  * Generate a self-contained TypeScript file with all instruction types for a Codama IDL:
+ * - Aliases of the recursive defined types they use, e.g. `NodeArgs`.
  * - Per-instruction `${Name}InstructionDataArgs`, `${Name}Accounts` and `${Name}AccountsWithData`.
  * - Per-instruction `${Name}Signers` aliases.
  * - Per-instruction `${Name}ReadsAccountData` flags, requiring `fetchAccounts` when `true`.
@@ -14,6 +15,7 @@ import { generateSignerTypes } from './generate-signer-types';
 export function generateTypes(idl: RootNode): string {
     return (
         INSTRUCTION_TYPES_FILE_HEADER +
+        generateDefinedTypes(idl) +
         generateResolutionInputTypes(idl) +
         generateSignerTypes(idl) +
         generateReadsAccountDataTypes(idl) +

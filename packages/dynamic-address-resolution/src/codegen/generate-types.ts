@@ -1,16 +1,23 @@
 import type { RootNode } from 'codama';
 
+import { generateDefinedTypes } from './generate-defined-types';
 import { generatePdaTypes } from './generate-pda-types';
 import { generateResolutionInputTypes } from './generate-resolution-input-types';
 
 /**
  * Generate a self-contained TypeScript file with all address-resolution types for a Codama IDL:
+ * - Aliases of the recursive defined types they use, e.g. `NodeArgs`,
  * - PDA seed types, `${Program}Pdas` map,
  * - Per-instruction `${Name}InstructionDataArgs` and `${Name}Accounts`.
  */
 export function generateTypes(idl: RootNode): string {
     const { typeBlock: pdaBlock, mapTypeName } = generatePdaTypes(idl);
-    return getTypesFileHeader(mapTypeName !== null) + pdaBlock + generateResolutionInputTypes(idl);
+    return (
+        getTypesFileHeader(mapTypeName !== null) +
+        generateDefinedTypes(idl) +
+        pdaBlock +
+        generateResolutionInputTypes(idl)
+    );
 }
 
 const getTypesFileHeader = (importPdaTypes: boolean): string => {

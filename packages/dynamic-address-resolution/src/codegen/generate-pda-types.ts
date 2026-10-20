@@ -1,4 +1,12 @@
-import { pascalCase, type PdaNode, type RootNode, type VariablePdaSeedNode } from 'codama';
+import {
+    getLinkablesFromNode,
+    type NodePath,
+    pascalCase,
+    type PdaNode,
+    type RootNode,
+    type TypeNode,
+    type VariablePdaSeedNode,
+} from 'codama';
 
 import { codamaTypeToTS } from './codama-type-to-ts';
 import { collectPdaNodesFromIdl } from './collect-pda-nodes';
@@ -6,12 +14,13 @@ import { collectPdaNodesFromIdl } from './collect-pda-nodes';
 /**
  * Generate `${Pda}Seeds` types and the aggregate `${Program}Pdas` map type, whose
  * functions take an optional `programId` overriding the program deriving the PDA.
+ * Recursive seed types are referenced by the aliases `generateDefinedTypes` emits.
  *
  * Returns the type block with the aggregate map type name. `mapTypeName` is `null` when the program has no PDAs.
  */
 export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; typeBlock: string } {
     const programName = pascalCase(idl.program.identifier);
-    const definedTypes = idl.program.definedTypes ?? [];
+    const linkables = getLinkablesFromNode(idl);
     const pdaMap = collectPdaNodesFromIdl(idl);
 
     if (pdaMap.size === 0) {
@@ -27,7 +36,7 @@ export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; t
         output += `export type ${typeName}Seeds = {\n`;
         for (const seed of variableSeeds) {
             const tsType = seed.type
-                ? codamaTypeToTS(seed.type, definedTypes)
+                ? codamaTypeToTS(getVariableSeedTypePath(idl, pdaNode, seed), linkables)
                 : 'unknown/** missing type in variablePdaSeedNode */';
             output += `    ${seed.identifier}: ${tsType};\n`;
         }
@@ -48,6 +57,18 @@ export function generatePdaTypes(idl: RootNode): { mapTypeName: string | null; t
     return { mapTypeName, typeBlock: output };
 }
 
-function getVariableSeedNodes(pdaNode: PdaNode): VariablePdaSeedNode[] {
+export function getVariableSeedNodes(pdaNode: PdaNode): VariablePdaSeedNode[] {
     return (pdaNode.seeds ?? []).filter(s => s.kind === 'variablePdaSeedNode');
+}
+
+/**
+ * The path of the type of a variable seed, used to resolve its links. PDAs collected from the
+ * instructions of the program resolve their links within that program, as PDAs of the program do.
+ */
+export function getVariableSeedTypePath(
+    idl: RootNode,
+    pdaNode: PdaNode,
+    seed: VariablePdaSeedNode,
+): NodePath<TypeNode> {
+    return [idl, idl.program, pdaNode, seed, seed.type];
 }

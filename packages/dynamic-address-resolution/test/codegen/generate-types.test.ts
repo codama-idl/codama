@@ -1,4 +1,15 @@
-import { constantPdaSeedNodeFromString, pdaNode, programNode, rootNode } from 'codama';
+import {
+    constantPdaSeedNodeFromString,
+    definedTypeLinkNode,
+    definedTypeNode,
+    instructionNode,
+    optionTypeNode,
+    pdaNode,
+    programNode,
+    rootNode,
+    structFieldTypeNode,
+    structTypeNode,
+} from 'codama';
 import { describe, expect, test } from 'vitest';
 
 import { generateTypes } from '../../src/codegen/generate-types';
@@ -25,5 +36,22 @@ describe('generateTypes', () => {
 
         const output = generateTypes(root);
         expect(output).toContain("import type { Address, ProgramDerivedAddress } from '@solana/addresses';");
+    });
+
+    test('it emits the aliases of the recursive types it references', () => {
+        const node = definedTypeNode({
+            identifier: 'node',
+            type: structTypeNode([
+                structFieldTypeNode({ identifier: 'next', type: optionTypeNode(definedTypeLinkNode('node')) }),
+            ]),
+        });
+        const push = instructionNode({ data: definedTypeLinkNode('node'), identifier: 'push' });
+        const root = rootNode(
+            programNode({ definedTypes: [node], identifier: 'p', instructions: [push], publicKey: '1111' }),
+        );
+
+        const output = generateTypes(root);
+        expect(output).toContain('export type NodeArgs = { next?: NodeArgs | null };');
+        expect(output).toContain('export type PushInstructionDataArgs = { next?: NodeArgs | null };');
     });
 });

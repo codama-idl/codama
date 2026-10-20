@@ -3,6 +3,7 @@ import {
     CODAMA_ERROR__CANNOT_RESOLVE_PATH,
     CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__DATA_MISSING,
+    CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING,
     CODAMA_ERROR__DYNAMIC_CLIENT__INVARIANT_VIOLATION,
     CODAMA_ERROR__DYNAMIC_CLIENT__NODE_REFERENCE_NOT_FOUND,
     CODAMA_ERROR__DYNAMIC_CLIENT__UNSUPPORTED_NODE,
@@ -36,7 +37,6 @@ import {
 } from 'codama';
 
 import { toAddressOrThrow } from '../shared/address';
-import type { FetchAccountsFn } from '../shared/types';
 import { getInstruction, getValue } from './context';
 import { detectCircularDependency, resolveAccountValueNodeAddress } from './resolve-account-value-node-address';
 import type { ResolutionContext } from './types';
@@ -261,14 +261,19 @@ function getLinkedAccountPath(typePath: TypePath, ctx: ResolutionContext): NodeP
 /**
  * Fetch the account at the given address and decode its data using the account at the end of
  * `accountPath`. Decoding errors are Kit's `SOLANA_ERROR__ACCOUNTS__FAILED_TO_DECODE_ACCOUNT`.
+ *
+ * @throws `DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING` when the context has no `fetchAccounts` function.
  */
 async function readAccountData(
     ctx: ResolutionContext,
     address: Address,
     accountPath: NodePath<AccountNode>,
 ): Promise<unknown> {
-    // Instructions reading account data require `fetchAccounts` in their generated types.
-    const [account] = await (ctx.fetchAccounts as FetchAccountsFn)([address]);
+    // Generated types require `fetchAccounts` for instructions reading account data, but untyped callers may omit it.
+    if (!ctx.fetchAccounts) {
+        throw new CodamaError(CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING, { path: accountPath });
+    }
+    const [account] = await ctx.fetchAccounts([address]);
     const codecVisitor = getNodeCodecVisitor(ctx.linkables, { stack: new NodeStack(accountPath.slice(0, -1)) });
     // Decoded nodes are objects, as Kit's `decodeAccount` requires, whatever the account data.
     return decodeAccount(account, visit(getLastNodeFromPath(accountPath), codecVisitor)).data.value;

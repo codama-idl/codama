@@ -49,6 +49,9 @@ export type ResolveInstructionAccountAddressInput<
  * | With default | `undefined` | its default value |
  * | Optional | `null` | its `optionalAccountStrategy` |
  *
+ * Default values resolving to nothing, e.g. an omitted optional account, use the
+ * `optionalAccountStrategy` of optional accounts and throw for required ones.
+ *
  * Default values reading account data, e.g. `accountDataValueNode('mint', { path: 'mintAuthority' })`,
  * fetch these accounts with `fetchAccounts` and decode them using their `accountLink`.
  *

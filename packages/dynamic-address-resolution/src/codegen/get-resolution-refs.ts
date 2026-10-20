@@ -1,4 +1,15 @@
-import { type DefinedTypeNode, type InstructionNode, isNode, pascalCase, type TypeNode } from 'codama';
+import {
+    type DefinedTypeLinkNode,
+    type DefinedTypeNode,
+    getLastNodeFromPath,
+    getLinkablesFromNode,
+    type InstructionNode,
+    isNode,
+    type LinkableDictionary,
+    type NodePath,
+    pascalCase,
+    type TypeNode,
+} from 'codama';
 
 import { OPTIONAL_NODE_KINDS } from '../shared/nodes';
 
@@ -26,9 +37,23 @@ export type ResolutionRefs = {
     hasRequiredData: boolean;
 };
 
-export function getResolutionRefs(ix: InstructionNode, definedTypes: DefinedTypeNode[] = []): ResolutionRefs {
+/**
+ * Get the {@link ResolutionRefs} of the instruction at the end of the given path. Its linked data
+ * type is resolved from that path, following the program of the link if any, using the linkable
+ * nodes of the tree, recorded from the root of the path unless given.
+ *
+ * @example
+ * ```ts
+ * getResolutionRefs([root, root.program, transfer]).dataRef; // 'TransferInstructionDataArgs'
+ * ```
+ */
+export function getResolutionRefs(
+    path: NodePath<InstructionNode>,
+    linkables: LinkableDictionary = getLinkablesFromNode(path[0]),
+): ResolutionRefs {
+    const ix = getLastNodeFromPath(path);
     const typeName = pascalCase(ix.identifier);
-    const data = resolveType(ix.data, definedTypes);
+    const data = ix.data ? resolveType([...path, ix.data], linkables) : undefined;
     // Omitted fields always encode their default value, so they are never provided.
     const fields = isNode(data, 'structTypeNode')
         ? (data.fields ?? []).filter(field => field.defaultValueStrategy !== 'omitted' || !field.defaultValue)
@@ -47,8 +72,21 @@ export function getResolutionRefs(ix: InstructionNode, definedTypes: DefinedType
     };
 }
 
-/** Resolve a link to its defined type when found, keeping unresolved links as data of unknown shape. */
-function resolveType(type: TypeNode | undefined, definedTypes: DefinedTypeNode[]): TypeNode | undefined {
-    if (!isNode(type, 'definedTypeLinkNode')) return type;
-    return definedTypes.find(definedType => definedType.identifier === type.identifier)?.type ?? type;
+/**
+ * Resolve links to their defined types when found, keeping unresolved or circular links as
+ * data of unknown shape.
+ */
+function resolveType(path: readonly [...NodePath, TypeNode], linkables: LinkableDictionary): TypeNode {
+    let typePath = path;
+    const followedTypes = new Set<DefinedTypeNode>();
+    for (;;) {
+        const type = typePath[typePath.length - 1] as TypeNode;
+        if (!isNode(type, 'definedTypeLinkNode')) return type;
+        const definedTypePath = linkables.getPath(typePath as unknown as NodePath<DefinedTypeLinkNode>);
+        if (!definedTypePath) return type;
+        const definedType = getLastNodeFromPath(definedTypePath);
+        if (followedTypes.has(definedType)) return type;
+        followedTypes.add(definedType);
+        typePath = [...definedTypePath, definedType.type];
+    }
 }

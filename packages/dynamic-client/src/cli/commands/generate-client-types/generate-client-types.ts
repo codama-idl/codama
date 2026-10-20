@@ -1,4 +1,5 @@
 import {
+    generateDefinedTypes,
     generatePdaTypes,
     generateResolutionInputTypes,
     getResolutionRefs,
@@ -43,13 +44,14 @@ export type MethodBuilder<TAccounts, TSigners extends string[]> = {
 
 `;
 
+    output += generateDefinedTypes(idl);
     output += generateResolutionInputTypes(idl);
     output += generateSignerTypes(idl);
 
-    const definedTypes = idl.program.definedTypes ?? [];
+    const linkables = getLinkablesFromNode(idl);
     for (const ix of idl.program.instructions ?? []) {
         const typeName = pascalCase(ix.identifier);
-        const refs = getResolutionRefs(ix, definedTypes);
+        const refs = getResolutionRefs([idl, idl.program, ix], linkables);
         const signerRef = getInstructionSignerRef(ix);
         const signersGeneric = signerRef.signersRef ?? 'string[]';
 
@@ -78,7 +80,6 @@ export type ${programName}Methods = {\n`;
 
     const pdasProp = pdasMapTypeName ? `    pdas: ${pdasMapTypeName};\n` : '';
     // Clients of programs reading account data require \`fetchAccounts\` when created.
-    const linkables = getLinkablesFromNode(idl);
     const reads = (idl.program.instructions ?? []).some(ix => readsAccountData([idl, idl.program, ix], linkables));
     output += `/**
  * Strongly-typed program client for ${programName}.

@@ -67,7 +67,7 @@ const address = await resolveInstructionAccountAddress({
 });
 ```
 
-Errors come from Kit: `assertAccountsExist` throws for accounts that do not exist, and data that does not decode throws `SOLANA_ERROR__ACCOUNTS__FAILED_TO_DECODE_ACCOUNT`. Errors thrown by `fetchAccounts` are thrown as is. `readsAccountData(path)` tells whether building an instruction may read account data, and thus needs `fetchAccounts`; the generated types of `@codama/dynamic-instructions` and `@codama/dynamic-client` use it to require the option.
+Errors come from Kit: `assertAccountsExist` throws for accounts that do not exist, and data that does not decode throws `SOLANA_ERROR__ACCOUNTS__FAILED_TO_DECODE_ACCOUNT`. Errors thrown by `fetchAccounts` are thrown as is. Reading account data without a `fetchAccounts` function throws a `CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING` error, whose `path` is the path of the account to read. `readsAccountData(path)` tells whether building an instruction may read account data, and thus needs `fetchAccounts`; the generated types of `@codama/dynamic-instructions` and `@codama/dynamic-client` use it to require the option.
 
 Accounts requested together are fetched in a single call, and each account is fetched once per resolution. Use `getBatchedFetchAccounts(fetchAccounts)` to share these batches and this cache across several resolutions, e.g. all the accounts of an instruction.
 
@@ -94,6 +94,8 @@ A provided address is always used. Otherwise, the account resolves from its `def
 | Optional (`isOptional: true`), without one | Throws                    | Optional account strategy |
 | Optional, with `defaultValue`              | Resolves from its default | Optional account strategy |
 
+A default value may resolve to nothing, e.g. an `accountValueNode` referring to an optional account omitted by the `omitted` strategy, or a `conditionalValueNode` without a matching branch. Optional accounts then resolve using the optional account strategy, and required accounts throw a `CODAMA_ERROR__DYNAMIC_CLIENT__ACCOUNT_MISSING` error rather than being left out of the instruction.
+
 Default values resolve as follows.
 
 | Default value          | Resolves to                                                                                                  |
@@ -116,7 +118,7 @@ Paths of data values may cross the `accountLink` of a public key, with a `.data`
 
 ### PDAs
 
-Each seed is encoded using its declared type: constant seeds use their value, and variable seeds use the value provided by the `pdaValueNode`, from an account, the instruction data, the data of an account injected through an `accountDataValueNode`, or a value node. Missing `remainderOptionTypeNode` seeds encode to zero bytes.
+Each seed is encoded using its declared type: constant seeds use their value, and variable seeds use the value provided by the `pdaValueNode`, from an account, the instruction data, the data of an account injected through an `accountDataValueNode`, or a value node. Injected seed values resolve like the values they inject, e.g. an injected `accountValueNode` gives the address of that account. Missing `remainderOptionTypeNode` seeds encode to zero bytes.
 
 ```ts
 // seeds: [constant('vault'), variable('owner', publicKey), variable('name', string)]
@@ -150,7 +152,7 @@ const [address, bump] = await resolveStandalonePda({
 
 ## Types generation
 
-This package can generate the TypeScript input types of each instruction: `${Name}InstructionDataArgs` for its data, `${Name}Accounts` for its accounts, including remaining accounts as named `Address[]` lists, and `${Pda}Seeds` for the variable seeds of each PDA.
+This package can generate the TypeScript input types of each instruction: `${Name}InstructionDataArgs` for its data, `${Name}Accounts` for its accounts, including remaining accounts as named `Address[]` lists, and `${Pda}Seeds` for the variable seeds of each PDA. Linked types are inlined, following the program of their link, except recursive types, which are emitted once as `${Type}Args` aliases, prefixed with the name of their program when it is an additional program, e.g. `OtherProgramNodeArgs`.
 
 ### CLI
 
