@@ -3,6 +3,9 @@ import {
     assertIsNode,
     definedTypeLinkNode,
     definedTypeNode,
+    enumTypeNode,
+    enumValueNode,
+    enumVariantTypeNode,
     fixedSizeTransformNode,
     integerTypeNode,
     programLinkNode,
@@ -107,5 +110,42 @@ test('it qualifies links inside types inlined into another program', () => {
     assertIsNode(result, 'rootNode');
     expect(result.program.accounts?.[0].data).toStrictEqual(
         definedTypeLinkNode('inner', { program: programLinkNode('programB') }),
+    );
+});
+
+test('it keeps the links of enum values', () => {
+    // Given a field linking to an enum type, whose default value is a variant of that enum.
+    const directionType = enumTypeNode([enumVariantTypeNode('up'), enumVariantTypeNode('down')]);
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([
+                    structFieldTypeNode({
+                        defaultValue: enumValueNode('direction', 'up'),
+                        identifier: 'heading',
+                        type: definedTypeLinkNode('direction'),
+                    }),
+                ]),
+                identifier: 'myAccount',
+            }),
+        ],
+        definedTypes: [definedTypeNode({ identifier: 'direction', type: directionType })],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+
+    // When we unwrap every link to the enum type.
+    const result = visit(node, unwrapTypeDefinedLinksVisitor(['[definedTypeLinkNode]direction']));
+
+    // Then the field type is inlined while the enum value keeps its link.
+    assertIsNode(result, 'programNode');
+    expect(result.accounts?.[0].data).toStrictEqual(
+        structTypeNode([
+            structFieldTypeNode({
+                defaultValue: enumValueNode('direction', 'up'),
+                identifier: 'heading',
+                type: directionType,
+            }),
+        ]),
     );
 });

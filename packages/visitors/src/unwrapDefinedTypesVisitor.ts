@@ -1,10 +1,11 @@
-import { assertIsNode, DefinedTypeNode, IdentifierString, programNode, TYPE_NODES } from '@codama/nodes';
+import { assertIsNode, DefinedTypeNode, IdentifierString, isNode, Node, programNode, TYPE_NODES } from '@codama/nodes';
 import {
     extendVisitor,
     findProgramNodeFromPath,
     getDefinedTypeLinksVisitor,
     getLastNodeFromPath,
     LinkableDictionary,
+    mergeVisitor,
     NodePath,
     NodeStack,
     nonNullableIdentityVisitor,
@@ -33,6 +34,10 @@ import { inlineDefinedType } from './inlineDefinedTypeHelpers';
  * inlining would never end: they are kept, and so are the links to them.
  * Cycles going through a type that is not inlined end at its link, so their
  * other types are inlined as usual.
+ *
+ * The link of an `enumValueNode` names the enum its variant belongs to and
+ * cannot be replaced by a type: it is kept, and so is the defined type it
+ * targets, in its own program. Other links to that type are still inlined.
  */
 export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
     const linkables = new LinkableDictionary();
@@ -71,12 +76,44 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
         return cyclic;
     };
 
+    // The defined types targeted by the links of enum values, which must be kept. Computed once per visited root.
+    const enumValueTargets = new WeakMap<Node, Set<DefinedTypeNode>>();
+    const getEnumValueTargets = (root: Node): Set<DefinedTypeNode> => {
+        if (!enumValueTargets.has(root)) {
+            const targetsStack = new NodeStack();
+            const targets = visit(
+                root,
+                pipe(
+                    mergeVisitor(
+                        () => [] as DefinedTypeNode[],
+                        (_, values) => values.flat(),
+                    ),
+                    v =>
+                        extendVisitor(v, {
+                            visitEnumValue(node, { next }) {
+                                const definedTypePath = linkables.getPath([...targetsStack.getPath(), node.enum]);
+                                return [
+                                    ...(definedTypePath ? [getLastNodeFromPath(definedTypePath)] : []),
+                                    ...next(node),
+                                ];
+                            },
+                        }),
+                    v => recordNodeStackVisitor(v, targetsStack),
+                ),
+            );
+            enumValueTargets.set(root, new Set(targets));
+        }
+        return enumValueTargets.get(root)!;
+    };
+
     return pipe(
         nonNullableIdentityVisitor(),
         v =>
             extendVisitor(v, {
                 visitDefinedTypeLink(link, { self }) {
-                    const linkProgram = findProgramNodeFromPath(stack.getPath())?.identifier;
+                    const path = stack.getPath();
+                    if (isNode(path[path.length - 2], 'enumValueNode')) return link;
+                    const linkProgram = findProgramNodeFromPath(path)?.identifier;
                     const definedTypeProgram = link.program?.identifier ?? linkProgram;
                     if (!shouldInline(link.identifier, definedTypeProgram)) {
                         return link;
@@ -96,12 +133,14 @@ export function unwrapDefinedTypesVisitor(typesToInline: string[] | '*' = '*') {
 
                 visitProgram(program, { next }) {
                     const programPath = stack.getPath('programNode');
+                    const enumValueTargets = getEnumValueTargets(programPath[0]);
                     return next(
                         programNode({
                             ...program,
                             definedTypes: (program.definedTypes ?? []).filter(
                                 definedType =>
                                     !shouldInline(definedType.identifier, program.identifier) ||
+                                    enumValueTargets.has(definedType) ||
                                     isInInlinedCycle([...programPath, definedType]),
                             ),
                         }),
