@@ -1,15 +1,13 @@
 /**
- * `@codama/renderers-core` — public API.
+ * `@codama/renderers-core`: public API.
  *
- * The bulk of the surface is re-exported from `@codama/fragments`:
- * fragment primitives, casing helpers, path / filesystem helpers, and
- * the `RenderMap` data operations all live there so they can be shared
- * with code generators and other consumers outside the renderers
- * stack. This package layers the renderer-specific visitors on top —
- * {@link writeRenderMapVisitor} and {@link writeIdlVisitor} — the
- * pieces that pull in the visitor + node infrastructure.
+ * The renderer-specific visitors built on top of `@codama/fragments`:
+ * {@link writeRenderMapVisitor} and {@link writeIdlVisitor}, the pieces
+ * that pull in the visitor and node infrastructure. Fragment primitives,
+ * casing helpers, path and filesystem helpers, and the `RenderMap` data
+ * operations are not re-exported here; import them from
+ * `@codama/fragments` directly.
  */
 
-export * from '@codama/fragments';
 export * from './renderMap';
 export * from './writeIdlVisitor';

@@ -104,9 +104,9 @@ export function addFragmentImports(
 }
 
 /**
- * Record an alias for an imported path on the fragment's import map. If
- * the path isn't yet imported, it is added; if it's already present, the
- * alias replaces any existing one. The fragment's content and any other
+ * Import a path under an additional local name on the fragment's import
+ * map (`use foo::Bar as Baz;`). Any name the path is already imported
+ * under, plain or aliased, is kept. The fragment's content and any other
  * fields are preserved.
  *
  * @param fragment - The source fragment.
@@ -148,8 +148,9 @@ export function mergeFragmentImports(fragment: Fragment, importMaps: readonly Im
 }
 
 /**
- * Drop paths from a fragment's import map. The fragment's content and any
- * other fields are preserved.
+ * Drop paths from a fragment's import map, along with every local name
+ * they are imported under. The fragment's content and any other fields
+ * are preserved.
  *
  * @param fragment - The source fragment.
  * @param paths - The Rust paths to remove. May be a single string, an

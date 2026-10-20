@@ -1,3 +1,4 @@
+import { splitLines } from '../core/splitLines';
 import type { Fragment } from './fragment';
 import { fragment } from './fragment';
 
@@ -14,12 +15,15 @@ import { fragment } from './fragment';
  * ```
  *
  * Each line is prefixed with `///` (outer doc) by default, or `//!`
- * (inner doc) when `internal` is `true`. Empty elements in the array
- * render as a bare prefix line (`///` or `//!` with no trailing space),
- * useful for paragraph breaks inside a doc comment.
+ * (inner doc) when `internal` is `true`. Items containing line breaks
+ * (`\n` or `\r\n`), as docs from Anchor IDLs often do, are split so every
+ * line is prefixed, ignoring a single trailing line break per item. Empty
+ * lines render as a bare prefix line (`///` or `//!` with no trailing
+ * space), useful for paragraph breaks inside a doc comment.
  *
- * @param lines - The lines of the doc comment, or `undefined`. Empty
- * array and `undefined` both return `undefined`.
+ * @param lines - The lines of the doc comment, or `undefined`. Each item
+ * may itself span several lines. Empty array and `undefined` both return
+ * `undefined`.
  * @param options - Optional settings.
  * @param options.internal - When `true`, emit inner doc comments (`//!`)
  * instead of outer doc comments (`///`). Useful for module- or crate-level
@@ -41,6 +45,10 @@ import { fragment } from './fragment';
  * // ///
  * // /// Second paragraph.
  *
+ * getDocblockFragment(['First line.\nSecond line.'])?.content;
+ * // /// First line.
+ * // /// Second line.
+ *
  * getDocblockFragment(['Module docs.'], { internal: true })?.content;
  * // //! Module docs.
  *
@@ -55,6 +63,6 @@ export function getDocblockFragment(
     if (!lines || lines.length === 0) return undefined;
     const prefix = options.internal ? '//!' : '///';
     const lineJump = options.withLineJump ? '\n' : '';
-    const prefixedLines = lines.map(line => (line ? `${prefix} ${line}` : prefix));
+    const prefixedLines = lines.flatMap(splitLines).map(line => (line ? `${prefix} ${line}` : prefix));
     return fragment`${prefixedLines.join('\n')}${lineJump}`;
 }

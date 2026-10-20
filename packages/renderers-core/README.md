@@ -7,7 +7,7 @@
 [npm-image]: https://img.shields.io/npm/v/@codama/renderers-core.svg?style=flat&label=%40codama%2Frenderers-core
 [npm-url]: https://www.npmjs.com/package/@codama/renderers-core
 
-This package provides the core utility for generating clients from Codama IDLs. Its aim is mainly to provide helpers for other renderer packages such as [`@codama/renderers-js`](https://github.com/codama-idl/renderers-js) and [`@codama/renderers-rust`](https://github.com/codama-idl/renderers-rust).
+This package provides the visitors renderers use to write the output of Codama IDLs to the filesystem, built on top of [`@codama/fragments`](../fragments). Its aim is mainly to provide helpers for other renderer packages such as [`@codama/renderers-js`](https://github.com/codama-idl/renderers-js) and [`@codama/renderers-rust`](https://github.com/codama-idl/renderers-rust).
 
 ## Installation
 
@@ -18,214 +18,21 @@ pnpm install @codama/renderers-core
 > [!NOTE]
 > This package is **not** included in the main [`codama`](../library) package.
 
-## Filesystem wrappers
+## Migrating from the `@codama/fragments` re-export
 
-This package offers several helper functions that delegate to the native Filesystem API — i.e. `node:fs` — when using the Node.js runtime. However, in any other environment — such as the browser — these functions will throw a `CODAMA_ERROR__NODE_FILESYSTEM_FUNCTION_UNAVAILABLE` error as a Filesystem API is not available. This enables us to import renderers regardless of the runtime environment.
+Fragment primitives, casing helpers, filesystem and path helpers, and the `RenderMap` data operations live in [`@codama/fragments`](../fragments) and are no longer re-exported by this package. Import them from `@codama/fragments` directly; see the [`@codama/fragments` README](../fragments/README.md) for their documentation.
 
-### `createDirectory`
-
-Creates a directory at the given path, recursively.
-
-```ts
-createDirectory(newDirectoryPath);
+```diff
+- import { createRenderMap, deleteDirectory, writeRenderMapVisitor } from '@codama/renderers-core';
++ import { createRenderMap, deleteDirectory } from '@codama/fragments';
++ import { writeRenderMapVisitor } from '@codama/renderers-core';
 ```
 
-### `deleteDirectory`
+## Visitors
 
-Deletes a directory, recursively, if it exists.
+### `writeRenderMapVisitor`
 
-```ts
-deleteDirectory(directoryPath);
-```
-
-### `writeFile`
-
-Creates a new file at the given path with the given content. Creates its parent directory, recursively, if it does not exist.
-
-```ts
-writeFile(filePath, content);
-```
-
-### `readFile`
-
-Reads the UTF-8 content of a file as a string.
-
-```ts
-const content = readFile(filePath);
-```
-
-### `readJson`
-
-Reads the UTF-8 content of a file as a JSON object.
-
-```ts
-const json = readJson<MyJsonDefinition>(filePath);
-```
-
-## Path wrappers
-
-This package also offers several `path` helpers that delegate to the native `node:path` module when using the Node.js runtime but provide a fallback implementation when using any other runtime.
-
-### `joinPath`
-
-Joins multiple path segments into a single path.
-
-```ts
-const path = joinPath('path', 'to', 'my', 'file.ts');
-```
-
-### `pathDirectory`
-
-Returns the parent directory of a given path.
-
-```ts
-const parentPath = pathDirectory(path);
-```
-
-## Fragments
-
-The fragment primitives that used to live in this package — `BaseFragment`, `createFragmentTemplate`, `mapFragmentContent`, `mapFragmentContentAsync`, and `setFragmentContent` — have moved to [`@codama/fragments`](../fragments) so they can be shared with code generators outside the renderers stack. They are still re-exported here under the same names for backward compatibility, but new code should import them from `@codama/fragments` directly.
-
-For documentation, examples, and the language-specific `Fragment` and `ImportMap` types provided alongside the core primitives, see the [`@codama/fragments` README](../fragments/README.md).
-
-## Render maps
-
-This package also provides a `RenderMap` type and a handful of helpers to work with it.
-
-A `RenderMap` is a utility type that helps manage a collection of `Fragment` files to be rendered. It acts as a middleman between the logic that generates the content and the logic that writes the content to the filesystem. As such, it provides a way to access the generated content outside an environment that supports the Filesystem API — such as the browser. It also helps us write tests about the generated code without having to write it to the filesystem.
-
-### Creating new `RenderMaps`
-
-You can use the `createRenderMap` function with no arguments to create a new empty `RenderMap`.
-
-```ts
-const renderMap = createRenderMap();
-```
-
-Since `RenderMaps` store fragments, you may specify a custom fragment type parameter that extends `BaseFragment` when creating a new `RenderMap`.
-
-```ts
-type Fragment = BaseFragment & { imports: ImportMap };
-const renderMap = createRenderMap<Fragment>();
-```
-
-You may provide the path and fragment of a file to create a `RenderMap` with a single file.
-
-```ts
-const renderMap = createRenderMap('path/to/file.ts', { content: 'file content' });
-```
-
-You may also provide an object mapping file paths to their fragments to create a `RenderMap` with multiple files.
-
-```ts
-const renderMap = createRenderMap({
-    'path/to/file.ts': { content: 'file content' },
-    'path/to/another/file.ts': { content: 'another file content' },
-});
-```
-
-Note that when setting paths inside a `RenderMap`, they should be relative to the base directory that will be provided when writing the `RenderMap` to the filesystem. For instance, if we decide to use `src/generated` as the base directory when writing the `RenderMap`, then using a path such as `accounts/mint.ts` will result in the file being written to `src/generated/accounts/mint.ts`.
-
-### Adding content to a `RenderMap`
-
-To add content to a `RenderMap`, you may use the `addToRenderMap` function by providing the path and the fragment of the file to be added. Note that, here as well, the path should be relative to the base directory that will be provided when writing the `RenderMap` to the filesystem.
-
-```ts
-const updatedRenderMap = addToRenderMap(renderMap, 'path/to/file.ts', { content: 'file content' });
-```
-
-Since `RenderMaps` are immutable, you may want to use the `pipe` function from `@codama/visitors-core` — also available in `codama` — to chain multiple updates together.
-
-```ts
-const renderMap = pipe(
-    createRenderMap(),
-    m => addToRenderMap(m, 'programs/token.ts', { content: 'export type TokenProgram = {...}' }),
-    m => addToRenderMap(m, 'accounts/mint.ts', { content: 'export type MintAccount = {...}' }),
-    m => addToRenderMap(m, 'instructions/transfer.ts', { content: 'export function getTransferInstruction() {...}' }),
-);
-```
-
-### Merging multiple `RenderMaps`
-
-You may use the `mergeRenderMaps` helper to combine multiple `RenderMap` instances into a single one. If two `RenderMap` instances contain the same file path, the content from the latter will overwrite the content from the former.
-
-```ts
-const renderMapA = createRenderMap('programs/programA.ts', { content: 'export type ProgramA = {...}' });
-const renderMapB = createRenderMap('programs/programB.ts', { content: 'export type ProgramB = {...}' });
-const mergedRenderMap = mergeRenderMaps(renderMapA, renderMapB);
-```
-
-### Removing content from a `RenderMap`
-
-To remove files from a `RenderMap`, simply use the `removeFromRenderMap` function by providing the relative path of the file to be removed.
-
-```ts
-const updatedRenderMap = removeFromRenderMap(renderMap, 'programs/token.ts');
-```
-
-### Accessing content from a `RenderMap`
-
-The `RenderMap` type is essentially a JavaScript `Map` so you can use all the methods available on the `Map` prototype. Therefore, you may use the `get` method to access the content of a file from its relative path.
-
-```ts
-const content: string | undefined = renderMap.get('programs/token.ts');
-```
-
-However, this may return `undefined` if the file does not exist on the `RenderMap`. If you want to access the content of a file and throw an error if it does not exist, you can use the `getFromRenderMap` helper instead.
-
-```ts
-const content: string = getFromRenderMap(renderMap, 'programs/token.ts');
-```
-
-You may also use the `renderMapContains` helper to check if the provided file content exists in the `RenderMap` at the given path. The expected file content can be a string or a regular expression.
-
-```ts
-const hasTokenProgram = renderMapContains(renderMap, 'programs/token.ts', 'export type TokenProgram = {...}');
-const hasMintAccount = renderMapContains(renderMap, 'programs/token.ts', /MintAccount/);
-```
-
-### Transforming content from a `RenderMap`
-
-To map the content of all files inside a `RenderMap`, you can use the `mapRenderMapContent` function. This method accepts a function that takes the content of a file and returns a new content.
-
-```ts
-const updatedRenderMap = mapRenderMapContent(renderMap, c => `/** Prefix for all files */\n\n${c}`);
-```
-
-An asynchronous version of this function called `mapRenderMapContentAsync` is also available in case the transformation function needs to be asynchronous.
-
-```ts
-const updatedRenderMap = await mapRenderMapContentAsync(renderMap, async content => {
-    const transformedContent = await someAsyncFunction(content);
-    return `/** Prefix for all files */\n\n${transformedContent}`;
-});
-```
-
-Note that in both cases, a second argument is available in the mapping function that provides the relative path of the file being transformed.
-
-```ts
-const updatedRenderMap = mapRenderMapContent(renderMap, (content, path) => `/** File: ${path} */\n\n${content}`);
-```
-
-### Writing a `RenderMap` to the filesystem
-
-When the `RenderMap` is ready to be written to the filesystem, you can use the `writeRenderMap` helper by providing the base directory where all files should be written. All paths inside the `RenderMap` will be appended to this base directory.
-
-```ts
-const renderMap = createRenderMap({
-    'programs/token.ts': { content: 'export type TokenProgram = {...}' },
-    'accounts/mint.ts': { content: 'export type MintAccount = {...}' },
-});
-
-writeRenderMap(renderMap, 'src/generated');
-// In this example, files will be written to:
-// - src/generated/programs/token.ts
-// - src/generated/accounts/mint.ts.
-```
-
-### Using visitors
-
-When building renderers, you will most likely create a visitor that traverses the Codama IDL and returns a `RenderMap`. That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](https://github.com/codama-idl/renderers-js) package exports a `getRenderMapVisitor` function that does just that.
+When building renderers, you will most likely create a visitor that traverses the Codama IDL and returns a [`RenderMap`](../fragments/README.md#render-maps). That way, you can test the generated content without having to write it to the filesystem. For instance, the [`@codama/renderers-js`](https://github.com/codama-idl/renderers-js) package exports a `getRenderMapVisitor` function that does just that.
 
 ```ts
 import { getRenderMapVisitor } from '@codama/renderers-js';
@@ -237,6 +44,7 @@ If you have access to a visitor that returns a `RenderMap` — also described as
 
 ```ts
 import { getRenderMapVisitor } from '@codama/renderers-js';
+import { writeRenderMapVisitor } from '@codama/renderers-core';
 
 codama.accept(writeRenderMapVisitor(getRenderMapVisitor(), 'src/generated'));
 ```
@@ -254,7 +62,8 @@ codama.accept(renderVisitor('src/generated'));
 Here's a simple example of how to set up the basis of a renderer from an existing `getRenderMapVisitor`.
 
 ```ts
-import { deleteDirectory } from '@codama/renderers-core';
+import { deleteDirectory } from '@codama/fragments';
+import { writeRenderMapVisitor } from '@codama/renderers-core';
 import { rootNodeVisitor, visit } from '@codama/visitors-core';
 
 type RenderOptions = {
@@ -273,4 +82,19 @@ export function renderVisitor(path: string, options: RenderOptions = {}) {
         visit(root, writeRenderMapVisitor(getRenderMapVisitor(options), path));
     });
 }
+```
+
+### `writeIdlVisitor`
+
+Writes the visited `RootNode` to a JSON file at the given path, creating intermediate directories as needed. This is typically used as a Codama CLI script to write the IDL back to a file after all `before` visitors have been applied. Like the filesystem helpers of `@codama/fragments`, it throws on runtimes other than Node.js.
+
+```js
+// codama.mjs
+export default {
+    idl: 'interface-idl.json',
+    before: [...],
+    scripts: {
+        idl: { from: '@codama/renderers-core#writeIdlVisitor', args: ['idl.json'] },
+    },
+};
 ```

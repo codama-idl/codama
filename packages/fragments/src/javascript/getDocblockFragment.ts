@@ -1,3 +1,4 @@
+import { splitLines } from '../core/splitLines';
 import type { Fragment } from './fragment';
 import { fragment } from './fragment';
 
@@ -13,17 +14,19 @@ import { fragment } from './fragment';
  * fragment`${getDocblockFragment(node.docs)}\nexport interface X {}`;
  * ```
  *
- * Single-line input renders as a one-line block (`/** line *\/`);
- * multi-line input renders as a standard multi-line JSDoc block. Empty
- * elements in the array render as bare ` *` lines, useful for paragraph
- * breaks inside a docblock.
+ * Items containing line breaks (`\n` or `\r\n`) are split into separate
+ * lines first, ignoring a single trailing line break per item. Single-line input renders as a one-line block
+ * (`/** line *\/`); multi-line input renders as a standard multi-line
+ * JSDoc block. Empty lines render as bare ` *` lines, useful for
+ * paragraph breaks inside a docblock.
  *
  * The helper defangs any literal `*\/` sequences inside the lines (they are
  * rewritten as `*\\/`) so that user-supplied content cannot accidentally
  * close the docblock early.
  *
- * @param lines - The lines of the docblock, or `undefined`. Empty array
- * and `undefined` both return `undefined`.
+ * @param lines - The lines of the docblock, or `undefined`. Each item may
+ * itself span several lines. Empty array and `undefined` both return
+ * `undefined`.
  * @param options - Optional settings.
  * @param options.withLineJump - When `true`, appends a trailing `\n` after
  * the closing `*\/`. Useful when the docblock is followed by a same-line
@@ -45,6 +48,12 @@ import { fragment } from './fragment';
  * //  * Second paragraph.
  * //  *\/
  *
+ * getDocblockFragment(['First line.\nSecond line.'])?.content;
+ * // /**
+ * //  * First line.
+ * //  * Second line.
+ * //  *\/
+ *
  * getDocblockFragment(undefined);
  * // undefined
  * ```
@@ -55,7 +64,7 @@ export function getDocblockFragment(
 ): Fragment | undefined {
     if (!lines || lines.length === 0) return undefined;
     const lineJump = options.withLineJump ? '\n' : '';
-    const safeLines = lines.map(defang);
+    const safeLines = lines.flatMap(splitLines).map(defang);
     if (safeLines.length === 1) return fragment`/** ${safeLines[0]} */${lineJump}`;
     const prefixedLines = safeLines.map(line => (line ? ` * ${line}` : ' *'));
     return fragment`/**\n${prefixedLines.join('\n')}\n */${lineJump}`;

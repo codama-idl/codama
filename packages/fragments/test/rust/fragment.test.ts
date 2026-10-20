@@ -97,7 +97,11 @@ describe('addFragmentImports', () => {
 describe('addFragmentImportAlias', () => {
     it('records an alias for an imported path', () => {
         const f = addFragmentImportAlias(fragment`x`, 'foo::Bar', 'Baz');
-        expect(f.imports.get('foo::Bar')?.alias).toBe('Baz');
+        expect([...(f.imports.get('foo::Bar')?.keys() ?? [])]).toEqual(['Baz']);
+    });
+    it('keeps an existing plain import of the same path', () => {
+        const f = addFragmentImportAlias(addFragmentImports(fragment`x`, 'foo::Bar'), 'foo::Bar', 'Baz');
+        expect([...(f.imports.get('foo::Bar')?.keys() ?? [])]).toEqual(['Bar', 'Baz']);
     });
     it('does not mutate the source fragment', () => {
         const f = fragment`x`;

@@ -1,4 +1,5 @@
-import type { ImportMap, ImportPath } from './ImportMap';
+import type { ImportInfo, ImportMap, ImportPath, UsedIdentifier } from './ImportMap';
+import { mergeImportMaps } from './mergeImportMaps';
 
 /**
  * Rewrite the symbolic prefixes of an import map's paths against a
@@ -8,7 +9,9 @@ import type { ImportMap, ImportPath } from './ImportMap';
  * `'generated::accounts::AccountNode'` against
  * `{ generated: 'crate::generated' }` becomes
  * `'crate::generated::accounts::AccountNode'`. Paths that don't match any
- * prefix are kept unchanged. Aliases follow their path.
+ * prefix are kept unchanged. Every local name follows its path, keeping
+ * the name it is used under. When several paths resolve to the same
+ * concrete path, their local names are merged.
  *
  * Renderers typically pre-define a base set of symbolic modules
  * (`generated → crate::generated`, `mplToolbox → mpl_toolbox`, etc.) and
@@ -32,16 +35,20 @@ import type { ImportMap, ImportPath } from './ImportMap';
 export function resolveImportMap(importMap: ImportMap, dependencies: Record<string, string>): ImportMap {
     const prefixes = Object.keys(dependencies);
     if (prefixes.length === 0 || importMap.size === 0) return importMap;
-    const next = new Map(importMap);
     let mutated = false;
-    for (const [path, info] of importMap) {
+    const resolvedMaps = [...importMap].map(([path, infos]): ImportMap => {
         const resolvedPath = resolvePath(path, dependencies, prefixes);
-        if (resolvedPath === path) continue;
-        next.delete(path);
-        next.set(resolvedPath, Object.freeze({ ...info, importedPath: resolvedPath }));
+        if (resolvedPath === path) return Object.freeze(new Map([[path, infos]]));
         mutated = true;
-    }
-    return mutated ? Object.freeze(next) : importMap;
+        const resolvedInfos = new Map<UsedIdentifier, ImportInfo>(
+            [...infos.keys()].map(usedIdentifier => [
+                usedIdentifier,
+                Object.freeze({ importedPath: resolvedPath, usedIdentifier }),
+            ]),
+        );
+        return Object.freeze(new Map([[resolvedPath, Object.freeze(resolvedInfos)]]));
+    });
+    return mutated ? mergeImportMaps(resolvedMaps) : importMap;
 }
 
 function resolvePath(path: ImportPath, dependencies: Record<string, string>, prefixes: readonly string[]): ImportPath {
