@@ -10,6 +10,7 @@ import {
     injectedValueNode,
     instructionNode,
     integerValueNode,
+    pdaSeedValueNode,
     programNode,
     providedNode,
     publicKeyTypeNode,
@@ -109,6 +110,18 @@ test('it treats a node with an unresolvable nested injection as unresolvable', (
 
     // Then the whole value is unresolvable rather than partially resolved.
     expect(new ProvidedScope().resolve(node, { kinds: VALUE_NODES })).toBeUndefined();
+});
+
+test('it does not require the fallback of a nested injection whose key is provided', () => {
+    // Given a PDA seed value injecting a provided key, with a fallback injecting a key nobody provides.
+    const scope = new ProvidedScope([providedNode('authority', accountValueNode('owner'))]);
+    const fallback = injectedValueNode({ key: 'payer' });
+    const node = pdaSeedValueNode('authority', injectedValueNode({ fallback, key: 'authority' }));
+
+    // Then the injection resolves to its provided node, as its fallback is never needed.
+    expect(scope.resolve(node, { kinds: ['pdaSeedValueNode'] })).toEqual(
+        pdaSeedValueNode('authority', accountValueNode('owner')),
+    );
 });
 
 test('it returns a node without injections as-is', () => {

@@ -43,6 +43,22 @@ export function getRecordLinkablesVisitor<TNodeKind extends NodeKind>(
     );
 }
 
+/**
+ * Record the linkable nodes of the tree under the visited node into `linkables`
+ * before each top-level visit of the given visitor, so it can resolve links
+ * while visiting the tree.
+ *
+ * The dictionary is cleared before recording, so a visitor reused on several
+ * trees only resolves links against the tree it is currently visiting.
+ *
+ * @example
+ * ```ts
+ * const linkables = new LinkableDictionary();
+ * const visitor = recordLinkablesOnFirstVisitVisitor(myVisitor, linkables);
+ * visit(rootA, visitor); // Resolves links within rootA.
+ * visit(rootB, visitor); // Resolves links within rootB only.
+ * ```
+ */
 export function recordLinkablesOnFirstVisitVisitor<TReturn, TNodeKind extends NodeKind>(
     visitor: Visitor<TReturn, TNodeKind>,
     linkables: LinkableDictionary,
@@ -51,6 +67,7 @@ export function recordLinkablesOnFirstVisitVisitor<TReturn, TNodeKind extends No
 
     return pipe(visitor, v =>
         interceptFirstVisitVisitor(v, (node, next) => {
+            linkables.clear();
             visit(node, recordingVisitor);
             return next(node);
         }),

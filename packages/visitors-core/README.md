@@ -764,6 +764,9 @@ const accountPath: NodePath<AccountNode> = linkables.getPathOrThrow([...somePath
 
 // List the paths of every recorded linkable node of a given kind, across all programs.
 const accountPaths: NodePath<AccountNode>[] = linkables.getRecordedPathsOfKind('accountNode');
+
+// Forget every recorded linkable node.
+linkables.clear();
 ```
 
 Note that:
@@ -795,7 +798,7 @@ visit(rootNode, getRecordLinkablesVisitor(linkables));
 
 This visitor is a utility that combines `interceptFirstVisitVisitor` and `getRecordLinkablesVisitor` to record all linkable nodes before the first visit of any node.
 
-It accepts a base visitor and a `LinkableDictionary` instance; and returns a new visitor that records all linkable nodes it encounters before the very first visit of the provided base visitor. This means that we can inject the `LinkableDictionary` instance into other extensions of the base visitor to resolve any link node we encounter.
+It accepts a base visitor and a `LinkableDictionary` instance; and returns a new visitor that records all linkable nodes it encounters before the very first visit of the provided base visitor. This means that we can inject the `LinkableDictionary` instance into other extensions of the base visitor to resolve any link node we encounter. The dictionary is cleared before each top-level visit, so a visitor reused on several trees only resolves links against the tree it is currently visiting.
 
 Note that the `recordLinkablesOnFirstVisitVisitor` **should be the last visitor** in the pipe to ensure that all linkable nodes are recorded before being used.
 

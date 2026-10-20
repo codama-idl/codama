@@ -14,7 +14,8 @@ import {
     type ProvidedNode,
 } from '@codama/nodes';
 
-import { bottomUpTransformerVisitor } from './bottomUpTransformerVisitor';
+import { identityVisitor } from './identityVisitor';
+import { interceptVisitor } from './interceptVisitor';
 import { visit } from './visitor';
 
 /** A node an injection resolved to, with the frame depth its own injections resolve against. */
@@ -155,27 +156,29 @@ export class ProvidedScope {
      * Replace every injection nested within `node`, resolving against frames
      * strictly below `depth`. Returns the first injection that resolves to
      * nothing, if any, and `node` itself when it contains no injection.
+     *
+     * Each injection is resolved as a whole, top-down, so its `fallback` is
+     * only resolved when the injection's own key does not resolve.
      */
     private resolveWithin(node: Node, depth: number): Outcome {
         let replaced = false;
         let missing: InjectedValueNode | undefined;
-        const visitor = bottomUpTransformerVisitor([
-            child => {
-                if (missing || !isNode(child, 'injectedValueNode')) return child;
-                replaced = true;
-                const resolution = this.lookup(child, depth);
-                if (!resolution) {
-                    missing = child;
-                    return null;
-                }
-                const outcome = this.resolveWithin(resolution.node, resolution.depth);
-                if ('missing' in outcome) {
-                    missing = outcome.missing;
-                    return null;
-                }
-                return outcome.node;
-            },
-        ]);
+        const visitor = interceptVisitor(identityVisitor(), (child, next) => {
+            if (missing) return child;
+            if (!isNode(child, 'injectedValueNode')) return next(child);
+            replaced = true;
+            const resolution = this.lookup(child, depth);
+            if (!resolution) {
+                missing = child;
+                return null;
+            }
+            const outcome = this.resolveWithin(resolution.node, resolution.depth);
+            if ('missing' in outcome) {
+                missing = outcome.missing;
+                return null;
+            }
+            return outcome.node;
+        });
         const result = visit(node, visitor);
         if (missing) return { missing };
         return { node: replaced ? (result as Node) : node };

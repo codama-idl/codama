@@ -72,3 +72,20 @@ test('it lists the recorded paths of each linkable kind across programs', () => 
 test('it returns no paths when nothing was recorded', () => {
     expect(new LinkableDictionary().getRecordedPathsOfKind('accountNode')).toStrictEqual([]);
 });
+
+test('it forgets every recorded path when cleared', () => {
+    // Given a dictionary recording a program with an account.
+    const program = programNode({
+        accounts: [accountNode({ identifier: 'myAccount' })],
+        identifier: 'myProgram',
+        publicKey: '1111',
+    });
+    const linkables = getLinkablesFromNode(rootNode(program));
+
+    // When we clear it.
+    linkables.clear();
+
+    // Then nothing is recorded anymore.
+    expect(linkables.getRecordedPathsOfKind('programNode')).toStrictEqual([]);
+    expect(linkables.getRecordedPathsOfKind('accountNode')).toStrictEqual([]);
+});
