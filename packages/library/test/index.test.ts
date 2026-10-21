@@ -19,6 +19,40 @@ test('it exports node helpers', () => {
     expect(typeof rootNode).toBe('function');
 });
 
+test('it rejects JSON IDLs without a program node with a Codama error', () => {
+    const hostileJson = JSON.stringify({ version: CODAMA_VERSION, kind: 'rootNode' });
+    expect(() => createFromJson(hostileJson)).toThrow(CodamaError);
+});
+
+test('it validates the root structure at the JSON boundary', () => {
+    // Missing the kind discriminator entirely.
+    expect(() => createFromJson(JSON.stringify({ version: CODAMA_VERSION }))).toThrow(CodamaError);
+
+    // A structurally valid root passes and exposes its program.
+    const codama = createFromJson(
+        JSON.stringify({
+            kind: 'rootNode',
+            standard: 'codama',
+            version: CODAMA_VERSION,
+            program: { kind: 'programNode', name: 'myProgram', publicKey: '1111' },
+        }),
+    );
+    expect(codama.getRoot().program.name).toBe('myProgram');
+});
+
+test('it rejects root updates without a program node with a Codama error', () => {
+    const codama = createFromJson(
+        JSON.stringify({
+            kind: 'rootNode',
+            standard: 'codama',
+            version: CODAMA_VERSION,
+            program: { kind: 'programNode', name: 'myProgram', publicKey: '1111' },
+        }),
+    );
+    const orphanRoot = { kind: 'rootNode', version: CODAMA_VERSION } as never;
+    expect(() => codama.update(rootNodeVisitor(() => orphanRoot))).toThrow(CodamaError);
+});
+
 test('it exports visitors', () => {
     expect(typeof identityVisitor).toBe('function');
 });
