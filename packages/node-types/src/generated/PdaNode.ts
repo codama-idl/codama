@@ -15,15 +15,12 @@ export interface PdaNode<
 > {
     readonly kind: 'pdaNode';
 
-    // Data.
     /** The identifier of the PDA. */
     readonly identifier: IdentifierString;
-    /** The base58-encoded program ID used to derive the PDA. When omitted, the surrounding program is assumed. */
-    readonly programId?: string;
-
-    // Children.
     /** Markdown documentation for the PDA. */
     readonly docs?: TDocs;
+    /** The base58-encoded program ID used to derive the PDA. When omitted, the surrounding program is assumed. */
+    readonly programId?: string;
     /** The seeds used to derive the PDA, in order. */
     readonly seeds?: TSeeds;
     /** Namespaced plugins with custom structured data. */

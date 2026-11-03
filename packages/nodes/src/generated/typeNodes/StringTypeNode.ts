@@ -21,10 +21,7 @@ export function stringTypeNode<
     return Object.freeze({
         kind: 'stringTypeNode',
 
-        // Data.
         encoding,
-
-        // Children.
         ...(options.display !== undefined && { display: options.display }),
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

@@ -15,7 +15,6 @@ export interface AmountNumberDisplayNode<
 > {
     readonly kind: 'amountNumberDisplayNode';
 
-    // Children.
     /**
      * How many decimal places scale the underlying integer. Resolved as an integer value: either a literal `integerValueNode` or a key resolved from a surrounding provider.
      * A value of `1000000` with `decimals` resolving to `6` renders as `1`.

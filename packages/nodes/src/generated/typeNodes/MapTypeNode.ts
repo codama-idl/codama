@@ -23,7 +23,6 @@ export function mapTypeNode<
     return Object.freeze({
         kind: 'mapTypeNode',
 
-        // Children.
         key,
         value,
         count,

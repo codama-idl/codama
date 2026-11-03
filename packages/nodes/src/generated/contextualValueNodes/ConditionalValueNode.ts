@@ -30,7 +30,6 @@ export function conditionalValueNode<
     return Object.freeze({
         kind: 'conditionalValueNode',
 
-        // Children.
         condition: input.condition,
         ...(input.value !== undefined && { value: input.value }),
         ...(input.ifTrue !== undefined && { ifTrue: input.ifTrue }),

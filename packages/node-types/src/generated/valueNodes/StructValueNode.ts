@@ -8,7 +8,6 @@ export interface StructValueNode<
 > {
     readonly kind: 'structValueNode';
 
-    // Children.
     /** The named fields of the struct value. */
     readonly fields?: TFields;
     /** Namespaced plugins with custom structured data. */

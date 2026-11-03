@@ -12,7 +12,6 @@ export interface MapEntryValueNode<
 > {
     readonly kind: 'mapEntryValueNode';
 
-    // Children.
     /** The entry key. */
     readonly key: TKey;
     /** The entry value. */

@@ -24,11 +24,8 @@ export function pluginNode<const TPlugins extends Array<PluginNode> | undefined 
     return Object.freeze({
         kind: 'pluginNode',
 
-        // Data.
         namespace: namespaceString(namespace),
         ...(payload !== undefined && { payload }),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

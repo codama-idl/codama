@@ -10,7 +10,6 @@ export interface StructTypeNode<
 > {
     readonly kind: 'structTypeNode';
 
-    // Children.
     /** The fields of the struct, in declaration order. */
     readonly fields?: TFields;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */

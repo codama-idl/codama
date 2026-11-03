@@ -11,11 +11,8 @@ export interface DefinedTypeLinkNode<
 > {
     readonly kind: 'definedTypeLinkNode';
 
-    // Data.
     /** The identifier of the referenced defined type. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** The program the referenced type is defined in. When omitted, the surrounding program is assumed. */
     readonly program?: TProgram;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */

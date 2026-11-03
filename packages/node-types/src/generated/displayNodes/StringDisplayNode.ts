@@ -7,7 +7,6 @@ import type { PluginNode } from '../PluginNode';
 export interface StringDisplayNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'stringDisplayNode';
 
-    // Data.
     /**
      * The start index of the displayed slice, inclusive. Defaults to the start of the string.
      * Indices apply to the decoded character sequence.
@@ -18,8 +17,6 @@ export interface StringDisplayNode<TPlugins extends Array<PluginNode> | undefine
      * Indices apply to the decoded character sequence.
      */
     readonly sliceEnd?: number;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

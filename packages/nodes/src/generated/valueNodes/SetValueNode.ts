@@ -13,7 +13,6 @@ export function setValueNode<
     return Object.freeze({
         kind: 'setValueNode',
 
-        // Children.
         ...(items !== undefined && items.length > 0 && { items: items as TItems }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

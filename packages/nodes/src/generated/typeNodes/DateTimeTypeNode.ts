@@ -16,10 +16,7 @@ export function dateTimeTypeNode<
     return Object.freeze({
         kind: 'dateTimeTypeNode',
 
-        // Data.
         ...(options.ticksPerSecond !== undefined && { ticksPerSecond: options.ticksPerSecond }),
-
-        // Children.
         number,
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

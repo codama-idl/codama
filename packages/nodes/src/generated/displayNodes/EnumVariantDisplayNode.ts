@@ -13,11 +13,8 @@ export function enumVariantDisplayNode<
     return Object.freeze({
         kind: 'enumVariantDisplayNode',
 
-        // Data.
-        ...(input.skipInnerData !== undefined && { skipInnerData: input.skipInnerData }),
-
-        // Children.
         ...(input.label !== undefined && { label: input.label }),
+        ...(input.skipInnerData !== undefined && { skipInnerData: input.skipInnerData }),
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

@@ -14,11 +14,8 @@ export interface InjectedValueNode<
 > {
     readonly kind: 'injectedValueNode';
 
-    // Data.
     /** The key looked up against the surrounding provide/inject graph. */
     readonly key: IdentifierString;
-
-    // Children.
     /**
      * A value used when no provider supplies the key.
      * When absent, the key is required: a provider must supply it for the surrounding context to be valid.

@@ -15,7 +15,6 @@ export function remainderOptionTypeNode<
     return Object.freeze({
         kind: 'remainderOptionTypeNode',
 
-        // Children.
         item,
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

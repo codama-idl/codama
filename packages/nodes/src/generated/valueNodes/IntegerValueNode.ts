@@ -15,10 +15,7 @@ export function integerValueNode<const TPlugins extends Array<PluginNode> | unde
     return Object.freeze({
         kind: 'integerValueNode',
 
-        // Data.
         value: integerString(value),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

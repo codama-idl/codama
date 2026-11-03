@@ -17,10 +17,7 @@ export function textNode<const TPlugins extends Array<PluginNode> | undefined = 
     return Object.freeze({
         kind: 'textNode',
 
-        // Data.
         content: input.content,
-
-        // Children.
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

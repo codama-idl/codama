@@ -11,7 +11,6 @@ export interface HiddenSuffixTransformNode<
 > {
     readonly kind: 'hiddenSuffixTransformNode';
 
-    // Children.
     /** The constant values written after the transformed type, in order. */
     readonly suffix?: TSuffix;
     /** Namespaced plugins with custom structured data. */

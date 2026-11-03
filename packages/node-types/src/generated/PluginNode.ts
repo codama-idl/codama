@@ -17,7 +17,6 @@ type SelfPluginNode = PluginNode;
 export interface PluginNode<TPlugins extends Array<SelfPluginNode> | undefined = Array<SelfPluginNode> | undefined> {
     readonly kind: 'pluginNode';
 
-    // Data.
     /**
      * The unique, dot-separated namespace identifying the plugin this data belongs to (e.g. `i18n.es`).
      * There is no central registry. Some namespaces are agreed ecosystem-wide conventions — such as `i18n.*` for translations — and may be used as such; otherwise, to keep namespaces unambiguous, prefix them with a name you control — a package, crate or organisation name. The `codama.*` prefix is reserved for the official plugins listed above.
@@ -29,8 +28,6 @@ export interface PluginNode<TPlugins extends Array<SelfPluginNode> | undefined =
      * Plugins never change the meaning of the node they decorate — its byte layout, resolution semantics or any other behaviour; they only annotate it. Consumers that do not recognise a namespace can therefore safely ignore the plugin.
      */
     readonly payload?: unknown;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

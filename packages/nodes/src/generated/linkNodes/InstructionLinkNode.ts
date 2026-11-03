@@ -18,10 +18,7 @@ export function instructionLinkNode<
     return Object.freeze({
         kind: 'instructionLinkNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(program !== undefined && {
             program: (typeof program === 'string' ? programLinkNode(program) : program) as TProgram,
         }),

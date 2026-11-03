@@ -19,10 +19,7 @@ export function enumValueNode<
     return Object.freeze({
         kind: 'enumValueNode',
 
-        // Data.
         variant: identifierString(variant),
-
-        // Children.
         enum: (typeof enumLink === 'string' ? definedTypeLinkNode(enumLink) : enumLink) as TEnum,
         ...(options.value !== undefined && { value: options.value }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),

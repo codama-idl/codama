@@ -11,7 +11,6 @@ export interface SomeValueNode<
 > {
     readonly kind: 'someValueNode';
 
-    // Children.
     /** The wrapped value. */
     readonly value: TValue;
     /** Namespaced plugins with custom structured data. */

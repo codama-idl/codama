@@ -599,8 +599,8 @@ export function mergeVisitor<TReturn, TNodeKind extends NodeKind = NodeKind>(
     if (keys.includes('valueLabelDisplayNode')) {
         visitor.visitValueLabelDisplay = function visitValueLabelDisplay(node) {
             return merge(node, [
-                ...visit(this)(node.value),
                 ...(node.label !== undefined && typeof node.label !== 'string' ? visit(this)(node.label) : []),
+                ...visit(this)(node.value),
                 ...(node.plugins ?? []).flatMap(visit(this)),
             ]);
         };

@@ -15,7 +15,11 @@ export interface StructFieldDisplayNode<
 > {
     readonly kind: 'structFieldDisplayNode';
 
-    // Data.
+    /**
+     * An override label shown for the member (e.g. `"Amount"`).
+     * When absent, renderers derive a label from the member `identifier`.
+     */
+    readonly label?: TLabel;
     /** Whether the member is shown in the fallback list. Defaults to `"never"` (always shown). */
     readonly skip?: DisplaySkip;
     /**
@@ -24,13 +28,6 @@ export interface StructFieldDisplayNode<
      * Meaningful only when the member's type is structurally a struct; renderers ignore it otherwise.
      */
     readonly flatten?: boolean;
-
-    // Children.
-    /**
-     * An override label shown for the member (e.g. `"Amount"`).
-     * When absent, renderers derive a label from the member `identifier`.
-     */
-    readonly label?: TLabel;
     /**
      * A literal prefix prepended to each flattened member's label (e.g. `"args."`).
      * Meaningful only when `flatten` is `true`. Useful to disambiguate when two flattened children might collide.

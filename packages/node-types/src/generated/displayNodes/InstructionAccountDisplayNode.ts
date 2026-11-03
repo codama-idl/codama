@@ -9,16 +9,13 @@ export interface InstructionAccountDisplayNode<
 > {
     readonly kind: 'instructionAccountDisplayNode';
 
-    // Data.
-    /** Whether the account is shown in the fallback list. Defaults to `"never"` (always shown). */
-    readonly skip?: DisplaySkip;
-
-    // Children.
     /**
      * An override label shown in the fallback list (e.g. `"To"`).
      * When absent, renderers derive a label from the account `identifier`.
      */
     readonly label?: TLabel;
+    /** Whether the account is shown in the fallback list. Defaults to `"never"` (always shown). */
+    readonly skip?: DisplaySkip;
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

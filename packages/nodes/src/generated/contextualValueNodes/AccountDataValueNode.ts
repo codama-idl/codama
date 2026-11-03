@@ -17,11 +17,8 @@ export function accountDataValueNode<const TPlugins extends Array<PluginNode> | 
     return Object.freeze({
         kind: 'accountDataValueNode',
 
-        // Data.
         account: identifierString(account),
         ...(options.path !== undefined && { path: pathString(options.path) }),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

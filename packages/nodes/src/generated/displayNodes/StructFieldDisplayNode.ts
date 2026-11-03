@@ -22,12 +22,9 @@ export function structFieldDisplayNode<
     return Object.freeze({
         kind: 'structFieldDisplayNode',
 
-        // Data.
+        ...(input.label !== undefined && { label: input.label }),
         ...(input.skip !== undefined && { skip: input.skip }),
         ...(input.flatten !== undefined && { flatten: input.flatten }),
-
-        // Children.
-        ...(input.label !== undefined && { label: input.label }),
         ...(input.flattenPrefix !== undefined && { flattenPrefix: input.flattenPrefix }),
         ...(input.valueLabels !== undefined &&
             input.valueLabels.length > 0 && { valueLabels: input.valueLabels as TValueLabels }),

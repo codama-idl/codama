@@ -38,11 +38,8 @@ export function accountNode<
     return Object.freeze({
         kind: 'accountNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
         ...(input.size !== undefined && { size: input.size }),
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
         data: (input.data ?? structTypeNode([])) as TData,
         ...(input.pda !== undefined && { pda: input.pda }),

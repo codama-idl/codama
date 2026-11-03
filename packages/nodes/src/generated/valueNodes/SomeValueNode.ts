@@ -16,7 +16,6 @@ export function someValueNode<
     return Object.freeze({
         kind: 'someValueNode',
 
-        // Children.
         value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

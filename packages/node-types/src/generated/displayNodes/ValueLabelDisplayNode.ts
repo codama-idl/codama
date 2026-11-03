@@ -7,23 +7,22 @@ import type { ValueNode } from '../valueNodes/ValueNode';
  * Listed in a `structFieldDisplayNode`'s `valueLabels`; it is not part of any `display` slot on its own.
  */
 export interface ValueLabelDisplayNode<
-    TValue extends ValueNode = ValueNode,
     TLabel extends string | TextNode = string | TextNode,
+    TValue extends ValueNode = ValueNode,
     TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined,
 > {
     readonly kind: 'valueLabelDisplayNode';
 
-    // Children.
-    /**
-     * The value to label, matched structurally against the field's raw decoded value, before any display formatting, e.g. `integerValueNode('18446744073709551615')` or `noneValueNode()`.
-     * It must be a concrete value of the field's type: injected values are not resolved here.
-     */
-    readonly value: TValue;
     /**
      * The label presented instead of the value, both in the fallback list and in interpolated intents (e.g. `"all SOL"`).
      * Since the same label serves both, prefer wording that reads well as a field value and mid-sentence.
      */
     readonly label: TLabel;
+    /**
+     * The value to label, matched structurally against the field's raw decoded value, before any display formatting, e.g. `integerValueNode('18446744073709551615')` or `noneValueNode()`.
+     * It must be a concrete value of the field's type: injected values are not resolved here.
+     */
+    readonly value: TValue;
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

@@ -17,7 +17,6 @@ export function setTypeNode<
     return Object.freeze({
         kind: 'setTypeNode',
 
-        // Children.
         item,
         count,
         ...(options.transforms !== undefined &&

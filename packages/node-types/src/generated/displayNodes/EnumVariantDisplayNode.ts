@@ -8,19 +8,16 @@ export interface EnumVariantDisplayNode<
 > {
     readonly kind: 'enumVariantDisplayNode';
 
-    // Data.
-    /**
-     * When `true`, the variant's payload is hidden — only the label is rendered.
-     * Useful for tuple payloads that have no per-field handle, or when the payload is purely structural.
-     */
-    readonly skipInnerData?: boolean;
-
-    // Children.
     /**
      * An override label shown for the variant (e.g. `"Buy"`).
      * When absent, renderers derive a label from the variant `identifier`.
      */
     readonly label?: TLabel;
+    /**
+     * When `true`, the variant's payload is hidden — only the label is rendered.
+     * Useful for tuple payloads that have no per-field handle, or when the payload is purely structural.
+     */
+    readonly skipInnerData?: boolean;
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

@@ -8,7 +8,6 @@ export interface ArrayValueNode<
 > {
     readonly kind: 'arrayValueNode';
 
-    // Children.
     /** The items of the array, in order. */
     readonly items?: TItems;
     /** Namespaced plugins with custom structured data. */

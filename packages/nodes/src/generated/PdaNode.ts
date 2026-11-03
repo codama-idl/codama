@@ -23,12 +23,9 @@ export function pdaNode<
     return Object.freeze({
         kind: 'pdaNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
-        ...(input.programId !== undefined && { programId: input.programId }),
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
+        ...(input.programId !== undefined && { programId: input.programId }),
         ...(input.seeds !== undefined && input.seeds.length > 0 && { seeds: input.seeds as TSeeds }),
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });

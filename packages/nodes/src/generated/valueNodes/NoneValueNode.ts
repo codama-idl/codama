@@ -12,7 +12,6 @@ export function noneValueNode<const TPlugins extends Array<PluginNode> | undefin
     return Object.freeze({
         kind: 'noneValueNode',
 
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

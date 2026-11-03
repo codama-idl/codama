@@ -12,7 +12,6 @@ export interface InstructionDisplayNode<
 > {
     readonly kind: 'instructionDisplayNode';
 
-    // Children.
     /** A short imperative label describing what the instruction does (e.g. `"Transfer"`). */
     readonly intent?: TIntent;
     /**

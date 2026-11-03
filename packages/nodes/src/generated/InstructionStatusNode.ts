@@ -17,10 +17,7 @@ export function instructionStatusNode<
     return Object.freeze({
         kind: 'instructionStatusNode',
 
-        // Data.
         lifecycle,
-
-        // Children.
         ...(options.message !== undefined && { message: options.message }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

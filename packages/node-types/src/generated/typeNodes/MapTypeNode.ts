@@ -17,7 +17,6 @@ export interface MapTypeNode<
 > {
     readonly kind: 'mapTypeNode';
 
-    // Children.
     /** The type of each entry key. */
     readonly key: TKey;
     /** The type of each entry value. */

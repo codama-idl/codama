@@ -13,7 +13,6 @@ export function mapValueNode<
     return Object.freeze({
         kind: 'mapValueNode',
 
-        // Children.
         ...(entries !== undefined && entries.length > 0 && { entries: entries as TEntries }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

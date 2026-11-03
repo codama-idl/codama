@@ -11,7 +11,6 @@ export interface PrefixedCountNode<
 > {
     readonly kind: 'prefixedCountNode';
 
-    // Children.
     /** The integer type used as the count prefix. */
     readonly prefix: TPrefix;
     /** Namespaced plugins with custom structured data. */

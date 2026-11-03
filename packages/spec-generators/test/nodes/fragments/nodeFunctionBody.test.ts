@@ -24,4 +24,21 @@ describe('getNodeFunctionBodyFragment', () => {
         expect(out).toContain('...(input.docs !== undefined && { docs: input.docs }),');
         expect(out).not.toContain('parseDocs');
     });
+
+    it('emits attributes in declaration order without regrouping data and children', () => {
+        // `docs` is a child declared between the `identifier` and `programId` data attributes.
+        const n = defineNode('myNode', {
+            attributes: [
+                attribute('identifier', stringIdentifier()),
+                optionalAttribute('docs', docs()),
+                optionalAttribute('programId', stringIdentifier()),
+            ],
+        });
+        const out = getNodeFunctionBodyFragment(n, undefined, getNodeTypeParameterAttributes(n, scope)).content;
+        const positions = ['identifier:', 'docs:', 'programId:'].map(key => out.indexOf(key));
+        expect(positions).not.toContain(-1);
+        expect(positions).toEqual([...positions].sort((a, b) => a - b));
+        expect(out).not.toContain('// Data.');
+        expect(out).not.toContain('// Children.');
+    });
 });

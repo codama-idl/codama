@@ -36,13 +36,10 @@ export function instructionAccountNode<
     return Object.freeze({
         kind: 'instructionAccountNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
         isWritable: input.isWritable,
         isSigner: input.isSigner,
         isOptional: input.isOptional ?? false,
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
         ...(input.defaultValue !== undefined && { defaultValue: input.defaultValue }),
         ...(input.accountLink !== undefined && { accountLink: input.accountLink }),

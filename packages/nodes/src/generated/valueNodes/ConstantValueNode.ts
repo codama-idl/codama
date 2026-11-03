@@ -15,7 +15,6 @@ export function constantValueNode<
     return Object.freeze({
         kind: 'constantValueNode',
 
-        // Children.
         type,
         value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),

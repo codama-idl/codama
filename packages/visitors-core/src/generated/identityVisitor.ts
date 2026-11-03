@@ -1180,9 +1180,6 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
 
     if (keys.includes('valueLabelDisplayNode')) {
         visitor.visitValueLabelDisplay = function visitValueLabelDisplay(node) {
-            const value = visit(this)(node.value);
-            if (value === null) return null;
-            assertIsNode(value, VALUE_NODE_KINDS);
             let label = node.label;
             if (typeof label !== 'string') {
                 const visited = visit(this)(label);
@@ -1190,10 +1187,13 @@ export function identityVisitor<TNodeKind extends NodeKind = NodeKind>(
                 assertIsNode(visited, 'textNode');
                 label = visited;
             }
+            const value = visit(this)(node.value);
+            if (value === null) return null;
+            assertIsNode(value, VALUE_NODE_KINDS);
             return valueLabelDisplayNode({
                 ...node,
-                value,
                 label,
+                value,
                 plugins: node.plugins
                     ? node.plugins.map(visit(this)).filter(removeNullAndAssertIsNodeFilter('pluginNode'))
                     : undefined,

@@ -74,13 +74,10 @@ export interface PostOffsetTransformNode<
 > {
     readonly kind: 'postOffsetTransformNode';
 
-    // Data.
     /** The signed byte offset to apply after the transformed type runs. */
     readonly offset: number;
     /** How the `offset` value is interpreted. */
     readonly strategy: PostOffsetStrategy;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

@@ -9,7 +9,6 @@ export function programIdValueNode<const TPlugins extends Array<PluginNode> | un
     return Object.freeze({
         kind: 'programIdValueNode',
 
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

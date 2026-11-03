@@ -25,14 +25,11 @@ export interface SentinelCountNode<
 > {
     readonly kind: 'sentinelCountNode';
 
-    // Data.
     /**
      * Whether the sentinel is written when encoding and required when decoding.
      * When absent, `required` is assumed.
      */
     readonly strategy?: SentinelCountStrategy;
-
-    // Children.
     /** The fixed-size constant compared against the bytes at each item position. */
     readonly sentinel: TSentinel;
     /** Namespaced plugins with custom structured data. */

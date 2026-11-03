@@ -13,10 +13,7 @@ export function fixedCountNode<const TPlugins extends Array<PluginNode> | undefi
     return Object.freeze({
         kind: 'fixedCountNode',
 
-        // Data.
         value,
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

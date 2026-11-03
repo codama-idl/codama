@@ -15,7 +15,6 @@ export interface RootNode<
 > {
     readonly kind: 'rootNode';
 
-    // Data.
     /**
      * A literal marker identifying the JSON object as a Codama IDL.
      * This allows other communities to fork the Codama standard under a different marker.
@@ -23,8 +22,6 @@ export interface RootNode<
     readonly standard: 'codama';
     /** The Codama spec version this IDL conforms to. */
     readonly version: CodamaVersion;
-
-    // Children.
     /** The primary program described by the IDL. */
     readonly program: TProgram;
     /** Additional programs referenced by the primary program. */

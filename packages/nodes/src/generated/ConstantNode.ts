@@ -20,10 +20,7 @@ export function constantNode<
     return Object.freeze({
         kind: 'constantNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(options.docs !== undefined && { docs: options.docs }),
         type,
         value,

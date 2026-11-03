@@ -20,10 +20,7 @@ export function definedTypeLinkNode<
     return Object.freeze({
         kind: 'definedTypeLinkNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(program !== undefined && {
             program: (typeof program === 'string' ? programLinkNode(program) : program) as TProgram,
         }),

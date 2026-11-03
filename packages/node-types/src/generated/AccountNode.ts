@@ -19,13 +19,10 @@ export interface AccountNode<
 > {
     readonly kind: 'accountNode';
 
-    // Data.
     /** The identifier of the account. */
     readonly identifier: IdentifierString;
     /** The size of the account in bytes, when the data length is fixed. */
     readonly size?: number;
-
-    // Children.
     /** Markdown documentation for the account. */
     readonly docs?: TDocs;
     /**

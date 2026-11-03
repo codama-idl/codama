@@ -19,7 +19,6 @@ export interface InstructionAccountNode<
 > {
     readonly kind: 'instructionAccountNode';
 
-    // Data.
     /** The identifier of the account. */
     readonly identifier: IdentifierString;
     /** Whether the instruction may write to the account. */
@@ -34,8 +33,6 @@ export interface InstructionAccountNode<
      * When `true`, absent accounts are handled according to the `optionalAccountStrategy` attribute of the surrounding `instructionNode`. Defaults to `false`.
      */
     readonly isOptional?: boolean;
-
-    // Children.
     /** Markdown documentation for the account slot. */
     readonly docs?: TDocs;
     /** A default value used to fill the slot when the caller does not provide one. */

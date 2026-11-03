@@ -17,7 +17,6 @@ export function unitNumberDisplayNode<
     return Object.freeze({
         kind: 'unitNumberDisplayNode',
 
-        // Children.
         unit: input.unit,
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });

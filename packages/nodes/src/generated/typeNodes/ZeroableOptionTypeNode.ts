@@ -23,7 +23,6 @@ export function zeroableOptionTypeNode<
     return Object.freeze({
         kind: 'zeroableOptionTypeNode',
 
-        // Children.
         item,
         ...(options.zeroValue !== undefined && { zeroValue: options.zeroValue }),
         ...(options.transforms !== undefined &&

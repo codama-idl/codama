@@ -16,7 +16,6 @@ export interface StructFieldTypeNode<
 > {
     readonly kind: 'structFieldTypeNode';
 
-    // Data.
     /** The identifier of the field. */
     readonly identifier: IdentifierString;
     /**
@@ -24,8 +23,6 @@ export interface StructFieldTypeNode<
      * Only relevant when `defaultValue` is set or a `codama.resolver` plugin resolves the field — a strategy without a default value is meaningless. When absent, `optional` is assumed.
      */
     readonly defaultValueStrategy?: DefaultValueStrategy;
-
-    // Children.
     /** Markdown documentation for the field. */
     readonly docs?: TDocs;
     /** The type of the field. */

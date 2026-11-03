@@ -7,7 +7,6 @@ export interface FieldDiscriminatorNode<
 > {
     readonly kind: 'fieldDiscriminatorNode';
 
-    // Data.
     /**
      * The path to the discriminating field, relative to the account or instruction data — e.g. `discriminator` or `header.kind`.
      * Field segments are only valid where the data type resolves to a struct (following links).
@@ -16,8 +15,6 @@ export interface FieldDiscriminatorNode<
     readonly path: PathString;
     /** The byte offset of the field. */
     readonly offset: number;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

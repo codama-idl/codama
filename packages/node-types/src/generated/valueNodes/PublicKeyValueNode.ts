@@ -5,13 +5,10 @@ import type { PluginNode } from '../PluginNode';
 export interface PublicKeyValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'publicKeyValueNode';
 
-    // Data.
     /** The base58-encoded public key. */
     readonly publicKey: string;
     /** A symbolic identifier for the address, useful in generated client code. */
     readonly identifier?: IdentifierString;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

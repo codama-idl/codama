@@ -15,7 +15,6 @@ export interface SentinelTransformNode<
 > {
     readonly kind: 'sentinelTransformNode';
 
-    // Children.
     /** The constant value written immediately after the transformed type to mark its end. */
     readonly sentinel: TSentinel;
     /** Namespaced plugins with custom structured data. */

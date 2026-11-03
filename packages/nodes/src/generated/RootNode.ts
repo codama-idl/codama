@@ -22,11 +22,8 @@ export function rootNode<
     return Object.freeze({
         kind: 'rootNode',
 
-        // Data.
         standard: 'codama',
         version: CODAMA_VERSION,
-
-        // Children.
         program,
         ...(options.additionalPrograms !== undefined &&
             options.additionalPrograms.length > 0 && {

@@ -13,7 +13,6 @@ export function remainderCountNode<const TPlugins extends Array<PluginNode> | un
     return Object.freeze({
         kind: 'remainderCountNode',
 
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

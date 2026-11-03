@@ -18,10 +18,7 @@ export function pdaLinkNode<
     return Object.freeze({
         kind: 'pdaLinkNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(program !== undefined && {
             program: (typeof program === 'string' ? programLinkNode(program) : program) as TProgram,
         }),

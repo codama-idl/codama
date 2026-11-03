@@ -7,7 +7,6 @@ import type { PluginNode } from '../PluginNode';
 export interface NoneValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'noneValueNode';
 
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

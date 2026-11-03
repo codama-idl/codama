@@ -13,11 +13,8 @@ export function fieldDiscriminatorNode<const TPlugins extends Array<PluginNode> 
     return Object.freeze({
         kind: 'fieldDiscriminatorNode',
 
-        // Data.
         path: pathString(path),
         offset: options.offset ?? 0,
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

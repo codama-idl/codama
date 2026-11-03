@@ -13,7 +13,6 @@ export interface IntegerTypeNode<
 > {
     readonly kind: 'integerTypeNode';
 
-    // Data.
     /** The wire format used to serialise the integer. */
     readonly format: TFormat;
     /** The byte order used to serialise the integer. Defaults to `le`; byte-oriented formats such as `shortU16` ignore it. */
@@ -23,8 +22,6 @@ export interface IntegerTypeNode<
      * Part of the value semantics: without it, consumers cannot know what quantity the number represents. For scaled quantities, use `fixedPointTypeNode` instead.
      */
     readonly unit?: string;
-
-    // Children.
     /** Display metadata describing how the integer is presented. */
     readonly display?: TDisplay;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */

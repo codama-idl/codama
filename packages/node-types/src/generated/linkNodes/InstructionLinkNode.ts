@@ -9,11 +9,8 @@ export interface InstructionLinkNode<
 > {
     readonly kind: 'instructionLinkNode';
 
-    // Data.
     /** The identifier of the referenced instruction. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** The program the referenced instruction belongs to. When omitted, the surrounding program is assumed. */
     readonly program?: TProgram;
     /** Namespaced plugins with custom structured data. */

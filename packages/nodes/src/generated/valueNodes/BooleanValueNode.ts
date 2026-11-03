@@ -10,10 +10,7 @@ export function booleanValueNode<const TPlugins extends Array<PluginNode> | unde
     return Object.freeze({
         kind: 'booleanValueNode',
 
-        // Data.
         boolean,
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

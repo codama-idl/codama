@@ -14,13 +14,10 @@ export interface ErrorNode<
 > {
     readonly kind: 'errorNode';
 
-    // Data.
     /** The identifier of the error. */
     readonly identifier: IdentifierString;
     /** The numeric error code returned by the program. */
     readonly code: number;
-
-    // Children.
     /** A human-readable description of the error. */
     readonly message: TMessage;
     /** Markdown documentation for the error. */

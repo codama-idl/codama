@@ -20,7 +20,6 @@ export function instructionDisplayNode<
     return Object.freeze({
         kind: 'instructionDisplayNode',
 
-        // Children.
         ...(input.intent !== undefined && { intent: input.intent }),
         ...(input.interpolatedIntent !== undefined && { interpolatedIntent: input.interpolatedIntent }),
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),

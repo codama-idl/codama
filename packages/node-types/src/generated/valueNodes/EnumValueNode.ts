@@ -11,11 +11,8 @@ export interface EnumValueNode<
 > {
     readonly kind: 'enumValueNode';
 
-    // Data.
     /** The identifier of the selected variant. */
     readonly variant: IdentifierString;
-
-    // Children.
     /**
      * A link to the defined enum type the value belongs to.
      * The linked defined type must contain an `enumTypeNode`.

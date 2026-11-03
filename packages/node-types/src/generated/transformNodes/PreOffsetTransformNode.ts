@@ -59,13 +59,10 @@ export interface PreOffsetTransformNode<
 > {
     readonly kind: 'preOffsetTransformNode';
 
-    // Data.
     /** The signed byte offset to apply before the transformed type runs. */
     readonly offset: number;
     /** How the `offset` value is interpreted. */
     readonly strategy: PreOffsetStrategy;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

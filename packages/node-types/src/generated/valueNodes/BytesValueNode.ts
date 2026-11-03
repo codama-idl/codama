@@ -5,13 +5,10 @@ import type { BytesEncoding } from '../shared/bytesEncoding';
 export interface BytesValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'bytesValueNode';
 
-    // Data.
     /** The bytes encoded as a text string per the `encoding` attribute. */
     readonly data: string;
     /** The encoding used to represent the bytes as text. */
     readonly encoding: BytesEncoding;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

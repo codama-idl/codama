@@ -23,11 +23,8 @@ export function errorNode<
     return Object.freeze({
         kind: 'errorNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
         code: input.code,
-
-        // Children.
         message: input.message,
         ...(input.docs !== undefined && { docs: input.docs }),
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),

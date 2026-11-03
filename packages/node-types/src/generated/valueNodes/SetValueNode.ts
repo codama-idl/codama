@@ -8,7 +8,6 @@ export interface SetValueNode<
 > {
     readonly kind: 'setValueNode';
 
-    // Children.
     /** The items of the set. */
     readonly items?: TItems;
     /** Namespaced plugins with custom structured data. */

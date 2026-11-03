@@ -7,11 +7,8 @@ import type { PluginNode } from '../PluginNode';
 export interface FixedCountNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'fixedCountNode';
 
-    // Data.
     /** The fixed number of items. */
     readonly value: number;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

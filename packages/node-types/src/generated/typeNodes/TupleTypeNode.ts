@@ -10,7 +10,6 @@ export interface TupleTypeNode<
 > {
     readonly kind: 'tupleTypeNode';
 
-    // Children.
     /** The type of each positional slot, in order. */
     readonly items?: TItems;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */

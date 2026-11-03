@@ -6,11 +6,8 @@ export interface FixedSizeTransformNode<
 > {
     readonly kind: 'fixedSizeTransformNode';
 
-    // Data.
     /** The total byte size the transformed type must occupy. */
     readonly size: number;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

@@ -63,11 +63,8 @@ export function preOffsetTransformNode<const TPlugins extends Array<PluginNode> 
     return Object.freeze({
         kind: 'preOffsetTransformNode',
 
-        // Data.
         offset,
         strategy: options.strategy ?? 'relative',
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

@@ -24,11 +24,8 @@ export function enumVariantTypeNode<
     return Object.freeze({
         kind: 'enumVariantTypeNode',
 
-        // Data.
         identifier: identifierString(identifier),
         ...(options.discriminator !== undefined && { discriminator: options.discriminator }),
-
-        // Children.
         ...(options.docs !== undefined && { docs: options.docs }),
         ...(options.data !== undefined && { data: options.data }),
         ...(options.display !== undefined && { display: options.display }),

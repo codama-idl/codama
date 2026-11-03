@@ -19,7 +19,6 @@ export function pdaValueNode<
     return Object.freeze({
         kind: 'pdaValueNode',
 
-        // Children.
         pda: (typeof pda === 'string' ? pdaLinkNode(pda) : pda) as TPda,
         ...(options.seeds !== undefined && options.seeds.length > 0 && { seeds: options.seeds as TSeeds }),
         ...(options.programId !== undefined && { programId: options.programId }),

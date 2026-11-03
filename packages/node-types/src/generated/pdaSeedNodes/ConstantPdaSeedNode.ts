@@ -10,7 +10,6 @@ export interface ConstantPdaSeedNode<
 > {
     readonly kind: 'constantPdaSeedNode';
 
-    // Children.
     /** The type of the seed value. */
     readonly type: TType;
     /** The constant value to use as the seed — either a literal value or the program ID placeholder. */

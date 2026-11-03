@@ -18,7 +18,6 @@ export function mapEntryValueNode<
     return Object.freeze({
         kind: 'mapEntryValueNode',
 
-        // Children.
         key,
         value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),

@@ -21,10 +21,7 @@ export function eventNode<
     return Object.freeze({
         kind: 'eventNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
         data: input.data,
         ...(input.discriminators !== undefined &&

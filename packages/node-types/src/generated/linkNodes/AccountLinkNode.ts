@@ -9,11 +9,8 @@ export interface AccountLinkNode<
 > {
     readonly kind: 'accountLinkNode';
 
-    // Data.
     /** The identifier of the referenced account. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** The program the referenced account belongs to. When omitted, the surrounding program is assumed. */
     readonly program?: TProgram;
     /** Namespaced plugins with custom structured data. */

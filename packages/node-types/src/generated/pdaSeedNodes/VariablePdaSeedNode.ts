@@ -11,11 +11,8 @@ export interface VariablePdaSeedNode<
 > {
     readonly kind: 'variablePdaSeedNode';
 
-    // Data.
     /** The identifier of the seed variable. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** Markdown documentation for the seed variable. */
     readonly docs?: TDocs;
     /** The expected type of the seed value. */

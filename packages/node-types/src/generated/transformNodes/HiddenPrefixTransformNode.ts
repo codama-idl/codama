@@ -11,7 +11,6 @@ export interface HiddenPrefixTransformNode<
 > {
     readonly kind: 'hiddenPrefixTransformNode';
 
-    // Children.
     /** The constant values written before the transformed type, in order. */
     readonly prefix?: TPrefix;
     /** Namespaced plugins with custom structured data. */
