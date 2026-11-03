@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
 import {
+    CODAMA_ERROR__UNEXPECTED_NODE_KIND,
     CODAMA_ERROR__VERSION_MISMATCH,
     CODAMA_VERSION,
     CodamaError,
@@ -101,5 +102,50 @@ test('it validates the document version when creating a Codama instance', () => 
     expect(() => createFromRoot(rootNode(program))).not.toThrow();
     expect(() => createFromRoot({ ...rootNode(program), version: '99.0.0' as typeof CODAMA_VERSION })).toThrow(
         new CodamaError(CODAMA_ERROR__VERSION_MISMATCH, { codamaVersion: CODAMA_VERSION, rootVersion: '99.0.0' }),
+    );
+});
+
+test('it rejects JSON IDLs without a program node with a Codama error', () => {
+    const hostileJson = JSON.stringify({ kind: 'rootNode', version: CODAMA_VERSION });
+    expect(() => createFromJson(hostileJson)).toThrow(
+        new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: ['programNode'],
+            kind: null,
+            node: undefined,
+        }),
+    );
+});
+
+test('it validates the root structure at the JSON boundary', () => {
+    // Missing the kind discriminator entirely.
+    expect(() => createFromJson(JSON.stringify({ version: CODAMA_VERSION }))).toThrow(
+        new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: ['rootNode'],
+            kind: null,
+            node: { version: CODAMA_VERSION } as never,
+        }),
+    );
+
+    // A structurally valid root passes and exposes its program.
+    const codama = createFromJson(
+        JSON.stringify({
+            kind: 'rootNode',
+            program: { kind: 'programNode', name: 'myProgram', publicKey: '1111' },
+            standard: 'codama',
+            version: CODAMA_VERSION,
+        }),
+    );
+    expect(codama.getRoot().program.name).toBe('myProgram');
+});
+
+test('it rejects root updates without a program node with a Codama error', () => {
+    const codama = createFromRoot(rootNode(programNode({ name: 'myProgram', publicKey: '1111' })));
+    const orphanRoot = { kind: 'rootNode', version: CODAMA_VERSION } as never;
+    expect(() => codama.update(rootNodeVisitor(() => orphanRoot))).toThrow(
+        new CodamaError(CODAMA_ERROR__UNEXPECTED_NODE_KIND, {
+            expectedKinds: ['programNode'],
+            kind: null,
+            node: undefined,
+        }),
     );
 });
