@@ -1,5 +1,17 @@
 # codama
 
+## 1.11.1
+
+### Patch Changes
+
+- [#1265](https://github.com/codama-idl/codama/pull/1265) [`1656303`](https://github.com/codama-idl/codama/commit/1656303e2d291f6b2fc7e79cfeefd4fe1e057543) Thanks [@latent-9](https://github.com/latent-9)! - Reject malformed root structures at the JSON boundary. `createFromRoot` now asserts that the given root is a `rootNode`, validates its document version, and asserts that its child is a `programNode`. `update()` likewise asserts that the visited root's output preserves the `programNode` child. Malformed IDLs that previously slipped through `createFromJson` and crashed later with a raw `TypeError` now fail at the boundary with a `CODAMA_ERROR__UNEXPECTED_NODE_KIND` error.
+- Updated dependencies []:
+  - @codama/errors@1.11.1
+  - @codama/nodes@1.11.1
+  - @codama/validators@1.11.1
+  - @codama/visitors@1.11.1
+  - @codama/cli@1.6.4
+
 ## 1.11.0
 
 ### Patch Changes
