@@ -8,11 +8,8 @@ export interface ConstantDiscriminatorNode<
 > {
     readonly kind: 'constantDiscriminatorNode';
 
-    // Data.
     /** The byte offset at which the constant begins. */
     readonly offset: number;
-
-    // Children.
     /** The constant value expected at the offset. */
     readonly constant: TConstant;
     /** Namespaced plugins with custom structured data. */

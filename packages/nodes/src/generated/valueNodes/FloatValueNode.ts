@@ -15,10 +15,7 @@ export function floatValueNode<const TPlugins extends Array<PluginNode> | undefi
     return Object.freeze({
         kind: 'floatValueNode',
 
-        // Data.
         value: decimalString(value),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

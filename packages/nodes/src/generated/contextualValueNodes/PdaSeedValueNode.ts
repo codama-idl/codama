@@ -16,10 +16,7 @@ export function pdaSeedValueNode<
     return Object.freeze({
         kind: 'pdaSeedValueNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

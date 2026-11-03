@@ -15,11 +15,8 @@ export interface DefinedTypeNode<
 > {
     readonly kind: 'definedTypeNode';
 
-    // Data.
     /** The identifier of the defined type. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** Markdown documentation for the type. */
     readonly docs?: TDocs;
     /** The type definition. */

@@ -9,11 +9,8 @@ export interface StructFieldValueNode<
 > {
     readonly kind: 'structFieldValueNode';
 
-    // Data.
     /** The identifier of the field. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** The concrete value of the field. */
     readonly value: TValue;
     /** Namespaced plugins with custom structured data. */

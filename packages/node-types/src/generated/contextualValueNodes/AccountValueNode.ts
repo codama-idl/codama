@@ -5,11 +5,8 @@ import type { PluginNode } from '../PluginNode';
 export interface AccountValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'accountValueNode';
 
-    // Data.
     /** The identifier of the referenced account. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

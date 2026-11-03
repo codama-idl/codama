@@ -18,11 +18,8 @@ export function instructionByteDeltaNode<
     return Object.freeze({
         kind: 'instructionByteDeltaNode',
 
-        // Data.
         withHeader: options.withHeader ?? true,
         ...(options.subtract !== undefined && { subtract: options.subtract }),
-
-        // Children.
         value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

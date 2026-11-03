@@ -10,7 +10,6 @@ export interface ConstantValueNode<
 > {
     readonly kind: 'constantValueNode';
 
-    // Children.
     /** The type of the constant. */
     readonly type: TType;
     /** The concrete value of the constant. */

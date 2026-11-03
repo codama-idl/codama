@@ -4,7 +4,6 @@ import type { PluginNode } from '../PluginNode';
 export interface ProgramIdValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'programIdValueNode';
 
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

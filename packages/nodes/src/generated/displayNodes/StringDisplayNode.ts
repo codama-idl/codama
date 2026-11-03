@@ -13,11 +13,8 @@ export function stringDisplayNode<const TPlugins extends Array<PluginNode> | und
     return Object.freeze({
         kind: 'stringDisplayNode',
 
-        // Data.
         ...(input.sliceStart !== undefined && { sliceStart: input.sliceStart }),
         ...(input.sliceEnd !== undefined && { sliceEnd: input.sliceEnd }),
-
-        // Children.
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

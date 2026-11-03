@@ -11,7 +11,6 @@ export interface SizePrefixTransformNode<
 > {
     readonly kind: 'sizePrefixTransformNode';
 
-    // Children.
     /** The integer type used as the size prefix. */
     readonly prefix: TPrefix;
     /** Namespaced plugins with custom structured data. */

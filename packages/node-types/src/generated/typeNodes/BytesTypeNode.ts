@@ -8,7 +8,6 @@ export interface BytesTypeNode<
 > {
     readonly kind: 'bytesTypeNode';
 
-    // Children.
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */
     readonly transforms?: TTransforms;
     /** Namespaced plugins with custom structured data. */

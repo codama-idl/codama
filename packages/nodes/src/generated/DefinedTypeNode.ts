@@ -23,10 +23,7 @@ export function definedTypeNode<
     return Object.freeze({
         kind: 'definedTypeNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
         type: input.type,
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),

@@ -16,7 +16,6 @@ export function prefixedCountNode<
     return Object.freeze({
         kind: 'prefixedCountNode',
 
-        // Children.
         prefix,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

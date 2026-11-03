@@ -15,7 +15,6 @@ export function structTypeNode<
     return Object.freeze({
         kind: 'structTypeNode',
 
-        // Children.
         ...(fields !== undefined && fields.length > 0 && { fields: fields as TFields }),
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

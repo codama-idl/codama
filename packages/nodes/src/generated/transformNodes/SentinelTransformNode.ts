@@ -20,7 +20,6 @@ export function sentinelTransformNode<
     return Object.freeze({
         kind: 'sentinelTransformNode',
 
-        // Children.
         sentinel,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

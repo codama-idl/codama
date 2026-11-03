@@ -18,10 +18,7 @@ export function variablePdaSeedNode<
     return Object.freeze({
         kind: 'variablePdaSeedNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(options.docs !== undefined && { docs: options.docs }),
         type,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),

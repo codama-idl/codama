@@ -16,7 +16,6 @@ export interface FloatTypeNode<
 > {
     readonly kind: 'floatTypeNode';
 
-    // Data.
     /** The wire format used to serialise the float. */
     readonly format: TFormat;
     /** The byte order used to serialise the float. Defaults to `le`. */
@@ -26,8 +25,6 @@ export interface FloatTypeNode<
      * Part of the value semantics: without it, consumers cannot know what quantity the number represents.
      */
     readonly unit?: string;
-
-    // Children.
     /**
      * Display metadata describing how the float is presented.
      * Only a contextual unit applies: a float already carries its own scale.

@@ -11,11 +11,8 @@ export function bytesValueNode<const TPlugins extends Array<PluginNode> | undefi
     return Object.freeze({
         kind: 'bytesValueNode',
 
-        // Data.
         data,
         encoding,
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

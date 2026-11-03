@@ -16,11 +16,8 @@ export interface StringTypeNode<
 > {
     readonly kind: 'stringTypeNode';
 
-    // Data.
     /** The byte encoding used to serialise the string. */
     readonly encoding: TEncoding;
-
-    // Children.
     /** Display metadata describing how the string is presented. */
     readonly display?: TDisplay;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */

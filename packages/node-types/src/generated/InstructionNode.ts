@@ -36,18 +36,15 @@ export interface InstructionNode<
 > {
     readonly kind: 'instructionNode';
 
-    // Data.
     /** The identifier of the instruction. */
     readonly identifier: IdentifierString;
+    /** Markdown documentation for the instruction. */
+    readonly docs?: TDocs;
     /**
      * How absent optional accounts are represented when serialising the instruction.
      * When absent, `programId` is assumed.
      */
     readonly optionalAccountStrategy?: OptionalAccountStrategy;
-
-    // Children.
-    /** Markdown documentation for the instruction. */
-    readonly docs?: TDocs;
     /** The accounts the instruction operates on, in order. */
     readonly accounts?: TAccounts;
     /**

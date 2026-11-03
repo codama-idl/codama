@@ -18,10 +18,7 @@ export function instructionAccountLinkNode<
     return Object.freeze({
         kind: 'instructionAccountLinkNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(instruction !== undefined && {
             instruction: (typeof instruction === 'string'
                 ? instructionLinkNode(instruction)

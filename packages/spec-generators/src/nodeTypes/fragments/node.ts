@@ -26,24 +26,11 @@ export function getNodeFragment(node: NodeSpec, scope: NodeScope): Fragment {
         ),
     );
 
-    const dataLines = node.attributes
-        .filter(attr => !isChildAttribute(attr.type))
-        .map(attr => getAttributeBodyLineFragment(node.kind, attr, scope));
-    const childLines = node.attributes
-        .filter(attr => isChildAttribute(attr.type))
-        .map(attr => getAttributeBodyLineFragment(node.kind, attr, scope));
-
-    const dataSection =
-        dataLines.length > 0
-            ? mergeFragments([fragment`// Data.`, ...dataLines], parts => parts.join('\n'))
-            : undefined;
-    const childSection =
-        childLines.length > 0
-            ? mergeFragments([fragment`// Children.`, ...childLines], parts => parts.join('\n'))
-            : undefined;
-    const body = mergeFragments([getKindLineFragment(node.kind), dataSection, childSection], parts =>
-        parts.join('\n\n'),
-    );
+    // Attributes follow the spec's declaration order, base attributes last, which is the order they serialise in.
+    const attributeLines = node.attributes.map(attr => getAttributeBodyLineFragment(node.kind, attr, scope));
+    const attributeSection =
+        attributeLines.length > 0 ? mergeFragments(attributeLines, parts => parts.join('\n')) : undefined;
+    const body = mergeFragments([getKindLineFragment(node.kind), attributeSection], parts => parts.join('\n\n'));
 
     const aliasPrefix = selfAlias ? fragment`type ${selfAlias.alias} = ${interfaceName};\n\n` : undefined;
     const docComment = getDocblockFragment(node.docs, { withLineJump: true });

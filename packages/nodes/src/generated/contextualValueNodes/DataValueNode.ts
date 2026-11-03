@@ -12,10 +12,7 @@ export function dataValueNode<const TPlugins extends Array<PluginNode> | undefin
     return Object.freeze({
         kind: 'dataValueNode',
 
-        // Data.
         path: pathString(path),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

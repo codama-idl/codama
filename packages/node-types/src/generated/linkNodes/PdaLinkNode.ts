@@ -9,11 +9,8 @@ export interface PdaLinkNode<
 > {
     readonly kind: 'pdaLinkNode';
 
-    // Data.
     /** The identifier of the referenced PDA. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** The program the referenced PDA belongs to. When omitted, the surrounding program is assumed. */
     readonly program?: TProgram;
     /** Namespaced plugins with custom structured data. */

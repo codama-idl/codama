@@ -20,10 +20,7 @@ export function optionTypeNode<
     return Object.freeze({
         kind: 'optionTypeNode',
 
-        // Data.
         fixed: options.fixed ?? false,
-
-        // Children.
         item,
         prefix: (options.prefix ?? integerTypeNode('u8')) as TPrefix,
         ...(options.transforms !== undefined &&

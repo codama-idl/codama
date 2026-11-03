@@ -5,11 +5,8 @@ import type { PluginNode } from '../PluginNode';
 export interface ProgramLinkNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'programLinkNode';
 
-    // Data.
     /** The identifier of the referenced program. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

@@ -11,13 +11,10 @@ export interface InstructionByteDeltaNode<
 > {
     readonly kind: 'instructionByteDeltaNode';
 
-    // Data.
     /** Whether the delta includes the account header overhead — i.e. 128 bytes. */
     readonly withHeader: boolean;
     /** When `true`, the delta is subtracted from the running size instead of added. Defaults to `false`. */
     readonly subtract?: boolean;
-
-    // Children.
     /** The source of the delta value — a literal number, the size of a linked account, or a value within the instruction data. */
     readonly value: TValue;
     /** Namespaced plugins with custom structured data. */

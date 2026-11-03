@@ -13,11 +13,8 @@ export function instructionAccountDisplayNode<
     return Object.freeze({
         kind: 'instructionAccountDisplayNode',
 
-        // Data.
-        ...(input.skip !== undefined && { skip: input.skip }),
-
-        // Children.
         ...(input.label !== undefined && { label: input.label }),
+        ...(input.skip !== undefined && { skip: input.skip }),
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });
 }

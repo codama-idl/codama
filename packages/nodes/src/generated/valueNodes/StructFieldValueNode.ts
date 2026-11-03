@@ -16,10 +16,7 @@ export function structFieldValueNode<
     return Object.freeze({
         kind: 'structFieldValueNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

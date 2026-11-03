@@ -14,7 +14,6 @@ export interface InstructionRemainingAccountsNode<
 > {
     readonly kind: 'instructionRemainingAccountsNode';
 
-    // Data.
     /** The identifier of the account-list input exposed to callers. */
     readonly identifier: IdentifierString;
     /** Whether the remaining accounts may be omitted. Required ones must be provided, possibly as an empty list. Defaults to `false`. */
@@ -26,8 +25,6 @@ export interface InstructionRemainingAccountsNode<
     readonly isSigner?: boolean | 'either';
     /** Whether the instruction may write to each remaining account. */
     readonly isWritable?: boolean;
-
-    // Children.
     /** Markdown documentation for the remaining-accounts slot. */
     readonly docs?: TDocs;
     /** Display metadata describing how the remaining-accounts group is presented as a whole. */

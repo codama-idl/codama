@@ -15,7 +15,6 @@ export interface FixedPointTypeNode<
 > {
     readonly kind: 'fixedPointTypeNode';
 
-    // Data.
     /**
      * How many powers of `base` divide the raw integer. An integer value of 12345 with a base-10 scale of 2 represents 123.45.
      * Must be non-zero: an unscaled quantity is an `integerTypeNode` with a `unit`.
@@ -25,8 +24,6 @@ export interface FixedPointTypeNode<
     readonly base?: 2 | 10;
     /** The unit of measure the quantity denotes — e.g. `"SOL"`, `"USDC"` or `"%"`. */
     readonly unit?: string;
-
-    // Children.
     /**
      * The integer type used to serialise the raw value — a pure encoding slot.
      * It must use a fixed-size format, because a fixed point presupposes a fixed bit width — most visibly for binary Q-format fractions, whose layout is defined by that width. Variable-size formats such as `shortU16` therefore cannot anchor one.

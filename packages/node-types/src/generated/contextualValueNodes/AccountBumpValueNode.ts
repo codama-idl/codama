@@ -5,11 +5,8 @@ import type { PluginNode } from '../PluginNode';
 export interface AccountBumpValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'accountBumpValueNode';
 
-    // Data.
     /** The identifier of the account whose bump seed is referenced. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

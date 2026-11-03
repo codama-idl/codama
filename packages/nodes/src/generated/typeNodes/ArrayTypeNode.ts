@@ -17,7 +17,6 @@ export function arrayTypeNode<
     return Object.freeze({
         kind: 'arrayTypeNode',
 
-        // Children.
         item,
         count,
         ...(options.transforms !== undefined &&

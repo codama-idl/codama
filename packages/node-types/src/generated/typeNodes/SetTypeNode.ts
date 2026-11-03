@@ -12,7 +12,6 @@ export interface SetTypeNode<
 > {
     readonly kind: 'setTypeNode';
 
-    // Children.
     /** The type of each item in the set. */
     readonly item: TItem;
     /** The strategy used to determine the number of items. */

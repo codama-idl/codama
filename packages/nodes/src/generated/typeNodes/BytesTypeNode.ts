@@ -13,7 +13,6 @@ export function bytesTypeNode<
     return Object.freeze({
         kind: 'bytesTypeNode',
 
-        // Children.
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),

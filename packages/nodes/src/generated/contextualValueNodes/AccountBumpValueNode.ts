@@ -12,10 +12,7 @@ export function accountBumpValueNode<const TPlugins extends Array<PluginNode> | 
     return Object.freeze({
         kind: 'accountBumpValueNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

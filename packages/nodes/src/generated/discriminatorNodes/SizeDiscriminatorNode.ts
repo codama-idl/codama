@@ -10,10 +10,7 @@ export function sizeDiscriminatorNode<const TPlugins extends Array<PluginNode> |
     return Object.freeze({
         kind: 'sizeDiscriminatorNode',
 
-        // Data.
         size,
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

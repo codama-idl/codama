@@ -20,7 +20,6 @@ export function booleanTypeNode<
     return Object.freeze({
         kind: 'booleanTypeNode',
 
-        // Children.
         size: (options.size ?? integerTypeNode('u8')) as TSize,
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

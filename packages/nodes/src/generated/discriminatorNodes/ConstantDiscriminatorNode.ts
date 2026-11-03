@@ -14,10 +14,7 @@ export function constantDiscriminatorNode<
     return Object.freeze({
         kind: 'constantDiscriminatorNode',
 
-        // Data.
         offset: options.offset ?? 0,
-
-        // Children.
         constant,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

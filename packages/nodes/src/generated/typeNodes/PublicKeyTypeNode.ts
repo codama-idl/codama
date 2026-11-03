@@ -15,7 +15,6 @@ export function publicKeyTypeNode<
     return Object.freeze({
         kind: 'publicKeyTypeNode',
 
-        // Children.
         ...(options.accountLink !== undefined && { accountLink: options.accountLink }),
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

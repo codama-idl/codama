@@ -4,11 +4,8 @@ import type { PluginNode } from '../PluginNode';
 export interface BooleanValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'booleanValueNode';
 
-    // Data.
     /** The boolean value. */
     readonly boolean: boolean;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

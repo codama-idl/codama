@@ -28,15 +28,12 @@ export interface ProgramNode<
 > {
     readonly kind: 'programNode';
 
-    // Data.
     /** The identifier of the program. */
     readonly identifier: IdentifierString;
     /** The base58-encoded program ID. */
     readonly publicKey: string;
     /** The version of the program, in semver form. */
     readonly version: Version;
-
-    // Children.
     /** Markdown documentation for the program. */
     readonly docs?: TDocs;
     /** The accounts owned by the program. */

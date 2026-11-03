@@ -19,10 +19,7 @@ export function durationTypeNode<
     return Object.freeze({
         kind: 'durationTypeNode',
 
-        // Data.
         ...(options.ticksPerSecond !== undefined && { ticksPerSecond: options.ticksPerSecond }),
-
-        // Children.
         number,
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

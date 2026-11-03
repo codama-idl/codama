@@ -101,12 +101,9 @@ export function instructionNode<
     return Object.freeze({
         kind: 'instructionNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
-        optionalAccountStrategy: input.optionalAccountStrategy ?? 'programId',
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
+        optionalAccountStrategy: input.optionalAccountStrategy ?? 'programId',
         ...(input.accounts !== undefined && input.accounts.length > 0 && { accounts: input.accounts as TAccounts }),
         ...(input.data !== undefined && { data: input.data }),
         ...(input.returnData !== undefined && { returnData: input.returnData }),

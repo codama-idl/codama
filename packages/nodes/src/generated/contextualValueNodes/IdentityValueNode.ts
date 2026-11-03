@@ -13,7 +13,6 @@ export function identityValueNode<const TPlugins extends Array<PluginNode> | und
     return Object.freeze({
         kind: 'identityValueNode',
 
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

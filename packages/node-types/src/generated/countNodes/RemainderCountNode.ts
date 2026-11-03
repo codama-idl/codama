@@ -8,7 +8,6 @@ import type { PluginNode } from '../PluginNode';
 export interface RemainderCountNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'remainderCountNode';
 
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

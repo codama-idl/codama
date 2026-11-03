@@ -32,11 +32,8 @@ export function structFieldTypeNode<
     return Object.freeze({
         kind: 'structFieldTypeNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
         ...(input.defaultValueStrategy !== undefined && { defaultValueStrategy: input.defaultValueStrategy }),
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
         type: input.type,
         ...(input.defaultValue !== undefined && { defaultValue: input.defaultValue }),

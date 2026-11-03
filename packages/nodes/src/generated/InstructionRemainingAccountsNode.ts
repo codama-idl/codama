@@ -29,13 +29,10 @@ export function instructionRemainingAccountsNode<
     return Object.freeze({
         kind: 'instructionRemainingAccountsNode',
 
-        // Data.
         identifier: identifierString(identifier),
         ...(options.isOptional !== undefined && { isOptional: options.isOptional }),
         ...(options.isSigner !== undefined && { isSigner: options.isSigner }),
         ...(options.isWritable !== undefined && { isWritable: options.isWritable }),
-
-        // Children.
         ...(options.docs !== undefined && { docs: options.docs }),
         ...(options.display !== undefined && { display: options.display }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),

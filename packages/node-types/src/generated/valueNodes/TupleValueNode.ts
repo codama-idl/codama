@@ -8,7 +8,6 @@ export interface TupleValueNode<
 > {
     readonly kind: 'tupleValueNode';
 
-    // Children.
     /** The positional items of the tuple, in order. */
     readonly items?: TItems;
     /** Namespaced plugins with custom structured data. */

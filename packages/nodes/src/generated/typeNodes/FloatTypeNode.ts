@@ -29,12 +29,9 @@ export function floatTypeNode<
     return Object.freeze({
         kind: 'floatTypeNode',
 
-        // Data.
         format,
         endian: options.endian ?? 'le',
         ...(options.unit !== undefined && { unit: options.unit }),
-
-        // Children.
         ...(options.display !== undefined && { display: options.display }),
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

@@ -16,7 +16,6 @@ export function sizePrefixTransformNode<
     return Object.freeze({
         kind: 'sizePrefixTransformNode',
 
-        // Children.
         prefix,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

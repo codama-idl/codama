@@ -13,7 +13,6 @@ export function payerValueNode<const TPlugins extends Array<PluginNode> | undefi
     return Object.freeze({
         kind: 'payerValueNode',
 
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

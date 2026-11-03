@@ -13,15 +13,12 @@ export interface DurationTypeNode<
 > {
     readonly kind: 'durationTypeNode';
 
-    // Data.
     /**
      * How many ticks make one second. Defaults to `1` (the value is already in seconds).
      * Must be non-zero.
      * Common choices are `1000` (milliseconds), `1000000` (microseconds), and `1000000000` (nanoseconds).
      */
     readonly ticksPerSecond?: number;
-
-    // Children.
     /**
      * The integer type used to serialise the tick count — a pure encoding slot.
      * It must not carry a `unit` or `display` of its own.

@@ -15,7 +15,6 @@ export function tupleTypeNode<
     return Object.freeze({
         kind: 'tupleTypeNode',
 
-        // Children.
         ...(items !== undefined && items.length > 0 && { items: items as TItems }),
         ...(options.transforms !== undefined &&
             options.transforms.length > 0 && { transforms: options.transforms as TTransforms }),

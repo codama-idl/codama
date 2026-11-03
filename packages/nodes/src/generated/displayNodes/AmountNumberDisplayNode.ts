@@ -27,7 +27,6 @@ export function amountNumberDisplayNode<
     return Object.freeze({
         kind: 'amountNumberDisplayNode',
 
-        // Children.
         decimals: input.decimals,
         ...(input.unit !== undefined && { unit: input.unit }),
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),

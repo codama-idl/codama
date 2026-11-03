@@ -19,7 +19,6 @@ export function enumTypeNode<
     return Object.freeze({
         kind: 'enumTypeNode',
 
-        // Children.
         ...(variants !== undefined && variants.length > 0 && { variants: variants as TVariants }),
         size: (options.size ?? integerTypeNode('u8')) as TSize,
         ...(options.transforms !== undefined &&

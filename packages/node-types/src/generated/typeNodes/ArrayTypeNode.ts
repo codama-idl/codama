@@ -12,7 +12,6 @@ export interface ArrayTypeNode<
 > {
     readonly kind: 'arrayTypeNode';
 
-    // Children.
     /** The type of each item in the array. */
     readonly item: TItem;
     /** The strategy used to determine the number of items. */

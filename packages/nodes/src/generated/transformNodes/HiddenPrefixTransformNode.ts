@@ -16,7 +16,6 @@ export function hiddenPrefixTransformNode<
     return Object.freeze({
         kind: 'hiddenPrefixTransformNode',
 
-        // Children.
         ...(prefix !== undefined && prefix.length > 0 && { prefix: prefix as TPrefix }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

@@ -13,11 +13,8 @@ export function publicKeyValueNode<const TPlugins extends Array<PluginNode> | un
     return Object.freeze({
         kind: 'publicKeyValueNode',
 
-        // Data.
         publicKey,
         ...(options.identifier !== undefined && { identifier: identifierString(options.identifier) }),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

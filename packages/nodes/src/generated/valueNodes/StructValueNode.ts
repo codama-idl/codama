@@ -13,7 +13,6 @@ export function structValueNode<
     return Object.freeze({
         kind: 'structValueNode',
 
-        // Children.
         ...(fields !== undefined && fields.length > 0 && { fields: fields as TFields }),
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

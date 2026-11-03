@@ -16,13 +16,10 @@ export interface EnumVariantTypeNode<
 > {
     readonly kind: 'enumVariantTypeNode';
 
-    // Data.
     /** The identifier of the variant. */
     readonly identifier: IdentifierString;
     /** Explicit discriminator value. When omitted, the discriminator is the index of the variant in the enum, starting at 0. */
     readonly discriminator?: number;
-
-    // Children.
     /** Markdown documentation for the variant. */
     readonly docs?: TDocs;
     /** The payload carried by the variant. When omitted, the variant is a unit variant. */

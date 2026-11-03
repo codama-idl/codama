@@ -10,7 +10,6 @@ export interface RemainderOptionTypeNode<
 > {
     readonly kind: 'remainderOptionTypeNode';
 
-    // Children.
     /** The type carried by the option when present. */
     readonly item: TItem;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */

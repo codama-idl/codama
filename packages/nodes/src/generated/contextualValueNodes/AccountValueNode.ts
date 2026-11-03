@@ -12,10 +12,7 @@ export function accountValueNode<const TPlugins extends Array<PluginNode> | unde
     return Object.freeze({
         kind: 'accountValueNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

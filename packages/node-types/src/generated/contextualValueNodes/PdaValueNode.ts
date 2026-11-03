@@ -12,7 +12,6 @@ export interface PdaValueNode<
 > {
     readonly kind: 'pdaValueNode';
 
-    // Children.
     /** The PDA being derived — either a link to a defined PDA or an inline `pdaNode`. */
     readonly pda: TPda;
     /** The seed values used to derive the PDA, paired with their seed names. */

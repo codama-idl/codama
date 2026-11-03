@@ -13,11 +13,8 @@ export interface EventNode<
 > {
     readonly kind: 'eventNode';
 
-    // Data.
     /** The identifier of the event. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** Markdown documentation for the event. */
     readonly docs?: TDocs;
     /** The type describing the event payload. */

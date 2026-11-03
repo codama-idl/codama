@@ -9,11 +9,8 @@ export interface InstructionAccountLinkNode<
 > {
     readonly kind: 'instructionAccountLinkNode';
 
-    // Data.
     /** The identifier of the referenced instruction account. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /**
      * The instruction the referenced account belongs to. When omitted, the surrounding instruction is assumed.
      * The instruction link may itself point to a different program if needed.

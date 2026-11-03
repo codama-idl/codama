@@ -22,10 +22,7 @@ export function injectedValueNode<
     return Object.freeze({
         kind: 'injectedValueNode',
 
-        // Data.
         key: identifierString(input.key),
-
-        // Children.
         ...(input.fallback !== undefined && { fallback: input.fallback }),
         ...(input.plugins !== undefined && input.plugins.length > 0 && { plugins: input.plugins as TPlugins }),
     });

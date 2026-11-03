@@ -16,7 +16,6 @@ export interface ConditionalValueNode<
 > {
     readonly kind: 'conditionalValueNode';
 
-    // Children.
     /** The value whose evaluation drives the branch. */
     readonly condition: TCondition;
     /**

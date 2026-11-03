@@ -1,5 +1,5 @@
 import { type Fragment, fragment, mergeFragments } from '@codama/fragments/javascript';
-import { type AttributeSpec, isChildAttribute, type NodeSpec } from '@codama/spec';
+import { type AttributeSpec, type NodeSpec } from '@codama/spec';
 
 import type { AttributeOverride, NodeConstructorConfig } from '../config';
 import { paramIdentifier } from '../paramIdentifier';
@@ -12,9 +12,11 @@ function hasCoerce(override: AttributeOverride | undefined): boolean {
 
 /**
  * The node function body — a `return Object.freeze({ kind, ... });`
- * block. `docs` and `text` attributes are ordinary `string | textNode`
- * children with no bespoke handling: pass-through when required,
- * conditional spread when optional, like every other child.
+ * block. Attributes follow the spec's declaration order, base
+ * attributes last, which is the order they serialise in. `docs` and
+ * `text` attributes need no bespoke handling: pass-through when
+ * required, conditional spread when optional, like every other
+ * attribute.
  */
 export function getNodeFunctionBodyFragment(
     node: NodeSpec,
@@ -25,12 +27,10 @@ export function getNodeFunctionBodyFragment(
     const positionalSet = new Set(config?.positionalArgs ?? []);
     const typeParameterAttrsByName = new Map(typeParameterAttributes.map(attr => [attr.name, attr]));
 
-    const dataLines: Fragment[] = [];
-    const childLines: Fragment[] = [];
+    const attributeLines: Fragment[] = [];
     const preStatements: Fragment[] = [];
 
     for (const attr of node.attributes) {
-        const isChild = isChildAttribute(attr.type);
         const override = config?.attributes?.[attr.name];
         const isBarePositional = isPositional && positionalSet.has(attr.name);
         let reader = computeReader(attr, override, isPositional, positionalSet);
@@ -48,16 +48,13 @@ export function getNodeFunctionBodyFragment(
         }
 
         const line = getNodeFunctionAttributeFragment(attr, reader, override, typeParamAttr, isBarePositional);
-        (isChild ? childLines : dataLines).push(line);
+        attributeLines.push(line);
     }
 
     const kindLine = fragment`kind: '${node.kind}',`;
     const sectionFragments: Fragment[] = [kindLine];
-    if (dataLines.length > 0) {
-        sectionFragments.push(fragment``, fragment`// Data.`, ...dataLines);
-    }
-    if (childLines.length > 0) {
-        sectionFragments.push(fragment``, fragment`// Children.`, ...childLines);
+    if (attributeLines.length > 0) {
+        sectionFragments.push(fragment``, ...attributeLines);
     }
 
     const objectLiteral = mergeFragments(sectionFragments, parts => parts.join('\n'));

@@ -9,11 +9,8 @@ import type { PluginNode } from './PluginNode';
 export interface TextNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'textNode';
 
-    // Data.
     /** The text itself, in the default language of the IDL. */
     readonly content: string;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

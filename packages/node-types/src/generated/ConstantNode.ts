@@ -13,11 +13,8 @@ export interface ConstantNode<
 > {
     readonly kind: 'constantNode';
 
-    // Data.
     /** The identifier of the constant. */
     readonly identifier: IdentifierString;
-
-    // Children.
     /** Markdown documentation for the constant. */
     readonly docs?: TDocs;
     /** The type of the constant. */

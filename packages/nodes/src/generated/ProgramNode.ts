@@ -62,12 +62,9 @@ export function programNode<
     return Object.freeze({
         kind: 'programNode',
 
-        // Data.
         identifier: identifierString(input.identifier),
         publicKey: input.publicKey,
         version: input.version ?? '0.0.0',
-
-        // Children.
         ...(input.docs !== undefined && { docs: input.docs }),
         ...(input.accounts !== undefined && input.accounts.length > 0 && { accounts: input.accounts as TAccounts }),
         ...(input.instructions !== undefined &&

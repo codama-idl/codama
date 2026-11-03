@@ -20,10 +20,7 @@ export function providedNode<
     return Object.freeze({
         kind: 'providedNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         node: value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

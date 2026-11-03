@@ -15,7 +15,6 @@ export function constantPdaSeedNode<
     return Object.freeze({
         kind: 'constantPdaSeedNode',
 
-        // Children.
         type,
         value,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),

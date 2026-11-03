@@ -13,7 +13,6 @@ export interface BooleanTypeNode<
 > {
     readonly kind: 'booleanTypeNode';
 
-    // Children.
     /** The integer type used to serialise the boolean. */
     readonly size: TSize;
     /** Transforms applied to the serialisation of this type, in order — the first is the innermost. */

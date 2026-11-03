@@ -48,17 +48,13 @@ function buildArgumentNode() {
 }
 
 describe('getNodeFragment', () => {
-    it('emits an interface with kind discriminator, generics, and section markers', () => {
+    it('emits an interface with kind discriminator, generics, and every attribute', () => {
         const result = getNodeFragment(buildWrappingNode(), buildScope());
         const c = result.content;
         expect(c).toContain('export interface WrappingTypeNode<');
         expect(c).toContain("readonly kind: 'wrappingTypeNode';");
-        expect(c).toContain('// Data.');
-        expect(c).toContain('// Children.');
-        // The `endian` enumeration is data; the `payload` union is a child.
         expect(c).toContain('readonly endian: Endianness;');
         expect(c).toContain('readonly payload: TPayload;');
-        // Optional u32 attribute should land in Data with `?: number;`.
         expect(c).toContain('readonly count?: number;');
     });
 
@@ -67,14 +63,14 @@ describe('getNodeFragment', () => {
         expect(result.content).toContain('TPayload extends TypeNode = TypeNode');
     });
 
-    it('emits no Data or Children section when the corresponding group is empty', () => {
-        // A child-only node: just one child attribute, no data attributes.
-        const childOnly = defineNode('childOnlyNode', {
-            attributes: [attribute('child', node('innerTypeNode'))],
-        });
-        const result = getNodeFragment(childOnly, buildScope());
-        expect(result.content).not.toContain('// Data.');
-        expect(result.content).toContain('// Children.');
+    it('emits attributes in declaration order without regrouping data and children', () => {
+        // The `payload` child is declared before the `endian` and `count` data attributes.
+        const c = getNodeFragment(buildWrappingNode(), buildScope()).content;
+        const positions = ['payload', 'endian', 'count'].map(name => c.indexOf(`readonly ${name}`));
+        expect(positions).not.toContain(-1);
+        expect(positions).toEqual([...positions].sort((a, b) => a - b));
+        expect(c).not.toContain('// Data.');
+        expect(c).not.toContain('// Children.');
     });
 
     it('inserts a SelfXxxNode alias for self-referential nodes', () => {

@@ -12,7 +12,6 @@ export interface EnumTypeNode<
 > {
     readonly kind: 'enumTypeNode';
 
-    // Children.
     /** The variants of the enum, in declaration order. */
     readonly variants?: TVariants;
     /**

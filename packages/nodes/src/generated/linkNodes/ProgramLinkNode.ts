@@ -12,10 +12,7 @@ export function programLinkNode<const TPlugins extends Array<PluginNode> | undef
     return Object.freeze({
         kind: 'programLinkNode',
 
-        // Data.
         identifier: identifierString(identifier),
-
-        // Children.
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });
 }

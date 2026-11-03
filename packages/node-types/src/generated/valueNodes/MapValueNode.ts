@@ -8,7 +8,6 @@ export interface MapValueNode<
 > {
     readonly kind: 'mapValueNode';
 
-    // Children.
     /** The entries of the map, in order. */
     readonly entries?: TEntries;
     /** Namespaced plugins with custom structured data. */

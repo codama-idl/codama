@@ -8,11 +8,8 @@ import type { PluginNode } from '../PluginNode';
 export interface IntegerValueNode<TPlugins extends Array<PluginNode> | undefined = Array<PluginNode> | undefined> {
     readonly kind: 'integerValueNode';
 
-    // Data.
     /** The integer value, as a base-10 string — e.g. `"42"` or `"-12048014319693667524"`. */
     readonly value: IntegerString;
-
-    // Children.
     /** Namespaced plugins with custom structured data. */
     readonly plugins?: TPlugins;
 }

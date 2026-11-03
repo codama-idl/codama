@@ -30,10 +30,7 @@ export function sentinelCountNode<
     return Object.freeze({
         kind: 'sentinelCountNode',
 
-        // Data.
         ...(options.strategy !== undefined && { strategy: options.strategy }),
-
-        // Children.
         sentinel,
         ...(options.plugins !== undefined && options.plugins.length > 0 && { plugins: options.plugins as TPlugins }),
     });

@@ -29,12 +29,9 @@ export function fixedPointTypeNode<
     return Object.freeze({
         kind: 'fixedPointTypeNode',
 
-        // Data.
         scale: options.scale,
         ...(options.base !== undefined && { base: options.base }),
         ...(options.unit !== undefined && { unit: options.unit }),
-
-        // Children.
         number,
         ...(options.display !== undefined && { display: options.display }),
         ...(options.transforms !== undefined &&
