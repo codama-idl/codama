@@ -1,5 +1,15 @@
 # @codama/validators
 
+## 2.0.0-rc.1
+
+### Patch Changes
+
+- Updated dependencies [[`141998e`](https://github.com/codama-idl/codama/commit/141998ef817294a79629c4592cdfdce93bd6939d)]:
+  - @codama/nodes@2.0.0-rc.1
+  - @codama/errors@2.0.0-rc.1
+  - @codama/visitors-core@2.0.0-rc.1
+  - @codama/fragments@2.0.0-rc.1
+
 ## 2.0.0-rc.0
 
 ### Major Changes
