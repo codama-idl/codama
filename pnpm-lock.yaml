@@ -30,8 +30,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(browserslist@4.25.4)
       happy-dom:
-        specifier: ^20.14.6
-        version: 20.14.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        specifier: ^21.0.4
+        version: 21.0.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       oxfmt:
         specifier: ^0.71.0
         version: 0.71.0
@@ -55,7 +55,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.1.0
-        version: 5.1.0(@types/node@26.6.6)(happy-dom@20.14.6(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.6.6)(yaml@2.9.1))
+        version: 5.1.0(@types/node@26.6.6)(happy-dom@21.0.4(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.6.6)(yaml@2.9.1))
 
   packages/cli:
     dependencies:
@@ -351,7 +351,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.1.0
-        version: 5.1.0(@types/node@26.6.6)(happy-dom@20.14.6(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.6.6)(yaml@2.9.1))
+        version: 5.1.0(@types/node@26.6.6)(happy-dom@21.0.4(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.6.6)(yaml@2.9.1))
 
   packages/upgrade:
     dependencies:
@@ -2669,8 +2669,8 @@ packages:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  happy-dom@20.14.6:
-    resolution: {integrity: sha512-5DDsf4QmEIlRL6NkCv/fxSjYHHkZceL/IaYQdJc2h3G7DRTEai++VTjbfL0LB9geW2VrA3+vrjF3Efx+OTtX0Q==}
+  happy-dom@21.0.4:
+    resolution: {integrity: sha512-tFm+GaLBgo6o0awHnvHaNoraVo27qJ+2tZEtZ+cIa08hXbeitrxAJajLI05hsUy/2/YTKcUjQYzHe5mCcraLBw==}
     engines: {node: '>=20.0.0'}
 
   has-property-descriptors@1.0.2:
@@ -3230,18 +3230,6 @@ packages:
   wrap-ansi@8.1.0:
     resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==}
     engines: {node: '>=12'}
-
-  ws@8.22.0:
-    resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
 
   ws@8.22.1:
     resolution: {integrity: sha512-oyL6OPYme/CmiFvNuGzeoxCJ4nOrZE2O1FwM9MWM1AsGri6nLXB2pg+lNA8aLeXMSav0J6eIVS1j6vUPzUtK9g==}
@@ -5331,7 +5319,7 @@ snapshots:
 
   gopd@1.2.0: {}
 
-  happy-dom@20.14.6(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+  happy-dom@21.0.4(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       '@types/node': 26.6.6
       '@types/whatwg-mimetype': 3.0.2
@@ -5339,7 +5327,7 @@ snapshots:
       buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
-      ws: 8.22.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      ws: 8.22.1(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -5857,7 +5845,7 @@ snapshots:
       fsevents: 2.3.3
       yaml: 2.9.1
 
-  vitest@5.1.0(@types/node@26.6.6)(happy-dom@20.14.6(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.6.6)(yaml@2.9.1)):
+  vitest@5.1.0(@types/node@26.6.6)(happy-dom@21.0.4(bufferutil@4.1.0)(utf-8-validate@6.0.6))(vite@7.3.0(@types/node@26.6.6)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.1.0(vite@7.3.0(@types/node@26.6.6)(yaml@2.9.1))
@@ -5875,7 +5863,7 @@ snapshots:
       why-is-node-running: 3.2.1
     optionalDependencies:
       '@types/node': 26.6.6
-      happy-dom: 20.14.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      happy-dom: 21.0.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - msw
 
@@ -5898,11 +5886,6 @@ snapshots:
       ansi-styles: 6.2.3
       string-width: 5.1.2
       strip-ansi: 7.2.0
-
-  ws@8.22.0(bufferutil@4.1.0)(utf-8-validate@6.0.6):
-    optionalDependencies:
-      bufferutil: 4.1.0
-      utf-8-validate: 6.0.6
 
   ws@8.22.1(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     optionalDependencies:
