@@ -78,7 +78,7 @@
         "@solana/addresses": "^8.6.0",
         "@solana/codecs": "^8.6.0",
         "codama": "workspace:*",
-        "commander": "^15.0.0"
+        "commander": "^15.1.0"
     },
     "devDependencies": {
         "@solana/kit": "8.6.0"
