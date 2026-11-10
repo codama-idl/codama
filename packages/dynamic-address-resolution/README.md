@@ -35,9 +35,11 @@ const address = await resolveInstructionAccountAddress({
 The path is needed to follow links, e.g. to PDAs of other programs, and to resolve injected values from the `provides` of the instruction and its parents. Links are followed using the linkable nodes of the tree, which every function of this package records from the root of the path unless given as `linkables`. Record them once with `getLinkablesFromNode(root)` and pass them when resolving several times.
 
 ```ts
+import { resolveInstructionAccountAddress } from '@codama/dynamic-address-resolution';
 import { getLinkablesFromNode } from 'codama';
 
 const linkables = getLinkablesFromNode(root);
+const accountPaths = (instruction.accounts ?? []).map(account => [root, root.program, instruction, account] as const);
 const addresses = await Promise.all(
     accountPaths.map(path => resolveInstructionAccountAddress({ accountsInput, dataInput, linkables, path })),
 );
@@ -50,6 +52,7 @@ The `dataInput` uses the value format of [`@codama/dynamic-codecs`](../dynamic-c
 Some default values read the data of accounts, e.g. an owner defaulting to `accountDataValueNode('mint', { path: 'mintAuthority' })`, or a seed reading `dataValueNode('mint.data.decimals')` where `mint` is a public key linking to the mint account. Pass a `fetchAccounts` function returning these accounts, which must exist. Their data is decoded using the IDL, following `accountLink`s.
 
 ```ts
+import type { FetchAccountsFn } from '@codama/dynamic-address-resolution';
 import { assertAccountsExist, fetchEncodedAccounts } from '@solana/accounts';
 
 const fetchAccounts: FetchAccountsFn = async addresses => {
@@ -60,6 +63,8 @@ const fetchAccounts: FetchAccountsFn = async addresses => {
 ```
 
 ```ts
+import { resolveInstructionAccountAddress } from '@codama/dynamic-address-resolution';
+
 const address = await resolveInstructionAccountAddress({
     accountsInput: { mint },
     fetchAccounts,
@@ -67,13 +72,36 @@ const address = await resolveInstructionAccountAddress({
 });
 ```
 
-Errors come from Kit: `assertAccountsExist` throws for accounts that do not exist, and data that does not decode throws `SOLANA_ERROR__ACCOUNTS__FAILED_TO_DECODE_ACCOUNT`. Errors thrown by `fetchAccounts` are thrown as is. Reading account data without a `fetchAccounts` function throws a `CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING` error, whose `path` is the path of the account to read. `readsAccountData(path)` tells whether building an instruction may read account data, and thus needs `fetchAccounts`; the generated types of `@codama/dynamic-instructions` and `@codama/dynamic-client` use it to require the option.
+Errors come from Kit: `assertAccountsExist` throws for accounts that do not exist, and data that does not decode throws `SOLANA_ERROR__ACCOUNTS__FAILED_TO_DECODE_ACCOUNT`. Errors thrown by `fetchAccounts` are thrown as is. Reading account data without a `fetchAccounts` function throws a `CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING` error, whose `path` is the path of the account to read.
 
-Accounts requested together are fetched in a single call, and each account is fetched once per resolution. Use `getBatchedFetchAccounts(fetchAccounts)` to share these batches and this cache across several resolutions, e.g. all the accounts of an instruction.
+`readsAccountData(path)` tells, from the IDL alone, whether building an instruction may read account data, and thus needs `fetchAccounts`. It is `true` when the default value of one of its accounts or top-level data fields, once its injected values are resolved, reads the data of an account. It does not know the inputs, so an instruction may read nothing when the accounts and fields with these defaults are provided.
+
+```ts
+import { readsAccountData } from '@codama/dynamic-address-resolution';
+
+// e.g. `true` when the `decimals` of `transferChecked` default to the decimals of its mint account
+const needsFetchAccounts = readsAccountData([root, root.program, transferChecked], linkables);
+```
+
+Each resolution batches and caches the accounts it fetches: accounts requested together are fetched in a single call, and each account is fetched once. Use `getBatchedFetchAccounts(fetchAccounts)` to share these batches and this cache across several resolutions, e.g. all the accounts of an instruction. The cache is never refreshed, so use one per instruction or per group of instructions built together.
+
+```ts
+import { getBatchedFetchAccounts, resolveInstructionAccountAddress } from '@codama/dynamic-address-resolution';
+
+const batchedFetchAccounts = getBatchedFetchAccounts(fetchAccounts);
+const addresses = await Promise.all(
+    accountPaths.map(path =>
+        resolveInstructionAccountAddress({ accountsInput, fetchAccounts: batchedFetchAccounts, linkables, path }),
+    ),
+);
+```
 
 Instruction data fields whose default value is injected from account data, e.g. a `decimals` field provided by `accountDataValueNode('mint', { path: 'decimals' })`, cannot be evaluated by codecs, which are synchronous. `resolveInstructionDataDefaultValues` resolves them beforehand, for the `resolvedDefaultValues` codec option.
 
 ```ts
+import { resolveInstructionDataDefaultValues } from '@codama/dynamic-address-resolution';
+import { getNodeValueCodec } from '@codama/dynamic-codecs';
+
 const resolvedDefaultValues = await resolveInstructionDataDefaultValues({
     accountsInput: { mint },
     dataInput: { amount: 42n },
@@ -143,6 +171,8 @@ When no branch matches, optional accounts resolve using the optional account str
 Derives a PDA outside of any instruction, from its path and the values of its variable seeds. It uses the given `programId`, or else the `programId` of the PDA, or else the address of the program defining it. Pass a `programId` for PDAs that instructions derive from another program through their `pdaValueNode.programId`.
 
 ```ts
+import { resolveStandalonePda } from '@codama/dynamic-address-resolution';
+
 const [address, bump] = await resolveStandalonePda({
     path: [root, root.program, metadataPda],
     programId: otherProgramAddress, // optional
@@ -173,12 +203,14 @@ const source = generateTypes(idl);
 The generated types can narrow the inputs of `resolveInstructionAccountAddress`.
 
 ```ts
+import { resolveInstructionAccountAddress } from '@codama/dynamic-address-resolution';
+
 import type { TransferAccounts, TransferInstructionDataArgs } from './generated/my-program-address-resolution-types';
 
 const address = await resolveInstructionAccountAddress<TransferAccounts, TransferInstructionDataArgs>({
     accountsInput: { destination, source },
     dataInput: { amount: 1_000_000_000n },
-    path,
+    path: [root, root.program, transferChecked],
 });
 ```
 
