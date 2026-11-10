@@ -74,7 +74,7 @@ const address = await resolveInstructionAccountAddress({
 
 Errors come from Kit: `assertAccountsExist` throws for accounts that do not exist, and data that does not decode throws `SOLANA_ERROR__ACCOUNTS__FAILED_TO_DECODE_ACCOUNT`. Errors thrown by `fetchAccounts` are thrown as is. Reading account data without a `fetchAccounts` function throws a `CODAMA_ERROR__DYNAMIC_CLIENT__FETCH_ACCOUNTS_MISSING` error, whose `path` is the path of the account to read.
 
-`readsAccountData(path)` tells, from the IDL alone, whether building an instruction may read account data, and thus needs `fetchAccounts`. It is `true` when the default value of one of its accounts or top-level data fields, once its injected values are resolved, reads the data of an account. It does not know the inputs, so an instruction may read nothing when the accounts and fields with these defaults are provided. Use it to require `fetchAccounts`, or an RPC connection, only for these instructions. The generated types of `@codama/dynamic-instructions` and `@codama/dynamic-client` use it to require the option.
+`readsAccountData(path)` tells, from the IDL alone, whether building an instruction may read account data, and thus needs `fetchAccounts`. It is `true` when the default value of one of its accounts or top-level data fields, once its injected values are resolved, reads the data of an account. It does not know the inputs, so an instruction may read nothing when the accounts and fields with these defaults are provided.
 
 ```ts
 import { readsAccountData } from '@codama/dynamic-address-resolution';
