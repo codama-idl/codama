@@ -1,5 +1,15 @@
 # @codama/renderers-core
 
+## 1.4.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @codama/errors@1.11.1
+  - @codama/nodes@1.11.1
+  - @codama/visitors-core@1.11.1
+  - @codama/fragments@1.0.1
+
 ## 1.4.1
 
 ### Patch Changes

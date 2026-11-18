@@ -1,6 +1,6 @@
 {
     "name": "@codama/dynamic-instructions",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Runtime instruction creation for Codama IDLs",
     "keywords": [
         "framework",

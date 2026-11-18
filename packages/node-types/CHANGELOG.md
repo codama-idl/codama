@@ -1,5 +1,9 @@
 # @codama/node-types
 
+## 1.11.1
+
+No changes in this release.
+
 ## 1.11.0
 
 ### Patch Changes
