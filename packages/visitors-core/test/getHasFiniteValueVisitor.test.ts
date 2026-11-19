@@ -32,6 +32,7 @@ const u8 = integerTypeNode('u8');
 const self = definedTypeLinkNode('self');
 const constantOfSelf = constantValueNode(self, integerValueNode('0'));
 const prefixOfSelf = hiddenPrefixTransformNode([constantOfSelf]);
+const u8OfSelf = integerTypeNode('u8', { transforms: [prefixOfSelf] });
 const field = (type: TypeNode) => structTypeNode([structFieldTypeNode({ identifier: 'value', type })]);
 
 test.each<[string, TypeNode]>([
@@ -79,6 +80,9 @@ test.each<[string, TypeNode]>([
     ['transforms of sets', setTypeNode(u8, remainderCountNode(), { transforms: [prefixOfSelf] })],
     ['transforms of maps', mapTypeNode(u8, u8, prefixedCountNode(u8), { transforms: [prefixOfSelf] })],
     ['transforms of enums', enumTypeNode([enumVariantTypeNode('nil')], { transforms: [prefixOfSelf] })],
+    ['prefixes of options', field(optionTypeNode(u8, { prefix: u8OfSelf }))],
+    ['sizes of enums', enumTypeNode([enumVariantTypeNode('nil')], { size: u8OfSelf })],
+    ['prefixed counts', arrayTypeNode(u8, prefixedCountNode(u8OfSelf))],
 ])('it finds no finite value through %s', (_, type) => {
     // Given a defined type named `self` with the given type.
     const definedType = definedTypeNode({ identifier: 'self', type });

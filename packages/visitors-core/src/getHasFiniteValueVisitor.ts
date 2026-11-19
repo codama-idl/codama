@@ -18,7 +18,7 @@ import { visit, Visitor } from './visitor';
  * sizes and zero values, are part of every value of it, so they prevent a
  * value from existing when their constants link back to a type being visited,
  * since those constants could then never be created. Links that cannot be
- * resolved count as finite.
+ * resolved count as finite on their own.
  *
  * A link back to a defined type being visited has no finite value on its own:
  * a finite value never needs to nest a type within itself, so another branch
