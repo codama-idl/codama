@@ -163,12 +163,14 @@ export function getResolvedInstructionInputsVisitor(
 
         switch (resolvedDefaultValue?.kind) {
             case 'accountValueNode': {
+                // The default account is resolved first, so its resolved flags carry along a chain of
+                // defaults, e.g. `a` defaulting to `b` defaulting to `c`.
                 const defaultAccount = visitedAccounts.get(resolvedDefaultValue.identifier)!;
-                const resolvedIsPublicKey = account.isSigner === false && defaultAccount.node.isSigner === false;
-                const resolvedIsSigner = account.isSigner === true && defaultAccount.node.isSigner === true;
+                const resolvedIsPublicKey = account.isSigner === false && defaultAccount.resolvedIsSigner === false;
+                const resolvedIsSigner = account.isSigner === true && defaultAccount.resolvedIsSigner === true;
                 const resolvedIsOptionalSigner = !resolvedIsPublicKey && !resolvedIsSigner;
                 localResolved.resolvedIsSigner = resolvedIsOptionalSigner ? 'either' : resolvedIsSigner;
-                localResolved.resolvedIsOptional = !!defaultAccount.node.isOptional;
+                localResolved.resolvedIsOptional = defaultAccount.resolvedIsOptional;
                 break;
             }
             case 'publicKeyValueNode':

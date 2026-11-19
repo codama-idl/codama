@@ -17,6 +17,7 @@ import {
     InstructionNode,
     instructionNode,
     integerTypeNode,
+    payerValueNode,
     pdaSeedValueNode,
     pdaValueNode,
     programNode,
@@ -146,6 +147,66 @@ test('it sets the resolved signer to either when a signer defaults to a non sign
         resolvedIsOptional: false,
         resolvedIsSigner: 'either',
     });
+});
+
+test('it carries the resolved signer along a chain of default accounts', () => {
+    // Given signers "a" and "b" such that "b" defaults to "c", which is not a signer.
+    const node = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                defaultValue: accountValueNode('b'),
+                identifier: 'a',
+                isSigner: true,
+                isWritable: false,
+            }),
+            instructionAccountNode({
+                defaultValue: accountValueNode('c'),
+                identifier: 'b',
+                isSigner: true,
+                isWritable: false,
+            }),
+            instructionAccountNode({ identifier: 'c', isSigner: false, isWritable: false }),
+        ],
+        identifier: 'myInstruction',
+    });
+
+    // When we get its resolved inputs.
+    const result = resolve(node);
+
+    // Then "b" may not sign, and so may "a" which defaults to it.
+    expect(result.map(input => input.node.identifier)).toEqual(['c', 'b', 'a']);
+    expect(result[1]).toMatchObject({ resolvedIsSigner: 'either' });
+    expect(result[2]).toMatchObject({ resolvedIsSigner: 'either' });
+});
+
+test('it carries the resolved optionality along a chain of default accounts', () => {
+    // Given an account "a" defaulting to an optional account "b" which defaults to the payer.
+    const node = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                defaultValue: accountValueNode('b'),
+                identifier: 'a',
+                isSigner: false,
+                isWritable: false,
+            }),
+            instructionAccountNode({
+                defaultValue: payerValueNode(),
+                identifier: 'b',
+                isOptional: true,
+                isSigner: false,
+                isWritable: false,
+            }),
+        ],
+        identifier: 'myInstruction',
+    });
+
+    // When we get its resolved inputs.
+    const result = resolve(node);
+
+    // Then "b" is always present, and so is "a" which defaults to it.
+    expect(result.map(input => input.node.identifier)).toEqual(['b', 'a']);
+    expect(result[0]).toMatchObject({ resolvedIsOptional: false });
+    expect(result[1]).toMatchObject({ resolvedIsOptional: false });
 });
 
 test('it includes instruction data fields with resolvable default values', () => {
