@@ -1,11 +1,14 @@
 import {
     arrayTypeNode,
+    constantValueNode,
     definedTypeLinkNode,
     definedTypeNode,
     enumTypeNode,
     enumVariantTypeNode,
     fixedCountNode,
+    hiddenPrefixTransformNode,
     integerTypeNode,
+    integerValueNode,
     mapTypeNode,
     optionTypeNode,
     prefixedCountNode,
@@ -13,6 +16,7 @@ import {
     remainderCountNode,
     remainderOptionTypeNode,
     rootNode,
+    sentinelCountNode,
     setTypeNode,
     structFieldTypeNode,
     structTypeNode,
@@ -26,6 +30,9 @@ import { getHasFiniteValueVisitor, getLinkablesFromNode, NodeStack } from '../sr
 
 const u8 = integerTypeNode('u8');
 const self = definedTypeLinkNode('self');
+const constantOfSelf = constantValueNode(self, integerValueNode('0'));
+const prefixOfSelf = hiddenPrefixTransformNode([constantOfSelf]);
+const u8OfSelf = integerTypeNode('u8', { transforms: [prefixOfSelf] });
 const field = (type: TypeNode) => structTypeNode([structFieldTypeNode({ identifier: 'value', type })]);
 
 test.each<[string, TypeNode]>([
@@ -62,6 +69,20 @@ test.each<[string, TypeNode]>([
     ['fixed maps', mapTypeNode(self, u8, fixedCountNode(1))],
     ['enums whose every variant recurses', enumTypeNode([enumVariantTypeNode('cons', { data: field(self) })])],
     ['enums without variants', field(enumTypeNode([]))],
+    // Constants of the type itself, which are never created, within the parts of a type that a
+    // recursion may otherwise stop at.
+    ['transforms of links', field(definedTypeLinkNode('missing', { transforms: [prefixOfSelf] }))],
+    ['transforms of options', field(optionTypeNode(self, { prefix: u8, transforms: [prefixOfSelf] }))],
+    ['zero values of zeroable options', field(zeroableOptionTypeNode(u8, { zeroValue: constantOfSelf }))],
+    ['transforms of remainder options', field(remainderOptionTypeNode(u8, { transforms: [prefixOfSelf] }))],
+    ['sentinel counts', arrayTypeNode(u8, sentinelCountNode(constantOfSelf))],
+    ['transforms of prefixed arrays', arrayTypeNode(u8, prefixedCountNode(u8), { transforms: [prefixOfSelf] })],
+    ['transforms of sets', setTypeNode(u8, remainderCountNode(), { transforms: [prefixOfSelf] })],
+    ['transforms of maps', mapTypeNode(u8, u8, prefixedCountNode(u8), { transforms: [prefixOfSelf] })],
+    ['transforms of enums', enumTypeNode([enumVariantTypeNode('nil')], { transforms: [prefixOfSelf] })],
+    ['prefixes of options', field(optionTypeNode(u8, { prefix: u8OfSelf }))],
+    ['sizes of enums', enumTypeNode([enumVariantTypeNode('nil')], { size: u8OfSelf })],
+    ['prefixed counts', arrayTypeNode(u8, prefixedCountNode(u8OfSelf))],
 ])('it finds no finite value through %s', (_, type) => {
     // Given a defined type named `self` with the given type.
     const definedType = definedTypeNode({ identifier: 'self', type });
