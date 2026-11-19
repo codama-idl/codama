@@ -1,5 +1,22 @@
 # @codama/nodes
 
+## 2.0.0-rc.1
+
+### Patch Changes
+
+- [#1273](https://github.com/codama-idl/codama/pull/1273) [`141998e`](https://github.com/codama-idl/codama/commit/141998ef817294a79629c4592cdfdce93bd6939d) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Emit node attributes in the declaration order of the spec, followed by base attributes, instead of regrouping them into data and child attributes. Encoded IDLs change order only, e.g. the `docs` of a `pdaNode` now come before its `programId`, and readers must not depend on attribute order. Following `@codama/spec@2.0.0-rc.4`, link nodes now put their `identifier` before their parent link, and the type parameters of `ValueLabelDisplayNode` follow its new attribute order (`TLabel` before `TValue`).
+  
+  ```jsonc
+  // Before
+  { "kind": "pdaNode", "identifier": "vault", "programId": "…", "docs": "The vault.", "seeds": […] }
+  
+  // After
+  { "kind": "pdaNode", "identifier": "vault", "docs": "The vault.", "programId": "…", "seeds": […] }
+  ```
+- Updated dependencies [[`141998e`](https://github.com/codama-idl/codama/commit/141998ef817294a79629c4592cdfdce93bd6939d)]:
+  - @codama/node-types@2.0.0-rc.1
+  - @codama/errors@2.0.0-rc.1
+
 ## 2.0.0-rc.0
 
 ### Major Changes

@@ -1,5 +1,15 @@
 # @codama/visitors
 
+## 2.0.0-rc.1
+
+### Patch Changes
+
+- Updated dependencies [[`9146ad3`](https://github.com/codama-idl/codama/commit/9146ad38aa121ee6c3862315f6cf8dd3fb7bc641), [`9210c1f`](https://github.com/codama-idl/codama/commit/9210c1f87827a29751db42a9402bcbbacc954f11), [`141998e`](https://github.com/codama-idl/codama/commit/141998ef817294a79629c4592cdfdce93bd6939d)]:
+  - @codama/visitors-core@2.0.0-rc.1
+  - @codama/nodes@2.0.0-rc.1
+  - @codama/errors@2.0.0-rc.1
+  - @codama/fragments@2.0.0-rc.1
+
 ## 2.0.0-rc.0
 
 ### Major Changes
