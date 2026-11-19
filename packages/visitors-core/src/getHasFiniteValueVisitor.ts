@@ -1,4 +1,4 @@
-import { CountNode, DefinedTypeNode, isNode } from '@codama/nodes';
+import { CountNode, DefinedTypeNode, isNode, Node } from '@codama/nodes';
 
 import { extendVisitor } from './extendVisitor';
 import { mergeVisitor } from './generated/mergeVisitor';
@@ -12,9 +12,10 @@ import { visit, Visitor } from './visitor';
 /**
  * Whether the visited type has at least one finite value, following links.
  *
- * Only the shape of values matters: options may be `None`, enums may pick any
- * variant and collections without a fixed positive count may be empty, so all
- * of them stop a recursion. Transforms, prefixes and sizes only prevent a
+ * Options may be `None`, enums may pick any variant and collections without a
+ * fixed positive count may be empty, so all of them stop a recursion at their
+ * items. The other parts of a type, such as its transforms, counts, prefixes,
+ * sizes and zero values, are part of every value of it, so they prevent a
  * value from existing when their constants link back to a type being visited,
  * since those constants could then never be created. Links that cannot be
  * resolved count as finite.
@@ -52,7 +53,11 @@ export function getHasFiniteValueVisitor(
         v =>
             extendVisitor(v, {
                 visitArrayType(node, { self }) {
-                    return !hasFixedPositiveCount(node.count) || visit(node.item, self);
+                    return (
+                        (!hasFixedPositiveCount(node.count) || visit(node.item, self)) &&
+                        visit(node.count, self) &&
+                        visitAll(node.transforms, self)
+                    );
                 },
 
                 visitDefinedType(node, { next }) {
@@ -64,15 +69,20 @@ export function getHasFiniteValueVisitor(
                     return hasFiniteValue;
                 },
 
-                visitDefinedTypeLink(node, { self }) {
+                // The link itself, such as its transforms, goes through `next`.
+                visitDefinedTypeLink(node, { next, self }) {
                     const linkedPath = linkables.getPath(stack.getPath(node.kind));
-                    if (!linkedPath) return true;
+                    if (!linkedPath) return next(node);
                     if (visitingDefinedTypes.has(getLastNodeFromPath(linkedPath))) return false;
-                    return stack.visitPath(linkedPath, self);
+                    return stack.visitPath(linkedPath, self) && next(node);
                 },
 
                 visitEnumType(node, { self }) {
-                    return (node.variants ?? []).some(variant => visit(variant, self));
+                    return (
+                        (node.variants ?? []).some(variant => visit(variant, self)) &&
+                        visit(node.size, self) &&
+                        visitAll(node.transforms, self)
+                    );
                 },
 
                 // The defined type of an enum value only references it.
@@ -81,27 +91,40 @@ export function getHasFiniteValueVisitor(
                 },
 
                 visitMapType(node, { self }) {
-                    return !hasFixedPositiveCount(node.count) || (visit(node.key, self) && visit(node.value, self));
+                    return (
+                        (!hasFixedPositiveCount(node.count) || (visit(node.key, self) && visit(node.value, self))) &&
+                        visit(node.count, self) &&
+                        visitAll(node.transforms, self)
+                    );
                 },
 
-                visitOptionType() {
-                    return true;
+                visitOptionType(node, { self }) {
+                    return visit(node.prefix, self) && visitAll(node.transforms, self);
                 },
 
-                visitRemainderOptionType() {
-                    return true;
+                visitRemainderOptionType(node, { self }) {
+                    return visitAll(node.transforms, self);
                 },
 
                 visitSetType(node, { self }) {
-                    return !hasFixedPositiveCount(node.count) || visit(node.item, self);
+                    return (
+                        (!hasFixedPositiveCount(node.count) || visit(node.item, self)) &&
+                        visit(node.count, self) &&
+                        visitAll(node.transforms, self)
+                    );
                 },
 
-                visitZeroableOptionType() {
-                    return true;
+                visitZeroableOptionType(node, { self }) {
+                    return (!node.zeroValue || visit(node.zeroValue, self)) && visitAll(node.transforms, self);
                 },
             }),
         v => recordNodeStackVisitor(v, stack),
     );
+}
+
+// The transforms of a type are part of every value of it, even when the recursion may stop at its item.
+function visitAll(nodes: readonly Node[] | undefined, visitor: Visitor<boolean>): boolean {
+    return (nodes ?? []).every(node => visit(node, visitor));
 }
 
 function hasFixedPositiveCount(count: CountNode): boolean {
