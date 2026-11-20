@@ -97,6 +97,38 @@ Codama errors raised while encoding are thrown as is, e.g. a `CODAMA_ERROR__DYNA
 
 Default values injected from account data cannot be evaluated while encoding: resolve them with `resolveInstructionDataDefaultValues` from [`@codama/dynamic-address-resolution`](../dynamic-address-resolution/README.md#reading-account-data) and pass them as the `resolvedDefaultValues` option. The encoder then creates a codec for these values on each call, since they differ from one instruction to the next.
 
+Resolve them before every encoding: when no data default needs resolving, `resolveInstructionDataDefaultValues` returns an empty map and fetches nothing. `fetchAccounts` is only needed when `readsAccountData(path)` is `true`. `createInstructionsBuilder` does all of this for you.
+
+```ts
+import {
+    getBatchedFetchAccounts,
+    readsAccountData,
+    resolveInstructionDataDefaultValues,
+} from '@codama/dynamic-address-resolution';
+import { createAccountMetas, encodeInstructionData } from '@codama/dynamic-instructions';
+
+const path = [root, root.program, transferChecked] as const;
+const accountsInput = { authority, destination, mint, source };
+const dataInput = { amount: 42n };
+
+// One batch and cache for the data and the accounts, only when the instruction may read account data
+const batchedFetchAccounts = readsAccountData(path) ? getBatchedFetchAccounts(fetchAccounts) : undefined;
+
+const resolvedDefaultValues = await resolveInstructionDataDefaultValues({
+    accountsInput,
+    dataInput,
+    fetchAccounts: batchedFetchAccounts,
+    path,
+});
+const data = encodeInstructionData(path, dataInput, { resolvedDefaultValues });
+const accounts = await createAccountMetas({
+    accounts: accountsInput,
+    data: dataInput,
+    fetchAccounts: batchedFetchAccounts,
+    path,
+});
+```
+
 ### `createAccountMetas({ path, accounts?, data?, fetchAccounts?, signers? })`
 
 Creates the `AccountMeta`s of an instruction: its accounts, in order, followed by its remaining accounts. Accounts that are not provided are resolved from their default values, e.g. PDAs derived from the data, and optional accounts provided as `null` follow the `optionalAccountStrategy` of the instruction. Default values reading account data fetch these accounts with `fetchAccounts`, shared by all the accounts.
