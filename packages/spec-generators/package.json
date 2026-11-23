@@ -21,7 +21,7 @@
         "rimraf": "6.1.4",
         "tsup": "^8.5.1",
         "typescript": "^7.0.2",
-        "vitest": "^5.1.0"
+        "vitest": "^5.1.1"
     },
     "engines": {
         "node": ">=20.18.0"
