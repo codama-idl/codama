@@ -35,12 +35,10 @@ import {
     instructionStatusNode,
     integerTypeNode,
     integerValueNode,
-    Node,
     noneValueNode,
     optionTypeNode,
     pathString,
     payerValueNode,
-    PdaLinkNode,
     pdaLinkNode,
     pdaNode,
     pluginNode,
@@ -1170,21 +1168,45 @@ test('it reports account links pointing to missing accounts', () => {
     ]);
 });
 
-// Links point outside of the tree when they name a program that is not in it, so they are not checked.
-
-/** A `token` program with a `vault` PDA, a `config` defined type, a `mint` account and a `transfer` instruction. */
-function linksRoot(extend: (program: ProgramNode) => ProgramNode = p => p) {
-    const token = programNode({
-        accounts: [accountNode({ data: structTypeNode([]), identifier: 'mint' })],
-        definedTypes: [definedTypeNode({ identifier: 'config', type: structTypeNode([]) })],
+test('it reports PDA links to missing PDAs', () => {
+    // Given an account linking to a PDA that does not exist, next to one that does.
+    const program = programNode({
+        accounts: [
+            accountNode({ data: structTypeNode([]), identifier: 'user', pda: pdaLinkNode('vualt') }),
+            accountNode({ data: structTypeNode([]), identifier: 'admin', pda: pdaLinkNode('vault') }),
+        ],
         identifier: 'token',
-        instructions: [
-            instructionNode({
-                accounts: [instructionAccountNode({ identifier: 'authority', isSigner: false, isWritable: true })],
-                identifier: 'transfer',
+        pdas: [pdaNode({ identifier: 'vault', seeds: [] })],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Pointing to a missing PDA named "vualt"', [
+            root,
+            program,
+            program.accounts![0],
+            program.accounts![0].pda!,
+        ]),
+    ]);
+});
+
+test('it reports PDA links to missing PDAs of other programs in the tree', () => {
+    // Given an account linking to the `vault` PDA of a program that only has an `escrow` PDA.
+    const program = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([]),
+                identifier: 'user',
+                pda: pdaLinkNode('vault', { program: programLinkNode('other') }),
+            }),
+            accountNode({
+                data: structTypeNode([]),
+                identifier: 'admin',
+                pda: pdaLinkNode('escrow', { program: programLinkNode('other') }),
             }),
         ],
-        pdas: [pdaNode({ identifier: 'vault', seeds: [] })],
+        identifier: 'token',
         publicKey: '1111',
         version: '1.0.0',
     });
@@ -1194,78 +1216,63 @@ function linksRoot(extend: (program: ProgramNode) => ProgramNode = p => p) {
         publicKey: '2222',
         version: '1.0.0',
     });
-    return rootNode(extend(token), { additionalPrograms: [other] });
-}
-
-/** A `token` program whose `user` account links to the given PDA. */
-function rootWithAccountPda(pda: PdaLinkNode) {
-    return linksRoot(program => ({
-        ...program,
-        accounts: [accountNode({ data: structTypeNode([]), identifier: 'user', pda })],
-    }));
-}
-
-/** A `token` program with a `swap` instruction providing the given node as `target`. */
-function rootWithProvided(node: Node) {
-    return linksRoot(program => ({
-        ...program,
-        instructions: [
-            ...(program.instructions ?? []),
-            instructionNode({
-                accounts: [instructionAccountNode({ identifier: 'payer', isSigner: true, isWritable: true })],
-                identifier: 'swap',
-                provides: [providedNode('target', node)],
-            }),
-        ],
-    }));
-}
-
-const messages = (root: Node) => visit(root, getValidationItemsVisitor()).map(item => item.message);
-
-test('it reports PDA links to missing PDAs', () => {
-    expect(messages(rootWithAccountPda(pdaLinkNode('vualt')))).toEqual(['Pointing to a missing PDA named "vualt"']);
-    expect(messages(rootWithAccountPda(pdaLinkNode('vault', { program: programLinkNode('other') })))).toEqual([
-        'Pointing to a missing PDA named "vault"',
+    const root = rootNode(program, { additionalPrograms: [other] });
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Pointing to a missing PDA named "vault"', [
+            root,
+            program,
+            program.accounts![0],
+            program.accounts![0].pda!,
+        ]),
     ]);
-    expect(messages(rootWithAccountPda(pdaLinkNode('vault')))).toEqual([]);
-    expect(messages(rootWithAccountPda(pdaLinkNode('escrow', { program: programLinkNode('other') })))).toEqual([]);
 });
 
 test('it skips links to programs outside the tree', () => {
-    // The associated token program is not in the tree, e.g. its client is generated separately.
-    expect(
-        messages(rootWithAccountPda(pdaLinkNode('associatedToken', { program: programLinkNode('associatedToken') }))),
-    ).toEqual([]);
-    const root = linksRoot(program => ({
-        ...program,
-        definedTypes: [
-            ...(program.definedTypes ?? []),
-            definedTypeNode({
-                identifier: 'external',
-                type: structTypeNode([
+    // Given links of every kind naming the associated token program, which is not in the tree,
+    // e.g. because its client is generated separately.
+    const external = programLinkNode('associatedToken');
+    const program = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([
                     structFieldTypeNode({
                         identifier: 'account',
-                        type: publicKeyTypeNode({
-                            accountLink: accountLinkNode('token', { program: programLinkNode('associatedToken') }),
-                        }),
+                        type: publicKeyTypeNode({ accountLink: accountLinkNode('token', { program: external }) }),
                     }),
                     structFieldTypeNode({
                         identifier: 'config',
-                        type: definedTypeLinkNode('config', { program: programLinkNode('associatedToken') }),
+                        type: definedTypeLinkNode('config', { program: external }),
                     }),
                 ]),
+                identifier: 'user',
+                pda: pdaLinkNode('associatedToken', { program: external }),
             }),
         ],
-    }));
-    expect(messages(root)).toEqual([]);
-    const instruction = instructionLinkNode('create', { program: programLinkNode('associatedToken') });
-    expect(messages(rootWithProvided(instruction))).toEqual([]);
-    expect(messages(rootWithProvided(instructionAccountLinkNode('mint', { instruction })))).toEqual([]);
+        identifier: 'token',
+        instructions: [
+            instructionNode({
+                identifier: 'swap',
+                provides: [
+                    providedNode('instruction', instructionLinkNode('create', { program: external })),
+                    providedNode(
+                        'account',
+                        instructionAccountLinkNode('mint', {
+                            instruction: instructionLinkNode('create', { program: external }),
+                        }),
+                    ),
+                ],
+            }),
+        ],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    expect(visit(rootNode(program), getValidationItemsVisitor())).toEqual([]);
 });
 
 test('it never reports program links', () => {
-    const root = linksRoot(program => ({
-        ...program,
+    // Given an account defaulting to the address of a program that is not in the tree.
+    const program = programNode({
+        identifier: 'token',
         instructions: [
             instructionNode({
                 accounts: [
@@ -1279,55 +1286,119 @@ test('it never reports program links', () => {
                 identifier: 'transfer',
             }),
         ],
-    }));
-    expect(messages(root)).toEqual([]);
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    expect(visit(rootNode(program), getValidationItemsVisitor())).toEqual([]);
 });
 
-test('it reports account links to missing accounts of programs in the tree', () => {
-    const root = linksRoot(program => ({
-        ...program,
-        definedTypes: [
-            ...(program.definedTypes ?? []),
-            definedTypeNode({
-                identifier: 'owner',
-                type: publicKeyTypeNode({
-                    accountLink: accountLinkNode('mint', { program: programLinkNode('other') }),
-                }),
-            }),
-        ],
-    }));
-    expect(messages(root)).toEqual(['Pointing to a missing account named "mint"']);
+test('it reports account links to missing accounts of other programs in the tree', () => {
+    // Given a public key linking to the `mint` account of a program that has no account.
+    const link = accountLinkNode('mint', { program: programLinkNode('other') });
+    const type = publicKeyTypeNode({ accountLink: link });
+    const owner = definedTypeNode({ identifier: 'owner', type });
+    const program = programNode({ definedTypes: [owner], identifier: 'token', publicKey: '1111', version: '1.0.0' });
+    const other = programNode({ identifier: 'other', publicKey: '2222', version: '1.0.0' });
+    const root = rootNode(program, { additionalPrograms: [other] });
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Pointing to a missing account named "mint"', [root, program, owner, type, link]),
+    ]);
 });
 
 test('it reports instruction links to missing instructions', () => {
-    expect(messages(rootWithProvided(instructionLinkNode('tranfser')))).toEqual([
-        'Pointing to a missing instruction named "tranfser"',
+    // Given an instruction providing links to an existing instruction and to a misspelt one.
+    const link = instructionLinkNode('tranfser');
+    const swap = instructionNode({
+        identifier: 'swap',
+        provides: [providedNode('existing', instructionLinkNode('transfer')), providedNode('missing', link)],
+    });
+    const program = programNode({
+        identifier: 'token',
+        instructions: [instructionNode({ identifier: 'transfer' }), swap],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Pointing to a missing instruction named "tranfser"', [
+            root,
+            program,
+            swap,
+            swap.provides![1],
+            link,
+        ]),
     ]);
-    expect(messages(rootWithProvided(instructionLinkNode('transfer')))).toEqual([]);
 });
 
 test('it reports instruction account links to missing accounts', () => {
-    // Without an instruction, the link points to an account of the surrounding instruction.
-    expect(messages(rootWithProvided(instructionAccountLinkNode('authority')))).toEqual([
-        'Pointing to a missing instruction account named "authority"',
+    // Given links to an account of the surrounding instruction, of another instruction, and to one
+    // the surrounding instruction does not have.
+    const link = instructionAccountLinkNode('authority');
+    const swap = instructionNode({
+        accounts: [instructionAccountNode({ identifier: 'payer', isSigner: true, isWritable: true })],
+        identifier: 'swap',
+        provides: [
+            providedNode('own', instructionAccountLinkNode('payer')),
+            providedNode(
+                'other',
+                instructionAccountLinkNode('authority', { instruction: instructionLinkNode('transfer') }),
+            ),
+            providedNode('missing', link),
+        ],
+    });
+    const transfer = instructionNode({
+        accounts: [instructionAccountNode({ identifier: 'authority', isSigner: false, isWritable: true })],
+        identifier: 'transfer',
+    });
+    const program = programNode({
+        identifier: 'token',
+        instructions: [transfer, swap],
+        publicKey: '1111',
+        version: '1.0.0',
+    });
+    const root = rootNode(program);
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Pointing to a missing instruction account named "authority"', [
+            root,
+            program,
+            swap,
+            swap.provides![2],
+            link,
+        ]),
     ]);
-    expect(messages(rootWithProvided(instructionAccountLinkNode('payer')))).toEqual([]);
-    expect(
-        messages(
-            rootWithProvided(instructionAccountLinkNode('authority', { instruction: instructionLinkNode('transfer') })),
-        ),
-    ).toEqual([]);
 });
 
 test('it only reports the missing instruction of an instruction account link', () => {
-    expect(
-        messages(
-            rootWithProvided(instructionAccountLinkNode('authority', { instruction: instructionLinkNode('mintTo') })),
-        ),
-    ).toEqual(['Pointing to a missing instruction named "mintTo"']);
-    const instruction = instructionLinkNode('transfer', { program: programLinkNode('other') });
-    expect(messages(rootWithProvided(instructionAccountLinkNode('authority', { instruction })))).toEqual([
-        'Pointing to a missing instruction named "transfer"',
+    // Given a link to an account of a missing instruction, in the tree and in another program of the tree.
+    const mintTo = instructionLinkNode('mintTo');
+    const otherTransfer = instructionLinkNode('transfer', { program: programLinkNode('other') });
+    const swap = instructionNode({
+        identifier: 'swap',
+        provides: [
+            providedNode('a', instructionAccountLinkNode('authority', { instruction: mintTo })),
+            providedNode('b', instructionAccountLinkNode('authority', { instruction: otherTransfer })),
+        ],
+    });
+    const program = programNode({ identifier: 'token', instructions: [swap], publicKey: '1111', version: '1.0.0' });
+    const other = programNode({ identifier: 'other', publicKey: '2222', version: '1.0.0' });
+    const root = rootNode(program, { additionalPrograms: [other] });
+    expect(visit(root, getValidationItemsVisitor())).toEqual([
+        validationItem('error', 'Pointing to a missing instruction named "mintTo"', [
+            root,
+            program,
+            swap,
+            swap.provides![0],
+            swap.provides![0].node,
+            mintTo,
+        ]),
+        validationItem('error', 'Pointing to a missing instruction named "transfer"', [
+            root,
+            program,
+            swap,
+            swap.provides![1],
+            swap.provides![1].node,
+            otherTransfer,
+        ]),
     ]);
 });
 
