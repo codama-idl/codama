@@ -1,5 +1,19 @@
 # @codama/validators
 
+## 2.0.0-rc.1
+
+### Minor Changes
+
+- [#1289](https://github.com/codama-idl/codama/pull/1289) [`f56fc28`](https://github.com/codama-idl/codama/commit/f56fc28898b93bec3bfe2729f8b867311affc3c0) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Report PDA, instruction and instruction account links that point to no node of their program, e.g. `pdaLinkNode('vualt')`, as errors. Links naming a program that is not in the tree point outside of it, such as the PDA of the associated token program, so they are not checked, and neither are account and defined type links to such programs anymore.
+
+### Patch Changes
+
+- Updated dependencies [[`9146ad3`](https://github.com/codama-idl/codama/commit/9146ad38aa121ee6c3862315f6cf8dd3fb7bc641), [`9210c1f`](https://github.com/codama-idl/codama/commit/9210c1f87827a29751db42a9402bcbbacc954f11), [`f56fc28`](https://github.com/codama-idl/codama/commit/f56fc28898b93bec3bfe2729f8b867311affc3c0), [`141998e`](https://github.com/codama-idl/codama/commit/141998ef817294a79629c4592cdfdce93bd6939d)]:
+  - @codama/visitors-core@2.0.0-rc.1
+  - @codama/nodes@2.0.0-rc.1
+  - @codama/errors@2.0.0-rc.1
+  - @codama/fragments@2.0.0-rc.1
+
 ## 2.0.0-rc.0
 
 ### Major Changes
