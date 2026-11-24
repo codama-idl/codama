@@ -1,5 +1,19 @@
 # @codama/visitors-core
 
+## 2.0.0-rc.1
+
+### Patch Changes
+
+- [#1285](https://github.com/codama-idl/codama/pull/1285) [`9146ad3`](https://github.com/codama-idl/codama/commit/9146ad38aa121ee6c3862315f6cf8dd3fb7bc641) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Carry the resolved signer and optionality of a default account along a chain of defaults in `getResolvedInstructionInputsVisitor`. An account defaulting to an account that itself defaults to a non-signer, e.g. `a` → `b` → `c`, now resolves to an `'either'` signer rather than a required one, and likewise inherits the resolved optionality of its default account.
+
+- [#1286](https://github.com/codama-idl/codama/pull/1286) [`9210c1f`](https://github.com/codama-idl/codama/commit/9210c1f87827a29751db42a9402bcbbacc954f11) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Check the transforms, counts, prefixes, sizes and zero values of types that may stop a recursion in `getHasFiniteValueVisitor`. A constant of a type being visited hidden in, e.g., the transforms of a link or an option, or in a sentinel count, can never be created, so `hasDefinedTypeFiniteValue` now reports that type as having no finite value instead of accepting it.
+
+- [#1289](https://github.com/codama-idl/codama/pull/1289) [`f56fc28`](https://github.com/codama-idl/codama/commit/f56fc28898b93bec3bfe2729f8b867311affc3c0) Thanks [@lorisleiva](https://github.com/lorisleiva)! - Depend on a PDA value's `programId` when it is a `dataValueNode` in `getResolvedInstructionInputsVisitor`, so the data field resolves before the PDA value, and keep the instruction account in the path of `CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE` whenever the PDA value is the account's own, including when resolving an injected seed within it rebuilt the value.
+- Updated dependencies [[`141998e`](https://github.com/codama-idl/codama/commit/141998ef817294a79629c4592cdfdce93bd6939d)]:
+  - @codama/nodes@2.0.0-rc.1
+  - @codama/errors@2.0.0-rc.1
+  - @codama/fragments@2.0.0-rc.1
+
 ## 2.0.0-rc.0
 
 ### Major Changes
