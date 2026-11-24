@@ -188,7 +188,8 @@ export function getResolvedInstructionInputsVisitor(
                     if (dependency.resolvedIsOptional) {
                         // A PDA value injected by a provider is not within the account, so its path
                         // starts at the PDA value node. The account's own PDA value starts at the
-                        // account, even when resolving an injected seed within it rebuilt the value.
+                        // account, even when resolving an injected seed within it rebuilt the value,
+                        // in which case the tail of the path is the resolved value, not the tree's.
                         const pdaPath = isNode(account.defaultValue, 'injectedValueNode')
                             ? [resolvedDefaultValue]
                             : [...stack.getPath('instructionNode'), account, resolvedDefaultValue];
