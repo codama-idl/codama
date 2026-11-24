@@ -186,12 +186,13 @@ export function getResolvedInstructionInputsVisitor(
                     if (!isNode(seed.value, 'accountValueNode')) return;
                     const dependency = visitedAccounts.get(seed.value.identifier)!;
                     if (dependency.resolvedIsOptional) {
-                        // A default value injected by a provider is not within the account, so its
-                        // path starts at the PDA value node.
-                        const pdaPath =
-                            account.defaultValue === resolvedDefaultValue
-                                ? [...stack.getPath('instructionNode'), account, resolvedDefaultValue]
-                                : [resolvedDefaultValue];
+                        // A PDA value injected by a provider is not within the account, so its path
+                        // starts at the PDA value node. The account's own PDA value starts at the
+                        // account, even when resolving an injected seed within it rebuilt the value,
+                        // in which case the tail of the path is the resolved value, not the tree's.
+                        const pdaPath = isNode(account.defaultValue, 'injectedValueNode')
+                            ? [resolvedDefaultValue]
+                            : [...stack.getPath('instructionNode'), account, resolvedDefaultValue];
                         throw new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
                             path: [...pdaPath, seed],
                             seedValueName: seed.value.identifier,
@@ -375,12 +376,8 @@ function getDependencies(defaultValue: InstructionInputValueNode | undefined): I
                 dependencies.push({ ...seed.value });
             }
         });
-        return deduplicateInstructionDependencies([
-            ...dependencies,
-            ...(defaultValue.programId && isNode(defaultValue.programId, 'accountValueNode')
-                ? [defaultValue.programId]
-                : []),
-        ]);
+        if (defaultValue.programId) dependencies.push({ ...defaultValue.programId });
+        return deduplicateInstructionDependencies(dependencies);
     }
 
     if (isNode(defaultValue, 'conditionalValueNode')) {

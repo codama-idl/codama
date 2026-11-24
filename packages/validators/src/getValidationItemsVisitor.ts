@@ -14,10 +14,13 @@ import {
     DateTimeTypeNode,
     DurationTypeNode,
     getTextNodeContent,
+    InstructionLinkNode,
     InterpolatedIntentPart,
     isNode,
+    LinkNode,
     Node,
     parseInterpolatedIntent,
+    ProgramLinkNode,
     REGISTERED_NODE_KINDS,
 } from '@codama/nodes';
 import {
@@ -81,12 +84,7 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                 },
 
                 visitAccountLink(node, { next }) {
-                    const items = [] as ValidationItem[];
-                    if (!linkables.has(stack.getPath(node.kind))) {
-                        items.push(
-                            validationItem('error', `Pointing to a missing account named "${node.identifier}"`, stack),
-                        );
-                    }
+                    const items = getMissingLinkItems('account', node.program, stack.getPath(node.kind), linkables);
                     return [...items, ...next(node)];
                 },
 
@@ -131,13 +129,9 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     const items = [] as ValidationItem[];
                     if (!node.identifier) {
                         items.push(validationItem('error', 'Pointing to a defined type with no identifier.', stack));
-                    } else if (!linkables.has(stack.getPath(node.kind))) {
+                    } else {
                         items.push(
-                            validationItem(
-                                'error',
-                                `Pointing to a missing defined type named "${node.identifier}"`,
-                                stack,
-                            ),
+                            ...getMissingLinkItems('defined type', node.program, stack.getPath(node.kind), linkables),
                         );
                     }
                     return [...items, ...next(node)];
@@ -344,6 +338,19 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     return [...items, ...next(node)];
                 },
 
+                visitInstructionAccountLink(node, { next }) {
+                    // When the instruction it names is missing, only that instruction link is reported, as it
+                    // is visited on its own.
+                    const path = stack.getPath(node.kind);
+                    if (node.instruction) {
+                        const instructionPath = [...path, node.instruction] as NodePath<InstructionLinkNode>;
+                        if (isExternalProgram(node.instruction.program, linkables) || !linkables.has(instructionPath)) {
+                            return next(node);
+                        }
+                    }
+                    return [...getMissingLinkItems('instruction account', undefined, path, linkables), ...next(node)];
+                },
+
                 visitInstructionDisplay(node, { next }) {
                     const items = [] as ValidationItem[];
                     const path = stack.getPath('instructionDisplayNode');
@@ -362,10 +369,20 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
                     return [...items, ...next(node)];
                 },
 
+                visitInstructionLink(node, { next }) {
+                    const items = getMissingLinkItems('instruction', node.program, stack.getPath(node.kind), linkables);
+                    return [...items, ...next(node)];
+                },
+
                 visitPda(node, { next }) {
                     const seeds = (node.seeds ?? []).filter(seed => isNode(seed, 'variablePdaSeedNode'));
                     const context = ` in PDA "${node.identifier}"`;
                     return [...getIdentifierCollisionItems(seeds, 'PDA seed', context, stack), ...next(node)];
+                },
+
+                visitPdaLink(node, { next }) {
+                    const items = getMissingLinkItems('PDA', node.program, stack.getPath(node.kind), linkables);
+                    return [...items, ...next(node)];
                 },
 
                 visitProgram(node, { next }) {
@@ -464,6 +481,30 @@ export function getValidationItemsVisitor(): Visitor<readonly ValidationItem[]> 
         v => recordProvidedScopeVisitor(v, scope),
         v => recordLinkablesOnFirstVisitVisitor(v, linkables),
     );
+}
+
+/**
+ * The items of a link that points to no node, such as a PDA link with a typo.
+ *
+ * A link naming a program that is not in the tree points outside of it, e.g. to the PDA of another
+ * program whose client is generated separately, so it cannot be checked and is skipped. Links to
+ * programs are never reported for the same reason. A typo in the name of the program, such as
+ * `program = "tokne"`, therefore cannot be told apart from an external program and is not reported.
+ */
+function getMissingLinkItems(
+    kind: string,
+    program: ProgramLinkNode | undefined,
+    path: NodePath<LinkNode>,
+    linkables: LinkableDictionary,
+): ValidationItem[] {
+    if (isExternalProgram(program, linkables) || linkables.has(path)) return [];
+    const link = getLastNodeFromPath(path);
+    return [validationItem('error', `Pointing to a missing ${kind} named "${link.identifier}"`, path)];
+}
+
+/** Whether `program` names a program that is not in the tree. */
+function isExternalProgram(program: ProgramLinkNode | undefined, linkables: LinkableDictionary): boolean {
+    return program !== undefined && linkables.getPath([program]) === undefined;
 }
 
 /** The items of a date-time or duration whose `ticksPerSecond` is not a positive integer. */
