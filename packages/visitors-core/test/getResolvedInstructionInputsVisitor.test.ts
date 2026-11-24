@@ -1,4 +1,5 @@
 import {
+    CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE,
     CODAMA_ERROR__VISITORS__CYCLIC_DEPENDENCY_DETECTED_WHEN_RESOLVING_INSTRUCTION_DEFAULT_VALUES,
     CODAMA_ERROR__VISITORS__INVALID_INSTRUCTION_DEFAULT_VALUE_DEPENDENCY,
     CODAMA_ERROR__VISITORS__INVALID_PROVIDED_VALUE,
@@ -11,14 +12,19 @@ import {
     dataValueNode,
     definedTypeLinkNode,
     definedTypeNode,
+    identifierString,
     injectedValueNode,
     INSTRUCTION_INPUT_VALUE_NODE_KINDS,
+    InstructionAccountNode,
     instructionAccountNode,
     InstructionNode,
     instructionNode,
     integerTypeNode,
+    integerValueNode,
     payerValueNode,
+    PdaSeedValueNode,
     pdaSeedValueNode,
+    PdaValueNode,
     pdaValueNode,
     programNode,
     providedNode,
@@ -357,6 +363,98 @@ test('it resolves the program id of a PdaValueNode first', () => {
             resolvedIsOptional: false,
             resolvedIsSigner: false,
         },
+    ]);
+});
+
+test('it resolves the program id of a PdaValueNode read from a data field first', () => {
+    // Given an account defaulting to a PDA whose program id is a data field.
+    const node = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                defaultValue: pdaValueNode('counter', { programId: dataValueNode('program') }),
+                identifier: 'counter',
+                isSigner: false,
+                isWritable: false,
+            }),
+        ],
+        data: structTypeNode([structFieldTypeNode({ identifier: 'program', type: publicKeyTypeNode() })]),
+        identifier: 'myInstruction',
+    });
+
+    // When we get its resolved inputs.
+    const result = resolve(node);
+
+    // Then the data field resolves first, as a dependency of the account.
+    expect(result.map(input => input.node.identifier)).toEqual(['program', 'counter']);
+    expect(result[1]).toMatchObject({ dependsOn: [dataValueNode('program')] });
+});
+
+test('it fails when a PdaValueNode takes an optional account as a seed', () => {
+    // Given an account defaulting to a PDA seeded with an optional account.
+    const node = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                defaultValue: pdaValueNode('counter', {
+                    seeds: [pdaSeedValueNode('authority', accountValueNode('authority'))],
+                }),
+                identifier: 'counter',
+                isSigner: false,
+                isWritable: false,
+            }),
+            instructionAccountNode({ identifier: 'authority', isOptional: true, isSigner: false, isWritable: false }),
+        ],
+        identifier: 'myInstruction',
+    });
+
+    // When we get its resolved inputs, then it fails with the path of the seed within the account.
+    const counter = (node.accounts ?? [])[0] as InstructionAccountNode;
+    const pda = counter.defaultValue as PdaValueNode;
+    const seed = (pda.seeds ?? [])[0] as PdaSeedValueNode;
+    expect(() => resolve(node)).toThrow(
+        new CodamaError(CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE, {
+            path: [node, counter, pda, seed],
+            seedValueName: identifierString('authority'),
+        }),
+    );
+});
+
+test('it keeps the account in the path of an optional seed when another seed is injected', () => {
+    // Given the same PDA with an injected seed next to the optional one, so resolving the PDA rebuilds it.
+    const node = instructionNode({
+        accounts: [
+            instructionAccountNode({
+                defaultValue: pdaValueNode('counter', {
+                    seeds: [
+                        pdaSeedValueNode('authority', accountValueNode('authority')),
+                        pdaSeedValueNode('bump', injectedValueNode({ key: 'bump' })),
+                    ],
+                }),
+                identifier: 'counter',
+                isSigner: false,
+                isWritable: false,
+            }),
+            instructionAccountNode({ identifier: 'authority', isOptional: true, isSigner: false, isWritable: false }),
+        ],
+        identifier: 'myInstruction',
+        provides: [providedNode('bump', integerValueNode('255'))],
+    });
+
+    // When we get its resolved inputs, then the path still starts at the instruction account.
+    let error: unknown;
+    try {
+        resolve(node);
+    } catch (e) {
+        error = e;
+    }
+    expect(error).toBeInstanceOf(CodamaError);
+    const path = (error as CodamaError<typeof CODAMA_ERROR__VISITORS__CANNOT_USE_OPTIONAL_ACCOUNT_AS_PDA_SEED_VALUE>)
+        .context.path;
+    expect(path.slice(0, 2)).toEqual([node, (node.accounts ?? [])[0]]);
+    expect(path.map(n => n.kind)).toEqual([
+        'instructionNode',
+        'instructionAccountNode',
+        'pdaValueNode',
+        'pdaSeedValueNode',
     ]);
 });
 
