@@ -187,6 +187,18 @@ describe('optional accounts', () => {
         ]);
     });
 
+    test('it does not sign with the program address of optional signers', async () => {
+        // Given an optional signer, with the default `programId` strategy.
+        const path = getInstructionPath(
+            instruction({ accounts: [account('authority', { isOptional: true, isSigner: true })] }),
+        );
+
+        // Then it resolves to the program address as a readonly non-signer.
+        expect(await createAccountMetas({ accounts: { authority: null }, path })).toStrictEqual([
+            { address: PROGRAM_ADDRESS, role: AccountRole.READONLY },
+        ]);
+    });
+
     test('it keeps the role of provided optional accounts', async () => {
         const buffer = await generateAddress();
         const path = getInstructionPath(

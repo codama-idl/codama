@@ -104,14 +104,14 @@ export async function createAccountMetas<
             if (address === null) return null;
 
             // Optional accounts resolved to the program address via the `programId` strategy
-            // cannot be writable on-chain, so they are downgraded to readonly.
+            // can neither be writable nor sign on-chain, so they are downgraded to readonly.
             const input = accounts?.[account.identifier];
             const isResolvedToProgramId =
                 account.isOptional &&
                 (input === undefined || input === null) &&
                 (instruction.optionalAccountStrategy ?? 'programId') === 'programId' &&
                 address === programAddress;
-            const isSigner = isSignerAccount(account, signers);
+            const isSigner = !isResolvedToProgramId && isSignerAccount(account, signers);
             const role = getAccountRole(isSigner, !isResolvedToProgramId && Boolean(account.isWritable));
             return { address, role } satisfies AccountMeta;
         }),
