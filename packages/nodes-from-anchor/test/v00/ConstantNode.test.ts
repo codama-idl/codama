@@ -11,6 +11,7 @@ import {
     integerValueNode,
     publicKeyTypeNode,
     publicKeyValueNode,
+    sizePrefixTransformNode,
     stringTypeNode,
     stringValueNode,
 } from '@codama/nodes';
@@ -181,4 +182,15 @@ test.each([
 
     // Then we expect its textually canonical value.
     expect(node).toEqual(constantNode('ratio', floatTypeNode('f64'), floatValueNode(expected)));
+});
+
+test('it removes the quotes Anchor keeps around string constants', () => {
+    // When we convert string constants whose values Anchor writes with their quotes.
+    const seed = constantNodeFromAnchorV00({ name: 'SEED', type: 'string', value: '"anchor"' });
+    const escaped = constantNodeFromAnchorV00({ name: 'GREETING', type: 'string', value: '"say \\"hi\\""' });
+
+    // Then we expect the values without their quotes.
+    const type = stringTypeNode('utf8', { transforms: [sizePrefixTransformNode(integerTypeNode('u32'))] });
+    expect(seed).toEqual(constantNode('SEED', type, stringValueNode('anchor')));
+    expect(escaped).toEqual(constantNode('GREETING', type, stringValueNode('say "hi"')));
 });
