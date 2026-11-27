@@ -112,7 +112,25 @@ export function parseConstantValue(valueString: string, type: TypeNode): { type:
         return { type, value: publicKeyValueNode(valueString) };
     }
 
+    if (isNode(type, 'stringTypeNode')) {
+        return { type, value: stringValueNode(unquoteString(valueString) ?? valueString) };
+    }
+
     return { type, value: stringValueNode(valueString) };
+}
+
+/**
+ * The content of a quoted string constant, e.g. `"seed"` → `seed`. Anchor
+ * keeps the quotes since it stores the `Debug` output of the value, or its
+ * Rust source in legacy IDLs.
+ */
+function unquoteString(valueString: string): string | undefined {
+    try {
+        const parsed: unknown = JSON.parse(valueString);
+        return typeof parsed === 'string' ? parsed : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 /** Defined types of a program, keyed by identifier, used to follow `definedTypeLinkNode`s. */
